@@ -323,6 +323,13 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // interleaved plus/minus per axis on this body 68; the side vector from named dx/dy differences 260 (1183 bytes). Retail's
 // 0x1b0400 evaluates the arg_7 compare while EBX still holds the actor and moves arg_0 into EBX after it, which needs
 // arg_0 declared before arg_7's group, so the folding orders (arg_4 after arg_8) still lose that caller.
+// M3 lane 7 r191 (fast with 0x1e55d0 and the five callers; control 20, callers matched): parameter orders with arg_0 ahead
+// of arg_7 and arg_4 last, (arg_2, arg_3, arg_1, arg_5, arg_6, arg_0, arg_7, arg_8, arg_9, arg_4) and (arg_2, arg_3, arg_1, arg_0,
+// arg_5 .. arg_9, arg_4), at the definition, every declaration and all seven calls: MATCH here, 0x1b0400 38, 0x1b2770 2,
+// 0x25f7b0 8 each (0x1b0400 still loads the actor's field into EDI ahead of the setup where retail compares it in memory);
+// round 188's order with 0x1b0400 passing the 0xbaf40 result straight as its argument (no reassignment) MATCH here,
+// 0x1b0400 38, 0x25f7b0 8. Body: the mode-1 rows through `point3f const *const &` bound to arg_1 45 (1175 B: every mode-1
+// row and the mode-2 rows then load the centre first); the centre x through `real const &` for both x rows 20 (same code).
 // M3 lane 11 r127 (fast with 0x1e55d0; control 20): the quarter written as a divide by 4.0f in all six rows 20; the x row
 // as `local_9.x = arg_1->x;` then `+=` the product 20; the spacing as a one-element const array 20 (all three the same
 // code); the centre copied by value into a local point for the rows 329 (1191 bytes, the copy goes through the stack);
@@ -332,6 +339,13 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // first: all load); the mode-2 x row likewise folds with the target parameter at index 0..2 or 7..9. The y row folds at
 // every index. No body form reaches the row: it follows the centre parameter's index, and 0x1b0400's retail call
 // (compare on the actor in EBX before `mov ebx, eax`) needs the target and arg_0 ahead of arg_7.
+// M3 lane 4 r228 (fast with 0x1e55d0; control 20 at 1176 B): a local copy of the target pointer read everywhere in place of
+// arg_4, declared first or after the top locals, 20/20 (same code); copies of both points (centre declared first) read
+// everywhere 30 (1175 B: the mode-1 x and y rows then load and the z row folds, and two mode-2 rows move); the centre x
+// named once for both mode-1 x rows 45 (1175 B); the three scaled side offsets named as one vector for both mode-1 points
+// 35. Compile-only screen of the copies (build/r228/grid1c.py: each use group of arg_1 and arg_4 read through a copy or
+// not, scored against this body with the x row folded): all 255 centre-copy subsets, all 127 target-copy subsets and 800
+// random joint subsets in both declaration orders: none folds the mode-1 x row with the rest unchanged.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

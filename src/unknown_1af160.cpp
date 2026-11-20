@@ -215,6 +215,9 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // straight to the record's short 25 (the helper's result takes its own home); the 0x1e5280 completion flag declared
 // inside its test 19 (its true store moves after the call); the rounding input declared at the top of the non-equal
 // branch 12 (same code); the result flag declared after the 0x261280 call 62.
+// M3 lane 12 r154 (`--fast 0x1af160 0x1e1f20`, control 12; `const &` bindings, each match-only): the 0x262b40 result read
+// through one for its two +0x14 tests and the 0x210ac0 argument 12; the prop node, the actor, both, and the 0x25d690 result
+// each bound straight to its lookup's result (a hidden temporary) 12/12/12/12 (all the same code). 0x260670 is still 440.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

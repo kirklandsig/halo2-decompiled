@@ -65,7 +65,9 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // score 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// MiniMax E (11-20): no new form, no lower score (376): the top block still reads the session state into ESI and compares ESI where retail loads it into EAX and compares EAX, and retail's out-of-line call to 0x5b080 for the session data is expanded at the call site in this build, so the two paths diverge from the first difference at 0x6b on.
 // Round 127 (m3 lane 10; fast, kept form confirmed plain with 0x706f0 and 0x5b080 matched): the property value cleared by
 // memset, as the members-ready arm already clears it, 387 -> 376 (kept: retail's seven zero stores are all `mov [..], ecx`
 // from one zero register, where `= {0}` stored the first member as an immediate; 1589 bytes, retail's length; aligned 115 ->
@@ -396,6 +398,10 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Use the actual owner and progress record layouts together 376.
 // Use the roster, owner, progress, hopper and state record forms together 376.
 // NOT kept: All eight record forms tie at 376 and 1,589 bytes. The reduced preview agrees with the full score and extent and reports six unresolved global references. The secondary state stays in ESI and the data getter still expands.
+// M3 lane 12 r154 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH each time; control 376, aligned 331 equal):
+// the second session as a `const &` to the owner's field 473 (1616 B); the data getter's result and the surface lookup's
+// result each bound by `const &` 376/376 (same code); a second session local re-read from the owner for the data getter's
+// call 400 (the getter still expands); the first session as a `const &` 461 (1595 B).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

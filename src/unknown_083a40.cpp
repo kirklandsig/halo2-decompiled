@@ -891,6 +891,14 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // gives the key its own induction variable. Reading: a user pointer local as the base (`players`) is also added last, so
 // the grouping is not a temporary-numbering tie; retail's (collection + inverse) is the shape of a whole-address reduction
 // with `collection` treated as invariant, which every in-loop definition here loses.
+// M3 lane 10 r132 (compile-only key screen, which reproduces ours, then fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/
+// 0x83570, all MATCH): the find-slot/swap/remove/add tail as a forceinline helper given `&watcher->players` (no collection
+// local in the else arm) 28; that with the first arm's apply also given `&watcher->players` and no collection local at
+// all 28; the conflict scan as a forceinline bool helper 28; both helpers 28; the two arms swapped (the else arm first,
+// the test negated) 28 (all the same code). Screen only: the watcher taken as `void *` and cast to a local (0x83370's
+// form) keeps the grouping; `collection` before the second loop, or at the top and used by the first loop's apply too,
+// gives the key its own induction variable (a fourth one: retail has i, the cursor and the session player only). In
+// every in-loop form the screen names the base a compiler temporary (watcher + 0x88) and adds it last. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

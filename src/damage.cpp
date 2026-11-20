@@ -552,6 +552,8 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+/* the material word is stored through a pointer to its field: as a plain field store the NONE
+   constant is scheduled ahead of that store (retail stores it first, then loads the bsp index) */
 // score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
 // load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
 // `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
@@ -618,6 +620,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
 // owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
 // moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
+// M3 lane 3 r273 (fast, and a one-object link-time screen that reproduces this listing): every NONE written `-1` 3; the word
+// fields as `(short)NONE` 3; screen: `(short)0xffff`, `0xffff`, `-1` for the word fields, `0xffffffff` for the owner object, the
+// memset size as 0x88, the +0x7c copy as a word copy, with a cast or through a `long` local, the definition index through a
+// local, 3 each (same code). Diagnostic bodies with stores removed: one NONE store before the +0x22 copy and at most one after
+// it gives retail's order; two before it, or three in all, gives ours, so the `or` takes the slot because eight stores use it.
 // M3 lane 11 r126 (fast with 0xd8cb0): the owner copied from the default-owner pointer (`*g_467420`) 49 (121 B); the owner,
 // unknown14 and the leaf/cluster NONEs as two chained assignments in store order 3 (same code); the material global read into
 // a short local ahead of the memset 28 (105 B, the bsp load then hoists above the definition store); the same local read
@@ -628,7 +635,8 @@ void function_d6660(s_type_1e6529 *data, long definition_index)
 {
 	memset(data, 0, sizeof(*data));
 	data->definition_index = definition_index;
-	data->unknown7c = g_47d8e0;
+	short *material = &data->unknown7c;
+	*material = g_47d8e0;
 	data->owner.object_index = NONE;
 	data->owner.player_index = NONE;
 	data->owner.team = NONE;
@@ -2419,6 +2427,20 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
 // the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
 // `info` being 0xdb090's register argument, not the use count.
+// M3 lane 3 r273 (fast; a one-object link-time screen of this file reproduces every state here in about a second): the flip is
+// a link-time convention change, `definition` kept in EBX through the guard and passed in EAX; a compile-only first pass
+// reloads `definition` in every form, so only a link-time screen shows it. `long region_index;` declared first 3 (same code);
+// an inline guard taking only the accumulator and reading info through `accumulator->field_4_2` 226 (857 B: the field read is
+// not merged with the entry-time load); round 114's guard called with both fields 227; on round 114's guard K = 0..20 dead
+// locals stay flipped (screen). Re-measured: round 98's guard 2, the entry read ahead of the ternary with round 114's guard 9.
+// HELD (needs the owner's OK; r273 build/r273/held-d8cb0.patch): `function_d5d20(object_index, false) * body_vitality` in the
+// vitality test, with 0xd5d20's definition made `inline` so the link expands it here with its constant `false`, in place of
+// that function's body written out; 3 -> 3 with the same bytes, 0xd5d20 and 0xd5d80 still match, 0xd82e0 stays 203 (fast and
+// plain); 0xd5d20 is a contributor's function, so its definition is left as it is. Screen lead (about 620 combinations): with round
+// 114's guard (any parameter order or return form) only the notify written through a named handle (or two fresh lookups)
+// with `object` declared ahead of `info` keeps retail's guard allocation (aligned 35: the guard, its hoisted load and the
+// flags address all retail's; left the prologue's load order, the notify's pointer in ECX and the scratch rotation after it);
+// with the notify through `damaged` (retail's code there) every combination flips.
 // M3 lane 11 r126 (fast with 0xd6660): on the entry local read in the guard's block (228, the flip), the variables renamed
 // (object as damage_object; info and entry renamed as diagnostics) 228 each, so symbol names do not decide the flip; the
 // entry read ahead of the 0xd5d20 call 218 (874 B); between that call and the inverse ternary 10 (re-measured: every
@@ -2426,6 +2448,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // New: the plain entry local in the guard's block with 0xdb090's first argument as `accumulator->field_4_2` 24 (871 B;
 // the load and every register are then retail's; left the [edx + eax + 4] address and that argument, `mov ecx,
 // [edi + 4]` for retail's `mov ecx, ebx`), so on the plain body too the flip follows `info` being that call's argument.
+// M3 lane 13 r125 (fast with 0xd6660 and the five matched callees): no `info` local, the field read at each of its uses
+// 248 (851 B), the same with the entry read into a local ahead of the guard 248; `info` declared in the damage block just
+// above the guard 158 (860 B: its read then follows the two calls); the index defaulted to NONE and set under `if (entry)`
+// inside `if (info)` 3, and defaulted to NONE, set under `if (info && entry)` with the range test after it 3 (both the same
+// code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
+// storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
+// the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2691,6 +2720,10 @@ struct s_unit_event
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
+// MiniMax G (11-19): no new form tried this round, no lower score (420): the region index, the datum offset and the
+// permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
+// address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
+// where retail reads it after.
 // score 420 (was 513): Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
@@ -4602,6 +4635,7 @@ bool function_138880();
 // second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // MiniMax I (11-15): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // MiniMax S (11-15): no new form, no lower score (194): the 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
+// MiniMax E (11-20): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, the 0xda110 permutation still arrives where retail keeps its own convention, and the second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three

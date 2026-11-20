@@ -907,6 +907,10 @@ extern "C" void _ReadWriteBarrier(void);
 // at the top, without/with the barrier 44 (208 B)/6 (same code); a discarded `(void)state->flags;` read at the top, no
 // barrier, 44 (removed); the point copied through a block-local `point3f` in the flags arm, no barrier, 50 (212 B). The
 // slot load still sinks to the NONE block in each.
+// M3 lane 12 r154 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, each with the barrier): the state assigned again from
+// the slot at the head of the NONE block 6; the NONE test in a bool read through a `bool const &` 50 (212 B); a second pointer
+// to the slot for the point copy 6; the 0x86/0x50c arms' 0x41c/0x420 stores through a forced-inline setter 6; the busy field
+// bound to a `long const &` for the NONE test 6 (all the 6s the same code: the slot still loads after the jne).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2091,6 +2095,19 @@ void function_1f86a0(long actor_index);
 // callee-saved register with a home and the first root borrows it, retail's shape, but the register is EDI (the actor
 // leaves it for the loop) and the mask keeps BL. So the mask wins BL from every other value however it is spelled, and a
 // second byte value shared across the root calls takes BL when the mask cannot; retail's loop has neither in BL.
+// M3 lane 16 r150 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all MATCH; control 134, aligned 109, register-masked 49).
+// Same code as this body (134): the joint index declared and set to NONE first with the early exit returning it; the
+// search loop moved whole into an inline function that returns the found index (forced inline; left to the compiler it
+// stays out of line, 467 at 639 bytes); the iterator's three stores in an inline set-up function; a first-entry inline
+// function (the three stores and the first step) driving a `for` loop; the mask as the only member of a local aggregate;
+// the mask's address taken in a no-op statement (diagnostic). One function-scope mask byte also assigned above the
+// slot-flag test and tested in both arms 231 (862 bytes: `and al, 0x20` there, where retail keeps the whole flags
+// byte in AL for two `test al, 0x20`). Diagnostic, reverted at once: a volatile mask on this body 254 (879 bytes, frame
+// 0x14 and the mask at +0x13, but the flags byte is then shared across the root calls in BL and the entry stays in
+// memory). Re-measured: the slot views ahead of the actor 137. Reading of retail's head: the incoming actor index sits in
+// EDX because ECX already belongs to the iterator address for the first step (retail forms that address ahead of the
+// actor-index store), the unit index chain stays in ECX and the object table goes to ESI because EAX is not free there;
+// none of the forms above moves either.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

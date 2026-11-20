@@ -2302,6 +2302,7 @@ struct s_unit_motion
 // BLOCKED-BY 0xc7840's call sites. The permuter (annealing, 427 s, 37 tries, the first run over this body) found no
 // variant below 104.
 // MiniMax C (11-17): no new form, no lower score (104, was 104): this body keeps position/velocity on the stack (ret 0xc) where retail takes them in XMM5/XMM4 with the time in XMM3 and returns with ret 4; the accumulator form (#515's body) gives retail's convention and the same 227 bytes at 28, but it then inlines into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80, so it cannot be kept.
+// MiniMax E (11-20): no new form, no lower score (104): this body still keeps position/velocity on the stack (ret 0xc) where retail takes them in XMM5/XMM4 with the time in XMM3 and returns with ret 4; the accumulator form that gives retail's convention inlines into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80, so the two bodies pull against each other: BLOCKED-BY 0xc7840.
 // score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
@@ -2508,6 +2509,7 @@ void function_cfec0(long unit_index)
 // complement test (`~unit_index != 0`, 96) and the shift test (`unit_index + 1`, 95), which leave three extra
 // instructions at the entry, and a copy of the index in a local for the NONE exit only, which is propagated back and
 // folds the exit as before (2); the permuter (annealing, 428 s, 38 tries) found no variant below 1.
+// MiniMax E (11-20): no new form, no lower score (1): the one difference left is still the branch at the NONE test, where this build's greater-than spelling gives jle and retail has je; the equality spelling gives retail's branch but VC folds the NONE exit's register copy to the constant (2), and a copy that all four exits return keeps the copy but loses retail's `mov ebx, eax` prologue (47).
 // score 1 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
 // exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
 // (mov eax, ebx), so it did not fold the value there - the 11-15 round's `>` spelling of that test keeps the fold
@@ -3061,6 +3063,7 @@ void function_c5740(long unit_index, bool start)
 // helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax I (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180 helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
+// MiniMax E (11-20): no new form, no lower score (97): the prologue's register roles still differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x188180.
 // score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax C (11-15): no new form, no lower score (97): the body is retail's length and the first difference is still
 // the prologue - retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit
@@ -4814,6 +4817,7 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // the sampled-speed spill and the seed copy in the other order, and the callee itself lives in another lane's file.
 // MiniMax H (11-13): no new form, no lower score (4); the cone call's four setup instructions are in the other order: retail spills the sampled speed first, then the forward pointer, then the result pointer and the seed, while this build forms the pointers first.
 // MiniMax I (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - retail spills the sampled speed before it forms the forward pointer - and that order is the cone helper's own convention, whose file this lane may not edit. The two swaps are the spill of the sampled speed against the forward pointer's offset and the result pointer against the seed copy.
+// MiniMax E (11-20): no new form, no lower score (2): the one difference left in the whole body is the swapped pair in the cone call's setup - retail spills the sampled speed (`fstp dword ptr [esp + 0x18]`) and only then forms the forward pointer (`add ecx, 0x168`), this build forms the pointer first - and that order is the cone helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x146320 (src/projectiles.cpp).
 // score 4 (was 4): cone setup differs: retail spills sampled speed before forming the forward
 // pointer, then forms the output pointer before copying the seed. Ours swaps both pairs.
 // The 0x98 frame and every other instruction agree.
@@ -7056,6 +7060,10 @@ done:
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
 // MiniMax I (11-16): no new form, no lower score (242): the body is retail's length and the first difference is still at +0x51; what is left is retail's native facing GPR transfers, the first-scale ownership, the dead flag-byte stores and the state pointer's home; the permuter over 300 s made nine tries and reached 229 against its baseline of 242 differing instructions (the check's 242), but that variant adds a local holding only a constant, a flag set by one test and tested by the next and a swapped call argument, so it is not kept; the two forms written by hand here - the ternary written as an if/else, and the two tests of the same condition in the other order - measure 242 and 243.
+// MiniMax G (11-19): no new form, no lower score (187): retail's inline 2-D normalizer multiplies the first component
+// as scale * x and the second as y * scale, while the shared helper in include/unknown_11cc90.h multiplies both as
+// component * scale; the helper is used by other files where retail's order is component * scale, so it cannot be
+// changed from here, and writing the normalizer out by hand is a form the review list rejects.
 // score 187 (was 199): Normalization x-load order, definition-flag bytes, weapon reloads and the state slot still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
@@ -7551,6 +7559,7 @@ public:
 // MiniMax D (11-17): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the slot loop's two induction registers and the frame slot layout follow that plan; the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line, and that file is not this lane's. BLOCKED-BY 0x106030.
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
+// MiniMax E (11-20): no new form, no lower score (508): the frame agrees (0x3c) and the body is 1799 bytes against retail's 1785, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, so the frame homes differ (+0x38/+0x40/+0x14 against +0x28/+0x2c/+0x24); the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line: BLOCKED-BY 0x106030.
 // score 508 (was 492): Frame 0x3c agrees, with 1799 bytes against 1785.
 // Early object/tag spills, magazine flags, later register/slot choices and the
 // expanded 0x106030 call remain. The ordinary whole-file check confirmed the
@@ -8524,6 +8533,7 @@ real function_50650(real cosine);
 // push position and velocity where retail passes them in XMM5/XMM4 with the time in XMM3; that call's register convention is decided by
 // 0xc7750's own declaration, which this lane may not change: BLOCKED-BY 0xc7750.
 // MiniMax C (11-17): no new form, no lower score (563, was 563): the frame is still 0x8c against retail's 0x80, and the input and vector homes and the prediction/call scheduling still differ.
+// MiniMax E (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the input and vector homes and the prediction/call scheduling still differ; a 300 s permuter run over the body (13 tries on the reduced image, with the twelve other functions of the queue as context) found no variant below its own baseline, and the two 0xc7750 calls still push position and velocity where retail passes them in XMM5/XMM4: BLOCKED-BY 0xc7750.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
@@ -9401,6 +9411,10 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax G (11-19): no new form, no lower score (484): the range field read at each ray, as retail reads it in every
+// row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
+// the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
+// order; the named range local stays.
 // score 484 (was 493): The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the

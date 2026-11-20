@@ -1125,6 +1125,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 0x2551f0 turns its direction about the same axis global with include/axis_rotation.h's spelling of this helper, and
 // retail sums that dot (k + i) + j, as ours does here, while it copies its source i, k, j; so retail's (j + i) + k here is
 // set by this function's context (its i, j, k copy order), not by the helper's spelling.
+// M3 lane 7 r194 (fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each time; control 26): the existing forced-inline
+// 0x29b6c0 rotation (angle in, sine and cosine inside) 223 (1098 B); the existing forced-inline weapon emission rotation
+// (angle in) 235 (1108 B); cosine computed ahead of sine 45; the direction passed through a pointer local 26 (same code);
+// the axis copied by value into a loop-invariant local for the rotation and the 0.5 lift 264 (1104 B).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

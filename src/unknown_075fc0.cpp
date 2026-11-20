@@ -354,6 +354,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // && 1 / local_22 > local_17)` 352 (aligned 189), the same on the 353 form 353 (aligned 190). Left on 352: NONE in ESI and
 // `this` in EDI at entry, the channel base `this + index * 0x528` (0xa8 folded into every field), the 0x76520 result in
 // BL, the window size in EDI, the counter snapshot as two plain loads, and the has-host flag set in its arm (match-only).
+// M3 lane 1 r132 (fast with 0x75910/0x76520/0x765c0/0x77940, all MATCH; control 356): retail's snapshot is two plain
+// loads of the counter and its reset stores the low word it already loaded for the elapsed count and then the high word
+// (no composition). Through the 64-bit view `*(__int64 *)&g_4e6398` (src/unknown_075870.cpp's spelling): snapshot and
+// reset 429 (1330 B, frame 0x30), the snapshot only 431 (1341 B), the reset only 419 (1356 B): with retail's plain copies
+// the body is 39 bytes short, so the composition is hiding missing code elsewhere. Re-measured round 122's
+// `bool local_16 = false;` beside local_7 353 (1370 B, a declaration move, three points); with the 64-bit reset 384.
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,

@@ -86,6 +86,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
 // layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
 // message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
+// A permuter run against the full image over 700 s (twelve tries) reached no lower score than its own baseline.
 // score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four
@@ -358,6 +359,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
 // NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
 // call 393 (2320 bytes).
+// M3 lane 14 r122 (fast with 0x230134/0x2b0a14, MATCH; control 316): the session widget's three state calls as one
+// call with a nested ternary argument 332 (2337 B); the voice pointer renamed to sort before the session pointer 316,
+// declared before it and assigned after it 316; the message buffer at function scope 316; the final layout record
+// declared before the player record 316 (same code each: the (8,5)/(8,4) widget slots stay swapped).
 // M3 lane 5 r209 (fast with 0x230134, 0x22eeee, 0x2b0a14, 0x253b1a; control 316, aligned 49 = register-masked 49). LEAD: the
 // five buffer homes and the two child-pointer homes follow a reference ranking. Diagnostics (not keepable): two extra
 // code-emitting suffix uses (`suffix.text[1] = 0;` twice) put every buffer and both child pointers in retail's homes
