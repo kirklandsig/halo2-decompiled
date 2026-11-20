@@ -552,83 +552,15 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
-// score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
-// load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
-// `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
-// in locals (28), team/player/object order swapped (5), unknown7c before definition_index (7), chained 1.0f
-// stores (5). A one-function check scores this differently (5); judge it on the 515-source set.
-// Also tried: +0x1c typed as s_location (3), the owner copied from the const NONE owner (42), unknown18 before
-// the location (7), `player_index = object_index = NONE` (3), `unknown1c = unknown14 = NONE` (3). The alias status
-// of both globals is retail's (g_47d8e0 address-taken there too, g_4686c4 not), so only the scheduler is left.
-// M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
-// chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
-// remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
-// R75: second global read after definition/before memset 3/3; both globals read early together 3; owner pointer 3;
-// mutable/const owner aggregate 54/54; aggregate member reads 3; definition parameter through its address 3.
-// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
-// payload memset 36/36; individual long/short sentinel memsets 3/3;
-// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
-// P422: Complete zero-clear partitions at flags/owner/handle/location/vector/scale/
-// material/tail boundaries 34/43/55/63/66/45/50/41, 111-133/104 bytes.
-// NOT kept: split bulk clearing adds stores or another clear and lengthens native code.
-// MiniMax G (11-12): no new form, no lower score (3): nothing new this round; ours still materialises `or eax,-1` right after the
-// load of g_47d8e0 where retail stores that word at +0x7c first, loads g_4686c4 and only then materialises
-// the sentinel.
-// MiniMax G (11-12): no new form, no lower score (3): ours materialises `or eax, -1` right after the load of
-// g_47d8e0, where retail stores that word at +0x7c first and only then loads g_4686c4 and does the `or`; the
-// assignment orders around the sentinel stores and a local for either global leave the same schedule.
-// MiniMax A (11-12, run 63): no new form, no lower score (3); the unknown18 assignment moved above the unknown22
-// one is 5, and the two global loads stay where they are, so the constant's place is still the only difference.
-// MiniMax A (11-12, run 62): no new form, no lower score (3); the owner.object_index assignment moved below the
-// unknown22 assignment 12, the permuter on this function was stopped before it produced a try, and `or eax, -1`
-// still comes right after the load of g_47d8e0 where retail stores that word at +0x7c first, loads g_4686c4 and
-// only then materialises the constant.
-// MiniMax H (11-12): no new form, no lower score (3): the `or eax,-1` still comes before the word store of g_47d8e0 where retail stores that word first, loads g_4686c4 and only then materialises the sentinel; a permuter run over this body was stopped before it printed a baseline.
-// MiniMax C (11-09): no new form, no lower score (3); a 300 s permuter run (24 tries) found nothing lower.
-// MiniMax E (11-09): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, where retail stores that word at +0x7c first, loads g_4686c4 and only then does the `or`.
-// MiniMax D (11-06, run 49): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, retail stores that value at +0x7c first, loads g_4686c4 and only then does the `or`.
-// MiniMax A (11-04, run 41): no new form, no lower score (3); the permuter on this function was stopped by the
-// harness before it produced a try, and only the `or eax, -1` schedule against the two global loads is left.
-// MiniMax B (11-06, run 42): no new form and no lower score (3); retail stores the g_47d8e0 word at +0x7c, then
-// loads g_4686c4 and only then materialises `or eax, -1`; ours materialises the -1 right after the
-// definition-index store, so the constant sits two instructions early.
-// Round 163 (m3 lane 8, plain; the fast check carries a CAVEAT here): the +0x7c store as the existing material-type
-// class (callers clear +0x7c to NONE as a default constructor would) built from the global 3 (same code); the same as an
-// aggregate copy of the global viewed as that type 3; as an unsigned 16-bit copy 3; a barrier after the definition
-// store (diagnostic) 12 (the 1.0 load sinks and `or eax, -1` still fills the load slot); the owner's three NONE stores
-// through a forced-inline helper 3. Ours fills the 16-bit load's latency with the `or`; retail stores right after it.
-// Also round 163 (plain): `data = (s_type_1e6529 *)memset(...)` 3 (same code); the +0x7e NONE store moved up beside +0x7c 15;
-// the +0x84 field typed `byte` and cleared with 0 3 (same code).
-// M3 lane 2 r85 (plain): the +0x7c copy after the +0x22 store 12 (the bsp load hoists above the definition store);
-// a two-byte memcpy from the global 3 (same code); the definition store last 17 (105 bytes, `mov eax, -1`); the +0x7c
-// copy after the owner's three stores 7 (the global load then waits for those stores: it may alias); the owner in
-// declaration order (player, object, team) 5. The reduced (--fast) image hoists the g_47d8e0 load above the
-// definition store (not address-taken there), so judge this body only with the plain check.
-// M3 lane 13 r98 (plain): the +0x1c/+0x20/+0x22 stores through an inline location-reset helper (leaf, cluster,
-// bsp) 3 (same code); `short bsp_index = g_4686c4;` right after the +0x7c copy 3 (same code); the +0x7c copy moved
-// down beside the +0x7e store 16 (the bsp load then hoists above the definition store); the location as an
-// initialised `s_location` local copied in 46 (119 bytes). Diagnostics: one to seven unused `long` locals 3 each
-// (no phase effect); the body through a mirror of the event type without the +4 byte/dword overlay 3 (same code).
-// Round 168 (m3 lane 7, plain): unknown14 ahead of the owner's three stores 7; the three 1.0f stores ahead of the +0x7c
-// copy 37 (119 bytes); the +0x84 clear ahead of the +0x7e store 5; the location's cluster cleared before its leaf 5; the
-// +0x7e store ahead of the three 1.0f stores 7; the +0x7e store right after the owner's team 3 (same code: still stored
-// last). Diagnostic (reverted): g_4686c4 read through a pointer to it (address taken) 9: its load then waits for every
-// store ahead of +0x22, so retail does not treat it as aliased; its load sits right after the +0x7c store, held only by CX.
-// M3 lane 14 r104 (fast with 0xd8cb0 in the set, which reproduces the full build here; a single-address fast image hoists the
-// g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
-// owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
-// moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
-// M3 lane 11 r126 (fast with 0xd8cb0): the owner copied from the default-owner pointer (`*g_467420`) 49 (121 B); the owner,
-// unknown14 and the leaf/cluster NONEs as two chained assignments in store order 3 (same code); the material global read into
-// a short local ahead of the memset 28 (105 B, the bsp load then hoists above the definition store); the same local read
-// after the memset, ahead of the definition store 7 (the material takes EAX and `or` lands after the bsp load as retail,
-// but the definition goes through ECX); the material global's extern declared just above this function 3 (same code).
+/* the material word is stored through a pointer to its field: as a plain field store the NONE
+   constant is scheduled ahead of that store (retail stores it first, then loads the bsp index) */
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
 	memset(data, 0, sizeof(*data));
 	data->definition_index = definition_index;
-	data->unknown7c = g_47d8e0;
+	short *material = &data->unknown7c;
+	*material = g_47d8e0;
 	data->owner.object_index = NONE;
 	data->owner.player_index = NONE;
 	data->owner.team = NONE;
@@ -2426,6 +2358,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // New: the plain entry local in the guard's block with 0xdb090's first argument as `accumulator->field_4_2` 24 (871 B;
 // the load and every register are then retail's; left the [edx + eax + 4] address and that argument, `mov ecx,
 // [edi + 4]` for retail's `mov ecx, ebx`), so on the plain body too the flip follows `info` being that call's argument.
+// M3 lane 13 r125 (fast with 0xd6660 and the five matched callees): no `info` local, the field read at each of its uses
+// 248 (851 B), the same with the entry read into a local ahead of the guard 248; `info` declared in the damage block just
+// above the guard 158 (860 B: its read then follows the two calls); the index defaulted to NONE and set under `if (entry)`
+// inside `if (info)` 3, and defaulted to NONE, set under `if (info && entry)` with the range test after it 3 (both the same
+// code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
+// storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
+// the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
