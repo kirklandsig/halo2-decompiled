@@ -74,6 +74,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax G (11-20): no new form, no lower score (110): the unit is still fetched once and kept across the two 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // score 110 (was 110): retail fetches the unit again after the two inlined 0x14de90 calls to 0xbadc0; ours merges that
 // fetch into the entry fetch, so the entry saves and every later register differ. BLOCKED-BY 0xbadc0 as reached through
 // the inlined 0x14de90 (see round 117 at the end: retail's 0xbadc0 itself has the no-write summary).
