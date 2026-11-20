@@ -80,6 +80,8 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax C (11-20): no new form, no lower score (219): a permuter run with annealing over this body (27 tries, 242 s, no
+// confirming build) found nothing below 219, and the jump table still sits four bytes earlier than retail's.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
 // different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.

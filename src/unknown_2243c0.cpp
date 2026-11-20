@@ -217,6 +217,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax C (11-20): no new form, no lower score (117): read the earlier rounds' forms; the only lower one known is the
+// score-8 chain, and it rests on one-use element bindings and moved stores, so it is kept only with an exact match. The
+// stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged.
 // MiniMax B (11-20): no new form, no lower score (117): the fallback tag index is still zero-extended through
 // EAX where retail masks the 32-bit value in place (`and edx, 0xffff`); the in-place mask moves the tag table
 // from EDI into ECX and hoists its load above the frame (152), while the `(word)` cast keeps the table in EDI

@@ -2728,6 +2728,9 @@ struct s_unit_event
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
+// MiniMax C (11-20): no new form, no lower score (420): a base-pointer local for the region-state update scores 523 (reverted),
+// retail keeps the permutation pointer in EBX and the region index in EBP where this build has EBP and EBX the other way round,
+// and retail's destroyed-permutation mask is a 32-bit shift in EDI where ours is a 16-bit shift in ESI.
 // MiniMax G (11-19): no new form tried this round, no lower score (420): the region index, the datum offset and the
 // permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
 // address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
@@ -4649,6 +4652,10 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
+// MiniMax C (11-20): no new form, no lower score (194 in the full image, 357 in the reduced image): a `word` local holding the
+// team and read at both 0x1e9720 calls moves the frame's other homes and scores 418, and retail's `xor ecx, ecx` ahead of the
+// team word comes from its callee taking the team as a 32-bit value where this file declares it `short`, which would change
+// every other 0x1e9720 caller in the tree: BLOCKED-BY 0x1e9720's declaration.
 // MiniMax C (11-19): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures):
 // retail's 0xda110 takes its first argument in eax while this file declares it __stdcall, so the permutation still
 // travels on the stack; changing that declaration would move the call setup of every caller across the tree, which
