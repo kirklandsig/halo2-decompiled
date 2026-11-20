@@ -2307,6 +2307,8 @@ struct s_unit_motion
 // score 86 (was 104): Position and time use retail's XMM5 and XMM3. Velocity still arrives on the
 // stack, the 8-byte return cleanup and the step clamps and final stores differ.
 // At 104, both position and velocity were on the stack (ret 0xc). Retail takes them in
+// MiniMax A (11-20): no new form, no lower score (104): this body still keeps the position and the velocity on the stack (ret 0xc) where retail takes them in XMM5/XMM4 with the time in XMM3, and the accumulator spelling that gives retail's convention and its 227 bytes reaches 28 but LTCG then inlines it into 0xc7840, so that caller's score and the matched 0x1e5af0 and 0x1faf80 all move with it: BLOCKED-BY 0xc7840's call sites.
+// score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
 // convention and the same 227 bytes at 28; only time/step are swapped (time in XMM2, step in XMM3). But then
@@ -2457,6 +2459,15 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax A (11-20): no new form, no lower score (1): the entry branch is still `jle` where retail has `je`; the
+// equality spelling gives retail's branch but VC folds the NONE exit's register copy to `or eax, 0xffffffff` (2, 258
+// bytes); a local copy of the parameter returned at that exit folds the same way (2) whichever way the test is spelled,
+// one trailing `return` for all four paths merges the epilogues (62, 239 bytes) and a shared exit hoists retail's lazy
+// pushes into the prologue (12); retail's NONE exit has a single predecessor, so no phi can restore the unfolded copy.
+// This round added: the equality test written as an early return or with the body in an `else` measures 92 (the copy
+// still folds and the entry block loses retail's `push edi`), and a `result` local assigned the parameter and returned
+// at every exit measures 47 whether the entry test reads the parameter or the local (the extra phi moves the unit
+// pointer from EAX into ECX).
 // MiniMax B (11-19): no new form kept, no lower score (1): this round worked out why the equality spelling cannot be
 // used - with `unit_index != NONE` VC proves the value to be -1 at the exit and folds the returned copy to a constant,
 // so the copy survives only with the `> NONE` spelling and its `jle`; retail's exit block has a single predecessor
@@ -4784,6 +4795,11 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax A (11-20): no new form, no lower score (2): the one difference left is the swapped pair in the cone call's
+// setup - this build forms the forward pointer (`add ecx, 0x168`) before the x87 spill of the sampled speed
+// (`fstp dword ptr [esp + 0x18]`) where retail spills first; the max angle, the forward pointer, the result pointer
+// and the seed as named locals, and the seed passed directly, all measure 2 with the same pair swapped, so the order
+// is the scheduler's and not the source's: BLOCKED-BY 0x146320 (src/unknown_146240.cpp).
 // MiniMax B (11-19): no new form kept, no lower score (2): the only difference left is the order of two instructions -
 // the x87 spill of the sampled speed (`fstp dword ptr [esp + 0x18]`) sits after `add ecx, 0x168` here and before it
 // in retail, and both write the same slot and pass the same pointer. This round tried the speed's expression with the
@@ -4828,6 +4844,12 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // MiniMax H (11-13): no new form, no lower score (4); the cone call's four setup instructions are in the other order: retail spills the sampled speed first, then the forward pointer, then the result pointer and the seed, while this build forms the pointers first.
 // MiniMax I (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - retail spills the sampled speed before it forms the forward pointer - and that order is the cone helper's own convention, whose file this lane may not edit. The two swaps are the spill of the sampled speed against the forward pointer's offset and the result pointer against the seed copy.
 // MiniMax E (11-20): no new form, no lower score (2): the one difference left in the whole body is the swapped pair in the cone call's setup - retail spills the sampled speed (`fstp dword ptr [esp + 0x18]`) and only then forms the forward pointer (`add ecx, 0x168`), this build forms the pointer first - and that order is the cone helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x146320 (src/projectiles.cpp).
+// MiniMax A (11-20): no new form, no lower score (2): the only difference left in the body is the swapped pair in
+// the cone call's setup - retail spills the sampled speed (`fstp dword ptr [esp + 0x18]`) and only then forms the
+// forward pointer (`add ecx, 0x168`), this build forms the pointer first and spills after it; splitting the speed
+// expression so the draw stays before the call and the float tail after it moves the spill to `[esp + 0x10]` and
+// breaks the body (98), keeping the tail in place loses the constant fold (117) and scaling the draw first (38),
+// so the order is the scheduler's tie-break rather than the source's: BLOCKED-BY 0x146320.
 // score 4 (was 4): cone setup differs: retail spills sampled speed before forming the forward
 // pointer, then forms the output pointer before copying the seed. Ours swaps both pairs.
 // The 0x98 frame and every other instruction agree.
@@ -7608,6 +7630,7 @@ public:
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
 // MiniMax E (11-20): no new form, no lower score (508): the frame agrees (0x3c) and the body is 1799 bytes against retail's 1785, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, so the frame homes differ (+0x38/+0x40/+0x14 against +0x28/+0x2c/+0x24); the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line: BLOCKED-BY 0x106030.
+// MiniMax A (11-20): no new form, no lower score (508): the head still loads the object pool into EAX and the table into ECX where retail loads the pool into ECX and keeps it in that register, the unit's pointer goes to EBP and a frame slot where retail keeps it in EDX, and the 0x106030 call boundary and the frame's flag bytes still differ.
 // score 508 (was 492): Frame 0x3c agrees, with 1799 bytes against 1785.
 // Early object/tag spills, magazine flags, later register/slot choices and the
 // expanded 0x106030 call remain. The ordinary whole-file check confirmed the
@@ -8582,6 +8605,7 @@ real function_50650(real cosine);
 // 0xc7750's own declaration, which this lane may not change: BLOCKED-BY 0xc7750.
 // MiniMax C (11-17): no new form, no lower score (563, was 563): the frame is still 0x8c against retail's 0x80, and the input and vector homes and the prediction/call scheduling still differ.
 // MiniMax E (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the input and vector homes and the prediction/call scheduling still differ; a 300 s permuter run over the body (13 tries on the reduced image, with the twelve other functions of the queue as context) found no variant below its own baseline, and the two 0xc7750 calls still push position and velocity where retail passes them in XMM5/XMM4: BLOCKED-BY 0xc7750.
+// MiniMax A (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, the two 0xc7750 calls still push the position and the velocity where retail passes them in XMM5/XMM4 with the time in XMM3, and the input and vector homes and the prediction's call scheduling still differ: BLOCKED-BY 0xc7750.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
