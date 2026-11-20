@@ -413,6 +413,9 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// score 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
+// Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
+// MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
 // score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // Earlier: Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
@@ -837,6 +840,26 @@ extern point2f *g_468778;
 // actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
 // partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
 // partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
+// M3 lane 5 r210 (fast with the file's neighbours; control 375, register-masked 67): actor first 413; actor first with
+// `return !f14 && !f13 && !f2d;` in the arm and `return false;` last (B) 393; B with a `vector3f const *velocity` for the
+// magnitude call and every field_1c read 417 (1563 B); that with the planar pair copied whole 408 (1555 B); the velocity
+// pointer and the whole planar copy on the body 393 (1568 B); B with the velocity pointer and the first facing dot's k
+// and j read off the view 455 (1593 B); B with that facing read and the whole planar copy 411 (1531 B). Retail stores the
+// zero weight to arg_1's home before the 0x24590 call and reloads it after (0x1aa318, 0x1aa379), so it treats 0x24590 as
+// clobbering XMM where our link keeps the weight in XMM4: BLOCKED-BY 0x24590 (its register summary; `inline` on it
+// raised six callers in earlier rounds).
+// planar output aggregate near and aggregate prediction transfers 406; planar output component near and aggregate prediction transfers 387; planar output aggregate near and component prediction transfers 376; planar output component near and component prediction transfers 371; planar output aggregate near and aggregate prediction transfers with actor first 415; planar output component near and aggregate prediction transfers with actor first 414; planar output aggregate near and component prediction transfers with actor first 423; planar output component near and component prediction transfers with actor first 373.
+// NOT kept: The best planar form scores 371 at retail length, a four-point gain. The actor-first component form scores 373 and moves the first difference to +0x9. Neither meets the retention threshold. The original actor, settings, and request lifetimes are restored.
+// Actor/slot names, settings/prop names and two orders of all four names:
+// settings-first 375/375/375/375, actor-first 413/413/413/413.
+// Typed settings view after admission, with existing or later slot binding:
+// settings-first 375/374, actor-first 413/413.
+// NOT kept: the one-point gain leaves the late actor read. Actor-first forms
+// reserve 0x44 instead of 0x40, spill the actor and grow to 1555 bytes.
+// Unit handle in facing arm or at slot/facing boundary 389/385; live unit field
+// at the same boundaries 374/375. With actor lookup first 408/418/409/413.
+// NOT kept: the one-point gain leaves entry scheduling unresolved, and the
+// actor-first forms enlarge the 0x40 frame.
 // score 259 in a full build with stand-in SDK headers (was 375): the actor's table entry is formed before the
 // 0x1e4f90 call, there is no result local (the block returns true and the function ends with return false, retail's
 // two epilogues at 0x1aa6c5 and 0x1aa6d1), a pointer to field_1c is taken at the top of the third arm, local_8 is

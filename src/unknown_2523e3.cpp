@@ -102,6 +102,16 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // the dword is loaded twice. In the plain tree that source scores 247 (790 bytes: the iterator is still inlined and the
 // second load shifts every later line), so the body stays as it was; the source is build/r121/held-252554.patch. Needed:
 // the build takes the iterator's copy from a speed-built object (the user's decision, like a flags change).
+// M3 lane 6 r202 (fast; control 49), re-measured on today's main: `items` declared ahead of `controller` 50; round 121's
+// recipe (that order plus the slot flags dword returned by value from an inline accessor at each read) 247, the same
+// without the declaration move 246. Diagnostic, restored: with an array-construction probe appended to a speed-built file
+// that links ahead of the size-built supplier, the recipe MATCHES and without the declaration move scores 7 (the controller's
+// zero store then sits ahead of the iterator call), so both parts are needed. Still BLOCKED-BY 0x20670 (build-level).
+// Coordinator trial (Fable, 2026-11-19, full checks): linking the objects of src/unknown_0815e0.cpp and then src/team_balancing.cpp first (both
+// speed-built, both use the iterator; either alone loses 0x54590) gives retail's iterator call, and with the accessor above
+// 0x252554 matches (also 0x41640, 0 lost). Nine in-place forms of the two slot reads under that link order do not match.
+// HELD: the accessor is a new steering helper (one caller, a struct copied by value), which is not kept even with a
+// match, so the link-order change is not kept either. Needed: a form without a helper that loads the slot flags twice.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {
