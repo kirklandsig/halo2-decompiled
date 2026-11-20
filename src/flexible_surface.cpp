@@ -949,6 +949,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // and assigned in it 130 (same code); the draw inside the angle product after the oscillation (no fraction local) 199 (880
 // B, aligned 69); the fraction declared after the oscillation 201 (885 B, aligned 67); the strength as a real local with
 // float rows 130 (same code). Body unchanged.
+// MiniMax E (11-19): no new form, no lower score (130, baseline): the frame is still 0x1c against retail's 0x20 and
+// the random sample still lands at [esp+0x14] against retail's [esp+0x18]; the SSE rotation block still differs in
+// every row's register assignment (retail keeps the seed pointer in ESI from the prologue, this build loads it after
+// the surface lookup), and the function is still 889 bytes against retail's 880.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

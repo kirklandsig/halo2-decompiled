@@ -994,6 +994,13 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // masked 324). Retail loads 1.0 four times (ours eight): it keeps 1.0 in XMM0 from the reciprocal to the sign and across
 // the four `1 - x` terms. A compile-only dead-local scan over the rotation block moves it with period 8 (best 241 of 225
 // lines at K = 6, 7), so the block's schedule is not a symbol-count state. All restored.
+// Shared i-k-j angle/sign/axis-norm dots 715/568/691.
+// angle+sign/angle+norm/sign+norm 566/684/583.
+// all three, with ordinary or staged sign cross 601/593.
+// Written-differs at 535. NOT kept: All shared-dot forms raise the score. The angle and sign dots
+// together score 566 with the first difference still at +0x41. The sign and norm pair reaches 3647 bytes
+// at 583 but changes the frame. Both explicit providers stay exact. The opening helper and body are
+// restored.
 // M3 lane 2 r113 (plain each, with the file's eight other functions, all at their baseline counts; base 535, aligned/masked
 // 442/186): the tag pointer dropped and the limits index read through the tag table at each of its four uses 720 (3649 B;
 // the lookup is redone at every use, where retail spills one pointer and reloads it); that with face_count declared first

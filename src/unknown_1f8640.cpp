@@ -976,6 +976,10 @@ struct s_1f8a70_actor
 // Mode-six route conditional 312, shared override assignment 402, one selected route update 415,
 // and separate fallback search and direct-bit result 393. The same with mode-seven node before radius
 // 364/402/412/393. NOT kept: all regress. The route dispatch remains after the mode-seven block.
+// MiniMax E (11-19): no new form, no lower score (182, baseline): the jump table still sits at another address (ours
+// [eax*4 + 0x1f90b8], retail [eax*4 + 0x1f90cc]) and the blocks it reaches are laid out differently, so every branch
+// after the dispatch compares one instruction out; the three calls to the reference lookup are already the shared
+// function (0x262b40) in the full build, and the reduced image's own copy of it is what the fast check reports.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

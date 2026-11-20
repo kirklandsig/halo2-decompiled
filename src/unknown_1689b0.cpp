@@ -2153,6 +2153,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 602/600/584, end-step while 602. Unsigned word ordinal 620/620/623/620. NOT kept: all raise the score.
 // The late signed square reaches its retail slot but displaces the ESI zero and prism cursor. The count
 // and clearance homes remain displaced.
+// MiniMax B (11-20): no new form, no lower score (551): the count and clearance homes are still displaced and the
+// radius square is still computed before the clearance branch where retail computes it after; the four-point indexed
+// leads stay above 30 and the live-count forms tie at 547 or 551.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

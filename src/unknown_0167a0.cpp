@@ -380,6 +380,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // block (the tables and the entry output by pointer) 294 (981 B), with the entry output bound by reference inside it 295
 // (982 B). Re-measured (diagnostic): the direct entry store 5 at +0x1a7, its only difference `second` loading into ESI
 // right after the entry lea, ahead of the entry store, where retail loads it after the chain and pass bases.
+// M3 lane 3 r276 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the direct entry store re-measured 5 (+0x1a7; its listing: the tables reload already in retail's place, only `second`
+// loads into ESI between the lea and the entry store); on it the restore block's packed and next as fresh `long` locals 5
+// (+0x1a7), the pass stored straight to its field and read back for the range 5 (+0x1a7); on main's body the top block's
+// entry word read without the `entry` local 5 (+0x19e) (all the same code as their bases). Diagnostic (not kept): on the
+// direct form `&second` passed to an out-of-line call at the end of the function 46 (992 B), and `second` still loads
+// ahead of the entry store, so retail's late load is not the store aliasing an exposed parameter. A /GL- compile-only
+// build does not reproduce this block (word loads through `xor edx, edx; mov dx`, other registers).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
