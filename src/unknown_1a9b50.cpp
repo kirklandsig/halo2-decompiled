@@ -1393,6 +1393,15 @@ static __forceinline long real_to_long(real value);
 // direction and both calls 458 (1910 B, frame 0x54), an actor-position pointer 448, an AI object pointer with the target
 // pointer 487 (1927 B), with both pointers 460 (1929 B), both pointers declared at the top of the far arm 422 (1906 B).
 // Body unchanged; the computed entry result still puts 0x25d740 under three tests, where our link expands it.
+// M3 lane 14 r124 (fast with 0x25d740, 0x25d690, 0x25d700; calls counted in our column, retail 21): what decides the
+// expansion of 0x25d740 at this site. Lane 6's computed entry result (`bool local_2 = !f13 && !f14 && !f2d; if (local_2)
+// {...} return local_2;`) re-measured 508 (1921 B, 20 calls). With it, 0x25d740's body written so that it compiles to 39
+// or 41 bytes keeps the call out of line and gives retail's frame, false-exit place and 1904 B, first difference +0x147:
+// early returns 396 (0x25d740 14), the two ternaries 396 (0x25d740 18), `base` set by a first if and tested by an
+// if/else 396 (14), nested if/else arms assigning NULL 396 (14). Bodies that compile to retail's 37 bytes are expanded:
+// through the existing tracking_get 508, with named locals for every step 508. So our link's choice follows the getter's
+// compiled size, and retail's 37-byte copy stays out of line at this site, so the difference is on the caller's side
+// (the site's weight), not in the getter. Body unchanged; still BLOCKED-BY 0x25d740's expansion.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

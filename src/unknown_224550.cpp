@@ -96,7 +96,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 
 // score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
-// score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
 // MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
 // difference is still at +0x29c, where the blend sits in XMM2 and retail keeps it in XMM5 from the sequence arm through
 // the aspect block; retail's flagged branch also reorders the bounds' four words into frame+0x60..frame+0x6c from the
@@ -766,6 +766,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
 // NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
 // recover the bitmap blend register.
+// M3 lane 14 r124 (fast with 0x2243c0, which matches throughout; control 162): the two inverse next terms computed
+// before the `bx>by` test 255 (1942 B, first difference +0x2); the aspect tests written `ay<ax` and `by<bx` 162 (same
+// code); the width product after `inv_y` 173 (1951 B); both inverse next terms, then the width, then both sums (retail's
+// schedule) 170 (1950 B); the y inverse sum before the x one 162 (same code). Retail still keeps the blend in XMM5 from
+// the sequence arm through the aspect block and spills both a-reciprocals; ours spills the blend.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
