@@ -1782,6 +1782,10 @@ long function_10f5f0(long object_index);
 // vertical scalar 565, or height sample 556. Complete radial velocity 599.
 // NOT kept: the altitude pair can reach frame 0x1988, but none meets the score threshold
 // or recovers retail's repeated height reads and 0x1984 frame.
+// Physics state matrix 573, returned state matrix 581, each with separate integration velocity 573/581,
+// boundary velocity 549/581 or falling velocity 573/581. NOT kept: The separate boundary velocity lowers
+// the count but drops the frame to 0x195c and grows the body to 2276 bytes. Retail uses a separate
+// transform.
 // M3 lane 11 r124 (fast, control 561; aligned 354, masked 189). Retail's six stored results are all one-bit flag reads (word +0xc0
 // bits 12 and 10 from one word load, byte +0xc1 bit 0 twice, byte +0xc0 bit 6, byte +0x348 bit 2), each `and reg8, 1; mov [esp+0x13],
 // reg8; jcc`. Diagnostic, a file-local two-definition test (result false, set under `bit < 32`) on exactly those six: 574 at 2312 B
@@ -4779,6 +4783,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
 // Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
 // the i product but loses the forward j/k preloads. Cross and trig homes remain.
+// Default-axis dot after publication 211, before publication 148, complete projection before publication
+// 152, default-axis reference 211, returned projection 211, early dot with returned projection 150, staged
+// subtraction 206, shared scaled add with negative projection 167. NOT kept: The default-axis receiver
+// loses retail's entry frame or publication schedule and none lowers the score.
 // M3 lane 11 r124 (fast, 0xf44a0 alone: this body scores 117 there, 118 with caller 0xf4800; aligned = sequence-aligned differing
 // instructions, 110 for this body). Retail's flip block was merged before scheduling: both arms carry the up rows, the rows are one
 // copy from the sine load on (0xf4713), and only `cosine * up.i` stays in each arm because its operand order differs there (the

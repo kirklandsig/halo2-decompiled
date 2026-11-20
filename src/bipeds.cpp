@@ -1846,6 +1846,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // reference 640. NOT kept: The saved animation offset reproduces the unity-load schedule and moves the first
 // difference to +0x4e at retail length, but scores 645. The byte animation receiver ties. The other flag and
 // velocity receivers regress.
+// Whole tag reference 175, movement section reference 193, unit section reference 193, both section
+// references 193, animation names record 175, names record with a shared turning key 193, component
+// acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
+// The unit load and definition, animation flags and point homes remain displaced.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

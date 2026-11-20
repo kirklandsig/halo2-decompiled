@@ -1560,13 +1560,15 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
 // loop guard still differ.
-// score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
+// score 551 (was 551): Frame 0xb964 and the sum, projected point, prism cursor and query-zero homes agree.
+// Count and clearance homes differ, and the radius square precedes the nonempty branch. The axis reload
+// and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
+// Earlier 580.
 // Earlier at 551 (was 580; a second score line, merged in round 211): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
-// score 551 (was 551): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
 // Earlier at 551 (was 580): initial sum homes also agree.
 // Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
 // The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
-// score 551 (was 551): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
+// Earlier at 551 differences (was 551): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
 // projected point and first point use retail slots. Count, clearance and prism-index homes differ.
 // The square precedes the nonempty branch. The axis reload and early remainder also differ.
 // Earlier scores 580, 606, 610, 637, 640 and 552.
@@ -2135,6 +2137,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // or header reference, indexed 547/547/551/547 and with an entry cursor
 // 555/554/551/554. NOT kept: the four-point indexed leads remain above 30;
 // the count and clearance homes and pre-branch radius square still differ.
+// Signed word prism ordinal with square before the loop, at prism entry or at clearance admission
+// 602/600/584, end-step while 602. Unsigned word ordinal 620/620/623/620. NOT kept: all raise the score.
+// The late signed square reaches its retail slot but displaces the ESI zero and prism cursor. The count
+// and clearance homes remain displaced.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
