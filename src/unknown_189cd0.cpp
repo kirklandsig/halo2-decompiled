@@ -292,6 +292,13 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // frame 0xa4, tag EDI); the started test inside a forceinline notify helper around 0x109220 116; `__assume(object_index !=
 // NONE)` at the top of the marker block 152, before the dispatch 152; `__assume(object_index == NONE)` in the request arm
 // 152 (535 bytes each). All restored.
+// M3 lane 12 r158 (plain; every form without the reference, object reads plain, control 116 at 531 bytes): `bool
+// attached` at the positioned arm's top for the marker test and the started test 162 (540 bytes); the started test and
+// dispatch moved out of the positioned arm, after both arms (the request arm's object is NONE, so it never passes) 109 (533
+// bytes), that with the object compared first 118 (531 bytes); the request's object field set from the parameter (NONE
+// on that path) 116 (same code: folded); the clamp as two separate tests 116 (same code). Reading: the object's EBP win
+// follows its uses packed into the second half (fewer blocks than the tag spans); moving the started test to the join
+// lengthens the object's range but adds the request path's compare.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
