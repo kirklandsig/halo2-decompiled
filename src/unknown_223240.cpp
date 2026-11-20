@@ -450,6 +450,11 @@ void function_2232a0(void)
 // count formed after the loop 40 (a declaration move, seven points, not kept: the fold stays, only the tail's zero stores
 // change); the terminal record indexed by the loop counter 182 (584 B); the count written at both uses with no view_count
 // local 120; the count taken back from a terminal pointer (diagnostic) 195. Body unchanged.
+// M3 lane 14 r132 (H2M_FAST with 0x223240/0x2232a0, MATCH each run; control 47): view_count declared after the loop 40
+// (re-measure; a moved declaration, match-only); on it the terminal record as `g_47f0f8 + view_count` 40, through a typed
+// element pointer declared at the call 40, the stub's views as `g_47f0f8 + 1` 40; the count as `1 + local_2` 47 (40 after
+// the loop). The base still folds early. 0x2b5d0's parked body is in another lane's file this round and the stub takes
+// the count in EDX (retail EAX): still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

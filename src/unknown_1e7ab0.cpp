@@ -593,6 +593,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // local typed const 117; case 4's iterator declared at the top of the case 117 (all five the same code). Retail's case 4
 // keeps the parent in ESI and sets up 0xd0590's arguments iterator first (`lea ecx` then `mov edx, esi`), ours keeps it in
 // ECX and must move it to EDX first: still BLOCKED-BY 0xd0590 (its file is held this round).
+// M3 lane 14 r132 (H2M_FAST with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all MATCH; control 117): the child test as `unit_index
+// != iterator.unit_index` 118, `NONE != iterator.seat_index` 117, both 118; the entry through 0x1e8d50 165 (2312 B), with
+// the first 166, with both 166; on the 0x1e8d50 entry, the child's seat read through a no-code inline accessor at the NONE
+// test, at the flags index or both, and the child's unit through one, 165 each (the child test keeps `test cl, 1`).
+// Still BLOCKED-BY 0xd0590.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

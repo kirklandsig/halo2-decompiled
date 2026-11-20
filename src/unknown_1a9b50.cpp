@@ -1428,6 +1428,13 @@ static __forceinline long real_to_long(real value);
 // inside the timeout arm that uses it 447 (1912 B); the near-stop timeout compare as `0.5f < ...`, the speed magnitude
 // test as `0.0f < local_12`, the alignment test as `dot < local_26`, the planar length test as `0.0f < normalize2d(...)`
 // 382 each (same code). All restored.
+// M3 lane 14 r132 (H2M_FAST with 0x25d740, MATCH each run; control 382): the computed entry result with the facing read
+// off the view at every use 560 (1961 B), written `!(f13 || f14 || f2d)` 508 (1921 B), that with no facing pointer 560.
+// Diagnostics with 0x25d740 kept out of line (reverted): computed result 394 (1904 B, retail's frame and false-exit place);
+// with no facing pointer 433 (1938 B: the near arm becomes retail's `add eax, 0x2c` copy and the view stays in EAX, but the
+// prop state and the actor swap ESI/EDI); the pointer formed after the predicted offset 432; main's body with no facing
+// pointer 517; an AI object pointer for the velocity reads 435 / 416 (lane 1 r90's numbers). Still BLOCKED-BY 0x25d740's
+// expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

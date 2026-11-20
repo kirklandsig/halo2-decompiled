@@ -949,6 +949,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `bool result` 754 (aligned 610); the pathfinding pointer read from the state at both searches and the trace (no entry
 // local) 769 (2969 B); `*complete` read in `last` (no entry copy) 769 (2963 B); the actor's linked index read once into
 // a named `long linked` for the height and the flags 761 (aligned 606).
+// M3 lane 14 r132 (H2M_FAST with 0x270930/0x2c4030, MATCH each run; control 675): the pathfinding pointer read through a
+// const reference at both searches and the trace 675, the source radius bound to a const reference for the clamp 675,
+// `result` declared after maximum_height 675 (same code each); `bool result` with either reference 754; `bool result`
+// declared after maximum_height 773 (2990 B).
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
