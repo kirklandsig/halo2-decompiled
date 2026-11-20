@@ -1954,9 +1954,17 @@ long function_baf80(long index);
 void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
+void function_0bfe20(dword *flags, long bit, bool value);
 
+// score 192 (was 285): the three volatiles are gone. Left: the parent's node-matrix base (retail takes it ahead of the
+// link stores and indexes it at the 0x141590 call; with a local for it there the count is 166, a one-use local
+// evaluated early, so match-only), the first vector rotation (retail reads the object's forward from the object again
+// for each row, ours copies its three components to frame slots first, 16 bytes), the table pointer's and the
+// parent's frame homes swapped ([esp+0x14] / [esp+0x18]) with the parent load's base and index the other way round,
+// the up vector's two first loads swapped, and the root's cluster word (retail reads it from the header at both
+// uses, ours once).
+// Earlier at 285 (was 285): the first difference is still the ancestry loop's exit at +0x76 (retail's shared epilogue);
 // MiniMax A (11-19): no new form, no lower score (285): the pool's data pointer is still in EDI here and in EBX in retail, and the unit's flag byte is still read through a 32-bit copy instead of AL, so every later instruction inherits that difference; the body is unchanged. BLOCKED-BY 0xb8bd0 and 0x142570.
-// score 285 (was 285): the first difference is still the ancestry loop's exit at +0x76 (retail's shared epilogue);
 // behind it retail re-reads the pool data after the walk and takes the parent, the header and the node-matrix base
 // from it. Round 199 (m3 lane 5, fast; aligned / register-masked counts, the body 215 / 152): `index` and `node` not
 // volatile with the object, walk and header through OBJECT_GET/OBJECT_HEADER_GET 315 (1202 bytes, 112 / 84); plus the
@@ -2233,8 +2241,34 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // 348 (1272 B) and it loses 0xbcc20, 0x11b710 and 0x18c3b0 (reverted); the node matrix through this file's existing
 // node-matrix inline on a fresh parent lookup 348 (1272 B), on the early parent pointer 324 (1245 B); the ancestry walk
 // as a while loop 285 (same code); the `allowed` exit ahead of the walk 314 (1238 B).
+// M3 lane 7 r195 (fast with 0xb8ee0/0xb8bd0/0x141590/0x142570/0xbe760, all matched throughout; control 285, aligned 216):
+// `node` not volatile 285 (same code); `was_active` not volatile 289; both 289; `index` not volatile 324; none volatile
+// 316 (1201 B, aligned 153). Kept, 285 -> 192 (1254 B, aligned 104), none volatile and: the bit-7 clear through the
+// existing 0xbfe20 (retail tests bit 7 on one flags load and clears it on a second, then tests bit 8 on the value it
+// stored: the clear does not share the test's load), bit 7, the inner bit 8 and the word at +0xc0's bit 6 tested by
+// shift, the header type as `(1 << type) & 0x80`, the parent's node matrix through the file's existing
+// object_node_matrix_bdef0 on a fresh lookup at the 0x141590 call (0xb8bd0 is no longer called here, as in retail), and
+// the parent read from `pool->data`. Lead, NOT kept (a one-use local evaluated ahead of the link stores): that
+// helper's result in a `node_matrices` local ahead of the stores, indexed at the call, which is retail's order, 166
+// (1252 B, aligned 67); from the early `parent` pointer 276 (1237 B). Steps on the way: object, walk
+// and header through the macros with those forms 301 (aligned 141), plus the 0xbfe20 clear 230, plus the word shift
+// 303, plus the node matrices 299 (aligned 98), all three 195 (1251 B), with the header declared first 194; the pool
+// local for the object and walk 212, for the parent and header too 203 (1238 B, aligned 111: the head is then retail's
+// to +0x76 and beyond); the 0xb8bd0 call kept at the 0x141590 call 293 / 301, taken ahead of the link stores 282 /
+// 290; then one more named local (the node_index or the offset local main already had, or both) 166: the attachment
+// point's x / y / z then take retail's XMM2 / XMM5 / XMM6 (XMM5 / XMM6 / XMM2 without, XMM5 / XMM2 / XMM6 on the
+// macro form). With the helper at the call instead of the early local 192; through the existing 0xb8bd0 call there
+// 306 (1211 B), through `parent` there 294 (1219 B). On 166: the header declared ahead of the parent 165 (a
+// declaration move, one point); `parent` renamed
+// a / zz, `header` renamed 203 on the 203 form (same code: the two frame homes do not follow names); a named local for
+// the table pointer 330; the root tail's cluster test nested under the flags test 166 (same code), its second read
+// through a fresh header lookup 164 (a mixed read, two points); the object's point and axes through a typed view 166
+// (same code). Reading: retail's rows re-read [object + 0x70..0x78] nine times while the up vector's components sit
+// in registers, which is what the shared rotate helper's three copies give when they get no register and are read
+// back from their source; ours spills them to the frame instead. BLOCKED-BY 0x142570 as before (/Ob1, inlined by
+// retail; this file's attachment-point helper writes that body).
 // @retail 0xb93b0
-void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
+void __stdcall function_b93b0(long parent_index, long index, short node)
 {
     s_record_pool *pool = g_4e0300;
     long offset = (index & 0xffff) * 12;
@@ -2246,17 +2280,17 @@ void __stdcall function_b93b0(long parent_index, volatile long index, volatile s
     for (long ancestor = parent_index; ancestor != NONE; ancestor = *(long *)(*(byte **)(pool->data + (ancestor & 0xffff) * 12 + 8) + 0x14))
         if (ancestor == index) return;
     if (!allowed) return;
-    byte *parent = (byte *)OBJECT_GET(parent_index);
+    byte *parent = *(byte **)(pool->data + (parent_index & 0xffff) * 12 + 8);
     s_object_header_view *header = (s_object_header_view *)(pool->data + offset);
-    volatile bool was_active = (bool)((header->flags >> 2) & 1);
-    if (*(dword *)(object + 4) & 0x80)
+    bool was_active = (bool)((header->flags >> 2) & 1);
+    if ((bool)((*(dword *)(object + 4) >> 7) & 1))
     {
-        *(dword *)(object + 4) &= ~0x80;
-        if (!(*(dword *)(object + 4) & 0x100) && g_4de2f4 && *(byte *)g_4de2f4) function_b8600(index, 0);
+        function_0bfe20((dword *)(object + 4), 7, false);
+        if (!(bool)((*(dword *)(object + 4) >> 8) & 1) && g_4de2f4 && *(byte *)g_4de2f4) function_b8600(index, 0);
     }
     function_b7300(index);
     if ((bool)((*(dword *)(object + 4) >> 8) & 1)) function_b87b0(index);
-    if ((object[0xc0] & 0x40) && header->type != 7) function_b8840(index);
+    if ((bool)((*(word *)(object + 0xc0) >> 6) & 1) && !((1 << header->type) & 0x80)) function_b8840(index);
     *(long *)(object + 0x14) = parent_index;
     short node_index = node;
     object[0x18] = (byte)node_index;
@@ -2267,7 +2301,7 @@ void __stdcall function_b93b0(long parent_index, volatile long index, volatile s
     *(short *)(object + 0x2c) = NONE;
     *(short *)(object + 0x2e) = g_4686c4;
     transform4x3f inverse;
-    function_141590(function_b8bd0(parent_index, node_index), &inverse);
+    function_141590(&object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index))[node_index], &inverse);
     point3f position;
     vector3f forward, up;
     object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);

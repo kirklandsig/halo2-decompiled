@@ -314,6 +314,15 @@ struct s_sound_channel
 	byte unknown10[0x24];
 };
 
+/* sets or clears one bit of a flags word */
+static inline void flags_set_bit(word *flags, long bit, bool value)
+{
+	if (value)
+		*flags |= (word)(1 << bit);
+	else
+		*flags &= ~(word)(1 << bit);
+}
+
 struct s_sound_permutation;
 
 /* 0x24 bytes */
@@ -1352,8 +1361,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
+// MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
 // and the first difference is the elapsed time's register (retail XMM3, this build XMM2) with the reciprocal one
@@ -1793,6 +1802,18 @@ long function_2197f0(real gain);
 // multiplied from memory); arm 1's clamp value divided by the fade-in copy 155 (687 B), the clamp test as `time /
 // copy` too 144 (680 B); `inverse * time` in the test 87 and `inverse * (elapsed - hold)` in the product 87 (same code).
 // Body unchanged.
+// M3 lane 7 r195 (fast with 0x1251e0/0x221810, both matched; control 87, aligned 54): operand-key screen: this body, the
+// division form with a ternary clamp and with an if clamp, each with 0 to 3 redundant paren pairs in other float
+// expressions: 87 x4, 125 x4 (678 B), 145 x4 (681 B) (the pairs move nothing here). The entry gain built from the
+// class's real value 230 (614 B: the gain then lives in an XMM register), on the division form 241; a
+// default-constructed gain then assigned 87 (same code). Compound `+=` in arm 1 only, arm 3, arm 4, arms 1+4, arms
+// 1+3+4: 87 each (same code); arm 4 interpolation first 115. On the division form: the product in two steps
+// (`scaled = (elapsed - hold) / fade_in; scaled *= fade_out;`) 124, the time accumulated in place 124, the time seeded
+// with the ambience difference then `+=` the product 125/125/124, `fade_out * ((elapsed - hold) / fade_in)` 124. For
+// the arm-3/arm-4 join: arm 4's gain operand built from the gain's bits 135 (704 B), a named interpolation `+=` the
+// gain then assigned 87 (same code), returned from the arm 174 (668 B); arm 3's sum stored through the long view 87
+// (same code). Reading: ours has exactly one sum with the gain in a register (arm 4, fed across the join) and retail
+// exactly one too (arm 1, loaded there); the other three add the gain from memory in both.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3262,9 +3283,9 @@ struct s_driver_voice_index_view
 	byte unknown04[0x6c - 4];
 };
 
-static __forceinline short sound_voice_find_available_channel(char type);
+static __forceinline short sound_voice_find_available_channel(long type);
 
-static inline short sound_voice_find_available_channel(char type)
+static inline short sound_voice_find_available_channel(long type)
 {
 	s_sound_system_channels_view *system = (s_sound_system_channels_view *)g_4e6380;
 	short result = NONE;
@@ -3280,501 +3301,67 @@ static inline short sound_voice_find_available_channel(char type)
 	return result;
 }
 
-/* assigns a free channel and, when needed, a shared driver voice */
-// MiniMax I (11-19): no new form, no lower score (96): the saved byte result still takes four extra frame bytes and the entry load order and the failure join still differ; the body stays 437 bytes against retail's 430.
-// score 96 (was 96): The saved byte result takes four extra frame bytes. The entry load order and failure join still differ.
-// The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
-// MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
-// failure path with xor bl, bl and moved back) while this build keeps it in a stack byte at [esp+0xf], so the frame
-// is 0xc against retail's 8; the closest form (15) needs a goto into an arm, a redundant store and a moved
-// declaration, and the file-local search helper taking `long type` on its own regresses to 127, so the body stands.
-// Earlier observation: MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
-// before reading the voice index and loads two globals ahead of it, where retail reads the index first and keeps the
-// outcome in AL; our frame is 0xc against retail's 8, both with the saved ebx, so one local is spilled that retail
-// keeps in a register. Body unchanged.
-// MiniMax E (11-15): no new form, no lower score (96): the call boundaries agree with retail's (0x127320, 0x12a5d0 and the two outside helpers), so what is left is the result byte, which sits in a stack slot here where retail keeps it in AL at the entry and in BL on the failure path.
-// MiniMax S (11-15): no new form, no lower score (96).
-// MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
-// true value set at the entry and BL holds the false value across the two cleanup calls - while this build
-// keeps it in a byte in the frame, so retail's frame is eight bytes and ours carries the extra slot; a form
-// that returns the true and the false value from their own exits reads 135 and changes the prologue's
-// register plan, and the shared exit with the byte in its slot stays closest.
-// Earlier at 96 (was 96; a second score line, merged in round 252): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
-// (false across the failure calls), and the block layout that follows from it; the closest form (15) is match-only.
-// MiniMax E (11-16): no new form, no lower score (96); the result still lives in a stack byte where retail keeps it in
-// AL at the entry and BL across the failure calls, and the frame is 0xc against retail's 8; the closest form (15) needs
-// a redundant store and a goto into an arm.
-// MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path
-// returning early 133 and the failure path returning false with two other exits 135, so the shared exit with the result
-// byte in its stack slot stays closest.
-// MiniMax G (11-11): no new form, no lower score (96): retail's three returns (true at the entry, false in the failure
-// block, true at the commit) measure 131, and the index still lands in eax where retail keeps it in ecx. This round:
-// the failure block reached by a goto after the channel search, so that it follows the buffer tests as retail's
-// does, measures 144 (449 bytes); the failure block after the shared exit 147, the failure label moved out of the
-// work block 139, the early return as an explicit else 131, the same test negated as an early return 131 and a bool
-// result 113. The permuter (608 s, 100 tries) ends at 89, and only by declaring the sound pointer volatile and
-// swapping two declarations, so the body stays.
-// MiniMax B (11-11): no new form, no lower score (96); the goto-free forms repeat earlier rounds' 131 and 139, so the
-// result still lives in a stack byte where retail splits it between al and bl.
-// Earlier at 96 (was 96): unchanged this round: the result still lives in a stack byte where retail keeps it in al
-// and clears it through bl on the failure path, and our frame is twelve bytes against retail's eight; the lower
-// forms listed need a moved declaration or a goto into an arm, which this lane may not keep.
-// Earlier at 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
-// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
-// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
-// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
-// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
-// retail's length and was reverted.
-// MiniMax R (11-09): no new form, no lower score; the result still lives in a stack byte where retail keeps
-// it in al, and the frame is still twelve bytes against retail's eight.
-// MiniMax D (11-08): score 96 (was 96): retail returns from two places - the failure block clears the result
-// byte and returns, the commit block returns true - while ours shares one return through a stack byte, and the
-// argument roles differ (retail keeps the index in ecx, ours in eax).
-// MiniMax H (11-07): no new form, no lower score (96); retail narrows the first parameter to a word
-// and scales it by nine where ours narrows a later parameter and scales that one, the result still
-// lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight
-// bytes.
-// MiniMax R (11-06): no new form, no lower score (96).
-// MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
-// MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
-// same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
-// and the byte result with the shared exit stays the best.
-// Earlier at 96 (was 96; a second score line, merged in round 185): unchanged this round: retail keeps the result in AL (set at the entry, cleared
-// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
-// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
-// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
-// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
-// retail's length and was reverted.
-// The twelve-byte frame, byte result normalization, initial voice/global load order and
-// Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
-// early failure tail remain; long search-result boundaries do not change the selected code.
-// Earlier at 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
-// cx and the result in al/bl with an 8-byte frame; ours loads the index into eax and holds the result in a stack
-// byte with a 12-byte frame.
-// Earlier: playback/channel roles recovered; frame 12 versus 8, status test and failure
-// placement remain.
-// Validity result 135; assigned result
-// 135; playback handle 113; const playback 113; long buffer index 117; entry status 113;
-// allocation-scope status 113; status name 113; allocation success result 122.
-// Failure flag 130, entry failure
-// 130, complemented status 132, long channel 147, driver-first/late-system commits 130/130,
-// status plus driver-first 132, requested buffer first 130.
-// `return true` on the success path gives retail's 8-byte frame and both
-// exits (139, 415 bytes); with `~status & DSBSTATUS_PLAYING` 131 (430 bytes); with driver_index
-// set before the channel test too 135 (430 bytes, aligned 101 of 124: channel spilled where retail
-// spills buffer_index); result declared first 139; failure/success as one if/else 126.
-// Requested-buffer rereads 113; long result 102, with rereads 102; rereads with success exit 139, long too
-// 138; byte result with rereads 96.
-// Rereads with valid guard 141, plus long/success exit 131. Isolated byte/char/short/word result
-// 96/96/125/125; byte only kept, 437/430 bytes.
-// Round 279: byte result from completed paths with short/long channel and buffer
-// 148/154/144/150; driver result at channel selection with long buffer 130, completed-path too 148;
-// completed byte result with complemented status, short/promoted outputs 151/160. Original byte-result body restored.
-// Round 161: bool result 113 (430 bytes; retail's failure `xor bl, bl ... mov al, bl`, but the success
-// exit reads the entry true from a slot); bool with `return true` on success 139 (result in BL from entry);
-// plus `return result` in the failure block 131 (retail roles, frame 8, false after the calls); failure
-// default after the search with success flag/`return true` 132/134.
-// Round 193: failure-scoped byte with shared/direct true exits 134/131;
-// those exits with low-byte complemented status 133/135; entry byte result 96;
-// published-channel/per-use system/both commit observations 96/96/96. All restored.
-// Round 164: search returning from the loop 96; bool result with `result = true` before the success
-// goto 122 (430 bytes: retail's entry `mov al, 1`, frame 8, EBX sound, `xor bl, bl ... mov al, bl`;
-// only the failure block's placement after the loop differs); result assigned on every path 135; that
-// with both NONE defaults between search and test 128 (retail's block order, not-found unthreaded);
-// driver default before/after the search 147/153; plus return-from-loop search 126.
-// Round 235: chained driver/buffer defaults inside/before test/before search 91/147/171;
-// with canonical success assignment 129/130/144; complemented status before test/inside
-// 122/127. The 91 form is below the minimum gain; original byte-result body restored.
-// Round 94: search helper taking `long type` (retail's direct movsx of the type byte) 128; success flag
-// declared after/before the search with `if (!success)` failure block and early `return true` 138/143;
-// result false after the search, true on success, `if (!result)` failure 132; bool result with the search
-// index re-tested after a break loop 104 (retail's found-path-after-loop layout: VC places a loop's break
-// target after the function's other blocks). Original byte-result body restored.
-// Lane 16 r50 (fast): bool result with an `assigned` flag tested before the failure calls 123 (flag in a
-// stack byte); the defaults before `if (channel != NONE) { buffer selection }` and then a failure-first
-// `if (channel == NONE || (buffer_index == NONE && (priority & 2 || requested != NONE))) { failure } else
-// { commit }`: byte result 151, bool result 126 (435 B: retail's block order and `xor bl, bl ... mov al, bl`
-// failure, but NONE hoisted into EBP at entry and the not-found exit unthreaded), with `return true` after
-// the commit 123; the defaults assigned inside the channel block 113 (threaded, failure back after the
-// loop), with `return true` 139; only the driver default before the channel test 107 (430 B, retail's
-// layout, `or ebp, -1` shared with the channel compare, but the not-found exit unthreaded and the channel
-// spilled); that with the driver default before the search 135; the search returning from its loop on
-// those 141/113; the kept form with the driver default before the channel test 132; the failure calls
-// written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
-// the not-found exit past a block that sets the driver default, which no form here reproduces.
-// A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
-// Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
-// giving 113/113/113/109/139/139/139/133.
-// Original executable source restored; no qualifying gain.
-// Round 34 (m3 lane 2, fast): retail shares one `or ebp, -1` between the found channel's `cmp di, bp` and
-// the driver/buffer defaults and keeps the channel in EDI (the loop index). Bool result with `return true`
-// after the commit and `result = false` before the failure calls 139 (415 bytes); with the driver default
-// before the channel test 133 (415); plus the search returning `(short)i` from its loop 122 (432); that
-// with the byte result 133 (430); byte result, success goto, driver default before the test and the
-// returning search 131 (433); bool, `return true`, returning search, driver default in the block 139 (415).
-// Round 117 (m3 lane 8, fast): bool result with `result = true` before the success goto 122 (430 bytes; the head's
-// registers rotate and the failure block follows the search loop); on it the driver default before the channel test
-// 153 (409 bytes: retail's block order, but the search index and the channel stop sharing EDI and the driver goes to
-// the stack), both defaults there 128 (431), that with `~status & DSBSTATUS_PLAYING` 142 (430), the driver default
-// before the search 147 (406), result declared first 146 (409); `else result = true` for the early path 135 (433); the
-// search returning from inside its loop on these 122/136 (416)/135/133; the 122 form with `~status` 121 (430).
-// J222: Long search workspace/return, long workspace with short return, promoted short result and native long
-// direct search exits all 96; long workspace with Boolean body result and long/short helper returns 113/113;
-// explicit committed success 122 (430 bytes); existing byte success declared at entry on the long search graph
-// 96. Original executable body and private helper restored; every calibrated match preserved.
-// F320: shared search mask/word ordinal/both 125/149/158; each with chained driver/buffer
-// defaults 120/149/158; both with cached upper bound 158; all 158. The frame remains twelve
-// versus eight, with a saved result byte and early failure tail. Original body/helper restored.
-// N313: Channel-search receiver read at every field use, chained defaults/byte status complement
-// subsets 0..3: 128/123/103/98; with explicit Boolean commit result 117/124/116/122.
-// Original receiver, independent defaults, byte result and full body restored. Frame twelve versus
-// eight, entry voice/global scheduling and early failure tail remain.
-// DH292: Available-bit intersection / occupied-bit union in the existing finder, original break
-// with byte/committed Boolean results 144/131/147/130; condition-controlled search
-// 159/131/161/133. Original two bitmap tests, helper, result and entire body restored.
-// DH294: Existing shared bitmap test/streaming-set/free-clear operations, seven subsets,
-// 96 each; complete shared-operation graph with explicit committed Boolean success 122.
-// Original private finder, raw bitmap operations, byte result, includes and full body restored.
-// N314: Condition-controlled availability scan with assigned/direct exhaustion results, independent/chained
-// defaults and native byte/committed Boolean results: 134/138/64/128/134/138/64/128. The 64 form (plain,
-// 435/430: frame eight and the later failure tail recovered; entry registers, search exit checks, sentinel
-// sharing and status test remain) needs a second `result = true;` before the commit's goto, where result
-// is already true: a redundant store, not kept without a match (coordinator review 11-02). Without it the
-// same scan scores 134. On that graph, long private search input/complemented status/both 107/130/60.
-// Original helper, byte result and full body restored.
-// N319: Split bitmap rejection through continues/nested guards, free/streaming first, byte/Boolean result: 96/96/99/99/113/113/113/113. Original helper and full body restored; frame twelve/eight, result normalization and early failure tail remain.
-// N325: Complete branch-owned driver/buffer defaults, byte/Boolean results, then
-// paired chained defaults: 91/126/120/133/153/149/137/130. Driver-only defaults 91 at 432/430:
-// NOT kept: five-point gain below eight while above 30. Original defaults, byte result,
-// helper and full body restored; frame, shared sentinel and search/failure joins remain.
-// N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
-// references with complemented playing status 127. Original pointers, saved byte result, search and full
-// body restored; frame twelve/eight and failure-tail placement remain.
-// Round 552: direct unchanged/commit/failure Boolean returns without a saved carrier, native
-// outer/early unchanged guards crossed with independent/chained defaults and original/complemented
-// status 131/135/131/135/131/135/131/135. Original byte result, helper and complete body restored.
-// NOT kept: no score gain or byte match.
-// Round 160: bool result with `return true` after the commit on a while scan: assigned/direct exhaustion 130/130, chained
-// defaults 130/130, complemented status 127/127; `result = true;` before the goto on the while scan 88 (430 bytes,
-// aligned 46; a redundant store, not kept: left are the head registers, `or ebp, -1` shared at the channel test, the
-// complemented status and the failure block's place), with complemented status 118, chained defaults too 118; the
-// returning for-search or while-search on it 122/122, with complemented status 121, chained defaults 122/121; the
-// failure calls written in two arms, inverted or not 168/145/168/145 (455/438 bytes), byte result 151, complemented
-// status 178/155.
-// N367: Tentative channel result before bitmap validation, short/int/long/dword in for scan 96/166/166/166;
-// while scan 96/166/166/166. NOT kept: no gain or equality; original private finder and full body restored.
-// Frame twelve/eight, normalized byte and early failure tail remain.
-// B440: Native full-width first/last/both/entry-const range captures on the
-// original inclusive scan: byte result 96/96/96/96, Boolean result 113/113/113/113.
-// NOT kept: ties or regressions; frame twelve/eight and saved-byte/failure tail remain.
-// Original private finder, result byte, independent defaults and full body restored.
-// N379: Existing finder produces admission plus the narrowed channel; selected-local, direct-output,
-// found-return and exhaustion-result forms with byte/bool body results: 96/96/130/134/113/113/129/104.
-// NOT kept: ties or regressions; private finder signature, saved byte result and complete body restored.
-// N381: Existing finder receives native voice/member pointer or reference, byte/Boolean body result:
-// 125/125/128/128/105/105/128/128. NOT kept: no byte match; original private input,
-// signed scan, byte result, status/error calls and complete body restored. Frame/result/failure joins remain.
-// N383: Actual channel/buffer predicates own the return decision, byte/bool, success/failure
-// polarity and constant/actual entry admission: 160/175/166/208/134/141/166/208.
-// NOT kept: all regress; original result, private finder, observations, commits and body restored.
-// N385: Independent finder completion state, found/searching polarity in bool/byte/long/dword:
-// 125/125/125/125/125/125/125/125. NOT kept: no equality; completion flags and whole finder/body restored.
-// Frame twelve/eight, saved byte normalization and early failure tail remain.
-// P351: Low-byte requested-buffer bits in byte/word/long/dword with byte/Boolean result:
-// 96/101/101/101/113/109/109/109. NOT kept: no byte match; frame twelve/eight, saved-byte normalization and failure joins remain.
-// Original complete body and existing helpers restored.
-// F399: Explicit candidate admission/rejection/staged-admission/independent bitmap
-// predicates with byte final result 96/96/177/96, Boolean result 113/113/156/113.
-// NOT kept: no gain or equality; original private scan, byte result and whole body
-// restored. Twelve/eight-byte frame, saved true and early failure tail remain.
-// F401: Actual free/streaming table bases separately/both, then native bitmap-word lvalues,
-// with byte/Boolean final result: 96/142/142/96/113/132/132/113. NOT kept: ties or regressions; original finder
-// and full body restored. Twelve/eight-byte frame, saved normalization and failure tail remain.
-// N389: Complete byte/short/long/dword failure results at original/entry lifetimes:
-// 130/130/104/104/136/136/136/136. NOT kept: no native result/frame recovery;
-// original byte-success result, helper and full body restored.
-// N391: Existing finder with actual system pointer/reference and char/signed-char/short/long
-// selector 128/128/128/128/99/99/128/128. NOT kept: inline contracts remain unmatched;
-// original finder, result, defaults and full body restored. Frame and failure tail remain.
-// N397: Complete byte-result, channel, driver, buffer and status native home identities 96/96/96/96/96/96/96/96.
-// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
-// Lane 15 round 62 (fast): `~status & DSBSTATUS_PLAYING` on the byte result 127 (439 bytes), with a bool result 130
-// (430 bytes, aligned 126); status declared at the top 96 or in the channel block 96 (same code); the driver and
-// buffer defaults declared before the search 171 (468 bytes).
-// MiniMax D (11-08), 96: retail returns from two places - the failure block clears the result
-// byte and returns, the commit block returns true - while ours shares one return through a stack byte, and the
-// argument roles differ (retail keeps the index in ecx, ours in eax).
-// MiniMax H (11-07): no new form, no lower score (96); retail narrows the first parameter to a word
-// and scales it by nine where ours narrows a later parameter and scales that one, the result still
-// lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight
-// bytes.
-// MiniMax R (11-06): no new form, no lower score (96).
-// MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
-// Round 158 (m3 lane 5, fast): a `bool result;` with no initializer assigned in every arm (the early path's
-// `else result = true;`, `result = true;` before the commit's goto, `result = false;` in the failure block) 135
-// (433 bytes: frame eight, the index load before `sub esp, 8` and the failure's `xor bl, bl ... mov al, bl` as retail,
-// but the early path gets its own `mov al, 1` exit copy and the failure block still follows the search loop); on it
-// the defaults before the channel test 138 (431), `~status & DSBSTATUS_PLAYING` 138 (435), both 141, a byte result
-// 148 (441), the commit as `return true;` 136 (430), with the defaults first 136 (431). The private search as a
-// condition-controlled while scan returning `i <= last ? (short)i : NONE` (or through a NONE result), and as a for
-// loop with a plain break and the bound tested after it (both compile alike): byte result 134 (452, aligned 47),
-// the arm-assigned bool 142 (435), `bool result = true` with the goto 104 (440), with `return true;` after the
-// commit 109 (436, aligned 45: the failure block follows the buffer tests as retail, but the result sits in a stack
-// byte and the bound is tested again after the loop), plus the defaults before the channel test 130/134.
-// "Assume failure" (`result = false;` before the channel work, `result = true;` before the commit's goto, nothing in
-// the failure block): after the search 132 (430, stack byte), before the search 129, with the defaults first 134
-// (436), as a byte 137 (439), with the while scan 135/135 (441).
-// Round 139 (m3 lane 7, fast): the channel search, buffer choice and commit as an inline step returning a bool, the
-// caller keeping `bool result = true` and running the failure calls on a false step: with plain `inline` the step
-// stays out of line, 464/464/465/464/464 (98 bytes) for the five forms below; forced inline: defaults before the
-// channel test with `result = step` 128 (431 bytes), defaults inside the channel block 122 (430), defaults first with
-// `if (!step) { result = false; ... }` 126 (435), defaults first with `(byte)~status & DSBSTATUS_PLAYING` 124 (433),
-// defaults inside with that status test 121 (430). Frame eight and the entry index load before `sub esp, 8` appear in
-// the forced forms, but the head's registers and the failure block's place still differ; none kept.
-// Round 103 (m3 lane 9, fast): the search returning `(short)i` from its loop, bool result, driver default before the channel test
-// 141 (438 bytes); with `~status & DSBSTATUS_PLAYING` and both defaults before the test 144 (440), as a failure-first if/else 144
-// (440); the while scan, bool result, complemented status, defaults first, failure-first 148 (442), with the plain status 138 (435);
-// the for/break search with that failure-first form 141 (437). N314's 64 form rebuilt for reading: its tail and failure block are
-// retail's byte for byte; left are the entry registers, the scan's post-loop bound test (retail's found path goes straight to the
-// `(short)i != NONE` test, as the for/break search does), the shared `or ebp, -1` and the complemented status.
-// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 96 [50]): the status as
-// `(byte)~status & DSBSTATUS_PLAYING` (the idiom 0x127010's matched flags test uses) 127 [47]; with a bool result 130; with
-// `return true` after the commit 129, both 131. N314's condition-controlled scan rebuilt: byte result 134, bool result 104 [30],
-// with `return true` after the commit 109, bool with the redundant `result = true;` before the goto 64 [17] (diagnostic, the
-// form review rejected; it reproduces N314). On the scan, the result assigned from the commit test (`result = buffer_index !=
-// NONE || ...; if (result)`) 122 (bool) / 152 (byte), on the for scan 123/130; an uninitialized result assigned once on each
-// path (early `else result = true;`, before the commit's goto, in the failure block) 142 (bool) / 152 (byte). On the 64 body
-// left are the entry registers (index in ECX as retail only with the frame-8 forms), the type byte loaded then sign-extended
-// (retail `movsx ecx, byte ptr [esi + 8]`), the scan's post-loop bound test, NONE shared in EBP and the complemented status.
-// R229 (m3 lane 3, fast with 0x129100): `bool result = true;` with `result = false;` at the top of the channel block,
-// `result = true;` after the commit and the failure calls under `if (!result)` 129 (430 bytes: retail's `mov al, 1`
-// at the entry, but the false value lives in a stack byte and the failure block follows the search loop); the same
-// with a byte result 151 (450); the false assigned in `else` arms of the buffer and channel tests, failure calls under
-// `if (!result)`, 114 (430); bool result with `return true;` after the commit (re-measured 139, 415 bytes: the whole
-// result in EBX, the sound in EDI) plus the driver default declared at the top of the channel block, before the
-// search, 155 (407), at function scope 145 (442). Diagnostic re-measure: bool result on the kept goto body 113 (430:
-// `mov al, 1` stored to a stack byte for the goto path, `xor bl, bl ... mov al, bl` failure as retail). The first form is
-// a variant of round 94's (false after the search, 132) and the driver-before-search one of lane 16 r50's / round 117's
-// on another base. Also: `result = false;` after the two failure calls, byte result 96 (same code), bool result 136 (430).
-// M3 lane 12 r114 (fast with the file's 76 functions and 0x221810, control 96 [masked aligned 48, register-masked 33]; goto-free
-// forms would be kept at 96 or lower since they drop main's goto): the commit block ending in `return result;` with the byte
-// result and no label 130 (430 B, frame 8, but the result then lives in BL from the entry, `test bl, bl; setne al`) [91, 47]; the
-// same with a bool result 139 (415 B, the listed `return true` numbers: likely the same code); on the goto body the driver
-// default before the channel test with `(byte)~status & DSBSTATUS_PLAYING` 140 (436 B) [58, 26], with a bool result as well 139
-// (430 B) [68, 31]; the `return result;` commit with the driver default before the channel test 133 (430 B) [92, 37]; the
-// channel-system pointer read at the function's top for the commit 122 (430 B) [75, 34]; the search helper without its separate
-// forced-inline declaration 195 (365 B: it stays out of line).
-// m3 lane 1 r92 (fast with 0x129100, control 96, aligned 73, registers masked 55): retail's exits are three blocks (early
-// path returning the entry AL, failure `xor bl, bl ... mov al, bl`, commit `mov al, 1`), so its commit path has its own true
-// and the early and failure values are separate webs. New: the driver default before the channel test with `return true;`
-// after the commit and `return result;` closing the failure block, bool result 144 (407 bytes: the early path folds to a
-// constant and NONE is hoisted into EBP at the entry); the same with the byte result 144 (same code). Body restored.
-// Round 185 (m3 lane 4, fast with 0x129100/0x127320/0x12a5d0/0x21de90): the channel work inside `do { ... } while
-// (false);` with `break` for a missing channel and for a missing buffer, `return true;` after the commit and the
-// failure calls after the loop, bool result 111 (430 bytes, register-masked aligned 38 -> 23: retail's block order, the
-// failure block after the buffer tests with the entry true shared into its epilogue; left the entry registers, the sound
-// in EDI for EBX, the channel in EBP and the driver in EBX, `cmp bp, -1` for retail's shared `or ebp, -1`, the status
-// test); a steering wrapper, match-only. On it: a byte result 119 (433), byte result with the goto exit 144 (449), the
-// driver default before the channel break 133 (415), with `~status & DSBSTATUS_PLAYING` 135 (430), the complemented
-// status alone 130 (432, masked 21). Re-measured (diagnostic): bool result with `return true;` 139 (415).
-// Round 235 (m3 lane 3, fast): bool result, `return true;` after the commit and the failure block ending `return result;` 131
-// (431 bytes: the false folds to `xor al, al`); re-measured bool result with `return true;` after the commit 139 (415: retail's
-// three exits, but `mov bl, 1` at the entry and the sound in EDI for EBX); that with `(byte)~status & DSBSTATUS_PLAYING` 131 (430),
-// plus a byte result 129 (430), plus the search returning `(short)i` from its loop 131, plus the defaults ahead of the channel
-// test 138 (435); `bool result = true;` declared first 139 (same code); a guard `return true;` for the early path with
-// `bool result = false;`, `result = true;` after the commit and the failure under `if (!result)` 142 (440); the failure test
-// written ahead of the commit (`if (channel == NONE || (buffer_index == NONE && (...))) { fail } else { commit; return true; }`,
-// defaults before the channel test) 123 (433), with the complemented status 138, plus a byte result 142, without the commit's
-// `return true` 141 / byte 155.
-// m3 lane 8 r158 (fast with 0x127010, 0x127320, 0x12a5d0, 0x21de90, 0x129100): the commit's two bit updates through the
-// existing bit_vector_set 96, the search helper's two bit tests through bit_vector_test 96, both 96 (same code each; both
-// kept: existing helper calls in place of hand-written copies of their bodies); the requested-buffer local at every use (the
-// buffer assignment and the final test, no field re-read) 139 (441 B), for the assignment only 138 (441 B).
-// Round 178 (m3 lane 5, fast with 0x129100/0x127320/0x12a5d0/0x21de90/0x127010; al = aligned differing lines; control 96,
-// al 73; about 60 forms). LEAD, 15 at 430 bytes (al 8; the form is saved as build/r178/held-1295e0-form15.txt): `bool result
-// = true;` declared before the voice and the sound, the search helper taking `long type`, the missing channel as `if
-// (channel == NONE) goto channel_failed;`, then `buffer_index = NONE; driver_index = NONE;` (buffer first), the status
-// test as `(byte)~status & DSBSTATUS_PLAYING`, and a failure-first if/else whose failure arm holds the label and whose
-// commit arm ends `result = true;`. Every instruction is retail's except three scheduling spots that have one cause: the
-// two early exits join the commit block's epilogue (so `mov al, bl` sinks below three pops in the failure tail and the
-// commit's pops stay together), where retail joins them to the failure block's epilogue. Not kept: it needs the second
-// `result = true;` (a redundant store), the moved declaration and a goto into an arm, all match-only. What each part
-// does (ablation on the goto-free twin of the lead, 74/79): result declared after the sound 116 (the entry index then
-// takes EAX and NONE takes EBP); no initializer with `else result = true;` for the early path 138; no `result = true;`
-// in the commit arm 161 (451 bytes, stack byte); plain status test 106; `char type` 79; driver default before the
-// buffer default 74 (the compare and the buffer store then use immediates where retail shares `or ebp, -1`).
-// Two families, by how the missing channel reaches the failure code. Implicit (`if (channel != NONE) { ... }` with the
-// failure after it, or `channel == NONE ||` / `channel != NONE &&` in one if/else, goto or not, commit before or after
-// the return): 79 (415 bytes, al 28), retail's code with the failure block and the return placed straight after the
-// search loop instead of after the buffer tests. Explicit (the goto above, the failure arm first or second, the commit
-// through `goto channel_done`, a label after the return, flat gotos with the exit label referenced first, or a one-pass
-// `do { } while (false)` with breaks): 15 each, the same code. Other forms: the defaults ahead of the channel test (both
-// families) 109-127 (al 20-44: the failure block is placed as retail's but the search result is not threaded, so the
-// counter stays in EDX and is copied); chained defaults 109 / 74 / 79; the defaults ahead of the search 121-128; the
-// failure written in both else arms 126, without the commit's `result = true;` 193; a `return true;` or `return result;`
-// in the commit arm 125, `return result;` in the failure arm 128 (any second return merges the result into one register
-// from the entry); the search returning from its loop gives the same code as the break form with `long type`, the
-// condition-controlled scan 127-129 (442 bytes).
-// On the lead with flat gotos, the early path as its own `return result;` or `return true;` 135 (431 bytes).
-// Earlier at 96 (was 96): unchanged this round: the allocator keeps the result in BL where retail splits it (AL at the
-// entry, BL in the failure block) and holds the sound in EBX.
-// Round 197 (m3 lane 4, fast with 0x127010/0x1251e0/0x129100/0x127320/0x12a5d0/0x21de90/0x221810): lane 5 r178's
-// match-only 15 form rebuilt on the current tree, 15 at 430 bytes (unchanged: the early exits jump into the commit
-// block's epilogue where retail's jump into the failure block's). On it: the commit arm's `result = true;` at the arm's
-// start 111 (433 bytes); the failure arm's `result = false;` after the two calls 49; `byte result` 119 (439 bytes);
-// `bool result = true;` declared between the voice and the sound 93; the requested-buffer local dropped (the byte read at
-// its test and its index) 15 (same code). A 600 s permuter run on it (66 tries) found none below 15. Main's body restored.
-// MiniMax G (11-14): no new form, no lower score (96): retail keeps the result in AL (set at the entry, cleared on the
-// failure path with xor bl, bl and moved back into AL), ours keeps it in a stack byte; spelling the result as a bool
-// reaches retail's 430-byte length but measures 113, and the other body forms (the result returned directly from the
-// commit arm, the failure arm first, the commit through a label) measure 124, 135 and 139, so the byte result stays.
-// MiniMax G (11-14, later): no new form, no lower score (96): the bool result reaches retail's 430 bytes but is also
-// spilled to the stack (mov byte ptr [esp + 0xf], al) because it is live across the calls, while retail parks the
-// result in BL only on the failure path; the explicit-return form (no result variable, return true in the commit arm,
-// return false in the failure arm and return true at the end) measures 135 (431 bytes) and moves the mov al, 1 from
-// the entry to the exit, and the same form with a bool result left in place gives the same 135.
-// M3 lane 13 r95 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): the find-or-create arm
-// first (`if (requested_buffer == NONE) { if (sound->priority & 2) ... } else { status test }`) 115 (430 bytes); the
-// second bit update from `channel` (no re-read of the stored index) 128 (436); the final test through the
-// requested-buffer local only (the assignment still re-reads the field) 141 (443); the channel-system pointer read at
-// the top of the channel block 117 (430); the unknown0e test ahead of the priority test 97. Same code (not counted):
-// the commit's channel store ahead of the unknown0e store, `->GetStatus(&status)`, the requested-buffer local dropped;
-// the buffer default declared ahead of the driver default 91 (432 bytes, the same code as the chained `driver_index =
-// buffer_index = NONE`, round 235's listed 91). Diagnostic: lane 5 r178's 15 form rebuilt, 15 at 430 bytes: retail's
-// layout is failure block, shared return, then the commit with its own return copy, so the commit has its own exit;
-// that form with the commit ending `return true;` (gotos or a one-pass do/while, result declared first or after the
-// sound, bool or byte) 125/125/125/126 (430/433 bytes: `mov bl, 1` at the entry and the sound in EDI), lane 4 r185's
-// do/while form re-measured 111. Body unchanged.
-// M3 lane 16 r122 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's match-only 15
-// form rebuilt from this note 15 at 430 bytes (unchanged: the early exits share the commit block's epilogue). On it: the
-// first bit update from `voice->channel_index` 15 (same code); both bit updates from `channel` 122 (431 bytes); an 1800 s
-// fast annealing permuter run (seed 122, the four callees as context): 195 tries, best 13, only with a `volatile` voice
-// pointer and constant locals (not allowed). On the kept body the first bit update from `voice->channel_index` 96 (same
-// code). Body unchanged.
-// P575: Actual API status-idle/playing admissions in bool/byte/short/long
-// storage 127/127/127/127/96/96/96/96. NOT kept: no native frame/result/exit recovery;
-// original status test, byte result, search helper and complete body restored.
-// Round 252 (m3 lane 3, fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): retail's layout
-// suggests its commit's true is not the entry's true as far as the compiler knows (the early exits share the failure
-// block's tail, the commit has its own `mov al, 1` copy). `bool result = true;` declared first on main's goto body
-// 153 (449 bytes); the byte result declared first 96 (same code); the status test as `(status & ...) == 0` 96 (same
-// code); round 229's flag form (true at entry, false at the channel block's top, true after the commit, failure calls
-// under `if (!result)`) with the complemented status test and buffer-first defaults 126 (430 bytes, frame 0xc); the
-// channel assignment as an inline helper returning true after the commit and false after the failure calls, called
-// as `result = helper(...)` under the early test, 489 (not inlined; 0x129100 then 14), the helper `__forceinline` 126
-// (415 bytes). Body unchanged.
-// b9H (11-17) walk against retail, fast build on r839 (with 0x129100, 0x127320, 0x12a5d0, 0x21de90, 0x221810): no
-// behaviour difference found. Voice and sound lookup (0x1295e0-0x129614, mask and *0xbc at 0x129605), the early test
-// (0x129614-0x12962a), the channel scan (first/last by the signed type byte at 0x129630-0x12963e, free bit 0x129661,
-// streaming bit 0x129666, `<=` at 0x12966f) and `cmp di, bp` (0x129679), the defaults (0x12968b), the status test
-// (0x1296af-0x1296b7: skip when PLAYING is set, ours `test ..., 1; jne` has the same sense), both reads of value_a2
-// (0x1296b9, 0x12970a), the find-or-create call with the sound in EBX (0x21de90 reads it at 0x21dee7) and its +2
-// word (0x1296ed), the commit test (0x1296f7-0x129711), the failure calls (0x127320 reads EAX at 0x127322 with the
-// 7 pushed, 0x12a5d0 reads AX at 0x12a5dd from the voice index re-read at 0x12971e) and the commit stores (0x12973d,
-// 0x129741, 0x129754, the set at 0x129763, the clear from the re-read channel at 0x129783) agree with the source.
-// The three exits give true at the entry (0x129618), false through BL (0x129717-0x129727) and true after the commit
-// (0x129785), as the source's result. What is left is only the result byte's place and the block layout listed above.
-// Round 622: buffer fallback result byte 130; buffer fallback result bool 127; channel result byte 146; channel
-// result bool 131; both tests into byte result 160; both tests into bool result 134; distinct rejection arms with
-// byte 96; distinct rejection arms with bool 114.
-// The distinct byte rejection branches tie at 96 and shorten the body by one byte. The other forms regress,
-// including three that reach retail length. The twelve-byte frame and early result residence remain.
-// Assigned-channel bypass with separate, nested, compound or named buffer checks, each with
-// direct or cleanup-scoped rejection return: eight 135s. NOT kept: eight-byte frame recovered,
-// but entry AL, pre-call failure in BL and the shared failure return still differ.
-// Retail uses a register result and an eight-byte frame. The result from the admission tests recovers
-// retail length and frame size with a different entry and failure join. status assigns buffer 122;
-// driver assigns buffer 123; both arms assign buffer 122; result from both tests 135; byte from both
-// tests 177; result guards cleanup 135; cleanup at common exit 135; failure from missing channel or
-// buffer 134. NOT kept: all forms scored above the opening body.
-// M3 lane 15 r98 (fast with 0x129100, 0x127320, 0x12a5d0, 0x21de90, all MATCH; control 96): lane 5 r178's match-only form
-// (build/r178/held-1295e0-form15.txt in that lane's tree) rebuilt as found: 108 at 430 B (aligned 7: the search helper here
-// takes a char, so the type byte is loaded and then sign-extended); with the file-local search helper taking `long type`
-// 15 (aligned 4, as before: `mov al, bl` sunk below three pops in the failure tail, the channel store one slot late and
-// the commit's two pops at its end, because the early exits share the commit's epilogue). On the char rebuild (same code
-// as it, 108, each): the early exit as `goto done;` to a label at the return; the commit arm ending `goto done;`; the
-// commit arm first with the failure arm (and its label) second. The early test nested with its own `return result;` 135
-// (431 B).
-// Voice reference, playback reference, or both 96/96/96; provisional Boolean before or after
-// the search 129/132; provisional byte 151; assigned outcome in each admission arm 135;
-// existing-channel outcome first 135.
-// NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
-// Reuse result from combined or staged channel/buffer admission, as byte or bool.
-// With cleanup on failed result, combined 176/135 and staged 172/197. With a common
-// exit after commit, combined 176/135 and staged 161/182.
-// NOT kept: all retain the twelve-byte frame. Combined admission reads the index first
-// but takes it in EAX and still spills the result.
-// Entry channel result with plain/complemented status: bool has-channel 135/138,
-// bool needs-channel 182/185, byte has-channel 176/179, byte needs-channel 182/185.
-// counted while scan over cached inclusive bounds 96; cached inclusive bounds with return from the found channel
-// 96; inclusive last channel read once before the scan 96; both inclusive channel bounds read before the scan 96;
-// full-width selected index with both inclusive bounds 96; separate guards skip unavailable and streaming channels
-// 96; positive free-channel guard nests the streaming guard 96; single rejection guard skips unavailable or
-// streaming channels 96.
-// NOT kept: all eight search forms tie at 96 and keep the twelve-byte frame, result spill and failure join.
-// M3 lane 12 r153 (fast with 0x129100, 0x127320, 0x12a5d0, 0x21de90, all matched; aligned exact / register-masked 69 / 50
-// at 96): the channel-system pointer read at the top of the function 122 (430 B, 111 / 55); `char result` 96 (same code);
-// lane 5 r178's match-only form rebuilt 15 (430 B, 8 lines: the search helper taking `long type`, called with the
-// `(char)` type; without the cast the type is zero-extended, 16); on it the commit arm first and the failure arm (with
-// the label) second 15 (same code); the commit arm ending `return true;` 125 (430 B); the missing channel handled by
-// its own copy of the failure calls and `return result;` in place of the goto 177 (461 B). On the 15 form the failure
-// block is laid out ahead of the commit block as in retail, but the early exits share the commit block's return (its
-// `mov al, 1` then three pops) where retail's share the failure block's (`mov al, bl` before the pops), so this build's
-// failure tail takes its own copy of the pops and the commit's `pop edi; pop esi` stay together.
-// M3 lane 8 r196 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's form rebuilt 15
-// (16 with the type byte passed unconverted: movzx). Matched siblings with retail's split result (true in AL, false in
-// BL across the failure calls) assign the result in every arm with no initializer (0x136c40, 0x21dda0); on the 15 form:
-// no initializer with `else result = true;` for the early path 134 (every path then gets its own epilogue: the commit's
-// tail is retail's, but the early path's own exit is placed straight after the entry tests); that with the commit arm
-// ending `return true;` 138 (`mov bl, 1` on the early path); the early path as the first arm 134; the commit placed after
-// the final return behind a label, ending `result = true; goto done;` 15 (same code) or `return true;` 125. Retail's
-// failure block falls into the exit it shares with the early path and the commit owns the duplicated epilogue; every
-// form here puts the commit ahead of the shared exit. Body unchanged.
+static __forceinline bool sound_voice_assign_channel(s_sound_voice *voice, s_sound_playback *sound);
+
+/* finds a free channel and a buffer for a voice and assigns them to it; false
+   when there is no channel, or no buffer where one is needed. Retail tests the low
+   byte of the complemented buffer status for the playing bit, and sign-extends the
+   voice's type byte straight from memory (the search takes a long). */
+static inline bool sound_voice_assign_channel(s_sound_voice *voice, s_sound_playback *sound)
+{
+	short channel = sound_voice_find_available_channel((char)voice->definition_type);
+
+	if (channel == NONE)
+		return false;
+	short buffer_index = NONE;
+	long driver_index = NONE;
+	char requested_buffer = (char)sound->value_a2;
+
+	if (requested_buffer != NONE)
+	{
+		DWORD status;
+		IDirectSoundBuffer_GetStatus(SOUND_DRIVER_GLOBALS->voices[requested_buffer].buffer, &status);
+		if ((byte)~status & DSBSTATUS_PLAYING)
+			buffer_index = (char)sound->value_a2;
+	}
+	else if (sound->priority & 2)
+	{
+		driver_index = sound_voice_find_or_create((s_voice_playing_sound const *)sound);
+		if (driver_index != NONE)
+			buffer_index = ((s_driver_voice_index_view *)g_502114->data)[driver_index & 0xffff].buffer_index;
+	}
+	if (buffer_index == NONE && ((sound->priority & 2) || (char)sound->value_a2 != NONE))
+		return false;
+	s_sound_system_channels_view *system = (s_sound_system_channels_view *)g_4e6380;
+	voice->unknown0e = buffer_index;
+	voice->channel_index = channel;
+	voice->driver_voice_index = driver_index;
+	bit_vector_set(system->streaming_bits, channel, true);
+	bit_vector_set(system->free_bits, voice->channel_index, false);
+	return true;
+}
+
+/* assigns a free channel and, when needed, a shared driver voice.
+   Retail's three results are separate values: true at the entry (returned by the
+   paths that need no channel), the step's false kept across the two failure calls,
+   and the step's true after the stores; so the search, the buffer choice and the
+   stores are one inlined step whose result is assigned here. */
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
+	bool result = true;
 	s_sound_voice *voice = &g_4e6378[voice_index];
 	s_sound_playback *sound = SOUND_PLAYBACK_GET(voice->sound_index);
-	byte result = true;
 
 	if (voice->channel_index == NONE || ((sound->priority & 2) && voice->unknown0e == NONE))
 	{
-		short channel = sound_voice_find_available_channel((char)voice->definition_type);
-		if (channel != NONE)
+		result = sound_voice_assign_channel(voice, sound);
+		if (!result)
 		{
-			long driver_index = NONE;
-			short buffer_index = NONE;
-			char requested_buffer = (char)sound->value_a2;
-
-			if (requested_buffer != NONE)
-			{
-				DWORD status;
-				IDirectSoundBuffer_GetStatus(SOUND_DRIVER_GLOBALS->voices[requested_buffer].buffer, &status);
-				if (!(status & DSBSTATUS_PLAYING))
-					buffer_index = (char)sound->value_a2;
-			}
-			else if (sound->priority & 2)
-			{
-				driver_index = sound_voice_find_or_create((s_voice_playing_sound const *)sound);
-				if (driver_index != NONE)
-					buffer_index = ((s_driver_voice_index_view *)g_502114->data)[driver_index & 0xffff].buffer_index;
-			}
-			if (buffer_index != NONE || (!(sound->priority & 2) && (char)sound->value_a2 == NONE))
-			{
-				s_sound_system_channels_view *system = (s_sound_system_channels_view *)g_4e6380;
-				voice->unknown0e = buffer_index;
-				voice->channel_index = channel;
-				voice->driver_voice_index = driver_index;
-				bit_vector_set(system->streaming_bits, channel, true);
-				bit_vector_set(system->free_bits, voice->channel_index, false);
-				goto channel_done;
-			}
+			function_127320(voice->sound_index, 7);
+			sound_voice_free(voice_index);
 		}
-		result = false;
-		function_127320(voice->sound_index, 7);
-		sound_voice_free(voice_index);
 	}
-channel_done:
 	return result;
 }
 
@@ -3957,8 +3544,7 @@ void function_128020(void)
 						fading->fade_curve = 0;
 						fading->fade_start_time = 2000;
 						fading->fade_end_time = NONE;
-						byte *flags = (byte *)&fading->flags;
-						*flags |= 0x80;
+						flags_set_bit(&fading->flags, 7, true);
 					}
 					sound->flag2 = true;
 				}
@@ -4717,11 +4303,15 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
-// score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
+// score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
+// bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
+// sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
+// for the count's default).
+// Earlier at 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
 // The second pending test through a one-use low-byte view scores 50. That alias was reverted.
+// MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
 // Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
 // Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
@@ -5040,6 +4630,28 @@ struct s_128ca0
 // existing real clamp 169; two bound assignments 150; decibel result with typed bounds 192;
 // in-place bit or decibel clamp 177/163. NOT kept: all raise the count, and all but the
 // conditional selection also raise the matched fade user. Both pin register exchanges remain.
+// M3 lane 7 r195 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; plain confirmed): kept,
+// 81 -> 72: flag6 set through the file's inline flags_set_bit (retail's second pending test reads a byte and its flag6
+// store is a byte `or`, so the store does not share the test's word load; a setter taking the flags' address gives
+// that, 73), the same setter at the two byte-view stores of matched 0x128020 and 0x1293f0 (both still match), and the
+// stream bit through the existing 0x12a420 (72). The setter at the bit-9 store, the pending clear and the pending
+// set 72 (same code, not applied). Tried on the kept form: `char count = NONE` 208 (1049 B: retail's `or edx, -1`
+// block, but the scratch registers rotate from the pitch-range lookup on; on main's form a cast on the bit-field
+// read, signed char, post-decrement or declared inside the gate 189 each, declared at the top 246), `long count =
+// NONE` 122; the first pin sum with the bits as the left operand 174 (1074 B), the second 138 (1077 B); one to three
+// redundant paren pairs in the float products 72 (same code); the first controller block as if/else, or both lookups
+// through one inline accessor, 72 (same code); the pin sums' right operand as an aggregate copy of the bits, the bits
+// in a decibel local, the left operand named as a decibel value, a real or a long 72 (same code each); a decibel local
+// then `+=` 201 (1022 B). A 1500 s permuter run (147 tries): best 50, only with a volatile byte store of the packet's
+// word (not allowed). Leads, NOT kept (a spelling picked among parallel tests): the second pending test as plain
+// `!local_1->flag3` 48 (1059 B; the tail's scratch registers are then retail's, but the test is `mov ebx, 8; test bl,
+// al` and both later `or ..., 8` take BL); the flag6 test as plain `!local_1->flag6` 100 (1053 B, aligned 22: the
+// test is `test al, 0x40`, two instructions short, and everything after it is retail's); the first pending test
+// plain 74, flag6 + first 99, flag6 + second 104, first + second 92, all three 109. Reading: from the flag6 test on
+// retail's scratch registers are one step further round (its flag6 copy takes DL where ours takes CL), and in both pin
+// sums retail gives the gain byte its register before the bits' copy (EDX then EAX; EAX in place then ECX), ours the
+// copy first; a form that evaluates the gain byte first should bring the pins, the field_c store and the tail together.
+// One or two named copy locals of the parameters (the symbol-count lever that moved 0xb93b0's XMM triple) 72 (same code).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5126,8 +4738,8 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 			}
 			else
 			{
-				local_1->flag6 = true;
-				SOUND_DRIVER_STREAMS->streams[g_4e6378[arg_0].channel_index].unknown03_3 = true;
+				flags_set_bit(&local_1->flags, 6, true);
+				function_12a420(arg_0);
 			}
 		}
 	}
@@ -5163,7 +4775,7 @@ void function_1293f0(void)
 		}
 		s_sound_playback *local_7 = SOUND_PLAYBACK_GET(local_3->sound_index);
 		if (TEST_FIELD_BIT(local_7->fading) && local_7->fade_end_time > local_7->fade_start_time && SOUND_SYSTEM->time >= local_7->fade_end_time)
-			*(byte *)&local_7->flags &= ~0x80; /* the fading bit, in the low byte */
+			flags_set_bit(&local_7->flags, 7, false);
 		if (local_3->channel_index == NONE)
 			continue;
 		s_type_12a1b0_spatial local_8;
