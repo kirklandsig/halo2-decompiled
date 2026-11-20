@@ -398,7 +398,7 @@ long function_1469f0(real seconds);
 bool function_172750(long mode, point3f const *point, real radius);
 real function_259a0(dword *seed);
 dword vector3d_compress(vector3f const *vector);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 void function_bb950(long object_index, bool add, long delta);
 long __stdcall function_b7b40(void *creation);
@@ -3267,6 +3267,9 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // velocity 37; retail's order re-measured 40. Body unchanged.
 // Coordinator 11-19: 0x17e670 is now declared (point, source, ...) for 0x23aad0's match; that gives 21 here (first
 // difference at +0x472), so the call's register pair no longer blocks this function.
+// Matched in a full build with stand-in SDK headers (was 23): function_189060 takes (object, value, position,
+// direction, scale, tag), and the detached sound's velocity is stored before its location, as in the other
+// callers of function_1895f0.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3359,7 +3362,7 @@ void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_
 		{
 			short node_index = EFFECT_NODE_INDEX(location->node_index);
 
-			function_189060(effect->object_index, node_index, scale, &location->matrix.position, &location->matrix.forward, part->tag_index);
+			function_189060(effect->object_index, node_index, &location->matrix.position, &location->matrix.forward, scale, part->tag_index);
 		}
 		else
 		{
@@ -3367,8 +3370,8 @@ void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_
 
 			position.position = *point;
 			position.compressed_forward = vector3d_compress(forward);
-			position.location = effect->location;
 			position.velocity = *g_4687a4;
+			position.location = effect->location;
 			function_1895f0(&position, scale, part->tag_index);
 		}
 		break;
