@@ -618,6 +618,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
 // owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
 // moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
+// M3 lane 3 r273 (fast, and a one-object link-time screen that reproduces this listing): every NONE written `-1` 3; the word
+// fields as `(short)NONE` 3; screen: `(short)0xffff`, `0xffff`, `-1` for the word fields, `0xffffffff` for the owner object, the
+// memset size as 0x88, the +0x7c copy as a word copy, with a cast or through a `long` local, the definition index through a
+// local, 3 each (same code). Diagnostic bodies with stores removed: one NONE store before the +0x22 copy and at most one after
+// it gives retail's order; two before it, or three in all, gives ours, so the `or` takes the slot because eight stores use it.
 // M3 lane 11 r126 (fast with 0xd8cb0): the owner copied from the default-owner pointer (`*g_467420`) 49 (121 B); the owner,
 // unknown14 and the leaf/cluster NONEs as two chained assignments in store order 3 (same code); the material global read into
 // a short local ahead of the memset 28 (105 B, the bsp load then hoists above the definition store); the same local read
@@ -2419,6 +2424,20 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
 // the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
 // `info` being 0xdb090's register argument, not the use count.
+// M3 lane 3 r273 (fast; a one-object link-time screen of this file reproduces every state here in about a second): the flip is
+// a link-time convention change, `definition` kept in EBX through the guard and passed in EAX; a compile-only first pass
+// reloads `definition` in every form, so only a link-time screen shows it. `long region_index;` declared first 3 (same code);
+// an inline guard taking only the accumulator and reading info through `accumulator->field_4_2` 226 (857 B: the field read is
+// not merged with the entry-time load); round 114's guard called with both fields 227; on round 114's guard K = 0..20 dead
+// locals stay flipped (screen). Re-measured: round 98's guard 2, the entry read ahead of the ternary with round 114's guard 9.
+// HELD (needs the owner's OK; r273 build/r273/held-d8cb0.patch): `function_d5d20(object_index, false) * body_vitality` in the
+// vitality test, with 0xd5d20's definition made `inline` so the link expands it here with its constant `false`, in place of
+// that function's body written out; 3 -> 3 with the same bytes, 0xd5d20 and 0xd5d80 still match, 0xd82e0 stays 203 (fast and
+// plain); 0xd5d20 is a contributor's function, so its definition is left as it is. Screen lead (about 620 combinations): with round
+// 114's guard (any parameter order or return form) only the notify written through a named handle (or two fresh lookups)
+// with `object` declared ahead of `info` keeps retail's guard allocation (aligned 35: the guard, its hoisted load and the
+// flags address all retail's; left the prologue's load order, the notify's pointer in ECX and the scratch rotation after it);
+// with the notify through `damaged` (retail's code there) every combination flips.
 // M3 lane 11 r126 (fast with 0xd6660): on the entry local read in the guard's block (228, the flip), the variables renamed
 // (object as damage_object; info and entry renamed as diagnostics) 228 each, so symbol names do not decide the flip; the
 // entry read ahead of the 0xd5d20 call 218 (874 B); between that call and the inverse ternary 10 (re-measured: every

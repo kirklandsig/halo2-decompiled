@@ -904,6 +904,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // loop head, and holds the flag pointer in EDI and NONE in EBX from the prologue on. `last` as `final_complete && step == count -
 // 1` 762 (2948 bytes, the frame changes); the out-count test as `!(*out_count < 4)` 675 (same code); `count - 1` named once as
 // a short for `last` and the failure path's test 733 (2976 bytes); `object_index != NULL` 675 and `actor != NULL` 675 (same code).
+// M3 lane 3 r273 (fast): the two obstacle-list clears through a file-local inline clear helper 675 (same code); the two
+// centre-transform loops through a file-local inline helper 1099 (2632 bytes: called out of line), `__forceinline` 846 (2867
+// bytes); both helpers 1099 / 846.
 // m3 lane 6 r204 (fast, plain agrees; 0x270930 and 0x2c4030 matched each time; difflib counts as [exact, stack offsets masked,
 // registers masked too], control 675 [418, 362, 276]; nothing kept, the whole form is build/r204/lead-2c41b0-shape.patch in
 // worktree m3-lane6). Lane 14 r77's shape re-applied 771 [357, 276, 158]. On it, each step read off retail's listing: `short

@@ -783,6 +783,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // reloads in the 412 body) because the prop index holds EBX; retail holds the actor index in EBX for the whole body
 // (the three callees that take it in EBX get it without a load) and the prop index in EDI with a stack home. The
 // argument register follows from that allocation, not from an inner function. Body unchanged.
+// M3 lane 3 r273: retail's listing calls 0x28fa60 itself (34 calls against our 35), so 0x2641c0 is expanded here; its noinline
+// declaration sits in a file another lane held this round, so no trial. A one-object link-time screen of this file with a direct
+// caller does not reproduce the full build (frame 0xa8, the index kept in EDI), so it is no screen for this function.
 // M3 lane 6 r204 (fast with 0x1e34e0, 0x263210, 0x264330, 0x264210, 0x2641c0, 0x26be00, 0x26be30, 0x265680, 0x264b50; control
 // 412, aligned [218, 198, 149] as exact / stack offsets masked / registers masked; body unchanged). Where the stack argument
 // comes from, by cutting the body (diagnostics, each restored): with no loop, with only the walk and the 0x263670 call, or

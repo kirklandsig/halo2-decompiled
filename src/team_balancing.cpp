@@ -991,6 +991,13 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assignment 34. A `/Gd` first-pass compile of each (and of the copy guarded by `if (0 < player_count)`, the fill
 // guarded by `player_count < total` or `0 < extra_count`, and the file without `/arch:SSE`) still loads the extra count
 // into EAX and keeps the player count in EBX, where LTCG then gives it EDX.
+// M3 lane 3 r273 (fast, and a one-object link-time screen of this file that reproduces 34 and round 23's `(short)` fill 7):
+// the fill as `while (i < total) parties[i++] = next_party;` 70; counted down from `total - 1` 72 (193 bytes); screen: the
+// fill over its own index `j` and through `long const *value = &next_party` 34 (same code), counted by extra_count worse; a
+// standin caller with other argument sources leaves the roles as they are (the body decides them). Diagnostics on the fill
+// value: `next_party + 1`, `<< 1`, `(word)`, `(short)` and `party_indices[0]` give retail's roles; `& 0xffff`, `| 1` and a
+// stack parameter do not, so retail's plain dword load of the fill value still needs a natural form evaluated after the
+// count and destination.
 // M3 lane 6 r204 (fast with 0x91e30, MATCH each run, and 0x7e210 871; control 34, register-masked aligned 2). Nothing kept.
 // The count parameters reused: the fill stepping the player count itself, `for (; player_count < total; player_count++)`
 // 34 and as a `while` with `parties[player_count++]` 34 (same code); the total kept in the extra count (`extra_count +=
