@@ -2204,6 +2204,13 @@ struct s_actor_looking_structure_view
 // second product parenthesized (odd counts, 0x296e60 270 -> 282) best 35, with the score's k product too best 22.
 // Natural spellings on the `(i + k)` then `+= j` form (clamp compare reversed, fraction-first clamp product, `0.2f *
 // distance`, constant-first angle, fraction declared before the copy, `best_score < score`) 124 each (same code).
+// M3 lane 5 r213 (fast with 0x296e60 at 270, 0x2980d0 and 0x297660 matched throughout; control 23): the pathfinding lookup
+// through the existing out-of-line getter 0x1fa7f0 (as matched 0x2551f0 calls it) 82; the angle constant as a constant
+// expression (pi / 4, 2 pi / 8, pi * 0.25, (2 pi) / 8) 23 each (same code, folded first); the in-place helper spelled as
+// matched 0x1055b0's (`(1 - cos) * dot3f(vector, axis)`, rows axis-first) 144 (925 B; 0x296e60 282); as matched
+// 0x177d10's (axis k named, cross terms j, k, i, rows axis-first) 99 (0x296e60 362). Dead initialised longs at the top,
+// K = 8..40: states 23/33/39/42/48/74 only. Form x K grid (K = 0..7): the score through dot3f in either argument order
+// 35/32/48/35/45/35/35/35; the 0x1055b0 helper 144 at every K, with the dot3f score 142-147; the 0x177d10 helper 99-108.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

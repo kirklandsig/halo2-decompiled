@@ -1072,6 +1072,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
 // +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
 // 238 (inlined at compile time, same code), with the material at function scope 230.
+// M3 lane 5 r213 (fast with the file's eight other functions, matched throughout; control 238, aligned 138): the origin
+// copied member-wise z, y, x through a source pointer (retail's float copies, z first) 311 (aligned 127, frame still
+// 0x40); the hit copied member-wise 323 (aligned 166); both 361 (1260 B); the distance sum written radius first 238 (same
+// code); the valid flag and the two indices declared ahead of the fraction test 328 (1243 B, aligned 222); the hit copy
+// after the distance 305 (1245 B, aligned 137).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

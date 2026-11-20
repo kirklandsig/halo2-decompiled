@@ -642,6 +642,16 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the fetch both after that test 926 [673]. Retail's layout puts the join (distance test, definition bit, classification
 // start up to its first `jmp`) right after the type-0 other-actor branch, with the type-0 `else if` branch and the type
 // 1/7/11 arms after it jumping back; every form here keeps source order.
+// M3 lane 5 r212 (fast with 0x2c0d00/0x2c3550/0x29c860, plus 0x29a190/0x29cbb0/0x2c41b0 for the signature trials, all stayed
+// as they were; fast control 926 [masked 171, exact 465]): the previous direction as the ninth parameter (definition, three
+// declarations, three calls) 928f (3707 B); both volatiles dropped 975f (3671 B, frame 0x2cb0); that with the ninth-parameter
+// order 983f, with `else straight = true;` 955f, with both 963f; the marker query word read once per object into a named local
+// for the three queries 932f (3702 B). Diagnostics on the volatile-free body (reverted): no second object lookup for the
+// location 982f; the settings block removed 1064f (actor_index then EBP, unit_index EDI at entry); the loop's four settings
+// reads removed 1024f, only unknown18 970f, only the three marker words 1021f: the loop's settings reads are what put settings
+// in EBX at entry here, where retail reads it into ECX in the settings block only and keeps actor_index EBX, unit_index EDI,
+// self_unit EBP. The object table global made address-taken (file-scope pointer, diagnostic) 966f main body, 926f volatile-free
+// (3734 B): its entry hoist stays, so that is not what keeps retail's per-block table loads. Body unchanged.
 // M3 lane 13 r121 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3030, 0x2c2060, 0x2c3550,
 // 0x29c860; this set's control is 920 = plain; [difflib-aligned] in brackets, control [680]): retail's call in 0x2c41b0
 // computes the previous-direction argument right after it pushes the ignore and unit indices and before the direction,

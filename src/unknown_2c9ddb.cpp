@@ -364,6 +364,17 @@ extern long g_55c154;
 // `saved` and the storage address follow it there and `this` is left in ESI or EDI with a spill round each copy, which
 // also costs the biased frame; retail hoists neither constant because `this` holds EBX from the first instruction, as
 // this one-call body does.
+// M3 lane 5 r212 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ba9f4, all MATCH; trials only, restored): base = two load arms +
+// 0x238c69 as (controller, mode, type, name, maximum_count) at its definition, both declarations and both calls + a count named
+// in the default arm (round 189's recipe) 183 (575 B: `this` ESI and spilled, EBX zero, then saved, then the hoisted variant
+// address); with `flag_c = true;` after the selected re-read 175 (582 B); the selected arm's copy as memcpy 183 (same code);
+// build_default declared (variant, type) everywhere (retail loads the type into EAX before pushing the address) 183 (same
+// code); the selected arm's index store after the copy and flag clear 179 (580 B). Diagnostics (wrong values, reverted): the
+// selected arm's file type from the local copy instead of the global 62 (584 B, aligned 12; `this` EBX and retail's layout
+// but for the default arm's EAX copy of the address); no build_default call 181; no flag clear 189; the request name from the
+// local copy 176. The second use of the variant's address in the selected arm (copy destination plus file-type argument)
+// makes the constant a register candidate that outranks `this`; retail keeps every use an immediate (the same hoist is open
+// in 0x22d503's family). Body unchanged.
 // M3 lane 7 r189 (fast with 0x13fac0/0x212bc0/0x238c69/0x238c21/0x2ca244/0x2ba9f4, all MATCH in every trial; control 61,
 // nothing kept). What fixes each remaining piece is now known but for one register fight. (1) Retail's argument order
 // for 0x238c69, controller first (definition, both declarations, three calls): alone 76 (574 B, re-measured), and on two load

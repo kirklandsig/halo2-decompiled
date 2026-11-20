@@ -364,6 +364,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // counts, the cursor bound before normalization, and checked-count reuse with a short
 // ordinal/remaining count: 583/285/660/583/603/637/284/604. NOT kept: the entry load stays late and
 // the cursor forms disturb the loop and frame slots.
+// M3 lane 5 r214 (fast; control 93; the reduced image warns that callee 0x439d0 builds differently): the short
+// count-loop index re-measured 102 (retail's prologue and `test bx, bx; movzx ebx, bx` loop; the centre sums flip to the
+// lower field first, the count/counter slots stay swapped, the transform rows keep our operand order); on it dead longs
+// K = 1..7 at the top 177/178/178/178/178/222/225 (one centre-sum row and the fourth transform copy change order, the
+// first three copies do not), one dead long inside the block or after the count loop 177; the transform helper's point
+// read z, y, x 114; the vertex counter as a long 585 (2697 bytes). Still BLOCKED-BY 0x17cfa0 for the call setup.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
