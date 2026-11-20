@@ -2526,6 +2526,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 13's `return 1` 613 (2416 B).
 // Further forms on the 433 base:
 //
+// MiniMax B (11-20): no new form, no lower score (480 measured, the line below still reads 433): the
+// dispatch-default branch span, the return placement and the timer and request scheduling still differ. The
+// selector orders tie at 433, the direct acknowledged return gives 477, and the case 2 turn vector as an
+// aggregate copy with case 4's facing read from the state at each use measures 624 (2400 bytes, masked 84 in an
+// earlier round). No form found this round.
+// score 433 (was 433):
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.

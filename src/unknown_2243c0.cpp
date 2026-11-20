@@ -217,6 +217,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax B (11-20): no new form, no lower score (117): the fallback tag index is still zero-extended through
+// EAX where retail masks the 32-bit value in place (`and edx, 0xffff`); the in-place mask moves the tag table
+// from EDI into ECX and hoists its load above the frame (152), while the `(word)` cast keeps the table in EDI
+// but gives `movzx eax, dx` (117), and masking the index inside the subscript reproduces retail's `and` only
+// with that same table move. The stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused
+// element loads still differ. No form found this round.
 // score 117 (was 117): the fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
 // and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax C (11-15): no new form kept, no lower score (117, was 117): the fallback path still masks the tag index with

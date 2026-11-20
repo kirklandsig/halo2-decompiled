@@ -482,6 +482,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // xmm4 = k and the 1.0f in xmm6) and the margin still loads the radius into a fresh register where retail multiplies the inverse
 // in place.
 // score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax B (11-20): no new form, no lower score (218): retail's prologue saves EBX/EBP/ESI and loads the actor
+// into EAX (the pathfinding data is copied to EBX) where this build keeps the pathfinding data in EAX and
+// pushes only ESI; the case-2 `state->pathfinding` -> `pathfinding` spelling was measured at 265 and 294 in an
+// earlier round, so the entry allocation, case 5's colours and the projection sum's order are unchanged. The
+// frame (0x40) and case 2 still agree. No form found this round.
+// score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // M3 lane 5 r209 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70, register-masked 24). Diagnostics:
 // 8-32 dead initialised locals at the top 218-220 (the entry never moves); lane 11 r113's recipe (actor first in the
