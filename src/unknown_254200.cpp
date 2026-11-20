@@ -643,6 +643,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
 // Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
 // in our order (aligned). Restored.
+// M3 lane 12 r155 (fast with 0x254490 4 and 0x254200 matched; control 2; a compile-only build leaves the graphics
+// calls out of line, so it cannot screen this pair): the first quad's two texture coordinates as `real const` upper and
+// lower locals declared after the quad's start call 398 (2264 B), declared before 0x1cf50 382 (2258 B); the last quad's size as an
+// if/else 2 (same code); the alpha converted straight to a byte 2 (same code); the point read as `arg_0->x`/`arg_0->y`
+// at each use without the coordinate pointers 18 (the y fold returns). All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

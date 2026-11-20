@@ -188,9 +188,8 @@ struct s_path_result_view
 	s_path_location_view location;
 };
 
-bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
-	s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
-	s_type_c3b527 const *parent_point, long parent_node_index,
+bool function_26f3f0(long actor_index, s_type_c3b527 const *entry, s_type_f17a25 *state,
+	s_pathfinding_data *pathfinding, long surface_index, s_type_c3b527 const *parent_point, long parent_node_index,
 	long *parent_node_index_out, s_type_c3b527 *out, long *out_node_index);
 void __stdcall function_2c2060(s_type_f17a25 *state, short count, s_path_step_view const *steps,
 	short *out_count, s_path_step_view *out, bool *complete);
@@ -976,9 +975,8 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				steps[node->depth - 1].type = node->target.type;
 				steps[node->depth - 1].link_index = (short)node->target.index;
 				s_path_node_key_view *parent = &lookup->nodes[node->parent];
-				function_26f3f0((s_pathfinding_data *)state->pathfinding,
-					node->target.index, &node->entry_point, actor_index, state,
-					&parent->entry_point, parent->node_index, &parent->node_index,
+				function_26f3f0(actor_index, &node->entry_point, state, (s_pathfinding_data *)state->pathfinding,
+					node->target.index, &parent->entry_point, parent->node_index, &parent->node_index,
 					&steps[node->depth - 1].point, &steps[node->depth - 1].node_index);
 			}
 			else if (node->target.type == 2)

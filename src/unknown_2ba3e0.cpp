@@ -912,6 +912,12 @@ real g_55e618;
 // AC597: Typed placement output; surface construction at call, construction before position, and copy
 // before position; typed output with call construction or early copy; initialization before position
 // with call or early construction: 102/102/242/242/102/242/102/242.
+// M3 lane 12 r155 (fast; control 102): the dot through the existing basis_dot_xzy (i, then k, then j, retail's order)
+// on the velocity copy 103 (same length); on a `vector3f const *velocity = &particle->velocity` pointer (tangent read
+// through it) 194 (1541 B); with the position through real_point3d_set 188 (1536 B); on the copy with the setter 245 (1570 B);
+// the perpendicular through the existing vector3f_scale with the dot as its argument (no named dot): basis_dot_xzy on the
+// pointer 108 (1538 B, frame 0x118: the perpendicular loses its home), with the setter 188 (dot3f the same 188), on the
+// copy 103. All restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
