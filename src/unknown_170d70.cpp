@@ -306,6 +306,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
 // NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
 // deadline and group homes exchanged.
+// Complete forward/up/both snapshots for correction on the inferred walk
+// 232/234/408, on the explicit walk 204/190/399. Both snapshots used during
+// validation and correction 433/434. NOT kept: all shorten away from retail
+// and regress. The two-vector forms also change the matched caller. The
+// inferred deadline and signed group ordinal still exchange stack slots.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -885,6 +890,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // both count field bindings 129, reserved volume name 129, named projection result 129.
 // NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
 // The other forms leave the opening register exchange.
+// With a shared capacity exit, skip linked entries, refused projections,
+// or both before advancing at the test 125 each. Direct count increment,
+// postincrement as reservation, and positive capacity arm 125 each. Signed
+// successor with either increment form 122. NOT kept: the best gains seven
+// at 431 bytes. Cluster creation still precedes the volume loop.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1172,6 +1182,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Axis reference, matrix output reference, immutable original forward, symmetric matrix
 // with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.
 // NOT kept: Two first-axis squares still spill across the half-angle tangent and unity starts in XMM3.
+// One-argument vertical field arctangent 351. Explicit denominators at
+// horizontal/vertical/both scaled angles 373/373/368. With the one-argument
+// vertical field these score 377/377/372. Naming that vertical ratio on
+// the combined form gives 339. NOT kept: seven points, with unity in XMM2
+// at entry against XMM5 and FLD1 replacing the vertical unity memory load.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

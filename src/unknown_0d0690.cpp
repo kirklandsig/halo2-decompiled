@@ -1603,6 +1603,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // advancing cursor, or an exclusive end. Result before publication 591/571/601/577;
 // constant result on each exit 611/587/609/572. NOT kept: all grow past retail;
 // the 0x28 frame on the direct-index forms still leaves different entry roles.
+// Signed indexed do/while latches with tested outcome, literal branch returns,
+// early failure or late success assignment: do 569/580/583/580, while
+// 529/566/568/573. NOT kept: the 569 form recovers frame and length but
+// regresses. Late success changes the matched upstream caller.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

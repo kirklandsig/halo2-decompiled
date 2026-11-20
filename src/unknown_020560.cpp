@@ -1216,6 +1216,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 590/591/513, or an end bound 1234/1234/1187. A direct winning pointer with
 // a count-bounded projection or distance cursor 605/605. NOT kept: all regress;
 // the offset spill and independent induction addresses still differ.
+// Nearest/opposite/both pre-tested while loops 418 each. Positive-domain do loops
+// in the nearest/opposite/both scans 971/1092/1612. With the other scan pre-tested
+// while, 971/1092. NOT kept: the post-test forms suppress four-wide expansion,
+// shorten the body and leave the vector spill and extra induction address unresolved.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
