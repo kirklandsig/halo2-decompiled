@@ -308,6 +308,11 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax D (11-20, round 132): no new form, no lower score (390): the body is unchanged. With an ordinary result the
+// four name and team copy tails still merge into one block (691) and the volatile result keeps them apart but frames
+// 0x208 against retail's 0x204, so retail's ranking (the result in ESI, the token length in EDI, the event in EBX, the
+// remaining count in EBP, with the token re-read from its stack slot for every compare) and its token preload are not
+// reproduced here.
 // score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // MiniMax H (11-19, round 95): no new form, no lower score (390): retail's register ranking is the result in ESI, the token
 // length in EDI, the event in EBX and the remaining count in EBP, with the token re-read from its stack slot for every

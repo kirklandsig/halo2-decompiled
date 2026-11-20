@@ -1089,6 +1089,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax D (11-20, round 132): no new form, no lower score (234): the body is unchanged. The first cross still
+// multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the
+// same code for all sixty-four operand spellings and is used by nine matched functions in this file, so that product
+// order can only be reached by writing the cross out in place, which the earlier rounds measured at 529; the damping
+// bit's first extraction still uses ECX where retail uses EDX, and the general arm's k row still ends in XMM2 where
+// retail's ends in XMM0.
 // MiniMax B (11-19): no new form, no lower score (234): the permuter over this body tried three rewrites in 363 s and left
 // the baseline at 234. The shared out.k store does reproduce retail's tail - with the disabled arm's last row left in a
 // register and the three arms ending in one shared store of out.k, the disabled arm jumps to retail's store and the
