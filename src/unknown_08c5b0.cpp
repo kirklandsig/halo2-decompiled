@@ -267,6 +267,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // change test as an inline setter returning `changed`, with the volatile read 4 (same code), with a plain read 32 (95 B).
 // Re-measured: the index read first with the volatile read 5 (request EAX, kind AX: the request dies before the kind
 // loads), with a plain read 32.
+// M3 lane 7 r194 (fast with 0x8c5b0/0x8c660, both MATCH each time), plain reads: `register short kind` 32 (95 B); the
+// availability part as its own inline helper (seeded, `if (available) setting = block;`) called as `kind == 1 ? helper() : 1`
+// 30 (94 B); that helper with early returns under `if (kind == 1) ... else setting = 1;` 32 (95 B); seeded `setting = 1` with
+// `switch (kind) { case 1: if (available) setting = block; break; }` 17 (95 B, `movsx; dec`); the same switch on the field
+// itself with the index read after it 26 (95 B).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

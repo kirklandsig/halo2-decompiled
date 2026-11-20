@@ -3037,6 +3037,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // M3 lane 14 r116: 330 -> 354 with no change here: 0x22cf0 now takes the position pointer in EDX as retail's does, so
 // both calls gain retail's `mov edx, eax` (the only change in this function's code) and the body is 4 bytes longer.
+// M3 lane 7 r191 (fast with 0x235a0/0x23600/0x23540/0x23ca0/0x22850/0x3e380/0x4b5d0; control 354): this build already
+// ends in `ret 0x1c` with retail's prologue (all seven parameters on the stack). Each 0x235a0 site sits under the same
+// number of enclosing tests and early exits in both builds, so the second copy staying inlined here looks like the
+// inliner's calibration (ours one level deeper, as for 0x25d740 and 0x5b080), not a source form. The allocation through
+// render_memory.h's render_memory_allocate with a NONE early exit, the sign-tested output pointer and the handle stored
+// after it 436 (1658 B: the allocation block is then retail's instruction for instruction, but the length gap grows by
+// 63 bytes); the level entry through a pointer local 354 (same code: the load still folds); the sample source computed
+// ahead of the `continue` test 369 (1603 B); `long last_level = layout->level_count - 1` used for the clamp 373 (ESI/EDI
+// swap at the entry); that with the coefficient base read after the clamp 374.
 // score 354 (was 354): the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
 // handle's NONE test and takes the output pointer through the masked handle, as retail does; the loop's pair
 // pointer, the level's table entry and the second 0x235a0 copy still differ.

@@ -2003,6 +2003,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the player bit declared after the clamp 118 (same code). A /Gd first-pass screen of all 288 order x size x kept-type x
 // bit-position forms holds the player in EDI in every size-first order, but each one that keeps the EAX zero reuses it.
 // On SWKC the result typed dword or int 118 each (same code), dword with `!= 0` 139: the zero is reused whatever its type.
+// M3 lane 7 r192 (fast with 0x56380/0x564c0/0x53b00/0x56000; control 60; the caller 0x56380's score in brackets, [0] =
+// matched): SWKC (size, written, kept, capacity) re-measured 118 [0] (456 B: retail's head through the has-player test, the
+// EAX zero live, but reused for the clamp's `cmp edi, eax` and the written store, then kept takes EAX); on SWKC the flag
+// typed `byte` with `11 + 2 * (include_mask != 0)` 139 [0] (460 B); the clamp as one nested ternary 118 [0] (same code);
+// the written-first orders WSKC 144 (443 B) [13], WSCK 153 (434 B) [13], WKSC 144 (443 B) [13] (the player goes to the
+// stack in each).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

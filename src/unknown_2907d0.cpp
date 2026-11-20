@@ -211,6 +211,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // node) and then `if (node)` transform else copy 134 (478 B), the same with `if (arg_0 != NONE)` as the second test 19
 // (same code). In both builds the point's x outranks y and z (x ESI, z spilled), so the transform sits between x and
 // y in ours and below y in retail.
+// M3 lane 7 r194 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the forward copied into the
+// vector local at its declaration with the else arm copying only the position 139 (451 B); the record filled through a
+// pointer local 19 (same code); no address local, the position and forward pointers named once ahead of the branch for
+// both arms 147 (451 B); the node bound to a const reference `local_3[arg_1]` for both calls 19 (same code); the node
+// index widened into a named long for the test and the index 36.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

@@ -678,6 +678,10 @@ struct s_visibility_object_header
 // 4 (same code); the centre and radius chosen by two ternaries 36; the object pointer declared ahead of the three flags
 // 8 (only the init stores move); the plane call and the packer in a forceinline helper owning the two outputs 291 (671
 // bytes). Retail's frame from the top: object +0x10, first +0xc, radius +8, second +4, behind +3, contained +2.
+// M3 lane 7 r191 (fast with 0x132fd0/0x132b10/0x132e60/0x133390, all MATCH each time; control 4): `inline` on 0x132b10's
+// definition 4; `inline` on 0x132fd0's definition 4 (both stay out of line, same code); behind read for the packer through
+// a `bool const &` bound before the plane call 4; the pair in one declarator `bool in_front, behind;` 4; `dword flags;`
+// declared ahead of the pair and assigned from the packer 4 (all the same code, homes still ours).
 // M3 lane 11 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): `in_front = in_front;` or
 // `behind = behind;` right after the plane call 4/4 (same code: the self-copy is dropped before the homes are picked);
 // the pair in one declaration, in_front first or behind first, 4/4; the packer's result declared ahead of the pair and

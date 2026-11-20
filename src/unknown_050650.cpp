@@ -969,6 +969,11 @@ struct s_collision_result_buffer_1697c0
 // between normalization and fallback 381; default direction setter 365; pitch fallback setter 331;
 // both initial vector setters 345; best-hit direction setter 350; both best-direction setters 356.
 // NOT kept: the setter forms at the best-direction producers also change the matched sampler caller.
+// M3 lane 7 r194 (fast with 0x2967b0, 0x297660 (MATCH) and 0x297d30 (23); control 270; a one-file link with the files of
+// 0x259d0 and 0x24590 reproduces 1431 B, aligned 198): `if (!test_collision) continue;` 270 (same code); the clear tail
+// copying the candidate out and normalizing the output in place 288 (1426 B); the best tail that way 348 (1400 B, 0x297660
+// 4); both 376 (1388 B, 0x297660 40). One-file link diagnostics: the random state read as a global aggregate member
+// (aligned 368, 1426 B); the axis globals read that way (aligned 198, same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

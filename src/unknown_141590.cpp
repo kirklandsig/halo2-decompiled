@@ -118,11 +118,12 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Stacked status lines merged in r192.
 // MiniMax B (11-19): no new form, no lower score (201): the permuter over this body tried three rewrites in 359 s and
 // left the baseline at 195. Retail still keeps five 4-byte cells below the quaternion where ours keeps four, and computes
 // s = 2w*w - 1 above the identity copy while w2 comes after it; writing s as a helper parameter regresses to 302 with
 // frame 0x18, so the body stands.
-// score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // MiniMax A (11-19): no new form, no lower score (201): retail's frame is 0x24 against our 0x20 because retail spills the
 // quadratic term twice (a dead store at [esp+0x18] and a live one at [esp+0x20]) where our third row reuses the cell of
 // the cross term; the dot's associations, the cross terms and the term orders already agree with retail's listing. Tried:
@@ -130,7 +131,7 @@ static inline void quaternion_transform_vector(
 // rows' terms reordered (244), the doubled scalar and the quadratic term passed to the helper (305, frame 0x14), the scale
 // computed before the cross product (240) and the quadratic term associated differently (205) - all worse than the body as
 // it stands, so the body is unchanged.
-// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// Earlier status line (201, was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
 // quaternion/cross spill overlap remain.
 // M3 lane 2 r107 (fast = plain 201): retail's 2.0 for the forward dot and w2 is a fresh load after the dot (its first 2.0,
@@ -501,6 +502,11 @@ static inline void quaternion_transform_vector(
 // 287 (1327 B); the clamp testing `cosine` instead of `dot` 201 (same code); the dot assigned to `cosine` directly (no
 // separate dot local) 207 (1321 B). Retail's 2.0 goes to XMM6 and the cosine half to XMM5 (ours XMM5 and XMM4); the repair
 // crosses' product sides differ as before. Body unchanged.
+// M3 lane 7 r192 (fast with 0x11d000, 0x143120, 0x30bf0 and 0x141710, all matched each time; control 201): the helper's m
+// ahead of w2 247 (1317 B, retail's length: m then takes its own register ahead of the copy as retail's s, but w2 is still
+// computed ahead of the copy from the shared 2.0 and stored twice, where retail computes it after the copy with a fresh
+// 2.0); m first, then the dot and the cross terms, w2 last 245 (1312 B); `real w = q->w;` read once for w2 and m 201 (same
+// code), with m first 247 (1317 B); m first with the helper `__forceinline` 247.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

@@ -1342,6 +1342,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // * 12, ...)` 40; the walked destination filled by three dword stores from a source dword pointer 225 (684 B). Reading of
 // the indexed listing: the state takes EBX for the whole function (reloaded after the loop) and `current` ESI at the top,
 // so count, state and `current` compete for the two callee-saved registers that survive the close call and the clear.
+// M3 lane 7 r193 (fast with 0x6fcc0, 0x6f940, 0x6fa60 and the callees 0x5a520, 0x59e50, 0x5a220, whose files the reduced
+// image otherwise leaves out; control 9): with the callees in the image the indexed copy re-measures 195, the full build's
+// result, so this image is the faithful screen (a caller-only fast check is not). On the indexed copy: the arm reading the
+// session through a second named pointer 195; the session id zeroed by `= {0}` 197; the player array named in the arm 196;
+// the copy as a `continue` arm 195; a list pointer formed before the branch and passed to the call 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
