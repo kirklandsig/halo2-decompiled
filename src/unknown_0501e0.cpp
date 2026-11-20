@@ -671,6 +671,17 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // coefficient values 465/448, direct paired rows 367/335, separate completed
 // view results 477/454. NOT kept: all enlarge the frame and score higher.
 // The second displacement spill and the live right-axis coefficient still differ.
+// M3 lane 8 r201 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221 at 1112 B,
+// difflib-aligned 249, register-masked 154). Lane 13 r96's macro lead rebuilt on this body (separate view vectors, the
+// rows written straight into them, the depth limits in the condition) 252 at retail's 1136 B and 0x14 frame, aligned 174,
+// masked 62: the positional score rises while two thirds of the masked differences go. Reading of what it leaves: retail
+// loads the scale after the last origin subtraction into XMM6 (the origin z's register) and gives XMM7 to right.i, which
+// it loads once and carries across the second scale test, so the second view's scaled x and z live in [esp+4] and [esp]
+// and its products take those from memory; ours gives XMM7 to the scale, which lets the scale test rise to the top of
+// the block, carries no coefficient across the test and keeps the second view's copy in registers. On the lead: the
+// depth limits as named locals 260 (masked 88); the second offsets computed first 249 (masked 65); the scale read
+// once into a local ahead of both views 256 (masked 93); the scale step written out per component in the macro 252
+// (same code). Lead saved as build/r201/lead-0x501e0.patch; nothing kept (every form is above 221).
 // Caller scale test at each view, its own scale sample, one shared test, or one shared sampled scale and
 // test 278/283/282/308. Selecting the complete scaled vector in the two arms on those forms
 // 311/319/310/306. NOT kept: all raise the score. The 0x20 frame, second displacement and coefficient

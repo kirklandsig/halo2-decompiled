@@ -584,8 +584,10 @@ real distance_sq3f(
 	return sum;
 }
 
+/* `inline` on the definition: none of retail's 25 calls of 0x24590 keeps a scratch register live
+   across it, which is what a caller sees for an inline function called out of line (0xe3380 matches) */
 // @retail 0x24590
-real magnitude3d(
+inline real magnitude3d(
 	vector3f const *v)
 {
 	return (real)sqrt(v->i*v->i + v->j*v->j + v->k*v->k);
