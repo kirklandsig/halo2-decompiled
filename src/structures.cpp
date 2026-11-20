@@ -499,6 +499,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	}
 	return false;
 }
+// MiniMax B (11-20): no new form, no lower score (172): the prologue still differs in one more place - retail interleaves
+// the point's three stores with its pushes (the third component at [esp+0x34] after the first push and the second at
+// [esp+0x38] after three), while this build stores the third component before any push and the second after two, so the
+// BSP in EBX against EBP and the push order still decide the frame's slot heights: BLOCKED-BY 0x11e800.
 // MiniMax I (11-17): no lower score (172): clearing the definition once at its declaration and dropping the else
 // branch's clear measures 208 (726 bytes), so the definition's two clears are not what holds the prologue apart.
 // MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
@@ -830,6 +834,8 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
 // (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
 // does). Nothing kept: no form gains on the control, and the lead needs an exact match.
+// score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
+// the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

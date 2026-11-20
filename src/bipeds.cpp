@@ -3471,6 +3471,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax B (11-20): no new form, no lower score (324): retail's prologue still reads the +0x34b state byte with movsx
+// where this build reads it with movzx (the signed local measures 323 again, under the keep bar), and the frame is still
+// 0x48 against retail's 0x4c: BLOCKED-BY 0xe16b0.
 // MiniMax B (11-19): no new form tried this round, no lower score (324): the frame is still 0x48 against retail's 0x4c
 // (retail's dead flag byte before the 0xe16b0 call needs a local whose address is taken, a form this lane may not
 // use), the +0x34b state byte is still zero-extended where retail sign extends it (the signed view measures 323,
@@ -3817,6 +3820,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // 522/502, with the same scores for signed and unsigned state. NOT kept: the
 // one-first dispatch reaches 0x4c but takes the index in EAX and changes the caller.
 // The state compares stay byte-wide and the pre-call flag slot is still missing.
+// score 324 (was 324): frame 0x48 against retail's 0x4c, so every home is four bytes out; the +0x34b state byte
+// zero-extended where retail sign-extends it, and the 0xe16b0 call's argument in a register where retail passes it
+// on the stack.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
