@@ -79,7 +79,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 367 (was 367; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// score 367 (was 329 with MiniMax C's hand-inverted loop, reverted at review; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
 // M3 lane 4 r230 (fast with 0x29e730/0x29de20, both MATCH; control 367, difflib-aligned 323, register/offset-masked 135).
 // Retail's output loop indexes the output by the count each pass (`imul eax, eax, 0x1c`), walks a separate cursor (SI)
 // and keeps the group's record in EDI. The output written to `&arg_4->field_30[local_37]` with a `short` cursor copied
@@ -91,11 +91,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // (retail a word), the found flag's byte (+0x12) and the result byte (+0x13 against retail's +0xb), and the table/point
 // registers at the 0x29de20 call. Body unchanged.
 // Earlier 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
-// score 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
+// Earlier 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
 // MiniMax C (11-20): the point scan written as a guarded do-while (the same bound test before the loop and after its
 // body) gives retail's loop shape and retail's 1596-byte length: 367 -> 329; what is left is the group pointer and the
 // group table held in the two callee-saved registers the other way round and the selected-index homes displaced.
-// score 329 (was 367): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// Earlier 329 (was 367): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
 // frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
 // and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
 // separate byte rather than the dead argument slot.
@@ -738,6 +738,30 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // declared ahead of the two NONE defaults 367 (same code); the endpoint search tested on `local_20 == NONE` with no
 // break 374; the output step as if/else increments 379 (1576 B); the output count as `long` 369 (1581 B); the group loop
 // index as `long` 369.
+// M3 lane 12 r161 (fast with 0x29e730/0x29de20, both MATCH; plain-confirmed 196): 329 -> 196 at 1596 bytes (not kept at
+// review, see the review lines below), the
+// natural parts of round 64's recipe on today's body: the endpoint `short`, the start copy (local_29) `short`, the pass
+// scan as a plain while loop with the record index computed ahead of it and again after each step (retail recomputes it
+// at the latch, `add eax, ebp`), the output loop walking a cursor copied from the selected point with the entries
+// indexed by the count (retail's imul per pass and its compare with the unchanged start), `else local_4 = false;` on the
+// no-selection exit (retail stores the false byte there again), and the three lengths through the existing distance3d
+// (0x3ea30) in place of the file's hand-written copy of it. Measured on the way: the recipe itself 155; without its
+// per-site distance helpers 188; also without the else 216 (1577 bytes); also without the one-use record and output
+// pointers 221 (1572 bytes); the found flag in main's place 223; with the else back 200 at 1596 bytes; on it the record
+// index computed at the top of the loop body 428, stepped by `local_33 += local_26` 444 (1614 bytes), a `long` endpoint
+// 213, a `char` start copy 427, distance3d with its arguments the other way 227, `local_28 + local_20` 196 and
+// `local_26 + local_19` 196 (same code), the view pointer for the zone table 196 (same code). Match-only, not kept: the
+// found flag declared first 194; the group record pointer named ahead of the output loop 187; both 185. Alone on main's
+// body: the cursor output 326 (1602 bytes), with the `short` endpoint 325 (the NONE defaults take retail's homes).
+// After the kept form: the output step selected once ahead of the loop 227 (1609 bytes); the record index `long` 247
+// (1605 bytes); the cursor's step tested against the cursor instead of the unchanged start 215.
+// Review (machine 3, 11-20), not kept: the 196 rests on two match-only forms, the record index kept in step with the
+// loop counter by hand (computed ahead of the loop and again after each step: a comma loop written as two statements;
+// 428 without it) and the redundant `else local_4 = false;` (local_4 is already false there; 223 without it). The clean
+// parts on the do-while body all raise the count: distance3d alone 429, with both `short` types 483, with the plain
+// while as well 418. MiniMax C's guarded do-while (367 -> 329, the bound test before the loop and again after its body)
+// is a hand-inverted loop and was kept by mistake at review: the scan is back to the plain while, 367 (0x29e730 and
+// 0x29de20 still MATCH); on that body distance3d raises it to 376. Lead for a match only: the 196 form.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
@@ -801,33 +825,30 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                             point3f *local_30 = &local_22->field_4[local_19];
                             real local_31 = function_29e3b1(&marker_position, local_30);
                             bool local_32 = false;
-                            if (local_28 >= 0 && local_28 < local_22->field_0)
+                            while (local_28 >= 0 && local_28 < local_22->field_0)
                             {
-                                do
+                                if (local_32 && ((local_27 == 0 && local_28 > local_18) || (local_27 == 1 && local_28 < local_17))) break;
+                                if (visited_points[local_28 >> 5] & (1 << (local_28 & 31)))
                                 {
-                                    if (local_32 && ((local_27 == 0 && local_28 > local_18) || (local_27 == 1 && local_28 < local_17))) break;
-                                    if (visited_points[local_28 >> 5] & (1 << (local_28 & 31)))
+                                    local_30 = &local_22->field_4[local_28];
+                                    local_29 = local_28;
+                                    local_31 = function_29e3b1(&marker_position, local_30);
+                                }
+                                short local_33 = local_20 + local_28;
+                                if (local_33 >= 0 && local_33 < arg_3->field_b4 && arg_3->field_0[local_33].field_4 != 2)
+                                {
+                                    point3f *local_34 = &local_22->field_4[local_28];
+                                    real local_35 = function_29e3b1(local_34, arg_0) + function_29e3b1(local_30, local_34) + local_31;
+                                    if (best_distance > local_35 && function_29de20(local_33, arg_3, arg_0, arg_1) == 1)
                                     {
-                                        local_30 = &local_22->field_4[local_28];
-                                        local_29 = local_28;
-                                        local_31 = function_29e3b1(&marker_position, local_30);
+                                        best_distance = local_35;
+                                        local_0 = local_15;
+                                        local_1 = local_28;
+                                        local_2 = local_29;
+                                        local_32 = true;
                                     }
-                                    short local_33 = local_20 + local_28;
-                                    if (local_33 >= 0 && local_33 < arg_3->field_b4 && arg_3->field_0[local_33].field_4 != 2)
-                                    {
-                                        point3f *local_34 = &local_22->field_4[local_28];
-                                        real local_35 = function_29e3b1(local_34, arg_0) + function_29e3b1(local_30, local_34) + local_31;
-                                        if (best_distance > local_35 && function_29de20(local_33, arg_3, arg_0, arg_1) == 1)
-                                        {
-                                            best_distance = local_35;
-                                            local_0 = local_15;
-                                            local_1 = local_28;
-                                            local_2 = local_29;
-                                            local_32 = true;
-                                        }
-                                    }
-                                    local_28 += local_26;
-                                } while (local_28 >= 0 && local_28 < local_22->field_0);
+                                }
+                                local_28 += local_26;
                             }
                             local_26 = -local_26;
                             local_28 = local_19 + local_26;
