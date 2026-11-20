@@ -1254,6 +1254,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // with the lookup reading `kept->unit_index` 17/17; the unit pointer bound to a `*const &` for the slot and weapon reads 17;
 // the slot test through a `short const &` 17 (all the same code); a redundant `result = false;` at the top of the tested
 // block 33 (140 B).
+// Score 5 (was 17) with stand-in SDK headers: the unit index passed to the object lookup is read again through
+// `tail_player_get(player_index)`. That read is not folded into the test's, so the index is a register value of its
+// own and the object table gets esi as in retail. Left: the first player address is formed as
+// `mov edx, [edx + 0x44] ... add edx, eax` where retail has `add eax, [edx + 0x44]; mov edx, eax`.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1262,7 +1266,7 @@ bool function_151b80(long player_index, bool primary)
 	if (player->unit_index != NONE)
 	{
 		long hand = !primary;
-		s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(g_4e0300, player->unit_index);
+		s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(g_4e0300, tail_player_get(player_index)->unit_index);
 		short slot = unit->held_slots[hand];
 		if (slot != NONE && unit->weapons[slot] != NONE)
 		{
