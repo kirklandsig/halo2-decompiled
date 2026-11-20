@@ -627,6 +627,8 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // `for` 2 (same code); the entries base named at the function top for the copy and `&entries[n]` 28 (cache_index then
 // arrives in EAX, first still in mode's home); the material as one ternary 76; `chosen` as a ternary 52; a `short`
 // counter 152. The permuter was skipped (the round's baseline full check took 17 minutes).
+// M3 lane 3 r279 (fast; control 2): first typed dword 2; the index as `n + first` 2; the selection a long with NONE 2; the mode
+// test as `mode == 0 ?` 2 (the four the same code); material declared with its NONE ahead of the weight read 4.
 // M3 lane 14 r127 (fast with 0x404b0; control 2): `long first = previous; current = first;` 158 (492 bytes); the selection
 // computed at the function top 165 (492 bytes); first declared at function scope and assigned in the block 2 (same code);
 // the loop counting the running index from first (`index - first < count`, entry `&entries[index - first]`) 8 (first still

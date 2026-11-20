@@ -432,6 +432,21 @@ extern real g_4c9798[36];
 // `(real)width / maximum * 0.75f` 174, `0.75f * width / maximum` 174 (all the same divide-then-multiply code); the border
 // scaled in one statement and divided in the next 227 (1489 B); the mode defaulted to 0 at its declaration with the two
 // set arms 180. Still BLOCKED-BY 0x48e70 (its file is machine 1's again this round).
+// M3 lane 16 r157 (fast with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174, aligned 70, masked 33; body unchanged).
+// Screened without touching 0x48e70's file: as a diagnostic the two rounding calls went to an undefined stand-in declared
+// in this file (the reduced link leaves it unresolved, so this caller treats it as opaque; restored after every trial).
+// Stand-in alone 181 (1501 B, aligned 50). With lane 7 r178's held forms (long height limit, the raw size and one nested
+// ternary clamp, the border product in parentheses) and the near distance read at each use with the second plane's normal
+// copied straight in and its dot taken on the plane 128 (1479 B, aligned 17, masked 7: that round's 130). With the near
+// distance kept in its named local instead (those forms, the second plane straight in, the dot on the plane) 100 at
+// 1481 B, aligned 9, masked 0: only the flags in EDX for retail's EAX (4 instructions) and the distance and extent homes
+// exchanged (5), the state lane 7 reached with an `__assume`; with the real callee defined inline that round measured the
+// same forms at 148, so the near products' operand order moves with the symbol count. On the 100 form: the products
+// written near distance first 100 (same code); the inverse read from the state field instead of the distance local at
+// both uses, at the quotient only, at the test only 335/328/335 (the entry reloads the field); 1/2/3 redundant paren
+// pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
+// stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
+// height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

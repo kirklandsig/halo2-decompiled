@@ -226,6 +226,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
+// defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
+// still take the opposite component order.
+// MiniMax S (11-20): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, so every local home sits four bytes higher; retail's caller 0x4f7e0 sets the arguments up as three pushed values, then ECX = camera, EDX = a, ESI = the displacement vector and EBX = the output point.
 // score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
@@ -234,6 +238,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // displaced, both and reversed sites was measured at 423/376/529/359/538/536/718 in an earlier round, all worse,
 // and the in-place displaced transform and the perspective-only inverse locals measure 263 and 261. No form
 // found this round.
+// Earlier findings. one note (the stacked score lines merged, r184).
 // Merged header (r184): 195 (was 195), one note.
 // Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
@@ -697,11 +702,23 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // component 315 (1029 B); `d` through a `vector3f const *const &` alias in the sums 257 (981 B); `a` through such an alias
 // 231 (976 B); the displaced point transformed before the origin 250 (924 B); the two inverse defaults as one point2f
 // 195 (same code). 0x142570's file (src/unknown_141590.cpp) was on another lane's list this round. All restored.
+// The second displaced transform still spills X and Z in a 0x30 frame. Orthographic bypass
+// 223; perspective-only early invalid-factor exit 210, or inside the perspective arm 210.
+// Direct inverse factors with the bypass 217, early exit 208, or in-arm test 204.
+// View-owned admission result with factor copies 210 or direct inverses 204.
+// NOT kept: all forms retain the extra spill word and raise the score.
 // M3 lane 2 r116 (fast with 0x30bf0 and 0x30710, both MATCH; control 195): the point helper's scale test written
 // `1.f != camera->scale` 263 (995 B); the factor test written `0.f != fa && 0.f != fb` 211 (978 B); the factors defaulted
 // to 1 at their declaration with the else arm dropped 261 (906 B); the zero outputs as one chained assignment 195 (same
 // code); the displaced and transformed points renamed point/origin/displaced (name order reversed) 195 (same code: the
 // frame does not follow these names). All restored.
+// M3 lane 6 r212 (fast with 0x30bf0/0x30710; control 195): the displacement copied into a value local for the six sums
+// 324 (1032 B); the origin copied into a value local 336 (1039 B); both 341 (1046 B); the helper's scale tested through a
+// `s_camera const *const *` to its own parameter with the inverses set to 1 in the orthographic arm and copied to fa/fb
+// after the block 220 (960 B), with the displacement bound by const reference 253 (990 B). On the match-only
+// parameter-address and direct-inverse lead (re-measured 175 at 955 B): the displacement by const reference 200; a
+// `vector3f const *` copy of d for the sums 200 (the z sum then loads d first as retail, the first transform's x/z swap);
+// a `point3f const *` copy of a 175; the sums in statement order y, x, z 175.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

@@ -980,6 +980,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
 // the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
 // from the two separate lookups, not the other way round.
+// MiniMax G (11-20): the second lookup's index is only independent of the header lookup with the word cast,
+// and that gives retail's `movzx ecx, ax` where retail has `mov ecx, eax; and ecx, 0xffff`; an unsigned-long
+// index folds to the same value as the header's, so both lookups share one index computation (42). What still
+// differs is that instruction, the inner store of the object index that retail does not repeat, and two bytes
+// of padding after the last return.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1432,6 +1437,18 @@ bool c_projectile_type::v8(long a, long b)
 // tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
 // indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
 // of the object lookup with the typed pointer 18. Word-read body kept (5).
+// M3 lane 6 r213 (fast with 0xa5e70, matched each time; word read 5): with the full-width mask, the group mask written
+// `0xffffu` 12, the group stride written `12u` 12, the 0x800 arm's bit written `0x800u` 12 (suffixes fold: the constant pairs
+// stay shared); the result started at 0 and accumulated (`result |= function_a5e70(...)`) with the mask 12, with the word read
+// 5 (same code).
+// M3 lane 7 r198 (fast with 0xa5e70, matched each time; control 5): the group index masked with an unsigned literal
+// `0xffffu` 12 (the same swap as the mask); `(long)(unsigned short)index` 5 (movzx); with the word read, the object's
+// power through a `real const &` 5, the 0x400 test and compare as nested ifs 5, a `long` flags local 5 (all the same
+// code as the word-read body). All restored.
+// M3 lane 11 r134 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, matched each time; word read 5, mask control 12), all with the
+// full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
+// a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
+// flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

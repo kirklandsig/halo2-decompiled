@@ -556,6 +556,18 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // copies as `*(vector2f const *)` reads 286 (same code), with the third planar copy too 310 (1864 B). Retail loads
 // the weight once into XMM6 for the rows and re-reads it for the complement; ours folds it from memory in every
 // row. Site 1 is still BLOCKED-BY 0x2b400.
+// M3 lane 16 r157 (fast with 0x29b2e0, 0x1f9760 and 0x2922b0 unchanged; control 286 at 1865 B, aligned / register- and
+// offset-masked 184 / 41; body unchanged). The history weight in a named local: declared ahead of the sums with the
+// complement read from the field and the history product first 320 (1866 B, 191 / 43); the same with the complement taken
+// from the local 320 (196 / 43); declared after the sums, the rows in the existing order 320 (184 / 43); ahead of the
+// sums, the rows in the existing order 320 (191 / 43): retail's one load of the weight into XMM6 does not come from a
+// named local. The 0x1f9e70 product's factor read into a named local ahead of the call (retail reads +0x50 into a stack
+// temporary before the call and multiplies the result by it) 334 (1889 B, 174 / 41); declared ahead of the third planar
+// normalize 339 (173 / 39); lane 4 r180's planar copy of the saved direction re-measured 310 (1864 B, 170 / 35); the
+// two together 294 and 298 (1882 B, 161 / 35 and 161 / 31: between the two late calls only five masked lines then
+// differ, the third normalize's in-place scaling among them). None kept: a one-use local ahead of a call, and the
+// count rises. Sites 1 and 3 are both 0x2b400's shape in retail (scaling in place in the vector's own home), so the
+// function stays BLOCKED-BY 0x2b400 (machine 1's file this round).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

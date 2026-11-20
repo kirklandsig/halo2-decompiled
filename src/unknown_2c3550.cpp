@@ -603,6 +603,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
 // score lines below are merged into this one (m3 lane 11 r102).
+// MiniMax I (11-20): no new form, no lower score (675): the frame and the length (2986 bytes) are retail's and what is left is the entry's colouring - retail takes the path pointer into EBX after the pushes, keeps the success flag in the byte at [esp+0x13] and loads the source radius before the 0.2f constant, where this build takes the pointer into EAX before the pushes and keeps the result in a dword at [esp+0x64], and the homes of the radius, the maximum height and the count sit at different offsets.
 // MiniMax I (11-17, run 103): no new form, no lower score (675): retail still takes the path pointer into EBX after the
 // pushes, keeps the success result in the stack byte at [esp+0x13] and loads the source radius before the 0.2f
 // constant, where this build takes the path pointer into EAX before the pushes and keeps the result in a dword; the

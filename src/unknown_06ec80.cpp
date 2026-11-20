@@ -212,6 +212,10 @@ union s_6ec80
 // out-pointer getter for the two blocks with the mask scoped 225; a typed player-record pointer copied from players just before
 // the guard (live across both tests) with the mask scoped 225, that pointer stepped inside the guard 225; the scoped mask tested
 // ahead of the data word re-measured 225. All restored.
+// M3 lane 3 r279 (fast with 0x6ec10/0x5b120, both MATCH; control 5): with the mask scoped in the guard, the two flags declared
+// ahead of every other local 225, the mask tested ahead of the machine word 225, the inverted guard with the clear first 225,
+// the do loop as a plain `while (local_15 < 16)` 348 (1059 B, unrolled); with the mask zeroed before the guard as now, the
+// mask tested ahead of the machine word 8.
 // M3 lane 14 r127 (fast with 0x6ec10/0x5b120; base 5): with the mask scoped in the guard, the guard's arms swapped (`if
 // (!local_2 || !players) local_1 = false; else { ... }`) 225, the two ids preset by one chained `= NONE` 225 (unscoped 7), the
 // two block addresses assigned players first 225 (974 B), the guard testing players first 225; the mask declared and zeroed
