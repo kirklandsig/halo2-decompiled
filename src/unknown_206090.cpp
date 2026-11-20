@@ -819,6 +819,17 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // compression default and adjustment 1406, direct wide magnitude products 1566.
 // The 0x58c frame and native velocity homes remain unresolved. Direct wide magnitude products reduce the
 // frame to 0x590 and shorten the body to 6022 bytes.
+// M3 lane 2 r119 (fast = plain here, 0x2056e0 MATCH each run; control 1346 at 6243 B; aligned = rows outside a minimal diff
+// against retail with addresses, stack offsets and registers masked, control 932). A chain, each step on the one before:
+// (1) the magnitude helper reading its input directly (no snapshot) 1624 (5990 B, frame 0x590, aligned 939); (2) in the
+// friction arm the root `sqrt(local_62 * 0.9f)` computed before the normalised copy (retail evaluates and stores it first,
+// then does the scale product in SSE from the normalised components held in xmm) 1603 (6018 B, aligned 912); (3) the
+// contact cross written straight into field_4c and local_4 added there (retail's `lea ebx, [edi + 0x4c]` shape) 1618
+// (5977 B, frame 0x588, aligned 827); (4) the friction ternaries in retail's order (local_62, local_64, local_63) 1618
+// (5977 B, aligned 817); on (3), a named bool for `field_82 || field_83` ahead of the ternaries with that order 1602 (5993 B,
+// aligned 889; retail recomputes the `||` at both impact calls). Not kept: the positional count rises because the body is
+// 261 bytes short; retail's contact loop still multiplies the counter (three `imul`) and its homes need disp32 offsets.
+// Patch: build/r119/lead-206090.patch in the m3-lane2 worktree.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -2117,6 +2117,14 @@ void function_1f86a0(long actor_index);
 // EDX because ECX already belongs to the iterator address for the first step (retail forms that address ahead of the
 // actor-index store), the unit index chain stays in ECX and the object table goes to ESI because EAX is not free there;
 // none of the forms above moves either.
+// M3 lane 2 r117 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched; control 123, aligned 105,
+// register-masked 48): the mask, the entry, both, the `same` flag and the element each read through a const reference
+// 123 (five forms, all the same code as this body). Diagnostics (reverted at once): a call to an unresolved function
+// at the top of the loop body 245 (867 B), after the mask 249 (869 B), after `same` 245 (874 B); the mask stays in BL
+// and the entry in memory in all three. `inline` on 0xbaf40 and 0xbaf80's definitions (diagnostic, full check) leaves
+// this function unchanged and loses eight matched callers elsewhere, so 0xbaf40's memory summary, the lever the notes
+// above left open, is not the cause; open as before: retail gives EBX to the loop entry (with a home it reloads after
+// the roots), spills the mask byte and frames 0x14.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

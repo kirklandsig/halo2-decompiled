@@ -2033,6 +2033,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // block-local copy of the render model, a const reference, forceinline pair helpers, a one-member aggregate render
 // model with and without a constructor, one-pass loops, the copy written in both arms, switch accessors): the store
 // stays at the eighth slot in every one.
+// M3 lane 2 r119 (fast; control 2): a redundant `had_animation = false;` at the top of the flag block 2 (same code);
+// had_animation left uninitialised and cleared in an else arm of the flag block 170; the time computed ahead of the
+// flag test 71 (1636 B, not sunk into the block); the animation id read ahead of the flag test (the speed block
+// assigning the same local) 13: its load and spill then sit above the branch and the block's fstp follows `push edi` as
+// retail, so with `mov edi` out of the block the store reaches retail's slot; the animation read through a const
+// reference at both sample calls 2 (same code).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
