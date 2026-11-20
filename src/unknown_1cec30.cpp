@@ -2564,8 +2564,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 8 (was 8): The frame and extent agree. The first scaled velocity store is late,
-// and the zero property value uses EBX where retail uses EDI.
+// score 3 (was 8): The frame and extent agree; the zero property value uses EBX where retail uses EDI (two `xor` and one
+// push). M3 lane 7 r202: the Havok vector's set() now stores each component through the element accessor (shared header,
+// for 0x1d7ef0); the four stores then keep their order, which is retail's last block here (copy, speed * i, store x, then
+// the j and k products): 8 -> 3. Earlier first line: the first scaled velocity store is late, and the zero property value
+// uses EBX where retail uses EDI.
 // M3 lane 11 r135 (fast with 0x1d06c0, 0x1d0400 and 0x181db0, matched each time; control 8): the inline property setter
 // given the key as a parameter (all three sites pass the 2003 key) 8; the setter as a forceinline member of a derived
 // entity view (`this` the entity) 8; the material sample vector declared once ahead of its loop 8 (all three the same
@@ -3482,111 +3485,6 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// score 15 (was 15; earlier 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
-// caller, the reduced image gives another convention: 344). 0x1d83e0 MATCHES, so the call registers
-// (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. The node_b word is now
-// read inside the `pair->node_b != NONE` test (the guard compares the short, the sign extension and its
-// slot store come after it, in EAX as in retail): 173 -> 15, and the whole second half matches. What is
-// left is the first equal-node arm only (frame_a, columns 0-2): ours hoists the zero stores of the
-// columns' fourth words (and in column 0 the k store) ahead of the i/j stores, and loads k,j,i where
-// retail loads k,i,j and stores i,j,k,w; the identical copy in the frame_b arm and this arm's
-// translation already match. The same helper call gives retail's order in the second half, so only this
-// block's scheduling differs.
-// Round 1 (c2A) tried, on the 15 form: operand order `pair->node_a != first->node` 16; arms swapped
-// (equal arm first) 74; per-column loop with k,i,j locals 15 (same code); columns and translation
-// as direct set() calls 324; const reference to the pair 15; one source pointer (&matrix or the pair)
-// feeding a single converter call 546; node_a read after the first link 281; node_a assigned inside a
-// NONE guard like node_b 311; first link before the count 214; relative/matrix declared once at
-// function scope 15; node_b initialized to NONE (kept, same code) 15.
-// Round 90 tried: the equal arm copied into a local matrix first 352 (changes the frame); the pair
-// pointer through a local in that arm 173; node_b declared after index_b 173; node_b read after the
-// index search 308.
-// Tried: body getters 206; first count after lookup 205 (below gate), both 275; node streams 336;
-// streams with getters 336; count names 206; search names 206; transformed name 206; entry phase
-// transforms 301; equal-node arm first 248; second selector word 226; promoted first nodes 290; entry
-// matrix 206; entry relative transform 206; fallback first 206; first mapped byte 299; second mapped
-// byte 213; first node at use 338; second node at use 226; loop-scoped child counters 206; late first
-// link 370; late second 309; array accessor 206; mapped-index names 206; second count after lookup
-// 224; reused first body 206; word first mapped index 220; word second mapped index 212; array header
-// pointer 336; per-phase model pointers 209; reduced search operand order first/second/both
-// 346/346/346; frame-test operands first/second/both 346/346/346; first mapped-index result 345, with
-// search operands 345 (control 346; one-point reductions excluded); existing frame converter with
-// matrix/output/both references 206/206/206; direct translation, with matrix/output/both references
-// and actual output return 367/367/367/367/367; output-first converter, with matrix reference,
-// output pointer return, and output-first return 206/206/206/206; split rotation/translation,
-// output-first split, split return and output-first split return 206/206/206/206; shared sequential
-// body index/count/first-link workspaces 299/208/302; index+count/index+link/count+link/all/all with
-// child ordinal 217/213/302/300/300; consistent requested-node snapshots first/second/both
-// 367/254/400; count fields at every use first/second/both 316/337/358; corresponding
-// snapshot/bound pairs and all 369/369/419; index through if/else 313; a body-link table local 209;
-// the child search as a while with the compound test 206 (same code); the second index assigned in
-// plain statements (no embedded assignment, same code, kept) 206; the child counter declared first 208.
-// Round 241: native requested-node shorts first/second/both 338/226/354; independent
-// readonly model snapshots first/second 221/321; both snapshots with first/second/both
-// shorts 267/325/283. Original frame, body and protected relative-call contract restored.
-// First link before count first/second/both 205/224/275; loop link locals first/second 206/206;
-// converter position declared first 206; translation read before rotations 254; converter force-inline 206 (plain).
-// Round 33: Native transform-value converter input, with pointer/reference output, output order
-// and actual output-address return combinations: 321/321/321/321/321/321/321/321. Original converter/body restored.
-// Round 233: Call-free native body records first/second/both, then each with
-// readonly first links, both with first-link/count order and both refinements:
-// 317/203/332/317/203/332/374/374. Original records, output reloads and protected call tuple restored.
-// Round 182: first/second/both actual link references 206/206/206; native body
-// record references confined to count/node searches, alone/with either/both links
-// and mutable body records, 332/332/332/332/332. Original records and body restored.
-// Round 89 (resolved by the 0x1d83e0 match): retail loads the component into EAX before each 0x1d83e0
-// call and 0x1d83e0 reads it from EAX at entry.
-// Round 3 of #1044, score 15 unchanged: in retail's frame_a equal arm (and its non-equal twin) the zero is
-// rematerialised after the k store of column 0 and the w stores come last in each column; ours stores
-// w first in columns 1 and 2 (the frame_b arm, where the zero is already live in XMM0, keeps retail's
-// order with the same helper), so the cause is the zero constant being defined inside this arm, not
-// the column order. Tried this round, all worse or the same: the equal arm through a local `hkTransform *`
-// 15; the pair parameter non-const 344; `&pair->frame_a` held in a local pointer from the top of the
-// function 298.
-// M3 lane 1 r117 (fast, with 0x1d83e0 matched and 0x1d77d0 22): the arm's locals declared matrix, relative 15;
-// the equal arm through an `hkTransform &` to frame_a 15; body_a through havok_component_rigid_body_get 15;
-// the NONE node_b/index_b declarations at the function top 15; the converter's position temp declared first
-// 15. Diagnostic: the equal arm without its translation part (wrong code) gives retail's i, j, k, w store
-// order in columns 1 and 2 (column 0 keeps k + xorps first), so the translation temp's zero store -> movaps
-// chain is what pulls the w stores forward in this arm.
-// M3 lane 2 r100 (a one-file LTCG harness of this file with src/unknown_1d77d0.cpp gives the full build's 15 exactly;
-// --fast builds this function differently): `*body_a` stored before the frame_a conversion 261; the equal arm through a
-// const source pointer 15 (same code); the equal arm's output through an `hkTransform &` 15 (same code); the first-node
-// test against the node_a local 265; the child search comparing against the node_a local 309. Retail's column 0 loads
-// k, i, j and stores i, j, k, w; ours loads k, j, i (as the frame_b arm does in both) and stores k, w first.
-// M3 lane 9 r139 (fast with 0x1d83e0 and 0x1d77d0): 1-7 dead initialised locals at the top 15 each (no symbol-count
-// tie); the equal arm's columns written out with set() against frame_a and the translation through a temp after
-// them 15, with that temp declared first in the arm 15, with it at function scope 15; the equal arm through a
-// `transform4x3f const &` to pair->frame_a 15 (all the same code: after inlining the arm's block is identical); the
-// equal arm converted into a local hkTransform and copied with hkTransform::set 351 (1325 B).
-// M3 lane 2 r106 (one-file LTCG harness with src/unknown_1d77d0.cpp, 15 as the check): both halves through one
-// forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
-// helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
-// value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
-// M3 lane 16 r147 (one-file harness with src/unknown_1d77d0.cpp, 15 as the check): the first child counter declared in
-// its `for` 15; the equal arm's converter call in braces 15 (same code each); one source pointer for both arms, repointed
-// at the composed matrix, with one converter call after the test 313 (1023 B); the first half's rigid-body entry named
-// once for the count, first node, child search and body store 314 (1165 B); the entry reads through the array's
-// operator[] 15 (same code).
-// M3 lane 15 r112 (same harness, 15 as the check): the converter passing w explicitly 15; the translation built with
-// `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
-// through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
-// XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
-// M3 lane 1 r139 (fast with 0x1d83e0 and 0x1d77d0, control 15 as the plain check): a redundant `if (0 < node_count)` guard
-// around the first child search 15 (same code); the first-node test held in a bool read through a const reference 258;
-// `first` read through a const reference for the test and the call 242; the body_a store written in each arm of the first
-// conversion 349 (1216 B); the equal arm reading the pair through a const reference to the pointer 15 (same code). Permuter
-// with the caller and callee as context (604 s, 63 variants): best 15. Body unchanged.
-// M3 lane 11 r135 (fast with 0x1d83e0, 0x1d77d0 22 and 0x1d0c20; control 15): the converter's parameters as (frame,
-// matrix) at its definition and all five calls 15; the converter as a member of a derived Havok-frame view (`this` the
-// frame) 15; the converter `__forceinline` on this body 15 (all three the same code); the pair's first frame named once
-// for both arms of the first half 265; both halves' pair frames so named 238 (1239 B). The first arm's order is a
-// scheduling choice: retail's column 0 loads k, i, j (neither argument order) and stores i, j, k, then the zero.
-// M3 lane 16 r155 (fast with 0x1d83e0, 0x1d77d0 and the converter's other users, all unchanged; control 15): the
-// converter `__forceinline` 15; the vector-to-Havok helper `__forceinline` 15; the Havok vector's set writing the four
-// lanes of `m_quad` directly 15; that set `__forceinline` 15 (same code each); the converter a plain static function
-// 918 (655 B, called out of line). In both builds the frame_b equal arm loads k, j, i and stores i, j, k, w; only
-// retail's frame_a arm loads column 0 as k, i, j, so that block's schedule, not the helper's text, is what differs.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,

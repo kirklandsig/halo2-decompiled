@@ -943,14 +943,6 @@ void function_11f5f0(box2f *bounds, point2f const *points, long count);
 void function_141590(transform4x3f const *in, transform4x3f *out);
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result);
 
-/* result = -vector */
-PRIVATE inline void vector3f_negate_ab(vector3f const *vector, vector3f *result)
-{
-    result->i = 0.0f - vector->i;
-    result->j = 0.0f - vector->j;
-    result->k = 0.0f - vector->k;
-}
-
 PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vector3f const *point, point2f *result)
 {
     real vi = point->i;

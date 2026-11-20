@@ -2094,6 +2094,14 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
 // with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
 // return is 1040.
+// M3 lane 7 r202 (fast with the twin 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd560, 0x2963f0, 0x1236f0, all but the twin MATCH
+// each time; control 812, aligned 578, masked 74): the three iterator outputs as one aggregate local (a three-long type)
+// 807 (aligned 561): they then stay together in the frame and both inheritance counters take the dead argument homes as
+// retail's, but the result sits below them (retail above) and the zero register and second request do not change; the
+// aggregate declared at function scope ahead of the result 807 (same code); three plain longs declared there 812 (same
+// code as this body). Diagnostics: the request's urgent flag in a named local re-measured 787 (2805 B); the other flag in
+// a named local 913 (2789 B). Reading: retail's entry takes NONE in ECX and the compared argument in EDX (ours the reverse) and
+// makes a second NONE in EAX for the outputs once ECX is reused for the mode. Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

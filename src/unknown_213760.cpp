@@ -1996,6 +1996,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // skipped/short/full write outcome with default, exhaustive or separate tests 112/112/90;
 // conditional completed count local 157. NOT kept: the outcome forms recover both slots
 // at retail length but raise the score. The failed-resize branch and write registers still differ.
+// M3 lane 7 r202 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH each time; control 33). The by-value write
+// helper + pointer close helper + `else if` header read + reference-bound checksum form rebuilt: 114 at 917 B, aligned 4
+// (the close's `mov ecx, eax` copy and the two pads that follow from it). On it, same code each (114): the helper's count
+// read through a const reference, a named copy of it read through a const reference, the close's handle test through a
+// const reference to the field, through a named raw copy read through a const reference, through a named raw-handle
+// local, through a by-value predicate on the raw handle; the close testing a named copy and passing `*file`; an explicit
+// temporary copy of the handle at the write call, at the helper call, at the close call; a generic write helper taking
+// the raw handle and the buffer with the header built by an outer helper, the same taking the handle aggregate by value.
+// The write helper taking the handle by const reference 5 at 930 B (the listed 5 form reached through the helper: the
+// handle is loaded after the flags zero). Without the reference-bound checksum 114 (aligned 6, checksum in ECX).
+// Reading: any by-value parameter loads the handle ahead of the call and takes no scratch-rotation step, an unnamed
+// `*handle` at the call takes the step but loads after the flags zero; retail has both. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
