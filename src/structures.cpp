@@ -830,6 +830,15 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
 // (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
 // does). Nothing kept: no form gains on the control, and the lead needs an exact match.
+// M3 lane 7 r200 (fast with 0x14a8e0/0x14af40/0xd47d0/0x16e1b0, all MATCH throughout; control 172): round 268's lead
+// rebuilt (the vertex getter's result unset on a miss, definition and section NULL at their declarations, result after
+// section, no else arm, unknown18 stored before part_index) with a byte result 146 (743 B: the BSP in EBX as retail, but
+// the byte goes back through test/setne), with a bool result 133 (733 B). On 133: 1 to 8 dead initialised longs ahead of
+// the body (diagnostic) 133 at every count, so not a symbol-order tie; a per-iteration copy of the section for the
+// indices, the 0x16e1b0 call and the vertex reads 133; the 0x16e1b0 outputs and the vertex array declared at function
+// scope 133; range as a const pointer 133. Left on 133: ours keeps the section in EDX from the join into the loop (NONE
+// then takes ESI), where retail reloads the section at the 0x16e1b0 call and gives EBP to the range from the arms to
+// the loop's first test. Body unchanged.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

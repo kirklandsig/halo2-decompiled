@@ -355,6 +355,11 @@ static __forceinline long real_to_long(real value);
 // Reading for the next round: retail expands 0x210850 only at this call, and this build expands a plain function from
 // another file only when that file allows it (lane 9 r138: without /Ob1 on its file it is expanded here and in 25 matched
 // callers), so the match stays BLOCKED-BY 0x210850.
+// M3 lane 7 r200 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH throughout; control 373): the sign
+// step through the existing random_next on the state local (`random_next(&local_10->unknown0) & 0x8000`) 378; the same
+// on the global with no state local 417; the third input bound by a const reference for its five uses 409 (1852 B);
+// `(local_11 & 0x80000000) > 0` with +0x38 named for its two uses 375 (1862 B); random_next on the global with +0x38
+// named 412. BLOCKED-BY 0x210850 as above.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

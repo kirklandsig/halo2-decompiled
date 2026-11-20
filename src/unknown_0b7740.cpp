@@ -1196,6 +1196,14 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (837 B, first difference +0xa: object_index then takes ESI, the +0xb3 byte BL with EBX pushed before it and
 // `definition` is stored at once, as retail, but final's home is stored at entry from EAX where retail stores it late
 // from EDX). Diagnostic: the object-type test through a fresh definition lookup 170 (merges with `definition`).
+// M3 lane 7 r200 (fast with 0xbfe20/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): lane 4 r225's lead
+// rebuilt 170 (826 B; object_index in EDX and the parameter in ESI with `result` its EDI copy, where retail has ESI / EDX
+// / EDI). On it: object_index bound by a const reference for the header and both early tests 170 (same code; on this
+// body 240, same code); the matrices parameter read through one const reference for `result` and final_matrices 170
+// (same code); the awake test named and read through a const reference, nested under the offset test 170 (same code); a
+// redundant `1 < node_count` guard around the node loop 175 (827 B). Diagnostic, reverted at once: `result` read through
+// a volatile view of the parameter 278 (839 B, object_index still in EDX), so a memory-resident parameter is not what
+// gives object_index ESI. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
