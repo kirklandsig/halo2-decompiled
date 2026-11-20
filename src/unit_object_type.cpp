@@ -5350,6 +5350,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
 // score 169 (was 169): The frame agrees at 0x50. The first cross loads up.i early, and the projection and x87 forward-scale lifetimes differ.
+// Earlier score 169 (was 169). The frame agrees at 0x50. The first cross loads up.i early, and the projection and x87 forward-scale lifetimes differ.
 // MiniMax E (11-16): no new form, no lower score (169): the first difference is still inside the shared cross-product helper, whose header this lane may not edit, so the products land in the other SSE registers; retail loads up.k and up.j before up.i where this build preloads all three, and the clamped angles still reuse the two incoming argument slots.
 // MiniMax D (11-14): no new form, no lower score (169): re-measured this round: the body is 768 bytes against retail's
 // 767 and the first difference is at +0x4a, inside the shared cross-product helper, whose own file this lane may not
@@ -5488,6 +5489,8 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // products with mutable or immutable terms all 169. Existing basis builder
 // for first/second cross 186/225. NOT kept: the builder grows the branch
 // and the yaw forms leave both schedules at their opening scores.
+// Reuse frame left and forward, left and up, or all three axes 204/218/205.
+// Staged first cross with frame left, left and forward, or all three 205/204/205; staged second with frame left and up 218; both staged with all three 205. NOT kept: longer bodies and higher scores.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

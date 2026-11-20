@@ -3266,7 +3266,8 @@ point3f *function_142700(transform4x3f const *matrix, point3f const *point, poin
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
 // MiniMax B (11-20): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes (reading `alternate` inside the definition guard reproduces retail's entry but measures 615) and the track loop still holds the index in ESI, the track definition in EBP and NONE in EBX where retail keeps the index in memory, the track in EBP and NONE in ESI; what still differs is that entry mask, the creation arm's compare order and the track loop's register roles.
-// score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
+// score 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
+// Earlier score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
@@ -3325,7 +3326,6 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // at all four pitch sites; 0x21b940 77 -> 74, 0x21b0e0/0x21c400 unchanged; under the keep bar); track definition
 // read at each use 807; `!TEST_FIELD_BIT(flags & 1)` start test 614.
 // frame 0x3c agrees; definition/identifier, result and alternate homes still differ.
-
 // MiniMax A (11-18): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp - and the request byte still occupies BL before the saved registers; the earlier rounds' forms of these measure 590 or more.
 // MiniMax H (11-12): no new form, no lower score (597); the update block's register and slot layout are unchanged.
 // Earlier: frame 0x3c and retail length recovered by the availability guard join;
@@ -3707,6 +3707,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Clear path first for alternate/second/third/all 600/600/597/603.
 // All clear-first with both mask tests 619. NOT kept: the five-point reduction
 // shortens the body by seven bytes and leaves the early BL load.
+// Lookup miss first with a creation guard, state test first, result in each arm, or positive creation gate 607/645/607/607.
+// The initial result store and the availability exit use the same frame byte after the EDI push.
+// With alternate scoped to the definition guard 630/630/598/630. NOT kept: the per-arm result reaches retail length and recovers the saves but raises the score.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

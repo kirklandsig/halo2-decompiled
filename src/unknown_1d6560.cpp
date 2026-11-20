@@ -100,13 +100,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// score 96 (was 96): The object type is read in both kind routes and the build starts with the owner chain. Retail reads the header data and type once at entry and keeps the body in ESI.
 // MiniMax E (11-20): no new form, no lower score (96): the one-read forms that use every local twice (the headers
 // local with case 0 through it, the object-index local with case 0 through havok_object_get) score 101 to 137 and flip
 // the incoming register pair, so the type stays read in both kind routes; the control already has retail's own
 // convention (component EAX, rigid index ECX, kind EDI, owner and level on the stack, ret 8) and the matched caller.
 // MiniMax A (11-18): no new form, no lower score (96): the type read once at the entry (24 at 256 B with the caller matched) needs a one-use object-index and a one-use absolute-index local, so it stays unkept; the one-use-free forms (the header base first, the header base second, the type local alone, a long type) score 83 to 136 and demote the matched caller 0x1d5bf0 to 2, 13 or 213, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (96): the type is still read in both kind routes where retail reads it once at the entry; the single-read form reaches 68 only with a one-use local and a score-picked declaration order, and the one-use-free form (98) demotes the matched caller 0x1d5bf0, so the read stays as it is.
-// score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data
+// Earlier score 96 (was 96). unchanged in round 252; left: retail reads the type once at the entry with the header data
 // loaded first, which every keepable form here either repeats in both branches or pays for with the caller's register
 // pair (see Round 252 below).
 // MiniMax G (11-14): no new form kept, no lower score (96): a single type read shared by both kind routes reaches 68
@@ -617,6 +618,8 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Shared header for the repeated types and case zero 96. One type with the original getter or shared
 // header in case zero 122/122. Model binding with array pointer or rigid-body reference 96/94. NOT kept:
 // The repeated-type form gains one. The 94 form gains two and changes the matched caller to 13.
+// Single type, body selected after the kind guard: model before handle, between handle and type, or after type 115/113/116; body array at these positions 110/116/119.
+// Array after type, element selected in each flag case 96; late body selection with shared case-zero flag type 117. NOT kept: all lose the matched caller and none improves the score.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

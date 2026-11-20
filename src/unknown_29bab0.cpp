@@ -59,7 +59,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 4 r230 (fast; control 489, difflib-aligned 224, register/offset-masked 77). With local_6.i/.j set before the k
 // test (retail's order: its `movaps xmm7, xmm5` / `movaps xmm6, xmm1` copies sit ahead of the branch, the zero is made once
 // before `cmp di, 2` and the field_68 test compares against it) the whole mode-2 block is retail's but for the MIN operand
@@ -757,6 +758,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Position remains at +0x8c for retail's +0x80. Both path vectors declared together before
 // the heading, before the position, before or after its query, or after normalization 489 each;
 // one path vector before the position or before or after its query 489 each.
+// Translated target as two scalars, query-vector coordinates, explicit planar writes, or shared setter into the query vector before planar normalization 702/669/546/487.
+// The same forms inside side selection 775/775/763/764. NOT kept: the setter gains two and retains the wrong position home.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
