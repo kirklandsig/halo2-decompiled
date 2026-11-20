@@ -974,6 +974,16 @@ struct s_collision_result_buffer_1697c0
 // copying the candidate out and normalizing the output in place 288 (1426 B); the best tail that way 348 (1400 B, 0x297660
 // 4); both 376 (1388 B, 0x297660 40). One-file link diagnostics: the random state read as a global aggregate member
 // (aligned 368, 1426 B); the axis globals read that way (aligned 198, same code).
+// M3 lane 10 r131 (fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23), 0x297a50, 0x2980d0, 0x298370 and the callees
+// 0x1ffe00/0x1e1f20; control 270). Reading: retail's two transfer slots hold {magnitude, both draws, first sine, second
+// cosine} and {first cosine, second sine}, i.e. the four trig values take slots in the order they are produced (sine
+// first in the pitch rotation, cosine first in the yaw rotation); ours homes the wrapper's two named locals per name in
+// both expansions. Retail's normalizer j product loads j first (`j * scale` in xmm1, the zero then in xmm2). Forms: the
+// normalizer's length read through `real const &length = magnitude` 332 (1435 B); the wrapper's sine and cosine each
+// through a const reference 274 (1429 B; 0x297d30 23 -> 60); the pitch-axis normalize and fallback in a block of their own
+// 270 and each rotation in a block of its own 270 (both same code); the pitch rotation through the wrapper and the yaw
+// rotation through the in-place helper with `(real)sin(yaw), (real)cos(yaw)` as arguments 331 (1434 B); the pitch-axis
+// length bound to `real const &` and tested afterwards 282 (1437 B).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1065,7 +1075,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // first, which restores retail's case-1 block layout; the body is 1424 B against retail's 1444. Left: the two
 // flags' byte homes are still swapped against retail's (the returned flag at +0x0a, the presence byte at +0x13),
 // the two 0xcafc0 calls still sit side by side where retail keeps them apart, and the jump table sits 20 B early.
-// score 72 (was 257): every point-producing path now ends at aim_at_point, whose `if (aiming)` weapon block falls
+// Earlier 72 (was 257): every point-producing path now ends at aim_at_point, whose `if (aiming)` weapon block falls
 // into the direction-from-actor code (round 264, below), which gives retail's block layout and its two separate
 // 0xcafc0 blocks. Left: the result/point-valid byte homes are swapped, cases 1 and 2's trailing failure exits take the
 // plain exit where retail stores result = false first, and the weapon block keeps the direction pointer in EBX where
@@ -1518,6 +1528,29 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // positive normalize branch 91; named normalized length 73; shared weapon normalization with separate
 // flag defaults 109; nested point-publication guards 77; common switch exit and combined normalize guards 73.
 // Reduced control 73; the swapped Boolean homes and aiming registers persist.
+// M3 lane 10 r131 (fast with 0x296e60, 0x297660, 0x297a50, 0x297d30, 0x2980d0, 0x298370 and the callees 0x1ffe00 and
+// 0x1e1f20, the three callers MATCH in every form; control 73). Round 264's lead rebuilt 36 (1440 B). Reading of its
+// leftover: retail loads the actor index into EDI for the 0x1e1f20 and 0x1fc710 calls only, gives EDI to the direction
+// right after 0x1fc710 and reads the actor index for 0x1ffbd0 from its stack home (`mov eax, [esp + 0xbc]`, hoisted
+// between the pushes to where EAX is free); ours serves all three calls from EDI and gives the direction EBX. Retail's
+// other two 0x1ffbd0 calls (in 0x1fc7e0) set the register argument up last, so the parameter order is right.
+// Diagnostic, reverted at once (a forbidden form): on the lead, a volatile read of the parameter at the 0x1ffbd0 call is
+// a byte match in the fast and in the plain check, so the third read kept apart from the first two is all that is left.
+// Forms on the lead that compile to the lead's code (36): the first two calls through a forceinline helper with an
+// unsigned parameter, or one taking `long const *`; 0x1ffbd0 through a forceinline wrapper taking the index by value, or
+// taking a one-member aggregate built from it or cast from the parameter's address; the first two calls, or all three,
+// through `long const &` or `long const *` bound to the parameter; one read through `long const *actor_reference =
+// &actor_index` at the actor lookup, at 0x1e1f20, at 0x1fc710 or at 0x1ffbd0 (forwarded each time); the third argument
+// as `*(long const *)(void const *)&actor_index` or `*(dword const *)&actor_index`; a local copy of the direction for
+// the weapon block; the fallback's difference written component by component; `if (weapon_index != NONE)` repeated
+// around the 0x1ffbd0 call; that call inside `do { } while (false)` or a one-pass barrel loop. Other forms on the lead:
+// the flag argument as `!aiming` 69 (1452 B); the barrel as `aiming ? 0 : 1` 66 (1452 B); the third argument as
+// `aiming ? actor_index : NONE` 84 (1456 B); the third argument rebuilt from its two halves 397 (1468 B). Diagnostics on
+// the lead, reverted: the third use removed 30 (the direction then takes EDI, so the allocator reuses EDI once the copy
+// is dead); `if (aiming)` repeated around the 0x1ffbd0 call 65 (a real block boundary does not end the copy); the
+// parameter's address passed to a call on the default path 427 (1500 B: every use then reads the home, the first two
+// and case 0's as well, so retail's parameter is not address-escaped); one more direction use in the fallback 48 or
+// after the aim call 58 (the direction stays in EBX: not a use-count tie).
 // MiniMax A (11-19): score 36 (was 72): retail has two exit blocks, the plain one at 0x296aaa that returns the
 // result flag and the failure one at 0x296d22 that stores 0 to the result flag before returning it, and the
 // failure block is reached from the two remembered-branch failures (0x2969e0 and 0x296ae3) and from the two
@@ -2343,6 +2376,8 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
+// of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
 // MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
 // 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines
 // below it, where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four
@@ -2381,7 +2416,7 @@ struct s_actor_looking_turn_request
 // blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines it, and only
 // /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
 // MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
-// score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
+// Earlier 442: frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
 // block's planar vectors built from members (no `&actor->forward` cast) 450 (2032 B), that with the 0xe70b0
@@ -2539,13 +2574,31 @@ struct s_actor_looking_turn_request
 // where this build keeps the actor index in edi and the offset in esi - and the shared getter cannot change because
 // sixteen matched functions in this file use it; retail also calls 0x1fdd90 out of line where this build expands it
 // inline, and that callee's file is not this lane's: BLOCKED-BY 0x1fdd90.
-// score 442 (was 442): MiniMax D (11-17): no new form, no lower score (442 plain, 548 on the reduced image): the entry
+// Earlier 442: MiniMax D (11-17): no new form, no lower score (442 plain, 548 on the reduced image): the entry
 // block still differs in register roles and in when the record address is formed - retail keeps the actor index in esi,
 // builds the slot offset in eax and adds it to the base (`and eax, 0xffff`, `imul eax, eax, 0x888`, `add ebp, eax`) and
 // spills the offset to [esp+0x30], and then reads the record through ebp, where this build keeps the actor index in edi,
 // the offset in esi, reads the record through `mov eax, [ebp + esi + 0x18]` and only then adds the offset to the base;
 // the shared getter cannot change (sixteen matched functions in this file use it), so the spelling has to be this
 // function's own. BLOCKED-BY 0x1fdd90: retail calls it out of line and this build expands it inline.
+// M3 lane 10 r131 (fast with 0x2967b0, 0x296e60, 0x297660, 0x297d30, 0x297a50, 0x2980d0, 0x1fdd90, 0x2982f0, 0x297600,
+// 0x2973f0, 0x296d60, 0x297560, 0xe70b0 and the callees 0x1ffe00/0x1e1f20; control 442, aligned 356). New reading: a
+// test ahead of the 0x1fdd90 call keeps it out of line with no build flag: the combat test as `!actor->unknown48a &&
+// function_1fdd90(actor_index)` 590 at 1952 B (aligned 325), and an implied `animation_state != 6 &&` ahead of the call
+// (diagnostic, folds) 591 at 1952 B, the same code as a noinline pin (diagnostic, reverted) 591. So the blocker is a
+// form question, but out of line the body is still 68 bytes short of retail's 2020: retail's valid flag is a bool (BL
+// only in the marker arm, threaded elsewhere), retail publishes the aiming direction a second time after the turn
+// request (0x2986fb) and publishes the looking output per path, with the identical tails cross-jumped (one forward
+// copy, one aiming-output copy shared by animation state 6 and the looking modes' else arm, two direction copies).
+// On the out-of-line form (implied test or pin, diagnostics): bool valid 599 (aligned 314), with bool looking_valid
+// 606 (310), the looking output as an if/else 589/601/632 (aligned 305/296/298 with the bools and the existing 0xe70b0),
+// the state through the existing 0xe70b0 620/628/635 (aligned 334/326). Forms on the body: the 0x1fdd90 declaration
+// at block scope in the caller 442 (same code); the combat test as `function_1fdd90(...) ? !unknown48a : false` 531
+// (2024 B); the turn arm publishing the direction itself, with the not-turn arm and the plain arms publishing their own
+// (three publication arms) 537 (2008 B); the looking output written per path with a forward default (no looking_valid)
+// 637 (2132 B: the two 0x2967b0 calls no longer share their tail); both 667 (2136 B); both with bool valid 585 (2068 B);
+// the looking output as an if/else 579 (2080 B, re-measured); with bool valid and looking_valid 539 (2004 B). Diagnostic:
+// a second caller of 0x1fdd90 (in its own file or in this one) leaves this site inlined (442).
 // @retail 0x298370
 void function_298370(long actor_index)
 {

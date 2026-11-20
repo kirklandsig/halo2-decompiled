@@ -268,6 +268,10 @@ void function_254200(void)
 // (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
 // all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
 // (Begin, 2s, 4f, render state, End) 4. All restored.
+// M3 lane 10 r132 (single-address fast; control 4): the doubled size computed after the 0x1cf50/0x1c710 calls with the
+// point copy still ahead of them 20 (the colour products' spill slots swap, the pair unchanged); the point copy after the
+// calls with the size ahead 16; both after Begin 116 (1093 B); the chosen bitmap selected ahead of the readiness test 52;
+// the choice as `if (!arg_4) ... else ...` 4 (same code). All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
