@@ -377,6 +377,28 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // local_16 declared beside local_7 and the chained has-host arm 352 (four points, not kept); with the flag form 403; the
 // flag form alone on the bool callee 403; the snapshot and reset through `*(__int64 *)&g_4e6398` 429 (1330 B), with the
 // flag form 419; the flag form with the connection read through link_connection_get at each use 397.
+// M3 lane 13 r132 (fast with 0x75910/0x76520/0x765c0/0x77940/0x89030, all MATCH each time; control 356, 1374 B; aligned =
+// differing lines of a sequence alignment with stack offsets masked). A rewrite from retail's flow, read block by block:
+// every channel field through `arg_0->channels[local_0]` (a file-local view of the element, no pointer local), the
+// counter snapshot and reset as plain copies through the existing counter view, the 64-bit steps on that view, the
+// has-host flag started false and set in the call's arm (match-only), the pacing test as `!(rate > 0 && 1 / limit > rate)`,
+// the first threshold as `if (!(elapsed >= interval)) goto done` with no result store, the second as `if (payload < 48)
+// goto done`, the reliable-bytes test nested with the payload named and `local_2 = false` in each failing arm, the
+// payload floor under one sign test, and three exits (`return local_2` in the budget block, `return false` after it,
+// `done`): 427 at 1337 B, aligned 134 (`this` in EDI with its home written at entry and the whole middle from the
+// has-host call to the thresholds line for line as retail but for slots; the index takes ESI where retail keeps NONE
+// there, and the connection takes EBP where retail keeps it in memory). On it: the two NONE locals ahead of the search
+// 412 (1339 B: NONE in EBP and the index in ESI, retail the reverse, and both NONE stores ahead of the loop); only the
+// quotient's NONE local ahead 415 (1348 B); the observer copy made after the search 430; a pointer to the channel's
+// counter declared after the connection and used at its five sites 434 (1335 B: frame 0x34 and the channel base
+// `this + index * 0x528` formed ahead of the has-host call, both as retail, but `this` then lives only in memory and
+// the index takes EDI); all 24 orders of the connection, that pointer, the two NONE locals and the two false flags
+// between the found test and the has-host call 397 with the pointer first (1337 B, aligned 132), 400 or 434 otherwise,
+// and 425 to 427 for the six orders without the pointer; NONE locals ahead of the search with the pointer 424 (1343 B:
+// NONE in ESI and frame 0x34 as retail), with the connection ahead of the pointer 393 (1339 B). Left on the best forms:
+// retail gives `this` EDI and the index EBP up to the has-host call and no register to the connection (ours: memory,
+// EDI, EBP), stores the two NONE locals after the found test from the NONE register, loads the connection index into
+// ECX after the pushes, and returns the first `false` from AL; 0x75910's byte result as before. Body unchanged at 356.
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,

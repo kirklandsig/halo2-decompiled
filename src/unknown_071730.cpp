@@ -438,6 +438,22 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // members-ready live test as `!session_state_is_live(local_2) || !local_2->flag49e8` 376 (same code); the property value
 // as `= {0}` in place of the memset 387 (1597 B); the not-ready block's live test as two nested ifs 376 (same code). All
 // restored; still BLOCKED-BY 0x5b080 calibration.
+// M3 lane 13 r132 (fast with 0x5b080, MATCH each time; control 376). The data getter stays expanded in every form:
+// the whole last arm as a file-local forced-inline function taking the state, the owner and both sessions 495 (1629 B);
+// the last arm ending in its own `return` of the result 434 (1589 B); the type test as a one-case switch 376 (same
+// code); the value getter written at the lookup and again at the 0x71ff0 call, no local, 418 (1584 B); the data getter
+// read after the first elapsed time and the progress pointer 417 (1581 B).
+// Measured law for the getter's expansion (one-object link of this file with the getter's file, build/r132/cost717.py:
+// the smallest inline threshold that expands it, against the build's 81): 18 as the function's first statement, 22
+// under the type test, 31 in the first live-state arm, 50 in the second arm or in the last arm (this body), 86 under
+// one more `if`, about 13.5 + 4.5 * 2^depth. Depth is the count of enclosing `if`, `switch` and `?:` constructs as
+// written, also when the compiler folds their test (`if (true)`, `true ? x : NULL`, `switch (0)`, `if (local_2)` all
+// 86 with no code of their own); a bare block, `else { if` for `else if`, a `for (;;)` with a break and an `&&` leave
+// it at 50, removing or folding the type test or either live-state test leaves it at 50, statements before the call
+// in the same arm leave it at 50, and a `do ... while (false)` around the call lowers it to 15. So retail's source has
+// the getter call (or the whole last arm) under four conditional constructs where this body has three, and the fourth
+// one emits no test. No natural candidate found: a fourth test that is always true where it stands is the steering
+// form round 58 measured (`if (local_2)`, 440 then). Still BLOCKED-BY 0x5b080's call-site depth.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
