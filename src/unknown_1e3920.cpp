@@ -1305,6 +1305,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Shared present/missing squad test after settings 245/245, before settings 267/267.
 // Shared signed/unsigned low-half selector before/after settings 237 each.
 // NOT kept: the tests add a materialized flag and the selector forms tie with NONE in EDI.
+// M3 lane 11 r128 (fast with 0x1e4990/0x2036c0/0x203900/0x1e02f0/0x1e0160/0x1e04a0, all MATCH; control 237, aligned 249 by
+// a sequence-aligned diff): the squad index used through a `long const &` bound to the parameter 237 (same code, folded); a
+// second named squad pointer for the query's mode read 237 (same code); the squad bit as `bool flag = false; if (squad) flag
+// = (bool)(... & 1);` 238 (aligned 246), with the entry index masked `& 0xffff` 253; retail's loop shape with the squad bit
+// in that form 411 (1319 B), with the masked entry index 420, with the parameter reference as well 420 (0x1e4990 expands in
+// the loop each time; with that shape and the mask the head is retail's line for line up to the loop, NONE in ESI and the
+// squad index reloaded into ECX). Re-measured: the mask alone 252, retail's loop shape alone 411.
 // M3 lane 14 r120 (fast; control 237, 364 instructions both sides; cut at the 26 calls and masked, 262 differ, 206 of them
 // the creation arm's place). Retail's order reads as a straightened jump: the swarm arm falls into the actor test, that
 // test's chain runs on through the placement switch's case 2 to its `jmp`, then comes the creation arm, which ends
@@ -2350,6 +2357,15 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // all five draws 302 (1199 B); the options probability read once into a named local for its clamp 256; the two-weapon
 // loop as `for (short i = 0; i < 2; i++)` 251 (same code); the raised probability kept by `if (probability <=
 // increased)` 253.
+// M3 lane 11 r128 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0, all MATCH; control 251, aligned 183 by a sequence-aligned
+// diff, 74 with registers masked): both slot queries through one inline pair helper writing a `long *` 365 (1166 B), that
+// helper with result-first queries and a fresh lookup for each 323 (1165 B); the two query results in named locals ahead of
+// the weapons[] stores 267 (1200 B); the grenade type in a named short ahead of the settings call 251 (same code); the
+// secondary query stored first 251 (aligned 183, masked 75). Diagnostic on the callee, reverted at once: 0x1e53e0 written
+// as a tail recursion over the parent 303 here (1242 B, aligned 175, masked 56: the pool global is then held and the unit
+// re-read after the call, as with the earlier store diagnostics), but 0x1e53e0 itself becomes 82 bytes with the key in DX,
+// and 0x1e5380 2, 0x1e04a0 6 and 0x2758b0 56 lose their code: retail's 0x1e53e0 is a real loop, so recursion is not
+// what makes it look impure to its callers.
 // M3 lane 14 r120 (fast unless said; control 251). Diagnostic, plain check, body replaced by one comparison of each
 // global before and after each callee: only the out-of-line draw 0x259a0 (its file is built without LTCG) and the tail
 // 0x1e1a00 are taken to write the pool or the seed global; 0x1e1f20, 0x1e5280, 0xcbd50, 0x259d0, 0x1469f0, 0xc6f80,
