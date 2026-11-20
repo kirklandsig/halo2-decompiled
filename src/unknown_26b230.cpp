@@ -2317,6 +2317,12 @@ void function_269250(long clump_index, long actor_index);
 // selection and best declared ahead of the walk 129; the team test as `if (team != ...) continue;` 126; the score declared
 // at loop scope 126; the activity flag read ahead of the walk's start 126; the walk record at function scope 126 (all
 // four the same code).
+// M3 lane 5 r219 (H2M_FAST with the ten matched callees and walk users, all MATCH each run; control 87): the in-arm compare
+// re-measured 126 (480 B) and the walk's datum index as the selection on it 128. On the in-arm form: the team test written
+// actor first 126; the walk record, selection and best at function scope with the datum-index selection 128; the found arm
+// storing the selection before the best 126 (all the same code as their bases); the post-walk test `if (selected ==
+// actor->unknown07c) continue;` inside the found arm 126 (same code). On this body: the score as one ternary (`team match ?
+// score call : best`) 128 (484 B). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

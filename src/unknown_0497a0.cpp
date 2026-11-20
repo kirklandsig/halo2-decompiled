@@ -1479,6 +1479,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // First field as output with the pixel returned by value, pointer/reference 352/352;
 // field readback on the original packer 352. NOT kept: the 301 form saves the color
 // pointer but adds a register copy between stores where retail uses the same packed register.
+// M3 lane 5 r219 (H2M_FAST with 0x42c50/0x42b20/0x43720/0x43740, all MATCH each run; control 351): case 0's six edge
+// stores as first x, y, z then second x, y, z 355; with the x and y pairs chained (`first.x = second.x = ...`) and the z
+// rows after 352; chained the other way round (`second.x = first.x = ...`) 424; the z rows first (first, then second),
+// then the chained x and y pairs 348 (a statement order, 3 below the control: case 0 then loads y, x and the second z into
+// retail's XMM1/XMM0/XMM2, but the half-width and the first edge's copies still rotate, XMM3/XMM6/XMM5 for retail's
+// XMM4/XMM5/XMM6); case 0's points through the existing real_point3d_set 445 (2576 B). Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

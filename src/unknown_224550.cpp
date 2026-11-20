@@ -829,6 +829,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // `(void)&blend;` 162 (same code); the blend unset at the top and zeroed at the head of each flag arm 497 (1953 B, the
 // blend still read from memory in the aspect block, so the length of its lifetime is not what keeps it out of XMM5); a
 // store into the second record ahead of the first encode 162 (same code).
+// M3 lane 5 r220 (fast with 0x2243c0, MATCH throughout; control 162, masked aligned rows 61, all in the aspect block):
+// the first set's reciprocals declared ahead of the second set's extents 162 (same code); the two inverse sums each in one
+// expression ahead of the width 319 (1957 B); one to eight unused locals at the top, uninitialised or set to 0 (a
+// diagnostic) 162 each, so the blend's register is no symbol-count phase effect; the aspect pair as one point2f
+// re-measured 158 (1938 B, first difference +0x199, the packed colour's home moves from +0x2c to +0x24); the second
+// set's extents and reciprocals declared first 162, the blend's weight named once for the aspect block's four products
+// 162, the pivot rows' complement named once in the sequence arm 162 (same code each). Body unchanged.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

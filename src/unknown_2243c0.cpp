@@ -841,6 +841,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // definition's +0x1c field with the word fallback 135 (first +0x0), with the `& 0xffff` fallback 156; the group read in place
 // at both compares (no instance pointer) 165 (first +0xe), with the masked fallback 135; the instance pointer const 117 (same
 // code).
+// M3 lane 5 r219 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each run; main 117): lane 1 r59's reference
+// chain rebuilt on this main 8 at +0x9e (the same eight lines). Permuter on the chain (--fast --anneal --jobs 1, 600 s,
+// the full check here took 4 minutes): 50 tries, best 8. On the chain, each the same code (8): the three pointer zeros
+// as one chained assignment; the pass definition bound as `byte const *const &` with local_10 formed from it; the pass
+// tag bound as `long const &` to the element's field; the pass tag masked at its definition; one to seven unused
+// initialised locals at the top (flat: the last two lookups' registers are not a symbol-count phase). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

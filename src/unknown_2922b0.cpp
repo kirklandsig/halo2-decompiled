@@ -775,6 +775,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // loads the global axis component into a fresh register for all six products, where this build multiplies the dying
 // local component by the memory operand in two of them; the first two rays' root products are limit x root with the
 // limit copied ahead of the square root and the last two root x limit, this build root x limit in all four.
+// M3 lane 5 r220 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): retail's ray loop head is reached by fall
+// through at +0x440 with no pad, ours 8 bytes earlier with a jmp and a 6-byte pad (the code ahead is shorter). The range
+// test positive with `return local_0;` closing its block and `return true;` last 647 (2866 B: the early exit is then laid
+// out last as retail's 0x292de9, but the range is read again after the test and the slots move); the shared cross3f at
+// the four crosses 660 (2848 B); the ray loop as a plain counted for loop 708 (2820 B); the angle limit as a default
+// then an if 641; the root clamp's product written root first 521 (same code). Lane 2 r113's 331 lead re-measured 331 at
+// 2896 B on today's file (opening exact to +0x91, first difference the second cross's operand order). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

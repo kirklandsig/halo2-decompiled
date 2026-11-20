@@ -714,6 +714,44 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // previous-direction block and in the no-actor `else` 849 [134, 322] (3708 B, frame 0x2cac and retail's homes for the four
 // shorts, self_unit and actor; lead only: the initialiser moved into else arms). Retail's type-0 `else if` arm and the type-1
 // arm end in their own `sete`/`mov byte ptr [esp+0x12], 1` (skip flag in memory), where ours keeps it in BL.
+// M3 lane 5 r218 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3550, 0x29c860, 0x2c3030, 0x2c2060,
+// none of which moved; with that set the fast control is the plain 925, with this function alone the image differs, 920 at 3740
+// bytes; [aligned, masked] = difflib counts with addresses masked / registers and stack offsets masked too, control [519, 236]).
+// Read from retail: 0x2c0e9a is a second store of 1 to `straight`, reached only when actor_index is NONE; the type-1 arm stores the
+// skip flag on the passing path only (`je` / `call 0x1df560` / `jne` around one `mov byte ptr [esp+0x12], 1`, no store on the
+// other path); the definition's no-obstacle bit is tested as `mov cl, [eax+2]; shr cl, 3; test cl, 1`; the vehicle block compares
+// `[object+0x248]` with NONE in memory and loads it again for the lookup, and tests the vehicle's actor for NONE once, reading its
+// +0x5d0 byte through the folded address before it forms the pointer; the byte slots follow reference counts, with the skip flag
+// in memory at +0x12 between `aligned` and `straight`.
+// Not kept (m3 review: a field reread at each use and a repeated lookup are match-only; code back to main), 859: the definition's flag view as a word bitfield (the field's declared width; retail's shift-and-test), the vehicle index
+// read from the object at each use, the vehicle's actor through actor_get at both field reads (no NULL-initialised pointer, one
+// NONE test). Those three with the vehicle's actor as a named pointer used twice 927; the first two alone 923.
+// LEAD 514 (m3 lane 5 r218): the 859 form plus `else straight = true;` after the actor block and the type-1 arm's skip flag set
+// by an `if`, both match-only; with all five the frame (0x2cac), the entry registers and the byte homes are retail's. Left on it:
+// each lookup's scaled index (retail takes a fresh register), the i-term operand orders of the marker, vehicle and velocity dots,
+// the sphere loop's XMM numbering and loop padding.
+// The lead, step by step: `else straight = true;` 906 [419, 231] at 3724 B (frame 0x2cac and retail's homes for the four shorts,
+// self_unit, actor and straight); on it the type-1 arm as `if (team == ... || !function_1df560(...)) skip_classification = true;`
+// 708 [203, 84] at 3772 B, first difference +0x91 (the entry registers and the skip flag's home at +0x12 are then retail's); with
+// the word bitfield 568; with the vehicle index at each use 684; with the vehicle's actor through actor_get 692; those two 661;
+// all five 514 [170, 77] at 3740 B, plain-confirmed 514. The five without the `else` store 847 (first difference +0x4a); without
+// the type-1 `if` 914; the `else` store replaced by an `else` arm of the previous-direction test plus the no-actor `else`, no
+// initialiser, 884; by `straight = true;` at the top of the actor block plus the no-actor `else`, no initialiser, 851 (without
+// the type-1 `if` 940 and 859); the vehicle's actor as a named pointer on the five 537.
+// On the lead: a long type local for the four arm tests (retail's `movsx eax` and the `push eax` that passes false to 0x25d810)
+// 520 [154, 67] at 3756 B (it also turns the second marker dot's i-term to retail's unfolded form); `bool enabled = true;` with the
+// per-object defaults (retail's `mov dl, 1` ahead of the settings branch) 507; the object distance test distance-first
+// (`!(distance_squared <= r * r)`, retail squares the differences before it adds the radius) 520, the sphere test the same way
+// 505, both 511 [164, 63]; type + enabled 513; type + enabled + both tests 519 [146, 51] (the closest structure found), with one,
+// two or three redundant pairs around the entry dot's first product (diagnostic) 514 / 514 / 519; type + sphere test 520; type +
+// both tests 526; enabled + sphere test 498; the object offset through vector3d_from_points3d 559 (it loads i, j, k, retail k, j,
+// i), with the type 543, with enabled 552, with both 536; the offset assigned k, j, i 514 (emitted i, j, k); the distance declared
+// ahead of the radius 514 (same code); the combined flags as `moving | (sphere_flags | obstacle_flags)` or with moving last 514
+// (same code); the loop-top object lookup with the masked index in a local, through a header pointer, or as byte arithmetic in
+// either operand order 519 on the type + enabled + tests form (same code each). On the `else` store alone: the long type 911, with
+// the type-1 `if` 739. Retail's scaled lookup indices go to a fresh register each time (`lea edx, [eax+eax*2]` at the loop top,
+// `lea edx, [eax+eax*4]` for the component, `lea ecx, [eax+eax*4]` for the sphere) with the table loaded after them; its sphere
+// loop keeps the centre's z in XMM4 and 1.0 in XMM0 and subtracts k, j, i in that order.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

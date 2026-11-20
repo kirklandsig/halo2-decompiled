@@ -768,6 +768,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and copied/assigned heading 671/727/503/727. The same workspace as a
 // point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
 // NOT kept: the initial position still goes to +0x8c and every score rises.
+// M3 lane 5 r219 (H2M_FAST; control 489): the closing test as dot3f(&local_7, &local_9) 489 (same code: retail's
+// local_7-first products there come from operand ranks, not argument order); the side flip held in a byte and converted
+// at the join (`local_21 = side != 0`, diagnostic for retail's `test al, al; setne al` after the flip: that pair then
+// appears, but the new byte takes a home and every slot below moves) 663 at 3499 B; local_25 assigned y first 708
+// (3488 B, frame moves); that with the byte flip 718 (3481 B); y first with local_26 through the existing
+// vector2d_from_points2d 721 (3476 B). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
