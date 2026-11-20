@@ -590,6 +590,7 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// score 190 (was 198): Frame 0xa0 and both plane calls agree. The transformed normal, contact point and pending x87 spin scale still use different homes.
 // MiniMax C (11-19): no new form, no lower score (190): retail keeps the spin scale in the x87 stack across the branch
 // merge where this build gives it a stack home, and the plane distance written as one expression scores 203 against the
 // four accumulating statements; the body stands.
@@ -609,7 +610,7 @@ struct s_item_collision_bsp
 // plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
 // still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
 // products stay in fresh registers where retail overwrites them in place.
-// score 190 (was 198): the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
+// Earlier detail: the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
 // Earlier score 200.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
@@ -909,6 +910,9 @@ struct s_item_collision_bsp
 // Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
 // Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
 // contact registers still differ at the 1366-byte extent.
+// Contact point declaration beside marker, at the surface arm, before the marker query or
+// beside its plane workspaces. Direct stores and the shared point setter at each site all score
+// 190. NOT kept: the placement slot and 1366-byte extent stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

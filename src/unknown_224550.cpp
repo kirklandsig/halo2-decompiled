@@ -94,17 +94,18 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
-// score 162 (was 162): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// score 162 (was 162): The 0x60 frame, tint and UV homes agree. The fixed-arm jump span and blend spill through the bitmap join still differ.
+// Earlier detail: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Earlier score detail: 194 before.
-// score 162 (was 162): the statement order already matches retail (the blend remainder sits between the two
+// Earlier score 162 (was 162): the statement order already matches retail (the blend remainder sits between the two
 // aspect tests, where retail computes it into XMM2); what is left is the allocation - retail carries the blend
 // in XMM5 through the aspect block, ours computes it in XMM2 and spills the remainder to [esp+0x74]; removing
 // the two named inverse terms so the sums read inline measures 322 and is reverted.
-// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// Earlier score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // Earlier score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
-// score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
+// Earlier score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Prior score history: 194 before.
 // MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
@@ -792,6 +793,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // extents 217 (1948 B); width computed after both inverse rows 173 (1951 B); width computed ahead of both inverse rows 170
 // (1950 B); the aspect test as `ay<ax` 162 (same code). Diagnostic (behaviour change, reverted): the blend assigned without
 // its 0x20 test 332 (1959 B), so the conditional store and reload is not what keeps it out of XMM5.
+// Primary, secondary or both span declarations beside the UV outputs or at bitmap entry,
+// then one pair before the other at the bounds/pivot boundary, all 162.
+// NOT kept: the primary spans and blend retain their opening registers.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
