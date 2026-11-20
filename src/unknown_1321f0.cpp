@@ -962,7 +962,6 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 	return false;
 }
 
-static __forceinline void *pool_filter_kept_134390(s_bit_vector_pool const *data) { void *filter = data->filter; void *const &kept = filter; return kept; }
 // score 69 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
 // instance flags with behind last (ours earlier), and reloads data->lists[3] after function_16e210 in the
 // duplicate-instance branch; writing that reload swaps edx and edi in the instance loop (score 70).
@@ -976,11 +975,11 @@ static __forceinline void *pool_filter_kept_134390(s_bit_vector_pool const *data
 // ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
 // visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
 // shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
-// Matched in a full build with stand-in SDK headers (was 69): the cluster radius is passed straight to function_132fd0
-// (no local), the else arm reads the entry index into a short local before the bit store (0x133050's form), and the
-// instance filter test is repeated twice more through a getter that holds the filter in a reference-bound local. The
-// repeated tests leave no code; each is a block the instance index lives through, which lets the centre pointer be
-// coloured first (edi, as retail at 0x134693).
+// score 10 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), the
+// else arm reads the entry index into a short local before the bit store (0x133050's form), and the entry local is
+// declared with its NONE before the function_132e60 call, which gives retail's registers in the instance loop (the
+// centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call; retail stores it after
+// the visible test (0x1346c0).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -1042,14 +1041,14 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 			if (g_4e7c20[(short)instance_index] != g_4e7c1c)
 			{
 				c_entry_list *filter = (c_entry_list *)data->filter;
-				if (filter && pool_filter_kept_134390(data) && pool_filter_kept_134390(data))
+				if (filter)
 					filter = *(c_entry_list **)((byte *)filter + 0x18);
 				if (*(word *)(definition + 0x24) > 0)
 				{
 					bool contained, first, second;
+					long entry = NONE;
 					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || ((char)data->flags2a60 >> 7) != 0)
 					{
-						long entry = NONE;
 						bool behind;
 						bool in_front;
 						function_132fd0(data, &instance->center, &behind, &in_front, instance->radius);
