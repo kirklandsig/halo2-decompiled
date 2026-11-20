@@ -3172,6 +3172,11 @@ bool function_39a80(byte *state)
 real magnitude3d(vector3f const *v);
 
 // MiniMax I (11-19): no new form, no lower score (170): the raw current magnitude still shares the clamped length's slot where retail keeps it in a slot of its own ([esp + 0xc]) and reloads it for both clamp tests, and the dot's promotion still widens to a spill; the named raw length (251) and the clamped pair (320) recorded below still measure worse, so the body is unchanged.
+// MiniMax H (11-20): no new form, no lower score (170): the body is retail's length and the whole difference is
+// the raw current magnitude's home - retail keeps it in a slot of its own ([esp + 0xc]) and reloads it for both
+// clamp tests, where this build leaves it on the x87 stack and lets the clamped value take its place. Note for the
+// next round: with this function alone in the reduced image the length drops to 997 bytes and the score to 315,
+// because magnitude3d stays out of line there, so measure it with the rest of the file's functions present.
 // score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
 // MiniMax S (11-17): no new form, no lower score (170): retail still keeps the raw current length in its own slot
 // and the pinned value in another, where this build reuses one slot for both, so the later homes shift; retail
@@ -3577,7 +3582,15 @@ s_cached_input_list g_5234e8[4];
 // still lands in eax where retail puts it in ecx; the reduced image scores 147 here, as earlier rounds recorded.
 // MiniMax R (11-15): no new form, no lower score (146): the index still rides in EDI into the call to 0x31590, whose register convention is set in another file, and the allocator does not tie the index to the argument register here.
 // MiniMax R (11-16): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills the input list and reloads it at the loop top and keeps the total on the stack with the index in EBX and the cursor in EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590, whose body is in another file. BLOCKED-BY 0x31590.
-// score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
+// MiniMax H (11-20): the input list read once into a local and the counter and total as shorts (126 in this reduced
+// image, was 147): the frame is now 0xa0 and the body is retail's 548 bytes, and the depth sum now orders its terms
+// as retail does (the z and x terms added first, the y term next). What still differs: the prologue pushes esi after
+// the view clamp and keeps the list in esi where retail spills it and reloads it at the loop top, the loop counts
+// down a stack counter where retail keeps a 16-bit counter in si, and this reduced image loads the three float
+// constants inside the loop (the full build hoists them into xmm5-xmm7).
+// score 126 (was 147 here; the full build's 113 is from before this change): frame 0xa0 and retail's length now
+// agree; retail pushes esi before the view clamp and spills the input list (reloaded at the loop top) where ours
+// keeps the list in esi, and retail's 16-bit counter in si is a stack countdown here.
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
 // declared outside the loop 147 fast (fast control 147).
@@ -3802,10 +3815,11 @@ long __stdcall function_31910(s_cached_input *output)
 {
     long count = 0;
     long view = g_4b9ed4 < 0 ? 0 : g_4b9ed4 > 3 ? 3 : g_4b9ed4;
-    long total = *(short *)((byte *)g_547f98 + 4);
-    for (long i = 0; i < total; ++i)
+    byte *list = (byte *)g_547f98;
+    short total = *(short *)(list + 4);
+    for (short i = 0; i < total; ++i)
     {
-        long index = (*(long **)((byte *)g_547f98 + 0xc))[(short)i];
+        long index = (*(long **)(list + 0xc))[i];
         byte shape[0x7c];
         if (index != NONE && function_31590(index, (s_light_shape_ab *)shape) && count < 128)
         {
@@ -3819,7 +3833,7 @@ long __stdcall function_31910(s_cached_input *output)
             result->data[1] = index;
             result->data[2] = parent;
             result->data[3] = *(dword *)(entry + 0x100);
-            real depth = g_4b9e38 * position.z + g_4b9e20 * position.x + g_4b9e2c * position.y + g_4b9e44;
+            real depth = g_4b9e2c * position.y + g_4b9e20 * position.x + g_4b9e38 * position.z + g_4b9e44;
             if (depth < 0.0f) depth = 0.0f - depth;
             if (!(depth > 0.1f)) depth = 0.1f;
             real score = (g_4b9ed0 / depth) * radius * 2.0f;

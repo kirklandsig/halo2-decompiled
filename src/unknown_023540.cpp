@@ -2445,6 +2445,16 @@ dword __cdecl function_131fc0(real alpha);
 // width and the height once and multiplies the coordinates by the stored reciprocals, this build multiplies the
 // coordinates by named reciprocals and folds the other operand, so retail's reciprocal registers, its dimension
 // homes (the width at 0x10, the height at 0x14) and the bottom edge's v products still differ.
+// MiniMax H (11-20): 14 -> 4 (fast, the reduced image): the width and the height are one point2f now, read in
+// retail's order, and the two default rectangles and the four vertex pairs are retail's. Left: the bottom edge's two
+// vertices - retail multiplies the stored reciprocal by the coordinate and keeps the coordinate in the destination
+// register, this build keeps the reciprocal in the destination register and multiplies by the coordinate; the
+// permuter found nothing below 4 (80 tries), and a named reciprocal always gives the coordinate first while an
+// inline reciprocal duplicates the reciprocal.
+// score 4 (was 14; earlier 100, was 140): at retail's 1729 bytes everything up to the default rectangles equals retail (the
+// flag loads, the short arm's reload and the two parameter-home writes included). Left: the bottom edge's two vertex
+// products, where retail loads the coordinate and multiplies by the reciprocal's home and this build loads the
+// reciprocal and multiplies by the coordinate (see the round above).
 // score 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the order of the eight
 // default stores, the reciprocals' registers and the operand order of the UV products (see round 117 below).
@@ -2768,16 +2778,17 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     if (!g_4b99b0[1] && alternate_target) return;
     real default_source[4];
     real default_destination[4];
-    real width = 1.0f;
-    real height = 1.0f;
+    point2f size;
+    size.x = 1.0f;
+    size.y = 1.0f;
     byte *definition = tag != NONE ? g_4e3b44[tag & 0xffff].bytes : NULL;
     if (tag != NONE && bitmap_index >= 0 && bitmap_index < *(long *)(definition + 0x44))
     {
         byte *bitmap = *(byte **)(definition + 0x48) + bitmap_index * 0x74;
         real w = (real)*(short *)(bitmap + 4);
-        width = 1.0f > w ? 1.0f : w;
+        size.x = 1.0f > w ? 1.0f : w;
         real h = (real)*(short *)(bitmap + 6);
-        height = 1.0f > h ? 1.0f : h;
+        size.y = 1.0f > h ? 1.0f : h;
     }
     if (alternate_target) function_14bc0(*(short *)(g_4b99b0 + 0x38), 0, false);
     else if (screen_target) function_14bc0(0, 0, false);
@@ -2858,29 +2869,29 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1c710(g_51f0f0);
     default_source[0] = 0.0f;
     default_source[2] = 0.0f;
-    default_source[1] = width;
-    default_source[3] = height;
-    default_destination[0] = 320.0f - width * 0.5f;
-    default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
-    default_destination[1] = 320.0f + width * 0.5f;
-    default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
+    default_source[1] = size.x;
+    default_source[3] = size.y;
+    default_destination[0] = 320.0f - size.x * 0.5f;
+    default_destination[2] = 240.0f - size.y * 0.5f + arg_af5a49;
+    default_destination[1] = 320.0f + size.x * 0.5f;
+    default_destination[3] = arg_af5a49 + size.y * 0.5f + 240.0f;
     if (!source) source = default_source;
     if (!destination) destination = default_destination;
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
-    real inverse_height = 1.0f / height;
-    D3DDevice_SetVertexData2f(1, source[0] / width, source[2] * inverse_height);
+    real inverse_height = 1.0f / size.y;
+    D3DDevice_SetVertexData2f(1, source[0] / size.x, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] / width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / size.x, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] / width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / size.x, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[0] / width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[0] / size.x, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
@@ -2921,6 +2932,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // is still compared with minus one where retail does that before the size is stored; re-measured at 330 (1591 bytes
 // in the reduced image, against retail's 1543). BLOCKED-BY 0x235a0.
 // MiniMax R (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; retail inlines the first 0x235a0 copy and calls the second one, while this build inlines both, and retail's dword rounding of the byte count (sub size, remainder; add size, 4) written out after the zero test measures 392 (1624 bytes), since the body is already misaligned there.
+// MiniMax H (11-20): no new form, no lower score (354): the body is still 52 bytes longer than retail's
+// (1595 against 1543), so this build's early exit jumps to a block further from the function's start than
+// retail's and the body after it pairs against the wrong instruction; the extra code is the second 0x235a0
+// copy inlined where retail calls it: BLOCKED-BY 0x235a0.
 // score 354 (was 354; earlier 330, 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here

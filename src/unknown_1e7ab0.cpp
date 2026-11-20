@@ -190,6 +190,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // lookup before the 0x14de70 call 585, the entry test before the player test 366 and both 274); the rotation is the
 // allocation around the lookup, not the lookup's shape.
 // MiniMax E (11-20): no new form, no lower score (117): the body is still retail's length and the difference is the scratch rotation - the inlined getter's registers (ours table EAX/result ECX, retail ECX/EAX), case 4's parent (ours ECX, retail ESI) and the rotations after it; the parent's register comes from 0xd0590's parameter order, which does not match yet and lives in another file: BLOCKED-BY 0xd0590.
+// MiniMax H (11-20): no new form, no lower score (117): the body is still retail's length and the first difference
+// is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the
+// result into ECX, retail loads the table into ECX and the result into EAX); the getter rewritten with an early
+// return measures the same 117, and the rotation is settled by 0xd0590's parameter order in
+// src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
 // score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
 // into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
 // 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter

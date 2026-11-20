@@ -4311,6 +4311,10 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
+// score 48 (was 72): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
+// word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
+// DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
 // score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
@@ -4739,7 +4743,7 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 			sound_voice_queue_chunk(arg_0, local_8, local_1->chunk_index);
 			local_1->flag3 = false;
 		}
-		if (!TEST_FIELD_BIT(local_1->flag3))
+		if (!local_1->flag3)
 		{
 			short next_chunk = (short)function_219290((s_permutation_group *)local_8, local_1->chunk_index);
 			if (next_chunk != NONE)
