@@ -901,6 +901,13 @@ struct s_physical_block_iterator
 // today's file 40 (1213 B, first difference +0x356). On it: the head flag as a `long` 93 (1214 B), as `bool const` 40 (same
 // code), the second stage on `!at_head` with its arms swapped 93, the flag declared between the pool and entry pointers 46
 // and ahead of both 46 (first difference +0xcc each).
+// M3 lane 1 r135 (fast with the file's six functions and 0x13d320, all MATCH; round 124's 40 lead re-applied, 40 at +0x356):
+// on it, 1 to 7 dead longs at the top 40 each (no phase effect on this integer code); the walk test through `long const
+// start`/`end` named in the loop, through a block pointer local, as two nested ifs, with the block's end named, 40 each
+// (same code: the second compare still re-reads best.offset where retail keeps it in EDI with a `mov edx, edi` copy); one
+// test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
+// a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
+// registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

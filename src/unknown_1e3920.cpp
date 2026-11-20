@@ -2001,6 +2001,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax B (11-20): no new form, no lower score (251): retail keeps the seed global in EBX across the out-of-line draw at 0x259a0, and that callee is opaque to this build because its file is built without link-time inlining, so the seed reloads here; the actor, the weapon options and the object-pool global still take different registers (ours actor EDI, options ESI, pool reloaded).
 // score 251 (was 251): retail holds the object-pool global in EDI from the options lookup on (actor ESI, options EBP);
 // ours reloads it at each lookup, so the actor and the options take EDI and ESI. The forms tried follow.
 // MiniMax G (11-18), no new form, no lower score (251): retail loads the object-pool global into EDI above the

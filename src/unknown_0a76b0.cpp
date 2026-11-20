@@ -2592,6 +2592,12 @@ __forceinline char unit_action_round(real value)
 // permuter on it (909 s, 34 tries) found nothing below 105. Also on it: the mode-2 arm's first-person copy in both
 // branches 105, the first-person NONE alone ahead of the getter (name's NONE after it) 105, both NONEs as separate
 // initialisers ahead of the getter 105 (same code each: the first-person name keeps EBP and the compare its immediate).
+// One entry table read with the short hand getter 332, a shared
+// pool with a word slot 318 or long slot 295, one entry table read 328,
+// a shared pool with the short hand getter 298, a separate active receiver
+// 335, a shared projected header 293, and a word slot with the active and
+// short hand helpers 320. The shared header reaches 1189 bytes with the
+// displacement in ECX and the hand comparison still at byte width.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

@@ -431,6 +431,14 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // (357 B); the zoom-out sound helper plain `inline` 165 (315 B). Checked: 0x10a390's source re-reads the pool through
 // its macro after its 0xbadc0 call, so the no-write inference above holds; the real 0x14de90 is in a file this round
 // could not edit. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
+// M3 lane 15 r115 (fast with 0x103b10, 0x14de90, 0xbadc0, 0xcbd50 and 0x100f70, all MATCH; control 110, aligned 80):
+// `__assume(unit != NULL)` after the entry fetch 110 (same code: the second fetch still merges); the weapon lookup's unit
+// fetched into a named pointer with the same assumption 110 (same code); the player-index helper returning a one-member
+// aggregate through a wrapper 110 (same code); one user-index helper making both 0xbadc0 calls 156 (326 bytes); the entry
+// fetch moved after the two player lookups and used for the reset and the weapon 109 (376 bytes, retail's length, aligned
+// 63: everything after the calls then has retail's shape, but retail also keeps the entry fetch in EBP for the reset), not
+// kept (a moved declaration, a gain of 1). 0xbadc0 prints as ours now, but its file is on this round's Avoid list.
+// Still BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

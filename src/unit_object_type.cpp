@@ -7260,6 +7260,11 @@ done:
 // rotations with shared scaler 220; state flag updates through byte helper with shared scaler 181.
 // NOT kept: the shared planar scaler recovers the reciprocal and both multiplies at retail length but gains
 // only six. The direction branch span, flag-result bytes, state home and weapon reloads still differ.
+// Shared planar scaler with conditional length 493, nested action gate 181, type-first animation rejection
+// 185, named state and weapon roles 181, branch-local fallback duration 190, animation accessor and nested
+// definition gate 181, conditional side selector 181, named weapon eligibility 208.
+// NOT kept: the scale sequence agrees at 181 and retail length, but gains six. Flag bytes, state home and
+// independent weapon lookups remain.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8904,9 +8909,8 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
 // retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
 // the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.
-// score 62 (was 116; earlier 129, 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
-// score 116 (was 129; earlier 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
-// score 129 (was 383; earlier 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
+// score 62 (was 116): Retail interleaves owner-field reads and the grenade tag lookup. Earlier scores 129, 383, 399.
+// Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
 // definition and uses ebx and edi as temporaries, so the prologue order, the stack slots (retail: definition 0x10,
 // total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail passes the bit of
@@ -8964,6 +8968,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 57 (masked 11), fraction + owner order 121 (1598 bytes, masked 8), globals + owner order 89 (1606 bytes); the cap's
 // upper test as `cap > 1.0f` 116 (other code, masked 15). The low counts are positional; only the owner order (a
 // statement order, kept only with a match) and the fraction's stun multiply order move masked lines.
+// Interleaved owner and grenade-tag reads 64, early player before both
+// tag reads 64, tag before player and object 62, one owner-unit receiver 141,
+// separate grenade handle 64, library owner copy 64, returned center for both
+// event fields 389, and distinct event/center names 64. The 64 forms reach
+// +0xd8 at retail length and delay the owner object-index load.
 // MiniMax E (11-19): no new form, no lower score (62, baseline): the owner's two fields are still read in the opposite
 // order (ours +0xc8 then +0xc4, retail +0xc4 then +0xc8), the shake's fields are still named locals where retail
 // re-reads them from memory (dropping both names measures 383, re-reading only the divisor measures 116), the 0xc98a0
@@ -9569,6 +9578,11 @@ struct s_unit_melee_collision
 // by test and publication 484; collision classification by tests 486.
 // NOT kept: the live range forms recover the 0x17c frame but shorten the body. The scaled-add form gains
 // four at 2201 bytes, and chained defaults gain one at 2229. Retail's unit and fan counter homes remain.
+// Native per-ray range with sequential basis scales 511, shared across 511, shared up 511, shared across and
+// up 511, aim after center 531, factored biped preference 536, successful query around collision dispatch 531,
+// basis and ordinal names 531.
+// NOT kept: all recover 0x17c but shorten to 2205 bytes and raise the score. The early pool load and fan
+// register allocation remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
