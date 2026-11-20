@@ -868,6 +868,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
 // neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
 // above the count for the fourth callee-saved register is still open.
+// M3 lane 6 r214 (fast with 0x239d50, MATCH throughout; control 144): a retail-shaped body (one long hull counter as
+// `while ((short)hull_count < count)`, bool flag, heading zeroed before the lowest scan, memmove, return exits) whose
+// pass body ends in a `return` with the not-closed paths as `continue` (no latch block, to test for retail's top-tested
+// head) 345 (655 B: the two difference tests merge into one); with a long flag 295 (683 B); with a short hull counter
+// 343 (657 B); the plain return-exit form re-measured 269 (747 B); on it `short current = count;` at function scope
+// ahead of the classifier call 271 (748 B). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1458,6 +1464,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
 // tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
 // guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
+// M3 lane 6 r214 (fast with 0x239e50; control 129, aligned 81, masked 16). Retail keeps both side bytes in memory (the
+// copy at the loop end goes through CL into +0xd), so the count holds ECX from the top; ours keeps the previous side in
+// CL. The listed copy moved ahead of `if (inside)` re-measured 157 (masked 9: left the two side-byte slots swapped, the
+// copy's place, the XMM renaming); on it the previous side renamed to sort between the two others, the current side
+// renamed to sort last, and both renamed: 157 each (same code: the byte slots do not follow names); the current side
+// renamed on main 129 (same code); the crossing result named ahead of the copy (`bool crossed = inside !=
+// previous_inside; previous_inside = inside; if (crossed)`) 226 (894 B). Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

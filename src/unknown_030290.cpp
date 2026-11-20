@@ -709,6 +709,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // parameter-address and direct-inverse lead (re-measured 175 at 955 B): the displacement by const reference 200; a
 // `vector3f const *` copy of d for the sums 200 (the z sum then loads d first as retail, the first transform's x/z swap);
 // a `point3f const *` copy of a 175; the sums in statement order y, x, z 175.
+// M3 lane 6 r214 (fast with 0x30bf0/0x30710, both MATCH; control 195, aligned 95, masked 38): the orthographic factors as
+// `fa = fb = 1.f;`, the transformed points declared ahead of the displaced point, `fa`/`fb` declared with the inverse
+// defaults, the displaced point as an aggregate initialiser, the transformed points declared `tb, ta` (retail's ta.z
+// slot sits below tb.z, ours above) and as two declarations: 195 each, identical code. The 0x4f7e0/0x4ff50 call-line
+// reorder stays held (both still contributor code). Body unchanged.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

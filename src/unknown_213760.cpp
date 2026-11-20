@@ -1984,6 +1984,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // NOT kept: The query-and-write and resize-and-write forms reach 32 at retail length. Both retain the first stack-
 // slot difference and use one-use handle copies, so the one-point gain is excluded. The other six tie or raise the
 // score.
+// M3 lane 6 r214 (fast with 0x213800 and 0x2149c0, both MATCH; control 33; lane 9 r132's 5 form rebuilt at 5, only the
+// write's flags zero in EAX ahead of the handle load left). Retail's `mov esi, 1` range bound is the register already
+// holding 1 reused for the immediate (the 7 and 5 forms have it). Looking for a no-code step after the write's wait (the
+// probe finding above), on the 5 form, same code each (5): the count copied into a named `dword` before its test; the
+// count compared as `(long)`; the close test through `file->handle`; the empty header declared ahead of `if (resized)`
+// with the strings set inside; the count compared with `sizeof(empty_header)`. The permuter on the 5 form (annealing,
+// one job, 609 s): 67 tries, none under 5 in the reduced or the full image. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -2598,6 +2598,12 @@ __forceinline char unit_action_round(real value)
 // 335, a shared projected header 293, and a word slot with the active and
 // short hand helpers 320. The shared header reaches 1189 bytes with the
 // displacement in ECX and the hand comparison still at byte width.
+// M3 lane 6 r214 (fast with 0xe9ed0/0xea090, both MATCH; control 234, aligned 141): retail divides by the lunge-speed
+// field read again (`divss xmm0, [eax+0x2c]`); that field read at each use (through a named settings pointer, or the full
+// chain twice: same code) 234 (aligned 126, the tail then retail's). On lane 5's 105 lead (rebuilt at 105, masked 9): the
+// same re-read 355 (1142 B: the first-person name drops to a stack home and loses its copies); the biped flag renamed to
+// sort after `result` 105 (same code: the two byte slots do not follow names); `type = NONE;` after the NONE pair 105
+// (same code); the first-person name copied from `name` after the weapon getter 317 (1191 B). Body unchanged.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
