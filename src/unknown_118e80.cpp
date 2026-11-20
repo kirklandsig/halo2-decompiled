@@ -1543,6 +1543,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // call and read back twice); no member store 90 (re-measure). Still BLOCKED-BY 0x1c4b00's bool formal: three of its 14
 // declarations sit in files other lanes hold this round (src/bipeds.cpp, src/items.cpp, src/unknown_0a76b0.cpp), and by
 // 0x1ec690 (still a disabled draft behind its stub) for the copy's hoisted loads; lane 3 r258's held form (6) stands.
+// score 11 (was 14): MiniMax H (11-20): the move output's byte member store now follows the +0x88 copy, so the byte store sinks past the force push as retail does; the tail still differs where retail keeps the copy's destination in EAX and spills the 0x119bc0 result to a stack byte that it pushes as a dword, which needs 0x1c4b00's bool formal in src/unknown_1c25a0.cpp and in its other declarations.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
@@ -1601,9 +1602,9 @@ bool __stdcall function_118700(long arg_0)
         bool local_13 = length_sq3f(&local_3.field_138) > 0.0f;
         forward_flags_set(&local_0->flags, 0x10, local_13);
         bool local_force = function_119bc0(arg_0);
-        local_11.field_8 = local_force;
         s_forward_object *local_15 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
         *(vector3f *)((byte *)local_15 + 0x88) = local_11.field_c;
+        local_11.field_8 = local_force;
         function_1c4b00(arg_0, &local_11.field_c, NULL, local_force);
         function_119500(arg_0, local_11.field_4, (s_orientation_request_118f90 *)&local_6);
         function_1195c0(arg_0, (s_orientation_request_118f90 *)&local_6);
