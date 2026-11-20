@@ -4450,6 +4450,16 @@ extern vector3f *g_4687bc;
 // dword; the element from the array's data by byte arithmetic with sizeof, through a reference to the data element,
 // non-const. Diagnostics (screen): without the 0x188180 call, without the damage block, without 0x1eb020's call, with
 // the strength a constant: the material still in DX and the element still data-in-EDX, so both choices are local.
+// M3 lane 8 r210 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the element pointer declared at the
+// effect block's scope and assigned after the index test 8; the rigid-body index declared before the material and
+// assigned at the call 8; the node index declared at the effect block's scope 8; the element through a named pointer
+// to the rigid-body array formed after the component lookup 8 (all the same code); the material default-constructed
+// before the component lookup and assigned a constructed value after it 10 (the load sinks to the store, in AX).
+// Compile-only screen (both sites as the check; same code at both): the element as a data local then
+// `&rigid_body[index]`, as `index + data`; the component bound as a reference; a const component pointer; `0 <
+// node_count`; an `int` index; `NONE != index`. Diagnostics (screen): the index kept live past the element goes to EBX
+// with the data still loaded first; without the node-count test the offset takes ECX, data still first. Both stores and
+// loads sit as late or early as their registers allow, so both sites are register choices, not schedules.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

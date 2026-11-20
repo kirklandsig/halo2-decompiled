@@ -309,6 +309,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // in the same block (CSE'd away; diagnostic for a pre-CSE tag use) 118 (530 bytes, tag still EDI); an early object copy
 // bound by a const reference for the early tests and marker calls 116; the late uses (call, started test, dispatch) through
 // a const reference bound to the parameter 116; positioned read through the spatialization bit-field 116 (same code each).
+// M3 lane 8 r210 (fast with the eight callees; control 11, plain-reads control 116): `positioned` computed after the clamp
+// with every object read plain 141, on the kept form 146 (536 bytes); the spatialization pointer `const` (plain reads) 116
+// (same code); the request arm's result chained into the slot store (plain reads) 127 (534 bytes); the started test read
+// through the reference with its volatile cast away (`*(long const *)object_reference`) 116 (the address folds, object EBP).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

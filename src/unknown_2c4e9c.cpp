@@ -3289,6 +3289,10 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // (`map_id != NONE && next(&iterator)`, no early test) 33 (76 B). Re-measured the NONE-default id 13 (NONE cached in
 // EAX, the id loaded straight into EBX). A byte scan of retail finds only three references to the field: the store in
 // 0x19a6f2, the read in 0x19a864 (loaded straight into ESI there) and this function's EAX load.
+// M3 lane 8 r210 (fast with 0x2c9a58, matched in each): a const entry pointer named for the lookup argument 30; the lookup
+// result cast to a const definition pointer 30; the iterator's pool written `this->data` 30; the selection written
+// `this->select_datum` 30; the guard as `if (map_id == NONE) return;` with the iterator in the following block 30 (all the
+// same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
