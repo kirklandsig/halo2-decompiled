@@ -893,7 +893,7 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
 // build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
 // and the loop's entry block still sit at other frame offsets.
-// score 222 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
+// score 222 (was 222): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
@@ -1340,6 +1340,12 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // goto to the actor test, a smaller arm or the swapped cleanup arm do not park it. Matched 0x132e60 parks its else arm
 // only because that arm threads past the join test. Then the squad home (0x1c here, retail 0x10 shared with the bit
 // and the actor) and the query bytes' homes.
+// M3 lane 8 r202 (fast; control 222, aligned 224, register-masked 223, almost all of it the creation arm's place): on this
+// base the forced-inline creation arm (actor returned, unit through a reference) 421 (1336 B) no longer moves the arm; the
+// arm's actor in its own local copied after the unit test 305; `else return NONE;` after the arm's success block re-measured
+// 334 (1272 B), after both arms' success blocks 348 (1283 B); a `goto` to a label before the actor test at the arm's end 222
+// (same code). Retail's order is the chain from the actor test through case 2 moved up behind the perception arm, which needs
+// the creation arm to end in a jump; no form found that keeps one.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

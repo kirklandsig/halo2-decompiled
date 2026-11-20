@@ -815,6 +815,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
 // the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
 // stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
+// Three-way source selection as conditional, explicit branches, missing-record default, or provider default
+// with palette precedence scores 734/618/618/737 for the short slot and 730/704/708/724 for the byte.
+// NOT kept: all raise the score, with the provider and palette register assignments still different.
 // M3 lane 15 r113 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): reading
 // retail again, its NONE stays in EAX from the `or eax, -1` after the 0x130f60 call through the whole palette arm (the
 // +0xd4 tag test compares `cmp edi, eax` after all the inlined accumulations) and into the fallback store, so that web
@@ -828,6 +831,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // weight-kind-sentinel 606, sentinel-weight-kind 607. Completion default after metadata 607.
 // Explicit admission before defaults with a retained ordinal 607, with slot re-reads 666.
 // NOT kept: the one-point gains leave the palette width, sentinel and provider registers different.
+// M3 lane 16 r153 (fast, file alone; control 607, aligned 487). Reading: retail reads the palette byte again at the
+// source-index store (`movsx edx, byte [esi+0x6f]`), so the cluster pointer stays in ESI through the palette arm and the
+// record takes EBX. New: the slot as `long` 706; the record pointer declared at the loop top 607 (same code); the
+// source-index store reading the byte again with the short slot kept for the tests 703 (3831 B, aligned 464: record in
+// EBX and cluster in ESI as retail; the slot is still a word and NONE is in EDX), the same with a char slot 666 (3827 B:
+// retail's `mov cl` and byte compare, NONE in EDX against retail's EAX with the call result moved to EDX); the slot read
+// ahead of the three source resets 607 (same code).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

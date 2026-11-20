@@ -1449,6 +1449,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // distance at the loop end 258; the crossing written through a pointer to its output element 129; the previous point as
 // `points + count - 1` with the inside copy written per member 129; the epsilon test as `epsilon < distance` 129.
 // Diagnostic (reverted): a volatile previous side 149 (the frame moves, the entry is not retail's).
+// M3 lane 8 r202 (fast; control 129, aligned 89, register-masked 28): on the repeated-guard graph (match-only), re-measured guard +
+// if/else fraction 92 (890 B, aligned 36: the zero made late in XMM1, `i = 0` after the guard's branch, the crossing's dy
+// copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
+// tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
+// guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

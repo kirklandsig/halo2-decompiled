@@ -465,7 +465,7 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // the stack, the frame stays 0xa4 against retail's 0xa0 and the body 1620 bytes against retail's 1616; the two callees
 // that held this one back now match, so what is left is the actor index's home and the frame.
 // MiniMax E (11-16): no new form, no lower score (412): the frame is still 0xa4 against retail's 0xa0 and retail still takes the actor index in EAX where ours loads the argument from the stack, so the body stays four bytes longer than retail's.
-// score 404 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// score 404 (was 404; 412 before lane 14 r124): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
 // Frame 0xa4 versus 0xa0; stacked actor and node/workspace homes still differ.
@@ -847,6 +847,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // lookups on a `current` local 409 (the second test folds away); lane 6's walk through 0x26be00/0x26be30 on the case-2
 // form 443 at 1616 B (aligned 310 against 319). Still BLOCKED-BY 0x2641c0's inline (retail expands it here; its
 // noinline declaration is in another lane's file this round): the actor index arrives on the stack, not in EAX.
+// M3 lane 16 r153 (fast with 0x1e34e0, 0x264330, 0x265680; control 404). Retail expands 0x2641c0 here (its actor
+// lookup reuses the actor's scaled offset saved at entry, [esp+0x28]) and calls it everywhere else. New: the existing
+// noinline declaration of 0x2641c0 dropped 509 (1696 B; 0x264210 then expands it too, 68 -> 139 B, lost; the other five
+// callers stay matched; restored); `sample = update = true` as two statements 404 (same code); the final block on one
+// `current` local tested twice 409 (1616 B, the second test folds away, as lane 14's ternary form); `sampled_one` declared
+// ahead of `maximum` 404 (same code); `update` declared ahead of `sample` 402 (1620 B; a declaration order, not kept).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -878,6 +878,11 @@ void __stdcall function_1160c0(real dt)
 // before stores 213, three cross products staged j/k/i 144.
 // NOT kept: the 113 form gets within one byte of retail, but raises three shared users’ scores
 // and loses two matches. The selected segment and length-ratio spill still differ.
+// M3 lane 13 r126 (fast with 0x116750, 0x116010, 0x1160c0 and 0x115ff0, matched throughout; control 144): the dt test
+// as `0.f < dt` 144 and `node->ticks++` 144 (both the same code); the first node's copies with the direction first 152;
+// the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
+// Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
+// so the one-step scratch rotation is not set by a temporary at the base's own load).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
