@@ -3386,6 +3386,10 @@ real magnitude3d(vector3f const *v);
 // as a real 170 (the double copy stays: inlining exposes the same conversion); the dot as `dot3f(&first, &second)` 170;
 // the arccosine of the pinned dot 292 (1091 B). Diagnostic: the two lengths, or the dot/angle/sine/cosine, under other
 // names 170/170/170 (no home moves: the raw current length still shares the clamped length's slot).
+// Length gate before dot/current unit/target unit/both units 198/204/203/204.
+// Separate current-first magnitude/unit gates 267/202, target-first 271/267.
+// NOT kept: all retain frame 0x38 but regress. The raw current root and promoted
+// dot still occupy different homes from retail.
 // M3 lane 4 r227 (fast with 0x24590/0x30bf0, both MATCH; control 170; a/s/r = LCS-aligned unmatched lines exact /
 // stack-masked / register-masked, control 137/135/67). The listing agrees with retail line for line up to +0x30: the
 // only first-block difference is the raw current length's rounding store (`fstp` to a's home +4 where retail uses
@@ -4498,6 +4502,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M3 lane 5 r205 (fast, control 486): the old position advanced in place as the moved point (no `moved` local) 535 (1985 B,
 // frame 0x5c); the two projections as const locals 486; the offset updates as `+=` 486; the current position projected
 // before the moved point 546 (2097 B); `old` copied through the position pointer declared ahead of it 486.
+// Size before velocity/limit/offset or after offset 488/499/486/487. Scaled add 518,
+// with size before velocity/limit/offset 493/517/518. NOT kept: the scaled add
+// shrinks the frame to 0x50 and the body to 2001 bytes. Both velocity roots and
+// the 0x38 frame still differ.
 // M3 lane 1 r131 (fast with 0x36b50, control 486): the velocity pointer as `&((vector3f *)(state + 0x24))[i]` 486 (same
 // code); every velocity access as `velocities[i]` off a base pointer, no element pointer 509 (2009 B, frame 0x5c, the
 // adds still forwarded into the root); the divisor field read at its test and in the reciprocal (retail's `divss

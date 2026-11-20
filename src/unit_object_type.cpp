@@ -7243,6 +7243,10 @@ done:
 // 207. Left on the 171 form: the scale block's x multiply (`movaps xmm3, xmm0; mulss xmm3, [x]`), the first weapon index
 // in a frame slot with the unit looked up again for the second, the state pointer's home (+0x14), the dead base `add`
 // after the animation flag, and unit_index in ESI from the bit-1 test to the facing call.
+// Dedicated current, pointer-based next, mixed, separate record and explicit short slot forms 187 each.
+// Shared planar normalization with the current, next or both accessors 181/181/181.
+// NOT kept: the scale sequence matches but gains six. The weapon lookups still merge and the flag
+// bytes and state slot differ.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -9538,6 +9542,10 @@ struct s_unit_melee_collision
 // 476; read-only tags 484; conditional damage pair 519; staged fan sum 486; separate fan ordinals and
 // reversed trace workspace order 484. NOT kept: the 476 form shortens to 2215 bytes with frame 0x180.
 // The conditional pair recovers the 0x17c frame at 2233 bytes but increases the score.
+// Live range with row, column or both fan weights 531/530/531, shared basis scalers 531,
+// staged cross 531, positive hit-publication guard 531, positive boarding admission 520,
+// and conditional damage values 494. NOT kept: seven forms recover the 0x17c frame at shorter
+// extents and higher scores. The conditional pair shrinks the frame to 0x178.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

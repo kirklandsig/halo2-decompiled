@@ -803,6 +803,10 @@ struct s_object_damage_view
 // Test the table validity through the existing statistics record 353.
 // Use the existing player, object and statistics record layouts together 353.
 // NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
+// Timestamp at record entry/after player read/for a present player/after team admission
+// 417/417/459/353. Eligibility in those positions 463/463/459/353. NOT kept: earlier
+// reads or decisions grow the frame to 0x54 or 0x58. The late forms tie with the
+// amount-biased history cursor and rotated credited-player, victim-team and code homes.
 // M3 lane 15 r112 (fast = full 353, with the file's functions and 0xd9640): the consideration flag as `reported_player ==
 // NONE || !same_team(...)` 353; the assist loop's counter as a short 353 (same code each); the victim team as a ternary
 // initialiser 422; killer declared before killer_team 354; the fallback as a nested valid test followed by `if (killer !=
