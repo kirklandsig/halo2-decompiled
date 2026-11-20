@@ -8942,6 +8942,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 57 (masked 11), fraction + owner order 121 (1598 bytes, masked 8), globals + owner order 89 (1606 bytes); the cap's
 // upper test as `cap > 1.0f` 116 (other code, masked 15). The low counts are positional; only the owner order (a
 // statement order, kept only with a match) and the fraction's stun multiply order move masked lines.
+// MiniMax E (11-19): no new form, no lower score (62, baseline): the owner's two fields are still read in the opposite
+// order (ours +0xc8 then +0xc4, retail +0xc4 then +0xc8), the shake's fields are still named locals where retail
+// re-reads them from memory (dropping both names measures 383, re-reading only the divisor measures 116), the 0xc98a0
+// call still sets its pointer argument after the other three pushes where retail sets it first, and a 300 s permuter
+// run over the body found nothing below 62.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
