@@ -3886,27 +3886,6 @@ enum
 	k_maximum_damage_parents = 16
 };
 
-/* the damage info of an object's model (as 0xd5b60), which retail writes out inline in 0xd7b80's loop */
-PRIVATE inline s_damage_info *damage_object_model_info(long object_index, s_damage_object const *object)
-{
-	s_damage_info *info = NULL;
-
-	if (object_index != NONE)
-	{
-		byte *definition = g_4e3b44[object->tag_index & 0xffff].bytes;
-		long model_index = *(long *)(definition + 0x38);
-
-		if (model_index != NONE)
-		{
-			byte *model = g_4e3b44[model_index & 0xffff].bytes;
-
-			if (*(long *)(model + 0x60) > 0)
-				info = *(s_damage_info **)(model + 0x64);
-		}
-	}
-	return info;
-}
-
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
 // score 470 (was 661): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
@@ -3921,21 +3900,23 @@ PRIVATE inline s_damage_info *damage_object_model_info(long object_index, s_dama
 // 544 tree (but it shares the tag lookup, which retail recomputes); i/object/info hoisted to function scope
 // 544; body/shield declared in the other order 544; the damage-info walk taking the datum index instead of
 // the object 666.
+// Stand-in image 552 -> 371: the parent walk is a while loop, so the function_d5b60 call behind it stays a call as in
+// retail (0xd7c2b; a for loop there raises the site's static frequency and LTCG inlines it); the pass loop keeps the
+// current object index in a local and calls function_d5b60, which LTCG inlines there.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
 {
-	s_damage_effect_definition *definition =
-		(s_damage_effect_definition *)(g_4e3b44[data->definition_index & 0xffff].bytes + 0x10);
 	bool shield_children = true;
 	bool body_children = true;
+	s_damage_effect_definition *definition =
+		(s_damage_effect_definition *)(g_4e3b44[data->definition_index & 0xffff].bytes + 0x10);
 	bool friendly = false;
 	real amount = function_d9b60(data, (byte const *)definition, object_index, &friendly);
 	real damage = amount;
 	long objects[k_maximum_damage_parents];
 	long object_count = 0;
 	bool reported = false;
-	s_damage_info *local_9127e6 = (s_damage_info *)function_d5b60(object_index);
 
 	if ((data->flags & 5) || (data->flags & 0x200))
 	{
@@ -3944,10 +3925,15 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 	}
 	else
 	{
-		for (long index = object_index; index != NONE; index = DAMAGE_OBJECT(index)->parent_object_index)
+		long index = object_index;
+		while (index != NONE)
+		{
 			objects[object_count++] = index;
+			index = DAMAGE_OBJECT(index)->parent_object_index;
+		}
 	}
 
+	s_damage_info *local_9127e6 = (s_damage_info *)function_d5b60(object_index);
 	if (local_9127e6)
 	{
 		body_children = !((local_9127e6->flags >> 4) & 1);
@@ -3956,8 +3942,9 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 	for (long i = object_count - 1; i >= 0; i--)
 	{
-		s_damage_object *object = DAMAGE_OBJECT(objects[i]);
-		s_damage_info *info = damage_object_model_info(objects[i], object);
+		long current_index = objects[i];
+		s_damage_object *object = DAMAGE_OBJECT(current_index);
+		s_damage_info *info = (s_damage_info *)function_d5b60(current_index);
 		byte *object_definition = g_4e3b44[object->tag_index & 0xffff].bytes;
 		s_damage_region_accumulator accumulator;
 
@@ -3983,18 +3970,18 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 			accumulator.field_4_2 = info;
 			if (node_index >= 0 && node_index < info->unknownc4)
 				accumulator.unknown08 = *(short *)(info->unknownc8 + node_index * 0x10);
-			if (objects[i] == object_index)
+			if (current_index == object_index)
 			{
-				if (region_entry_index != NONE)
+				if (region_entry_index == NONE)
+				{
+					data->unknown7c = info->unknownce;
+				}
+				else
 				{
 					byte *entry = *(byte **)(model + 0x5c) + region_entry_index * 0x14;
 
 					data->unknown7c = *(short *)(entry + 0x10);
 					accumulator.unknown00 = entry;
-				}
-				else
-				{
-					data->unknown7c = info->unknownce;
 				}
 			}
 			else if (data->flags & 1)
@@ -4029,8 +4016,8 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 			if (damage > 0.0f || data->in_unknown_radius || data->unknown58 > 0.0f)
 			{
-				s_damage_object *current = DAMAGE_OBJECT(objects[i]);
 				bool kill = (data->flags >> 2) & 1;
+				s_damage_object *current = DAMAGE_OBJECT(current_index);
 
 				current->owner_object_index = data->owner.object_index;
 				current->owner_player_index = data->owner.player_index;
@@ -4044,10 +4031,10 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 				}
 
 				if (i == 0 && object->parent_object_index == NONE && !(data->flags & 0x200) &&
-					definition->side_effect == 2 && function_cc010(objects[i], &data->direction) &&
+					definition->side_effect == 2 && function_cc010(current_index, &data->direction) &&
 					!TEST_FIELD_BIT(object->damage_flags.unknown7))
 				{
-					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[objects[i] & 0xffff];
+					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[current_index & 0xffff];
 
 					if (!((1 << datum->type) & 3) || function_1df560(data->owner.team, datum->object->team))
 					{
@@ -4057,15 +4044,15 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 				}
 
 				if (i + 1 < object_count)
-					accumulator.damage = function_dc230(objects[i], objects[i + 1], data) * damage;
+					accumulator.damage = function_dc230(current_index, objects[i + 1], data) * damage;
 
 				if (!(info->flags & 0x80) && !TEST_FIELD_BIT(object->damage_flags.unknown14) && kill &&
 					!TEST_FIELD_BIT(object->damage_flags.body_depleted))
 				{
 					object->shield_vitality = 0.0f;
-					function_d6a70(objects[i]);
+					function_d6a70(current_index);
 					object->body_vitality = 0.0f;
-					function_d6800(objects[i], &data->owner, !((data->flags >> 7) & 1), false);
+					function_d6800(current_index, &data->owner, !((data->flags >> 7) & 1), false);
 					accumulator.flags |= 0x41;
 				}
 
@@ -4073,21 +4060,21 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 					object->maximum_shield_vitality > 0.0f)
 				{
 					if (i == 0 || shield_children && (info->flags & 1))
-						function_d9110(objects[i], definition, data, &accumulator);
+						function_d9110(current_index, definition, data, &accumulator);
 				}
 
 				if (g_4e6948->mode != 4 &&
-					((1 << ((s_damage_object_datum *)g_4e0300->data)[objects[i] & 0xffff].type) & 2) && i == 0 &&
+					((1 << ((s_damage_object_datum *)g_4e0300->data)[current_index & 0xffff].type) & 2) && i == 0 &&
 					accumulator.field_4_2 && (!(data->flags & 0x1000) || (info->flags & 0x100)))
 				{
-					function_db210(data, objects[i]);
+					function_db210(data, current_index);
 				}
 
 				if (!(definition->flags & 0x40) && (i == 0 || body_children && (accumulator.field_4_2->flags & 2)))
 				{
 					if ((data->flags & 1) || (data->flags & 0x100))
-						function_d82e0(data, accumulator.damage, objects[i], &accumulator);
-					function_d8cb0(objects[i], definition, data, &accumulator);
+						function_d82e0(data, accumulator.damage, current_index, &accumulator);
+					function_d8cb0(current_index, definition, data, &accumulator);
 				}
 
 				if (!reported &&
@@ -4102,7 +4089,7 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 					{
 						data->unknown78 = PIN(object->body_vitality, 0.0f, 1.0f);
 					}
-					function_b7360(objects[i]);
+					function_b7360(current_index);
 					reported = true;
 				}
 			}
@@ -4113,12 +4100,12 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 		s_damage_report report;
 
-		function_d9490(data, &accumulator, &report, objects[i]);
+		function_d9490(data, &accumulator, &report, current_index);
 		if (g_4e6948->mode == 4)
 			report.flags &= ~1;
-		function_d9640(&report, objects[i]);
+		function_d9640(&report, current_index);
 		if ((accumulator.flags & 4) && g_4e6948->mode != 4)
-			function_b8540(objects[i]);
+			function_b8540(current_index);
 		damage = accumulator.damage;
 	}
 }
