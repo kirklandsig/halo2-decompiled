@@ -486,6 +486,660 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 
 // The parameters are declared with the stack ones in retail's push order and the register ones (entry in EDI,
 // pathfinding in EAX, surface_index in ECX) in the order retail's caller sets them up, last to first.
+// score 218 (was 218): r123, r125, r209 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax I (11-19): no new form, no lower score (218): the entry still leaves the pathfinding root in the register this build
+// picks instead of copying it into EBX, and the actor index is still read in the case that uses it rather than into EAX before the
+// dispatch; case 1's paired-edge block still keeps the edge vector's j and k in the other two xmm registers (retail xmm3 = j,
+// xmm4 = k and the 1.0f in xmm6) and the margin still loads the radius into a fresh register where retail multiplies the inverse
+// in place.
+// score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax B (11-20): no new form, no lower score (218): retail's prologue saves EBX/EBP/ESI and loads the actor
+// into EAX (the pathfinding data is copied to EBX) where this build keeps the pathfinding data in EAX and
+// pushes only ESI; the case-2 `state->pathfinding` -> `pathfinding` spelling was measured at 265 and 294 in an
+// earlier round, so the entry allocation, case 5's colours and the projection sum's order are unchanged. The
+// frame (0x40) and case 2 still agree. No form found this round.
+// score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// colours and the projection sum's order differ.
+// M3 lane 5 r209 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70, register-masked 24). Diagnostics:
+// 8-32 dead initialised locals at the top 218-220 (the entry never moves); lane 11 r113's recipe (actor first in the
+// definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) re-measured 283 at 1284 B,
+// aligned 42, register-masked 7: only case 1 differs, as first.j/first.k exchanging XMM3/XMM4, 1.0 and the scratch
+// exchanging XMM6/XMM7, and the margin's fresh radius load; on it 1-32 dead locals repeat with period 8
+// (283/291/279/284 x5, 279 at 1280 B only moves the origin dot's operand order, the margin never goes in place);
+// no-code reads of first.k, first.j, both, either order, or as dead locals 286-292 (masked 18-26). On the recipe:
+// the margin as `radius / first_length` 283, the fraction as a division by the first length 283, `real const
+// inverse` 283 (all the same code). On this body: case 1/6's corners as const references 218 (same code).
+// M3 lane 11 r123 (fast with 0x270d90/0x270400/0x30bf0): actor_index declared first alone 218 (same code); with corners
+// a, b, c, d 281 (1284 B, aligned 70 -> 59, register-masked 23 -> 15: entry exact). The 4 extra bytes are the margin:
+// retail multiplies the reciprocal in place by the radius in memory (`mulss xmm2, [eax]`), ours loads the radius
+// (`movss; mulss`), so everything after case 1 is shifted. Compile-only screens (signature: projection load order, margin
+// side; retail 4,8,0 and in place, ours 8,4,0 and load): 0-15 extra referenced locals, no change; the margin as
+// radius * inverse, staged `margin = inverse; margin *= radius`, reference-bound, radius / first_length, through a radius
+// local (that keeps the radius in a register, not retail's memory operand): never in place; the size test as 2 * radius,
+// swapped, or radius + radius, with either margin order: no change; no-code reads of the radius or the reciprocal: no
+// change. Diagnostic: the margin goes in place only when the reciprocal has no other use (the fraction left unscaled).
+// M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
+// order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
+// c, d gives retail's entry byte for byte (pathfinding arrives in EAX and is copied to EBX, the actor loaded into EAX, out
+// in EBP): 281 (1284 B, first difference +0x3 -> +0x27, aligned 60); with case 5's position read before its direction,
+// cases 2 and 5 then agree too: 283 (1284 B, aligned 43). Left there, all in case 1: the first projection sums k before j
+// (retail j before k, so the edge vector's j/k take xmm4/xmm3 against retail's xmm3/xmm4), the 1.0 constant sits in xmm7
+// (retail xmm6), and the margin loads the radius into a fresh register (`movss; mulss xmm6, xmm2`) where retail multiplies
+// the inverse in place (`mulss xmm2, [eax]`): the 4 extra bytes. On that form all 283 / aligned 43 (same code): margin as
+// radius * inverse, the inverse written at each use, the fraction's product reversed, the radius compare swapped or as
+// 2 * radius, the inverse before the dots, dot3f arguments swapped, the origin dot first, the clamp as one conditional
+// expression, the vectors declared separately or the other way round or before the corners, margin/distances/second
+// length declared early, and a 47-form random mix of those; the entry parameter declared mutable (no const_cast local)
+// 291 (aligned 45); the 23 other corner orders 265-357 (only a, b, c, d keeps the entry). Diagnostics (reverted): a
+// volatile radius read for the margin, same code (register colouring, not CSE); no-code mentions of the edge vector's
+// fields 286-292. Without a, b, c, d the actor-first order alone 265 (the actor is not loaded at entry). Reference-bound
+// radius, edge vector or inverse on that form 283 each (same code).
+// MiniMax R (11-16): no new form, no lower score (218): retail copies the pathfinding root into EBX and takes the actor value from a stack slot at the entry, where this build keeps the root in EAX and reads the actor in the case body, so the vertex loads and the cross product's float schedule follow that allocation.
+// MiniMax R (11-15): no new form, no lower score (218): the entry still hands the pathfinding root over in the register the compiler picks instead of saving it in ebx, and the actor index is still not read into eax before the dispatch; the paired-edge block still keeps the vector's j and k in the other two xmm registers (retail: xmm3 = j, xmm4 = k and the 1.0f in xmm6; here xmm3 = k, xmm4 = j and the constant in xmm7); ten new spellings of the root local, the actor local, the case-5 statement order and the projection operand order all scored 218 or worse.
+// MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding
+// argument into EBX and reads the actor index into EAX there, while this build keeps the pathfinding in EAX and
+// reads the actor index in the case that uses it; dropping case 1's second vertex local so that the first can
+// take EBX scores 355 and was reverted.
+// MiniMax H (11-12): no new form, no lower score (218): the entry still differs - retail moves the pathfinding pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax and reads the actor index in the cases that use it; the frame and case 2 agree.
+// MiniMax A (11-12): no new form, no lower score (218); retail copies the pathfinding argument into ebx at the entry and reloads the vertices pointer from that copy before ebx takes the first vertex index, and taking the case-2 vertices and the trace from the pathfinding argument instead of from state->pathfinding scores 265 and 294, so the root cannot be kept alive by the case-2 use.
+// MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
+// and reads the actor index (the first stack argument) into EAX there, while this build keeps the pathfinding in EAX
+// and reloads the actor index at its case-5 use, so every case is seven bytes out of step; the actor test hoisted
+// ahead of case 5's direction (286) and the direction built inside the actor test (336) both score worse and were
+// reverted; swapping case 5's position and direction statements so the position comes first scores 265 and was
+// reverted, so the case-5 statements stay in their retail order.
+// MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
+// argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
+// bodies and the counter's register home still differ.
+// MiniMax I (11-06): no new form, no lower score; the case-5 direction negated while it is copied from the vertex gives 379 and 391 against 219.
+// MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
+// (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
+// the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.
+// Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
+// negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
+// 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
+// Earlier (278): frame 0x40 and length agree; early root EBX retention, actor ownership and paired-edge float/vector scheduling remain.
+// Earlier: Frame 0x40 agrees; early root EBX retention and float/vector scheduling remain.
+// Earlier 278 (was 278): frame 0x40 agrees; early pathfinding EBX ownership and float scheduling differ.
+// entry root retention and floating-point scheduling differ;
+// result first 299; surface first 299; vector names 299; vector helper 299;
+// Earlier (278): frame 0x40 and length agree. Retail loads actor_index into EAX at entry (case
+// 5 tests it first) and so moves pathfinding into EBX (pushed at entry); ours loads actor_index in
+// case 5 and keeps pathfinding in EAX, which re-colours every case; paired-edge float/vector
+// scheduling also differs. Tried: result first 299; surface first 299; vector names 299; vector helper 299;
+// frame 0x40 and length agree. Retail moves pathfinding to EBX at entry and
+// loads actor_index (first stack argument) into EAX there for case 5's test, which also forces
+// result into the dead out slot; ours keeps pathfinding in EAX and loads the actor at its use.
+// Everything after the entry follows (case 2 differs only in the pops).
+// Tried: result first 299; surface first 299; vector names 299; vector helper 299;
+// case order 300; separate vector declarations 299.
+// Round 24: trace-time state reload, mutable entry, both, coherent pathfinding/surface swap,
+// direct distance arguments and direct projected-origin 299 each; c/b/a/d pointer
+// declarations 278; direct case-5 direction 278 (selected with the declaration order).
+// Round 210: Four consistent vertex-index values in word/long/dword 338/344/344; word/long with
+// the actor value at entry 338/344; word/long with both shared differences 346/360;
+// both shared differences on the original c/b/a/d graph 297. All restored.
+// Entry vertex table at case/dispatch scope 280/340; ordinary result 340;
+// case table with ordinary result 342; early actor predicate 278; common case-5
+// outputs 404, with case table 404, with ordinary result 398. Original body restored.
+// Round 222: Complete point constructors: paired fallback 366; both case-5 copies 356; both 383; both case-2 copies 365; fallback/case-2 379; case-5/case-2 376; all 390; all with both vector setters 378. Frame 0x40 agrees; early root retention and vector scheduling remain. All restored.
+// Actor-valid direction scope with whole-vector initialization, readonly surface and
+// ordinary-result interactions: 284/334/284/334/363/357/363/357; restored.
+// Complete external vertex observations in paired/actor/trace cases 427/402/370;
+// paired+actor/paired+trace/actor+trace 475/475/448; all cases 519; all with
+// ordinary result 495. Retained element receivers and original result restored.
+// DH round 218: paired-edge vector aggregates/native surface reference/both 278/278/278;
+// ordinary result on these three graphs 340/340/340; all endpoint role names with aggregates,
+// with/without surface reference 278/278. Original body and qualifier restored.
+// Round 187: complete parallel dot-prefix parts/two-use upper fraction/both 278/278/278;
+// each and both with existing vector differences 297/297/297; complete incremental rows with
+// differences 296; complete shared dot/difference producers 351 (sum order differs, match-only).
+// All endpoints, qualifier, original rows and body restored.
+// Round 434: parent value captured in paired/actor/trace cases 395/384/330; paired-actor/
+// paired-trace/actor-trace 421/399/388; all cases 421, all with native radius snapshot 420.
+// Parent records grow the frame to 0x44/0x4c/0x50; original field observations and body restored.
+// Round 41 (fast): actor_index declared first (every declaration and call) 278; the actor test
+// nested 278; projection terms in z, y, x order (both/one/other) 278; dot3f for both projections,
+// either argument order, 278 (identical code). Diagnostic only, reverted: actor_index read at entry
+// through a volatile cast gives retail's EBX entry (aligned 199 -> 134, masked 58 -> 39) but swaps
+// the EAX/ECX parameters (318, 1284 bytes); a plain entry copy is propagated away (280).
+// Round 46: one vertices base for the case 1/6 corners 280; writable start-out parameter 279;
+// reversed entry declarations 278; case 5 fallback first 278; shared function-scope position 278.
+// Diagnostics: no actor in case 2 326, extra actor tests 360, actor declared first 278 (no entry load).
+// Round 6 (lane 17): the actor test as a function-scope bool used in case 5 364 (1292 bytes; aligned
+// 200 -> 139: retail's `push ebx; mov ebx, eax` entry and the actor loaded at entry, but compared there
+// with setne where retail keeps the value in EAX and compares in case 5); that bool at the top of case 5
+// 278; a short type local for the switch 280; `(long)` switch operand 278; const surface pointer 278.
+// Round 448: Call-site interpolation constructors (t01-t08) rejected as helper expansion;
+// existing shared helper constructor with native origin/direction/output capture
+// (t09-t16) 268/368/362/389/372/385/383/396/268/436/436/436/416/436/436/436.
+// Original body and helpers restored; Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling remain.
+// Round 49 (lane 16, fast = plain 278 here): result without volatile 340 (1252 bytes); the start-out
+// parameter declared mutable without the alias local 279 (as round 46); the two point distances
+// passed inline 278, case 5's actor test as an outer if 278 and case 2 reading the state's
+// pathfinding at each use 278 (all three same code). Retail loads actor_index into EAX at entry
+// (an enregistered stack parameter), which pushes pathfinding into EBX; ours loads it at the use.
+// Round 99 (lane 8): case 5 with the fallback in an `actor_index == NONE || !...` arm 278; the radius test
+// as `radius * 2.f < first_length` 278; `margin = radius * inverse` 278; the half-way branch first 277;
+// `if (!parent_point) break;` before the corner tests 278.
+// Round 40 (reduced-relink screen, base 275): a case-5 `actor` copy, `*= -1.f`, the existing vector3f_scale for
+// the negation, one vertices pointer for case 5, the actor test as a case-5 bool 275 each (same code); case 2
+// before case 5 349; case 5's direction before its position 275 (aligned 198 -> 168: case 5's tails become
+// retail's, case 2 is re-coloured). The corner pointers in all 24 declaration orders: a, b, c, d 290 (1285
+// bytes, aligned 123: actor_index loaded into EAX at entry and pathfinding homed in EBX as retail, case 5
+// exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
+// other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
+// and case 2's declaration orders, compile identically (286-290).
+// Round 125 (m3 lane 5, fast): retail's caller sets ECX (surface index), EAX (pathfinding), EDI (entry)
+// in that order, as ours already does, so no parameter reorder has evidence. a, b, c, d re-measured 299
+// (1284 bytes: actor index loaded into EAX at entry and pathfinding homed in EBX as retail, but
+// pathfinding arrives in EDX); on it the surface declared first 299, the result declared first 299,
+// a, b, d, c 314, one `vertices` base for the four corners 295.
+// Round 106 (fast): the corner pointers a, b, c, d now 299 at 1284 bytes (aligned 142 -> 94, case 5 exact,
+// but the actor load is the first instruction, so LTCG passes pathfinding in EDX, 0x270d90 313, and
+// case 2's 0x26c590 setup is re-coloured). On that graph: result first 299; surface before start_out 299;
+// case 5's direction before its position 295; result without volatile 371; the actor test as an outer if 299.
+// Round 35 (lane 13): result declared first 278; surface pointer declared first 278; corners a, b, c, d 299
+// (1284 bytes: actor_index loaded into EAX at entry and pathfinding moved to EBX as retail, but LTCG then passes
+// pathfinding in EDX); with the surface pointer first 299; with case 5's direction copied before its position 295.
+// Retail's caller sets up ECX, EAX, EDI in the same order as ours, so no parameter reorder is indicated.
+// Round 36 (m3 lane 14, fast; aligned = difflib count, base 199): the a, b, c, d corners re-measured 299 (1284
+// bytes, aligned 119; the corner code and case 5 become retail's, actor_index is loaded at entry, but pathfinding
+// arrives in EDX). On them: the projection and origin sums grouped `(y + z) + x` 300 (aligned 105; grouped on
+// the base form 278, same code); `first` and `second` through the existing vector3d_from_points3d 299 (1288,
+// aligned 96), with both sums grouped 304, origin grouped only 304, the projection written vector-first 299;
+// with that helper and both sums through dot3f 280 (1284, aligned 89: the projection, origin, distances and
+// stores take retail's shape apart from first.j/first.k swapping registers; every dot3f argument order 280);
+// dot3f with the corners' own differences 299 (aligned 119); dot3f projection with the origin written out,
+// grouped or not, 304/299. Diagnostic: first's components assigned i, k, j give retail's `(j + k) + i`
+// projection order (303; the stores reorder). On the dot3f form: fraction and margin as two divisions 280
+// (same code: one reciprocal), the reciprocal written in both 280, the radius through a source pointer 280,
+// the radius test ahead of the reciprocal 327, the reciprocal named before the projections 280, both reciprocal
+// products written the other way round 280. The length
+// (+4) is only the margin product: retail multiplies the reciprocal in place by the radius in memory
+// (`mulss xmm2, [eax]`), ours loads the radius and multiplies by the reciprocal; with that and the entry's
+// pathfinding register fixed, the dot3f form would align everything after case 1/6.
+// Round 62: the corner pointers a, b, c, d 299 fast and plain (1284 bytes, aligned 119: actor_index loaded
+// into EAX as the first instruction, so pathfinding arrives in EDX and moves to EBX after it; retail moves
+// EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
+// first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
+// before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 325: Complete native surface snapshot at dispatch, crossed with both difference setters,
+// ordinary result and actor-valid direction scope: 387/397/365/366/397/401/373/380.
+// All restored; root retention is not recovered and most frames/extents grow.
+// Round 275: complete native vertex values in paired/actor/trace cases 502/337/400;
+// paired-actor/paired-trace/actor-trace/all 526/551/438/575; all with shared
+// differences 583. Exact-only snapshots restored; early root/actor ownership and vector scheduling remain.
+// Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
+// round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
+// a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21
+// 349-353 (1280 B); only a,b,c,d / a,b,d,c load actor_index at entry, and both then take pathfinding in EDX.
+// b,a,c,d with the result declared first 274.
+// Round 128 (m3 lane 5, fast): retail passes the actor index in EAX to 0x270400 in case 5 straight from the
+// entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
+// `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
+// `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 45 (lane 14, fast), on the b, a, c, d corners with vector3d_from_points3d and both sums through dot3f: the
+// base 274 (aligned 199 -> 158); with case 5's direction declared first 274; case 2's position declared first 280;
+// both 276; both dot3f calls taking `&first` first 274. Left on it: the entry, first.j/first.k and the 1.0/radius*2
+// constants in swapped XMM registers, and the margin formed in the radius register, not in place in the reciprocal's.
+// Round 58 (m3 lane 1, fast; aligned = difflib count, base 199): the actor read through its address into a
+// function-scope local, as a volatile read: after the surface 323 (1288 bytes, aligned 135: EBX entry as retail,
+// but pathfinding arrives in ECX and the surface index in EAX), after the result 326, ahead of the surface 358
+// (1284 bytes, aligned 190), with the start-out alias dropped 320 (1284, aligned 117); as a plain read 280. The
+// surface table in a local read before the actor, then the index: 358 (1284; table/index registers are retail's,
+// pathfinding in EDX), plain read 280, table local alone 280. Register parameters entry/pathfinding/surface or
+// surface/pathfinding/entry 278/278, with the volatile read 323/323 (the arrival registers do not follow the
+// declared order), entry first with the plain read 280; a, b, c, d with the other five orders 299 each (EDX stays).
+// Round 74 (m3 lane 12, fast): the radius test inverted with the 0.5 arm first 277; a named upper bound
+// `1.f - margin` 278; the clamp as one nested ternary 278; `fraction < margin` for the lower test 278; the margin
+// compared with 0.5 before the clamp (not equivalent, diagnostic) 367 (1264 bytes). Retail's case 5 passes the
+// entry-loaded actor straight to 0x270400 in EAX (its register parameter); retail's caller 0x270d90 sets ECX, EAX,
+// EDI interleaved with the pushes, so it gives no parameter-order evidence.
+// DH276: complementary failure outcome at dispatch in inherited Boolean/plain
+// Boolean/short/long storage 402/359/356/354; initialized first 402/358/355/353.
+// All restored; frame 0x40 and length agree, but early root/actor ownership and
+// paired vector scheduling remain. Original result and helper retained.
+// DH281: Existing shared point-on-line scalar-product declaration orders, six forms 278; complete
+// coordinate results with/without scalar products 268, rejected because the matched helper user regresses
+// [278, 278, 278, 278, 278, 278, 268, 268]. Original executable body restored.
+// N301: Complete positive switch-outcome result in inherited Boolean/plain Boolean/short/long
+// storage at dispatch 366/384/380/370; declared first 366/384/380/370.
+// All restored; early root/actor retention and paired-vector scheduling remain.
+// Round 51 (m3 lane 13, fast): actor_index read once through its own address into a local at entry 280
+// (propagated, no entry load); case 5's two output sets as if/else arms with one `result = true` 278 (same code);
+// an explicit `default: break;` 278 (same code); case 2's trace result declared at the case's top 278 (same code).
+// Diagnostic only (volatile, reverted at once): a volatile read of actor_index at case 5's test 355 (1284 bytes,
+// 0x270d90 334). Retail's case-5 `cmp eax, -1` opens the case (actor loaded at entry, as a load hoisted from the
+// two sibling uses in cases 5 and 2).
+// DH292: Both vector differences through plain component-array loops, long/dword/short/word
+// ordinals 305/305/423/423; with the same direction-negation loop 305/305/401/401.
+// Original scalar arithmetic, result qualifier, helpers and complete body restored.
+// DH294: Existing shared add-scaled producer at first/second/both paired point outputs
+// 278/278/278; each with both native vector differences 297/297/297; complete point outputs
+// with native byte success, original/shared differences 358/366. Original helper calls,
+// result qualifier, includes and complete body restored; early root/actor ownership remains.
+// M323: Actual first-edge/second-edge/projection-field references, seven subsets and complete trace-element references, all 278. Original body restored; early root/actor ingress and vector scheduling remain.
+// Lane 17 r36 (fast): corners a, b, c, d re-measured 299 (1284 bytes; the actor load is still scheduled before
+// `push ebx`, so pathfinding arrives in EDX, and case 1's projection/origin loads are re-coloured); on that graph case 5
+// first in the switch 353, the surface as `surfaces + surface_index` 299 (same code), a const surface pointer 299 (same
+// code), the inverse length computed before the projection 299 (same code). Original c, b, a, d body restored.
+// Round 33 (m3 lane 18, fast; 0x270d90 295 throughout): the result as a plain bool (the volatile dropped)
+// 340 (1252 bytes); case 5's actor test as an outer if 278; one function-scope position pointer for cases
+// 5 and 2 278; the second edge declared in the first-length block 278; the margin as `radius * inverse`
+// 278 (each the same code). Retail's case 5 tests the actor in EAX loaded at entry while case 2 reloads it
+// from the stack. All restored.
+// DH317: One pathfinding receiver across dispatch/case 2, with existing first/second
+// differences and complete shared projections in eight subsets:
+// 278/278/297/297/278/359/297/351. Original body and all helpers restored;
+// early root/actor ownership remains, at the original frame and length.
+// Round 82 (m3 lane 12, fast; 0x270d90 295 unless noted): case 5 first in the switch body 300; actor test
+// constant first 278 (same code); const surface pointer 278; byte volatile result 406 (1228 B); case 5 as
+// if/else with the output stores shared after it 404 (1220 B, 0x270d90 368). Original body restored.
+// Round 67 (m3 lane 1, fast; 0x270d90 295 unless noted): case 5's negation as unary minus 367 (1264 bytes); case 2's
+// trace through the `data` local 319; case 5's call result in a `found` flag set under the actor test 278 (same
+// code); the negation as `-1.f * direction.i` 278; the corner tests as `vertices[i] != 0xffff` 357 (1292 bytes,
+// 0x270d90 368).
+// m3 lane 14 r56 (fast; 0x270d90 295 throughout): case 2's trace through the `data` local 319; the parent-point
+// test as an early `break` 278 (same code); the radius test as `radius * 2.f < first_length` 278 (same code);
+// the origin sum before the projection 278 (same code); corners declared d, c, b, a 280. All restored.
+// DH339: Direct result returns at native paired/actor/trace case ends, seven subsets then
+// complete success exits, eight at 270 fast; full form 270 plain, 1280 bytes.
+// Kept complete per-case returns; early root/actor ingress and paired vector scheduling remain.
+// Round 145 (m3 lane 5, fast; 0x270d90 286): a shared forceinline wrapper over 0x270400 for cases 5 and 2 278;
+// an inline vertex accessor for all eight vertex lookups 278; case 5's test as a named `found` bool 278 (all same
+// code); the register parameters declared pathfinding, entry, surface_index everywhere 278 (same code); the
+// surface read through the table at each use 429 (1336 B). A cdecl compile-only first pass loads actor_index
+// only at its uses even with uses added to every case, so no body form here gives retail's entry load.
+// DH342: On the retained direct-case-return graph, five alternate whole-case orders
+// 342/293/381/345/381; explicit default result returns first/middle/last 270/270/270.
+// Original case order and complete body restored; early root/actor ingress remains.
+// DH345: Reference producer interfaces, seven subsets/full forced expansion, eight at 270;
+// excluded from the trial count because caller adaptation left the queue; all restored.
+// Immutable origin/direction/output pointer bindings, seven subsets and full immutable
+// distance, eight at 270 with all callers unchanged. Original helper/body restored;
+// native root/actor ingress and paired-vector scheduling remain.
+// DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
+// all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
+// frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
+// N370: Persistent root/actor, parent and actual-output lexical families, seven
+// subsets then complete native local identities: 270 each. NOT kept: no equality
+// or gain; early root/actor retention and paired-vector scheduling remain.
+// F372: Paired-case normalized-length/projection/distance declaration lifetimes,
+// seven complete subsets and all with margin: 270/270/270/270/270/270/270/270.
+// Producers never moved; original declarations and complete body restored.
+// F374: Paired normalization-continuation results, positive/complementary
+// bool/byte/short/long: 270/270/270/270/270/270/270/270. NOT kept: no exact
+// ingress/home recovery; original direct tests and complete body restored.
+// DH354: Native direct-return workspace identities, edge/actor/trace subsets
+// 1/2/4/3/5/6/7 and complete endpoint identities: eight at 270. All restored;
+// early root/actor ingress and paired SIMD scheduling remain.
+// DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
+// subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
+// native root/actor ingress remains; original record fallback and all helpers retained.
+// Y589: Complete sole-exit success bool/byte/short/long 278/358/356/347;
+// complementary failure 402/359/356/354. NOT kept: ingress/frame/length
+// not recovered; original native case returns and complete body restored.
+// F383: Literal outcomes after paired/actor/trace publications, seven case subsets,
+// then complete literal returns without the result: 365/361/373/390/370/406/371/384.
+// NOT kept: root/actor ingress persists and extents regress; original result, all
+// publications, native helpers and complete body restored.
+// B433: Called normalizer/trace contracts, each ordinary/inline/forced, excluding
+// the ordinary pair: eight at 270. Original declarations and full body restored;
+// early root/actor retention and paired-vector scheduling remain.
+// P333: Native direction/point-publication/parent-record/all transfers through memcpy/memmove:
+// 270/354/270/433/270/414/270/396. NOT kept: no match or gain; original copies, helper and full body restored.
+// Round 62 (m3 lane 14, fast): 219 (was 270): corners b, a, c, d, vector3d_from_points3d for both edges and dot3f for
+// the projection and origin 266 (aligned 181 -> 143); case 5's direction first 264 (110); case 2 through a `vertices`
+// local (no `data`) 219 (70; case 2 is retail's byte for byte, kept). Tried on the way: the reciprocal multiplied in
+// place by the radius 270/266 (same code); `first_length * fraction` 266; dot3f taking &first first 266; a named
+// parent position 266; origin before projected 266; a named difference 266; case 2's position first 266; case 2's
+// state pathfinding read at each use 219 (same code); the trace through `data` 272; a case-5 `vertices` local 264.
+// On 219: projection and origin written out, staged with `+=`, or one of each 366 (1288 bytes); `second, first`
+// declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
+// product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
+// the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
+// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Round 151 (harness 232 for the real 219, aligned 89, masked 47): a plain read of actor_index through its address after the surface, after the result or first,
+// used at the test and the call or at the test only, 233 each (the read folds to the use, no entry load); dot sums through a `(j + k) + i` helper, both, either,
+// arguments swapped, 232 each (same code); written out grouped, both or either, 371 (1288 bytes); one final `return result` with breaks 242 (aligned 107), without
+// volatile 322 (1256 bytes, result in CL), declared later 322, first 321; multiple returns without volatile 335.
+// Random grid of 160 natural forms: lead, corners a, b, c, d load actor_index into EAX at entry with no volatile and move pathfinding to EBX, masked 28 (base 47), aligned 64 (base 89), but 289 at 1284 bytes:
+// the load comes first, so pathfinding arrives in EDX where retail has EAX (retail's load follows `mov ebx, eax`). Without case 5's position first 287 (masked 33), with `*= -1.f` or the old negation 290 (35);
+// corners d, c, b, a 354, c, d, a, b 355, a, b, d, c 304. On the lead: a copy of actor_index after the surface or result 297, the surface after the result 289, origin after projected 289, the
+// first three parameters declared in five other orders, with the call changed, 289 each (no effect on the arrival registers), on the old corners 278. Left on the lead: pathfinding's arrival, first.j/first.k, 1.0/radius*2 colours.
+// Round 153 (m3 lane 5, fast; 0x270d90 286 throughout), re-measured on the 219 base: case 5's position declared before its
+// direction 266; case 5's call under an outer actor test 219 (same code); result, surface, start_out declared in that order
+// 219; the radius read once into a named local for the test and the margin 214 (1284 bytes, gain under the gate), with the
+// margin product turned 214, with the test written `radius * 2.f < first_length` 214; second_distance computed first 219.
+// Case 2 and everything after case 5's actor test agree; the entry (actor_index loaded at entry, pathfinding moved to EBX)
+// shifts every line of cases 1/6 and 5.
+// T65: On the retained shared-vector/exact-case-2 graph, complete case orders 2/5/16,
+// 5/16/2, 5/2/16, 2/16/5, 61/5/2, 5/61/2, 5/2/61, 2/5/61:
+// 377/329/377/354/219/329/377/377. NOT kept: ties/regressions; original full body restored.
+// Early root/actor ingress and paired projection ownership remain.
+// P361: Complete actor-query success/rejection admission results in bool/byte/short/long at the original producer:
+// 219/219/219/219/219/219/219/219. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Early root EBX/actor EAX ingress and paired projection scheduling remain.
+// T68: Individual local names on the native paired-projection graph: both edges,
+// parent/origin projection, fraction, inverse length, facing and marker position:
+// 219/219/219/219/219/219/219/219. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Early root/actor retention and paired projection ownership remain.
+// P394: Paired-edge clamp admission before reciprocal/fraction, wide-edge/midpoint truth
+// in bool/byte/short/long: 367/367/371/369/367/367/371/369. NOT kept: no byte equality; original
+// comparison, geometry, result and whole body restored. Early root/actor ingress remains.
+// Round 82 (m3 lane 1, fast; 0x270d90 286, 0x270400 matched throughout; aligned = sequence-aligned count with targets
+// masked, base 76): round 151's lead rebuilt on this body, corners declared a, b, c, d: 288 at 1284 bytes (aligned 67);
+// with case 5's position declared before its direction 290 (aligned 50: all of case 5, case 2 and the copies then
+// agree). Left on that lead, two causes: the entry (actor_index is loaded into EAX first, so pathfinding arrives in EDX
+// for retail's EAX; retail copies pathfinding to EBX and only then loads the actor) and both dot sums (retail loads
+// first.j, first.k and adds (j + k) + i; ours loads k, j and adds (k + j) + i, which also swaps XMM6/XMM7 and leaves
+// the margin a separate `movss` + `mulss` for retail's `mulss xmm2, [radius]`, the 4 extra bytes). On the lead: the
+// margin multiplied into the reciprocal in place 288 (same code); the sums written out j, k, i 299 (1288 B, aligned
+// 74; the terms still come out k, j); dot3f with &first as its first argument 288 (same code); `second, first`
+// declared 288 (same code); the sums written with first's fields on the left 300 (aligned 57); `i + (j + k)` grouped
+// 305 (aligned 62); each product cast to real 300 (57); origin computed before projected 290 (same code); a named
+// copy of actor_index declared before or after the result, used in cases 5 and 2 or in 5 only, 297 (aligned 51; the
+// load still comes first); the surface declared before start_out 290 (same code). Nothing kept: every form scores
+// above 219.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 219 (1280 bytes against retail's 1280); the early root and actor ingress and the paired projection's ownership are still the whole of the difference, and every earlier round's actor-query, corner-order and paired-edge forms tie at 219.
+// Round 145 (m3 lane 8, fast; masked = register-masked aligned count, base 219 [22], aligned 99): an unused forceinline
+// use of actor_index in case 1/6 (diagnostic) 219, same code: no entry load. Corners a, b, c, d re-measured 288 [32]
+// (1284 bytes); on them: the surface through a named `surfaces` table local 295 [27]; the actor test nested 288 (same
+// code); one function-scope vertices pointer read after the result 306 [49] at 1280 bytes; one case-scope vertices pointer
+// for case 1/6 read ahead of the corner tests 174 [34] at 1280 bytes, and the same on the b, a, c, d corners 169 [37] at
+// 1280 bytes (aligned 149). Neither is kept: the actor is then loaded as the first instruction, pathfinding arrives in
+// EDX and is read from there with no copy to EBX, and the vertex table is loaded ahead of the parent test where retail
+// loads it after the corner tests; the lower positional count comes from the entry being one line shorter, which only
+// re-aligns the later lines (masked 22 -> 37); plain 169 too, with 0x270d90 still 286 but 1390 bytes for 1389. Left as before: every form that loads the actor at entry loads it ahead of
+// `push ebx`, so link-time code generation hands pathfinding over in EDX; retail's load follows `mov ebx, eax`.
+// Round 166 (m3 lane 6, fast; 0x270d90 286 throughout; masked = register-masked aligned count, base 22): the actor parameter
+// renamed to sort after pathfinding 219 (same code); the pathfinding parameter renamed 219 (same code); case 5's position
+// first with the radius in a named local for the test and the margin 261 (1284 bytes, masked 46); case 5's and case 2's
+// positions both first 272 (masked 28); the radius read at the top of case 1/6, ahead of the normalizes, 322 (1292 bytes).
+// The only caller, 0x270d90, is in a file other lanes hold this round, so its effect on the entry was not measured.
+// Round 148 (m3 lane 8, fast with the file's 15 other functions, 0x270d90 and 0x30bf0; aligned/masked = difflib counts on
+// the listing, masked ignores registers and stack offsets, base 54/13). Re-measured: case 5's position declared before its
+// direction 266 (as round 153); with corners a, b, c, d 290 (1284 B, aligned 37, masked 11, as rounds 151/82); on that the
+// function-scope actor bool 364 (1292 B, as lane 17 round 6) and the surface ahead of the start-out alias 290 (same code).
+// New: on that a, b, c, d graph the result as a plain bool 281 (1280 B, aligned 80). On the 219 body, each the same code
+// (219, aligned 54, masked 13): both projections in one expression with no projected/origin locals; the edge vectors
+// declared at function scope; the trace result declared at function scope; case 5's direction declared at function scope;
+// case 1/6 leaving through `break` to the final `return result`.
+// Round 67 (m3 lane 15, fast with 0x270d90/0x270400; aligned/masked = difflib counts with targets / registers masked,
+// base 219 aligned 54 masked 14): retail reloads actor_index from its stack slot in case 2 and uses the entry EAX only
+// in case 5 (compare and 0x270400's register argument); EBX is overwritten inside case 1/6 before any call, so the
+// pathfinding copy only frees EAX. The start_out alias dropped (const_cast at each use) 220 (masked 17); the radius in
+// a named local 214 at 1284 bytes (aligned 103, masked 33: positional only); the corners declared a, b, c, d but
+// assigned b, a, c, d 219 (identical: declaration order moves nothing, code order does); the surface fields read
+// through pathfinding->surfaces[surface_index] at each use 461 (1364 bytes); `1.f - margin` named for the test and
+// the assignment 218 (masked 15).
+// M3 lane 10 r92 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 219, aligned 70, masked 22): nothing kept. Case 5's arms joined
+// (the failure arm sets only start_out and the parent node, the out stores shared) 400 (1224 bytes; 0x270d90 286 -> 372); its
+// negation through the existing vector3f_scale(&direction, -1.f, &direction) 218 (one point), with `state->source.radius *
+// inverse` 218; the direction scaled straight from the vertex 379 (1256 bytes); position declared first with vector3f_scale 265;
+// `inverse * (projected - origin)` 219 and `state->source.radius * inverse` 219 (same code). Kept: the negation through
+// vector3f_scale (main wrote its body out by hand), 218 plain, the file's other functions and 0x270d90 unchanged.
+// m3 lane 13 r79 (fast, 0x270d90 286 throughout; brackets: difflib count aligned / with registers masked, base 219
+// [52/13]): a `vertices` local for case 1/6's corners inside the corner block 219 (same code); the radius read into
+// a named local for the test and the margin with `1.f - margin` named 214 (1284 bytes) [93/26]; the radius local
+// declared ahead of the projections 224; a 0.5 default with the fraction computed inside the radius branch 358
+// (1284); the radius local with the corner-block `vertices` local 211 (1280 bytes) [96/29], not kept: the count
+// falls only by re-alignment, the first/second length homes swap and retail reads the radius from memory twice
+// (no radius local). Re-measured: the vertex table read at case 1/6's top 169 [90/22] (round 145's form: the actor
+// load goes first and pathfinding arrives in EDX; 0x270d90 1390 bytes); the reciprocal before the projections 219.
+// Both builds share the dead `out` slot (E+0x18) between the result byte and first_length.
+// M3 lane 10 r94 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218, aligned 70, masked 23): nothing kept. Case 5's
+// position copied by value 345 (1316 bytes); case 1/6's two distances inline in the point_along_vector calls 300 (1284); both edge
+// vectors formed before the first length 347; case 1/6's missing parent as an early return 218 (same code); re-measured: the
+// surface as a const pointer 218, the entry parameter declared mutable (no start_out alias, the declaration in path.cpp
+// too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
+// pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
+// variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
+// MiniMax R (11-11): no new form, no lower score (218): the entry still differs - retail moves the pathfinding
+// pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax
+// and reads the actor index in the cases that use it; the frame (0x40) and case 2 agree, so the whole difference is
+// that entry.
+// M3 lane 10 r97 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218): nothing kept. The actor parameter typed dword 218
+// (same code); the actor declared third, ahead of the entry pointer (definition, declaration and the 0x270d90 call; stack order
+// unchanged) 218 (same code); that order on corners a, b, c, d 287 (1284 bytes: the actor load still comes first and pathfinding
+// arrives in EDX, as with every other order on that graph); corners d, a, b, c 356; c, a, b, d 358.
+// T96: Existing result owns paired-corner/both-length/actor-query/trace-query tests,
+// then corner-length/corner-actor/length-actor/all outcomes:
+// 388/406/357/263/441/408/423/467. NOT kept: no equality or native early root/actor
+// recovery; all extents grow. Original result, helpers, calls and full body restored.
+// T100: Paired positive/fallback endpoint publication sets 1/2/3/4/5/6/7, then full
+// direct-success completion: 417/499/405/353/351/368/406/415. NOT kept: no native
+// early root/actor recovery or equality; original helpers, result and full body restored.
+// P443: Complete corner-index receiver, double-factor negation, endpoint receivers, radius-owner receiver,
+// guarded parent-output reference, four corner role names, paired length declarations and sole result exit:
+// 219/362/220/218/219/218/218/228. NOT kept: no native ingress/home repair; original complete body and helpers restored.
+// P445: Actual diameter and clearance results, paired widened-distance transport, consumed
+// negation return, trace rejection, parent-presence and complete corner admissions, separate projected/clamped fraction:
+// 218/218/368/218/218/219/219/228. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: Immutable paired lengths/projections/reciprocal/distances/corner pointers/actor-trace receivers; original-site lower/upper margin admissions:
+// 218/218/218/218/218/218/218/218. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 10 r101 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218): nothing kept. The function defined ahead of its
+// callee 0x270400 in the file (a prototype added) 218 (same code: definition order moves nothing). Corners a, b, c, d
+// re-measured 287 (1284 bytes; entry `mov eax, [actor]; push ebx; push ebp; mov ebp, [out]; mov ebx, edx; mov edx, [ebx+0x3c]`,
+// and from the switch on case 1/6 reads as retail). On that graph: surface_index moved to the end of the parameter list
+// (definition, declaration and the one call together) 287 (same code); case 5 reading its vertices through the state's
+// pathfinding 325 (1296 bytes: the parameter then stays on the stack, 0x270d90 334); a `short type` local read ahead of the
+// result for the switch 295; case 5's actor test as an outer if around the call 287 (same code). Reading of the entry: retail
+// has the same two homes as that graph (actor EAX from the entry, pathfinding EBX) but its pathfinding arrives in EAX and
+// is copied to EBX ahead of the actor load, where ours is handed over in EDX because the actor load is placed first; no
+// parameter order, definition order or case spelling changes which register link-time code generation picks for it.
+// P450: Separate first/second positive-length continuations, positive/complementary bool/long:
+// eight 218s at 1280 bytes. NOT kept: native early root/actor ingress stays different;
+// one-consumer decisions do not match. Original geometry, result qualifier and full body restored.
+// P452: Separate paired-start/end, actor-success/fallback and trace-initial/recovered point memmoves, then complete paired/actor endpoint contracts:
+// 357/354/341/319/335/245/359/400. NOT kept: all regress; native early root/actor ingress remains. Original record publications, result qualifier, helpers, caller roles and full body restored.
+// P454: Existing point producer returns pointer/const-pointer/reference/const-reference/value,
+// then forced pointer/reference/value: 218/218/218/218/219/218/218/219.
+// NOT kept: no native early root/actor ingress repair; value returns also raise the other helper user to 66.
+// Original shared producer and complete body restored.
+// m3 lane 14 r92 (fast with 0x270d90 at 286 and 0x270400 MATCH, control 218): case 5's fallback as the one block under
+// `actor == NONE || !call` with the out stores shared 399 (1224 bytes; 0x270d90 372); a named `has_actor` test at the top 352
+// (1288 bytes, the entry loads it first); case 5 as if/else with one `result = true` 218 (same code); case 2 without
+// the vertices local 218; the radius test written `radius * 2.f < first_length` 218. Retail's case 5 compares the
+// actor in EAX early (the flags held across the scale) and calls with it in place, so the entry load is the whole cause.
+// P477: Standard paired dot/difference, actor-direction capture, paired/actor/trace point publications, upper-limit and native-prefix reductions:
+// 393/409/281/358/346/347/405/442. NOT kept: all regress and none repairs native early root/actor ingress; sixteen matched controls survive. Original geometry, shared producers, caller roles, result qualifier and complete body restored.
+// P490: Standard actor/first-length/second-length/wide-edge/corner/both-length/full
+// admission producers, then reverse full predicates: 312/373/376/437/471/398/629/629.
+// NOT kept: all regress and enlarge away from retail; all matched file controls survive.
+// Original predicates, geometry, result qualifier, helpers and full body restored; early root/actor ingress remains.
+// m3 lane 15 r84 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218): `__assume(surface_index >= 0)` at the top
+// 220; `__assume(pathfinding != NULL)` at the top 220; on corners a, b, c, d (re-measured 287, 1284 B) the same two assumes
+// 295/295 (the actor load still comes first and pathfinding still arrives in EDX); the volatile result left uninitialized
+// and set false on case 1/6's failure path and after the switch 372 (1292 B). Same code as the base: `__assume(parent_point
+// != NULL)` at case 5's top, `__assume(state->pathfinding != NULL)` at case 2's top.
+// M3 lane 8 r167 (fast with 0x270d90 and 0x270400; control 218, register-masked 23): retail treats the actor index like
+// `out` (loaded at entry, EAX, so pathfinding moves to EBX and case 5's `cmp eax, -1` is scheduled at the case's top),
+// then reloads it from its slot in case 2. Tried: a local copy of the actor index at the top used at all three uses 219
+// (coalesced with the parameter); the actor test in a named bool at case 5's top 218; one vertices pointer local for case
+// 5's direction and position 218; the actor test as an outer if around the 0x270400 call 218; the surface pointer
+// declared ahead of the start-out pointer 218 (all four same code).
+// M3 lane 10 r108 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, corners a, b, c, d re-measured 287 at 1284 bytes).
+// Dead-local phase scan on the corners form (diagnostic, removed), n = 1..7: 295/283/288/288/288/288/288, the dot sums' j/k
+// roles never move. On the corners form: one vertices base for case 1/6 and case 5 at the top 306 (its load joins the entry);
+// case 2 through the pathfinding parameter (diagnostic; retail reads the state's) 267 (1280 bytes, pathfinding then arrives in
+// ECX and surface_index in EDX, so the incoming register follows the body); corners a, b, d, c 302 (actor still first), b, a,
+// d, c 358, a, c, b, d 357, b, c, a, d 356. Same code as the corners form: the result declared first, surface_index declared
+// ahead of pathfinding (definition, declaration and call), `second` declared in its own block, the projection difference as
+// one expression, both length tests as `0.f < length`.
+// m3 lane 9 r124 (fast with 0x270d90, 286 throughout): one to seven unused locals at the top (diagnostic phase scan)
+// 219/220/220/220/220/220/220 (inert); the fraction as `inverse * (projected - origin)` 218, the projection's and the
+// origin's dot3f arguments swapped, singly and together, 218/218/218 (all same code); re-measured `margin =
+// state->source.radius * inverse` 218 (same code).
+// M3 lane 13 r97 (fast with 0x270d90 286 and 0x270400 MATCH throughout; control 218): retail's actor parameter is
+// colored first (EAX from the entry, its stack home then reused for case 1/6's corner spill, case 2 reloading it), so
+// parameter order and case order were tested for the coloring order, the declaration and 0x270d90's call changed
+// together: the actor declared first 218, second 218, the entry pointer declared first 218 (all the same code); case 5
+// placed first in the switch 329, case 2 first 354 (1284 B; the entry stays as before in both).
+// P545: Standard reciprocal, projected difference, fraction/margin products, paired
+// distance products, radius bound, upper bound and actor-direction scale:
+// 373/419/409/448/422/438/468/378. NOT kept: extra operation calls grow frame/extent
+// and miss native early EBX-root/actor ingress; original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (218): retail copies the pathfinding root into ebx and takes the
+// actor value in eax at the entry, where this build keeps the root in eax and reads the actor in the case body, so
+// the vertex loads and the cross product's float schedule follow from that allocation.
+// MiniMax S (11-16): no new form, no lower score (218): retail still pushes ebx and keeps the pathfinding root in ebx from the entry where this build reads the root's field first and keeps the root in eax with ebx as scratch, so the prologue order and the register that holds the root differ; a permuter run over the body found only a two-point variant that moves the second point_along_vector call after the assignments that follow it, a statement order the rules drop, so the body stands as it is.
+// Round 125 (m3 lane 16, fast with 0x270d90 286 throughout; control 218): the function as a member of the pathfinding data
+// (`this` for the first parameter; header declaration and the 0x270d90 call changed, then restored) 219 (the entry is
+// unchanged: `this` stays in EAX); the four corner pointers declared at function scope (a, b, c, d) 287 (1284 bytes); the
+// pathfinding parameter as a pointer to const (definition and path.cpp's declaration) 218 (same code), with the a, b, c, d
+// corners 287 (1284 bytes: actor_index loaded at entry, pathfinding again arriving in EDX); on that, the surface as a
+// reference 287. A scan of matched retail entries found the `mov ebx, eax` + stack-argument load into EAX only where the
+// argument is used in the entry block itself (0x270930, 0x105a80, 0x10f430, 0x20d220).
+// P565: Actual two-edge difference/normalization tables, long/dword/short/word/byte/char for,
+// then long/short while: 369/369/367/367/371/371/369/367. NOT kept: intermediate grouping and
+// changed lifetime do not match native ingress/frame; six forms raise caller 286 to 313.
+// Original helpers and complete body restored.
+// M3 lane 2 r92 (fast with 0x270400 and 0x270d90; control 218): the corner pointers in a, b, c, d order re-measured 287
+// (1284 B: actor_index loaded into EAX first thing and pathfinding homed in EBX, but it then arrives in EDX); the
+// parameters as (entry, pathfinding, surface_index, ...), the order retail's caller sets them up in read last to first
+// (ECX surface, EAX pathfinding, EDI entry), with the declaration and the call in src/path.cpp changed for the trial
+// and put back: 218 (same code), on the a, b, c, d form 287 (pathfinding still in EDX); (pathfinding, entry,
+// surface_index, ...) on the a, b, c, d form 287; the surface as a const reference 218 (same code). Diagnostic: on the
+// a, b, c, d form an actor copy declared after the surface 295 (still EDX). Retail's 270400 calls take the actor in
+// EAX; its case 5 compares the entry-loaded EAX first.
+// P586: Actual final interpolation argument table, long/dword/short/word/byte/char for,
+// then long/short while: 369/369/408/408/408/408/369/408. NOT kept: argument grouping and
+// traversal miss native entry/frame/extent; original scalar outputs and complete body restored.
+// M3 lane 3 r254 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, register-masked aligned 23): the entry
+// parameter declared mutable as `start_out` (definition and path.cpp's declaration; the const_cast copy dropped) 220; the
+// origin dot computed ahead of the projection 218 (same code); corners a, b, c, d re-measured on the plain check 287 (1284 B,
+// the plain check agrees with the fast one: the actor loads at entry and case 1/6's origin dot then sums k, j, i as retail,
+// register-masked 21, but pathfinding arrives in EDX); on that, the mutable `start_out` parameter 295; on that form, the
+// surface pointer set ahead of the start_out copy 287 (same code). Retail also forms `inverse * radius` in the inverse's
+// register (`mulss xmm2, [radius]`) where ours loads the radius first.
+// b12L (11-17) walk against retail, fast build on r846: every statement, jcc sense and callee argument checked against
+// 0x26f3f0-0x26f8d2; no behaviour difference found. Case 1/6: the four vertex-word tests in order (0x26f42e-0x26f45c),
+// first = b - a and second = d - c (0x26f472-0x26f4bb, 0x26f4e1-0x26f50d), length > 0 as comiss/jbe (0x26f4d3,
+// 0x26f525: NaN takes the fallback), radius * 2 test (0x26f5b6), margin = reciprocal * radius (0x26f5b8), clamps
+// (0x26f5bf, 0x26f5cd), stores and word output indices in retail's order (0x26f5fb-0x26f679; fallback
+// 0x26f686-0x26f6db). Case 5: vertex 3 scaled by -1.0f, cmp eax, -1 / je (0x26f6e8, 0x26f74e), 0x270400 with edx = 0
+// and ecx = &direction (0x26f750-0x26f769), whole 16-byte parent_point copy in the fallback (0x26f7ac-0x26f7c9). Case
+// 2: node-index store ahead of the call (0x26f85e), 0x26c590 stack order and 0.2f (0x26f885-0x26f895), trace point +4
+// and sector +0x10 (0x26f89a-0x26f8c0). Constants 0.0, 1.0, 0.5, 2.0, -1.0 (0x45dbd8, 0x45dbc0, 0x45dbbc, 0x45dc0c,
+// 0x45dbcc) agree. Only the entry allocation (above) differs. New forms, no gain: `inverse *= radius` for the margin
+// local 218 (same code); the vertex-word tests as a negated early return 218; `case 6:` before `case 1:` 218 (same
+// code); the projection and origin sums written out as y*j + z*k + x*i, vector- or point-major, grouped or not, 366
+// (1288 B).
+// M3 lane 16 r131 (fast with 0x270d90/0x270400; base 218): corners a, b, c, d re-measured 287 (1284 B); the actor parameter
+// declared `long const` 218 (same code), on a, b, c, d 287; case 5's outcomes as one fallback block with shared out stores
+// re-measured 399, on a, b, c, d 344 (1228 B); a, b, c, d with the switch on `(long)surface->type` 287 (same code); a, b, c, d
+// through one `vertices` base for the four corners 295. On a, b, c, d the caller loads pathfinding into EDX too (retail EAX):
+// the incoming register follows whether the actor load is placed before or after pathfinding's copy to EBX. Body unchanged.
+// Common surface pointer/reference with case views 219/219; common type with
+// an entry view 219; common table snapshot 218 at +0x4; indexed header with case
+// views 218; transition table indexed directly 218; signed type local 219;
+// case-local absent-actor test 218. NOT kept: the early root copy and actor load
+// remain unresolved. Original complete body restored.
+// Transition record indexing through a mutable/read-only/named read-only table
+// 218/218/219. With case-five vertex base 218/218, with paired-corner vertex
+// base 219, with both vertex bases 219/220.
+// NOT kept: all preserve the delayed EBX save and actor load at the same length.
+// Earlier measurement 219.
+// Admit then carry corner ordinals into paired vertex lookup. Second 219, third 219, second and third as
+// words or longs 220/220, first edge 317, second edge 220, first three 323, last three 247. The paired
+// middle words leave root and actor entry allocation unchanged.
+// Round 416: Retail saves the pathfinding root in EBX and loads the actor into EAX before dispatch. The
+// actor-first signature, ordered corners and position-first case five reproduce that entry through +0x27.
+// shared scaled point addition on the early-root form 283; shared scaled differences on the early-root form
+// 280; named surface kind before the result on the early-root form 291; named surface kind after the result
+// on the early-root form 291; named radius diameter on the early-root form 283; const actor input on the
+// early-root form 283; read-only saved surface record on the early-root form 283; case five actor comparison
+// assigned before either vertex read on the early-root form 283. NOT kept: All eight variants are 1284 bytes
+// and regress from 218. Paired differences give the lowest trial score, 280. The first-edge projection and
+// radius multiplication still use different SIMD operands. The opening body, caller and declaration are
+// restored.
+// M3 lane 6 r194 (fast with 0x270d90 at 286; control 218, aligned 70, masked 23). Round 113's actor-first recipe rebuilt on
+// this body (actor_index declared first in the definition, path.cpp's declaration and call; corners a, b, c, d; case 5's
+// position before its direction) 283 (1284 B, aligned 42, masked 6): every remaining difference is in case 1, where the
+// first edge's j/k, the parent point's y/z and the 1.0/a.z pairs hold each other's XMM registers (the instructions are
+// otherwise retail's) and the margin loads the radius and multiplies by the inverse where retail multiplies the inverse by
+// the radius in place (the 4 extra bytes). On the recipe: the radius named once for the compare and the margin 298 (aligned
+// 105); `inverse *= radius` used as the margin 283 (same code); the fraction and the margin as divisions by the first length
+// 283 (same code: the compiler forms the one reciprocal itself); the parameters as (actor, entry, pathfinding, surface,
+// state, ...) 283 (same code), (entry, pathfinding, surface, actor, state, ...) 289 (the entry is lost again), (actor, state,
+// entry, pathfinding, surface, ...) 283 (same code); retail's call sets up ECX (surface), then EAX, then EDI (entry) last.
+// Diagnostics (reverted at once): 1-7 dead initialised locals on the recipe 291/279/284/284/284/284/284 (only the origin
+// dot's term order moves; at 2 the body is 1280 B, aligned 39); a no-code read of first.j ahead of the projection puts
+// 1.0 in retail's XMM6, one of first.k puts first.j in retail's XMM3 (286/289), one of the parent point's y does nothing.
+// M3 lane 3 r262 (fast with 0x270400 and the caller 0x270d90): lane 11 r113's form rebuilt (actor_index declared first in
+// the definition, the declaration in src/path.cpp and the call; corners a, b, c, d; case 5's position before its direction)
+// 283 at 1284 B, first difference +0x27 (0x270d90 286 as on main). Its case 1 against retail: the projected dot's j and k
+// terms come out k + j where retail has j + k (the parent point's y/z loads swap with the edge vector's j/k registers;
+// the origin dot's tree already agrees), the 1.0 constant in XMM7 for retail's XMM6, and the margin in a fresh XMM6 where
+// retail multiplies the inverse in place. On that form: a pointer local to the parent point's position for the projected
+// dot 283 (same code); the parent position copied into a local vector 332 (1308 B); fraction and margin as divisions by
+// the first length, no inverse 283 (same code); the half-way arm first with the condition negated 283 (same code); a
+// named radius for the test and the margin 298. Diagnostic: dead initialised locals at the top, k = 1..7:
+// 291/279/284/284/284/284/284 (k = 2 gives 1280 B but recolours the origin dot): no phase fixes case 1. Body unchanged.
+// M3 lane 10 r123 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70): the actor parameter copied into a
+// `long const` local at the top and used in cases 5 and 2, 219 [70]; case 5's test written `NONE != actor_index` 218 (same
+// code); case 5's test held in a bool computed ahead of the direction 218 (same code); case 5 first in the switch 329; case 2
+// ahead of case 5 353 (1284 B). Retail's case 5 compares the entry-loaded EAX before the direction is formed, while case 2
+// reads the actor from its stack home again, so the entry value is not a whole-function register home for the parameter.
+// Early root and actor allocation still differ. Second-edge start/end/both addresses after the
+// first normalization 311/335/229, or inside the positive-length arm 334/336/361.
+// Both addresses with the second vector scoped there 229/361. All forms regress.
+// M3 lane 6 r203 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 60/60): the corners form (actor_index
+// declared first in the definition, the declaration and 0x270d90's call, corners a, b, c, d) re-measured 281 (aligned
+// 46/46), with case 5's position read before its direction 283 (aligned 33/33: only case 1's float block left, the
+// first vector's j/k in xmm4/xmm3 for retail's xmm3/xmm4, the 1.0 in xmm7 for xmm6, and the margin loading the radius).
+// Dead-local scan on that form, K = 0..31 (diagnostic, removed): period 8, K = 2, 10, 18, 26, 27 give 279 at 1280 B
+// (aligned 36: the origin dot reorders, the margin's radius load goes) and the rest 283-291; no K moves the j/k roles
+// or the margin. On that form: no-code reads of first.k then first.j ahead of its fill 292, j then k 289 (diagnostics);
+// the second edge vector computed before the first is normalised 360.
+// Retail retains the root in EBX before the actor load at entry.
+// First, second or both end vertices read at their differences 355/336/339.
+// Direction scaled from the vertex directly or through one vertex base
+// 379/379, and with both end reads 354. Staged projection and origin
+// products 220, and with both end reads 339.
+// NOT kept: all scores rise. The current frame and input handoff remain.
+// M3 lane 10 r125 (fast with 0x270d90 at 286, 0x270400/0x30bf0 MATCH; control 218): lane 11 r113's actor-first recipe rebuilt
+// (actor_index first in the definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) 283
+// (1284 B, +0x27, aligned 42). On it: the radius read through a `source` pointer to the state's source record for the test
+// and the margin 283 (same code); one `vertices` base for the four corners 291; the two distances computed second first
+// 283 (aligned 46); both projections in one fraction expression 283 (same code); the upper bound named once as `upper`
+// 283 (aligned 41). Diagnostic: two dead initialised locals 279 (1280 B, but the margin still loads the radius into a fresh
+// XMM6; the length only matches because the origin dot's a.z load moves). Body unchanged.
+// Case-five indices before the vertex table, word position/direction first 358/358,
+// long 262/262. Word index at each address, position/direction first 266/219.
+// Direction vertex reference 265, both vertex references 271.
+// NOT kept: all scores rise and the early root copy and actor load remain unresolved.
+// Parent then combined, paired or individual corner guards 218/218/218. Parent and first-edge
+// guard then second edge 218. Positive parent before corner guard 218. Positive parent and first
+// edge before second-edge guard 218. Parent guard before positive corners 218. Combined parent
+// and corner guard 218. NOT kept: All tie at retail length and leave the entry loads different.
+// The root and actor are still acquired in different registers before the dispatch.
+// Vertex table in the paired case 219, in the actor case 218, separate in both cases 219.
+// Shared vertex table after or before surface lookup 307/230, after result initialization 307.
+// Typed surface table with separate vertex reads 220 or a shared read 306.
+// NOT kept: All variants preserve the length but leave the first difference at the EBX save.
 // @retail 0x26f3f0
 bool function_26f3f0(long actor_index, s_type_c3b527 const *entry, s_type_f17a25 *state,
     s_pathfinding_data *pathfinding, long surface_index, s_type_c3b527 const *parent_point, long parent_node_index,

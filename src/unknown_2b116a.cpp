@@ -4476,6 +4476,8 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
+/* runs the chosen item: 0 the name entry, 1 and 2 a message to the listed members, 3 a
+   message box or a choice dialog, by the player's identity type and function_1a334a's query */
 // score 54 (was 56): Retail keeps the controller slot and reloads both pointer levels before the two dialog masks.
 // Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
@@ -4702,9 +4704,7 @@ void c_clan_options_list::handle_item(s_controller_reference **controller, long 
 
 			if (player_slot_get_identity(controller_index, &identity))
 			{
-				/* volatile: stored to the stack slot where retail spills
-				   controller_index, which keeps the function within a byte of retail's length (see the score note) */
-				long volatile member = function_1a334a(controller_index, (_XUID const *)&identity);
+				bool member = function_1a334a(controller_index, (_XUID const *)&identity);
 
 				if (identity.type != 1 && member)
 				{

@@ -2148,6 +2148,14 @@ bool function_1900a5(long index);
 // 737 (2894 B). Reading of retail's request loop: the identity is held by value in three registers and saved to the
 // first loop's identity home only in the type-5 arm, whose scan counts an index kept in memory against the record
 // count and leaves for the next player on a duplicate.
+// M3 lane 7 r193 (fast with the file's 41 functions, 0x641a0, 0x8df50, 0x1900a5 and 0x192e60; control 703). Retail's
+// property fill is a rolled loop through the properties pointer kept in a register (`lea edi, [ecx + 1]; mov word [eax],
+// di; mov [eax + 4], edx; add eax, 0x10; inc ecx; cmp ecx, esi`, ESI = 6 shared with the count store and the used-count
+// add); ours unrolls it and re-reads `record->properties` before each store. Forms with a `properties` pointer named where
+// it is computed and used for the record field and the fill: literal bound 771 (2814 B); bound `record->count` with
+// `properties_used += record->count` ahead of the fill 731 (2846 B); the same with `+= 6` ahead of it 731 (2846 B); bound
+// `record->count` with `+= 6` after the fill 718 (2862 B: retail's rolled loop, but the frame grows from 0xc0 to 0xc8);
+// with `+= record->count` after it 718 (same code). Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

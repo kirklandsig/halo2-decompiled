@@ -1442,6 +1442,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // one read of the index there keeps retail's pair and two undo it. So the pair follows a weighted reference count taken
 // before local CSE, in which a read in the block that defines the inlined element counts about half of one after the
 // join; retail's element carries about two post-join references more than ours.
+// M3 lane 13 r124 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): 0xbfe40 (the inlined fading-bit setter) with a plain `if (value)` 24 (0xbfe40 18, 0x1c35f0 21); in 0x126df0: both
+// elements as references 24 and as `*const` 24 (same code each), the fading test as the plain bitfield 43 (206 B; 0x126df0 39),
+// the fade-in element read through a const reference at every use 27 (registers unchanged, the conversion sinks below the
+// stores; 0x126df0 3).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -2870,6 +2875,11 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
+// MiniMax G (11-19): no new form, no lower score (339): the gain sum as the existing s_decibels operator+ measures
+// 484 on this body, and the 322 lead of lane 15 r105 needs the track value and the source scale read into locals
+// ahead of the pitch, which the review list rejects; the permuter's 312 lead rests on a local holding the constant 2
+// and on a flag set by one test and read by the next, which the review list rejects too, so the frame stays 0x4b4
+// against retail's 0x4bc.
 // score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword

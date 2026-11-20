@@ -1707,6 +1707,14 @@ bool function_108530(long device_index, long name)
 // intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
 // trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
 // form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
+// Positive input split 141, positive remaining split 141, nested bound selection 148, and a separate
+// lower-bound branch 145. Zero rate for absent acceleration, deceleration, or both 116 each. Accumulate
+// the half ramps into the remaining span 131. NOT kept: rate forms tie, and the other forms lose
+// both callers through the initial-velocity convention. Ramp-down still occupies an XMM register.
+// Separate request paths as statements or values 141/141, positive span first as statements or values
+// 141/141, carried request predicate as statements or values 156/156, span accumulator 141, clamp within a
+// positive span 145. NOT kept: all lengthen the body and lose the incoming velocity register. The ramp-
+// down slot and duration and position registers remain displaced.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2662,6 +2670,10 @@ bool function_0b6760(s_index_pair const *pair);
 // Bind the position-group field reads and updates to position and position velocity and group target 316.
 // Use the existing device definition as the saved receiver in both motion paths 61.
 // NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
+// score 61 (was 61): MiniMax H (11-19): the result local is declared after the saved definition, the speed is a
+// running sum and the unit byte is tested as `<= 0`; what still differs sits at the two channel-1 0xb6760 calls,
+// whose convention is fixed in another file.
+// MiniMax H (11-20), NOT kept: 58 (was 61), a 3-point gain, under the 8-point bar for a function above 30.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
