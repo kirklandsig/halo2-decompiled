@@ -226,6 +226,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // M3 lane 6 r209 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the node arm's forward address
 // named in a pointer local after the point call 19, ahead of it 19, the node arm's position address named 19 (the three the
 // same code); the else arm's forward copied through a pointer local 67, with the node arm's pointer as well 67.
+// M3 lane 6 r213 (fast; control 19): the position address named once ahead of the branch for both arms (address local
+// kept) 138 (452 B); the forward copied into the vector local at its declaration with the node arm rotating it in place
+// 136 (454 B); `1.0f != arg_0->scale` in the rotate helper 103 (474 B: the scale load moves, the pair stays); `NONE !=
+// arg_0` 19 (same code). Diagnostics (reverted at once): one extra store of the point's y into the record 52 (481 B, the
+// transform still in EBX); the else arm's forward from a global, so the transform has fewer uses, 111 (still EBX).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

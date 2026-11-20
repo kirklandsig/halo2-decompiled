@@ -1432,6 +1432,10 @@ bool c_projectile_type::v8(long a, long b)
 // tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
 // indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
 // of the object lookup with the typed pointer 18. Word-read body kept (5).
+// M3 lane 6 r213 (fast with 0xa5e70, matched each time; word read 5): with the full-width mask, the group mask written
+// `0xffffu` 12, the group stride written `12u` 12, the 0x800 arm's bit written `0x800u` 12 (suffixes fold: the constant pairs
+// stay shared); the result started at 0 and accumulated (`result |= function_a5e70(...)`) with the mask 12, with the word read
+// 5 (same code).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
