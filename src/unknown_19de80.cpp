@@ -827,6 +827,17 @@ static inline bool teams_enabled_19e1c0()
 // Ordinary result for player, team, score, or cause names 691/691/691/691.
 // NOT kept: the team-name form reaches retail length but keeps the 0x208 frame.
 // Ordinary results recover the 0x204 frame and merge the name-copy tails.
+// M3 lane 7 r195 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched unless said; control 390, plain result 691): parameter
+// names as the tie-break on the plain result (`token` as string / a / z / name, `remaining` as a / z / count /
+// maximum_length / buffer_size, 8 builds) 691 each (same code: names do not move the registers); 0x19e0f0 calling this
+// function directly, volatile / plain result 449 / 663 (0x19e0f0 9 / 10: LTCG then takes the token length in EAX, keeps
+// the token in EBP and re-reads the event from its slot at every use, the per-use reload retail shows for the token);
+// the token as a by-value one-pointer class-type parameter (it has a constructor), plain result 691 (scalarised, the same code; 0x19e0f0
+// 54); the `register` keyword on `remaining` 691 (ignored). Diagnostic (reverted): the opponent scan removed, or without
+// its event read, moves the event to EDI and the token to EBP on the plain result, `remaining` still in memory: with the
+// scan's read the event takes the last register (EBP) and without it the first (EDI), so the registers go out lowest
+// weight first, and retail's order (token length EDI, event EBX, `remaining` EBP) puts `remaining` above the event,
+// which has the scan's loop read. No natural form found that weighs `remaining` that high.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
