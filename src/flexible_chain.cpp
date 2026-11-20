@@ -846,6 +846,9 @@ void __stdcall function_1160c0(real dt)
 // explicit sine or cosine 144/172, completed constrained point 336.
 // NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
 // and leave the selected segment in EDI/ECX and at +0x20.
+// Reserve segment, node and stiffness in solver scope, seven subsets and a reordered
+// full declaration, 144 each. NOT kept: the segment stays in EDI/ECX and spills at
+// +0x20, while retail uses EDX and +0x14.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

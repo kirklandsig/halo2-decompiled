@@ -1283,6 +1283,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
 // field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
 // NOT kept: The direction-k preload and length/zero register split remain.
+// Normal fields in ikj/jik/jki/kij/kji order 435/435/436/435/436, direct indexed
+// coordinates 435, ascending/descending copies 441/441. NOT kept: the field forms
+// remove the native dword normal copy, and all shorten to 1668 bytes. The length
+// and persistent zero registers remain reversed.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -883,6 +883,8 @@ struct s_item_collision_bsp
 // 311/322 for compound or aggregate rows and 343/353 when copying the input normal first.
 // NOT kept: every form grows the body, and early publication also grows frame 0xa0 to 0xa4.
 // The transformed normal and contact position registers and pending x87 spin scale still differ.
+// Queried normal coefficients carried through all rows, i/j/k and ordered pairs jk/kj/ji/ki/ik,
+// 190 each. NOT kept: the first coefficient loads, contact-point home and pending spin factor remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

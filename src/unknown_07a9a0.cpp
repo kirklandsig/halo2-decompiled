@@ -1043,10 +1043,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// selector remains a call (two stacked first lines merged in r108).
 // score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// selector remains a call. Earlier score 964.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
 // M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
@@ -1626,6 +1624,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
 // shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
 // forms regress. The opening lookup still expands and no trial reaches the retail frame.
+// Pointer/reference from the output clear 926/926, after machine admission 871/871.
+// With dword buckets, clear-result forms 938/938 and admitted receivers 911/911.
+// NOT kept: the clear-result dword forms recover frame 0xb4 but shorten the body
+// and lose the caller in preview. The opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
