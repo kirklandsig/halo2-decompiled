@@ -1442,6 +1442,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // one read of the index there keeps retail's pair and two undo it. So the pair follows a weighted reference count taken
 // before local CSE, in which a read in the block that defines the inlined element counts about half of one after the
 // join; retail's element carries about two post-join references more than ours.
+// M3 lane 13 r124 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): 0xbfe40 (the inlined fading-bit setter) with a plain `if (value)` 24 (0xbfe40 18, 0x1c35f0 21); in 0x126df0: both
+// elements as references 24 and as `*const` 24 (same code each), the fading test as the plain bitfield 43 (206 B; 0x126df0 39),
+// the fade-in element read through a const reference at every use 27 (registers unchanged, the conversion sinks below the
+// stores; 0x126df0 3).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

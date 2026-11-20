@@ -689,6 +689,13 @@ extern "C" void _ReadWriteBarrier(void);
 // still EBP), a constant flag 152, the second flag call as a direct `&= ~FLAG(22)` 52. Next: a spelling of that first call
 // (or of the unit lookup before it) that leaves a scratch register for its pool data, or that ranks the datum index above
 // it; reference counts of the datum index do not (lane 15 r107).
+// M3 lane 13 r124 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH; control 122): lane 11 r115's
+// 20 form rebuilt (0x7b430's step: `pool` local feeding data_datum_iterator_set_current, lookup through
+// function_badc0(object_index, 3), `if (unit && !(flags & 1)) { tick; continue; } if (unit) { restore }`, no barrier)
+// 20 at 473 B, register-masked aligned 2. On it: the lookup written at each of its two tests 282 (582 B, two lookups);
+// the header read through `s_recorded_animation_object *const &` 20; the release's datum index through a `long const &`
+// bound after the step 20; the `continue` as an if/else with the restore and release in the else arm 20 (same code
+// each). Not kept: the 20 form needs the one-use `pool` copy beside direct reads of the global.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

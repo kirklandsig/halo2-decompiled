@@ -869,7 +869,7 @@ void function_21ee80(void)
 /* ---- the listener ---- */
 
 /* the reverb of no environment */
-const s_sound_driver_reverb g_44a2a0 =
+extern const s_sound_driver_reverb g_44a2a0 =
 {
 	{ 0, 0, 0, 0, 0, 0x80, 0, 0 },
 	-100.0f, -100.0f, 0.0f, 1.0f, 1.0f, -100.0f, 0.0f, -100.0f, 0.0f, 1.0f, 1.0f, 5000.0f
