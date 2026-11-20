@@ -759,6 +759,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
 // output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
 // Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
+// Round 452: A single ramp-tail calculation or a single elapsed-count read
+// 693/693. Named braking distance or travel ticks 693/693; accumulated estimate 697.
+// Real estimate before the cast on the first or both arms, or one shared store 693/693/693.
+// All eliminate the repeated elapsed-count calculation but move the first gap earlier
+// and shorten the body to 2865 bytes. EBX still keeps the supplied direction.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

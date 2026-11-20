@@ -370,6 +370,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// Round 452: Scan produces the successful ordinal or NONE, tested for equality
+// or signed validity 72/73, or the count, tested for equality or the bound 72/72.
+// The same four forms with a separate comparison cursor also give 72/73/72/72.
+// The terminator uses a direct zero and the body reaches 205–206 bytes, but the
+// 0x24 frame still lacks the base spill and EBX carries the scaled entry address.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

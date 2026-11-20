@@ -4769,6 +4769,11 @@ struct s_weapon_projectile_creation
 // Shared marker position 1154, marker origin/direction setters 1122/1149, i-k-j inherited/perpendicular
 // dot products 1144/1121, actor speed scale-add 1121, synchronized point setter 1136, inherited velocity setter 1121.
 // NOT kept: the marker direction setter grows the frame to 0x1eac and the remaining forms keep 0x1ea4.
+// Round 452: Creation up through a setter or an aggregate in each case 1136/1299.
+// Join component outcomes before a setter, field stores, or an aggregate 1143/1143/1171.
+// Repeated-direction setter on capture, restore, or both 1142/1139/1137.
+// The grouped result assignments expand the 0x1ea4 frame, and neither separate
+// component publication nor repeat transfer recovers retail's 0x1e98.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
