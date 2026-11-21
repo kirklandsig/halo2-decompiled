@@ -897,6 +897,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // pass advanced from incremented length 242/237, short pass and short length incremented independently 249,
 // short feedback with fixed compaction prefix 249. NOT kept: the forms reaching frame 0x14 shorten the
 // function to 760–762 bytes and regress. The long published-length form ties at frame 0x18.
+// M3 lane 14 r135 (fast with 0x239d50): one hull counter as the while variable, seven combinations of a bool/long flag,
+// short/long hull count, the short compare and the heading first 233-265 (759-762 B, the loop rotated); main's body with a
+// bool flag 264 (the count moves to EAX, `ret 8`, 0x239d50 80) and with the count read once through its address 262 (frame
+// 0x10, caller matched; the hull count takes the count's home); the one-counter body with a bool flag, a long hull count, the
+// heading first and `short current = count;` above the classifier call 156 at 784 B (count on the stack, frame 0x14, flag
+// byte in the indices home and hull count at +0x10 as retail; left: the rotated pass loop, points/current/count in
+// EBX/ESI/EDI, the closure's fxch); on it a positive two-axis equality helper for the closure 153, a short hull count 251,
+// the short compare 251, the heading after the scan 222, return exits 248.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

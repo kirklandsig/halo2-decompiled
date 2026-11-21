@@ -306,6 +306,12 @@ void function_254200(void)
 // (1113 B); the doubled size computed at the top of the readiness block 33 (the pair stays ours); at the top of the
 // function 283 (1103 B); the size parameter doubled in place with no size local 19; the bitmap choice as `if (arg_4)
 // local_0 = local_1;` reusing the first view local 41. All restored.
+// M3 lane 14 r135 (fast, control 4): the bitmap lookup helper as two nested ifs 4 (same code); each corner through a
+// forceinline (u, v, x, y) helper issuing the texture-coordinate and position calls 4 (same code); the drawing block in a
+// forceinline helper taking the point, scale, size and colour 230 (1095 B); the colour helper taking the colour by value
+// 218 (1133 B); the four texture-coordinate calls through a forceinline (u, v) helper 8. Reading: a scan of every function's
+// reload groups right after a call on a skipped path finds matched functions in both orders (0x22aff1 reloads its
+// second-declared local first, 0x13f700 its first-declared), so no register, declaration or definition order sets this pair.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -718,6 +724,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // code); defaulted to 42 and overridden in an `if` 94 (2258 B); the closing `else if (g_51ec9a)` as a plain `else` 22
 // (retail re-reads the flag); the alpha product scale first 2 (same code); the offset quad reading arg_0's fields
 // directly instead of the two coordinate pointers 18. All restored.
+// M3 lane 14 r135 (fast, control 2): the bitmap lookup helper as nested ifs 2 (same code); the two 0x14bc0 calls without
+// the (short) cast 2 (same code); a 600 s permuter run (60 tries), best 2; the last quad's corners through a forceinline
+// (u, v, x, y) helper 162 (2176 B, first +0x83); the texture-stage values by enumerator name 2 (same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
