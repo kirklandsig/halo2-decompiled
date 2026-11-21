@@ -2015,6 +2015,16 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // MiniMax R (11-20): score 188 (was 188): no new form; the frame stays 0x30 against retail's 0x2c (the look pair still
 // needs an aggregate slot of its own), the unit and mode still take each other's slot against retail, and esi and edi are
 // still saved ahead of the unit test where retail saves them after it, so the body stays BLOCKED by the stand-in.
+// MiniMax C (11-20): score 40 (was 188): applied the round-105 lead saved by m3 lane 15
+// (build/r105/lead-0x166d75-40.diff) to the current body - the active flag as a false-first if/else, the callback
+// ternary as `index == 0 ? right : left`, the zoom and scope flags as retail's positive bools, the channel byte in a
+// local tested with its two bits, the overlay set read once into a local with the clear test in the positive form and
+// the overlay play written in each arm; every step is behaviour-preserving against retail's own branches (retail keeps
+// zoomed at [ebp-2] and scoped at [ebp-1], clears channel98 when (!zoomed && !scoped) || (zoomed && !scoped && set ==
+// 0x60000d8) || (scoped && set != 0x60000d8) and plays the overlay only when scoped or zoomed, with 0x3f/0x60000d8
+// under scoped and 0x803f/0x6000060 under zoomed); the body is now retail's 2199 bytes; left: the frame is 0x30
+// against retail's 0x2c, the ESI/EDI saves still sit ahead of the unit test where retail pushes each just ahead of its
+// first use, and the +0xb8 channel pointer sits in ECX where retail keeps it in ESI.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -2088,90 +2098,94 @@ void __stdcall function_166d75(long user_index)
 			{
 				weapon->unknownf2--;
 			}
-			active = user->unit_index != NONE && weapon->weapon_index != NONE &&
-				!function_155760(user_index) && function_0b6780((s_index_triple *)&weapon->animation);
+			active = false;
+			if (user->unit_index != NONE && weapon->weapon_index != NONE)
+			{
+				active = !function_155760(user_index) && function_0b6780((s_index_triple *)&weapon->animation);
+			}
 			first_person_weapon_set_active(user_index, field_x11c898, active);
 
 			if (weapon->weapon_index != NONE)
 			{
 				s_166d75_weapon_object *weapon_object = (s_166d75_weapon_object *)first_person_object_get(weapon->weapon_index);
 				byte *orientations = first_person_orientations + (field_x11c898 + user_index * MAXIMUM_FIRST_PERSON_WEAPONS) * 0x1000;
-				animation_event_callback callback = field_x11c898 ? (animation_event_callback)first_person_weapon_sound_event_left :
-					(animation_event_callback)first_person_weapon_sound_event_right;
+				animation_event_callback callback = field_x11c898 == 0 ? (animation_event_callback)first_person_weapon_sound_event_right :
+					(animation_event_callback)first_person_weapon_sound_event_left;
 				real zoom;
-				bool no_zoom;
-				bool no_scope;
+				bool zoomed;
+				bool scoped;
 				c_animation_channel *channel;
 
 				if (weapon->animation.update(callback, user_index, weapon->orientation_count,
-					(s_blend_orientation *)(orientations + 0x800), (s_blend_orientation const *)orientations) &&
-					(weapon->animation.channels[0].unknown11 & 0xa))
+					(s_blend_orientation *)(orientations + 0x800), (s_blend_orientation const *)orientations))
 				{
-					first_person_weapon_animation_finished(user_index, field_x11c898);
+					long channel_flags = weapon->animation.channels[0].unknown11;
+
+					if ((channel_flags & 2) || (channel_flags & 8))
+					{
+						first_person_weapon_animation_finished(user_index, field_x11c898);
+					}
 				}
 				zoom = magnitude3d(&unit->aiming_velocity);
-				no_zoom = !(zoom > 0.1f);
-				no_scope = no_zoom || !function_c8a10(user->unit_index);
+				zoomed = zoom > 0.1f;
+				scoped = zoomed && function_c8a10(user->unit_index);
 				if (function_d03b0(user->unit_index))
 				{
-					no_zoom = true;
-					no_scope = true;
+					zoomed = false;
+					scoped = false;
 				}
-				if (!no_scope)
+				if (scoped)
 				{
 					c_type_709360 animation_id = weapon->animation.overlay_get(0x60000d8);
 
 					if (animation_id.index == NONE)
 					{
-						no_scope = true;
+						scoped = false;
 					}
 				}
 				if (function_0b6760((s_index_pair *)&weapon->channel98))
 				{
-					if (!no_zoom)
+					if (zoomed)
 					{
-						if (no_scope)
-						{
-							weapon->channel98.rate = PIN(zoom, 0.5f, 1.0f);
-						}
-						else
+						if (scoped)
 						{
 							weapon->channel98.rate = 1.0f;
 						}
+						else
+						{
+							weapon->channel98.rate = PIN(zoom, 0.5f, 1.0f);
+						}
 					}
-					else if (!no_scope)
+					else if (scoped)
 					{
 						weapon->channel98.rate = 1.0f;
 					}
 					weapon->animation.channel_update(&weapon->channel98, NULL, 0);
-					if (no_zoom && no_scope ||
-						!no_scope && weapon->channel98.unknown08 != 0x60000d8 ||
-						!no_zoom && no_scope && weapon->channel98.unknown08 == 0x60000d8)
+					long set = weapon->channel98.unknown08;
+
+					if (!zoomed && !scoped ||
+						scoped && set != 0x60000d8 ||
+						!scoped && set == 0x60000d8)
 					{
 						weapon->channel98.clear();
-						if (no_zoom && no_scope && weapon->animation.animation_name == 0x400000c)
+						if (!zoomed && !scoped && weapon->animation.animation_name == 0x400000c)
 						{
 							first_person_weapon_save_orientations(user_index, field_x11c898, 0.267f);
 						}
 					}
 				}
-				if ((!no_zoom || !no_scope) && !function_0b6760((s_index_pair *)&weapon->channel98))
+				if ((zoomed || scoped) && !function_0b6760((s_index_pair *)&weapon->channel98))
 				{
-					long set;
-					dword channel_flags;
-
-					if (!no_scope)
+					if (scoped)
 					{
-						channel_flags = 0x3f;
-						set = 0x60000d8;
+						weapon->animation.overlay_play_for_class(&weapon->channel98, 0x3f, mode, 0x7000101, 0x60000d8);
+						first_person_weapon_save_orientations(user_index, field_x11c898, 0.1335f);
 					}
-					else
+					else if (zoomed)
 					{
-						channel_flags = 0x803f;
-						set = 0x6000060;
+						weapon->animation.overlay_play_for_class(&weapon->channel98, 0x803f, mode, 0x7000101, 0x6000060);
+						first_person_weapon_save_orientations(user_index, field_x11c898, 0.1335f);
 					}
-					weapon->animation.overlay_play_for_class(&weapon->channel98, channel_flags, mode, 0x7000101, set);
-					first_person_weapon_save_orientations(user_index, field_x11c898, 0.1335f);
 				}
 				channel = &weapon->channelb8;
 				if (function_0b6760((s_index_pair *)channel))

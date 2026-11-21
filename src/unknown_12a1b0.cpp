@@ -3756,6 +3756,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // definition test, 731/731/725/731. The latter recover the entry to +0x1c
 // but the acquisition outcome then uses different stores and the scores rise.
 // Stopped state set from the resume bit 737, same with alternate decoded inside the definition guard 663.
+// MiniMax C (11-20): no new form, no lower score (597): retail masks the flags byte with 1 after the pushes and keeps
+// the alternate byte at [esp+0x13] after the definition_index test, this build hoists the flag into BL before the
+// test; the form that reads `alternate` inside the definition guard measures 615 and is not kept, and the track loop
+// still exchanges the index and the NONE with retail's roles.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
