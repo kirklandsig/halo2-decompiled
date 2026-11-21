@@ -1783,6 +1783,11 @@ bool function_108530(long device_index, long name)
 // named squares, or named difference and doubled rate 116 each, with the original
 // sampled distance or a reduction of the published deceleration distance. NOT kept:
 // all tie at 523 bytes. Ramp-down stays cached and duration still uses XMM3.
+// Value-first duration or both tolerance comparisons 116/116. Combined active gate or inactive exit 136/136.
+// Displacement from published target 109; active target readback 116; active start readback 116;
+// published displacement and endpoint readbacks 109. NOT kept: the seven-point forms store
+// the displacement after the reset, and the combined gates break both caller previews. The
+// ramp-down comparison still needs the stack slot.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
