@@ -993,6 +993,11 @@ real g_55e618;
 // retail has them, but the value takes EAX for retail's EDX, later scratch registers rotate one step and the miss arm's
 // flag store tail-merges with the countdown arm's (two bytes short); that copy moved after the velocity pointer, among
 // the normal locals, ahead of the perpendicular or of impact 59 each (same code), ahead of the coefficient loop 250.
+// Component walks for velocity capture, perpendicular, tangent or contact position 605/605/605/600;
+// perpendicular and tangent in separate or paired walks 599/591; paired with indexed velocity
+// capture, and also indexed contact publication 600/595.
+// NOT kept: The closest component walk pairs the projection and tangent at 591 and 1715 bytes.
+// The first mismatch moves into the prologue at +0xc.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

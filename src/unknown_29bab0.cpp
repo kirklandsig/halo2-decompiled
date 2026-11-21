@@ -781,6 +781,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
 // and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
 // position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
+// Shared i/k/j normalizer with setter, aggregate, coordinate walk, or explicit assignment 772/764/755/761.
+// Working-heading query destination on the i/k/j graph, with copy, setter, aggregate, or named
+// outcome 755/767/760/755.
+// NOT kept: Setter and aggregate with the working-heading query output recover the +0x80 position
+// and postpone the first mismatch to +0x123. All eight forms raise the score.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
