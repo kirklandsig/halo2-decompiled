@@ -1028,6 +1028,9 @@ static inline long font_character_pixel(long alpha, long color)
 // Nonempty packed, ordinary or both fill guards and the ordinary inner guard:
 // byte parity 138/111/144/59, dword parity 200/200/192/199.
 // NOT kept: dword parity shortens the fills and changes run allocation. The byte-parity tie retains the narrow packed mask.
+// The parity width, literal byte assembly and packed run register still differ. Word byte swap after a sized
+// copy or an unaligned read scored 59 with byte parity and 207 with dword parity. Network-order conversion
+// scored 119 and 204 for either load. NOT kept because the byte swap ties and the network-order form adds a call.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
