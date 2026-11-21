@@ -506,6 +506,16 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // NOT kept: All eight forms grow the body and raise the score. The form with a separately scaled forward
 // contribution keeps the 0x90 frame and the first difference at +0x10, while the other seven change the
 // frame. The matched caller at 0x137ed0 stays exact throughout.
+// The 0x90 frame and both early x87 angle products agree. At +0x10 retail loads axis i and keeps the squares through sine scaling. The existing builder is tested with sine or cosine rounded to real at use and with both conversions separated by the three sine products.
+// Named sine rounded at builder entry 335.
+// Sine argument rounded at its first coefficient 339.
+// Named sine rounded at its first coefficient 339.
+// Both raw arguments, rounded around the sine products 367.
+// Named cosine rounded at builder entry 334.
+// Cosine argument rounded after the squares 334.
+// Named cosine rounded after the squares 334.
+// Both named trig results, rounded around the sine products 372.
+// NOT kept: The single-result forms leave the first-axis mismatch. Separating both conversions shrinks the target's frame and body. Every widened handoff raises matched caller 0x137ed0 to 42 in the reduced image. The original builder and both calls are restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2806,6 +2816,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // at the top of the 275 form 499-501 (the homes move), in the end block, ahead of the camera angle or ahead of delta 496
 // every n (inert: the camera sums' operand sides and the forward block do not follow the symbol count here).
 // MiniMax H (11-20): no new form, no lower score (417); the delta and reflection XMM allocation and the unity store schedule still differ.
+// Distance bounds pointer 281, Distance bounds reference 281, Angle bounds pointer 281, Angle bounds
+// reference 281, Distance and angle bounds pointers 281, Distance and angle bounds references 281,
+// Distance bounds with branch result initialization 424, Both bounds with distance result handed to
+// angle phase 497.
+// NOT kept: The typed bounds tie at the opening extent. Both branch-produced fade forms raise the score, and the staged form lengthens the body.
+// The camera delta and reflection registers still differ, and the attenuation default still stores after the tint.
 // M3 lane 5 r223 (H2M_FAST, control 281, aligned 142/65 exact/register-masked; the one extra byte is the loop's
 // draw point x product, ours `movss xmm1, reflected.i; mulss xmm1, xmm0` where retail multiplies by memory):
 // redundant paren pairs (1 to 3) around the forward's first product or one delta term 487 each (one instruction
@@ -2824,6 +2840,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // position translation 280. In-place projected reflection by scale/difference, setter/difference or
 // scale/setter 554/499/539. Camera origin with shared difference and in-place reflection 595. NOT kept: the
 // one-point gain is below the threshold and still one byte over retail.
+// The 0x94 frame and decoded output homes agree. First +0x76 is the missing-tag exit displacement. The first changed computation has a different camera-axis schedule. Retail tests the distance endpoints while the last two reflected components are still in flight. Test the distance predicate at four stages, with the far endpoint either retained or read at every use.
+// Distance predicate before delta, direct far reads 540.
+// Distance predicate before delta, shared far endpoint 581.
+// Distance predicate after delta, direct far reads 528.
+// Distance predicate after delta, shared far endpoint 573.
+// Distance predicate after projection, direct far reads 528.
+// Distance predicate after projection, shared far endpoint 523.
+// Distance predicate after reflected side, direct far reads 509.
+// Distance predicate after reflected side, shared far endpoint 528.
+// NOT kept: Testing after the reflected side reaches 2285 bytes with direct endpoint reads, but breaks the entry frame and scores 509. Earlier predicate forms lengthen the body and leave the camera-delta and reflection registers unresolved. The original distance test and reflection are restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

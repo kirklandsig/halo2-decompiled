@@ -1345,6 +1345,10 @@ void function_2118c0(void)
 // indices in a `long [3]` local filled at that level 170 (761 B), in a `word [3]` local 10 (same code: the array is
 // promoted). Not tried: calling 0x212100 for the interpolation (its cubic divides by the general knot spacing, this one
 // multiplies by constants).
+// M3 lane 13 r135 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): p1 and out from the shifted
+// row too (`noise[row + k]`, `&noise[row + k][m]`) 175 (745 B, every row reduced); `long row = b << 3` declared ahead
+// of `previous` 10; the knot subscripts written `w + row` 10; `short b` declared ahead of `short m` 10; the knot rows
+// through a `long const &` bound to `(long)b << 3` 10 (all the 10s the same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

@@ -716,6 +716,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // rows 216/217. Per-coordinate scaled selection with direct/shared scale tests,
 // aggregate 289/256 and loop 303/279. NOT kept: the four displacement forms gain at
 // most five. The frame stays 0x20, and the second displacement and coefficient homes differ.
+// M3 lane 16 r166 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221, aligned
+// 249). On lane 8 r201's macro lead (re-measured 252 at 1136 B, frame 0x14, aligned 172): the camera scale read into a
+// named local between the offsets and the views 256 (aligned 169; first difference +0x2); the first coefficient
+// (right.i) read into a named local there and used in both views 277 (1160 B, aligned 187); both locals, scale first
+// 250, coefficient first 250 (aligned 174 each); the lead with the second offset loop first re-measured 249 (aligned
+// 174), with both locals 249 (aligned 172). No named local makes retail's choice (scale loaded into the origin z's
+// XMM6 after the last origin use, right.i carried in XMM7 across both views). Body unchanged.
 // M3 lane 11 r143 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the two input points through
 // named `first`/`second` pointers for every use 220 (1114 B); the view helper as ordinary `inline` 221 (same code); one
 // shared loop counter for both offset loops 220 (1113 B); both offsets in one loop 218 (the paired form above,
@@ -723,6 +730,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // First displacement initializer, in-place/separate view 220/219; second 218/217;
 // both first-endpoint first 218/217; both second-endpoint first 220/218.
 // NOT kept: gains of at most four, with frame 0x20 and different second-offset homes.
+// M3 lane 2 r129 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221): the second
+// offset loop first with the depth limits written in the condition 260 (1114 B); the else arm's weights set as local_5,
+// scale, then local_4 from local_5 221 (same code); the blend terms written first point first 221 (same code: the
+// operands canonicalise, ours still adds into the first point's product); the helper reading the camera's scale itself
+// (no scale parameter) on this body 218 (1115 B, -3); the origin copied once into a const local for both offset loops 262
+// (1136 B, retail's length, but the copy goes through the frame as dwords; frame still 0x20).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

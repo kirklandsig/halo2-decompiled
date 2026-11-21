@@ -249,6 +249,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // with one `if (!force && hidden) return;` 228; the hidden return first as `initialized && valid && hidden`, ahead of
 // force, 228 (816 bytes); the hidden return deferred past the sample decision 74 (834 bytes). A compile-only build does
 // not reproduce this function (87 aligned rows off).
+// M3 lane 8 r216 (h2m fast with 0x3db00 and 0xd1850, both MATCH; control 21): force written out at its two uses (no
+// named flag) 161 (first difference +0x21), the same on the update-first order 161; the object looked up right after the
+// cache, ahead of the elapsed time, 124 (830 B); update elapsed computed between the object lookup and force 215;
+// `bool update = false;` as the function's first statement 228, right after the cache lookup 228.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -274,6 +274,13 @@ __forceinline long portal_path_gain(real distance, real range)
 // the valid test 290; the path list pointer const 287 (same code); the other cluster's sound index named once in the walk
 // 322; the sound compare written cluster first 287 (same code); the found arm's index store and step as two statements 287
 // (same code). Still BLOCKED-BY 0x14b240's write summary.
+// M3 lane 15 r126 (h2m fast; lane 13's r111 held form rebuilt on this tree: 0x14b240's offset through a reference-bound
+// local, 0x222150 without its volatile reads, both twins rewritten; this body 250 there, 0x18ae80 846 -> 911): the nearest
+// test through `short source_sound = cluster->sound_index;` declared ahead of its `if` 8 (the cluster/portal-index pair
+// becomes retail's; left: that read sits above the distance compare instead of after its jb, and the four output stores
+// take [base + index] where retail has [index + base]); that with the deep block's `sound` pointer dropped 15; the pointer
+// drop alone 261; the read as an assignment inside the condition 250; as `closer ? cluster->sound_index : NONE` 250; a
+// long local 293. Body unchanged here (see 0x18dc90's note for the twin's forms).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -630,6 +637,21 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // 306 (1352 B); both 318 (1341 B); the side bit as `((dword)encoded >> 15) & 1` on the short entry 296; that with
 // `indices[i]` 307 (1352 B). Still BLOCKED-BY 0x14b240's write summary (its held form moves 0x18ae80, whose file is on
 // this round's avoid list).
+// M3 lane 15 r126 (h2m fast with 0x14b240 and 0x249d60; on lane 13's r111 held form rebuilt on this tree, 21 there with only
+// the cluster EBX / widened portal index EBP pair left; 0x18ae80 846 -> 911 on that base): the nearest test through `short
+// source_environment = cluster->environment_index;` declared ahead of its `if` 8 (pair retail's; left: that read above the
+// distance compare where retail reads after its jb, and the output stores' [base + index] order); with the deep block's
+// limit written without its `environment` pointer (`&table[i] ? table[i].range : maximum_range`) 4 (output stores retail's,
+// only the hoisted read left). No form that reads after the compare keeps the pair: the read as an assignment in the
+// condition 25 (with the local at the loop top 25), nested under the distance test 25 (no local 21), a const or plain
+// reference to the field 25/25, `closer ? cluster->... : NONE` 23, NONE preset then set under the distance test 21, a named
+// `closer` bool 319; with the deep pointer dropped 21/21/21/23. Also on the held form: the seed through a scoped short
+// index 370, long 362; portal and other cluster as table + index 21; the side bit as a named bool 21; the environment
+// compare cluster first 22; `distance <= nearest` 21 (8 on the early read); `!(nearest < distance)` 305; a long early local
+// 68; the portal index declared at the top, before the loop or after the memset 21 each; `(flags & 0x28) == 0` 21; the NONE
+// test first in the nearest test 326; a `while` walk 338; a redundant count guard around the walk 22; the deepest stores
+// portals first 21; the nearest stores distance first 22; a long portal index 325; a 600 s permuter run on the 4 form
+// (75 tries) best 4. Body unchanged here.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

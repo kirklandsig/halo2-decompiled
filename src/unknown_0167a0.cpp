@@ -444,6 +444,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // of the five tail calls 5 (all +0x1a7, the direct form's code); on the reference form the chain index reading the word
 // straight from the stored field with no packed reassignment 293 (980 bytes). The tail's 0x18a90 (a contributor's, 146 at
 // 715 bytes against 736) is in the group of calls whose removal gives retail's restore block (round 118).
+// M3 lane 8 r216 (h2m fast; control 5 at +0x19e, the direct entry store re-measured 5 at +0x1a7): `first * 10` named once
+// as an entry offset used by both blocks, with the direct store 5 (+0x1a7), with the reference 5 (+0x19e); `second` copied
+// into a block-scoped local at the top of the restore block for its chain index, with the direct store 5 (+0x1a7), with
+// the reference 5 (+0x19e) (all four their base form's code); the direct store with the entry base from the `tables` local
+// 210 (974 B). Diagnostic (reverted at once): the 0x18a90 call (a contributor's, unmatched) replaced by a call of matched
+// 0x19ca0 12 on either form, the restore block unchanged, so that callee's summary does not hold `second` back.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

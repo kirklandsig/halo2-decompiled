@@ -59,7 +59,7 @@ struct s_29de24 { byte field_0[0x6c]; long field_6c; s_29de23 *field_70; };
 struct s_29de25 { byte field_0[0xc4]; long field_c4; s_29de24 *field_c8; };
 
 // @retail 0x29de20
-short function_29de20(short arg_1, s_29de21 *arg_0, point3f const *arg_2, long arg_3)
+short function_29de20(short arg_1, point3f const *arg_2, s_29de21 *arg_0, long arg_3)
 {
     s_29de20 *local_0 = &arg_0->field_0[arg_1];
     short local_3 = local_0->field_4;
@@ -98,7 +98,7 @@ bool __stdcall function_29de90(long arg_0, point3f const *arg_1, long arg_2, s_2
     {
         for (short local_3 = 0; local_3 < arg_3->field_b4; ++local_3)
             if (arg_3->field_0[local_3].field_0 == arg_0 &&
-                function_29de20(local_3, arg_3, arg_1, arg_2) == 1)
+                function_29de20(local_3, arg_1, arg_3, arg_2) == 1)
             {
                 local_0 = true;
                 break;

@@ -414,6 +414,8 @@ real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
 // score 389 (was 389): one note (the r125 header below gives the current state). Earlier 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
+// Frame 0x40 agrees. The optional prop spills into the second argument home.
+// Earlier 375 (was 375): The actor loaded after the settings call, with different actor, settings and prop homes.
 // Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
 // Earlier 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
@@ -861,6 +863,7 @@ extern point2f *g_468778;
 // NOT kept: the one-point gain leaves entry scheduling unresolved, and the
 // actor-first forms enlarge the 0x40 frame.
 // Round 125 header: 389 (was 407; 259 in a full build with stand-in SDK headers before magnitude3d was defined `inline`, 375
+// Earlier 389 (was 407; 259 in a full build with stand-in SDK headers before magnitude3d was defined `inline`, 375
 // earlier): the actor's table entry is formed before the
 // 0x1e4f90 call, there is no result local (the block returns true and the function ends with return false, retail's
 // two epilogues at 0x1aa6c5 and 0x1aa6d1), a pointer to field_1c is taken at the top of the third arm, local_8 is
@@ -899,6 +902,10 @@ extern point2f *g_468778;
 // the same dot3f call in the condition 414; no facing pointer with that call 386 (1558 B, a gain of 3); that with the
 // weight dot through dot3f 413 (1578 B), and the sign dot too 435 (1575 B); main's body with only the weight dot
 // through dot3f 389 (same code); on the 377 form the slot declared first 377 and the sign dot through dot3f 377 (same code).
+// Absent-prop arm first 390, inactive-slot nesting 399, both 404.
+// Direct slot argument 395, with absent-prop arm first 396; entry slot reference 389.
+// Checked prop binding 402, with absent-prop arm first 403.
+// NOT kept: the prop spill persists. The closest length is 1558 bytes at 390.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
