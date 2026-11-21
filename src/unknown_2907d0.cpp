@@ -273,6 +273,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // copies 51 to 297: the transform never takes EBP (EBX, or EDI when the convention changes), so neither one block nor one
 // call decides the pair; the file without /Gr 19 (same code). Under the plain stack convention (no address local) the
 // constant 1 is not shared (`mov word ptr [eax + 0x2e], 1` then `mov al, 1`: EAX holds the record there).
+// M3 lane 15 r125 (h2m fast with 0x200e60 and 0x142570, MATCH; control 19): no address local re-measured 33 (464 B: ECX copied
+// to EBX at entry); no address local with the else arm copying the forward first 80 (462 B); no address local with the
+// transform declared last 33 (same code); a `bool result = true;` returned at the end with the node pointer named (`node =
+// local_3 + arg_1`) 19, the named node pointer alone 19 (same code each).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

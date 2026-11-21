@@ -297,6 +297,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // top 23; the model loop's counter through a `long &` bound to i 23; the text loop's animation type through a `long const &` in
 // its start block 23 (all three the same code); 0x22fa5b's definition parameter typed const does not compile (the model
 // constructor takes a non-const block).
+// M3 lane 15 r125 (h2m fast with 0x22facd, 0x22fa5b, 0x22f9bf, 0x22f6ca, all MATCH; control 23): diagnostic, the counter's
+// zero above the pane lookup plus the model index stored ahead of its start 13 at 414 B (the text reset becomes `and`, but
+// the model reset stays `and` and the model loop still copies the screen, `mov ecx, esi`, with the model in EAX, so the copy
+// does not come from the model's EDI); the text loop nested like the others with the zero above the pane lookup 25; the zero
+// above the pane lookup with the model loop on its own `for` counter 25; the model loop on its own counter with the shared
+// counter uninitialised and zeroed by the first loop's `for (i = 0;` 66; only the shared counter zeroed that way 66.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
