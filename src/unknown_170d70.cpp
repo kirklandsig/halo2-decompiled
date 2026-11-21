@@ -1102,6 +1102,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // match, and folded into the subscript it is plain 105 (the fast build gives 11 for both, so
 // confirm these forms with the plain check). Retail multiplies the key before pushing it. NOT kept:
 // the output reference changes the creation span, and the selected-plane forms change its two stores.
+// M3 lane 3 r290 (H2M_FAST, control 105; the one-use camera offset local rebuilt, 11 at 434 B: left are the camera table
+// in EDX loaded after the count store for retail's ECX at the block top, the key in ECX for retail's EDX, and the distance
+// copied through EAX for retail's ECX): `&cameras[entry->key * 0x1bc]` in the call 105; the offset as `0x1bc * key` 11
+// and typed `dword` 11 (both the offset lead's code); the key and the offset both named 105 (forwarded back); the portal
+// index read from the entry at both uses (no local) 105; the distance through a local 105 (both the same code).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1761,6 +1766,18 @@ struct s_point_pool_173520
 // complete recount as long or pointer difference 9/9; count-first end index 9; vertex binding and
 // native recount 183. NOT kept: the 9-point forms still spill the stride after loading the cursor,
 // exchange the recount registers and require an exact match for the reservation and bindings.
+// M3 lane 3 r290 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
+// `point2f const *points` local 9, count first 9, `&pool->points[0]` 9; the guard on `count` with `remaining` scoped to the
+// for 9; the step as `state != 1 ? 1 : -1` 9; `for (remaining = count; remaining > 0; --remaining)` 932 (unrolls);
+// `while (remaining-- > 0)` 9; the inverse computed ahead of the destination point 9; the vertex through a per-iteration
+// `point3f const *vertex` 9. Reading: retail 0x172840 gives the same recount's points the first free scratch register,
+// so here (EAX pool, EDX cache) retail's points take ESI and the count ECX; ours the reverse. Also on the lead: the
+// recount as `(points + count) - pool->points` 15 (867 B) and as `count + points - pool->points` 15 (867 B): the count is
+// then loaded first into ECX and the points take ESI as retail, but the shift folds into `shl ecx, 3; lea`; as `count -
+// (pool->points - points)` 35 (867 B); through the cache's own count and points fields 190 (857 B; no shared base);
+// `long used = count; used += points - pool->points;` 9, `long used = count + (...)` 9, `(long)count + (...)` 9 (all
+// propagated to the lead's code); `(void)result->count;` ahead of it 9; the recount in a forceinline (pool, polygon)
+// helper 9; the cull test through a `byte const *view` local 9.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2069,6 +2086,14 @@ struct s_pool_view_172840
 // read-only point difference 17; named parent bitmap source 17. NOT kept: the 17 forms
 // reach retail length with the short sentinel but retain the reordered publication,
 // reversed copy setup and exchanged scratch registers in the recount.
+// M3 lane 3 r290 (H2M_FAST, control 55; round 160's 17 form, key/next/portal/cluster store order, rebuilt 17 at 868 B with
+// retail's key ECX, link DX, portal CX and `or eax, -1`; left: the stores' order, the copy's esi/edi set-up order and the
+// recount's points ECX / count EDX for retail's EDX / ECX, the same swap as 0x173520's recount). Reading: the five-byte
+// sentinel is `mov eax, -1` because EAX was last written by the 16-bit portal load; with the portal in CX the last write is
+// the `movsx` and the short `or` follows. On the 17 form the recount as `pool->data_used = (next->data - pool->data) / 2 +
+// next->count` 115 (878 B, cdq), with `>> 1` 42 (871 B: sar 3, but the base formed as `sub 0x6c08`); on this body the `/ 2`
+// form 128 (880 B). On this body, read ahead of the link store and used at its place: the polygon distance 62 (874 B), the
+// default rectangle pointer 55, the new entry's portal-bit pointer 55.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
