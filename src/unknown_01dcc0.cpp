@@ -503,6 +503,10 @@ long g_55e6c0;
 // to `entry->elements[i]` 36; the separate offset dropped for the running +0x7c total 191 (439 B). Reading on the
 // select-first lead: retail's height web ends at the packing (`shl eax, 0xc` in place) and the format call reloads the
 // height from its home, where ours keeps it in EAX to the push and moves the select to EBX.
+// M3 lane 5 r228 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp stored through a `long &` bound to the
+// count field (`long &levels = entry->element_count; levels = ...`) 30, with the round-51 signed packing 30 (484 B); the
+// round-51 packing with the width and height stores ahead of the kind store 31, that with round 122's late levels store and
+// header pointer 33; round 122's lead re-measured 31 (484 B). The top block's height/count swap stays in all of them.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

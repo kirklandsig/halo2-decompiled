@@ -2303,6 +2303,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the decrement 158 (same code). Reading: the velocity dot after the velocity normalize folds the direction in both
 // builds; only after the relative normalize does retail load it into XMM1-XMM3, which earlier diagnostics reproduced
 // only with the direction escaped and that call opaque, so the lead is 0x30bf0's whole-program summary (BLOCKED-BY 0x30bf0).
+// score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
 // base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
 // takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
@@ -3027,6 +3028,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
 // each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
 // The contact-head address remains the first difference and the shared reset shortens the body.
+// M3 lane 14 r140 (h2m fast with 0x26be00/0x25d810/0x25d740, all MATCH; control 158): the not-established far-and-slow
+// decision inside the visible arm (`if (!established && !(far && slow)) positive = score > 0.0f;`) with the established
+// arm after it setting positive itself, no `visible || established` block, 160 (2885 B: the scoring block then has
+// retail's order, the established test jumping out to the bonus arm and the unseen path testing established before it, but
+// the two score tests stay separate where retail shares one, and the zero/approach XMM roles and two slot pairs swap);
+// that form with the far-and-slow test written first 233, with the visible decision as one direct boolean expression 227;
+// one `established || (visible && !(far && slow))` block holding the bonuses and the score test 247 (2856 B); the
+// established arm with `else if (!visible || (far && slow)) score = 0.0f;` and one score test 255 (2848 B).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

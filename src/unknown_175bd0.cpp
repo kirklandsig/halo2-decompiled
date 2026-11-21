@@ -4160,6 +4160,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Named color lookup settings or tag with a common successor return or separate active-path return, all 93 with the
 // cached mode or 126 with per-call reads. The per-call forms keep the caller exact and recover four of the eight
 // missing frame bytes, at 352 bytes against retail 337.
+// Effect lookup by low word, typed byte span, saved pool bases or active scope.
+// Cached mode 90/93/93/116. Live mode 117/108/108/121.
+// Live low-word lookups with named multiply result, system record first, mode-field
+// address or scoped index 127/128/117/117. The low-word lookup can keep the
+// caller with live mode. Naming the multiply result reaches frame 0x54 at 352 bytes.
+// The cached low-word form gains three and shortens to 333 bytes, so it is restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

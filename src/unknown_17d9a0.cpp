@@ -1086,6 +1086,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Primary count reused after secondary admission, before its first test, or as the initial bound 533/532/532.
 // With a mandatory first collection loop 551/551/551; with the primary count declared before the secondary count 533/532.
 // The two- and three-point gains leave the definition at ESP+0xb4 and the addressed counts displaced.
+// M3 lane 2 r132 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535 at 3647 B):
+// the axis length through the existing magnitude3d 691 (3679 B; it sums i, j, k where retail sums i, k, j); the cross
+// product taken plane normal first with the sign test flipped 562 (3631 B); the matrix scale stored ahead of the four
+// rotations 662; the two distance limits as `0.05f * radius` 535 and the angle limit as `0.017453292f * maximum_angle`
+// 535 (same code each). Restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

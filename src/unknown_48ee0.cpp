@@ -485,6 +485,11 @@ extern real g_4c9798[36];
 // the overflow test as `max_width * max_height < width * height` 176; `real border = 0.0f;` declared just ahead of its
 // `mode > 0` test 316 (1479 B: the entry's zero store moves); the width limit's test without the `(bool)` casts 278
 // (1479 B: the state then arrives in EDX).
+// M3 lane 16 r170 (h2m fast with 0x48e70, 0x1cf50, 0x1ddd0, all MATCH; control 174): the offset as one conditional
+// expression at its declaration 323 (1488 B, first +0x2a); the mode defaulted to 0 at its declaration with the two set arms
+// 180 (re-measured); the forward vector at matrix+0x28 named once for the first block's seven reads 321 (1479 B, the entry
+// changes at +0x2); the render flags word read once into a `dword` for the two limits 180 (1491 B); the upper clamp as a
+// conditional expression in the else arm 174 (same code). Still BLOCKED-BY 0x48e70.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

@@ -1609,6 +1609,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator outputs different homes. All request forms move away from retail length.
 // Separate optional-output destination bindings in their publication conditions, all seven subsets and a
 // const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
+// M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
+// same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
+// aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
+// `or eax, -1` after loading the iterator's mode, ours reuses the compare's NONE); that with the output defaults chained
+// after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
+// first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
+// 1011 (2837 B). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2170,6 +2177,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // unchanged: the iterator mode keeps found_mode's home and the outputs stay at +8/+0xc, so the copy alone does not
 // move the frame. `if (NONE != weapon_class)` 812 (same code, alone, in both twins, and with the cast): the class
 // and -1 keep ECX and EDX.
+// M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
+// same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
+// aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
+// `or eax, -1` after loading the iterator's mode, ours reuses the compare's NONE); that with the output defaults chained
+// after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
+// first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
+// 1011 (2837 B). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
