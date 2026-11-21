@@ -2452,9 +2452,6 @@ dword __cdecl function_131fc0(real alpha);
 // register, this build keeps the reciprocal in the destination register and multiplies by the coordinate; the
 // permuter found nothing below 4 (80 tries), and a named reciprocal always gives the coordinate first while an
 // inline reciprocal duplicates the reciprocal.
-// MiniMax B (11-20): 14 -> 4 (plain build, 1729 bytes as retail): the width and the height are one point2f read in
-// retail's order, so their homes are retail's 0x10 and 0x14 (the same form the round above records); left: the bottom
-// edge's two vertex products, where retail loads the reciprocal and multiplies by the coordinate.
 // score 4 (was 14; earlier 100, was 140): at retail's 1729 bytes everything up to the default rectangles equals retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the bottom edge's two vertex
 // products, where retail loads the coordinate and multiplies by the reciprocal's home and this build loads the
