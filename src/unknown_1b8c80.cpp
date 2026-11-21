@@ -1671,6 +1671,12 @@ void function_1f86a0(long actor_index);
 // loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in memory), so the tail's
 // frame offsets stay four bytes low, and in the head retail takes the actor index in EDX and reads the object table's
 // data ahead of the actor's index arithmetic.
+// M3 lane 15 r124 (H2M_FAST with 0x1b8c80, 0x1ba990, 0x1b9e70, all MATCH each run; control 123): the mask built in two
+// steps through a byte reference (`byte &mask = specified; mask = flags; mask &= 0x20;`) 243 (867 B: frame 0x14 and the
+// mask byte at +0x13 as retail, but the whole flags byte then holds BL across the root calls for the bit-6 test and the
+// entry stays in memory); that with plain truth tests for both mask uses 244 (868 B); with the bit-6 test written as a
+// shift and mask 243; the loop's element pointer declared const 123 (same code); the two-step mask with the decline test as
+// an and/or chain 250 (873 B). Body unchanged.
 // MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
 // MiniMax B (11-19): kept, 134 -> 123: the 0x20 mask compared against 0x20 (its only possible values) at both uses
 // keeps the masked byte's magnitude, which is what retail's spill holds, and the build takes retail's exact 861

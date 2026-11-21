@@ -1045,6 +1045,11 @@ static __forceinline long real_to_long(real value);
 // in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // MiniMax E (11-20): no new form, no lower score (382): the false exit still lands after the main exit instead of at 0x1aac35 and 0x25d740 stays expanded here where retail keeps it out of line; 0x25d740 lives in src/unknown_25d690.cpp, which this lane may not edit, so the difference is not reachable from this file.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
+// M3 lane 15 r124 (H2M_FAST with 0x25d740, MATCH each run; control 382, 21 calls = retail's): today's body already keeps
+// 0x25d740 a call; left are the false exit's place and the actor/facing ESI hand-over in the velocity block. The result
+// preset false at its declaration with the else arm kept 382 (same code); the view read through a const reference for the
+// facing address 397 (1905 B); no facing pointer, the facing field read off the view at each use 517 (1945 B); the view
+// pointer declared ahead of the prop state 382 (same code); the computed entry result re-measured 508 (1921 B, 20 calls).
 // M3 lane 4 r230 (fast with 0x25d740/0x25d690, both MATCH; control 382, difflib-aligned 155, register/offset-masked 86).
 // On today's tree the early `return false` for the three flags keeps 0x25d740 out of line (still a call) but folds the
 // result to `mov al, 1` (frame 0x54) and leaves the false exit last: 508 (re-measure); retail keeps the multi-valued
