@@ -605,6 +605,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // set only where it breaks (`if (...) { dispose = true; break; }`) with or without the per-pass reset, a direction-first
 // frame sum: 14 each (the same pair); set-only with no reset and `dispose || restart` at the join 1 (threaded again); the
 // `& 2` bit named per block as `long` 42 (655 B), as `word` 206 (663 B).
+// M3 lane 15 r125 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the restart break inside each
+// boundary block and none at the join 1 (same code, re-measured); each boundary block reading its own `word flags` with
+// `if (!dispose) { restart; switch }`, the join as `if (dispose || restart) break;` and the flag-8 test on the `flags.flag3`
+// bitfield 207 (frame 0xc); the boundary tests as `if (frame >= 0) { if (frame == count) ... } else ...` 136 (689 B); both
+// loop restarts as `!type && (playback_flags & 3) != 0` 229 (639 B); the three timing locals declared at their computations
+// 1 (same code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

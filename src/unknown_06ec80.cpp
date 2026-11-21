@@ -250,6 +250,11 @@ union s_6ec80
 // loop's bit named in the loop body (`dword bit = 1 << local_15; local_14 |= bit;`) 234 (the entry allocation moves); the
 // players walked through a `s_session_player const *` stepped each pass 9; a `word` mask 15 (974 B); the data and mask tests
 // as two separate ifs 156 (978 B); with the mask scoped in the guard, the bit named in the loop body 109 (re-measured).
+// M3 lane 15 r125 (h2m fast; control 5): the mask scoped re-measured with a listing 225 (NONE in EDI for its whole range and
+// never re-formed; one zero register for both block-pointer NULLs where retail zeroes EBX and EDI separately); with the mask
+// scoped: a `for` loop with `if (!active) continue;` 348 (1059 B, unrolled), the 0x49c8 NONE default at the top beside the id
+// defaults 245, the live/flag test for the two block pointers as nested ifs 225, that plus the 0x49c8 read in the file's
+// `if (live) value = field;` idiom 195 (first difference +0x101, as round 96's hand read).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

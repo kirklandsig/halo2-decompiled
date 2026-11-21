@@ -285,6 +285,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // the arm's `result = NULL` last, control 95 at 266 B): the allocator `__forceinline` 95; the allocator bumping `frame->size`
 // directly (no size pointer) 95; the element as `arguments + argument_index` 95; `register` on the pointer 95; the
 // allocator's size formal widened to `long` 95 (all the same code: the pointer and the result still share EAX, no spill).
+// M3 lane 15 r125 (h2m fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the result copied
+// at the top of the init block and in an else arm 87 (278 B), at the end of the init block and in an else arm 89 (278 B);
+// `__assume(arguments != NULL)` after the allocation 95 (same code); the type mismatch as an early `return result;` inside the
+// count test 83 (284 B, first difference +0x22: the pointer gets the spill slot but stays in EAX with no separate result, and
+// the second epilogue reloads it).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
