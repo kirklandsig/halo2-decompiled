@@ -339,7 +339,7 @@ void function_11bed0(s_location *location, point3f const *point);
 // score 80 (was 93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and the
 // walk keeps the element pointer where retail keeps a packed datum index; a pool local with the typed stride, the
 // inlined next-used scan and a sign test on the slot index reaches 80 (222 bytes); no one-use local here.
-// score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
+// Earlier at 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax G (11-20): no new form, no lower score (93): 0x11bed0 is still expanded here where retail calls it out of line.
 // MiniMax H (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // MiniMax I (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit; the one form that reaches 0 needs the redundant `&& data && sound` pointer tests, which the redundant-test ruling rejects. BLOCKED-BY 0x11bed0.
@@ -487,6 +487,10 @@ void function_11bed0(s_location *location, point3f const *point);
 // element cursor 206/215/227/225; salted datum cursor 311/318/353/355.
 // NOT kept: the additional scan paths increase the score and leave the
 // location query expanded. Original traversal restored.
+// Shared bitmap latch 80, shared entry and latch or inlined entry 126/126,
+// packed entry via pool or sound helper 97/118, sound helper with shared latch
+// 118, and shared bitmap absolute while/for 88/90. NOT kept: the latch ties,
+// and the other forms raise the score without restoring the location call.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -3118,6 +3122,10 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // 552, inner gain addition through the existing helper 492, native in-place inner gain addition 469.
 // Primary before pitch 453, converted pitch limits 339, named scaled interval 339, primary between
 // limits and arithmetic 453, and one guarded current-chunk read 420.
+// Lower pitch bound after whole clear, between clears, or after both 351/484/484;
+// playing pitch between clears 491; separate flag/payload fills 501; staged pitch
+// with class call, gain snapshots, or staged gain sum 549/503/484. NOT kept:
+// frame 0x4b4 persists, and every form raises the score.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

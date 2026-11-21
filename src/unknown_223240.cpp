@@ -65,7 +65,7 @@ void function_2232a0(void)
 }
 
 // MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
-// score 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// score 47 (was 47): Earlier score 79. Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
 // 0x68290, 0x2f6b0, 0x2c490, 0x3f450 and the 0x2b5d0 stub) reproduces the full build's listing exactly (0 rows); against
 // retail it leaves 9 aligned rows: the terminal record's `add eax, base` before the six stores (retail folds the base into
@@ -450,6 +450,10 @@ void function_2232a0(void)
 // count formed after the loop 40 (a declaration move, seven points, not kept: the fold stays, only the tail's zero stores
 // change); the terminal record indexed by the loop counter 182 (584 B); the count written at both uses with no view_count
 // local 120; the count taken back from a terminal pointer (diagnostic) 195. Body unchanged.
+// Paired terminal count, paired clamp outcomes, total clamped directly, and
+// requested total clamped 172/192/176/174. With layout selected from the total
+// 172/187/176/173. NOT kept: all forms grow the function and still form the
+// terminal base early. The dispatch count still goes to EDX in the stub.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
