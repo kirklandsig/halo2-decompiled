@@ -598,7 +598,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
-// score 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier at 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
 // its zero in EBP), the frame is 0x2cb0 against retail's 0x2cac, the byte homes differ and the join is laid out in
 // source order; the rounds below. MiniMax B (11-18) at 920: no new form, no lower score (920 plain, 926 fast). The permutation
 // MiniMax B (11-18): 920 then (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
@@ -801,6 +801,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // globals loaded ahead of the index where retail scales the index first (loop head, type 11, sphere node), the object
 // distance radius computed first (retail after the three differences), the marker-loop and sphere-loop dot term orders,
 // the location copy's scratch registers and the loop-entry `jmp` over padding. Body unchanged.
+// Role names for the separate actor/vehicle/sphere centers 925, actor/candidate displacements 925,
+// marker offsets 925, sphere-size workspace 925, object/sphere indices 925, inflation and sphere radius
+// 925, marker counts 925, and object distance/radius 925. Frame 0x2cb0 and the entry register choice stay.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

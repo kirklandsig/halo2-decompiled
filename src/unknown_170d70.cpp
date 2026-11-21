@@ -1461,6 +1461,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // complement, or with a complement accumulator 339/356/386/386. With a shared
 // signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
 // construction and leaves the unity register and square spill different.
+// Vector diagonal complements: separate or in-place scale 395/408, separate or in-place
+// scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
+// complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
+// the 0x50 frame and regress from the 337 reduced control. Unity and square homes still differ.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1761,6 +1765,11 @@ struct s_point_pool_173520
 // complete recount as long or pointer difference 9/9; count-first end index 9; vertex binding and
 // native recount 183. NOT kept: the 9-point forms still spill the stride after loading the cursor,
 // exchange the recount registers and require an exact match for the reservation and bindings.
+// Reserved points used for corners 139, inside copy 69, or both 110; cache array publication
+// 186. With staged reservation and cap/corner bindings: reserved-pointer recount 45, native
+// arena origin 190, signed byte-offset recount 9, and advance destination index at the depth
+// minimum 18. NOT kept: the 9 and 18 forms require exact equality on the staged shapes.
+// The scaled stride spill and the recount registers still differ.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2069,6 +2078,10 @@ struct s_pool_view_172840
 // read-only point difference 17; named parent bitmap source 17. NOT kept: the 17 forms
 // reach retail length with the short sentinel but retain the reordered publication,
 // reversed copy setup and exchanged scratch registers in the recount.
+// Key and predecessor staged together 55/55, shared signed predecessor 55, bound predecessor bitmap
+// array 203. On the reordered short-sentinel form: signed byte-offset recount 17, native arena origin
+// 42, staged key and predecessor 17, earlier predecessor bitmap pointer 22. NOT kept: the 17 and 22
+// forms reach retail length but keep the reordered publication and the exchanged recount registers.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
