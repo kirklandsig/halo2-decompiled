@@ -1117,6 +1117,12 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // count postincrement in the admitted arm 11, rectangle binding after displacement 11, and camera
 // row before output selection 13. NOT kept: the gains rely on the one-use displacement or pointer
 // and leave the camera table and key in exchanged registers.
+// M3 lane 12 r172 (H2M_FAST, control 105): the camera address or the camera byte offset named ahead of the count store
+// 13/13 (434 B; the key is then loaded before the store and again for the push, where retail loads it once after it);
+// the volume address, then the camera address, then the count store 81 (collection leaves EDI); the key named after the
+// volume address 105; the product as `entry->key * 0x1bc + cameras` 105; the camera table copied into a local, read once
+// through its own address, or bound by const reference at the top of the admitted block 105 each (the copy folds and the
+// table still loads into EDX after the count store).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1476,6 +1482,18 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // complement, or with a complement accumulator 339/356/386/386. With a shared
 // signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
 // construction and leaves the unity register and square spill different.
+// M3 lane 13 r139 (main re-measured 334 plain): the axis rotation rewritten in the shape of the code base's other axis
+// rotation (sine and cosine first, then the squares, a sine-axis vector, each off-diagonal pair after its diagonal, the
+// (1-c)*k product shared) 302 fast; with retail's (1-c)*i*j grouping 299 fast but 367 plain (1487 B, frame 0x4c, the EDI
+// save scheduled before the first rotation); with the complement declared before the first diagonal 298 fast, 376 plain
+// (1493 B); with the matrix stored as forward/left/up (retail keeps tij - s*k at +0xc) 291 fast. In the fast image unity
+// then takes XMM5 and the first rotation's squares stay in XMM0/XMM2/XMM7 as retail; the second rotation and the deviation
+// tail differ. Dead initialised locals on the 291 form 282/277/346/352/274/274/291 for 1..7 (diagnostic; uninitialised ones
+// and their position change nothing). Fast, on the 291 form: `limit` folded 367, with the vertical-angle local 356, the
+// vertical-angle local alone 355, `limit` and `half` 321, both angle intermediates 291; helper locals tk 317, tij 380,
+// one_minus_c 309; sine products j, k, i 341; squares as a vector 339; sine-axis vector before the squares 337. On main's
+// body: the deviation as a component vector squared from its fields 361 fast (1438 B; retail's interleaved store, fld,
+// fmul tail but in i, j, k order), the float sum of the named differences 339 fast.
 // Vector diagonal complements: separate or in-place scale 395/408, separate or in-place
 // scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
 // complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
@@ -1668,7 +1686,7 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 37 (was 45): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ.
+// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ.
 // Earlier at 37 (was 45). the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
 // The reservation publishes the pointer before the pool count and state test. The stride spill,
 // cap reload, corner loads, and recount registers still differ.
@@ -1780,6 +1798,10 @@ struct s_point_pool_173520
 // complete recount as long or pointer difference 9/9; count-first end index 9; vertex binding and
 // native recount 183. NOT kept: the 9-point forms still spill the stride after loading the cursor,
 // exchange the recount registers and require an exact match for the reservation and bindings.
+// M3 lane 13 r139 (fast; control 37): the second-reference, staged-reservation and cap-reference lead rebuilt 9 (865 B);
+// on it the cull test through a named view pointer 9, the recount's points in a named pointer 9, the recount count-first
+// with a long cast 9, the recount through a const pointer to the result 9 (all the same code); dead initialised locals 1..7
+// 9 each (diagnostic: the stride store order and the recount registers do not follow the phase).
 // M3 lane 3 r290 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
 // `point2f const *points` local 9, count first 9, `&pool->points[0]` 9; the guard on `count` with `remaining` scoped to the
 // for 9; the step as `state != 1 ? 1 : -1` 9; `for (remaining = count; remaining > 0; --remaining)` 932 (unrolls);
@@ -1797,6 +1819,11 @@ struct s_point_pool_173520
 // arena origin 190, signed byte-offset recount 9, and advance destination index at the depth
 // minimum 18. NOT kept: the 9 and 18 forms require exact equality on the staged shapes.
 // The scaled stride spill and the recount registers still differ.
+// M3 lane 12 r172 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
+// forced-inline trim helper with (pool, count, points), (count, points, pool) or (pool, points, count) parameters 9 each
+// (the helper folds to the same tree); the clipped count itself as the down-counter 9; `inside` at function scope 9; the
+// cursor declared ahead of the index and step 9; the pool view at the block top 9; an ascending vertex index with a
+// per-iteration vertex pointer 990 (1471 B, unrolled).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2117,6 +2144,14 @@ struct s_pool_view_172840
 // array 203. On the reordered short-sentinel form: signed byte-offset recount 17, native arena origin
 // 42, staged key and predecessor 17, earlier predecessor bitmap pointer 22. NOT kept: the 17 and 22
 // forms reach retail length but keep the reordered publication and the exchanged recount registers.
+// M3 lane 12 r172 (H2M_FAST, control 55; round 160's 17 form rebuilt, 17 at 868 B): the rectangle copy written ahead of
+// the link and key stores 34 (868 B; the copy is then emitted first and the link store last); the two NONE stores first
+// 34; the distance store first 49; with the copy first, all 24 orders of the link, key, cluster and portal stores, best
+// 30 (868 B, same reading). The bit vector set through next->unknown2c directly 121 (on the 17 form 109); its pointer
+// declared after the copy 55 (17 form 17, same code); the 64-byte vector copied as an aggregate 17 on the 17 form (same
+// code); the copy through a forced-inline memcpy wrapper that sets up the source first (the form of the copy helper in
+// src/unknown_1932c0.cpp) 55 / 17 (same code: `mov edi, eax` still precedes `add esi, 0x2c`). NOT kept: store orders
+// are match-only.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2319,7 +2354,7 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 155 (was 284): The 0xb8 frame and incoming axes agree. The plane-lookup branch span, zero placement and center SSE schedule still differ.
+// score 155 (was 155): The 0xb8 frame and incoming axes agree. The plane-lookup branch span, zero placement and center SSE schedule still differ.
 // Earlier (270, was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
 // retail. The center trace stays matched.
 // The 0xb8 frame and entry convention agree. First +0x3c is the branch span
@@ -2443,6 +2478,14 @@ struct s_camera_reference_171830
 // Shared scale and in-place or separate negation 158/158; rear-vector setter 155;
 // center-point setter 155; shared negation with center setter 158; paired setters 155;
 // zero-initialized rear vector 155; scaled-vector setter with shared negation 158.
+// M3 lane 13 r139 (fast with 0x170fd0, MATCH each run; control 155, plain 155): dead initialised locals 1..7 at the top
+// 155/155/155/256/177/155/155 (diagnostic: only the sample loop's sites move); the side vector through cross3f(up, forward),
+// cross_product_170c00(up, forward) or cross3f_staged 155 each (same code); every cross or depth product written the other
+// way round 155 (same code); the plane test through the existing plane_distance_to_point 281 (1235 B, plain 281): its three
+// products then load as retail (k*z, j*y, x loaded and multiplied by plane i) but the first sample loop gains a jump and
+// padding; that with separate success stores 283, with retail's arm order (flagged arm first, `else narrow = true`) 281;
+// dead locals 1..7 on the helper form at the top, before the depth or before the side vector 280 to 285 (the centre and
+// cross sites never move); the side vector right after the 0x171d00 call 254, before the up copy 262.
 // Packed low bits 155, packed unsigned flag 155, both packed fields 155, packed signed
 // flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
 // threshold 264, and constrained comparison assignment 291. NOT kept: packed views

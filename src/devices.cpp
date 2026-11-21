@@ -2114,6 +2114,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
 // the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three
 // the same code: the copies are coalesced before scheduling).
+// BirchWoodGod (11-21, fast; control 2): a _ReadWriteBarrier at the top of the flag block 7 (the fld then opens the
+// block, but the fstp moves ahead of `push 0`); after the animation id 12; after the time 9; between the two samples 2
+// (same code); a block-local copy of the render model ahead of a barrier 7. None kept.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

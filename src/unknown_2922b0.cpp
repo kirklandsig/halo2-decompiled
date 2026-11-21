@@ -824,6 +824,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // declared before response evaluation 645/535; copied in-place response 566;
 // first output reused in place by second 551; separate first input 542.
 // All leave the first success byte at ESP+0x13.
+// Common scalar ray length 725; seed other lengths from the first entry 516; indexed miss continuation
+// 708, with standard minimum 694. Ray scope through the query with separate hit result 522, with
+// shared scaler 519. Ray scope through the miss guard 708, with shared scaler 736.
+// NOT kept: the five-point lead shortens the body by one byte and leaves success at ESP+0x13.
 // M3 lane 2 r131 (H2M_FAST with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364, masked 160): the file-local
 // cross replaced by the shared cross3f_staged at its four calls 654 (2872 B; aligned 345, masked 130); one exit (positive
 // range test, the active block, `return local_0;` last) 633 (2868 B); the angle output as `local_4 / local_6` 649 (2874 B;
@@ -839,6 +843,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the memory operand); the two angles zeroed by one chained assignment 516 (same code); the minimum test as `local_4 <
 // FLT_MAX` 516 (same code); the cross helper's rows computed k, j, i 648 (2873 B); the input copy declared after the hit
 // flags 518. Body unchanged.
+// Round 666. The frame agrees and success stays at ESP+0x13 against +0x17.
+// Names for success/minimum/hits 521, ray workspaces 521, response angles 521, and all three
+// sets 521. Reused fallback axis 522, shared ray vector setter 564, minimum from the
+// stored hit distance 521, ray names with the shared setter 564. The setter shortens the ray loop.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
