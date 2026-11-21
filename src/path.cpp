@@ -960,9 +960,16 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
 // signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
 // NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
-// Earlier note: frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// Earlier note. frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
 // count compared as a dword where retail compares it as a word, and the node depth read at one address here and
 // through a lea there.
+// Word-count reconstruction with a retained edge index 396, signed flag 396, joined edge predicate 384,
+// early parent read 396; completed-step count 390, nested long 394, nested short 343, short guard first 345.
+// NOT kept: seven forms recover frame 0xe4, but all grow and score higher.
+// Link-target reference before capacity, inside capacity, shared with step metadata, or with scoped edge admission:
+// long count 286/286/286/357; short count 359/359/359/356.
+// The short forms recover 0xe4, with the scoped admission at retail length, and all raise the score. Body restored.
+// Earlier note: frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
 // Initial node reference and ordinal-only predecessor, long/short link counts with fallback branch
 // 287/396 or selected point and separate edge test 360/362. Pointer-only predecessor in the same
 // forms 365/408 and 414/443. NOT kept: ordinal-only recovers the frame in three forms but raises

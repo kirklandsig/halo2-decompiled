@@ -314,7 +314,7 @@ struct s_ai_script_clump_object
 	byte unknown3d[0x50 - 0x3d];
 };
 
-void __stdcall function_1e1a00(long index, long value);
+void __stdcall function_1e1a00(long index, bool value);
 
 /* an object, or NULL for NONE */
 inline s_slot_object_view *object_get_or_null(long object_index)

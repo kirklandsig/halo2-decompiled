@@ -964,6 +964,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // the scale rows through the existing scale_particle_vector_2b 338 (aligned 275); the velocity pointer as an if/else 334
 // (same code), as `local_0 == NONE ? g_4687a4 : ...` 334 (aligned 266). Compile-only: `_mm_cvtt_ss2si(_mm_load_ss(&x))` and
 // `_mm_cvtt_ss2si(_mm_set_ss(x))` both give an `and esp, -16` frame, so no intrinsic replaces the asm truncation.
+// Named flags byte bound as an lvalue 338; with effect reacquisition, separate impact settings, sibling particle indexing,
+// particle lvalue, child lvalue, or all record lvalues 338 each; all lvalues with separate impact settings 335.
+// The gate still folds the effect address, and the gate and settings spill slots remain displaced. Body restored.
 // Entry declarations with original assignments: allocation handle, record, both, reused sample,
 // handle/sample, record/sample, all three, or those plus settings, each 334.
 // NOT kept: the folded gate address, AL and the two stack slots are unchanged.

@@ -757,6 +757,18 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // j, i, k); that helper with the cross written out 204; with the cosine taken first 177; with cross3f_staged 169 (same
 // code); with cross3f reading the up vector straight from the object (no `local_17` pointer) 156 (1706 B, aligned 144).
 // Re-measured: round 134's lead (named first-rotation sine and cosine with cross3f) 141 at 1707 B, aligned 123.
+// M3 lane 3 r284 (h2m fast screen with 0x29b990, 0x11ce20, 0x11cc90; [n] = aligned rows, control [116]): the XY vector
+// declared ahead of the second copy 149 [115] (plain fast check agrees; first difference +0x179: its y store now precedes
+// the copy's k store as retail's; a declaration move worth 2, not kept); the four clamps' lower bounds as `0.0f - limit`
+// 151 (same code); named sine and cosine locals for both rotations ahead of the facing copy 224 [171] (1693 B), after it
+// 224; the turn tests as `!(x * delta < 0.0f)` 151 (same code); the facing copy ahead of the pitch clamp (with the XY
+// vector first) 424 (0x29b990 48). Retail stores the first rotation's sine at +0x10 and its cosine in the dead
+// first-parameter home (+0x3c), ours the reverse (the second rotation agrees); the yaw clamp's zero copy (`movaps xmm5,
+// xmm1`) sits above retail's `ja` and below ours.
+// Second projection as a zero-depth aggregate or through the component setter 389/372, or from the XY
+// workspace 420. Alternate shared normalizer for the second projection or both 289/393. Shared approach
+// operation for yaw, pitch or both 298/280/291. All regress. The exchanged depth and XY stores, yaw zero
+// copy and the first rotation's product order and spill homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

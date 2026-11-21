@@ -823,6 +823,25 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Inverse spans at each use, primary/secondary/both/horizontal/vertical 326/212/325/286/314.
 // Both pairs at use with current/next/both weighted terms staged 306/306/306.
 // NOT kept: The secondary-only form preserves frame 0x60 and regresses. The other forms reduce the frame and score higher.
+// M3 lane 2 r121 (fast with 0x2243c0 and 0x23ed30, MATCH throughout; control 162, aligned/masked 94/45). Reading: in
+// retail every extent has one stack home (+0x1c ay, +0x20 ax, +0x24 by, +0x28 bx) that the encode's unflipped arms read
+// back, and its register copy is consumed in place by the aspect product; in this build the first set's extents stay in
+// XMM4/XMM3 down to the encode, whose unflipped arm is then empty (the span is the extent's own register), and only the
+// second set gets retail's homes, plus a second home each for the named values. Tried: separate input bounds for the
+// first set as well 162 (same code); the blend's sequence-arm value written by a forceinline helper through `&blend` 162
+// (same code); the aspect pair as one two-real aggregate re-measured 158 (1938 B, 102/55, the blend still a memory
+// operand). Diagnostics: the second set encoded first 256 (the roles mirror: the set encoded first keeps register
+// extents and the other gets the stack homes, so retail treats both sets the way this build treats the second);
+// `(void)&blend;` 162 (same code); the blend unset at the top and zeroed at the head of each flag arm 497 (1953 B, the
+// blend still read from memory in the aspect block, so the length of its lifetime is not what keeps it out of XMM5); a
+// store into the second record ahead of the first encode 162 (same code).
+// M3 lane 5 r220 (fast with 0x2243c0, MATCH throughout; control 162, masked aligned rows 61, all in the aspect block):
+// the first set's reciprocals declared ahead of the second set's extents 162 (same code); the two inverse sums each in one
+// expression ahead of the width 319 (1957 B); one to eight unused locals at the top, uninitialised or set to 0 (a
+// diagnostic) 162 each, so the blend's register is no symbol-count phase effect; the aspect pair as one point2f
+// re-measured 158 (1938 B, first difference +0x199, the packed colour's home moves from +0x2c to +0x24); the second
+// set's extents and reciprocals declared first 162, the blend's weight named once for the aspect block's four products
+// 162, the pivot rows' complement named once in the sequence arm 162 (same code each). Body unchanged.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

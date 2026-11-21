@@ -1262,6 +1262,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
 // flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
 // the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
+// Resend result set before publication with return selection 129, or assigned ordinary type when none 120.
+// Separate query/empty-window and active-scan outcomes 36; ordinary type snapshot 20, with sole exit 23.
+// Bind time destination, name size at publication, or both 89/89/89.
+// Resend goes straight to the common return, with ordinary type read at exhaustion 120.
+// NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
 // M3 lane 13 r129 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched throughout; control 35): the resend scan as a
 // file-local bool helper (marks the message, returns true) under `&& helper) type = 4;` 35 forceinline with the saved-word
 // update (same code), 91 with the member update; the caller returning 4 itself 111/129; as plain `inline` the helper stays a
@@ -1289,6 +1294,23 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Bind time destination, name size at publication, or both 89/89/89.
 // Resend goes straight to the common return, with ordinary type read at exhaustion 120.
 // NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
+// M3 lane 3 r284 (h2m fast screen with 0x96510, 0x94df0, 0x94bf0, 0x96b00, all MATCH; lead = lane 15 r115's second-result
+// form, re-measured 10): the lead with `result = 4` last in the found block 91 (221 B); the lead with a named `bool sent`
+// 10 and with the loop bound read into `long newest` 10 (same code each); main's body with `type = 4` first in the found
+// block 42 (217 B), that with the in-place `|= 2` update 104 (209 B). In main every exit is a duplicated return (zero-trip
+// ahead of early, as retail); the lead's `else result = type` arms are real blocks laid out in source order after the
+// loop, so its early exit lands ahead of the zero-trip copy.
+// Saved word tests with a direct low-byte OR or shared byte setter 86/86, byte tests and OR
+// 84, paired word test and byte OR 88, message initialized at lookup 86. Success result before
+// publication with the ordinary result at the sole exit 112 or split empty and exhausted
+// outcomes 74. Separate window-count admission with byte OR 86. The compiled prologue or
+// found tail differs in every form, including the byte-test form at retail length.
+// Split result with shared lookup 10, available-first or missing-first conditional lookup
+// 34/32, separate eligibility rejections or nested word tests 10/10. Joint admission with
+// a separate result 28. Early admission exits with the result set before or after publication
+// 80/80. Direct found return under common or nested admission 129/129, scan-local result
+// return 80. NOT kept: the 10-point forms repeat the ordinary-result assignment and
+// exchange the two late exits. The combined admission shortens to 214 bytes.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
