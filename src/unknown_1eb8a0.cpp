@@ -798,6 +798,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // products 661/661, successive sum 603/659, and complete sum 659/603, with
 // the rate applied separately or in the initializer. NOT kept: the higher scores
 // shorten past retail, and each form leaves the supplied direction in EBX.
+// EBX still retains the supplied direction at entry instead of the sample.
+// Direct sample rate products before displacement/after displacement/after distance 691/691/691.
+// Shared scaling from the selected sample at those points 689/689/689; captured sample with batched
+// rate products before/after displacement 603/603. NOT kept: the direct and helper forms shorten
+// past retail and regress; batching ties.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

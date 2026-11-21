@@ -2200,6 +2200,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
 // the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
 // Body unchanged.
+// score 551 (was 551): The first count and clearance stores and the prism ordinal still miss their retail homes.
+// The first count and clearance stores and the prism ordinal still miss their retail homes.
+// Squaring after plane distance, projection or the vertex bound 548/548/548, after the edge walk 543.
+// Minimum first 570, count first 576, minimum and count first 570, count and minimum first 570.
+// NOT kept: 548 gains only three points. The 543 form reproduces the already-rejected late
+// one-use square, and the accumulator orders grow and raise the score.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
