@@ -2334,6 +2334,10 @@ void function_269250(long clump_index, long actor_index);
 // 146/146, team-local 128/128. The team-local datum form promotes the pool
 // to EDI and leaves the selected handle in memory at the wrong offset.
 // Candidate-local prior best for both default and threshold 87.
+// Bitmap predicate and shared datum setter: guarded index scan 160/174, skip unset bits
+// 166/180, bounded bitmap scan 160/174, occupied cursor search 166/180 (current/exhaustion first).
+// NOT kept: 0x40 frame spills the actor and changes four matched walk users. The pool,
+// selection and x87 score still need their retail homes.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

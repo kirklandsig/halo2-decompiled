@@ -5582,6 +5582,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // first, or both product sets first: 169/169/169/169 for the first cross and 169/169/169/169 for both.
 // NOT kept: the delayed up.i read and the 768-byte extent are unchanged.
 // MiniMax R (11-20): re-checked, no new form and no lower score (169): the cross products use other xmm registers (xmm4, xmm5 and xmm7 here against xmm2 and xmm4 there) and multiply the operands in the other order, and the two branches near the entry land at different offsets.
+// Separate yaw and pitch clip results 188/188, separate pitch result 188/188,
+// compare final clipped values 195/195, disabled early return 186/188 (scalar/paired angles).
+// NOT kept: all reach 767 bytes but raise the score. The early cross load and final
+// x87 forward-scale lifetime still differ.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9750,6 +9754,10 @@ struct s_unit_melee_collision
 // Fast scores in order 479/555/532/493/531/530/531/511.
 // NOT kept: Weapon lookup first gains five at 2229 bytes, below the eight-point gate. Five live-range trials recover 0x17c but shorten the body and raise the score. Explicit normalization by address enlarges the frame.
 // The opening frame is 0x180. Reading the range at each product still needs the retail unit/tag/fan homes and extent.
+// Ray aggregate, named coordinates, named transverse sums or named axial products:
+// range snapshot 484/484/485/484, range per product 531/531/533/531.
+// NOT kept: every per-product form recovers 0x17c but shortens the body by 24 bytes.
+// The unit and both fan counters still need their retail homes.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

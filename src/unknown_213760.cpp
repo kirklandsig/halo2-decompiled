@@ -2016,6 +2016,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // handle is loaded after the flags zero). Without the reference-bound checksum 114 (aligned 6, checksum in ECX).
 // Reading: any by-value parameter loads the handle ahead of the call and takes no scratch-rotation step, an unnamed
 // `*handle` at the call takes the step but loads after the flags zero; retail has both. Body unchanged.
+// Separate completion bytes: query 58; query with resize, write or close 50/50/50;
+// query with any two of those 105/105/105; all four 94. NOT kept: completion byte
+// homes shift and the three- and four-byte sets grow the frame to 0x1148. The query
+// and write output slots, write setup and checksum join still differ.
 // @retail 0x213970
 void function_213970(void)
 {
