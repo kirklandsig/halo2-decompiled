@@ -2292,6 +2292,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // score 158 (was 158; 168 earlier): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // M3 lane 6 r223 (h2m fast with 0x26be00/0x26be30/0x25d690/0x25d740/0x25d810, all MATCH; control 158): 0x26be00 is now
 // this machine's and its file is open, so its lookup was respelled there: `(index & 0xffff) * size + data` 158, the

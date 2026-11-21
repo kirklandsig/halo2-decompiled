@@ -1757,6 +1757,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 872 (2796 B, and the matched 0x705f0 and 0x72330 stop matching); diagnostic, an inline_depth(0) region around the top
 // lookup statement 994 (2640 B: the top call stays out of line but the region turns off the body's other expansions);
 // `result` declared ahead of the getter 871 (same code). BLOCKED on the link-wide inline choice for the top 0x192e60 call.
+// M3 lane 13 r139 (fast with 0x63220, 0x73530 and 0x192e60, all MATCH; control 871): the type-5 scan returning false at
+// the first match 887 (2768 B); the histogram cleared by memset instead of its initialiser 892 (2764 B); `available`
+// computed before the player loop 878; the adjusted value started from `rating` 885 (2768 B); the averages' zero test on
+// the element 855 (2796 B, a behaviour change: retail tests the array's address, not kept).
 // M3 lane 8 r217 (h2m fast with 0x73530 (MATCH), 0x192e60, 0x631f0, 0x193300, 0x1932c0, 0x63220, 0x1931a0, 0x66050; control 871).
 // Diagnostics in 0x192e60's file, restored: 2, 8 and 24 redundant `result = NULL;` statements in 0x192e60 871 each (the same code
 // everywhere: the inline choice does not follow the callee's source length); 0x192e60 as nested ifs with a named element pointer
@@ -1765,6 +1769,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // or first after total clear 871/867/916/899. Dword histogram with the same publication forms
 // 911/933/946/946. NOT kept: the 867 form gains four and shortens to 2748 bytes. Dword cells
 // reserve 0xb0 and regress. The opening variant lookup still expands.
+// M3 lane 12 r172 (H2M_FAST with 0x73530 and 0x192e60, both MATCH unless noted; control 871): the output memset ahead
+// of the session reads 870 (2796 B; 0x73530 drops to 8); the opening test split in two 871; the opening exit as
+// `{ result = false; return result; }` 871; the imbalance excess test returning at once (retail's exit at 0x7ea98) 895
+// (2752 B); the type-5 scan's exit as `return false` 871. Still BLOCKED on the link's inline choices.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -1156,6 +1156,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
+// slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax I (11-20): no new form, no lower score (33): the write block's close test written as one shared condition (the count test or the not-resized path with the handle test inside) measures 157, and the close duplicated in both arms measures 179 (994 bytes against retail's 930), so the body stands; what still differs is retail's single close block reached from the resized and the not-resized path, which needs a goto (kept only with a byte match), the swapped pair of homes (ours the query size at [esp+0x28] against retail's [esp+0x24] and the write count at [esp+0x24] against retail's [esp+0x28]), the write call's flags zero built in EAX where retail builds it in ECX, and the checksum compare taking EDX where retail takes EAX.
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
 // homes stay four bytes off, and the only lower form found so far is the goto that lane 11-16 used here, which is not
@@ -1168,8 +1170,6 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // against retail's [esp+0x44]; the write call builds the flags zero in EAX after the other pushes where retail loads the
 // handle into EAX first and builds the zero in ECX; and the checksum compare takes EDX where retail takes EAX.
 // MiniMax A (11-20): no new form, no lower score (33): the two stack homes are the swapped pair - the query size sits at [esp+0x28] where retail keeps [esp+0x24] and the write count at [esp+0x24] where retail keeps [esp+0x28] - and the homes follow the write count's scope rather than its declaration order: declaring it inside the `if (resized)` block moves both onto retail's slots and the first 0x1e1 bytes then agree, but retail reaches one close block from the resized and the not-resized path, which needs the `goto validation_done;` main does not have (kept only with a byte match); the flag spellings measure 83 and 98, the duplicated close arms 179 at 994 bytes, and the declaration moved between scopes, the handle copy and the checksum local all leave the body at 33. this round the `goto validation_done;` forms - the count scoped inside the `if (resized)` block with the label after the outer test, with the label inside the size block and with the count hoisted beside the size - measure 83, 83 and 83, the count outside the block 101 and the negated form 148, and the count hoisted beside the size without the goto leaves the body at 33. the goto form's four residual differences are these: the write call builds the flags zero in EAX and loads the handle after it where retail loads the handle into EAX first and builds the zero in ECX; the type check reloads the index into ECX and compares it with an immediate where retail reloads it into EAX and compares it with a 1 held in ESI; the checksum compare takes EDX where retail takes EAX; and the form carries one extra jmp. a copy of the handle before the write call measures 119 and a named flags local 83.
-// score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
-// slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
 // at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
 // against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
@@ -2063,6 +2063,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // pads that follow); on it the close's test and its body as nested ifs 114 (same code). Reading as before: any named or
 // by-value handle at the write gives retail's write but takes away the scratch step that makes the close copy its handle
 // into ECX; every unnamed spelling keeps the close and leaves the flags zero in EAX. Body unchanged at 33.
+// M3 lane 13 r140 (H2M_FAST; control 33): the count zeroed at a declaration after the resize wait, no else arm, 85; the
+// close test nested as `if (count != 0x800) { if (open) ... }` 33 (same code); the write count renamed to sort after the
+// query size (`written_size`) 33 (same code: names do not order these two homes, the else arm's zero store does); the
+// not-resized arm written first (`if (!resized) count = 0; else ...`) 123; the close written in both arms re-measured 179
+// (994 B). The resize result as `bool volatile` does not build (the resize routine takes a plain `bool *`). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

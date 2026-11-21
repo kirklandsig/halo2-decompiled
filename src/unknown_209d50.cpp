@@ -300,6 +300,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // lookup and the element and stored back as `index + 1` 95 (290 B); the argument-index slot as a plain pointer with the
 // expression-index slot kept a reference 95 (266 B), that with `result = NULL` first in the arm 83 (277 B); the expression-
 // index slot as a plain pointer with the argument-index slot kept a reference 95 (266 B).
+// M3 lane 16 r171 (h2m fast; volatile-free forms, control 12, volatile-free 95 at 266 B): the arm's element read through
+// the pointer's own address, `(*(long *const *)&arguments)[argument_index]` 95, and as `(long *)*(dword const *)&arguments
+// + argument_index` 95; the allocation stored through a type-punned `*(void **)&arguments` 95 (all promoted to one register
+// with the result, no spill); the parameter types copied into a local at the top 95 (same code); `long *result =
+// arguments = allocation` with a plain pointer 95. VC promotes every non-volatile address form tried here.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

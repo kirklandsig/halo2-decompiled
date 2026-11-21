@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 925 (was 925): r130 unchanged (lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// score 925 (was 925): r130 and m3 lane 8 r220 unchanged (r220 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
 // previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
 // shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
@@ -838,6 +838,15 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Role names for the separate actor/vehicle/sphere centers 925, actor/candidate displacements 925,
 // marker offsets 925, sphere-size workspace 925, object/sphere indices 925, inflation and sphere radius
 // 925, marker counts 925, and object distance/radius 925. Frame 0x2cb0 and the entry register choice stay.
+// M3 lane 8 r220 (h2m fast with 0x29a190 and 0x2c0d00, both MATCH; control 925): reading of retail's head: EBP is the
+// self-unit pointer (NULL, so the six zero stores come from it, and it holds self_unit at the loop's 0x3dc test), EBX the
+// actor index and in the other-actor branch the `enemy` byte, with the skip flag in a stack byte; ours keeps skip and
+// enemy together in BL, the actor index in EBP and a separate zero in EBX. Forms: the type-1 arm and the vehicle block's
+// identical team test through one file-local inline friendliness helper (two callers) 963 (3676 B); the other actor's
+// 0x5d0 flag and 0x5ec facing through the typed actor-view fields 925 (same code); every `actor` null test in the loop as
+// `actor_index != NONE` 947 (3772 B); the reference test as `if (actor)` 921 (retail compares the index with NONE there:
+// `cmp ebx, ebp` with EBP = -1, so not retail's form); the actor and self-unit pointers declared ahead of the four
+// priorities 925 (same code). Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

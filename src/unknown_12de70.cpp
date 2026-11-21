@@ -780,6 +780,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // removed): the count stored to a never-address-taken global 27 on main's body and 27 on round 89's form (the store is then
 // scheduled ahead of the load and the block goes straight to ESI), so the count's store order is not kept by the async
 // aggregate's taken address.
+// M3 lane 1 r150 (h2m fast with 0x12e210, which stays matched; control 27): the arm as `if (!local_1->runtime_linked)
+// continue;` then the release 27 (same code); the block read ahead of the task-count store 71 (first difference +0x9);
+// the busy result in a named flag re-tested at the loop's end 27 (same code); a second named pointer `group` copied from
+// the block local and passed to the release 27 (same code: the copy folds, no second use); the loop test as `busy(...)
+// == true` 28.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

@@ -2967,6 +2967,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
+// score 354 (was 354):
 // MiniMax A (11-20): no new form, no lower score (354): the frame is 0x208 against retail's 0x200
 // MiniMax E (11-16): no new form, no lower score (330): this build still inlines both copies of 0x235a0 where retail inlines the first and calls the second, so the body after that point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax B (11-13): no new form, no lower score (364): the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
@@ -3163,6 +3164,12 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // written out 159. Without the guard (both 0x235a0 copies inlined again): the allocator form with the helper and the early
 // source 347 (1636 B), with the reorder 338; each piece removed 385/388/423 (with the reorder 376/379/414). Nothing here is
 // keepable without a match (the guard, the moved source read and the one-caller determinant helper are match-only).
+// Both images reserve 0x200 bytes. The first exit displacement and the
+// out-of-line second matrix copy still differ. Typed sample source before
+// the position query for first/second/both 369/368/368. Position-result
+// submission predicate for first/second/both 369/368/368. Explicit unsampled
+// arm for first/both 369/368. NOT kept: both copies still expand at 1595 bytes
+// and the entry register allocation diverges earlier.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

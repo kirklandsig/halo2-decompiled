@@ -1425,6 +1425,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Tried: the squared length declared at its assignment 126; the plane declared after the length and t 126; the length
 // test as `if (length_squared)` 126 (each the same code); the normal copied ahead of the three basis copies re-measured
 // 186. Diagnostics (names only, reverted): the length renamed twice and the plane renamed 126 each (no tie on names).
+// Round 627. Shared yaw negation after product assignment, aggregate, or
+// component stores 397/396/396; in-place assignment or stores 141/131;
+// scoped aggregate 396; distance between products and negation 397, or
+// before in-place assignment 139. NOT kept: the projection preload and
+// length/zero homes still differ, and all forms raise the score.
 // M3 lane 2 r131 (H2M_FAST with 0x16c6f0/0x13cb40/0x142d10/0x23d090/0xa9b40, all MATCH; control 126): three listed leads
 // together (0x142d10 as (out, forward, up) at its definition, declaration and call; the shared quaternion helper's length
 // summed i, j, k, w; case 2's test as `0.0f != length_squared`) 121 (aligned 98, masked 33; under the bar). On 121: 1-7 dead
@@ -1433,6 +1438,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // B). Reading on 121: the animation arm's zero copy (`movaps xmm0, xmm1`, 3 bytes) moves the field-of-view tail, so 14 jumps
 // to it differ only in their target; the copy follows from the zero's register (XMM1 here, XMM0 in retail), which the
 // plane length sets. Body unchanged.
+// The 0x48 frame agrees. The projection still preloads direction k instead of j and swaps the length and zero XMM homes.
+// Copied normal through displacement 427; component setter 485, aggregate normal 485, representation copy 427.
+// Snapshot squared length 435; j capture and setter with that length 485; indexed setter 485; snapshot self-dot 435.
+// NOT kept: extending the copied normal changes the entry and displaces the original direction load. The component and aggregate forms move the body away from retail length.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

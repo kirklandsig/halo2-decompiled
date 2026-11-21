@@ -2261,6 +2261,14 @@ bool function_1900a5(long index);
 // properties pointer with `properties_used += record->count` ahead of the rolled fill 723 (2910 B), with the add after
 // the fill 670 (2894 B); the variant lookup nested under the state test (no assignment inside the condition) 643 (same
 // code).
+// M3 lane 7 r211 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643).
+// Reading: retail's request gate is the elapsed-time function 0x75890 expanded (`mov esi, eax` copies g_50c468 after its
+// test, the delay in EDI); ours re-reads the global after the clock call, so every row after the gate is one instruction
+// off. LEAD, not kept: the gate through a file-local forceinline by-value elapsed step (a copy of 0x75890's body) 621 (the
+// gate exact; next the loop set-up, where retail stores both zero counts to their homes and loads them into ESI/EDI after
+// the clock read); that step at both gates 626; on the 621 form the opening test through the existing
+// online_logon_connected() with its header 750, as this file's switch on the logon status 750, the free space named 645
+// (2846 B); `inline` on 0x75890's definition with the gate calling it 664 (2846 B, and matched 0x72700 94: reverted).
 // M3 lane 16 r170 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643): a user
 // record pointer for the users loop's flag, identity, properties, slot index and the later identity copy 726, without the
 // later copy 643 (same code); the existing online_logon_connected() (online_tasks.h) for the logon test 743 (retail's `dec
