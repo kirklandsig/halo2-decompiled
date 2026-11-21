@@ -1550,7 +1550,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
+// score 60 (was 60): The 0x14 frame and entry registers agree. At +0xe the inactive branch spans the longer
+// body. The first operational difference uses EAX for the membership word, where retail needs the zero result
+// through the capacity gate. Retail leaves the retained mask and written count in stack homes and carries a
+// packed entry cursor beside the ordinal. The trials change when the actual entry cursor is acquired, advanced
+// or reused across the emission and summary scans, with the original live count tests.
+// Earlier at 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
 // Earlier detail: the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
@@ -2032,6 +2037,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
 // 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
 // MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
+// Emission acquisition/cursor 184; summary cursor 69; separate cursors 184; shared cursor at latch/acquisition
+// 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
+// NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
+// the player on the stack.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

@@ -1083,7 +1083,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
-// score 812 (was 812): frame 0x2c agrees; the weapon_class/NONE register pair at entry, the result/output/candidate
+// score 812 (was 812): The 0x2c frame agrees. First +0x4 exchanges ECX and EDX for the class and NONE. Retail
+// has three adjacent iterator outputs below the result, and its candidate occupies the expired found-mode
+// parameter slot. The opening build assigns that slot to the iterator mode. Later retail keeps an EBP zero
+// through the fifth type request and inheritance setup. The trials test whether carrying the selected
+// identifier’s real validity into the inlined resource requests changes that zero lifetime and the coupled
+// result and output allocation.
+// Earlier at 812 (was 812): frame 0x2c agrees; the weapon_class/NONE register pair at entry, the result/output/candidate
 // homes, the second request's EBX/EBP roles and the later EBP zero remain (r924 and r120 entries at the end).
 // MiniMax B (11-18): no new form, no lower score (828, was 828): the frame 0x2c agrees, but retail keeps its
 // three iterator outputs at the bottom of the frame with the result four bytes above ours and gives the dead
@@ -1577,6 +1583,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // search block 813 (2827 B, all four registers pushed at entry). In the second request retail keeps `this` in EBX and
 // the found mode in EBP with the +0x34 table temp in found_mode's dead home; ours keeps the table temp in EBX, `this`
 // in EBP (reloaded per kind) and the found mode in that home: the two homes swap as one choice.
+// Selected-ID predicate as urgency for the requested, resolved or both key sets 1011/1011/1011. Missing-ID
+// predicate as secondary flag 990/1012/990. The same predicates held through the optional outputs and both
+// requests 1011/990. NOT kept: the 0x2c frame still exchanges class/NONE registers and gives the candidate and
+// iterator outputs different homes. All request forms move away from retail length.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
