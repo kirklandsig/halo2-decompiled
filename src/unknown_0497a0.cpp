@@ -625,6 +625,10 @@
 // whole third add is emitted and the body grows by 75 to 96 bytes. A zero-scaled add is therefore not what retail
 // dropped; the dead use has to be one this compiler removes after the x87 schedule is fixed, as the pointer-copy write
 // of r257 above is.
+// M3 lane 4 r242 (H2M_FAST with 0x4a1e0; control 536 at 2622 B): s0's product with its last two factors parenthesised
+// 536, its sum with the 7.75 cosine first 536, its three factors in reverse order 536, sin x as the second factor 536,
+// the four factors through the float sin/cos overloads with the sum left in real 536 (all the same code: VC reorders
+// the flat product and sum and keeps the x87 schedule). Body unchanged.
 // First +0x2 reserves 0x54 against retail's 0x60 at the same extent. Retail stores both rounded waves before SSE scaling and retains the cross products across the displacement updates. Test the rounding boundary with the original cross order and with the opposite cross between the updates, which previously recovered the frame.
 // Short wave rounded after the mixed wave 577.
 // Short wave rounded at its update 578.

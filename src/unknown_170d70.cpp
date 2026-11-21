@@ -1107,6 +1107,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // copied through EAX for retail's ECX): `&cameras[entry->key * 0x1bc]` in the call 105; the offset as `0x1bc * key` 11
 // and typed `dword` 11 (both the offset lead's code); the key and the offset both named 105 (forwarded back); the portal
 // index read from the entry at both uses (no local) 105; the distance through a local 105 (both the same code).
+// Projection-typed output 11, output through identifier 11, volume reselected on success 13,
+// early volume-array base with shared key 105, rectangle through leading coordinate 11, native
+// count postincrement in the admitted arm 11, rectangle binding after displacement 11, and camera
+// row before output selection 13. NOT kept: the gains rely on the one-use displacement or pointer
+// and leave the camera table and key in exchanged registers.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1466,6 +1471,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // complement, or with a complement accumulator 339/356/386/386. With a shared
 // signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
 // construction and leaves the unity register and square spill different.
+// Vector diagonal complements: separate or in-place scale 395/408, separate or in-place
+// scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
+// complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
+// the 0x50 frame and regress from the 337 reduced control. Unity and square homes still differ.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1778,6 +1787,11 @@ struct s_point_pool_173520
 // `long used = count; used += points - pool->points;` 9, `long used = count + (...)` 9, `(long)count + (...)` 9 (all
 // propagated to the lead's code); `(void)result->count;` ahead of it 9; the recount in a forceinline (pool, polygon)
 // helper 9; the cull test through a `byte const *view` local 9.
+// Reserved points used for corners 139, inside copy 69, or both 110; cache array publication
+// 186. With staged reservation and cap/corner bindings: reserved-pointer recount 45, native
+// arena origin 190, signed byte-offset recount 9, and advance destination index at the depth
+// minimum 18. NOT kept: the 9 and 18 forms require exact equality on the staged shapes.
+// The scaled stride spill and the recount registers still differ.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2094,6 +2108,10 @@ struct s_pool_view_172840
 // next->count` 115 (878 B, cdq), with `>> 1` 42 (871 B: sar 3, but the base formed as `sub 0x6c08`); on this body the `/ 2`
 // form 128 (880 B). On this body, read ahead of the link store and used at its place: the polygon distance 62 (874 B), the
 // default rectangle pointer 55, the new entry's portal-bit pointer 55.
+// Key and predecessor staged together 55/55, shared signed predecessor 55, bound predecessor bitmap
+// array 203. On the reordered short-sentinel form: signed byte-offset recount 17, native arena origin
+// 42, staged key and predecessor 17, earlier predecessor bitmap pointer 22. NOT kept: the 17 and 22
+// forms reach retail length but keep the reordered publication and the exchanged recount registers.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2420,6 +2438,10 @@ struct s_camera_reference_171830
 // Shared scale and in-place or separate negation 158/158; rear-vector setter 155;
 // center-point setter 155; shared negation with center setter 158; paired setters 155;
 // zero-initialized rear vector 155; scaled-vector setter with shared negation 158.
+// Packed low bits 155, packed unsigned flag 155, both packed fields 155, packed signed
+// flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
+// threshold 264, and constrained comparison assignment 291. NOT kept: packed views
+// leave the early zero unchanged, while signed and split forms lengthen the plane path.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

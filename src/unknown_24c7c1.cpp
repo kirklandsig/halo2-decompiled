@@ -932,6 +932,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // sharing with the row height -0x18, colour -0x28, flash sharing with the row fade -0x2c, text bounds -0x34, player -0x38,
 // view -0x3c, font -0x40, row counter -0x44, count -0x48, left -0x4c, top -0x50 (the rest as retail). So the open part is
 // which loop scalar shares with flash and with the total height. Body unchanged.
+// M3 lane 13 r137 (h2m fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30, 0x15f120, all MATCH; control 114): the row's
+// message height as a short 261 (1903 B); the status duration defaulted by `if (!duration) duration = 1;` 115; the
+// row fade clamped by if/else on a copy of the remainder 121; the status bounds' top stored before the bottom 114 (same
+// code); the text height tested and assigned without its local 114 (same code). Homes and predicate packing remain.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

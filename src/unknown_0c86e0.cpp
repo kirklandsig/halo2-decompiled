@@ -461,6 +461,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // the zoom flag declared right before the reset test 125 (350 B); the weapon flag as `weapon_index != NONE &&
 // function_100f70(weapon_index)` 104 (367 B, aligned worse); the entry unit fetch through slot_handler.h's object_get 110
 // (same code). Still BLOCKED-BY 0xbadc0.
+// M3 lane 11 r147 (fast with 0x103b10, MATCH each run; control 110): the sound block nested inside the reset block (the
+// only place the zoom flag is set) 130 (346 B), with the zoom flag tested first 128 (348 B); the keep flag read through its
+// address at the sound test 110 (diagnostic, same code); the weapon slot through a second named fetch of the unit 110 (same
+// code: the fetches still merge); the zoom flag declared after the weapon flag 125 (350 B). Still BLOCKED-BY 0xbadc0
+// (src/unknown_0bad50.cpp avoided this round).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

@@ -2052,6 +2052,17 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // local, the close tested as `bool written = written_size == 0x800; if (!written && open)` 114, through `file->handle`
 // 114, through the table element 114 (same code each), with the handle test first 135 (930 B, the `resized` test
 // materialised again). Body unchanged.
+// M3 lane 14 r139 (H2M_FAST with 0x213760, 0x213800, 0x2138f0, 0x2149c0 and 0x2141f0, all MATCH each run; control 33,
+// aligned 19 rows; lane 9 r132's 5 form rebuilt at 5, aligned 4: only the write's flags zero in EAX ahead of the handle
+// load). On the 5 form: the write's handle as an explicit temporary copy (`s_file_handle(*handle)`) 114 (917 B, the
+// write-local code); the handle pointer declared `*const` 5; the success flag typed `long` and tested `== 0` 5; the
+// success set by `written = count == 0x800 ? true : written;` 5; the write's handle through a `const &` bound ahead of
+// the call 5; the header's strings set inside the write's argument list by a comma expression 5 (all the same code as
+// the 5 form); the count initialised to zero at its declaration 153 (the zero store changes the frame). The plain
+// write-handle local re-measured 114 (aligned 3: the close pushes EAX where retail copies it to ECX first, and the two
+// pads that follow); on it the close's test and its body as nested ifs 114 (same code). Reading as before: any named or
+// by-value handle at the write gives retail's write but takes away the scratch step that makes the close copy its handle
+// into ECX; every unnamed spelling keeps the close and leaves the flags zero in EAX. Body unchanged at 33.
 // @retail 0x213970
 void function_213970(void)
 {

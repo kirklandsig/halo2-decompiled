@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 925 (was 925): after later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// score 925 (was 925): r130 unchanged (lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
 // previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
 // shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
@@ -599,6 +599,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
 // Earlier stacked first line (925, was 925), merged here: the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier header (925, was 925; merged into the note above in r130): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier at 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
 // its zero in EBP), the frame is 0x2cb0 against retail's 0x2cac, the byte homes differ and the join is laid out in
 // source order; the rounds below. MiniMax B (11-18) at 920: no new form, no lower score (920 plain, 926 fast). The permutation
 // MiniMax B (11-18): 920 then (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
@@ -791,6 +794,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 906 form: actor_index in EBP for retail's EBX with the zero in EBX for EBP (ours hoists the object-table global into
 // ESI at the entry, retail loads it in each block), the skip flag in BL where retail keeps it at [esp+0x12] (sete to
 // memory), and the other-actor branch's layout.
+// Entry pool acquisition is still hoisted and the 0x2cb0 frame exceeds 0x2cac.
+// Havok and movement pool accessors at the actor-unit lookup, location lookup,
+// or both 925 each. Complete conditional unit selection with explicit or
+// conditional-expression type arms 942 each at 3741 bytes.
+// NOT kept: the accessor forms tie and the complete selections grow past retail.
 // M3 lane 2 r128 (H2M_FAST with 0x29a190/0x29cbb0/0x2c41b0/0x2c0d00, which did not move; control 925 = plain; [aligned,
 // masked] difflib counts): lane 5 r218's 514 lead rebuilt on today's file 514 [170, 77] at 3740 B (all five forms
 // match-only). On it: the entry dot's k and j products written previous-direction first 514 (same code); the entry dot
@@ -818,6 +826,18 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // distance tail out right after the other-actor branch and defers the type-0 `else if` branch and the type 1/7/11 arms
 // behind it, the object pointer and index homes (+0x18/+0x1c), and scratch rotations. On the else-store base the listed
 // `if` form (708) still beats this one (755). Body unchanged.
+// M3 lane 2 r130 (h2m fast with 0x29a190, 0x29cbb0, 0x2c41b0 and 0x2c0d00; control 925 = plain): one `bool enemy = true;`
+// ahead of the type-0 branches, assigned in each, with one `skip_classification = !enemy;` after them 924 (3741 B);
+// `long object_count` 921 (3731 B); diagnostic (wrong code), the actor's unit read without the object table: still zero
+// EBX / actor_index EBP, settings then in ESI, 943 (so the hoisted table is not the cause). LEAD, not kept (declarations
+// moved, match-only): the four per-object defaults (inflation, skip and the two sphere flags) declared after the
+// unit/ignore `continue` 875 at 3776 B: retail's entry (actor_index EBX, zero EBP, no hoisted object table, the six
+// zero stores from EBP) with frame 0x2cb0 and bytes at +0x11/0x12/0x13/0x1b; with `else straight = true;` on the
+// no-actor path 788 (3772 B, first difference +0x41); with `long object_count` 956; with the shared skip 924. On last
+// round's 495 lead (all match-only) the moved defaults give 507.
+// Role names for the separate actor/vehicle/sphere centers 925, actor/candidate displacements 925,
+// marker offsets 925, sphere-size workspace 925, object/sphere indices 925, inflation and sphere radius
+// 925, marker counts 925, and object distance/radius 925. Frame 0x2cb0 and the entry register choice stay.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1699,7 +1719,7 @@ long function_1fa7f0(void);
 // keeps the zero in EDX, the count in BX and the edge, the next and the step in stack homes, with the frame at 0x114
 // against retail's 0x10c; the declaration orders of the loop's locals (the step pointer last, the edge after the link and
 // the edge first) all compile to the same code.
-// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// score 400 (was 400): r130 unchanged. Frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // M3 lane 3 r272 (fast with 0x270930/0x2c3030/0x26ccb0/0x2c2a70, matched throughout; control 400, aligned 350, masked
@@ -2363,6 +2383,12 @@ long function_1fa7f0(void);
 // emit's z and +0x02 reads through `points[index]` instead of the step pointer 473 (1758 B); the origin copied from
 // `query->source.point` (retail reads y through the query base) 400 (same code); `used` as a long 495 (1783 B). Body
 // unchanged.
+// M3 lane 2 r130 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70; control 400): the end scan as `for (end =
+// index; end < count; ++end)` 636 (1911 B); a named `short last_index = count - 1;` for the candidate test and the copied
+// last point 469 (1765 B); the scan as `while (end < count && points[end].type == NONE) ++end;` then one `if (end < count)`
+// 475 (1765 B); `found` declared inside the scan branch 481 (1769 B); the circle centre as `corners[side ? 0 : 1]` 484
+// (1700 B). Retail's count stays in SI only at the head and is read from [ebp+0xc] at every loop compare, leaving EBX to
+// the zero, the edge and then the output count.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
