@@ -921,6 +921,12 @@ static inline bool teams_enabled_19e1c0()
 // Complete signed clamp assignments on both branches for player/team/all names/all plus literal fallback
 // 432/433/438/436 with the existing result, 685/684/692/694 with an ordinary result.
 // The ordinary result recovers frame 0x204 and merges the length tails. The entry token preload remains absent.
+// M3 lane 15 r129 (H2M_FAST with 0x19df10, 0x19de80, 0x19e0f0, 0x19e770, 0x19e890, all MATCH; control 390): on the plain
+// result, the five clamps as `if (remaining <= result)` 691 and as `if (remaining < result)` 691 (1170 B, both the same code
+// as the plain control); the plain result with `__assume(remaining >= 0)` as the first statement 691 (diagnostic: a
+// code-free entry reference is not a use, `remaining` stays on the stack); the plain result with the twelve compares
+// reading a `name` copy of the token 691 (the copy coalesces with the parameter); on this body the opponent loop's team
+// counter typed `long` 421 (1424 B).
 // M3 lane 7 r209 (h2m fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH; control 390). Reading: retail's player and team
 // arms end in byte-identical 13-instruction runs (wcslen, clamp, three pushes) that each jump to one shared wcsncpy
 // call, so only the call is cross-jumped; the plain result merges the whole runs. Tried: the plain result with the

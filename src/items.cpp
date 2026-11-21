@@ -942,6 +942,10 @@ struct s_item_collision_bsp
 // Overlap both left and forward products in plane or scalar rows: 191 each.
 // NOT kept: the paired overlaps load j before k and still place j in XMM3.
 // Every preview retains the 1366-byte extent against retail's 1361.
+// Transposed rows through the shared dot product with coefficients before/after row setup:
+// separate aggregates 269/269, separate vector setters 269/269, reused row setter 194/194,
+// and a three-axis matrix 273/273. NOT kept: the reused row leaves the normal coefficients
+// in other registers at 1366 bytes. The other forms grow to 1392 bytes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1270,6 +1274,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
 // Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
 // NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
+// Raw shared or staged cross with scaled scalar, const-vector, setter or component-loop
+// results: 206/206/204/191 for either cross. NOT kept: all retain frame 0xc0 and
+// grow the body. The loop reaches 877 bytes with the axis home still present.
 // Returned unscaled cross with scaled scalar coefficients 245, scaled j/i/k 244, separate alignment dot 237,
 // same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
 // named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame

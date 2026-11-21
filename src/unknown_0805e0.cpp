@@ -908,6 +908,11 @@ void function_1537f0(s_profile_record *record);
 // (268 B); those links and the two tail clears ahead of it 70 (265 B); the tail clears ahead of four `entry->` link
 // statements 49 (NONE hoisted); the first two heads in the struct's field order 18 (same code). The cache globals are
 // already one aggregate object (include/unknown_4cf790.h).
+// M3 lane 3 r293 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18): the four heads as one chain in
+// retail's store order (`g_4cf988 = g_4cf984 = g_4cf97c = g_4cf980 = NONE;`) 18 (same code); the identity memset after
+// the 0x1537f0 call 73 (271 B); that with the `entry->` links as two chained pairs in retail's order 87 (277 B), with the
+// heads as one chain too 87; the `entry->` chained link pairs with the tail chained (`entry->field_64 = entry->flags = 0;`)
+// 49 (NONE hoisted).
 // @retail 0x7f930
 void function_7f930(void)
 {

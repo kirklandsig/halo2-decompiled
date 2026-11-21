@@ -1755,6 +1755,10 @@ void function_150820(dword *bits, bool local_only)
 // Slot and mode selections from the long hand ordinal, separately or together 83/78/99.
 // Primary-entry-first equivalents 83/78/99, signed slot assigned in both arms 87, query-scoped mode selection 78.
 // NOT kept: All forms grow past 210 bytes and retain the saved player/hand exchange.
+// The four-byte frame and extent agree. Player EDI and hand ESI remain exchanged against retail.
+// Primary-selected mode with compound/nested query 88/88; slot/mode selection and late hand 77/77.
+// Secondary bool through both reads and late hand 88/88; late hand with byte slot 83/83.
+// NOT kept: The 210-byte late-hand form puts the player in ESI but passes primary in a register and grows the frame to eight bytes. All forms raise the score.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

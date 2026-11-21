@@ -959,6 +959,14 @@ struct s_object_damage_view
 // 392 (1564 B: the cursor still +4); the selected entry's player index named for the datum test and the killer 403 (1596
 // B); the friendly test passed in the 0x1ea770 call (no local) 350 (1544 B: friendly then stays in AL where retail
 // keeps a stack byte; three points, not kept); self and friendly both in the call 359 (1535 B).
+// M3 lane 7 r211 (h2m fast with 0x197160, 0xd9640, 0x1ea770, 0x1ea5b0, matched ones MATCH; control 353). Reading: retail's
+// +0x14 home is the killer itself, reloaded per block (EDX at the joins, EDI in the killer block), and no long-lived value
+// holds a callee-saved register after the selection loop; ours keeps the killer in EBP, which rotates the three small
+// homes. Tried: the killer's address taken in an unused pointer 353; the killer read once through a `long const *` at the
+// 0x1ea770 call 353 (folded); the killer block on a by-value copy 353; the attribution (selected record, reported-player
+// fallback) as a forceinline helper writing the killer, code and threshold through pointers 353 (promoted; all the same
+// code); round 209's friendly test in the call plus the consideration flag true by default and cleared by the team test
+// 341 at 1544 B (a flag set inside a test, match-only; the direct form is 350).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

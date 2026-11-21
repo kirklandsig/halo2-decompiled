@@ -3236,6 +3236,10 @@ void function_c5740(long unit_index, bool start)
 // Explicit object-header lookup for unit, weapon, root, unit/weapon, weapon/root, unit/root,
 // all three or post-gate headers with typed root members: 97 each. NOT kept: no gain; the
 // definition-index and pool-data homes remain.
+// Scoped entry slot selection 123, conditional selection 123, scoped material tag 97,
+// both scopes 123, typed fallback material 97, one typed material for both calls 97,
+// typed material with scoped selection 123, scoped nested sentinel and call gates 123.
+// NOT kept: the 331-byte selection forms change the matched caller, and the other forms tie.
 // Damage-presence test before material lookup 105, masked damage slot before/after material
 // lookup 91/93, selected tag instance 97, typed damage/material/both playback indices
 // 97/97/97, and inline effect dispatcher 97. NOT kept: the six- and four-point gains
@@ -3243,6 +3247,10 @@ void function_c5740(long unit_index, bool start)
 // Round 454: the definition index still misses EBP and the pool data stays live across the weapon gate.
 // Common object lookup for unit, weapon or root 97/97/97; for unit plus weapon, weapon plus root, unit plus
 // root or all three 97/97/97/97; post-gate common lookups with typed root forward member 97. Body restored.
+// Retained pool and shared post-gate header array, refreshed initial array, post-gate global array,
+// common header type for both acquisitions, pool reference, common post-gate headers only,
+// read-only arrays, and early masked unit index with separate arrays: 97 each.
+// NOT kept: the same header data stays live across the gate and the material stays in BP.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5641,11 +5649,19 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Forward component copy loop ascending/descending with ordinary crosses, staged first,
 // staged second or both staged: 185 each. NOT kept: the copies lengthen the body and the
 // first cross still preloads up.i.
+// Forward split copy i then jk, ij then k, k then ij, and jk then i 183/99/99/183.
+// With staged first cross 180/99/99/180. Both spans through memcpy, ij first or k first
+// 94/96, also with the staged first cross. Shared aim pointer or reference for both spans 94/94.
+// NOT kept: 94 grows to 772 bytes and retains the early up.i load. The 767-byte forms score 180.
 // Inverse transform into separate storage 300, in place 278, or through its returned
 // pointer 303. Reconstruction through the unit-scale transform with separate or
 // reused storage 233/233, in place 199, and paired transforms with separate or shared
 // direction storage 353/353. NOT kept: the transform forms shorten the body and
 // raise the score without recovering the first cross schedule.
+// Forward copy at the first cross input, ordinary/first staged/second staged/both staged
+// 169/169/169/169. Named forward terms before or after the transverse sum: real 169/169,
+// double 197/197. NOT kept: the copy and real terms leave the early up.i read. The double
+// terms enlarge the body and change the caller's reduced score.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9860,6 +9876,11 @@ struct s_unit_melee_collision
 // Per-product range with row, column or both while loops 531/531/531. Axial addition in each ray coordinate with
 // for loops, row while, column while or both while 533/533/533/533. Named transverse sums and axial products
 // 533. NOT kept: these reach frame 0x17c but shrink to 2205 bytes and raise the score.
+// Tag table captured at entry or after the unit lookup, shared pool with armed header acquisition,
+// and combined entry tag table and pool: snapshot range 484/484/552/552,
+// range read at each product 529/529/536/536.
+// NOT kept: all repeated-range forms recover the 0x17c frame. The pool forms align through the
+// first argument load (first difference +0xd) but reach 2243 bytes, and every repeated-range score rises.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

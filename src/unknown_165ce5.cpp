@@ -2037,6 +2037,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // and the frame store as well 202 (2189 B); the look angles read from the global's entry at each use with no look pointer
 // 415 (2208 B); `first_weapon = user->weapons` 188 (same code); the set-active flag passed straight to the call with no named
 // bool 378 (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// Round 627. Direct scope result from named or const overlay ID 220/220,
+// weapon-scope ID with branch or direct result 362/373, signed overlay index
+// with direct result or sentinel branch 213/197, direct result with scoped
+// look pair 220, renamed overlay ID with direct result 220. NOT kept: the
+// 0x30 frame and swapped unit/mode slots remain, and all forms regress.
 // M3 lane 3 r291 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `active` renamed weapon_active
 // 188 (same code: the active byte still shares the unit slot, so the slot packing does not follow the names); `bool active
 // = false;` as a dead initialiser 188 (same code, no early store); the overlay flags and set passed as two `no_scope ?`
