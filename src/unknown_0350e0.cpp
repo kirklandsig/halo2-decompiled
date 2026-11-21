@@ -484,6 +484,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // named complement 340/351; named sine 340/346; named sine and complement
 // 340/357. The frame stays 0x90, but the first axis register and square spills
 // remain and every form increases the length.
+// Indexed axis squares with direct diagonals, early diagonal stores, diagonal loop after
+// cross products or diagonal loop before cross products. Ascending 351/370/342/361, descending 345/375/356/345.
+// NOT kept: the frame moves from 0x90 (0x7c, 0x88, 0x8c) and every score rises.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
