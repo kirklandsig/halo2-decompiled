@@ -214,7 +214,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// MiniMax E (11-20): score 849 (was 925): the straight flag's initialiser moved into the two else arms (the actor block's
+// score 925 (was 925): after later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
 // previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
 // shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
 // registers (retail keeps the actor index in EBX and the zero in EBP, this build the other way round), the byte homes of the
@@ -223,7 +224,6 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M3 review (11-20, MiniMax E): 849 came from `straight` declared without a value and set true in two added else arms (aligned,
 // beside it, keeps its initializer); statement placement is match-only, so code is back to main (925).
 // MiniMax S (11-20): no new form, no lower score (925): retail's prologue reads the first stack argument into EBX and compares it with -1 where this build reads it into EBP, and the frame is 0x2cb0 against retail's 0x2cac; the parameter order may not change, so retail's order is reported instead.
-// score 925 (was 925): after later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax R (11-20): no new form, no lower score (925 fast, 917 plain): the frame is 0x2cb0 against retail's 0x2cac and
 // the function-scope homes are not one uniform shift (retail's actor pointer at F+0x14, the range_min short at F+0x30,
 // the self-unit pointer at F+0x34, the range_max short at F+0x38, the block_priority short at F+0x48 and the ignore_priority
@@ -598,7 +598,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
-// MiniMax B (11-18): score 920 (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
+// MiniMax B (11-18): 920 then (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
 // search over the body (300 s, one job, the full image because the reduced image misleads here) made two tries and
 // never beat its baseline of 910 differing instructions; read from the listing again: retail takes the actor's unit
 // field with the pool's data base and the scaled index kept apart ([edx + esi + 0x18] against our folded address),
@@ -768,6 +768,18 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // frame 0x2cac but regress, still using EBX for the entry zero.
 // Memberwise query location copy after the unit lookup 901, Whole query location through memcpy 925.
 // NOT kept: the memberwise copy uses two word transfers where retail uses one dword.
+// M3 lane 11 r143 (plain checks; this function builds differently in the reduced image; control 925, difflib-aligned
+// 519, register/offset-masked 286). Retail evidence: on the no-actor path retail stores straight = 1 again (0x2c0e9a,
+// `mov byte [esp+0x13], 1`, falling into the join at 0x2c0e9f) although the prologue already stored it, so its source
+// has an `else straight = true;` on the actor test with the initialiser kept. That else alone 906 at 3724 B (frame
+// 0x2cac and the priority shorts, self-unit and actor homes all retail's; aligned 419, masked 281), a redundant store,
+// so match-only and not kept; with the skip flag declared at function scope as well 906 (same code); with a second
+// `else straight = true;` on the previous-direction test as well 849 at 3708 B (aligned 424, MiniMax E's code). The
+// self-unit test written as `self_unit = unit[0xaa] == 0 ? unit : NULL;` 890 at 3741 B (aligned 510), but it compiles
+// branch-free (setne/dec/and) where retail branches, so not kept; with the no-actor else 870 (aligned 415). Left on the
+// 906 form: actor_index in EBP for retail's EBX with the zero in EBX for EBP (ours hoists the object-table global into
+// ESI at the entry, retail loads it in each block), the skip flag in BL where retail keeps it at [esp+0x12] (sete to
+// memory), and the other-actor branch's layout.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
