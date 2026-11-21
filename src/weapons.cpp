@@ -1953,6 +1953,9 @@ static inline bool unit_dual_wielding(long unit_index)
 // has retail's offset-first trigger loop beside data-first lookups only through its `volatile` pool read, so that
 // lookup is a separate expression there. Left: what keeps the animation test's lookup data-first and the put-away lookup
 // offset-first (with the copy for 0xc9d00's pool copy) once the others are offset-first.
+// M3 lane 16 r163 (fast with 0xc9d00, MATCH each time), on the 2 form re-measured (2): the holder unit declared ahead of
+// the weapon class 121 (540 B); the existing 0x101f20 for the holder lookup 51 (533 B, it stays a call); lookup 3 after
+// the b7360 call 119 (525 B); per-loop counters in the two loops 2 (same code); a trigger pointer in the reset loop 130.
 // M3 lane 14 r133 (fast with 0xc9d00 and 0x1058b0, both matched each time; control 17): the 0xc9d00-call forms rebuilt
 // 27 / 4 (`result` first) / 2 (and weapon_get_102e10 at lookup 1, O O O O D). On the 2 form: the trigger loop through an
 // inline (weapon index, trigger index) clear helper 2 (same code); both reset loops through one inline helper taking the
@@ -3259,7 +3262,7 @@ struct s_ammo_conversion_entry
 // is left is the register colouring and one test - retail keeps the destination weapon in EBP and the other weapon in
 // EBX, sets the acquisition flag with setg on the clamped count and reaches the conversion entry without a nullable
 // test, while this build holds the destination in EDI, spills the other and tests the entry for null.
-// score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
+// Earlier 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
 // Earlier: frame 0x24 versus 0x20; destination/tag saved roles and conversion staging differ.
@@ -3482,6 +3485,11 @@ struct s_ammo_conversion_entry
 // formed before comparison 214, shared slot with all type tests reread 212, shared slot and typed block 190,
 // also full-width total selection 191. NOT kept: the forms tie or regress and retain the saved-register
 // divergence.
+// Bound and key in the search test 202, with the key carried 202;
+// short search ordinal and offered count 202; key shared across both arms 202;
+// single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
+// transfer cap inside the successful search 199. NOT kept: the ordinal searches shorten the body
+// to 718 bytes, and the forms at retail length still miss the destination and key registers.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3807,6 +3815,12 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // for the magazine's rounds (ours spills it to frame +0x24 because EDX is needed for `mov dx, [esi+0x2a]`; retail keeps
 // it in ECX, the magazine in EAX); the rounds named once for the opening tests 599 (same code). The unit index plain,
 // read by const reference in the player helper 646 (2507 B). None reaches the bar; body unchanged.
+// Shared shot notification 603; admission predicates producing the fired value 577;
+// plain holder plus nested feedback tests 648; named short fallback minimum 603;
+// pre-heat round predicate 603; separate magazine tag base 603; scoped owner rejection 603;
+// short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
+// the magazine debit where retail stores it after admission and the magazine update.
+// The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4286,6 +4300,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // keeps BL with a home at 0x13; masked aligned rows 887 -> 855); also without the complement local 1427; also with the
 // +0x1c clamps as float value selects 1432. The 64 bytes the double clamps add are about what the dword result stores
 // cost over retail's byte ones, so the double clamps, a bool result and the arm-local complement belong together.
+// Opening-only pool 1412; retained header slot 1449; direct owner player result 1438;
+// early blocking state 1433; Boolean activity set from magazine calls 1494 or call-first OR 1464;
+// arm-owned blends 1436, with opening pool 1440. NOT kept: the pool-only form ties;
+// Boolean activity and arm-owned blends shrink the frame to 0x30 and leave the dual spill.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4751,7 +4769,12 @@ struct s_weapon_projectile_creation
 	byte unknown4c[0xc4 - 0x4c];
 };
 
-// score 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
+// score 1121 (was 1121): The first difference at +0x1 is the 0x1ea4-byte stack probe against retail’s 0x1e98.
+// Entry lookup and indexing agree before the first spills. Retail’s 0x88-byte damage event sits above the
+// distinct clipping output and the creation request. The trials replace the raw damage buffer with the existing
+// event layout and test whether direct member publication changes the workspace allocation while preserving the
+// values and call tuples.
+// Earlier at 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
 // writes the code as a dword at 0x104450 and reads a word back from the slot at 0x105233), which gives the function
 // retail's length (5212 bytes). What still differs is the frame (0x1ea4 against retail's 0x1e98, twelve bytes bigger)
 // and the parameter offsets that follow from it, the game mode read (a byte load plus a sign extension where retail
@@ -4913,6 +4936,9 @@ struct s_weapon_projectile_creation
 // pointers 1121, fixed axis by value 1150, staged and direct shared cross 1186 each, shared i-k-j projection
 // 1131, changing vector passed and returned by value 1185. NOT kept: no gain. The setter reduces the frame to
 // 0x1e94 but shortens the body to 5105 bytes.
+// Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
+// Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
+// 1158. NOT kept: none improve the opening frame or score.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

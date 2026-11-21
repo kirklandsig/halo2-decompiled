@@ -448,6 +448,17 @@ long g_55e6c0;
 // count >= 4 ? 4 : count` 33; as if / else-if / else with the `<= 0` and `>= 4` bounds 33; upper bound first (`count > 4 ? 4 :
 // count < 0 ? 0 : count`) 153 (495 bytes); the level loop bounded by the levels local 158 (506 bytes: levels spills to the
 // count's home and the height then takes EAX at the top as retail, so a longer clamp range is what lowers its rank).
+// M3 lane 8 r211 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20, all MATCH unless noted; round 122's lead
+// re-measured 31 at 484 bytes). Diagnostics, restored at once: 0x1d6f0 given one more parameter that its body never reads
+// (the link drops it after the caller's common-subexpression pass; this gave retail's load in 0x12e290), declared last
+// and fed the height, on the lead 31, on this body 29, declared first on the lead 31 (all the same code: the argument
+// re-reads the parameter's home, so it is no further use of the top block's value), fed `height >> i` in the loop as
+// well 55; the call's height through `*(long const volatile *)&height` on the lead 31, with the select ahead of the
+// header word 40, the select-first lead alone 40, on the select-first form without the header pointer 140 (487 bytes;
+// 0x1db10 10, 0x1dc40 10, 0x1d770 213: the address-taken parameter moves the convention). Forms: the dimension and data
+// stores, the +0x8c clear and the clamp in a new forceinline setup helper taking (entry, width, height, count, data),
+// whose arguments would be evaluated count ahead of height, on this body 29, on the lead 31 (both the same code: an
+// inlined call's arguments are propagated, so they do not order the temporaries).
 // M3 lane 11 r140 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; base: round 122's lead re-measured 31 at 484 bytes, the pitch
 // part scheduled ahead of the height part): the levels value read through a `long const &` for its store 31; a second entry
 // pointer local for the header part 31; the levels clamp, zero stores and packing in their own block scope 31; the packing's

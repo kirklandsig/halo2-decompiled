@@ -411,6 +411,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // same code). On the ternary the masked rows left are mostly the expanded 0x1c4a80 (retail calls it from the inlined
 // 0xb7430 position move, which is disabled: BLOCKED-BY 0xb7430), the output/input register trade (BLOCKED-BY 0x1ec690)
 // and the state pointer held in ESI where retail re-reads it.
+// M3 lane 5 r222 (H2M_FAST with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319 at 1176 B, aligned 320,
+// register-masked 247): the shape match as `same = current == shape;` then set under `if (!same && compound)` 331 (1184 B);
+// the shape pointer not read again after the type call 368 (1180 B); the position rows with the base first and the rate
+// on the right in the j and k rows 319; the active flag in shift form 319; `if (shape != NULL)` with the last arm on its
+// own line 319 (the last three the same code). Still BLOCKED-BY 0x1ec690 for the output/input registers.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

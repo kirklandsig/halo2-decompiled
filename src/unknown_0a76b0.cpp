@@ -2621,6 +2621,19 @@ __forceinline char unit_action_round(real value)
 // explicit arms or Boolean bit 234/234/234/249. With the signed-short getter
 // 297/297/297/302. NOT kept: the shared name does not recover the pool,
 // hand result or completion-byte homes.
+// M3 lane 8 r213 (H2M_FAST with 0xe9ed0/0xea090/0xe9780/0xe99a0, all matched; control 234): a goto-free single exit: the
+// switch's default and the unhandled mode `break` with the name NONE, the rest under `if (name != NONE)`, the animation
+// failure clearing a `started` bool (true after 0xee7f0) that guards the tail, `result = true` in the tail, one return
+// 329 (1224 bytes); with the four lead pieces of lane 5 r214 (NONE pair chained ahead of the short-slot hand getter, the
+// 0x1b test through TEST_FIELD_BIT, the fallback names as a switch, the lunge target read after the 0x1e4 test) 301 (1202
+// bytes: the mode-2 arm's shared `first_person_name = name` sits in the join block, so its `name != NONE` test is not
+// threaded there); with that copy written in both mode-2 branches LEAD 105 (1188 bytes, match-only: the flag), the code of
+// the goto lead with no goto: retail's one exit reading the result byte, left the callee-saved rotation (pool EDI, offset
+// EBX, NONE EBP against retail's EBP, EDI, EBX), the getter's immediate -1 compare and the result/is_biped bytes swapped;
+// the both-branch copy on the plain flag form 240 (1193 bytes). On the 105 lead: the flag declared with the top locals
+// 105, the flag started false and set in both success paths 105, the switch on the expression with no `current` local 105,
+// the first-person NONE declared first (name's NONE after the actions) 105 (same code each); the channel declared at the
+// top 186 (frame 0x18, out of the dead mode parameter's home).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4479,6 +4492,12 @@ extern vector3f *g_4687bc;
 // node_count`; an `int` index; `NONE != index`. Diagnostics (screen): the index kept live past the element goes to EBX
 // with the data still loaded first; without the node-count test the offset takes ECX, data still first. Both stores and
 // loads sit as late or early as their registers allow, so both sites are register choices, not schedules.
+// M3 lane 3 r287 (fast, control 8): the rigid-body data pointer through a `s_havok_component_rigid_body *const &`
+// bound after the index test and indexed with `[]` 8, bound before the 0x0b67a0 call 8; the default material copied
+// into a short local read through a `short const &` for the constructor 8; the element as a const reference to
+// `component->rigid_bodies[index]` with `.node_count` / `.nodes[0]` 8 (all the same code at both sites); the component
+// through a `s_havok_component *const &` bound to the cast pool data (0xb9b90's data-first form) 47 (1099 B: the pool's
+// data then loads into ECX ahead of the material, retail's lookup is index-first).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

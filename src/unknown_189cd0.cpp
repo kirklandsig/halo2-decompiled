@@ -303,6 +303,20 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // plain-read form (no reference): the started test `NONE != object_index` 116, the request test `NONE == object_index`
 // 116, the marker test `NONE != object_index` 116, all three 116 (531 B, the plain-reads code); on the kept form the
 // request and marker tests constant-first 11 (same code). The operand side does not move the object/tag contest for EBP.
+// M3 lane 5 r221 (plain; every form without the reference, object reads plain, control 116 at 531 B). Diagnostics: one
+// conditional store (`if (a == 5) description.value24 = b;`) at the positioned arm's top 93 (542 B) is retail's code exactly
+// plus its own four instructions, two such stores there 109, two unconditional stores 150 (so a basic block, not a use);
+// the same block ahead of the clamp 171, in the request arm 175, after the marker block 144, inside the marker block 181;
+// an empty `if` there 116 (folds), `__assume(slot != NULL)` there 152. Forms: `long audible = 1; if (positioned) audible = 2;`
+// at the arm's top 136 (533 B); `audible` set by if/else just before the call 122 (533 B); the marker test under an implied
+// `if (spatialization || object_index != NONE)` 160 (560 B); a repeated `if (object_index != NONE)` around the 0xb8d30 call
+// 116; the top `flags = 0` kept with a redundant `else { description.flags = 0; }` 128 (538 B); `flags = 0` written in both
+// arms of the marker test 34 (527 B), arms swapped (`if (object_index == NONE) { flags = 0; } else { flags = 0; marker }`) 20
+// (523 B); `flags = 0` moved after the marker block 105 (500 B, folded into the bit). Reading of the 20/34 forms: retail's
+// allocation and late half everywhere (tag EBP, spatialization EDI, late object EBX copied to ESI, `cmp ebx, -1`); left: the
+// two stores are not merged into retail's one store at the arm's top, and the request test's edges are threaded past the
+// marker compare (object edge into the marker block, positioned edge to the no-object store), so that compare, one object
+// use, is what retail's allocation does not count while its code still has it.
 // M3 lane 8 r208 (fast with the eight callees listed, which reproduces the plain 11 and the plain-reads 116; every form
 // without the reference, object reads plain, control 116): the lookup in 0x18c250's form (tag view `.data`, a class-index
 // local, a classes local, the existing spatialization helper) 154 (541 bytes); a second tag lookup for the spatialization flags test
@@ -319,6 +333,14 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // (526 bytes); the audible argument as `positioned + 1` 40 (521 bytes: the flag is read with `movzx` and the late
 // object load moves ahead of the push, where retail reads the flag into BL first); the audible argument as an if-set
 // `long audible` 37 (532 bytes).
+// M3 lane 8 r213 (H2M_FAST with the eight callees; kept-form control 11, plain-reads control 116): every form below with no
+// reference and every object read plain: the audible argument as `positioned + 1` 110 (525 bytes); `long audible =
+// positioned ? 2 : 1;` at the positioned arm's top 131 (525 bytes); `long audible = 1; if (positioned) audible = 2;` there
+// 136 (533 bytes); `bool attached` (request and marker tests) before the clamp with `positioned + 1` 106 (521 bytes, retail's
+// length and allocation: left are the bool's `setne al`/`test al, al`, the request's zero bytes stored from AL, and the
+// flag read by `movzx` with the late object load ahead of the push); the flag reset and marker block in a forceinline
+// helper with an early return on NONE 116 (same code); the marker block split into two `object_index != NONE` tests
+// (0xb8d30 under one, 0x1892a0 under the next) 116 (same code); `bool attached` declared after the clamp 96 (523 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

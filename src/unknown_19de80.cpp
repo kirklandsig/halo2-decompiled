@@ -899,6 +899,15 @@ static inline bool teams_enabled_19e1c0()
 // branches or ternaries: ordinary result 669/480/669/669, existing qualified result
 // 563 each. NOT kept: the early bound adds a stack slot, growing the frame to 0x20c.
 // The token is still loaded after the prologue and the 0x204 frame remains unresolved.
+// M3 lane 4 r239 (fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH unless said; control 390, plain result 691 at 1170 B): `token`
+// and `destination` as one by-value two-pointer aggregate parameter (the caller builds it, same stack layout) plain 691,
+// volatile 390 (same code each: the aggregate is scalarised); the three stack parameters as one by-value aggregate plain 691
+// (same code, 0x19e0f0 then differs); the twelve compares through an inline predicate taking `&token` plain 691 (folded).
+// Diagnostics (reverted): every failure tail made unique so that no two arms can share code, plain 717 (1669 B: the token
+// still takes EDI and `remaining` stays on the stack with about 27 unshared uses, so shared tails are not what keeps it
+// there); a volatile token parameter with the plain result 469 (1386 B: result ESI, token length EDI, event EBX and the token
+// preload as retail, but the fourth register goes to a hoisted zero and `remaining` still stays on the stack). So retail's
+// `remaining` outranks both the token and the zero constant, which only a reference on the dispatch path gives it here.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

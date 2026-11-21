@@ -1871,6 +1871,20 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // MiniMax R (11-20): score 226 (was 226): no new form; the first difference is still the radius in xmm4 where retail
 // loads it into xmm5 at +0x4f, and the cosine block keeps its own allocation of the direction, the desired vector and
 // the zero, so the whole body stays 223 instructions away from retail's.
+// M3 lane 13 r133 (h2m fast, confirmed by check.py --fast and plain; al = aligned differing rows / registers masked):
+// `inline` on 0x210690's definition 194 at 1163 B (al 137/52; every matched caller of 0x210690 and 0x210770 still
+// matches, 0x299460 569 and 0x2c41b0 675 unchanged; the body is then retail's up to +0xd7, zero XMM1, radius XMM5, direction
+// XMM2/XMM3, 1163 B against 1173; left are facing x and side x in XMM6/XMM7 the other way round, the type-zero arms'
+// shared tail, the fraction's 1.0 in the dead radius register, the lateral spill and the trace call's radius
+// temporary), NOT kept at review: an inline decision on another function is the user's (held as a lead). On it: one / two / three paren pairs in the side test 236 /
+// 198 / 194; the side test through the existing dot_product2d either way round or with the x term first 194 (same
+// code); the left type-zero arm y first 231 (al 126/44: the arm is then retail's but for XMM6/XMM7), the not-left arm
+// y first 205 (first +0x4f), both 205; the trace radius in a named local 229 (al 110/65: the trace call's setup is
+// then retail's, the radius stored to the dead facing slot and reloaded), with the left arm y first 232; the fraction
+// started at 1.0 228, a named 1.0 for both uses 236, if/else arms 194 (same code). A grid of those (left / not-left /
+// type-one arm y first, trace radius local, four fraction spellings, three paren phases; 192 forms): best 124 at
+// 1174 B (type-one arm y first, radius local, one paren pair; first +0x4f) and 125 at 1173 B (radius local, two paren
+// pairs; first +0xd7); every form without the radius local 194 or more. None moves the XMM6/XMM7 pair.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
