@@ -1624,6 +1624,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
 // first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
 // 1011 (2837 B). Body unchanged.
+// Separate optional-output destination bindings in their publication conditions, all seven subsets and a
+// const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2175,6 +2177,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 812; iterator-controlled exit and candidate test 1005; signed index before optional output stores
 // 812. NOT kept: split result construction moves the first difference into the prologue at the
 // same score, and the other forms tie or regress.
+// M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
+// same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
+// aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
+// `or eax, -1` after loading the iterator's mode, ours reuses the compare's NONE); that with the output defaults chained
+// after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
+// first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
+// 1011 (2837 B). Body unchanged.
 // M3 lane 6 r222 (H2M_FAST with the twin 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1dd560, 0x2963f0, 0x1236f0, 0x1db120,
 // all but the twin matched each time; control 812, aligned 578, register-masked 71; body unchanged). Diagnostics for
 // the found mode's reads (retail copies it into EBP once for the second request; ours reads its home at each kind,

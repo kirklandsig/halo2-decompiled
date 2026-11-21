@@ -897,6 +897,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // head, stage and pass references each in their own block 8 (same code); the geometry-info pointer for 0x12de70 named
 // right after the pass tag (to hold ECX across the last two lookups) 8 (same code: it folds), named just after local_9 8,
 // named at the function's top 68 (551 B, 0x224d90 36). Body unchanged.
+// Fallback payload member and fallback plus shader payload members, mask/word
+// 152/117 and 152/117. Native slot lvalues 152/117.
+// Bound element addresses 124/123. Grouped cache defaults 103,
+// then late definition mask 93. NOT kept: 103 needs bound one-use
+// element addresses. The late mask loses caller 0x224d90. The EDX mask
+// and EDI table can coexist. The fallback payload still takes EAX.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

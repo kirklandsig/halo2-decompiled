@@ -820,6 +820,11 @@ union s_185be7
 // Second pass on the 28 lead: the angle products clamped where they are formed 39; PIN with its bounds passed to a
 // forceinline helper for local_19/local_20 227; local_19 started at 1.0 ahead of the quotient and reduced after it 28
 // (same code: the XMM3/XMM4 tie does not follow the textual order of the 1.0 constant).
+// M3 lane 13 r140 (H2M_FAST, single address; control 60): on the body, the two angle products clamped where they are formed
+// (`real local_21 = PIN(local_15.i * local_18, ...)`) 69; the two blends' sums written the stick term first (`local_19 *
+// turn + angle * local_20`) 60 (same code); local_17 declared ahead of local_16 60 (same code); the two angle products
+// computed ahead of local_19/local_20 487; local_20 ahead of local_19 re-measured 611; local_19/local_20 written `k * PIN(...)`
+// 60 (same code). The quotient/1.0 XMM3/XMM4 swap and the else arm's load order stand. Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

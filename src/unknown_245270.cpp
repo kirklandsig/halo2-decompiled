@@ -1032,6 +1032,12 @@ void function_245400(s_source_245400 const *source, long index,
 // indices named (`first_index`, `second_index`, each used for its pointer and the compare) 163 (same code), with the
 // sides as `((dword)code >> 15) & 1` 197; cross3f with the normals swapped and the dot negated 204; the facing test as one
 // ternary on the side relation 209 (786 B), with the swapped plane pointers 209.
+// Secondary endpoint scoped to edge 163, plane decode scoped after the edge 165,
+// or both 165. Material-only surface scope or vertex indices captured on
+// admission 163/163. Widened code declarations before admission 165,
+// immutable widened codes in facing 165, or immutable codes with normals
+// resolved at the cross 212. NOT kept: 0x24 frame and separate material homes
+// still differ. Delayed plane-table forms also change the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
