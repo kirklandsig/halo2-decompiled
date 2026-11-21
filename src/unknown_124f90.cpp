@@ -4905,6 +4905,10 @@ struct s_128ca0
 // the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
 // every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
 // initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
+// First, second or both gain scopes ending at the packet write 48 each. Separate decibel
+// operands with permutation first, processed bits first, or both scoped to publication 48 each.
+// Channel arguments named after publication, with or without scoped gain objects, 48 each.
+// The two scratch-register exchanges and full-width synchronization sentinel still differ.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

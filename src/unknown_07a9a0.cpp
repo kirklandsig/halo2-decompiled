@@ -1773,6 +1773,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // of the session reads 870 (2796 B; 0x73530 drops to 8); the opening test split in two 871; the opening exit as
 // `{ result = false; return result; }` 871; the imbalance excess test returning at once (retail's exit at 0x7ea98) 895
 // (2752 B); the type-5 scan's exit as `return false` 871. Still BLOCKED on the link's inline choices.
+// Rejection byte 890, declared at entry 890 or after admission 904. Accumulated machine,
+// party or capacity rejection 885/895/893. Single exit with rejection byte 874, or with
+// result initialized after the clear 903. The frame stays above 0xb4 and the opening
+// lookup still inlines.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

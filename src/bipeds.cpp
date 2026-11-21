@@ -6305,6 +6305,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // reference 124/89/134 or direct member access 136/160/140. Alternate forward
 // or up rotation with a staged side cross 124/89. NOT kept: the altered
 // rotation loads regressed. The original complement spill and final cross remain.
+// Rotation axis name, rotated-up and side names, or all three 79 each. Angle limited to the
+// trig producers, with or without the workspace names, 79 each. Rotation scope ending at the
+// up rotation, with workspace names or a nested angle scope, 79 each. The first complement
+// spill and the final forward-j reload remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

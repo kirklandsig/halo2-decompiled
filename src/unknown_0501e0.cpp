@@ -755,6 +755,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // rebuilt 252 (1136 B, aligned 174); on it, both offsets in one component loop with the second or the first point first
 // 251/252. On this body: the view helper taking its input vector by value 371 (1228 B); returning the view vector by
 // value 314 (1179 B); its rows written forward, up, right 221 (aligned 251).
+// Shared scalar origin with vector initialization, first or second endpoint first 218/219,
+// with a single scale read 256/261. Shared vector setter in the same four forms
+// 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
+// forms score higher, and the frame remains 0x20.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
