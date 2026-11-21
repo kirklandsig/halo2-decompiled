@@ -87,7 +87,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // callee-saved registers the other way round (retail keeps the group pointer in EBX and the g_4e0350 table in EBP, ours the
 // reverse), and the three -1 homes and the best-distance float sit at 0x24/0x0c/0x2c and 0x40 against retail's
 // 0x44/0x28/0x24 and 0x38.
-// score 367 (was 367; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// Earlier 367 (was 367; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
 // M3 lane 4 r230 (fast with 0x29e730/0x29de20, both MATCH; control 367, difflib-aligned 323, register/offset-masked 135).
 // Retail's output loop indexes the output by the count each pass (`imul eax, eax, 0x1c`), walks a separate cursor (SI)
 // and keeps the group's record in EDI. The output written to `&arg_4->field_30[local_37]` with a `short` cursor copied
@@ -781,6 +781,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // local_20 `long` 321 (same code), with local_29 `long` 414, the record index `long` 465 (1547 bytes), with local_29
 // `long` 321 (1548 bytes), the step local_26 `long` 460 (1550 bytes), with local_29 `long` 319 (1551 bytes, under the
 // bar). Diagnostic only: `else local_4 = false` on 321 460 (1579 bytes).
+// Bounded for, index before bitmap, both, immutable early index, separate record guards,
+// early index with separate guards, immutable record base/index, and named range predicate all 321.
+// The best-distance slot and reduced record-index induction still differ.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
