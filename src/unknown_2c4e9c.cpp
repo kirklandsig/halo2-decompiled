@@ -3331,6 +3331,13 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // of the break 40 (90 B); the selection as a file-local free function taking the list pointer, v1 passing `this`, 30 (the
 // list still arrives in EAX); the definition placed after v1's, in retail's address order, 30; the id read into its local
 // and the guard reading the field again 30; the guard through a named bool 30 (all the 30s the same direct EBX load).
+// M3 lane 4 r245 (h2m fast with 0x2c9a58, matched in each): re-measured the if/else two-definition id 36 (87 B); its NONE
+// arm as `{ map_id = NONE; return; }` 13 (the NONE-default code; a dead store); the iterator's three stores in a file-local
+// inline begin helper 30; `if (map_id == NONE) map_id = field;` after the read 33 (85 B: the head is then retail's, `this`
+// to EDI, the field loaded into EAX and copied to EBX, so any second definition alone gives the EAX load; the redundant
+// test stays, NONE cached in ECX with four references); `if (map_id != NONE) map_id = field;` ahead of the guard 13 (four
+// NONE references at the caching point, the tests merged later); a second named local for the value (test on the first,
+// walk on the copy) at the top or as the block's first statement 30/30 (propagated). All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
