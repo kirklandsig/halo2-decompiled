@@ -235,6 +235,9 @@ bool function_1946f0(s_bitstream *stream)
 // spellings, three mask spellings, three clear starts, three count spellings and both accounting store orders: neither
 // LEA comes out index-first (best 2). Probes: an index that dies at the read-modify-write is added into (`add index,
 // data`); one live afterwards gives data-first whenever the data is a field load in the block.
+// M3 lane 13 r136 (h2m fast): the masked byte through a `byte &` bound to the element inside the bound block 9 (`mov edi,
+// [esi]; add edi, edx`); the byte mask named before the bound test 2; the checkpoint pop through a file-local inline helper 2;
+// a named bit index beside the byte index 2 (the three 2s the same code).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

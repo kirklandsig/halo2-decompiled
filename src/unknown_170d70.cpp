@@ -2497,125 +2497,8 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 295 (was 325): same behaviour as retail. Walked statement by statement against retail
-// (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
-// order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
-// The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
-// after it, and the helper's threshold and scale are the same): retail keeps x at [esp+0x18] and y at [esp+0x1c],
-// and with the vector the frame is retail's 0x20 (the loose real locals gave 0x24) at retail's 2142 bytes. The same
-// pair as a `real direction[2]` with the normalize written out gives 320 and every slot as retail, but that only
-// groups two locals, so it is not kept.
-// What still differs:
-// (1) the call to function_171830. Retail passes forward in ecx, up in eax and &position, &distance, 0.02f on
-//     the stack (0x171684-0x171694); our function_171830 takes position in ebx and forward on the stack, so the
-//     call setup differs and ebx is busy: the state pointer lands in ebp (retail ebx) and the view.up pointer in
-//     ebx (retail ebp). Needs function_171830 to match first (its own convention comes from its body).
-// (2) the scheduling of the position sums (0x171186-0x1711d9: retail loads current[4] and current[3] into
-//     registers first and multiplies in place; ours folds them as memory operands), a few folded operands in the
-//     matrix block (`movaps; mulss [mem]` where retail loads the matrix field first), the translation add
-//     (retail `offset + translation`), and the branch not taken: retail loads x and z again there
-//     (0x17165c), ours keeps them in registers. Term order and folding move with every upstream change.
-// Kept (each made it closer): the direction vector (above); struct copies for the default forward/up and the view
-// forward/up; `up` declared before `forward` (retail's lea order); pointer locals for view.forward/view.up; the y of
-// the direction read as state->current[11] (retail loads [ebx+0x138], x through the forward pointer); the field of
-// view tested on the memory operand; the ternary clamp macro for view.position; `player_index = NONE` then an if;
-// (real)g_45e4c8 so 0.05f is a dword constant; the point helper declares z, y, x in that order.
-// Tried, no help: `a = a + b` for the translation, the other five declaration orders of the point helper (x,y,z
-// 341, z,x,y 334, others 347-357) and of the vector helper (i,j,k best; 322-327), a `long cluster_index` local in
-// the cluster test (365), __fastcall or reordered parameters on function_171830, 24 spellings of the three
-// position updates (all the same), the updates in z,y,x order (411 with vector2f), `s_location` declared first,
-// real direction_x/y locals (346), the direction array (320, above).
-// Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
-// stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
-// The point transform now reads its scale once. The state and collision-point registers still differ at entry.
-// Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
-// named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
-// cached vector-transform scale 397; signed-word location cluster 336.
-// The 0x20 frame agrees. The collision callee still takes the point in EBX, displacing the state to EBP.
-// in-place point helper 709; three in-place vector helpers 1110; direct transform fields 325; direct
-// collision fields 325; local-player lookup helper 325; camera point rename 325; direct initial basis
-// copies 402; horizontal vector initializer 325. NOT kept: The existing transform calls stay out of line
-// and shorten the body. The direct initial view copies also shorten it. The other forms tie at the retail
-// extent.
-// The camera state remains in EBP and the collision point argument still uses EBX.
-// Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
-// initial placement clamps on all three coordinates 336; projected-point aggregate 429;
-// in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
-// Collision resolver stack slots before/after the basis parameters 325/325;
-// later up pointer 325; direct up/forward through all phases 374/375;
-// nested collision gate 325; current up value before publication 385;
-// conditional entry distance 413. The collision point still occupies EBX.
-// The state remains in EBP with the point argument in EBX.
-// Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
-// The state remains in EBP and the collision point still arrives in EBX.
-// Output point address before calibration, after follow, at first store, or by reference 382 each;
-// calibrated view through location 459; horizontal subvector 337; follow matrix reference 325;
-// distinct focus point 459. NOT kept: the address forms keep the collision register conflict,
-// and the distinct focus point shortens the body by 93 bytes.
-// Input point memcpy 325. Shared point setter 518. Followed-point copy 399.
-// Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
-// Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
-// The state still uses EBP and the collision point still uses EBX.
-// View up/forward/both by reference 295/295/295; horizontal direction scoped to displacement 295;
-// indexed state address 295; basis pointers bound after both copies 405; initial/final coordinate
-// clamp loops 434/456. NOT kept: the late basis pointers shorten the body and the clamp loops
-// grow it. The state base remains in EBP and collision point in EBX.
-// The collision point in EBX still displaces the state from its retail register.
-// Point/vector/both row accumulators 382/297/382. Full point/vector/both setters 295/465/463.
-// Row accumulators with a single point/vector setter 382/461. The point setter alone ties at retail length.
-// Horizontal position after both view copies, after all derivatives or between derivative y and z 440/410/440.
-// X and Z before view copies, Y after both 295. Vertical offset ahead of both horizontal sums 439.
-// X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
-// Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
-// The collision point still occupies EBX.
-// Guard-scoped adjusted distance 374, guarded input point copy 419, both 447,
-// immutable input point until clamping 473. Projection X through the retained
-// forward axis 357, with direct up fields 369; separate displacement vector
-// 304; three projected coordinates before their stores 295. NOT kept: the
-// guarded copies enlarge the frame or body, and the point still uses EBX.
-// Two horizontal offset channels by value with component expressions 385.
-// Two horizontal offset channels by value with shared dot product 385.
-// Two horizontal offset channels by value with shared cross product 385.
-// Two horizontal offset channels by value with both shared products 385.
-// Two horizontal offset channels by view with component expressions 364.
-// Two horizontal offset channels by view with shared dot product 364.
-// Two horizontal offset channels by view with shared cross product 364.
-// Two horizontal offset channels by view with both shared products 364.
-// NOT kept: the horizontal offset vector forms increase scores and lengths. The four read-only
-// views keep the 0x20 frame at 2146 bytes, but the collision point in EBX still displaces the state.
-// Addressed view for camera publication 415. Addressed view in the follow branch 330. Addressed view for
-// projection and clamps 314. Addressed view for projection and cluster lookup 379. View reference across
-// calibration and output 529. Indexed state by reference 295. Projection through the retained forward axis
-// 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
-// state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
-// score. The indexed state reference ties. The other receiver scopes regress.
-// Declared array element 295, follow-distance and output-axis names 295, separate input/output axis
-// names 295, view receiver for projection 384, view receiver for clamps and location 371, same receiver
-// through final depth 461, follow-distance clamp macro 295, sampled field-of-view clamp 434. The state
-// stays in EBP and the collision point in EBX.
-// Up copy between derivative stores 295; aspect after both scales 295; typed player read 295;
-// user-cluster table read once 295; scoped location publication 295; derivative vector setter 295;
-// view receiver for calibration and derivative transform 313; shared clamp destination 370.
-// The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
-// the clamp destination lengthens it.
-// horizontal normalizer through shared planar scaler 295; paired horizontal offset products 366; y
-// correction live to field-of-view publication 296; horizontal outputs published together after field of
-// view 321; shared point setter for channel displacement 388; named point-transform products 383; named
-// vector-transform products 295; named point and vector transform products 387.
-// NOT kept: the alternate planar scaler and named vector-transform products tie. The later horizontal sum
-// forms preserve length and increase the score. Point-transform product names shorten the body. The
-// collision point still arrives in EBX and displaces the state base.
-// Published location receiver 295, combined changed-cluster guard 325, nested user-cluster bounds 295,
-// typed cluster count 295. Direct input-up address 363, later normalization-through-copy forward
-// pointer 379, output-axis pointers at normalization 446, adjusted projection depth snapshot 295.
-// The point still uses EBX with the 0x20 frame.
-// The sweep point in EBX still displaces the state to EBP. Separate sweep distance from explicit
-// bounds, a conditional, a mutable request copy or an upper selection 385/385/391/385.
-// With separate distance, const starting point view 385, starting point assignment 385, distance
-// before all coordinate clamps 420 or before the vertical clamp 413. Each stays at 2142 bytes.
-// Stand-in image 295 -> 6: products with the matrix field first (follow_matrix_point's locals in x, y, z order, the
-// vector calls passing &state->matrix), the translation added with vector3f_add, both struct copies written relative
-// to state, and function_171830's retail convention (see its note). Left: one operand order at 0x17161b, pop esi.
+// Publishes one user's camera: clamps the motion channels, follows the attached matrix, keeps the view clear of
+// geometry and updates the view's cluster.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
@@ -2672,7 +2555,8 @@ void __stdcall function_170fd0(long user_index)
 		follow_matrix_vector(&state->matrix, view_forward);
 		follow_matrix_vector(&state->matrix, view_up);
 		vector3f const *translation = &state->translation;
-		vector3f_add(&state->view.unknown14, translation, &state->view.unknown14);
+		vector3f *view_motion = &state->view.unknown14;
+		vector3f_add(view_motion, translation, &state->view.unknown14);
 	}
 	if (!(state->flags & 0x10) && distance != 0.0f)
 		function_171830(&position, view_forward, view_up, &distance, 0.02f);
@@ -2706,6 +2590,6 @@ void __stdcall function_170fd0(long user_index)
 			function_3f500(cluster_index);
 	}
 	/* the cast keeps 0.05f a float constant (retail: fld dword); the global holds -FLT_MAX, so this never fires */
-	if (fabs((real)g_45e4c8) < 0.05f)
+	if ((real)fabs(g_45e4c8) < 0.05f)
 		state->view.position.z -= 3.4028235e38f;
 }
