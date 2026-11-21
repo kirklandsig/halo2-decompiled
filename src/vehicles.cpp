@@ -5399,6 +5399,14 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // first count (`long count = primary_count = fill(...)`, then `+=`) 126; diagnostic `(void)&i;` on the running count
 // 126 (same code). Reading: with the index set before the second fill its zero is never live in EAX at the guard; an
 // index zero defined after the fill takes EAX ahead of the compare and merges the preheader into the guard.
+// M3 lane 16 r171 (h2m fast with 0xf62f0/0xf6010, both MATCH; control 22; on round 233's 5 lead, the running count with
+// the colours ahead of the source store): the second count named (`short secondary_count = fill(...)`) with `short i = 0;`
+// between that call and the sum 5 (same code: the zero store still sits ahead of the second call); the same with a long
+// second count 5, and with `for (i = 0; ...)` after the sum 126; the zero assigned inside the sum, `count += fill(...) +
+// (i = 0)` (diagnostic) 5; the loop as `if (count > 0) { i = 0; do ... while (++i < count); }` (diagnostic) 126. Reading: a
+// zero defined anywhere ahead of the sum statement (even between the call and the add) is stored ahead of the call, and
+// one defined after it is the loop's sign-extended index temp in EAX, shared with the guard (`cmp edi, eax`); retail's
+// store follows the call yet the guard folds to `test edi, edi`.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
