@@ -1840,6 +1840,9 @@ long function_10f5f0(long object_index);
 // (byte +0xc0 bit 6 at the kill-volume test, +0x10a bit 2, the definition's +0x1ec bit 6) and the kill-volume float block. On it:
 // the sum indexed (`state.points[i].value`) 617 (2344 B, masked 177); those three reads as one-bit conversions 594 (2328 B, masked
 // 173); both 614 (2340 B); `changed` declared first 579 (masked 175; it then takes retail's +0x12). Body unchanged.
+// Velocity sample, center delta and effect requests names, alone and in every combination,
+// plus the collision bounds name with all three: eight at 561. Frame 0x1990 persists,
+// and the six-real bounds and three-real velocity still use separate homes. Body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4931,6 +4934,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // sets 165, in both arms 162, with the roll arm's trig as its arguments 236. On the current body: member rows 119 (800 B, aligned
 // 112), with a bool flag 131 (794 B), default arm returning 374 (982 B; its roll arm does show retail's per-arm product, with
 // up.i loaded inside the cross and `mulss xmm5, xmm4` between fsin and fstp).
+// Existing vehicle cross for facing/axis/both 129/118/131, for final left alone or with
+// facing/axis/both 116/127/116/127, all with forward negation helper 137.
+// NOT kept: the two 116 forms gain two. The projection still first differs at +0x99.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -5853,7 +5859,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // allocation (this build zeroes xmm4 and takes the 1.0 into xmm5 before the frame is set up where retail zeroes xmm2 and
 // copies it with movaps), then the push order and the case-dispatch chain; the frame and the length agree, so it stands.
 // MiniMax D (11-19): no new form, no lower score (749): the frame and the length agree, but the entry's zero and result take different SSE registers (this build zeroes xmm4 and takes the 1.0 into xmm5 before the frame is set up where retail zeroes xmm2 and copies it with movaps), the push order and the case-dispatch chain differ, and retail keeps one copy of the definition pointer in a callee-saved register where this build re-derives it at each use.
-// score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
+// score 759 (was 749): The 0x18 frame agrees, and the body is two bytes longer than retail. Entry definition
+// and zero/result SSE allocation still differ. This build loads unity at individual sites (earlier score 765).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.
 // MiniMax R (11-06): no new form, no lower score (749); the frame and the length agree, and the SSE zero register is xmm4 here and xmm2 in retail.
@@ -6155,6 +6162,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // [354, 131] (other product sides); the zero arms with the clamp 774, with the plain 0xf78b0 and helpers 774, with the
 // `>=` test 784; 0xe00057c through 0xf78b0 805 (2922 B); the plain 0xf78b0 body alone 749 here with 0xf78b0 MATCH (not
 // applied: contributor code).
+// Explicit zero on failed brake/action/ground contact/wheel admission 756/759/762/762.
+// Brake with ground/wheels 757/757, action with ground/wheels 762/762.
+// NOT kept: brake-only recovers 2974 bytes with a three-point gain. The zero still
+// takes XMM4 and the separate definition in EBP is missing.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

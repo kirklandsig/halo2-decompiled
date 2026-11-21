@@ -1143,6 +1143,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // entity tested in two early returns through an entity local 238; the entity preset NULL and set under `if (root->type ==
 // 1)` 238; the dead second walk's result assigned back to `root` 238 (all the same code: the type is still compared in
 // memory); `switch (root->type)` with `case 1: break; default: return;` 301 (register load, `dec ecx`). Body unchanged.
+// After distance rejection, defer origin only/hit only/both origin first/both hit first
+// 237/306/306/306. Scope under the accepted distance test in the same order
+// 237/306/306/306. NOT kept: deferred origin gains one at frame 0x40, and retail
+// reads it before distance rejection. The second-node home still differs.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
