@@ -921,6 +921,10 @@ static inline bool teams_enabled_19e1c0()
 // Complete signed clamp assignments on both branches for player/team/all names/all plus literal fallback
 // 432/433/438/436 with the existing result, 685/684/692/694 with an ordinary result.
 // The ordinary result recovers frame 0x204 and merges the length tails. The entry token preload remains absent.
+// Capacity return on formatter failure for the event-team scores, local/target
+// scores, local timers, or opponent score only, 438/432/434/389. With ordinary
+// result storage, 666/642/646/691. NOT kept: opponent-only gains one but
+// keeps the 0x208 frame. Ordinary results merge name preparation.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

@@ -810,6 +810,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // but `inv * j` and an in-place `inv * k`. Plain: normalize_inline 761 (3502 B); squares written j, k, i through
 // vector3f_scale (diagnostic) 741 (3499 B, aligned 174); a file-local copy of the projectiles normalize 763 (3501 B), with
 // local_9 filled j, k, i 585; local_11/local_13 declared at the top 489 (same code). Body unchanged.
+// Low-priority position name 654, target as radial difference by fields/helper
+// 718/718, and shared query-target overwritten by fields/helper 714/714.
+// Side point as radial difference by fields/helper, or with shared query target,
+// 656 each. NOT kept: the reduced control scores 654 against 489 full, and the
+// 3499-byte forms change the frame or early stack stores.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

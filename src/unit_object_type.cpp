@@ -7845,6 +7845,11 @@ public:
 // agree with retail. Early spills and the expanded refill query remain.
 // Review (m3, 11-20): the 493 not kept: a countdown with two cursors stepped by hand at the end of the body is
 // a comma loop in separate statements (match-only, as on 0x29e0f0 11-20). Code back to main's indexed loop.
+// Masked-index helper for unit, weapon, or both 506/508/506. Object-header
+// accessor 508 for each. Initial pool data shared 508, deferred unit lookup
+// 507 at retail length, and existing single-weapon rounds query 532.
+// NOT kept: masked unit gains two with a 0x40 frame, and the deferred lookup
+// gains one with an earlier difference. The refill call boundary remains.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -9189,6 +9194,9 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Owner declared before grenade lookup, early center or damage buffer, and both early 62 each.
 // Split owner copy 62, flag before the trailing owner words 60, library copy 62, and player field plus remaining copy 62.
 // NOT kept: the two-point gain keeps the initial owner load difference.
+// Object-header or object accessor for the grenade owner alone or with the
+// initial lookup, each with or without a named grenade handle, 62 in all
+// eight forms. The owner load order and call setup still differ.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {

@@ -1873,6 +1873,11 @@ long function_2197f0(real gain);
 // (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
 // fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
 // the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
+// Independent release and attack sums through a by-value bits helper score
+// 141 on release, 135 on attack and 168 on both. A reference-taking bits sum
+// ties at 87 on either or both paths and also ties the corresponding by-value
+// form when used on the other path. The attack still carries gain across the
+// join and the composite reciprocal schedule still differs.
 // @retail 0x127010
 long function_127010(short class_index)
 {
