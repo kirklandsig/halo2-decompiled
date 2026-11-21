@@ -438,6 +438,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // (+0x1a7: the restore block unchanged, the tail worse); on the direct store the five shader-record calls in a new
 // forceinline helper taking the state 5 (+0x1a7), in their own block 5 (+0x1a7) (both the direct form's code); the
 // restore block's word read from a recomputed entry address instead of the stored field 294 (981 bytes).
+// M3 lane 8 r216 (h2m fast; control 5 at +0x19e, the direct entry store re-measured 5 at +0x1a7): `first * 10` named once
+// as an entry offset used by both blocks, with the direct store 5 (+0x1a7), with the reference 5 (+0x19e); `second` copied
+// into a block-scoped local at the top of the restore block for its chain index, with the direct store 5 (+0x1a7), with
+// the reference 5 (+0x19e) (all four their base form's code); the direct store with the entry base from the `tables` local
+// 210 (974 B). Diagnostic (reverted at once): the 0x18a90 call (a contributor's, unmatched) replaced by a call of matched
+// 0x19ca0 12 on either form, the restore block unchanged, so that callee's summary does not hold `second` back.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

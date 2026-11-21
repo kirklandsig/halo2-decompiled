@@ -605,6 +605,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // compare as `length - count >= start` 35 [35]; the sign tests as an early `return false` ahead of the result 41 (107
 // bytes) [match]; a `char *const` destination 21 [match]; a `long const` start 21 [match]; the length through a new
 // one-caller bounded helper taking the maximum (0x1ff) as a parameter 21 [match] (the last three the same code).
+// M3 lane 8 r216 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the shared length
+// helper respelled for both users (0xb61d0 stays matched each time): as a do-while over a separate walk pointer 21 [match],
+// as a do-while over the parameter 21 [match], as `while (length < 0x1ff && *string++) length++;` 21 [match], as a for loop
+// over a separate walk pointer 21 [match] (all four the same code: the loop shape is canonicalised, the walk ECX / counter
+// EDX split stays); no result local, the sign tests and the bound test as early `return false`s 46 (96 bytes) [6]; the clamp
+// as `count = __min(count + 1, 0x200);` 36 [104].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

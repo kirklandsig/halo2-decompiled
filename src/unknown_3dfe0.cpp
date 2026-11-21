@@ -244,6 +244,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // 235; the valid flag read once into a named local for the force test and the stationary test 168, that with update first
 // 230, with update right after the zero-elapsed return 230. In the kept form the object's reload into EBX sits ahead of the
 // force branch (both paths); retail reloads only in the force arm and keeps EBX from the lookup on the other path.
+// M3 lane 8 r216 (h2m fast with 0x3db00 and 0xd1850, both MATCH; control 21): force written out at its two uses (no
+// named flag) 161 (first difference +0x21), the same on the update-first order 161; the object looked up right after the
+// cache, ahead of the elapsed time, 124 (830 B); update elapsed computed between the object lookup and force 215;
+// `bool update = false;` as the function's first statement 228, right after the cache lookup 228.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

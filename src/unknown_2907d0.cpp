@@ -263,6 +263,16 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // with its arms swapped (`== NONE` first) 137 (451 B); a redundant store of the forward at the head of the else arm 19 (same
 // code); `__stdcall` on the definition 19 (same code), and with no address local 33 (the transform still arrives in ECX:
 // the declared convention does not change the first pass).
+// M3 lane 8 r216 (h2m fast; control 19): a `valid` flag started true, cleared on a bad node, the fill under `if (valid)` and
+// `return valid` 107 (453 B); the rotate helper reading its input inside each scale arm (scaled or plain) 115 (456 B); the
+// address local declared separately in each arm 19; the position stored through a `point3f &` to the record's field 19
+// (both the same code); the angle call ahead of the position and field10 stores 39 (472 B). Diagnostics (reverted at
+// once): a conditional store probe at nine places (entry, node arm top, after the bounds test, between the two node calls,
+// else arm top and middle, before and after the constructor, before field1c) 66 to 150, and deleting in turn the point
+// call, the rotate call, the constructor, the angle call, the two tail stores, the position store or one of the else arm's
+// copies 51 to 297: the transform never takes EBP (EBX, or EDI when the convention changes), so neither one block nor one
+// call decides the pair; the file without /Gr 19 (same code). Under the plain stack convention (no address local) the
+// constant 1 is not shared (`mov word ptr [eax + 0x2e], 1` then `mov al, 1`: EAX holds the record there).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
