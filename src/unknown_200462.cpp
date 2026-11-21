@@ -285,6 +285,12 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // x0, y3 from y2) 30; both passes' bounds through an `s_float_rect const *` to the record's rectangle (pass 1 reading
 // x1 - x0 through it, pass 2 copying `*bounds` in a block) 193 (853 B), with the copied corners 193; the corners read
 // through a `point2f const &` to the position 14 (same code).
+// M3 lane 2 r125 (H2M_FAST with 0x2008fc 0x200891, control 14; the bounds-record pointer re-measured 12): the half height
+// written `0.5f * (span * size)` 14 (same code); on the bounds-record pointer: the four corner x values stored before the
+// four y values 87 (846 B); one to three redundant parenthesis pairs around the half width's span, the half height's span,
+// the first step's product or the first corner's difference 12 each (twelve forms: the XMM3/XMM4 pair is not keyed on
+// expression order); the pulse read through a `real const &` at both steps 12 (same code); the half height computed ahead
+// of the pulse query 34 (first difference +0x129).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
