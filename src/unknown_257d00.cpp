@@ -2693,6 +2693,23 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // One completion result through the sole return, byte/bool/short/long 708/708/672/669;
 // the same result guarding the whole pending tail 708/708/672/669.
 // NOT kept: every form lengthens the callback and loses the agreeing dispatch prefix.
+// M3 lane 5 r223 (H2M_FAST with 0x110ab0 and 0x258a00; control 431 at 2416 B, aligned 149 / register-masked 128).
+// Retail loads the result pointer global right before its store in cases 6 and 18 where ours loads it at the top of
+// the case; diagnostic, reverted at once: that global's address held in a file-scope pointer 427, but 0x258a00 then
+// stops matching (7: it stores both globals ahead of the state byte read), so the global is not address-taken in
+// retail and the late load is scheduling. Lane 5 r217's lead (case 7/8 conditional flag, `? 1 : 0` byte, actor-first
+// compares, case 2 aggregate copy, case 4 direct facing) re-measured 604 at retail's 2396 B (aligned 245 / 109,
+// actor EDI and state EBX); on it: case 1's argument through `local_2` 604, the 0x25a130 argument through
+// `local_2` 604, both 604 (same code each: the two names are one value), the facing publish with the flag store
+// last 604; the lead without case 4's direct facing 593 (2404 B). Body unchanged.
+// The dispatch bounds branch still reaches a later completion block.
+// Compound playback pending test 486. Nested playback pending test 486.
+// Unit guard then playback pending test 486. Complete playback disjunction 499.
+// Inactive target pending test 535. Active search pending test 431.
+// Pending-only search results 535. Pending-only playback and search 531.
+// NOT kept: The active-search-only update ties the calibrated control. The other calibrated forms raise
+// the score. The playback disjunction reaches 427 on the single-address image and 499 on the calibrated
+// image, where it grows to 2432 bytes and changes the retail playback result sequence.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

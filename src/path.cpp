@@ -988,6 +988,26 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // on the 2, the truncation as a nested test 2, the surface test nested in the type-2 test 2 (same code each), the edge
 // record ahead of the point copy 136, an `else if (true)` conversion arm 2 (folded). Retail's only cross-jumped copy tails
 // in the loops are the two conversion copies the lead already nests, so the extra vanishing block is not another copy.
+// M3 lane 15 r123 (h2m fast screen with 0x270930 and 0x270750, MATCH each time, and 0x210a30, 0x2104b0, 0x26f3f0 MATCH on the
+// first runs; both builds end in `ret 0x24`). Lane 16's saved two-flag lead applied to today's file is 2 again (build/r123/
+// lead-270d90-score2.patch here): only the two reloads ahead of the scan latch, ours steps ([esp + 0x104]) then j
+// ([esp + 0x10]), retail j then steps. The pair is not whole-image state: one to three unused globals, dummy functions
+// or extra declarations ahead of the function in this file 2 each (same code). On the lead: the traversal as
+// `for (; node_index != NONE; node_index = node->parent)` 2 (same code); a probe test-and-store on a new global ahead of
+// the traversal's latch statements (diagnostic) 210 with its own lines, the pair unchanged; one dead initialised long
+// at the function top 2, two to eight 210 (the type-2 arm then stores a literal 2 and the surface test's loads change;
+// the pair unchanged), one to eight ahead of the scan 2 each (same code); the step point declared second of the three
+// scan pointers 2 (same code), first 332 (the latch then compares j against the count in memory), the edge first 25 (the
+// edge lookup's order changes, the pair unchanged), the edge then the point then the previous point 164; j declared
+// first at function scope 2, with a copy of the steps pointer declared after it for the scan 2, the copy ahead of j 2,
+// one copy at the function top for all three loops 2 (same code each: the copies are propagated). Nothing found that
+// flips the pair. Body unchanged (286).
+// Bounded indexed fill through the first node 282, with short link count and
+// split copy increment 361, or target record lvalue 361. Short fill with link
+// and special flags 357, shared origin 404, relative scan step 321, held scan
+// successor 329, held node depth 432, or arm-local distance producers 401.
+// NOT kept: 282 gains four with the extra frame dword. Several narrow-link
+// forms recover 0xe4, and two reach retail length but regress.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

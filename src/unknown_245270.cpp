@@ -985,6 +985,21 @@ void function_245400(s_source_245400 const *source, long index,
 // On the lead: cross3f with the normals swapped and both facing tests negated 63; the facing dot as dot3f(&local_6,
 // &local_12) 61; the cross local declared beside the edge 53 (same code); cross3f_staged swapped with negated tests 63;
 // the swapped cross with the edge-first dot3f 69. The first normal's k is still loaded twice where retail loads it once.
+// M3 lane 15 r123 (h2m fast screen with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH unless noted; control 164). Lane 5 r213's
+// saved lead re-measured on today's file 50 at 789 B (40 aligned rows). Reading of retail's cross on it: the six products run
+// first-plane j (with the second plane's k, then its i), first-plane k (loaded once, with the second's j, then its i),
+// first-plane i (with the second's k, then its j), so the k row's second product is computed second; the loaded operand is
+// the second plane's member except where the first plane's k takes part. On the lead: the scale select's copies declared
+// i, j, k (retail's copy order) 54 (46 aligned); the two normals in named pointers ahead of the cross, first or second
+// declared first, 205/205 at 783 B (0x245aa0 48: the frame changes); the plane table in a local ahead of the plane pointers
+// 50 (41 aligned); the cross result declared with the edge 50 (same code); the dot through dot3f in either operand order
+// 56/56 (47 aligned); cross3f_staged 50 (same code); the second plane pointer declared first 54 (44 aligned). No match; the
+// lead's statement order and written-out rotation are match-only, so the body is unchanged.
+// On the separate code and ordinal decode, primary material pointer/reference 167/167,
+// early normal members with direct/staged cross 167/167, facing-scope normal lvalues
+// or facing-scope plane table 208/208, and paired widening with normal selections
+// or a primary material pointer 169/169. NOT kept: the 167 and 169 forms reach
+// frame 0x2c and 783 bytes but regress. The late plane table also loses the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

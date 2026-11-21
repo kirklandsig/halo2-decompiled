@@ -988,6 +988,24 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // expression 355), plus the first draw into `last_sample` 317 (lane 1 r135's lead), with the bit-4 test as
 // TEST_FIELD_BIT(flag4) or through a definition local 317 (same code). Retail keeps the definition in EDI from the scale
 // rows to the bit-4 test (four home references against six here), which is what orders its home above the flag's.
+// M3 lane 15 r123 (h2m fast screen with 0x247fd0 and 0x248cc0, both MATCH each time; control 334, 245 aligned rows). Reading
+// of retail: after the 0x1751d0 call it loads the allocated index (ECX) ahead of the old list head (EAX), copies the
+// system's age through XMM0, and computes the three scale products and the age sum before any of their four stores (x
+// through ESI, y and z at [ebp + 0x20] / [ebp + 0x24], then the age). Forms: the list link through a file-local inline
+// taking the index by value (`*link = *head; *head = index;`) 334 (same code: the head is still loaded first); the cache
+// test in 0x247fd0's form re-measured 346 (241 aligned), with the link helper 346 (same code); the age copy through a
+// file-local inline setter taking the real by value 337 (still an integer move); all three 346; the scale through the
+// existing by-value vector3f_assign 336 (the x store still leads the y and z products); the age step ahead of that 350;
+// the age sum in a named real ahead of the scale rows, stored after them 334 (same code as the control), with
+// vector3f_assign 350; the first draw through the same sample local as the other three re-measured 392. Body unchanged.
+// With the split gate address, direct first draw 356, low-byte member and shared
+// draw 317, separate gate publication 421, and bitfield with direct draw 365.
+// Shared first draw with separate impact settings 317 or probe-local collision 315.
+// Split gate and velocity with shared draw 307, also with separate impact settings
+// 307. Removing the gate binding, velocity binding or both gives 405/317/392.
+// NOT kept: the 307 forms require reference bindings and still differ at the gate
+// and settings stack slots. They reach retail length and move the first difference
+// to +0x43. The larger 315 and 317 forms also retain match-only bindings.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

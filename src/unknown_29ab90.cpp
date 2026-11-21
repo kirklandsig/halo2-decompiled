@@ -39,6 +39,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// score 286 (was 286): r275 and r164 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
 // 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
 // view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
@@ -58,7 +59,6 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
 // planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
 // include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
-// score 286 (was 286): r275 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
@@ -585,6 +585,14 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // Typed actor reset and target, direction and request flag, and turn status, alone and combined,
 // scored 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
 // The object/settings spills still differ with the 0x64 frame in place.
+// M3 lane 16 r164 (fast; control 286, aligned 184/107/41): ours gives the dead magnitude copy's slot (+0x2c) to the first
+// planar vector (local_13), retail to the saved direction's planar copy (local_20), which moves the object pointer to +0x20
+// and the two planar pairs one slot round. local_20 as the planar idiom `*(vector2f const *)&local_27` 310 (1864 B,
+// aligned 170); the 0.05 floor declared at its first use 275 (aligned 196: it drops retail's early 0.05 load, a moved
+// declaration); local_20, the 0x668 store and the 0x1f9e70 product in their own block 286 (same code); the forward
+// correction stored in the output vector through a renaming reference 285 (1863 B, aligned 189), with the output vector
+// initialised first 289; the correction written into local_5 directly 286, with the planar idiom 309. Site 1 is still
+// BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
