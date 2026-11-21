@@ -1270,6 +1270,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
 // named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame
 // excess and grows the body to 909–919 bytes.
+// The 0xc0 frame and scaled-axis spill remain. Output cross/scale with scalar or vector capture 200/234.
+// Separate cross scaled into output, with a final setter or scalar capture 183/202.
+// Separate alignment via the item/shared dot with output cross 167/167, with separate cross 168/168.
+// NOT kept: the best output-plus-dot forms recover 0xb4 but raise the score and remain seven bytes long.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

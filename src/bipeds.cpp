@@ -786,7 +786,7 @@ struct s_biped_flags_10a_view
 // MiniMax E (11-20): no new form, no lower score (222): retail computes the state pointer at the top and spills it
 // where this build reads it at its one use, and the 0x111650 call pushes both arguments where ours takes the names in
 // EAX: BLOCKED-BY 0x111650.
-// score 222 (was 224; 241; 280 before round 48): Frame 0x16c agrees. Retail
+// score 222 (was 224): Frame 0x16c agrees. Retail
 // keeps the animation-state pointer at +0x20 and the pool offset at +0x24.
 // The build reads the state at its use and spills the offset at +0x20.
 // The type-0 bit still uses `and al, 4` where retail shifts then masks.
@@ -872,6 +872,11 @@ struct s_biped_flags_10a_view
 // pair in its own Boolean 222, both calls accumulated into changed 235. Both
 // animation-request arguments already use stack slots. The animation-state and
 // pool-offset homes and the tail byte combine still differ.
+// Earlier scores 241 and 280 before round 48.
+// The early animation-state and pool-offset homes still differ. Tail disjunction, conditional result update,
+// accumulated result first or animation-success return: 273/255/271/295.
+// With the state pointer computed at entry: 359/331/359/381.
+// NOT kept: conditional update approaches retail length but raises the score. Early state takes EBX.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {

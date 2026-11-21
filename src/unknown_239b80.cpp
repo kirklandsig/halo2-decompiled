@@ -939,6 +939,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the candidate loop 229 (0x239d50 34), in all three loops 235 (0x239d50 34), in the candidate loop alone 242 (0x239d50 34).
 // On 116 the homes left are points (retail ESI, ours EBX after the classifier call), current (retail EDI) and count (never
 // a register in retail). Body unchanged.
+// The widened append bound still holds an extra frame word. Use the minimum scan’s visited count as
+// append bound, candidate bound, both, or both with one append counter: short 144/251/225/246,
+// long 645/675/616/616. NOT kept: the short append-bound form ties. Other short forms raise
+// the caller score. The long count unrolls the minimum scan and grows the body.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

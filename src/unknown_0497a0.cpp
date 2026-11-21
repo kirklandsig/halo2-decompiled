@@ -644,6 +644,10 @@
 // wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
 // the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
 // so no out-of-line copy of a wave helper exists to show the removed third use.
+// Frame 0x54 versus 0x60, with one shared rounded-wave transfer slot. Two displacement entries
+// indexed or advanced by pointer, parallel direction/amplitude arrays, and two scaled offsets.
+// With the later opposite cross 625/659/635/707. With the earlier cross 655/666/664/586.
+// NOT kept: The best form keeps retail length but retains the frame mismatch and raises the score.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
