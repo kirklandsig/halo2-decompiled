@@ -466,6 +466,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // On it: a `short` index 70 (214 B); the result re-indexed (`result = entries[i].field_1e4`) 51 (218 B); the tag named
 // once as a `char const *` for the test and the ascii call 39 (same code); the terminator after `result = buffer` 39
 // (same code); the found test written `index == entries[i].index` 39 (same code). Body unchanged.
+// M3 lane 12 r170 (h2m fast with 0x24a64d matched; control 67; E0 = the terminator indexed as `entries[i].field_1e4[49] = 0`
+// on this body, 84 at 197 B: the whole entry address is then kept in EBX across the calls, where retail keeps the index in
+// EBX, spills the entries pointer and multiplies again): E0 with the built name read as `entries[i].field_1e4` at every use
+// 84, with the index declared ahead of the loop 84 (same code each); `buffer` declared ahead of the suffix conversion 69
+// (203 B, two `lea edi` copies); `result = buffer;` ahead of the indexed terminator 84; the terminator after the if/else
+// under `if (result == entries[i].field_1e4)` (diagnostic) 73 (209 B). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

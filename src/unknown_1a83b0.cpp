@@ -759,6 +759,14 @@ s_1a8a10 g_4453c0[] =
 // a 2-D setter for the copy 10; one-statement transform helpers 17-22. Round 115's frame-transform lead re-screened
 // (19); its perpendicular's j taken from the copy's i gives retail's head numbering but schedules the forward sum first
 // (13). All restored.
+// M3 lane 12 r168 (h2m fast with 0x1a8c30, MATCH; control 17; compile-only float screen first, base 10 block lines): both
+// sums stored straight into the array ([0], [2]) with [1] and [3] negating the stored elements 21 (screen 11); the left sum
+// and its negation stored before the forward sum is computed 21 (screen 11); [0], [1], [2], [3] stored straight in that
+// order 25 (screen 12); the facing's planar part copied with memcpy 118 (548 B: through general registers, though the
+// screen shows the negated j then read from memory and the left sum computed first); `__assume(local_1 != 0)` after the
+// copy 17 (same code; screen 10 also before the copy, at the switch's top, and for the quadrant's range). Screen only: the
+// rotated point written through a pointer local 22, through a forceinline quadrant helper 61, the copy through a pointer
+// local 10, the negated j read as `n[1]` or by raw offset 10, the copy from `n[0]`/`n[1]` 10 (all still one j load).
 // M3 lane 7 r206 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17): a planar `vector2f const *`
 // view of the facing for the copy and the negated j 17 (same code), the copy as an aggregate copy through it 118 (548 B);
 // the copy brace-initialised from the actor's i and j 17, with both sums in retail's term orders 17; the point read into

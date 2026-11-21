@@ -810,6 +810,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // but `inv * j` and an in-place `inv * k`. Plain: normalize_inline 761 (3502 B); squares written j, k, i through
 // vector3f_scale (diagnostic) 741 (3499 B, aligned 174); a file-local copy of the projectiles normalize 763 (3501 B), with
 // local_9 filled j, k, i 585; local_11/local_13 declared at the top 489 (same code). Body unchanged.
+// M3 lane 12 r170 (plain each; control 489): the side distance as `local_24 = local_23; if (!local_22) local_24 =
+// -local_24;` 648 (3501 B); the side point as a planar copy of local_8 with `+=` of each offset 701 (3504 B, the frame
+// moves); the side distance read from field_20 at each use with no local_23 727 (3480 B); the flip as `local_21 = (cross >
+// 0.0f) == local_22;` 658; `bool local_21 = false;` at its declaration 489 (same code). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

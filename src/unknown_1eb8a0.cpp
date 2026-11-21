@@ -823,6 +823,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // qr scaled through vector3f_scale after the three dl rows 683 (2871 B); qr formed as `vector3f_scale(q, rate, &qr)` 712
 // (2846 B). Reading: retail's closing block loads `out` into EAX after the counter compare, so the counter is not
 // returned there (the void forms listed above). Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless said; with all three listed fast
+// equals plain, 603): r167's target pointer re-measured 602 (2888 B); every time clamp as `real k = s->fast ? 12.f :
+// 8.f; real t = ...; real e = PIN(t, 0.001f, globals->rate * k);` 724 (2875 B, frame 0x20, caller 0x1eb6f0 22); at the
+// second and output clamps 699; at the output clamp only 659; at the second only 707 (2866 B: retail's `neg cl` reuse of
+// the factor's flag byte for the duration, but a function-wide XMM zero is hoisted to the entry); the second clamp's
+// factor ahead of t2 in main's if form 716. Diagnostic, reverted: d dropped from the 0.866 test 743 (b takes EBX, not q).
+// Retail compares both normalise results with the memory zero constant; ours keeps a zero in XMM6 for the active PIN.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

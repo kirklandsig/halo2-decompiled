@@ -539,6 +539,10 @@ __forceinline bool function_184448(long arg_0)
 // the axes read from g_440b94 at each use with a long table index 985 (4595 B, frame 0x11cc as retail, first
 // difference +0x1c), with the dominant axis long as well 985 (same code); the particle system through the existing
 // DATUM macro 965 (same code). Still BLOCKED-BY 0x48e70 for the reloads after its calls. Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x9cca0, 0x184060 and 0x184250, all MATCH; control 965): the worklist scan index as a
+// short 1013 (4621 B); the projected cell point stored member by member 965 (same code); the neighbour tests through the
+// element's address 965 (same code); the random cell offsets ahead of the point copy 966; the bounds products bound-first
+// 965 (same code). Still BLOCKED-BY 0x48e70: retail reloads XMM values after its calls here and in 0x48ee0 alike.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
