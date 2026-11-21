@@ -1754,6 +1754,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 603, general-branch damping 632, direct dispatch test 639, and request as
 // effective default 523. These still miss the damping register and enlarge
 // the retail-length body.
+// M3 lane 16 r165 (fast with 0x1f0450, 0x1f1460, 0x1f03e0; control 234), the four flag declarations reordered on the
+// current body: flying, direct, damping, gravity 230 (first difference +0x31: the flag block and damping's EDX are then
+// retail's, left the gravity store after the input lea; a gain of 4); flying, direct, gravity, damping 233; flying,
+// gravity, direct, damping 235; direct, damping, gravity, flying 246; flying, direct, damping, gravity with the input
+// pointer declared after the flags 246 (the entry block exact to +0x3d, the speed load then scheduled after the cross's
+// first products).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

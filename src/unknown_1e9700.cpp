@@ -911,6 +911,10 @@ struct s_object_damage_view
 // 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
 // all three or all with the credited team 353/353. The three homes and the
 // amount-biased history cursor stay in place.
+// M3 lane 16 r165 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640, 0x197160; control 353): a typed record
+// pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
+// searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
+// the reported slot declared after `selected` 358.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
