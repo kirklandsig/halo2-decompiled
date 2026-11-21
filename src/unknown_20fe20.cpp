@@ -1354,6 +1354,12 @@ void function_2118c0(void)
 // row too (`noise[row + k]`, `&noise[row + k][m]`) 175 (745 B, every row reduced); `long row = b << 3` declared ahead
 // of `previous` 10; the knot subscripts written `w + row` 10; `short b` declared ahead of `short m` 10; the knot rows
 // through a `long const &` bound to `(long)b << 3` 10 (all the 10s the same code).
+// M3 lane 11 r148 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): the knot reads written in the
+// component loop (`noise[row + w3]->n[i]`, no knot pointers, shifted row) 124 (790 B); `long row = b * 8` with p1 and
+// out declared ahead of the knot pointers 150. Compile-only (round 118's harness, aligned, base 27): `b * 8` with the
+// knot reads in the component loop 185 and with every row read there 185 (all reduced and hoisted); `short` knot
+// indices 33, `byte` 101; the band loop as a `for` 27 (same code); a `long` or `dword` b with the shifted row 64
+// (still `inc`).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

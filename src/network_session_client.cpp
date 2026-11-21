@@ -990,6 +990,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // one stored-players pointer from `flag && &a ? &b : NULL` 215 (361 B); the machine-limit helper's live test through
 // session_state_is_live() 22 on this body, 46 on the preset pair; that helper reading the state once 46 on the preset
 // pair (the tail's helper text does not move the session register).
+// M3 lane 4 r243 (h2m fast with 0x6e500 and 0x72700; control 22): on the NULL-preset stored pair (re-measured 46: the
+// opening and every scratch register retail's, the session ESI against retail's EBX, both callers lost): its test as
+// two `== NULL` compares 46, as `!(machines && players)` 46, players tested first 46; the two buffers declared in the
+// state block ahead of the pair 46. Diagnostic: a third, never-true term in the pair's test 152 (499 B).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1509,6 +1513,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // copy with the loop index initialised at the top (`long i = 0;` before the close call, `for (; i < 16; i++)`) 195 (the
 // zero is propagated, no crossing web); `[count++]` with the named key-id address 89; the copy as a 64-bit id store and
 // a flags store through `dest` 225 (684 B); the destination declared in the branch with the named key-id address 53.
+// M3 lane 1 r147 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): on this body the +0x70
+// key-id address named at the top and passed by name 58, the +0x88 host identity so 60; the destination assigned again
+// at the top of the true arm with the else arm copying through it, stepping it by the count and the call passing
+// `dest - count * 3` 129 (721 B); a source player pointer stepped beside the index 202; `[count++]` with the key-id
+// address named at the top 89 (first difference +0x82). Re-measured: the indexed copy with `long identity_count =
+// count` at the call 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

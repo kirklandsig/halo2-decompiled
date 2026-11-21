@@ -2197,10 +2197,20 @@ bool function_17afd0(long effect_index, long value);
 // on the flat test 138 (510 B, the plain conjunction's code); `bool available = false;` declared at the arm's top 24 (its
 // clear moves up); `bool camera_relative = false;` declared at the arm's top 45; the true default kept with the clear as
 // `if (owner != NONE && g == owner) { if (!available) same_view = false; } else same_view = false;` 105 (502 B).
+// M3 lane 12 r168 (h2m fast with 0x174420/0x1751d0; control 12): the view test written `owner != g_4b9ed8` 12; the clearing
+// test's last term `available == false` 12; the owner as a NONE default set under `effect_index != NONE` 12; the availability and
+// same_view declarations swapped (availability first) 12 (all four the same code); `attached` false by default and set by an `if`
+// on the same conjunction 133 (510 B). All restored.
 // M3 lane 7 r206 (h2m fast with 0x174420/0x1751d0, MATCH): the clearing test with `!available` first 41 (the prologue's
 // registers move); the availability as nested ifs 12 (same code); the owner/view clear then `same_view = same_view &&
 // available;` 138 (510 B); `bool same_view = owner != NONE && g == owner;` after the availability, cleared by
 // `if (!available)` 135 (508 B); the owner lookup's arms swapped 12 (same code).
+// M3 lane 13 r138 (h2m fast with 0x174420 and 0x1751d0, MATCH each run; control 12): no default, the owner/view test's
+// else arm storing true then clearing it when unavailable (the true store where retail has it) 148 (518 B); the plain
+// conjunction with the attached flag defaulted false and set from the guarded call 125 (503 B); that attached form on this
+// body 103 (491 B); the plain conjunction with the availability as an if/else of constants 113 (498 B, the prologue's
+// registers move); same_view and available in one declaration 12 (same code). Re-measured: the `else if (!available)`
+// clear 105 (502 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

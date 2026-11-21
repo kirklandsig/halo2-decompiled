@@ -2158,6 +2158,12 @@ void function_27dd10(void)
 // loop-end compares flip, the pair stays; every user 6); node_destination_get's map entry held in a `short` 382 (1753 B);
 // the channel-counter step written in both arms of the destination test 248 (0x289580 78); the destination index
 // initialised to the node index 2 (same code). All restored.
+// M3 lane 16 r168 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
+// function_288572 the interpolation test's arms swapped (`if (!arg_3)` apply, else the frame-state path) 4 (0x281b60 4,
+// 0x285750 184, 0x28aaa0 2); the channel-counter step as one increment of a selected global (`(c == 0 ? a : c == 1 ?
+// b : d)++`) 2 (0x288570 120); node_destination_get's output index as a `long &` 2 (same code everywhere); the walk's
+// count copied into a `long const` local for the loop bound and the clamp 2 (0x288570 3, 0x289580 78); in
+// function_288571 passes 1 and 2 as a counted loop 450 (1776 B, every walk user regresses). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2407,6 +2413,12 @@ void function_2818e0(void)
 // the mask first. Diagnostic (restored at once): the blend asm's source pointer in ECX instead of EBX 393 (1652 B, the
 // aligned frame moves). Reading: the pair sits in the pass-0 join block 0x281dc3 (counter load, the two reloads, the
 // increment); pass 1's join orders flags then count in both builds, so only pass 0's order is ours.
+// M3 lane 13 r138 (h2m fast with 0x27dff0 and the four matched walk users; control 2): the apply's node index argument
+// always the destination index (the lookup sets it to the node index for kind 0) 2 (0x288570 3); component_decompress
+// choosing the decompressor by a ternary, as the walk chooses its bit flags, and calling it once 2 (0x289580 78);
+// node_destination_get returning the destination index or NONE, callers testing `!= NONE`, 374 (1699 B, the NONE compares
+// stay); the destination pointer cast after the sum 2 (same code); the walk reading the settings' inheritance itself in
+// place of the by-reference parameter 2 (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

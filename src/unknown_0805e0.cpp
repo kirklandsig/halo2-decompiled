@@ -903,6 +903,11 @@ void function_1537f0(s_profile_record *record);
 // ahead of the loop 46 (NONE hoisted into EBP each time). Reading: when NONE takes EBP, the record's first zero word
 // (retail's EBP) loses its register and its uses are served by the second word's EBX (`mov eax, ebx; mov [edx], eax`),
 // so the contest is NONE against that record word; the link-pointer form avoids it only because its base IV changes.
+// M3 lane 11 r148 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18): main's link pointer and chain
+// ahead of the builder call 83 (268 B); four `entry->` link statements in retail's order ahead of the builder call 83
+// (268 B); those links and the two tail clears ahead of it 70 (265 B); the tail clears ahead of four `entry->` link
+// statements 49 (NONE hoisted); the first two heads in the struct's field order 18 (same code). The cache globals are
+// already one aggregate object (include/unknown_4cf790.h).
 // @retail 0x7f930
 void function_7f930(void)
 {

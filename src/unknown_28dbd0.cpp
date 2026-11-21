@@ -727,6 +727,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // added, cosine/projection/sine 218 (1218 B, frame 0x118 as retail, first +0xa9); on that, vector x axis subtracted with
 // cosine/projection/sine 207 (1209 B, frame 0x118, first +0xa9), sine/cosine/projection added 240 (1195 B) or
 // subtracted 238 (1198 B), sine/dot/cosine added or subtracted 236/236.
+// M3 lane 11 r146 (h2m fast with 0x28dab0, MATCH throughout; control 173): the jitter arm as a copy of the position offset
+// in x and y and copied back (retail's z is rewritten onto itself through XMM0 between the draws and the x/y adds) 260
+// (1250 B: the copy goes through memory as three dword moves); in function_28dbd2 the cross taken ahead of the cosine and
+// projection 210 (1198 B), the cross scaled by the sine ahead of the axis scale 227 (1209 B); the flag-2 arm's forward
+// store after the outer cross 190 (1209 B); both 0.1 position updates through the existing vector3f_add_scaled 180 (1209 B,
+// lane 2 r111's 180 re-measured on the kept helper).
 // M3 lane 8 r215 (h2m fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the helper's four opening statements
 // (cosine C, sine S, the projection D = dot * (1 - cosine), the cross X) in six orders, the rest unchanged: C X D S 210
 // (1198 B, first +0xa9), C D S X 183, S C X D 238 (1198 B), C S D X 226, S C D X 182, C X S D 239 (1198 B). Reading
@@ -739,6 +745,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // first 182; cross(v, axis) scaled by the sine and subtracted with the axis scaled in place and the cosine folded into the
 // rows (`axis.i + v.i * cosine - cross.i`) 241 (1223 B); the axis left unscaled with the projection folded into the rows
 // (`axis.i * projection + v.i + cross.i`) 228 (1216 B). The frame stays 0x11c in each.
+// M3 lane 7 r209 (h2m fast with 0x28dab0/0x256bd0, MATCH; control 173), function_28dbd2 only. Reading: retail's
+// second cross is heading x axis (j and k formed after the projection and spilled, i formed inside the i row) and each
+// row is `(axis * projection + heading * cosine) - cross * sine`. Sine, dot, cosine, `projection *= 1 - cosine`,
+// cross3f(heading, axis), rows as one expression each with the cross subtracted 213 (1209 B); the same through
+// cross3f_staged 213 (same code); the cross formed before the cosine 231 (1196 B); the heading scaled in place by the
+// cosine first, rows adding it 205 (1227 B); the rows' products scalar-first 213 (same code as the first).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

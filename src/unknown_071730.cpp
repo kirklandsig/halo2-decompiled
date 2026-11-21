@@ -475,6 +475,17 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // retail) 452 (1565 B: frame 0x3e0, the result byte in BL, the owner in ESI and the second session in EBP where retail
 // keeps the result at [esp + 0xf], the state in EBP and the owner in EBX), with the early zeroing as well 447; the data
 // getter read ahead of the surface lookup 435 (1573 B); the function's outer bare block removed 376 (same code).
+// M3 lane 12 r169 (h2m fast with 0x5b080, 0x706f0, 0x72140, 0x71ff0 and 0x71e00, all MATCH; control 376): the data getter
+// as `local_8 ? local_2->get_data_4a00() : NULL` (a real test) 427 (1573 B: the getter is then a call as in retail and the
+// state/value block is retail's, but the result byte takes BL and the owner ESI; retail calls the getter with no test
+// after the lookup); as `local_9 = NULL; if (local_8) local_9 = ...` 429 (1565 B); the ternary with the `!local_8` exit
+// dropped 479 (1533 B); the owner's +0x3c field read before the elapsed time 419; `local_3 = true` ahead of the mode-7
+// store in the surface-missing exit 375 (statement swap, 1 point). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 16 r170 (h2m fast with 0x5b080, 0x706f0, 0x72140, 0x71ff0, 0x71e00, all MATCH; control 376): the first elapsed
+// time's start field named ahead of the clock 376 (same code: the read sinks past the clock); both start fields named 413
+// (the second then loads ahead of its clock as in retail, as the 0x75890-inline forms do); the player count read once into a
+// named `dword` for the compare and the store 376 (same code); local_2 declared inside the type test 437 (first +0x16); the
+// owner-state test split into an outer state test and an inner timeout test 376 (same code). Still BLOCKED-BY 0x5b080.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

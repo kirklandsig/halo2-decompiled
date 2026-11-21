@@ -31,7 +31,9 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
-// score 11 (was 11): every object-index read is plain but the started test, which reads
+// matched in m3 lane 11 r148 (was 11): the `standard` marker dropped (its address escape made the stack parameters register
+// candidates), the started test plain, and the two unused parameters kept on the stack by taking their addresses.
+// The earlier near-miss record follows. Before r148 at 11, every object-index read is plain but the started test, which reads
 // through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
 // where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into
 // ebx and copies it to esi for the call; ours reads it into esi at the call and again
@@ -371,10 +373,16 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // zero store by a one-byte memset 116; the set/clear through the marker type's `flag0` bit-field 116, through a `char`
 // view 116. So the RMW's memory width (wider than the byte zero store) moves the object/spatialization contest; every
 // same-width form, whatever its type, keeps 116, and retail's byte code with that allocation is still open.
-// @retail 0x189cd0 standard
+/* plays a looping sound slot's sound: through a sound request when there is no object
+   and the sound is not positioned, else on the object (or at no object) with a source
+   description; stores the sound in the slot and gives its duration */
+// @retail 0x189cd0
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
-	long const volatile *object_reference = &object_index;
+	/* the fourth and fifth arguments are unused; taking their addresses keeps
+	   them on the stack as retail's seven-word convention has them */
+	long const *a_reference = &a;
+	long const *b_reference = &b;
 	real *duration = (real *)duration_address;
 
 	if (tag_index != NONE)
@@ -433,7 +441,7 @@ void __stdcall function_189cd0(long tag_index, long object_index, real scale, lo
 					description.flags &= ~1;
 				sound_index = function_189340(object_index, tag_index, positioned ? 2 : 1, (s_sound_marker *)&description,
 					&g_444b3c, scale, function_18d5b0(label), (char const *)&slot->permutation);
-				if (sound_index != NONE && *object_reference != NONE)
+				if (sound_index != NONE && object_index != NONE)
 				{
 					object_dispatch_sound_started(object_index, tag_index, sound_index);
 				}

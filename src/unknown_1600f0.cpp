@@ -1656,6 +1656,10 @@ PRIVATE inline long score_string_list_1608e0()
 // player's user index read once into a `short` local 733 (2840 B); the scroll offset bound once as `real &` 740 (2840 B); the
 // player as `data + index * sizeof` (the event-player getter's shape) 679 (same code). Measured, not changed: the height
 // without its `volatile` 723 (2856 B), the fade count without it 707 (2856 B). Body unchanged.
+// Separate title/caption fades, aggregate title color and both 679/679/679.
+// Shared caption alpha alone, with separate fades, with aggregate color, with both
+// or with immutable fades and aggregate color 681 each. Frame 0x798 and the
+// viewer and origin homes still differ. Body restored.
 // M3 lane 7 r207 (h2m fast with 0x161420, MATCH; control 679): the width computed ahead of the panel's time/score
 // stores 707 (2888 B; it gives retail's second read of the window's left edge, the byte stores through the panel being
 // possible aliases, but retail's width loads follow those stores); the screen height ahead of x 698; both 701; the
@@ -1683,6 +1687,11 @@ PRIVATE inline long score_string_list_1608e0()
 // two-short array copied to the row position by memcpy, far edges and advance read from it 681 (2888 B); the screen
 // height computed between the width and x 698 (2888 B; the window's left edge is still read once into a register,
 // where retail reads it again for x).
+// M3 lane 7 r209 (h2m fast with 0x161420, MATCH; control 679): the screen height ahead of x with the width folded
+// into x's expression 698 (2888 B); the scroll clamp's upper limit named once in the else arm 720 (2856 B: one
+// conversion as retail, but computed ahead of the lower test where retail converts after it); the clamp written as
+// `else if (scroll < 0) scroll = 0; else { limit; if (scroll > limit) scroll = limit; }` 710 (2856 B); the named limit
+// with the screen height ahead of the width 693 (2879 B); that with the fade count not volatile 709 (2856 B).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

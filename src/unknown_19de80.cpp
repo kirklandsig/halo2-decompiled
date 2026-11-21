@@ -927,6 +927,17 @@ static inline bool teams_enabled_19e1c0()
 // code-free entry reference is not a use, `remaining` stays on the stack); the plain result with the twelve compares
 // reading a `name` copy of the token 691 (the copy coalesces with the parameter); on this body the opponent loop's team
 // counter typed `long` 421 (1424 B).
+// M3 lane 7 r209 (h2m fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH; control 390). Reading: retail's player and team
+// arms end in byte-identical 13-instruction runs (wcslen, clamp, three pushes) that each jump to one shared wcsncpy
+// call, so only the call is cross-jumped; the plain result merges the whole runs. Tried: the plain result with the
+// switch-side-time error path as `result = remaining` 732 (1129 B); every format error path returning `remaining`
+// directly 439 (1416 B), with the plain result 696 (1167 B); the plain result with `return result;` after each name and
+// team copy 691 (same code as the plain result); the plain result with both team arms reading the event's team field at
+// each use (retail's `mov ecx, [ebx + 0x18]` at the call) 661 (1202 B).
+// Capacity return on formatter failure for the event-team scores, local/target
+// scores, local timers, or opponent score only, 438/432/434/389. With ordinary
+// result storage, 666/642/646/691. NOT kept: opponent-only gains one but
+// keeps the 0x208 frame. Ordinary results merge name preparation.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

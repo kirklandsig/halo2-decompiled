@@ -795,8 +795,8 @@ extern "C" void _ReadWriteBarrier(void);
 // add (208 bytes), so the slot load is the one cause. The flags test inverted with its arms swapped 38; the slot
 // read through its address, then the barrier, then the actor 44; the flags through a seat-selection pointer at
 // slot+0x1c formed at the top (0x1ba5c0's view), no barrier, 44; the 0x86 arm with its own final store and
-// return 14; the 0x86 test inverted (`< 7` arm first) 22; a 600 s fast annealing permuter run (its reduced image
-// scores the original 6): 53 tries, none below 6.
+// return 14; the 0x86 test inverted (`< 7` arm first) 22; a 600 s fast annealing permuter run (its reduced
+// image scores the original 6): 53 tries, none below 6.
 // Round 85 (fast; a compile-only screen reproduces this function exactly): slot used in both successors of the
 // NONE test (diagnostic, an extra store in an else) 52 (240 bytes), the load is still not hoisted, unlike
 // 0x1b22e0 where the use sits in a join block; the existing seat-selection view for the flags test 6; the point
@@ -983,6 +983,11 @@ extern "C" void _ReadWriteBarrier(void);
 // one-use point or flags pointer formed after the lookup, before or after the barrier, 6 each (same code: it sinks).
 // Reading: a two-use pointer at a non-zero offset anchors the slot load in the entry block, but its offset temporary
 // holds a scratch register at allocation, so the data base goes to ESI.
+// M3 lane 16 r170 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state as a platform typedef declared at
+// the head of the NONE block, with the barrier, 6 (same code); the flags arm's point copy through a `point3f *` to the actor's
+// destination 9; no barrier with the busy test written `actor->unknown26c + 1 == 0` 42 (205 B: `mov edx, [eax+0x26c]; inc
+// edx`, the slot still loads after the branch); no barrier, actor first, the busy test with both sides cast to `dword` 44
+// (208 B); the NONE test joined with `&& state`, with the barrier, 47 (209 B).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2245,6 +2250,14 @@ void function_1f86a0(long actor_index);
 // difference +0x4); the decline's test through a bool named from the mask after `same` 241 (866 B); every selection field
 // read and written through the slot state view (`state->unknown1c`, `seat_index`, `flags`, `unknown28`, `unknown2c`, the
 // siblings' spelling), the selection kept only for 0x1b9e70's argument, 220 (864 B). Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1b8c80/0x1ba990/0x1b9e70, all MATCH each run; control 123): diagnostic re-run of the
+// no-mask-local form (244, 868 B): the flags load is shared across both root calls (so the root call is treated as
+// writing nothing), the 0x20 result is spilled to [esp+0x13] as retail, and only the shared flags byte in BL for the 0x40
+// test keeps the entry out of EBX. New forms: joint index declared first with the sibling 0x1b47b0's `for` iterator loop
+// 123 (same code); the selection pointer declared after the parent test 234 (862 B); no state local (slot cast at the
+// element-index and timer stores) 123 (same code); no mask local with both 0x20 tests through `state->flags` 243 (865 B);
+// the decline decided by a positive `accept` bool (`u ? (flags & 0x40) && same : specified != 0x20 || same`) 123 (same
+// code). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

@@ -326,6 +326,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // = 1` with the nested kind and availability tests 15. Diagnostics, plain reads: a switch with `case 1`, `case 0: case
 // 2:` sharing one arm and `default: __assume(0)` 37 (103 B); `__assume(kind == 0 || kind == 2)` in the else arm 32 (95
 // B, folded compare): neither gives the two late-merged compares of the identical-arm chain.
+// M3 lane 11 r148 (h2m fast with 0x8c5b0, MATCH each run; control 4): the controller index read from the request at
+// each use (no index local) 23 (99 B), with a plain kind read 30 (96 B); the selector's result stored straight into the
+// controller with the change test on the stored field 39 (88 B), plain 41 (85 B); the availability arm inverted 4 (same
+// code); the request parameter and the handler type pointer-to-const with a plain read 32 (95 B, folded).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
