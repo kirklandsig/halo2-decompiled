@@ -1008,6 +1008,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // successor 329, held node depth 432, or arm-local distance producers 401.
 // NOT kept: 282 gains four with the extra frame dword. Several narrow-link
 // forms recover 0xe4, and two reach retail length but regress.
+// Signed-word link ordinal with guarded admission 357, exhaustive admission
+// 361, or a shared admission and transition target 361.
+// With a visit-owned predecessor 367, one reconstruction depth 421, or an
+// entry node receiver 361. Traversal-lifetime count with long/short link
+// ordinal 341/373. NOT kept: the forms regress even when the frame is 0xe4.
+// The entry depth load still folds and the predecessor/flag homes differ.
 // Traversal predecessor/count names, edge-vector names first, converted-endpoint names
 // first, and separate scan/history names with long link ordinal 286/286/286/286,
 // short ordinal 359/359/359/359. Names leave frame and allocation unchanged

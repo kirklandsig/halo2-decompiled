@@ -483,6 +483,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 23 (was 23): the word mask's one reload ahead of the first jne, and present's update in EBX remain.
+// M3 lane 6 r223 (h2m fast; control 23): retail's change block ORs the reloaded word register with present read from
+// memory (`or ecx, [esp+0x10]`) and compares present loaded into ESI, the pattern of a plain spilled local, while the
+// playing update is a memory OR (`or [esp+0x14], edx`). Forms: the mask stored as one expression with present first
+// (`present_teams | old_team_mask`) 77 (alignment `jmp` before the team loop); the team local as `char` 29 (byte compare);
+// a plain present with the one-expression store and the engine read as `g_55e4d0[globals->engine_index]` 122 (375 B);
+// a plain present, the one-expression store and the mask read and stored through `globals->team_mask` 139 (368 B), with
+// the engine read through globals as well 143 (363 B). Diagnostic, restored at once: the volatile moved from present to
+// playing 62 (frame 0xc, globals re-read after the loop; a volatile update is load/or/store, not retail's memory OR).
 // MiniMax H (11-20): no new form, no lower score (23): the old team mask still reloads narrowly for the compare and
 // once more for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares
 // that register with the OR for the store; a dword mask with a dword OR and a word store (33), the same with the
@@ -5969,6 +5977,11 @@ void __stdcall function_d6bc0(long object_index);
 // 172; a named `short *` timer for the zero test, delay store and countdown 172, with the countdown's `= 1` too 177 (854
 // B); the timer as a `short &` 177 (854 B); the parameter read once through its address into a second pointer used for
 // every access 172 (same code).
+// M3 lane 11 r146 (h2m fast with 0x15c150, matched; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at
+// 858 B): on the flag + field-test form, the 0x15aad0 call under one more `if` (diagnostic) 165; the release test's type
+// checks as a switch (2 skips, 1 falls into the release after its keep test) 171 (859 B); the kind modifier as one switch on
+// a selected modifier byte (0x211 for kind 0, 0x208 for kinds 1-7) 153 (861 B), with the reset counter's arms swapped 153;
+// that shared switch on the local-test flag form 94 (872 B). `entries` still takes EDI with the field test.
 // M3 lane 5 r224 (h2m fast; base 29; the flag form rebuilt: local test 21, field test 173 at 857 B, where `entries` is
 // promoted to EDI from the loop top and the timer address takes EBX; retail loads `entries` into EAX at the zero test
 // and keeps it across the `jne` for the index test): on the field-test flag form the object by a ternary at the loop top
@@ -5976,6 +5989,12 @@ void __stdcall function_d6bc0(long object_index);
 // 154 (863 B), with the local test 131 (874 B); a block-scoped entry pointer for the zero test, index test and delay
 // store 213 (861 B); the reset decision as one `||` condition with no reset bool 173 (857 B), on the kept body 29 (same
 // code); a function-scope timer pointer assigned at the zero test for the delay store, countdown and `= 1` reset 178 (853 B).
+// M3 lane 14 r140 (h2m fast; control 29, the 7 form rebuilt at 7): on the 7 form with the field index test (172, `entries`
+// in EDI from the loop top, the timer in EBX): the reset counter bound by a `short &` 183 (851 B); the countdown block's
+// index read once into a block local for its test, 0x158ff0 and 0xd6bc0 175 (855 B); the field test read through
+// a const pointer to the parameter's address 172 (same code: the indirection folds before allocation); 0x15aad0 given
+// `&entries[0]` 172 (same code). On the 7 form: case 0 written ahead of case 1, 7 (same code, CL stays). Reading: the
+// timer only wins EDI while the loop-top index is live through the schedule test; no form here moved `entries` below it.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

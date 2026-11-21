@@ -506,6 +506,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // NOT kept: All eight forms grow the body and raise the score. The form with a separately scaled forward
 // contribution keeps the 0x90 frame and the first difference at +0x10, while the other seven change the
 // frame. The matched caller at 0x137ed0 stays exact throughout.
+// M3 lane 4 r242 (H2M_FAST with 0x137ed0, MATCH each run; control 334): each cross term in two steps without sharing
+// (`xy = inverse * axis->j; xy *= axis->i;`, xz and yz alike, so complement * k is written twice as retail forms it)
+// 344 (1791 B); that with i, k, j sine products named after the squares 377 (1818 B); the diagonals written square
+// first (`xx + (1.0f - xx) * cosine`) 334 (same code); the rotated rows summed forward first 334 (same code); the axis
+// read through a const reference bound to the pointer parameter 394 (1827 B). Body unchanged.
 // The 0x90 frame and both early x87 angle products agree. At +0x10 retail loads axis i and keeps the squares through sine scaling. The existing builder is tested with sine or cosine rounded to real at use and with both conversions separated by the three sine products.
 // Named sine rounded at builder entry 335.
 // Sine argument rounded at its first coefficient 339.
@@ -516,6 +521,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Named cosine rounded after the squares 334.
 // Both named trig results, rounded around the sine products 372.
 // NOT kept: The single-result forms leave the first-axis mismatch. Separating both conversions shrinks the target's frame and body. Every widened handoff raises matched caller 0x137ed0 to 42 in the reduced image. The original builder and both calls are restored.
+// M3 lane 5 r227 (h2m fast with 0x137ed0, MATCH throughout; control 334 at 1781 B): the builder's complement
+// (`inverse`) declared ahead of the squares 332 (1782 B: only the 1.0 load moves; a moved declaration, not kept); the
+// three rotate_axis_vector rows summed forward, left, up 334 (same code); the two angles as `real` 397 (1835 B); the
+// squares declared k, j, i 344 (1789 B); the two builder calls in the other order 367 (1813 B). On the complement-first
+// form: named sine products (i, k, j, after the squares) 392 (1825 B; 387 without the complement move); the rows summed
+// forward first 332 (same code); the first cross term written `axis->j * inverse * axis->i` 332 (same code); squares
+// k, j, i 344 (1790 B). The axis registers and the square spills are unchanged in all of them.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2840,6 +2852,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // position translation 280. In-place projected reflection by scale/difference, setter/difference or
 // scale/setter 554/499/539. Camera origin with shared difference and in-place reflection 595. NOT kept: the
 // one-point gain is below the threshold and still one byte over retail.
+// M3 lane 4 r242 (H2M_FAST with 0x2f2d0/0x2e3f0, control 281): the first distance clamp as a ternary initialiser
+// (`near != far ? clamp : 1.0f`) 424, as if/else with `attenuation = 1.0f` in the else arm 424 (both 2286 B); the saved
+// record taken at the count and the count incremented in its own statement 281 (same code: retail stores the count
+// before the tag); the draw point's x product as `reflected.i * displacement` 281, with the position added first 281,
+// all three rows position-first 281 (same code). Reading of the retail-length lead (attenuation beside `animated`,
+// reflected as three statements, 495 at 2285 B): it has retail's per-arm stores at the first clamp; left are one more
+// instruction in the delta/forward block (retail multiplies each loaded axis in place by `forward`, ours copies
+// `forward`), the far-angle product (retail loads `far` and multiplies by `inverse`), the unoccluded product's sides,
+// the opacity arms, the draw point's y product and the vertex-data clamp's store form.
 // The 0x94 frame and decoded output homes agree. First +0x76 is the missing-tag exit displacement. The first changed computation has a different camera-axis schedule. Retail tests the distance endpoints while the last two reflected components are still in flight. Test the distance predicate at four stages, with the far endpoint either retained or read at every use.
 // Distance predicate before delta, direct far reads 540.
 // Distance predicate before delta, shared far endpoint 581.
@@ -2850,6 +2871,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Distance predicate after reflected side, direct far reads 509.
 // Distance predicate after reflected side, shared far endpoint 528.
 // NOT kept: Testing after the reflected side reaches 2285 bytes with direct endpoint reads, but breaks the entry frame and scores 509. Earlier predicate forms lengthen the body and leave the camera-delta and reflection registers unresolved. The original distance test and reflection are restored.
+// M3 lane 5 r227 (h2m fast, control 281 at 2286 B; retail copies the displacement for the draw point's x product,
+// `movaps xmm1, xmm0; mulss xmm1, [reflected.i]`, after the two integer argument loads): the displacement field read at
+// each of the three uses (no local) 419 at retail's 2285 B (each row reloads it: the stores to the address-taken point
+// kill the common load); the x row written `position.x + displacement * reflected.i` 281 (same code); the x row
+// `reflected.i * displacement` 281 (same code); the y and z rows `displacement * reflected.j/k` 281 (same code); the
+// displacement declared after the point 281 (same code).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3619,6 +3646,12 @@ real magnitude3d(vector3f const *v);
 // both 170 (the header's float overloads already route there); the parallel test on a recomputed dot3f 198 (1039 B: the
 // products move to the x87) and the arccosine of a recomputed dot3f 198 (the same). Reading: retail keeps the dot in a
 // float home and loads it twice (fabs, then acos), where ours converts once and keeps the double across the a/b tests.
+// M3 lane 2 r132 (h2m fast with 0x24590 and 0x30bf0, both matched; control 170). Reading: retail reloads the float
+// angle from its home for `fsin` and again for `fcos` (ours loads it once and duplicates it, `fld st(0)`), as it reloads
+// the float dot for the arccosine. Forms: the cosine computed before the sine in two statements 170 (same code); the two
+// length tests ahead of the parallel test 182; the parallel test on `(real)fabs(dot)` 170; the angle as
+// `step * acos(dot)` 170; the fallback clamp through the existing PIN macro 188 (1025 B). Diagnostic (flags, reverted at
+// once): the file built with /Op 558 (1296 B), so the reloads are not float-consistency code. Restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4510,10 +4543,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax G (11-20): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this build's locals and register plan differ from the start.
 // MiniMax I (11-20): no new form, no lower score (486): the first difference is the frame, 0x60 here against retail's 0x38; retail keeps one 12-byte home for the previous camera position and one per element.
 // MiniMax A (11-20): no new form, no lower score (486): the frame is 0x60 against retail's 0x38
-// score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
 // the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this
@@ -4856,6 +4889,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 0x64. Passing the previous value separately keeps 0x60 and ties. Naming the double-precision adjustment
 // shrinks the frame to 0x5c and raises the score to 525 at 1995 bytes. The reduced controls for 0x36b50
 // and 0x39e50 stay at 251 and 334.
+// M3 lane 2 r132 (h2m fast with 0x36b50; control 486 at 2036 B): the three flag bits as plain bool conversions (no
+// `!= 0`) 486 (same code); scale_size declared ahead of cycle 486 (same code); the range computed ahead of the camera
+// copy 487; the range start read once into a local used for the range and each distance 494 (2028 B); the view pointer
+// declared const 486 (same code). Restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

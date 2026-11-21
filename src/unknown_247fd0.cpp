@@ -1006,6 +1006,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // NOT kept: the 307 forms require reference bindings and still differ at the gate
 // and settings stack slots. They reach retail length and move the first difference
 // to +0x43. The larger 315 and 317 forms also retain match-only bindings.
+// Separate initial settings and impact observations with shared shift,
+// byte, Boolean and field gate producers 418/404/378/378. Bound effect
+// address 423, retained allocation pool 378, impact receiver with byte
+// or address binding 404/423. NOT kept: all regress. The gate still
+// needs the separate address, DL and its slot beside the settings.
 // Scale each random sample in its own storage before native word/long/dword/int
 // conversion. Separate first draw 430/430/430/430, shared draw 431/431/431/431.
 // The cast still selects an x87 runtime conversion; the frame stays 0xb0,

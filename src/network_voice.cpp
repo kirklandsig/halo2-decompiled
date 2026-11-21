@@ -2056,6 +2056,34 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
 // NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
 // the player on the stack.
+// M3 lane 6 r222 (H2M_FAST with 0x56380, 0x564c0, 0x53b00, 0x56000; control 60, aligned 58; the caller 0x56380's score in
+// brackets when it breaks; body unchanged; about 100 runs). LEAD 5 (450 B, aligned 1, every neighbour matched, and 4
+// differing instructions in the full image too): the head statements in retail's order kept, written, capacity, size
+// with `include_mask ? 13 : 11`; the first cursor byte stored in EACH include_mask arm (retail loads and tests the flag,
+// then stores the byte, then branches); the per-player decrement after the mask clear as now; and the length as
+// `(short)written * entry_size + 2` (or `written` typed short, or word: 5 each). Left on it: `movsx edi, cx` where
+// retail has `mov edi, ecx` (one byte, two jump displacements). The cast is what the allocation hangs on, not the
+// variable's type: it makes the product's left operand a fresh temporary in EDI, so EDI is written, the player arrives
+// in EAX and is moved to EDI, the cursor keeps EDX, the bit EBP and the size EBX, the entry's zero stays live in EAX to
+// the capacity exit and kept, written and the counter stay in memory, all as retail. Retail's `mov edi, ecx` is the
+// same fresh temporary without an extension, and no 32-bit spelling keeps it: with a plain long count, each 134 [12]
+// at 456 B with `ret 0x10` (the copy folds and the player goes to the stack): the direct product, `result = written;
+// result *= entry_size; result += 2;`, a length local, the header stores first or between, a const reference to the
+// count, the count read through its own address, a file-local inline for the length, a named long copy, an
+// assignment inside the product, `(int)`, `(dword)`, `(long)(dword)`, 64-bit and pointer round-trip casts, an `int`
+// or `unsigned int` count, an `int` size, the count as the one member of an aggregate (plain or a 32-bit field) or a
+// one-element array, `(written + result)`; kept typed word or long 134, the counter typed short 167, the bit declared
+// after the clamp or dropped 134, `11 + 2 * (include_mask != 0)` 138; the 23 other orders of the four head statements
+// 113-197. `(byte)written` in the product 6. `long &length = result; length = written; length *= entry_size; length +=
+// 2;` 151 [137] (aligned 36: retail's allocation, but the product in place in EBX, so EDI is never written and the
+// player arrives in EDI). On the way: the lead's shape with the decrement ahead of the mask clear 93 (aligned 15),
+// that with the first byte through a local read once 90 (aligned 10; the entry cursor then starts at +6 as retail),
+// with the shared first byte 102 [2]; the decrement-first form with a long count and per-arm bytes 138 [137]; length
+// spellings on the decrement-first form 101 each (folded). The permuter on the lead (604 s, 68 tries) found nothing
+// under it. Also folded (134 [12] each): the count copied through a one-member aggregate assignment, through a
+// two-element array, through memcpy; the reference-bound length written directly (before or after the header stores);
+// the reference-bound compound form with the header stores first or between its steps 151 [137] (same code as
+// above). Patch: build/r222/lead-0x55c40-score5.patch.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4461,6 +4489,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // stride 77, size, consumed, cursor, stride 77, size, cursor, stride, consumed 88, cursor, size, stride, consumed 88,
 // `&data[2]` for the cursor 67. Reading: the channel (seven uses) and the member (three) are one use apart for the
 // last callee-saved register; no natural statement was found that changes either count without code.
+// The channel and count-byte address still share the packet-base allocation decision. Live count by pointer or
+// reference, with or without an entry snapshot, all 139 indexed and 164 with an advancing packet. The advancing
+// packet still gives EBP to the member and shortens the body to 478 bytes.
 // Shared payload boundary with indexed or walking packet. Prefix and stride 172/167,
 // end-minus-payload 168/158, stride-minus-payload 159/160, selected address 139/164.
 // Using the queued payload extent for the prefix gives the same 172/167.
