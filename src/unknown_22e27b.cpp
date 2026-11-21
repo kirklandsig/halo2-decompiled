@@ -624,6 +624,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // const` 1 (same code); both loop restarts as `(type == 0) & ((playback_flags & 3) != 0)` 231 (636 B); a per-pass `wrap`
 // bool computed at the loop body's top and copied into restart in both boundary blocks 242 (619 B); both loop disposals
 // with the type test first 232 (636 B); the per-pass disposal reset moved into each boundary block's top 1 (same code).
+// M3 lane 6 r226 (h2m fast; base 1): round 220's lead rebuilt (join `restart != (dispose && type == 0)`, flag-8 test
+// through a byte cast) 14 at 657 B, left the zero EAX / `& 2` bit EBX pair; on it the join as `restart || (dispose &&
+// type == 0)` 1 (the thread returns), the per-pass reset written `dispose = restart;` 296 (749 B), a `short` flags local
+// 14; a forceinline (flags, owner type) dispose predicate at all three dispose sites 1 (same code), on the 14 form 14;
+// the existing flag-3 bitfield for the flag-8 test with that join 87 (659 B), with `restart != (frame != frame)` 87.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

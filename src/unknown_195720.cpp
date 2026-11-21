@@ -256,6 +256,10 @@ bool function_1946f0(s_bitstream *stream)
 // stores) gives the clear index first but folds the mask's address into `[index + data]` memory operands (no LEA); the
 // index or saved typed `int`, a `size_t` count, `saved / 8` written at the addresses only, and a byte pointer to the end
 // byte formed at the index all keep both LEAs data first.
+// M3 lane 6 r226 (h2m fast with 0x1957d0/0x195820, both MATCH): the clear's start as `stream->data + (byte_index + 1)`
+// with the count on the index 2; `1 + stream->data + byte_index` 2; a `bool const` discard parameter 2 (the three the
+// same code); the two accounting stores moved after the clear 49 (141 B); the checkpoint slot popped first with the
+// position read inside the discard block 66 (first difference +0x1).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

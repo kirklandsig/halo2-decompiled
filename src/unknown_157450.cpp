@@ -6002,6 +6002,11 @@ void __stdcall function_d6bc0(long object_index);
 // a const pointer to the parameter's address 172 (same code: the indirection folds before allocation); 0x15aad0 given
 // `&entries[0]` 172 (same code). On the 7 form: case 0 written ahead of case 1, 7 (same code, CL stays). Reading: the
 // timer only wins EDI while the loop-top index is live through the schedule test; no form here moved `entries` below it.
+// M3 lane 6 r226 (h2m fast; base 29, label form 7, label + field test 172 at 858 B): the delay store written in each
+// kind arm (kind 0, kinds 1-7, else) to add timer-address uses 133 (908 B, not tail-merged), on the label form 125 (904 B),
+// on the label + field-test form 119 (904 B); the countdown stored as `countdown - 1` and tested by re-reading the field
+// 29 (same code), on the label form 7, on the label + field-test form 172 (same code each). Timer-address use counts do
+// not move `entries` out of EDI.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
