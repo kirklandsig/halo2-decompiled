@@ -2410,7 +2410,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 479/479/479/479/479/479/479/479. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P449: Primary countdown, actor, animation release/index, facing, turn, delay and motion decisions:
 // 479/479/479/479/479/479/483/479. NOT kept: no exact scratch-register or completion-tail repair.
-
+//
 // Earlier note: the body gives the actor EBX and the state EDI as retail but is 20 bytes long (case 2's facing
 // copy, case 4's facing reads, case 7/8's flag, the +0x465 byte); the 2396-byte forms exchange the two registers unless
 // case 21's state use after the 0x1c1080 call reads the parameter's stack home (r238 below).
@@ -2757,6 +2757,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 0x48 OR written through the global (two stores as retail, but the global is reloaded) 484 (2432 B); case 4's dot terms
 // written k, j, i 431 (same code: the sum is re-sorted to i, j, k, where retail forms k*dz + j*dy first from the state's
 // facing read in place). Body unchanged.
+// Use direct returns through the function, with search success on acknowledgement,
+// absence or acknowledgement, active completion, or both active and inactive paths
+// 521/517/494/540. Share the explicit default with case 13 on these forms
+// 653/565/633/666. NOT kept: the closest form still misses the retail dispatch
+// displacement. Three explicit-default forms also change the entry allocation.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

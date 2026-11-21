@@ -1381,6 +1381,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
 // dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
 // fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
+// Both strict reductions through one updater. Reference/pointer state outputs 419/419,
+// accepted-result outputs 418/418, returned ordinal 608/608, returned cutoff 545/545.
+// The 0x2c frame and separate candidate spill still differ.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

@@ -644,6 +644,12 @@
 // wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
 // the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
 // so no out-of-line copy of a wave helper exists to show the removed third use.
+// Both saved projections via memcpy, four-field aggregates or direct component
+// stores 536/687/590, with camera shifts read at use 537/687/591.
+// Overlap-safe copies with shifts at use 735. Bind both projection addresses from
+// copy through shift 536, or read each shift at its use 537.
+// NOT kept: the aggregate grows to 2712 bytes and frame 0x58, while the other
+// forms retain the 0x54 frame. The overlap-safe copies also change the caller.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
