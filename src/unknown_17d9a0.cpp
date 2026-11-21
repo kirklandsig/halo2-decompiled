@@ -1045,6 +1045,14 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // do-while (the first pass always runs) 533 (frame 0x21e4 for 0x21dc, aligned 401, masked 243: the tag home moves to
 // retail's +0x94 and the secondary count to retail's +0x54, the face count to +0x1c for retail's +0x20); the do-while
 // with the face local 537 (3631 B, aligned 402), that on the rotation lead 483 [411 / 258].
+// Separate face/plane arrays, face record, or encoded plane argument 566 each; retained face array 715,
+// plane array 752, both 749; traversal edge and vertex arrays 655, with both decode arrays 767.
+// NOT kept: the tag spill stays displaced or the aligned frame changes, and all scores rise.
+// Ordinary inline on plane decode, angle and rotation (all seven nonempty combinations) 535 each;
+// local definitions for all three 535. Tag and count homes remain displaced. Original declarations restored.
+// Physical mode field reference or pointer, through the tag byte pointer or tag entry, each
+// with primary or secondary count initialized first: eight at 779.
+// NOT kept: each materializes the field offset, keeps the old spill homes and shortens to 3630 bytes.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

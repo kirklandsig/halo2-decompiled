@@ -1211,6 +1211,18 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // assigned again before the mask copy 240 (same code: the dead first assignment goes with its load), on the 170 lead 170
 // (same code); the parameter renamed to sort first or last on the lead (diagnostic) 170/170; round 132's 283 form with
 // `result` initialised from final_matrices 283 (same code). Body unchanged.
+// M3 lane 9 r147 (fast with 0xbfe20, MATCH each run; control 240): lane 4 r225's 170 lead and round 132's 283 form
+// rebuilt (170 at 826 B, 283 at 837 B). A grid of 216 bodies on the 0xbfc90 awake test and the 0xbfe20 clear: the first
+// test's object through header->object, the written-out table lookup or object_get(), `object` through the same three,
+// bit 29/+0x34b through those three or `object`, final_matrices at the top or late, and three exit shapes (single exit,
+// early returns with the model block returning inside and after it, early returns): best 166 (843 B) with the first test
+// through the lookup or object_get(), `object` through header->object, bit 29 through object_get() or the lookup,
+// final_matrices at the top and the mixed exits; 169 (eight forms), 170 (two), 259 (twelve); the same grid with the
+// awake test written out (144 bodies) best 166 (same code). Every one loads object_index into EDX at entry. On the 170
+// lead: `definition` read through a const reference for the object-type test 170, `header` bound by a const reference
+// for the bit-29/+0x34b reads 170 (same code each); `sample` declared at the top (diagnostic) 284 (837 B). Diagnostic:
+// 1 to 8 dead initialised longs at the top of the 170 lead 170 each, of the 166 form 166 each (the entry roles are not
+// a symbol-count tie on the leads either). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1754,6 +1766,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // pointer moves to EDI); the flag statement before the matrix with the defaults first 25. Reading: with the defaults
 // live in EAX/DL across the index test, retail's index has to take ESI because the pool still holds ECX; ours lets
 // the index take ECX and reloads the pool, so the pool's carried value loses its register to the index here.
+// M3 lane 15 r119 (H2M fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): one parent-object lookup with the
+// data field read through a dword-typed load 44 (1390 B: it still shares EDI's data); the render branch's two
+// current-object reads through object_get(object_index) at each use 20 (same code); render_index set to NONE in an else
+// arm of the model test 20 (same code); the no-model mirrored default declared before the parent default 22 (the two
+// zeroings swap); the no-model parent index read into its own local ahead of the render-index test 378 (entry reorders).
+// Diagnostic, restored at once: the no-model block written in both paths (an early `return` after it when the model
+// index is NONE, and the else of the render-index test) 403 (1420 B: the two copies are not merged).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -226,6 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 8 (was 49): The entry and header check agree. The object lookup still uses movzx and an extra index store.
 // MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
 // makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
 // one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
@@ -234,7 +235,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // MiniMax H (11-20): the false result is now set before the creation call and the true one at the attachment, the entity's index is
 // stored again between the header test and the object read, and the object read's index is a word, so the two addresses are formed
 // independently; the second store is one more than retail makes and the object read masks with movzx where retail masks with and.
-// score 8 (was 49): the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
+// Earlier score 8 (was 49). the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
 // independently with the table's data pointer reloaded. The object read masks its index with movzx where retail masks with and,
 // and the index is stored once more than retail stores it.
 // share a scaled index and data load where retail forms each address independently.
@@ -980,11 +981,38 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
 // the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
 // from the two separate lookups, not the other way round.
+// Attachment helper after repeated/guarded single publication 42/73; invalid-index guard 69; two guards 73; header rejection first and full index 75.
+// Attachment helper with late success 79; publication in the admission test 77; single accepted-or-rejected publication 75. NOT kept: all raise the score.
+// MiniMax R (11-20): no new form, no lower score (8): the second lookup truncates its index with a word cast where
+// retail masks the full-width index, and the object index is stored again inside the branch where retail stores it
+// once; the shared mask form gives both lookups one index computation (42) and the store-free form moves the value's
+// stack home and adds a frame pointer (77).
 // MiniMax G (11-20): the second lookup's index is only independent of the header lookup with the word cast,
 // and that gives retail's `movzx ecx, ax` where retail has `mov ecx, eax; and ecx, 0xffff`; an unsigned-long
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still
 // differs is that instruction, the inner store of the object index that retail does not repeat, and two bytes
 // of padding after the last return.
+// M3 lane 1 r141 (fast with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 8, left: `movzx ecx, ax`, the second
+// store and the data reload where retail has the reload, `mov ecx, eax` and `and ecx, 0xffff`). On this body: the object
+// read indexed `(short)object_index`, `(long)(word)object_index`, `(word)(short)object_index` or through a word local
+// declared after the first store 8 / 8 / 8 / 8 (the same code: every narrowing spelling gives the movzx); the word cast on
+// the header test and the plain index at the object read 14; the attach given the entity's field 21; the second store as
+// a self-assignment of the entity's field with the object read through that field 42 (the store stays, the index is
+// forwarded and shared); the second store kept with the object read through the entity's field and no cast 42. With no
+// second store: the object read through the entity's field 77 (160 B); `(short)object_index` 71; the header test behind
+// `object_index == NONE || !(flags & 0x10)` under the NONE test 75 (160 B), that guard on the entity's field 75; the
+// flagged clear under one `object_index != NONE && (flags & 0x10)` test with the valid block in `else if
+// (entity->object_index != NONE)` 75, with the block's lookups and attach through the entity's field 82 (157 B), every
+// index read from the field 82, the valid block nested as `if (object_index == NONE || !flagged) { if
+// (entity->object_index != NONE) ... } else clear` 75, the else-if on the local 75 (each retest of the stored field is
+// forwarded and threaded before the lookups are merged, so no join is left in front of the object read). Diagnostic,
+// removed at once (a made-up 16:16 bit-field view of the index): at the object read from the field or the local, with
+// and without the second store, at both lookups, at the header test only 42 / 77 / 42 / 77 / 77 / 77 (a bit-field
+// read is canonicalised to the same mask and shared). The store and attach through the existing 0xbb780 (retail's code
+// from the object read to the attach call is that function's body): with the second store kept 42, given the entity's
+// field 42, given `(word)object_index` 45 (179 B); with no second store and the flagged arm clearing the local and
+// storing it 77 (160 B), given the entity's field 77 (the expanded lookup is merged with the header test's each time).
+// A 1200 s permuter run (121 tries) found nothing below 8. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1458,6 +1486,17 @@ bool c_projectile_type::v8(long a, long b)
 // NONE block 12; the call's mask from `b` with the object looked up after the call 18. Diagnostic (semantics changed,
 // reverted): the call's mask 0x3fe 13, still swapped. Reading: only a two-use group computation anchored ahead of the NONE
 // compare gives retail's head pair with the mask.
+// M3 lane 7 r201 (fast with 0xa5e70, 0xa02e0, 0xa0be0, 0xa3a00 and 0x9d450, matched each time; word read 5, mask control
+// 12): 0xa5e70 given a fourth, unused parameter taking the definition by const reference, every v27 passing `this`, and no
+// definition copy here, 55 (the unused argument and its temporary are both removed: no `push ecx`, so the dead store
+// is not a dropped by-reference argument); the definition copy as a plain local with an unreachable call taking its
+// address (diagnostic) 7 with the word read, 14 with the mask (the store stays but lands one instruction early, flags
+// still ESI with the mask). Diagnostics with the mask (unreachable address-takers, reverted): `b` kept in its stack home
+// with the flags a real copy made after the object 12 (same code: the flags still take ESI, so it is not the parameter
+// against a local), `a` in its home 12, `d` in its home 60 (196 bytes). Reading: matched 0xa02e0 (one object read, two
+// flag uses) gives the flags ESI, so ESI goes to the heavier of the two; here both have three uses and retail gives the
+// tie to the object, ours to the flags. With the mask, the definition copy's pointee typed const (as the file's other
+// copies are), typed as the const device type, or as `void const` 12 each (same code).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

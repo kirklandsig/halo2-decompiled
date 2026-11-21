@@ -528,6 +528,12 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // sequential tail copies (79), so the barrier is the address taken at our call, not the callee's use of it; 0 for the
 // forward only at our call (70) lets the forward loads rise above the up stores but not the up loads, and the forward
 // dot's i product stays object-first, so that product's order is not the escape.
+// M3 lane 15 r121 (h2m fast with 0x118700, 0x11f0d0 and 0x1faf80; control 25): 0x1faf80's facing as its FIRST parameter
+// (definition, both declarations and both calls) 12 here, 0x1faf80 2 and 0xe01d0 537 -> 569, exactly as with facing second
+// (its i product still loads facing first): still BLOCKED-BY 0x1faf80. On this body: the two field pointers declared ahead
+// of the dispatch block 25 (same code: pointers formed before the escape do not free the tail's loads), declared at the top
+// beside the definition 107; the tail copies through the existing vector3f_assign 66 (1047 B, the copies go through xmm);
+// the zero-limit test written `0.0f == max_angle && 0.0f == acceleration` 27.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1273,6 +1279,7 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax D (11-20, run 131): no new form, no lower score (14, 1034 bytes): removing the move output's byte member store measures 90 and moving it after the +0x88 copy measures 11, and that one is a statement order kept only with a byte match, so both spellings are restored; retail hoists the copy's source component above the stores through the object pointer and spills the 0x119bc0 result to a stack byte that it pushes as a dword, where this build keeps the result in al and the tail needs 0x1c4b00's bool formal: BLOCKED-BY 0x1c4b00 (src/unknown_1c25a0.cpp).
 // MiniMax H (11-20): no new form, no lower score (14): retail spills the 0x119bc0 result to a stack byte and pushes the dword; this build keeps it in AL; that needs 0x1c4b00's bool formal in other files.
 // MiniMax D (11-20): no new form, no lower score (14, 1034 bytes): retail's block after the 0x119bc0 call still differs
 // in the tail (retail spills the 0x119bc0 result to a stack byte in the dead definition pointer's slot and pushes the
@@ -1573,7 +1580,14 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // call and read back twice); no member store 90 (re-measure). Still BLOCKED-BY 0x1c4b00's bool formal: three of its 14
 // declarations sit in files other lanes hold this round (src/bipeds.cpp, src/items.cpp, src/unknown_0a76b0.cpp), and by
 // 0x1ec690 (still a disabled draft behind its stub) for the copy's hoisted loads; lane 3 r258's held form (6) stands.
+// M3 lane 11 r138 (fast with 0x119bc0 and 0x1c4b00, matched throughout; control 14): the 0x119bc0 result held in
+// a `byte` 14, a `char` 14 (same code), stored to the member and the local in one chained assignment 14 (same code),
+// passed as `local_force != false` 95 (1038 B), the object's +0x88 copy through a named vector pointer 14 (same code).
+// Still BLOCKED-BY 0x1c4b00: retail has no member store; it keeps the result in its own stack byte and pushes the
+// containing dword, which only a bool last parameter gives, and that definition's file and seven of its declaration
+// files are other lanes' this round.
 // MiniMax H (11-20), NOT kept at review (statement order is match-only; code is main's): moving the move output's byte member store after the +0x88 copy scores 11 (was 14), so the byte store sinks past the force push as retail does; the tail still differs where retail keeps the copy's destination in EAX and spills the 0x119bc0 result to a stack byte that it pushes as a dword, which needs 0x1c4b00's bool formal in src/unknown_1c25a0.cpp and in its other declarations.
+// MiniMax B (11-20): no new form, no lower score (14): 0x1c4b00's bool formal is declared in another file, so the call's argument setup stays as it is; what is left is the one-row shift from the zero extension of the force argument and the 0x119bc0 result's own named bool.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

@@ -2629,9 +2629,10 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax E (11-20): no new form, no lower score (703): retail holds two separate request homes (the 0x1b request at esp+0x44 and the 0x16 request at esp+0x64) where this build shares one, so retail's frame is 0x74 against our 0x4c; giving the 0x16 request its own local reproduces retail's request setup but leaves the frame 8 bytes short and scores 806.
 // MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
 // MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
-// score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// score 703 (was 701): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
 // still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
 // files this lane may not edit, so the body stands.
@@ -2864,6 +2865,21 @@ static __forceinline long player_round_ticks(real value)
 // inside the block 701 (aligned 694); the +0x214 read of the two-slot arm through `current` 703 (2736 B); the latch's
 // node stored ahead of its target 702 (2741 B). `inline` on 0xe4050's definition (diagnostic, full check) leaves this
 // function unchanged. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
+// M3 lane 6 r218 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 703 at 2742 B, 34 calls against
+// retail's 33). The link-time inliner compares a callee's size with a limit that follows how often it estimates the call
+// site runs, and a test in front of a site lowers that estimate even when the test itself folds away (0xd6c80 in round
+// 218's report). Diagnostics on that, none kept (a test that repeats the one before it, and the function does not match):
+// `(actions & 0x80) && (actions & 0x80) &&` at the 0x80 site 775 at 2636 B with retail's 33 calls (the first 0x151b80 and
+// 0xccd20 both stay calls: the state earlier rounds reached only with the callee's file flags or a pragma); two repeats
+// 775 (same code); `if (buttons & 0x10)` again inside the 0x10 block 720 (2714 B, 34 calls: 0xccd20 a call, the first
+// 0x151b80 still expanded); both 858 (2573 B, 33 calls); the 0x80 repeat with each request declared in its own block 676
+// (2735 B, frame 0x6c: round 215's lead without a constant-holding local); that with the candidate written `input +
+// 0x28` at each call 698 (2742 B); the 0x80 repeat with the last request through the existing 0xe68c0 819 (2592 B). So
+// both wrong expansions follow from the 0x80 site's estimate; what retail's source has in front of that site is not
+// known. On the 676 form: the six flag sets through a named player pointer in its own block 726 (2713 B), with the
+// candidate at each call as well 683 (2730 B); the 0x10 block reading the unit through a fresh lookup 677 (2736 B); the
+// parent and seat read through fresh lookups 696 (2732 B); both 688 (2740 B, retail's length). BLOCKED-BY 0xe68c0
+// (expanded at the last site in retail) as before.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3260,6 +3276,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax E (11-20): no new form, no lower score (103): the whole gap is the players-globals pointer, which our build keeps in EDI across both loops where retail keeps it in ESI and reloads it late; that choice follows from what the loop's callees write to g_4e8c20, and those callees live in other files.
 // MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
 // MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
@@ -3558,6 +3575,18 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // loop 2 103, that local bound by const reference 103, the `= 6` store through such a local 103, both 103, the final
 // store under `if (!failed)` through a local 103, the `= 6` store through the prologue's pointer 103 (all the same
 // code); the final store through the prologue's pointer 176 (618 B). BLOCKED-BY 0xb8540 stands.
+// M3 lane 6 r218 (fast with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00, 0x6b380; control
+// 103). Checked in retail: only 0x14b4b0 and 0x14b560 write g_4e8c20, nothing calls either directly (both sit in the
+// subsystem table), and the global's address is never taken, so no direct call from loop 2 reaches a write; indirect
+// calls are already on loop 2's call tree through matched functions here (0xa7870 -> 0x8a400, 0xb75a0 -> 0x109290,
+// 0xe68c0 -> 0xe6900) and do not release the pointer. What is left as the cause is the object code's call cycle: retail's
+// loop 2 calls into it (through 0xb75a0, 0xb7b40, 0xb8540), where a caller has no finished summary of its callee and
+// reloads; our cycle is cut at the stubs. BLOCKED-BY 0xb8540 and 0xb7b40 stands. Forms that add an implied or repeated
+// test to change the estimated weights of the blocks (the estimate that decides link-time expansions and, in 0xd5de0,
+// float register priorities), all 103 with the same code: `else if (busy)` on the `= 6` store; the rest of the function
+// under `if (globals->unknown9c == 0)` in place of the early return; the final store under `if (!failed && last_unit !=
+// NONE)`; `if (root != NONE)` ahead of the busy test; `!busy && unit != NONE`; `last_unit != NONE &&` ahead of loop 2's
+// player tests.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

@@ -1176,6 +1176,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // statement lift all six offset orders 179. One to seven pointer aliases of the point used in the offset 20 each (no
 // numbering effect). So the late result store and the statement lift flip the same pair of choices (dot order and
 // memory operands) together; no form found gives retail's dot with register loads and the x, y, z offset.
+// M3 lane 8 r207 (fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26, lane 12 r147's M re-measured 20): the 0.1
+// offset reading a `vector3f const` copy of the axis taken after the 0x26d100 call 163 (1115 B), on M 158 (1113 B); reading a
+// `point3f const` copy of the collision point 143 (1113 B), on M 138; on M `real const` sine and cosine 20, the 0.5 lift as
+// `point.n[c] = point.n[c] + ...` 20, a `real const` trace distance 20 (the 20s the same code as M).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

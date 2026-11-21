@@ -95,6 +95,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 }
 
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// MiniMax G (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the near arm's y row written as one
+// expression (arg_3->x * local_12 + arg_3->y * local_11) takes the y row in SSE as retail does, but the cosine goes into
+// the register and the facing y into the memory operand (retail the other way round), the y*cos product moves after the
+// sine branch (retail hoists it before) and the two field_c stores come out reversed: 365 (1745 bytes), the same code with
+// the sum staged or written with the y term first. Copying the facing vector into two locals keeps the products on x87 at
+// 374 and 375, and holding the trig pair in a local point2f measures 382; the staged x*sin first form measures 365. The
+// first difference is still the constant 1.0f in XMM1 where retail keeps it in XMM2, and the candidate count is still a
+// byte against a short.
 // MiniMax R (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the first difference is still the
 // register that carries the constant 1.0f, which this build loads into XMM1 where retail loads it into XMM2, and the
 // reciprocal copy and the two product registers follow that one choice, so the float register assignment of the whole
@@ -708,6 +716,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 316 (1740 B); the distance's y term ahead of its x term 305 (same code: retail subtracts x first, ours y first); the
 // differences as a point2f local then sqrt of their squares 431 (1775 B); that through magnitude2d 431. The first
 // difference is still the 1.0f/radius pair (ours 1.0f XMM1 and the radius XMM2, retail the reverse).
+// M3 lane 9 r146 (fast with 0x29a190/0x298c30, both MATCH unless noted; base 305): the facing x and y read into two
+// locals in each near emission 423 (1772 B); the facing point copied once at entry and read everywhere 435 (1728 B,
+// 0x29a190 351); the near rotated point built in a named point2f and stored as one aggregate 375 (1725 B); the near side
+// and hit flags stored right after the angle, ahead of the rows, 313; only the facing y named in each near emission 413
+// (1772 B). All restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1499,6 +1512,29 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // fmulp); the first or the second distance passed straight into its trace call (no named local) 640 / 657 (the whole
 // allocation moves), with 1 to 7 unused locals 640 to 738. The exchanged homes: the rotated side's and the offset's names
 // swapped 108, the rotated side declared ahead of the offset 108, or at the top of the function 108 (all the same code).
+// M3 lane 3 r282 (H2M_FAST; on lane 6 r207's w10 lead re-applied, 108 at 3374 B; all restored, body unchanged).
+// Sites: A first loop distance squares, O obstacle offset squares, N obstacle normaliser squares, D facing dot,
+// S obstacle rotation sine products, H rotated/offset homes. Control wrong A O S H. Reading: the x87 operand order
+// at A, O, N and D follows the count of inlined-helper symbols before the site (dead longs inside a helper move them
+// like the top-of-function scan); S never moves. Forms: local_24..26 or local_21/22 declared in reverse, or apart
+// 108 each (same code); the first loop distance written at its site 232 (3372 B, A O right, N D S H wrong); the
+// normalised-difference helper's scale written as rows 104 (A right; an existing helper written out); the distance
+// helper with one vector3f local 232 (3372 B, A O right, N D wrong, the cosine products then component-first too);
+// dead longs in the distance helper 1..7 188/174/232 x5 (174: A O right, N D wrong), in the rotation helper 108 x7,
+// in the normalised-difference helper 1..11 188/188/188/178/178/236/240/236/236/236/232; unused dot products before
+// the rotation 108 x7; rotation rows with the casts on the components, on all four operands or the sine product
+// trig-first 108 each; double helper parameters 169; parameter orders (sin, cos, v, out) / (v, cos, sin, out) /
+// (cos, sin, v, out) / (out, v, sin, cos) 108/111/111/108 (the sine products stay component-first whichever value is
+// computed first); the y row sine-first 108; sine and cosine as double locals 190 (then the x products are
+// trig-first and the y products component-first), with double parameters 297, the sine alone a double 190.
+// Also on the lead: the rotation helper returning its output pointer, passed straight to the offset call 108 (same
+// code); float rows without casts 183; the components read into locals first 116 (re-measure); the helper's
+// parameters renamed four ways 108 each (same code: operand order does not follow names).
+// M3 lane 12 r163 (H2M_FAST with 0x29a190 MATCH; control 569): the facing dot through dot_product2d 617 (3329 B, either
+// argument order); the angle dot through it 569 (same code, either order); both 718 (3332 B); the obstacle difference
+// normalised through normalize2d_fast (its result unused there) in place of the file's 0x298df3 copy 569 (same code);
+// the two side lengths through distance3d with the arguments reversed (same a - b deltas) 587, with the normaliser too
+// 587. Body unchanged.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -328,6 +328,26 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // sits below the centroid sum and the walk's offset (not its position) shares the post-walk vector's slot in every one,
 // also with `3 - total` or the reciprocal unnamed, the scaled centre written per component, the sum assigned after its
 // declaration or added through a pointer, and with 1-10 unused locals (no home moves). Body unchanged.
+// M3 lane 5 r218 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all matched each time; control 252; [aligned, masked] =
+// difflib counts with addresses masked / registers and stack offsets masked too): 0x294669's scale taken as `real const &` (each
+// row reads the caller's strength from its home) 469 at 3712 B [101, 33]; the four strengths named with the centroid scaled in
+// place 270 at 3716 B [88, 30]; the four strengths named with the reference scale 453 at 3717 B [97, 36]; the four strengths
+// named with the request's speed vector stored ahead of its forward vector 276 [100, 41]; the reference scale with the speed
+// vector stored first 469 at 3712 B. Slot reference counts recounted from both listings: the object spill, the count, the nearest
+// distance, each centroid cell and the record spill have four references a cell in retail and here, so the three pairs are ties in
+// the emitted code too. Body unchanged.
+// m3 lane 13 r132 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched; screens with a one-object build compared
+// against retail, build/r132/scr.py, counting aligned differing lines with stack offsets masked, 47 on this body): the scaled
+// centre written per component in the scale helper's operand pattern (s*x, y*s, z*s) 259; the nearest fallback's strength as a
+// named local 266 (3718 B). Screen only: the centre's components all vector-first 46; divided by the count 47 (804 instructions,
+// the dead store goes); the sum's y and z read into named locals first 41 (804); the centre and its difference as one
+// expression per component 66; the reciprocal passed unnamed 41 (804). Diagnostic (not kept): 0 to 8 extra referenced locals
+// give 47/63/65/47/47/46/43/41/47, period 8 and the same wherever they are declared, homes unchanged in each; naming or
+// un-naming a value only moves that phase, and none of the eight phases has retail's operand sides at the walk's alignment i
+// term, the second 0x2949aa site and the scaled centre together. Frame study on synthetic functions: in a frame over 128 bytes
+// equal-weight homes are permuted by a rule that takes in every home's reference count (deleting the waypoint step here flips
+// local_13/local_14 and local_32/local_16), and neither declaration order nor the order addresses are taken moves a home, so
+// the three swapped pairs follow the whole set of homes and their counts, not the tied locals themselves.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
