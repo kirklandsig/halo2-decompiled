@@ -2027,6 +2027,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // NOT kept (M3 review 11-21, MiniMax C 11-20): the round-105 lead (score 40) applied again; as lane 15's r105 note says,
 // it rests on the swapped callback ternary, the one-use channel-byte local, the active preset and the implied
 // else-if, all match-only, so it is kept only with a byte match. The body is main's again.
+// M3 lane 4 r241 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the rate read from the global at
+// each use instead of the frame-settings reference 219 (2193 B); the +0xb8 channel pointer used for the play, the frame read
+// and the frame store as well 202 (2189 B); the look angles read from the global's entry at each use with no look pointer
+// 415 (2208 B); `first_weapon = user->weapons` 188 (same code); the set-active flag passed straight to the call with no named
+// bool 378 (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
