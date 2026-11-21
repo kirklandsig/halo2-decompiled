@@ -2731,6 +2731,10 @@ struct s_unit_event
 // 416 (listed), on the named-region-states lead 519 (1852 B; the lead re-measured 523). Reading: the notifications'
 // address operand order differs too (`[edx + ecx + 8]` here, `[ecx + edx + 8]` in retail): retail's offset there is an
 // allocated piece of its ESI web, ours a spill reload.
+// M3 lane 14 r138 (fast with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420, `ret 0x14` in both builds): on the
+// current body the region-state update through two DAMAGE_OBJECT lookups 478 (1852 B); both destroy arms' vitality
+// stores through DAMAGE_OBJECT 593 (1932 B); the child walk's start through DAMAGE_OBJECT 493 (1904 B); the damage-source
+// byte passed as the expression (no local) 464; the at-marker flag passed as the expression 420 (same code).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3554,6 +3558,13 @@ enum
 // user-declared copy constructor changes the passing (0xd82e0 237, 0x184060 115, 0xd9110 162). HELD patch:
 // build/r221/held-d82e0.patch (m3-lane6 worktree). On main's body: the material index bound by `short const &` for the
 // test and both calls 203.
+// M3 lane 14 r138 (fast; control 203): still BLOCKED-BY 0xcf040 (the held wrapper-parameter patch needs its call line,
+// in a contributor's body). Retail's other callers support the aggregate reading: 0x184060 and 0xd9110 load the field
+// fresh (`xor ecx, ecx; mov cx, [..]; push ecx`, which our matched 0x184060 gives with the short parameter), and 0xcf040
+// stores a word into a stack slot and pushes the slot's whole dword, so an unsigned 16-bit parameter would not explain
+// it. Tried in this file only: the two handles named (+0x14 first) 213; one element lookup for both handles 224 (1240 B,
+// one call); the index in a long local cast back to short at the test and both calls 203; `amount * d5bc0(..)` 203; the
+// material test as `!= NULL` 203.
 // @retail 0xd82e0
 void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
 {
@@ -3685,7 +3696,7 @@ enum
 
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
-// score 470 (was 661): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
+// score 371 (was 371): 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
 // (retail's bools sit at esp+0x13..0x17, then object, i, definition, info; ours orders them differently and
 // keeps region_absorbs in memory where retail holds it in bl), registers (retail's object_count is in edi, ours
 // esi) and the position of the 0xd5b60 call. Done: shield/body children flags were swapped (retail: body from
@@ -3700,6 +3711,16 @@ enum
 // Stand-in image 552 -> 371: the parent walk is a while loop, so the function_d5b60 call behind it stays a call as in
 // retail (0xd7c2b; a for loop there raises the site's static frequency and LTCG inlines it); the pass loop keeps the
 // current object index in a local and calls function_d5b60, which LTCG inlines there.
+// M3 lane 14 r138 (fast; control 371). Frame read push-normalised (F = locals base): retail packs body, friendly,
+// reported, shield, region_absorbs at F+3..F+7, then object F+8, i F+0xc, definition F+0x10, info F+0x14; ours has i at
+// F+0, a 3-byte hole, the five flags at F+7..F+0xb (body, reported, region_absorbs, friendly, shield), object F+0xc, info
+// F+0x10, definition F+0x14 (damage, count and datum offset agree). Registers: after the team test retail reloads i into
+// EDI and the object into ESI (then the datum pointer in ESI, i kept across 0x1df560's ESI argument); ours swaps them,
+// so i is reloaded once more and info goes to EDI. Tried: `i < object_count - 1` 380 (1888 B); the owner stores through
+// `object` instead of a second lookup 405 (1885 B); info looked up ahead of the object 522 (1913 B); region_absorbs
+// declared at function scope 371 (same code); `objects[i]` at every use with no current_index local 525 (1920 B); i
+// declared at function scope 371 (same code). Diagnostics (behaviour changes, reverted): one or two fewer i references
+// 404/462 with i still at F+0 (the layout is not a near tie on i's count); one extra object reference 501.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

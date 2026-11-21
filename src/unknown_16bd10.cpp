@@ -1415,6 +1415,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // retail keeps the product in xmm0 and the sum in xmm1 - while the offset's own terms agree with retail's
 // (sine*offset.i - cosine*offset.j); the term order inside the dot is canonicalised by the compiler, so no spelling
 // of it moves the block.
+// M3 lane 14 r138 (H2M_FAST with 0x142d10, 0x16c6f0 and 0x13cb40, all MATCH; control 126). Reading: in the plane block the
+// two sums are the same in both builds ((j + k) + i, the j term the accumulator); only the length load hoisted into the
+// plane-constant dot differs (retail left.j into XMM1, ours left.k), which sets the accumulator and so the zero register.
+// Tried: the squared length declared at its assignment 126; the plane declared after the length and t 126; the length
+// test as `if (length_squared)` 126 (each the same code); the normal copied ahead of the three basis copies re-measured
+// 186. Diagnostics (names only, reverted): the length renamed twice and the plane renamed 126 each (no tie on names).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

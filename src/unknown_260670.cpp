@@ -323,6 +323,15 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // take their own dwords eight bytes apart where retail packs them adjacently at 0x6/0x7, the result still takes the slot
 // above the actor where retail puts it at 0x8, and the source and settings still sit four bytes above retail's, so every
 // parameter offset moves with the frame.
+// M3 lane 1 r146 (H2M_FAST with 0x2600a0/0x2605d0, MATCH; control 440, register- and stack-masked aligned 116; two
+// callees flagged as building differently in the reduced image): the sorted loop's break test as two separate `if ...
+// break;` statements 440 (same code); the first evaluator pass as `parameters[0x67c] = function_2600a0(actor_index,
+// context, NULL);` 604 (3077 bytes, retail's length; masked 117; site 2 still expanded); that with the split break 604;
+// the `selected == NONE` return moved after the if/else (retail's random-pick path jumps into the same test as the
+// sorted loop's exits) 548 (3061 B, masked 103), with the first pass as the call 617 (3053 B, masked 106). Diagnostics,
+// restored: 1-3 folded `count > 0` guards around the sorted loop on this body 440 each (no change); on the first-pass call
+// three 607, four 602 (3026 B, masked 86: site 2 then calls 0x2600a0 as retail, leaving retail's inlined owner lookup as
+// the length gap), so retail's site 2 sits about four frequency levels lower than ours.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
