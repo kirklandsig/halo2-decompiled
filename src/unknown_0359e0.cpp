@@ -332,6 +332,12 @@ PRIVATE inline long swizzle_log2(dword value)
 // word/dword table coordinates before the branch 132/81. Signed suffixes retained in all forms.
 // Restored. The full-coordinate widenings still precede the logarithms and the common
 // count still spills from a different register.
+// M465: common signed high mask with short low mask 99; common signed high mask with long low mask 96;
+// high bands first and short low mask 88; high bands first and long low mask 134; branch-owned bands
+// and short low mask 103; branch-owned bands and long low mask 89; per-axis conditional high band and
+// short low mask 168; per-axis conditional high band and long low mask 165.
+// NOT kept: table-band forms grow the body and leave the early coordinate promotions.
+// The long low mask after high bands also loses both matched callers.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

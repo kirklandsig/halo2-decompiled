@@ -1891,6 +1891,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // On the retained state and speed declaration order, lexical ranks for tag, flags,
 // material, grab distance, position, facing, tag with distance, and tag with flags
 // and material each score 158. The +0x64 definition spill and other homes stay in place.
+// M465: selected tag-array pointer long 620; selected tag-array pointer dword 620; selected tag-array
+// reference long 620; selected tag-array reference dword 620; branch-owned tag array and offset long
+// 593; branch-owned tag array and offset dword 593; selected tag array from movement reference long
+// 620; selected tag array from movement reference dword 620.
+// NOT kept: conditional array selection repairs the definition, animation flags and material
+// slots but shifts position and grows the body. Selecting array and offset in a branch shrinks
+// the frame to 0xf8 against 0xfc.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
