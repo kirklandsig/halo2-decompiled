@@ -314,6 +314,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // scheduled after the product, so the shared 0.5 takes XMM7 and the running x XMM4; with the bounds-record pointer as well
 // 17; the span named ahead of the half width 22; `0.5f * span` at each use 19; the width span named too (half width
 // `width_span * 0.5f`) 19. So the pair follows which value is created first, the product or the half height.
+// M3 lane 5 r228 (h2m fast with 0x2008fc 0x200891, control 14): the draw block's five statements (bitmap entry pointer E,
+// pulse pointer Q, pulse query P, half width W, half height H) in other orders: E Q P H W 26, Q E P W H 14 (same code),
+// Q P E W H 83 (850 B), E Q W P H 28, Q E W P H 28, E Q W H P 55; the draw pass's record pointer named as the first pass
+// names its own (one-use there) re-measured 12 (only the XMM3/XMM4 pair left; match-only, not kept).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

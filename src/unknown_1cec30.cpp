@@ -1911,6 +1911,12 @@ PRIVATE __forceinline real const &component_time_step()
 // time step) 88 at 479 B, all three `[eax + 4]`, so the kept `add eax, 4` is not a use-count effect. Matched 0xc6810's
 // `add ebx, 4` follows a call (0xb58c0) between its reads, which kills the value but not the pointer; retail here has no
 // call and no store that can reach the globals between its two reads.
+// M3 lane 5 r228 (h2m fast; control 26): the force-acceleration arms swapped (`if (!force_acceleration)`) 101 (460 B);
+// the step test's arms swapped (`if (step <= 0.001f)` first) 140 (498 B); the ratio stored without the `fraction` local
+// 26 (same code); one to three redundant parenthesis pairs around the step product's operand, the whole step product, the
+// mass argument of the scale helper or the stop distance's `velocity / step` 26 each (same code). Diagnostic, reverted:
+// an opaque float store through a table pointer between the two reads 125 (483 B): the rate is still loaded first and
+// read again from `[eax + 4]`, so killing the loaded value alone gives neither the memory operand nor `add eax, 4`.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
