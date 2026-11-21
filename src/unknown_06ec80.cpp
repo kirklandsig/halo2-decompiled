@@ -225,6 +225,13 @@ union s_6ec80
 // return NONE;` 229, as an if/else on its result 194 (entry registers retail's, block pointers EBX/EDI swapped from
 // +0x101), each of the three also unmatching the getter (27 B against 26); the bit or-ed as a full assignment 225; one
 // readiness test after the guard repeating the pointer tests (match-only) 226.
+// M3 lane 5 r221 (h2m fast with 0x6ec10/0x5b120; base 5): diagnostics with the mask zeroed in the guard (225), a conditional probe
+// store `if (value_18 == 77) local_1 = false;` after the stored-data test 180 (985 B), before the second_id test 228, before the
+// block-pointer NULLs 261, inside the guard before the populated test 234 (no extra block restores the entry registers). Forms:
+// with the mask in the guard, the 0x49c8 NONE default as the `else` of the `arg_1` test 228 (981 B; entry registers retail's up to
+// +0xc3), that with the mask zeroed before the guard 228 (982 B); the loop through a player-record pointer stepped at the body's
+// end with the mask in the guard 228, with the mask before the guard 9; the else-arm default plus that pointer, mask in the guard
+// 226 (981 B).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

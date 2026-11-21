@@ -575,6 +575,15 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
 // and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
 // split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
+// M3 lane 5 r221 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): retail's 0xb61d0 sets its scan's walk
+// before its counter, this function the counter first, so the shared helper cannot serve both; with a second file-local helper
+// whose walk is a local set after the counter (one-caller helper, match-only): the natural body (source at the call) 40 [35]
+// (retail's scan, compare and clamp exactly, but start arrives unmodified in EDI, no `push edi` or entry move, and the source
+// is summed into EAX, `add eax, edi`, where retail adds into start's EDI), with the count tested first 39 [35], with `start +=
+// (long)string` after the clamp 40 [match] (start ECX for life, walk EDI), on main's early-source body 21 [match] (same code);
+// the natural form's source written `start + string`, `(char const *)(start + (long)string)` and `&string[start]` 40/40/40
+// [35] (the add's operands fold to the same order). LTCG passes start in a callee-saved register whenever the body never
+// writes it; retail's late `add edi, eax` writes it, so start is passed in ECX and moved.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
