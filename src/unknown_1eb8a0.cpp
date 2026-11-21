@@ -802,6 +802,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // products 661/661, successive sum 603/659, and complete sum 659/603, with
 // the rate applied separately or in the initializer. NOT kept: the higher scores
 // shorten past retail, and each form leaves the supplied direction in EBX.
+// EBX still retains the supplied direction at entry instead of the sample.
+// Direct sample rate products before displacement/after displacement/after distance 691/691/691.
+// Shared scaling from the selected sample at those points 689/689/689; captured sample with batched
+// rate products before/after displacement 603/603. NOT kept: the direct and helper forms shorten
+// past retail and regress; batching ties.
 // M3 lane 12 r167 (h2m fast reads 597 for this body; plain where stated): the activation target written through
 // `point3f *target = &s->target;` (retail stores it through EAX = esi + 0x30) fast 590 (2881 B), plain 602 (2888 B), not
 // kept (1 point); the activation direction through a pointer 597 (2883 B); both 691 (2862 B); `s->limited` first and the

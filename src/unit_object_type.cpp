@@ -5619,6 +5619,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // compare final clipped values 195/195, disabled early return 186/188 (scalar/paired angles).
 // NOT kept: all reach 767 bytes but raise the score. The early cross load and final
 // x87 forward-scale lifetime still differ.
+// The first cross still preloads up.i, and the angle spill homes and x87 forward scale differ.
+// Read-once yaw/pitch/both minima 187/188/212, yaw/pitch/both maxima 178/188/199, all four 244.
+// Angle declarations before the basis 169. NOT kept: bound snapshots raise the score, and
+// early declarations tie without moving the slots.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9810,6 +9814,11 @@ struct s_unit_melee_collision
 // range snapshot 484/484/485/484, range per product 531/531/533/531.
 // NOT kept: every per-product form recovers 0x17c but shortens the body by 24 bytes.
 // The unit and both fan counters still need their retail homes.
+// Retail reads range from the tag for each product and keeps the unit in EBX across the fan.
+// Live range with up declared first 531, basis slot names 531, query output names 531, contact receiver
+// names 531, selected-hit word set after the seat byte 533, collision storage first 531, object case
+// first 531, and branch-produced damage scale 531. NOT kept: the frame reaches 0x17c but the body
+// shortens to 2205 bytes and scores rise.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

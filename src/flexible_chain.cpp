@@ -947,6 +947,12 @@ void __stdcall function_1160c0(real dt)
 // `definition->segment_count == i` 145; the rotation through the existing rotate_vector_170d70 (k read at each use) 144
 // (same code), and every include/axis_rotation.h variant measured for 0x29b2e0 (k local or not, dot or cross order) 144.
 // Body unchanged.
+// The segment base and address still use EDI and ECX and spill at +0x20.
+// Anchor selection by value with test before node/before segment/after segment 185/182/177,
+// point source address 182. Segment scope ending at the rest-offset read 144, offset declared
+// first in that scope 144, offset declared before segment selection 144, constraint-and-blend
+// scope 144. NOT kept: the anchor forms restore length but move the first difference earlier.
+// The scope forms tie.
 // M3 lane 12 r167 (h2m fast with 0x116750 and 0x1160c0, MATCH in each; control 144): the axis through the existing
 // normalize_inline 172 (1368 B, first difference +0xc1: its x87/SSE interleave differs); through cross3f_staged 144 and the
 // vertical through vector3f_assign 144 (same code each); `predicted` through vector3f_add 204 (1368 B); the node velocity

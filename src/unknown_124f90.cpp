@@ -4862,6 +4862,11 @@ struct s_128ca0
 // index, or returning the playback pointer itself, used at one site each (the count block's test, the first block's test,
 // the pitch-range index, the field_2c store, the playback byte store, the 0x200 flag store) 204 each (same code: such
 // accessors fold away and do not move the scratch rotation here).
+// Both pin scratch pairs and the synchronization default still differ.
+// Converted gain member before each sum 48, separate assigned offset and sum 50, shared pin workspace 107.
+// Staged pins with direct channel reads in both calls 17. NOT kept: mixed direct and saved voice access.
+// Signed count governing the controller update 101, debit from the selected count 161, separate count producers
+// 101, separate validity-arm publication 194. NOT kept: all four change the early sentinel allocation.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

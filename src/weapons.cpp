@@ -3504,6 +3504,10 @@ struct s_ammo_conversion_entry
 // arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
 // and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
 // bank shortens the body, and retaining the tag bank does not recover the destination save.
+// The destination save and conversion-scan homes still differ in the 0x20 frame.
+// Separate short transfer, arm-selected or capacity-initialized, with negative/positive
+// acquisition 192/195 and 190/202. Long transfer equivalents 205/202 and 205/206.
+// NOT kept: the short form ties and the positive or widened forms tie no lower or shorten the body.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3849,6 +3853,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // with separate balance and heat blocks, balance and minimum blocks, heat and minimum
 // blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
 // the extra frame word and the early magazine tag spill.
+// The magazine tag and admitted round count still compete for frame homes.
+// Late shot result with full/balance/heat/minimum/holder admission split 652/597/634/600/660,
+// explicit no-magazine arms 652, explicit magazine result arms 646, default no-magazine success 648.
+// NOT kept: the 597 form gains six, grows to 2541 bytes and still publishes fired ahead of the debit.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4992,6 +5000,10 @@ struct s_weapon_projectile_creation
 // 1215. Shared dot and projected products before complete result or direct output
 // 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
 // and raise the score. The separate clipping point and opening rotation remain.
+// The rotation still needs the retail scalar homes at the 0x1e98 frame.
+// Dot before cosine, cross before cosine, dot then cross, or cross then dot:
+// vector result 1121 each, staged scalar result stores 1239 each.
+// NOT kept: the vector forms tie and the scalar forms reserve 0x1e94 and shorten the body to 5115 bytes.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
