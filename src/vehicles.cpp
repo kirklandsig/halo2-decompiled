@@ -1286,6 +1286,13 @@ __forceinline long vehicle_round(real value)
 // on the plain one; src/unknown_1cec30.cpp's reference getter 4 / 4 (same code). The flag clear through bit_vector.h's
 // one-local dword setter (compile-only) 3 flips and two instructions more. Lead: an existing inline with exactly one
 // local (or one byte/short result) used between the strength and the side test, on the staged first cross.
+// M3 lane 11 r148 (h2m fast; the compile-only product screen agrees), at 4: a file-local by-value tick-length getter for
+// the rate on the staged first cross 4 (products 6 and 11 flip instead; a float-returning getter moves the products
+// with or without a local of its own, and 0-7 dead helper locals beside it never give 0), on the plain first cross 17;
+// the mode through a byte accessor at all seven reads 3 flips, at the six tests 3 flips (compile-only). Diagnostics
+// (reverted at once): on the staged first cross one dead helper local anywhere from the else arm's top to just before
+// the side cross MATCHES (fast), and so does a byte accessor at one mode read (the axis test's first compare). No
+// existing cross helper in the tree has four locals.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2423,6 +2430,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // and graph lookups after the velocity call 128; the animation-state test ahead of the graph test 484 (2004 B); the
 // velocity call ahead of the vehicle lookup 536 (2011 B: one lookup less); no explicit stack convention 9 (same code).
 // Lead: the inlined animation helpers expanded eight times here carrying more named locals (15 each would do).
+// M3 lane 11 r148 (h2m fast), at 9: the forward speed as dot3f(&linear_velocity, &vehicle->forward) 11 and as
+// dot3f(&vehicle->forward, &linear_velocity) 11 (sum (j + k) + i, the i term forward-first); written velocity-first
+// in i, j, k order 9 and in k, j, i order 9 (same code). Diagnostic: through a forced-inline or plain inline dot helper
+// with its terms written k, j, i (either operand order) or i, j, k 11 each: every inline dot gives (j + k) + i, the
+// direct sum (i + j) + k, neither retail's (k + j) + i.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
