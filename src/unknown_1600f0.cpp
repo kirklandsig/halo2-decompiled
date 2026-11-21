@@ -1211,6 +1211,7 @@ PRIVATE inline long score_string_list_1608e0()
 	return result;
 }
 // score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// Earlier reduced check 678.
 // Earlier reduced check scored 678.
 // Earlier comparison 678 in the r718 fast check.
 // MiniMax C (11-20): no new form, no lower score (679): the frame is still 0x798 against retail's 0x79c, the viewer stays in edi and the coordinate homes and the panel's timing reads still sit in this build's slots; the forms that reach retail's frame size score lower on other axes, so the body stands as found.
@@ -1629,6 +1630,15 @@ PRIVATE inline long score_string_list_1608e0()
 // M3 lane 7 r199 (fast): the player's local user index named once and used at the four scroll-offset uses 697; the
 // scroll offset through a `real *` formed once 740 (2840 B), through a `real &` 740 (2840 B); the player pointer declared
 // after the scores pointer 713 (2888 B), just before the first scroll-offset use 717 (2888 B).
+// Caption rectangle holds the original horizontal/vertical/both edges, with row-copy or
+// direct title far edges 694/694, 693/693, 714/714. Advance caption top from its original
+// edge with vertical/both edges held 715/706.
+// NOT kept: the first six recover frame 0x79c at higher scores. The horizontal forms also recover EBX for the viewer.
+// The final two return to 0x798
+// and shorten the body. The separate ordered origin and score pointer homes still differ.
+// Team/player/both row fade quotients 679/679/679, team/player/both scaled offsets
+// 679/679/679, both final scales 679, both quotients and final scales 679.
+// The 0x798 frame, viewer register and separate origin slot still differ.
 // M3 lane 14 r133 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): the scores pointer as one ternary initialiser 719
 // (2888 B); `panel->time` as one ternary on flag1128 708 (2888 B); the screen height as a short 693 (2888 B); the width
 // as a long 679 (same code); both score flags cleared first and set under the test with no else arm 694.
@@ -1642,6 +1652,10 @@ PRIVATE inline long score_string_list_1608e0()
 // Shared signed team count with body/full rows 707/707. Explicit signed player/team
 // counts with body extent or conditional inset 707/708.
 // NOT kept: all retain 0x798 and raise the score.
+// M3 lane 11 r142 (fast with 0x161420/0x1600f0, MATCH; control 679, aligned 593; the fast image leaves six globals out): the
+// player's user index read once into a `short` local 733 (2840 B); the scroll offset bound once as `real &` 740 (2840 B); the
+// player as `data + index * sizeof` (the event-player getter's shape) 679 (same code). Measured, not changed: the height
+// without its `volatile` 723 (2856 B), the fade count without it 707 (2856 B). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

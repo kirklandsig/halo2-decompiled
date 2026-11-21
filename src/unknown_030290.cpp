@@ -226,7 +226,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
-// score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116, r286 unchanged.
+// score 195 (was 195): one note (the stacked score lines merged, r184, again r116 and r143); r155, r116, r286, r143 unchanged.
 // MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
 // defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
 // still take the opposite component order.
@@ -236,7 +236,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // the dead scale slot and spills the second transform's scaled x and z; the written operand order of the three displaced sums is
 // ignored by the compiler, and a helper taking the three components as scalars (with the reversed point as three locals, as
 // retail's third transform reads) shrinks the frame to 0x24 but reorders the sums and the scale block (214), so the pointer form stands.
-// score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
+// Earlier first line: one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
 // inverse defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the
@@ -738,6 +738,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // reorder stays held (both still contributor code). Body unchanged.
 // Array views of transform input, output, camera basis and translation, separately and together 195 each.
 // Input and output as bounded array references with camera array access 195. The X/Z spills and inverse homes persist.
+// M3 lane 1 r143 (fast; control 195): the point helper's coordinates declared y, x, z 230 (982 B), as three declarations
+// 230, z, x, y 225 (974 B), x, z, y 227 (982 B) (the y, x, z order was measured before only on the held reorder); the
+// helper returning the point by value 308 (875 B); the point passed by const reference 195 (same code).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

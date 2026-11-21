@@ -858,7 +858,7 @@ struct s_simulation_world_owner;
 struct s_session_machine_address;
 struct s_machine_address;
 long simulation_watcher_find_machine(s_simulation_world_owner const *watcher, s_machine_address const *address);
-long network_observer_find_channel_by_machine(s_network_observer *observer, s_session_machine_address const *address, long owner);
+long network_observer_find_channel_by_machine(s_network_observer *observer, long owner, s_session_machine_address const *address);
 
 /* the players and teams in the order of their ranks (0x6c bytes, filled by 0x23f3e0) */
 struct s_results_ranking_195ed0
@@ -1133,8 +1133,8 @@ void function_195ed0(void)
 					if (observer && simulation_watcher_find_machine((s_simulation_world_owner *)g_4cf780,
 						(s_machine_address const *)address->data) != NONE)
 					{
-						long channel = network_observer_find_channel_by_machine(observer,
-							(s_session_machine_address const *)address->data, 3);
+						long channel = network_observer_find_channel_by_machine(observer, 3,
+							(s_session_machine_address const *)address->data);
 
 						if (channel != NONE && *(long *)((byte *)observer + channel * 0x528 + 0xa8) == 7)
 						{
@@ -1555,7 +1555,7 @@ struct s_machine_address;
 struct s_session_machine_address;
 struct s_simulation_world_owner;
 long simulation_watcher_find_machine(s_simulation_world_owner const *watcher, s_machine_address const *address);
-long network_observer_find_channel_by_machine(s_network_observer *observer, s_session_machine_address const *address, long owner);
+long network_observer_find_channel_by_machine(s_network_observer *observer, long owner, s_session_machine_address const *address);
 
 // Disabled: the contiguous results object still has split shared bindings.
 // Retail 0x195ed0; the storage parameter is only an analysis binding.
@@ -1631,8 +1631,8 @@ void refresh_results_195ed0(s_results_update_storage *results)
 					if (observer && simulation_watcher_find_machine((s_simulation_world_owner *)g_4cf780,
 						(s_machine_address const *)address->data) != NONE)
 					{
-						long channel = network_observer_find_channel_by_machine(observer,
-							(s_session_machine_address const *)address->data, 3);
+						long channel = network_observer_find_channel_by_machine(observer, 3,
+							(s_session_machine_address const *)address->data);
 						if (channel != NONE && *(long *)((byte *)observer + channel * 0x528 + 0xa8) == 7)
 							connected = true;
 					}
@@ -1739,7 +1739,7 @@ void function_195a40(byte *results)
                 long channel = NONE;
                 if (observer && simulation_watcher_find_machine((s_simulation_world_owner *)g_4cf780,
                     (s_machine_address const *)address) != NONE)
-                    channel = network_observer_find_channel_by_machine(observer, (s_session_machine_address const *)address, 3);
+                    channel = network_observer_find_channel_by_machine(observer, 3, (s_session_machine_address const *)address);
                 address[7] = channel != NONE && *(long *)((byte *)observer + channel * 0x528 + 0xa8) == 7;
             }
             else address[7] = 0;

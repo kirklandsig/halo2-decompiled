@@ -1789,6 +1789,12 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// M3 review (11-21, lane 2 r124): a byte MATCH (full check 12319, 0 lost) came from file-local copies of the shared index scan
+// and datum step (data_datum_iterator_next_inlined) with the scan's loop inverted by hand (`if (index >= 0 && index < high)
+// do { ... } while (++index < high);`), plus the score compared inside the team arm and the selection stored before best.
+// Not kept: an existing helper's body written out by hand and a hand-inverted loop are reverted even with a match. The same
+// loop in the shared helper matches 0x2689d0 but loses 0x152660 (3) and 0x294050 (62), so retail's one scan spelling is still
+// unknown; a spelling of the shared helper that keeps all three is the open lead. Body is main's (87).
 // MiniMax G (11-20): no new form, no lower score (87 in the reduced image, 85 in the full one): the score is still taken and compared
 // outside the team arm with an SSE compare where retail compares inside the arm on the x87 stack, the walk's pool is still
 // reloaded from its slot at each step where retail hoists it into EBX, and the selection is still kept in EDI besides its slot.
@@ -2338,6 +2344,12 @@ void function_269250(long clump_index, long actor_index);
 // 166/180, bounded bitmap scan 160/174, occupied cursor search 166/180 (current/exhaustion first).
 // NOT kept: 0x40 frame spills the actor and changes four matched walk users. The pool,
 // selection and x87 score still need their retail homes.
+// M3 lane 14 r136 (h2m fast with 0x268840, 0x268bb0, 0x269580, 0x269250, 0x2694d0, 0x269040, 0x1e46c0, 0x26ae30,
+// 0x268c90 and 0x268510, all MATCH each run; control 87): on this body the improving arm storing the selection before the
+// best 87 (same code); `best` declared ahead of the selection 87 (same code). The in-arm compare re-measured 126 (480 B);
+// on it the selection declared after `best` with the arm storing the selection first (retail's arm stores the selection,
+// then jumps to the best store it shares with the initialiser) 126; `real const score` 126; `register long selected`
+// 126 (all the same code: the selection keeps EDI across the post-walk calls, where retail reloads it from +0x14).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

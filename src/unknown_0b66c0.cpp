@@ -575,6 +575,15 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
 // and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
 // split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
+// M3 lane 5 r221 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): retail's 0xb61d0 sets its scan's walk
+// before its counter, this function the counter first, so the shared helper cannot serve both; with a second file-local helper
+// whose walk is a local set after the counter (one-caller helper, match-only): the natural body (source at the call) 40 [35]
+// (retail's scan, compare and clamp exactly, but start arrives unmodified in EDI, no `push edi` or entry move, and the source
+// is summed into EAX, `add eax, edi`, where retail adds into start's EDI), with the count tested first 39 [35], with `start +=
+// (long)string` after the clamp 40 [match] (start ECX for life, walk EDI), on main's early-source body 21 [match] (same code);
+// the natural form's source written `start + string`, `(char const *)(start + (long)string)` and `&string[start]` 40/40/40
+// [35] (the add's operands fold to the same order). LTCG passes start in a callee-saved register whenever the body never
+// writes it; retail's late `add edi, eax` writes it, so start is passed in ECX and moved.
 // M3 lane 8 r208 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the length bound by a
 // const reference for the compare 21 [match]; a redundant `result = false;` at the top of the guarded arm 21 [match]; the
 // early source bound by a const reference for the copy 21 [match] (same code each); the natural body (source at the copy)
@@ -592,6 +601,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // const *text = string;` named after the clamp with `text + start` at the copy 27 [6] (same code); that local named
 // before the compare 40 [35]; the source as `(char const *)(start + (long)string)` at the copy 28 [6]; `start = (long)string
 // + start;` after the clamp 40 [match] (start ECX for life, the string folded into the add).
+// M3 lane 3 r288 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): on main's body the
+// compare as `length - count >= start` 35 [35]; the sign tests as an early `return false` ahead of the result 41 (107
+// bytes) [match]; a `char *const` destination 21 [match]; a `long const` start 21 [match]; the length through a new
+// one-caller bounded helper taking the maximum (0x1ff) as a parameter 21 [match] (the last three the same code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

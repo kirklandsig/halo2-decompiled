@@ -273,7 +273,8 @@ struct s_unit_animation
 	short unknown06;
 	byte unknown08[0x68 - 0x8];
 	long unknown68;
-	byte unknown6c[0x7c - 0x6c];
+	word flags;
+	byte unknown6e[0x7c - 0x6e];
 	long name;
 };
 
@@ -1865,7 +1866,7 @@ void function_c96b0(long unit_index, long *result, real a, real b)
 /* puts a weapon in the unit's slot, or empties the slot and gets rid of
    the weapon there by mode (mode 4 keeps it) */
 // @retail 0xcea70
-void __stdcall function_cea70(long mode, short slot_index, long weapon_index, long unit_index)
+void __stdcall function_cea70(short slot_index, long weapon_index, long mode, long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 
@@ -1932,7 +1933,7 @@ void function_ccf20(long unit_index)
 	{
 		if (unit->weapon_object_indices[i] != NONE)
 		{
-			function_cea70(1, (short)i, NONE, unit_index);
+			function_cea70((short)i, NONE, 1, unit_index);
 		}
 	}
 }
@@ -2227,7 +2228,7 @@ void function_ce920(long unit_index, long slot_index, long mode, bool flag)
 		{
 			mode = 1;
 		}
-		function_cea70(mode, (short)slot_index, NONE, unit_index);
+		function_cea70((short)slot_index, NONE, mode, unit_index);
 		for (long hand = 0; hand < 2; hand++)
 		{
 			if ((short)slot_index == (&unit->unknown216)[hand])
@@ -3100,6 +3101,7 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax B (11-19): no new form tried this round, no lower score (97): the body is still retail's 350 bytes with the
 // same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and
 // re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into
@@ -3108,7 +3110,6 @@ void function_c5740(long unit_index, bool start)
 // MiniMax I (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180 helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
 // MiniMax E (11-20): no new form, no lower score (97): the prologue's register roles still differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x188180.
-// score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax C (11-15): no new form, no lower score (97): the body is retail's length and the first difference is still
 // the prologue - retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit
 // index and the material from the stack at each use, while this build keeps the unit index in EBX and the material in
@@ -3134,7 +3135,7 @@ void function_c5740(long unit_index, bool start)
 // parameter types fixed in another lane's file, so the call setup cannot be matched from here.
 // MiniMax H (11-13): no new form, no lower score (97); retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP.
 // MiniMax I (11-15): no new form, no lower score (97): retail still keeps the definition index in ebp and the object globals pointer in edi and re-reads the unit index and the material from the stack at each use, where this build keeps the unit index in ebx and the material in bp; the effect helper's seventh parameter and its register convention live in another file. The pool's data pointer is the other half: retail reloads it out of the pool global after the 0x1012c0 call, which is what a build that treats the callee as opaque does, while this build keeps the pointer in esi across the call because the callee's body is visible to it and the re-read folds away; that callee lives in another file, which this lane may not edit.
-// score 94 (was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
+// Earlier (score 94, was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
 // Pool snapshot 92 (two-point gain rejected); headers 94; shared tag lifetime 94; pool/tag 92;
 // direct unit observations 94; conditional material result 94; weapon getter 121; pool/getter 135;
 // existing masked-index getter 94. Original body restored.
@@ -3198,6 +3199,23 @@ void function_c5740(long unit_index, bool start)
 // file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
 // MiniMax R (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file.
 // MiniMax S (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
+// M3 lane 14 r136 (h2m fast with 0xcf040, 0xcf3d0, 0x188180, 0x1012c0, 0xbaf80 and 0x189060; 0xcf040 MATCH, 0xcf3d0 484 each
+// run; control 97; 0x188180's convention now agrees: point EAX, forward ECX, eight pushes): definition_index copied to a
+// local at the top 97 (same code); unit_index read volatile at its three call uses 104 (unit from the stack as retail);
+// plus the material volatile at both uses 113 (363 B), in the fallback only 98 (EBP then holds definition_index as
+// retail); plus one pool local `s_record_pool *objects = g_4e0300;` for all three lookups 98; with that pool local
+// declared in the weapon block for the definition and root lookups only (the unit through UNIT_GET) 27 (351 B: retail's
+// EDI/ESI roles and the data re-read after 0x1012c0). On 27: no volatile at the 0x188180 call 71 (unit back in EBP); unit
+// through one read of its address 88 (folded); no material volatile 75; the pool local at function scope after the unit
+// lookup 27; volatile on one or neither 0x189060 call 27/27; the volatile only at the first lookup 27 (same rows: the call
+// setup order is not the volatile's). The material parameter typed c_type_47f957 (measured only: it needs the contributor
+// 0xcf040's call line) with the unit read and the block pool local 27 with no material volatile; that type alone 114;
+// type and pool local with no volatile 88; the block pool local alone 98. On the typed form: a named weapon definition
+// pointer 27; unit_get_current_weapon (the 0xcbd50 inline) 138 (0x1012c0 inlined); one function-scope tag_index 27; the
+// fallback as a forceinline helper taking the indices 88 (no volatile); the material tag read at each use from a named
+// record pointer 27. A 600 s permuter run on the 27 form (full image 26): 24 tries, none below 26. Left at 27: the weapon
+// definition load's destination (ECX for retail's EAX), the 0x188180 argument setup (ours loads the material first into
+// EDX, retail unit_index first into ECX), the first 0x189060 call's unit register and the fallback's table register.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3269,7 +3287,7 @@ void __stdcall function_ced30(long unit_index, long object_index)
 			{
 				unit->next_weapon_index = NONE;
 			}
-			function_cea70(4, (short)i, NONE, unit_index);
+			function_cea70((short)i, NONE, 4, unit_index);
 		}
 	}
 	if (unit->current_weapon_index == NONE)
@@ -3514,7 +3532,7 @@ void function_c6810(long unit_index)
 // @coldspear (#104, 2026-10-30): reading the request definition g_4677c8[9] through a volatile pointer gives 26,
 // not kept: retail re-reads the definition there.
 // @retail 0xce520
-void function_ce520(long weapon_index, long unit_index, bool flag)
+void function_ce520(long unit_index, long weapon_index, bool flag)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	long slot = NONE;
@@ -4140,6 +4158,9 @@ void __stdcall function_ceb30(long unit_index)
 // order alone 2); both held: the retail setup orders are reg-to-reg copies or differ per caller, so they
 // are not retail evidence, and 0xcea70 is matched code in @Banshee64's range. The 0xce520 order also
 // changes its call in 0x15e360 (src/unknown_157450.cpp), which stays matched either way.
+// Matched in a full build with stand-in SDK headers (was 4): the register moves in front of the calls of 0xcea70 and
+// 0xce520 follow the callees' parameter order, so 0xcea70 is declared (slot_index, weapon_index, mode, unit_index) and
+// 0xce520 (unit_index, weapon_index, flag); their bodies are unchanged and every call site passes the same values.
 // @retail 0xd09c0
 void __stdcall function_d09c0(long unit_index, long slot_index, long definition_index, short value, dword const *state)
 {
@@ -4178,7 +4199,7 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 	}
 	if (weapon_index != NONE)
 	{
-		function_ce520(weapon_index, unit_index, false);
+		function_ce520(unit_index, weapon_index, false);
 		weapon_index = NONE;
 	}
 	if (definition_index != NONE)
@@ -4193,7 +4214,7 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 			{
 				function_15e050(weapon_index, value);
 			}
-			function_cea70(NONE, (short)slot_index, weapon_index, unit_index);
+			function_cea70((short)slot_index, weapon_index, NONE, unit_index);
 			if (unit->unknown13c != NONE)
 			{
 				function_1520f0(unit->unknown13c);
@@ -7115,7 +7136,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	{
 		function_b9a90(weapon_index);
 	}
-	function_cea70(NONE, slot_index, weapon_index, unit_index);
+	function_cea70(slot_index, weapon_index, NONE, unit_index);
 	switch (mode)
 	{
 	case 0:
@@ -7190,7 +7211,7 @@ done:
 // addresses. The side bit cannot have both halves: every form that keeps retail's sete/test/je (a bool local, with
 // either the compound or the assignment form in the branches, or a signed char state pointer) makes the compiler merge
 // the two arms into one load of the byte, one register update and one store.
-// score 125 (was 187): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
+// Earlier score 125 (was 187): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
@@ -7388,6 +7409,13 @@ done:
 // paired animation/state setters 125, shared setters for all bits 121, separate side-arm setters 130,
 // nested early animation gate 125, typed animation object 129. NOT kept: all shared setters gain
 // four at retail length. The byte results and the side and animation memory updates still differ.
+// MATCH (m3 lane 3 r287; fast and plain, 125 -> 0, callers 0xc42e0 MATCH and 0xca0b0 62 unchanged): each definition-flag
+// test in its own named bool with its own `if` (retail's dead `and cl, 1` byte stores and the hoisted `mov ecx, 2`) 33;
+// the side bit through the existing setter on the byte (`sete` / `test`, the arms still merged through AL) 41; the
+// state read as word flags, as the other readers of that offset do, with the existing word setter (retail's `or` /
+// `and byte ptr [edi]` in each arm) 57 positional; the animation block's word flags at +0x6c named as a field of its own and
+// ORed through UNIT_ANIMATION 23 (a dead `lea` of the field where retail has a dead `add` of the block's base); the
+// animation block in a named pointer for that OR: MATCH.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7406,12 +7434,16 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		if (planar_normalize((vector2f *)&toward) > 0.0f && normalize2d(&facing) > 0.0f)
 		{
 			angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
-			if (!TEST_FIELD_BIT((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
+			bool facing_fixed = TEST_FIELD_BIT((definition->unit.flags >> 9) & 1);
+			if (!facing_fixed)
 			{
-				if (function_e70b0(unit_index).value == NONE)
+				if (unit->type == 0 && unit->parent_index == NONE)
 				{
-					facing = toward;
-					turn = true;
+					if (function_e70b0(unit_index).value == NONE)
+					{
+						facing = toward;
+						turn = true;
+					}
 				}
 			}
 		}
@@ -7446,7 +7478,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	{
 		return false;
 	}
-	byte *state = (byte *)unit + unit->unknown33e;
+	word *state = (word *)((byte *)unit + unit->unknown33e);
 	if (flag)
 	{
 		function_ba350(unit_index, 0.1335f);
@@ -7475,14 +7507,19 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		{
 			unit->unknown1f5 = 0;
 		}
-		*state = (side == 3) ? (byte)(*state | 8) : (byte)(*state & ~8);
+		word_flags_set(state, 3, side == 3);
 		if (!animated)
 		{
-			*((byte *)unit + unit->animation_offset + 0x6c) |= 1;
+			s_unit_animation *animation = UNIT_ANIMATION(unit);
+			animation->flags |= 1;
 			*state |= 4;
-			if ((definition->unit.flags >> 1) & 1 && !function_a7670(unit_index))
+			bool dies_unanimated = TEST_FIELD_BIT((definition->unit.flags >> 1) & 1);
+			if (dies_unanimated)
 			{
-				function_d6bc0(unit_index);
+				if (!function_a7670(unit_index))
+				{
+					function_d6bc0(unit_index);
+				}
 			}
 		}
 	}

@@ -25,7 +25,7 @@ static __forceinline long real_to_long(real value);
 
 extern s_record_pool *g_509434;
 struct s_location;
-void function_ce520(long weapon_index, long unit_index, bool flag);
+void function_ce520(long unit_index, long weapon_index, bool flag);
 void function_b75a0(long object_index, point3f const *point, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool flag);
 void function_b73b0(long object_index);
@@ -46,7 +46,7 @@ void function_15e360(point3f const *point, long object_index)
 	{
 		byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
 		if (TEST_FIELD_BIT(((s_engine_item_flags *)object)->held))
-			function_ce520(object_index, *(long *)(object + 0x154), true);
+			function_ce520(*(long *)(object + 0x154), object_index, true);
 		function_b75a0(object_index, point, g_4687a8, g_4687b0, NULL, false);
 		function_b73b0(object_index);
 		long cache_index = function_3ddd0(object_index);
