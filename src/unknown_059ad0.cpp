@@ -4657,6 +4657,17 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // shared `result = true` block sits at the end instead of after the state-8 test. On the 94 lead: the kept arms jumping
 // to `accepted` with no store ahead of them 246 (1276 B), with the store kept ahead 95 (1268 B: the post-disconnect test
 // turns into `je`); the kept arms `return true;` or `return result;` 103/103 (1270 B, a return block of their own).
+// M3 lane 4 r242 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; lane 1 r144's 44 lead rebuilt, 44).
+// Reading of retail on the 44 lead: retail's state-8 block (store 1, reload, epilogue) is the shared accept exit: the
+// acknowledgement's state-not-7 edge jumps to its start, and the kept arms and the post-disconnect true edge jump past
+// its reload with AL already 1 (the kept arms test `same`/`better` in CL and store `result` through AL), so on those
+// edges the return value is the constant; ours folds the accept exit to `mov al, 1` in an epilogue of its own. On the
+// 44 lead: the kept arms `goto done` with `done:` on the shared `return result;` 44 (same code), with the
+// post-disconnect test also `goto done` 105 (1248 B), with the acknowledgement ending `result = true;` and falling
+// into `done` as well 96; the accept exit written inside the state-8 arm (`else { accept: result = true; return
+// result; }`) 328 (1247 B: VC still lays it out at the end); the kept arms `return result;` with the acknowledgement
+// still `goto accept` 44 (same code); on the 96 form the kept arms `return result;` 100, as `if (same) return true;
+// if (better) return true;` 129.
 // M3 lane 15 r126 (h2m fast; on m3 lane 5 r208's structured lead, 96 there with only the end of the received block
 // left): after the disconnect, an own `return result;` 109; `if (result) return true; return false;` 110; `return result ?
 // true : false;` 110; `if (result) return result; return false;` 109; `if (!result) return false; return true;` 110 (each
