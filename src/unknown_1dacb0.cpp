@@ -1609,6 +1609,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator outputs different homes. All request forms move away from retail length.
 // Separate optional-output destination bindings in their publication conditions, all seven subsets and a
 // const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
+// M3 lane 6 r225 (H2M_FAST with the twin 0x1dbc80, 0x1dc790 and 0x1dc8c0, siblings MATCH unless noted; control 812,
+// aligned 578, masked 74): the three output stores moved after the found block 1037 (2846 B, diagnostic); the per-pass
+// candidate declared at the top of the do-while body 980 (2837 B); no candidate, the result reset with `result =
+// c_type_709360();` and set under `if (named)` 1008 (2837 B); a redundant `if (0 < graph->inheritance_count)` guard around
+// the request helper's inheritance loop 823 (2805 B, both twins; 0x1dc8c0 2); the entry pointer declared at its iterate
+// call in the loop body 812 (same code). Reading: ours gives found_mode's dead home to iterator_mode and keeps the candidate
+// at F+0xc, retail gives that home to the candidate and keeps iterator_mode at F+0; retail also carries the loop's result
+// in ECX past the output stores (its NULL exit reloads it, hence its `jne exit; jmp top` loop tail).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2170,6 +2178,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // unchanged: the iterator mode keeps found_mode's home and the outputs stay at +8/+0xc, so the copy alone does not
 // move the frame. `if (NONE != weapon_class)` 812 (same code, alone, in both twins, and with the cast): the class
 // and -1 keep ECX and EDX.
+// M3 lane 6 r225 (H2M_FAST with 0x1dc790 and 0x1dc8c0, both MATCH; control 812): the candidate initialised with
+// `= c_type_709360()` 812 (same code); a redundant `else { animation_id = c_type_709360(); }` arm 1013 (2837 B); the
+// outputs set by one chained `= NONE` 812 (same code); the found id copied into a const local for 0x1dd9d0 812 (same
+// code); the first request's keys read from the iterator's input fields 943 (2839 B). The twin's forms are in its note.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

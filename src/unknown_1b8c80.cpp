@@ -2253,6 +2253,13 @@ void function_1f86a0(long actor_index);
 // element-index and timer stores) 123 (same code); no mask local with both 0x20 tests through `state->flags` 243 (865 B);
 // the decline decided by a positive `accept` bool (`u ? (flags & 0x40) && same : specified != 0x20 || same`) 123 (same
 // code). Body unchanged.
+// M3 lane 6 r225 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123, aligned 105, masked 48):
+// the two-step byte-reference mask (`byte &mask = specified; mask = flags; mask &= 0x20;`) with the bit-0x40 test through the
+// slot state view 235 (866 B: the mask is back in BL once the flags byte no longer contests it), with plain non-zero mask
+// tests 234 (865 B); no mask local, both 0x20 tests through the selection and bit 0x40 through the state view 235 (same
+// code: the shared mask temp takes BL too), with non-zero tests 234; the mask local read from the state view with bit 0x40
+// from the selection 245 (867 B). Reading: any byte value live across the two root calls (mask local, shared mask temp or
+// the shared flags byte) takes BL; retail has none (mask spilled at F+3, flags re-read for bit 0x40, entry in EBX).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
