@@ -1259,6 +1259,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 133.
 // NOT kept: The quaternion forms grow the frame to 0xc4 and raise the score.
 // The 0xc0 frame exceeds 0xb4. The cross product has a separate stack home and the alignment products are scheduled differently.
+// Scoped normalized scalars 206, initialized scaled vector 206, shared setter for scaling 204.
+// Indexed scale 191, descending projection loop 195, first-component projection seed 130.
+// Origin default at transform 174, output workspace with scaled scalars 206.
+// NOT kept: the 0xc0 frame and rotation-axis spill remain. The projection seed ties.
 // Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
 // Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
 // NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
@@ -1774,6 +1778,9 @@ struct s_item_flags_view_10b850
 // Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
 // or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
 // and the reused entry Boolean bytes still differ.
+// Working or sampled gravity step 837/837. Gravity-adjusted velocity initializer 868.
+// Working, sampled or both conditional vertical values 851/858/858. Separate height 824.
+// Single gravity observation 824. NOT kept: the frame remains 0x154 and the entry flag stores differ.
 // Endpoint declared before the carrier 824, early or late point setter 904/904,
 // copied-origin component or indexed integration 886/905, early ray setter 824,
 // paired point and displacement setters 824, and component writes through the query origin 824.

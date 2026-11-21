@@ -3231,6 +3231,10 @@ void function_c5740(long unit_index, bool start)
 // Explicit object-header lookup for unit, weapon, root, unit/weapon, weapon/root, unit/root,
 // all three or post-gate headers with typed root members: 97 each. NOT kept: no gain; the
 // definition-index and pool-data homes remain.
+// Damage-presence test before material lookup 105, masked damage slot before/after material
+// lookup 91/93, selected tag instance 97, typed damage/material/both playback indices
+// 97/97/97, and inline effect dispatcher 97. NOT kept: the six- and four-point gains
+// leave the prologue different and split the damage index into two register values.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5629,6 +5633,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Forward component copy loop ascending/descending with ordinary crosses, staged first,
 // staged second or both staged: 185 each. NOT kept: the copies lengthen the body and the
 // first cross still preloads up.i.
+// Inverse transform into separate storage 300, in place 278, or through its returned
+// pointer 303. Reconstruction through the unit-scale transform with separate or
+// reused storage 233/233, in place 199, and paired transforms with separate or shared
+// direction storage 353/353. NOT kept: the transform forms shorten the body and
+// raise the score without recovering the first cross schedule.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

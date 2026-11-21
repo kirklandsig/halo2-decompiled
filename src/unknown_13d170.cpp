@@ -960,6 +960,11 @@ struct s_physical_block_iterator
 // block's offset named once for both tests 40; the overlap test inverted with `continue` 40 (retail's handle in ECX and
 // best.offset in EDI are not reached). The lead's comparator helper replaced in place by `if (... || ... && ...) better =
 // true;` 232 (1246 B) or by `better = time != best.time ? time < best.time : pages < best.pages;` 263 (1200 B). Body unchanged.
+// Retirement before winner copy 243, ordinal before eligibility 355, read-only ranked record 201.
+// Page total before timestamp 367, tie break 284.
+// Ordinal before candidate updates 250, retirement and policy rejection continue 324.
+// NOT kept: the tied forms leave case zero threaded. The other forms disturb the matching prefix.
+// Retirement with an explicit end-of-ring check 254. NOT kept: the matching limit setup changes.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
