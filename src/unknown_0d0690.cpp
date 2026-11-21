@@ -1666,6 +1666,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (direction2 in place, the square after the negate, three normalize orders, select stores): 0xd4080 445 to 496 (445 at
 // its retail 1870 B). Every form under 521 raises 0xd4080 above 378, so none is kept; leads saved as
 // build/r202/lead-0xd37f0-500.patch and build/r202/lead-0xd37f0-entry-565.patch. Body unchanged.
+// primary shared negate 569, secondary shared negate and copy 591, ambient shared negate and copy 552,
+// primary shared negate and secondary shared negate and copy 549, primary shared negate and ambient
+// shared negate and copy 606, secondary shared negate and copy and ambient shared negate and copy 622,
+// primary shared negate and secondary shared negate and copy and ambient shared negate and copy 613, all
+// shared negates with separate rotation input 634.
+// NOT kept: All eight forms shorten away from the retail extent and raise the score.
+// The 0x2c frame exceeds 0x28. The selection byte still spills and the block and query arrive in exchanged registers.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

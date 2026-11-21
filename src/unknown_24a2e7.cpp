@@ -443,6 +443,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // advanced with the index 83 (aligned 9: terminator and plain name exact, the arm uses the cursor); the per-iteration
 // pointer 75; the found pointer preset NULL and tested after the loop 60; the arm's pointer named in the found block 72
 // (aligned 6: one product hoisted and shared by all three uses where retail forms it three times).
+// Separate copy or whole format scopes with an entry pointer/reference and indexed
+// clear 83/83/83/83. Nested suffix with a comparison cursor, advancing on inequality
+// or after the match arm, ordinal or cursor first, 84/84/84/84. The frame remains 0x24.
+// The scaled entry remains live across the appends.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

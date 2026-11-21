@@ -1738,6 +1738,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // test as returns (also with two of its five conditions) and expands with everything else when the test is a value
 // or sets `result`; a test at 0x71730's call changes nothing.
 // MiniMax B (11-20): no new form, no lower score (871): the frame is 0xd0 against retail's 0xb4 and retail calls 0x192e60 out of line where ours expands it; the histogram as a long array reads 911 and as a memset read 936, both worse than the kept body.
+// all-group read advance 871, all-group read advance with dword buckets 911, eligible-party read advance
+// 870, eligible-party read advance with dword buckets 911, both reads advance 870, both reads advance
+// with dword buckets 911, eligible-party reject after advance 870, eligible-party reject after advance
+// with dword buckets 911.
+// NOT kept: The 870 forms gain one point. Dword cells cut the frame to 0xb0 but shorten the body to 2748 bytes and raise the score.
+// The 0xd0 frame exceeds 0xb4. The opening variant lookup still expands and the upper-capacity selector remains a call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

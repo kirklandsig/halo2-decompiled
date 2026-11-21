@@ -954,6 +954,11 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `bool result` 754 (aligned 610); the pathfinding pointer read from the state at both searches and the trace (no entry
 // local) 769 (2969 B); `*complete` read in `last` (no entry copy) 769 (2963 B); the actor's linked index read once into
 // a named `long linked` for the height and the flags 761 (aligned 606).
+// Accumulated actor bits, leaf-selected mask, optional low bit added, separate
+// option bits combined with base, or conditionally selected option bits 675/735/675/768/775.
+// Accumulated, leaf-selected and separate option bits with Boolean success 754/754/769.
+// The accumulated form keeps the old register homes. Boolean success moves the
+// entry allocation and keeps the stack homes different from retail's.
 // M3 lane 12 r162 (fast with 0x270930 and 0x2c4030 matched; control 675; retail keeps the pathfinding pointer in EBX at
 // entry, flag EDI, object_index ESI, NONE EBX, the result in a stack byte and first_output's zero as a dword store): the
 // pathfinding pointer declared after the radius 674 (one count, not kept); the step counter as long 764 (2949 B);

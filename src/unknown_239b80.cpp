@@ -1509,6 +1509,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
 // tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
 // guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
+// Ordinal before point/side, between them, before side/point, or between
+// side/point 133/132/133/130. Publishing the side in each input-acceptance
+// branch, before or after the point copy, after the mask update, or after duplicate
+// suppression 216/216/166/135. Early publication recovers count in ECX, swaps
+// the side slots and grows the body to 895 bytes. Late publication leaves the side in CL.
 // M3 lane 6 r214 (fast with 0x239e50; control 129, aligned 81, masked 16). Retail keeps both side bytes in memory (the
 // copy at the loop end goes through CL into +0xd), so the count holds ECX from the top; ours keeps the previous side in
 // CL. The listed copy moved ahead of `if (inside)` re-measured 157 (masked 9: left the two side-byte slots swapped, the

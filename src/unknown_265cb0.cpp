@@ -2279,8 +2279,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 // encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
 // registers.
-// score 158 (was 158): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
-// score 158 (was 158; 168 before lane 2 r119): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// Earlier measurement 158 (was 158): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// Earlier measurement 158 (was 158; 168 before lane 2 r119): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
 // Earlier measurement 158 (was 168): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
 // the players iterator loads its table into ECX (retail EAX) and the direction is not held in XMM1..XMM3 across the two dots.
 // Earlier first lines: 158 (was 168); 168 (was 168): r200 unchanged.
@@ -2983,6 +2983,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // memory where retail keeps them in registers (it loads the direction's j and k before the branch), the players
 // iterator still takes the table pointer in eax where retail takes it in ecx, and neither the operand order in the
 // three dots nor copying the direction's components into scalars changes anything; a permuter run found no variant.
+// state and view gate 158, view and state gate 585, one state-first eligibility test 158, one view-first
+// eligibility test 585, view-owned updates with nested state 585, view-owned updates with combined state
+// 585, nested state and one view influence read 605, combined state and one view influence read 605.
+// NOT kept: The state-first forms tie. The other forms shorten the body and raise the score. The one-read forms also disagree with retail’s two influence loads.
+// The 0x80 frame agrees. The contact-head address reverses base and index, and the player iterator and direction registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
