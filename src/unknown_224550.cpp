@@ -862,6 +862,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 185, secondary then pivots then primary 185, primary/x/secondary/y 169, and
 // x/both bounds/y 170. Both pivot inputs captured as points 377 in each order.
 // NOT kept: direct reads still spill blend at the join. Captures grow to 1995 bytes.
+// Blend still spills through the bitmap join. Frame-selected spans on primary, secondary
+// or both 341/390/379. Frame-selected spans and reciprocals on primary, secondary or
+// both 357/426/379. Primary both with secondary spans 408, reverse 417.
+// NOT kept: all raise the score. Moving both reciprocal pairs reaches 1936 bytes
+// but changes the frame.
 // M3 lane 8 r218 (H2M_FAST with 0x2243c0, MATCH throughout; control 162): every reciprocal product written as a
 // division (ay/ax, by/bx*blend, remaining_blend/ax, blend/bx ...) 390 (1839 B, frame 0x50: eight real divss, no shared
 // reciprocal across the arms); the flip between the extents and the reciprocals 340 (1975 B); each reciprocal right after

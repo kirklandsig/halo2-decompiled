@@ -466,6 +466,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // On it: a `short` index 70 (214 B); the result re-indexed (`result = entries[i].field_1e4`) 51 (218 B); the tag named
 // once as a `char const *` for the test and the ascii call 39 (same code); the terminator after `result = buffer` 39
 // (same code); the found test written `index == entries[i].index` 39 (same code). Body unchanged.
+// The frame is still 0x24 and retains the scaled entry. Scope the native name and suffix
+// arrays after conversion, at the copy, in separate blocks, or through concatenation,
+// with an indexed clear 84/84/84/84. With grouped list state 64/64/64/64.
+// NOT kept: grouping recovers the base spill and gains three points, but the ordinal
+// stays scaled across the appends.
 // M3 lane 12 r170 (h2m fast with 0x24a64d matched; control 67; E0 = the terminator indexed as `entries[i].field_1e4[49] = 0`
 // on this body, 84 at 197 B: the whole entry address is then kept in EBX across the calls, where retail keeps the index in
 // EBX, spills the entries pointer and multiplies again): E0 with the built name read as `entries[i].field_1e4` at every use

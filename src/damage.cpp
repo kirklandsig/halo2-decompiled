@@ -5469,6 +5469,10 @@ struct s_damage_object_creation
 // shared full-width test bit 167, with both word setters 167; shared word test bit 225, with both setters 225;
 // primary or secondary setter with the word mask 167/167. NOT kept: the word test bit shortens the scan
 // and moves the first difference earlier. The EDI count and EDX primary mask persist in the tie forms.
+// Count and ordinal in one for initializer, both orders with either record scope and
+// signed/unsigned membership shifts: 167 in all eight forms. A positive guard with
+// terminal-ordinal test, with or without the promoted primary mask, 181/181.
+// NOT kept: the count stays in EDI, and the terminal-ordinal loop raises the score.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
