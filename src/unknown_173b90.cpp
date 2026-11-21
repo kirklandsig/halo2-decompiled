@@ -2211,6 +2211,14 @@ bool function_17afd0(long effect_index, long value);
 // body 103 (491 B); the plain conjunction with the availability as an if/else of constants 113 (498 B, the prologue's
 // registers move); same_view and available in one declaration 12 (same code). Re-measured: the `else if (!available)`
 // clear 105 (502 B). All restored.
+// M3 lane 4 r245 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): same_view written by a file-local forceinline
+// helper through an out-pointer 138 (the plain conjunction's code). Diagnostic, reverted at once: same_view declared volatile
+// with an if/else of constants 133 (508 B): the availability block is then retail's exactly (true store ahead of the
+// `jne`, one shared false store), so retail's flag lives in memory and is stored where written; left are the callee-saved
+// choices (NONE EBX, owner EDI, effect index EBP against retail's NONE and owner in EBP, effect index EDI). A false default
+// with the owner/view arm setting true then clearing it when unavailable 129 (506 B); the true default with `else same_view
+// = true;` on the clearing test 138; the true default with that arm and `else` false 148; a NONE-defaulted owner with the
+// false-default arm 149 (517 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

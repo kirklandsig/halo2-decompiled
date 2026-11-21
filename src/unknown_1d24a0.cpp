@@ -660,6 +660,15 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // local_0/local_1 851; the two angular coefficients bound `real const &` to the record 871 (4225 B, as the reads at each
 // use); the element pointer as `data + index` 838 (same code). Reading: retail's head forms and spills the element pointer
 // because its data pointer is not kept across the attached-object lookup to the removal; ours keeps it in EBX for that path.
+// M3 lane 13 r140 (H2M_FAST, single address; control 838, difflib-aligned 340 with call targets masked): the angular
+// coefficient field_5c read from the record at its two uses (field_58's local kept) 843 at 4242 B (aligned 317): the frame is
+// then retail's 0x1d4 and the first difference moves to +0x14 (left there: `push ebx` at the entry, which this body saves around
+// the loop); field_58 read at each use with field_5c's local kept 857 (4238 B, frame 0x1d4, aligned 316); all four response
+// fractions through the one `response_fraction` local 876 (4243 B), with field_5c at each use 888. Lead (match-only, a statement
+// order): field_5c at each use plus the first level's step ahead of the target test (lane 11 r141's 807 form) 809 at 4245 B,
+// aligned 299: the whole entry block, frame and `push ebx` are then retail's to the loop head, where this body still keeps the
+// element list's data pointer in a register (retail re-reads it; r141's 780 removal form). With r141's list local moved to the
+// removal as well 739 at 4254 B (aligned 239; three match-only forms together). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

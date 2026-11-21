@@ -3511,6 +3511,10 @@ struct s_ammo_conversion_entry
 // Conversion candidate as mutable or const reference before the match test 214/214;
 // with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
 // NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
+// Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
+// Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
+// NOT kept: the joined conversion paths tie or shorten the body, and holding the pickup amount adds a frame word. The caller and both callee controls retain their scores.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3865,6 +3869,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // runtime element reference 636, with indexed tag 752, with tag reference 636.
 // NOT kept: full check of the indexed runtime form scores 645 and shortens to 2518 bytes.
 // The 0x1c60 stack probe returns, but the barrel offset is formed after the wake call and still takes EBX.
+// Required rounds scoped to ammunition 603. Magazine selector by field
+// reference 568. Loaded balance by field reference, both field references,
+// or both scoped to ammunition 647/647/647. Late tag defaults 630, late scale
+// defaults 674, both after scoped ammunition 665. Selector reference after
+// the sentinel test 603. NOT kept: the 568 form shares the first selector load
+// with sign extension where retail reads twice. The later binding restores
+// those reads and ties. Required rounds and the original field reads restored.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4372,6 +4383,11 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Flag-first selected barrel value 1423, tag field reference 1578, reference with shifted control bit 1577,
 // and separate selected-barrel assignments 1426. NOT kept: the names leave the 0x34 frame and early dual spill.
 // The flag-first forms grow the body and allocate 0x34 with a value or 0x3c with a reference.
+// Player presence from an owner-path assignment 1429, short-circuit
+// tests 1422, absence 1422, explicit owner arms 1422, or typed owner lookup
+// for presence/absence 1422/1422. Shared trigger test from the signed player
+// index 1419 or from a selected index 1442. NOT kept: all regress and
+// hold a 0x30 frame against retail's 0x38. The signed player index is restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

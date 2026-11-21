@@ -895,6 +895,14 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // right after the palette call, ahead of the flag and the three source stores, 700 (3828 B); the short slot read ahead
 // of the palette call 617 (3828 B); the flag declared after the three source stores 607 (same code); the three source
 // stores in reverse field order 607 (same code); a `long` slot read ahead of the palette call 689 (3823 B).
+// M3 lane 14 r140 (h2m fast with 0x130f60/0x131030/0x1317a0, all MATCH; control 607): retail re-reads the palette byte
+// for the source-index store (`movsx edx, byte ptr [esi + 0x6f]` after the accumulators) and widens the first read once,
+// ahead of the previous-index branch, for the range test and the index. Forms: a `long` slot index named in the palette
+// arm for the range test, the index and the source store, on a char slot 751 (3842 B, first +0x2e), on the short slot 797
+// (3862 B); the palette lookup with the scenario pointer in a local and the record cleared inside the else arm
+// (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
+// accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
+// (3838 B). Body unchanged.
 // M3 lane 6 r222 (H2M_FAST with 0x12e5e0, 0x12e960, 0x12eb00, 0x130f60, 0x131030, 0x1317a0, all matched in every run;
 // control 607 at 3832 B, aligned 487, register-masked 220; body unchanged). Read from retail: the inlined accumulator
 // merge scales the six source fields first and adds the weight and scales the remainder last (0x12f694-0x12f765, three
@@ -929,6 +937,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
 // accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
 // (3838 B). Body unchanged.
+// The 0x4820 frame and metadata cursor agree. Provider result, selected record and SIMD zero still use different registers.
+// Captured palette byte with short in the arm 750; short/long fresh lookup 728/619; early byte admission 748.
+// Cached previous index with short or explicit null and long 726/618; original capture with short/long lookup 729/620.
+// NOT kept: The long lookup forms recover the CL byte load, but spill that byte, keep NONE in EDX and raise the score. The four callee controls remain matched.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

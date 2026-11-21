@@ -332,6 +332,11 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // restored: 1-3 folded `count > 0` guards around the sorted loop on this body 440 each (no change); on the first-pass call
 // three 607, four 602 (3026 B, masked 86: site 2 then calls 0x2600a0 as retail, leaving retail's inlined owner lookup as
 // the length gap), so retail's site 2 sits about four frequency levels lower than ours.
+// M3 lane 11 r149 (H2M_FAST with 0x2605d0, 0x2613d0, 0x2600a0, all MATCH; control 440): the path state's queued
+// count read through the path type's field 440 (same code); the `selected == NONE` test moved after the if/else 548
+// (3061 B, re-measured); the first evaluator pass tested `possible && proc` 526 (3077 B, re-measured); both 539 (3053
+// B); both with the sort scratch in a block of its own around the sort call 531 (3037 B, first difference +0x3b).
+// Body unchanged.
 // M3 lane 15 r128 (H2M_FAST with 0x2600a0 MATCH; control 440). Reading of retail: the sorted loop's counter lives in the
 // low temporary cell (`inc eax; cmp ax, count` through [esp+0x10]) because 0x2600a0 is called there; that cell then sorts
 // ahead of both flags, which pack at +0x6/+0x7. Tried: the chosen position named after the reported copy for the

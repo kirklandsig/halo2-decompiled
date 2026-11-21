@@ -1211,6 +1211,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // result at each use 146 (1085 B); the 0.5 lift through vector3f_add_scaled 177 (1082 B); the pathfinding selection as one
 // ternary initialiser 199 (1090 B). A compile-only build of the file with the shared rotation pasted in sums the dot
 // (k + j) + i, neither ours nor retail's, so only the linked build screens the dot. All restored.
+// M3 lane 4 r245 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26, M re-measured 20): on M, 0-3
+// redundant pairs over the angle's two products, the endpoint's x product, the lift product and the 0.1 offset's x product
+// (56 forms): 20 (4 forms), 23, 39, 41, 71, 73, 179, 181; the pair count cycles the states the statement orders give (179
+// is the statement-lift state, retail's dot with the axis k as memory operands), none below M. All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

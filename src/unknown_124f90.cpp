@@ -1873,6 +1873,11 @@ long function_2197f0(real gain);
 // (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
 // fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
 // the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
+// The composite attack still differs in elapsed and reciprocal registers and in the
+// first gain load. Capture hold, attack, release, hold/attack, hold/release,
+// attack/release or all durations at their comparisons 162/95/92/159/165/99/157.
+// All three with the hold arm first 154 at retail length. NOT kept: every form
+// raises the score.
 // M3 lane 12 r170 (h2m fast with 0x1251e0/0x221810, both matched; control 87; D0 = the division form, no inverse local,
 // ternary clamp, re-measured 125 at 678 B): the sum with an inline reciprocal `(elapsed - hold) * (1.0f / fade_in) *
 // fade_out` 125 (same code as D0); the clamp as `t = time / fade_in; if (!(1.0f > time / fade_in)) t = 1.0f;` 127 (672 B);
@@ -4871,6 +4876,10 @@ struct s_128ca0
 // controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
 // shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
 // swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
+// Attenuation in the opening decibel, separate initialized or assigned decibel, unsigned bits
+// from the call or through it, signed-bit view, or existing decibel value member: 48 each.
+// Attenuation as a decoded real 180. NOT kept: the decoded real shortens to 1043 bytes and
+// moves the first difference to the gain setup. The tied forms leave both pin register pairs.
 // M3 lane 12 r170 (h2m fast with 0x1293f0, matched throughout; control 48; L = the LEAD 17 above, re-measured 17; Lc = L
 // with `char count = NONE`, re-measured 204): on L, the playback byte stored in both arms of the controller test (no count
 // local) 207 (1064 B); a `char count;` declared after the controller pointer and set in both arms 204; the count from a
