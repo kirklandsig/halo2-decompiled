@@ -839,6 +839,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // then the two choices; the count incremented first and the choice addressed through it) 975 (3268 B, first difference
 // +0x2); the query loop ending on `choice_count < 2` 846 (same code); the target count incremented after the target's
 // stores 923 (3305 B).
+// Choice cap at scan-body entry with short/short, short/long, long/short and long/long query/choice counts
+// 846/964/919/965. Cap after choice publication in the same width order 950/965/965/995. Widening the accepted
+// count restores the ESI zero but shortens the body and leaves the array homes displaced.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

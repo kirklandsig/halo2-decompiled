@@ -4461,6 +4461,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // stride 77, size, consumed, cursor, stride 77, size, cursor, stride, consumed 88, cursor, size, stride, consumed 88,
 // `&data[2]` for the cursor 67. Reading: the channel (seven uses) and the member (three) are one use apart for the
 // last callee-saved register; no natural statement was found that changes either count without code.
+// The channel and count-byte address still share the packet-base allocation decision. Live count by pointer or
+// reference, with or without an entry snapshot, all 139 indexed and 164 with an advancing packet. The advancing
+// packet still gives EBP to the member and shortens the body to 478 bytes.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
