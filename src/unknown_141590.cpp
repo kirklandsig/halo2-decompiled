@@ -544,6 +544,11 @@ static inline void quaternion_transform_vector(
 // opening weight order 212, and original quadratic expression in retail order 259.
 // NOT kept: the shared dot changes the left-axis grouping. The staged square gains only
 // with both changes together, leaves frame 0x20, and changes the projection schedule.
+// M3 lane 11 r143 (h2m fast with 0x143120, 0x11d000 and 0x30bf0, all MATCH; control 201, aligned 236, masked 196): in the
+// quaternion helper m computed ahead of w2 247 at retail's 1317 B (aligned 213: m then lands ahead of the identity copy as
+// in retail, but w2 does too, where retail forms w2 and the doubled dot after the copy from a fresh 2.0); the cross
+// product into a separate axis vector scaled into the rotation 201 (same code); the helper as `__forceinline` 201 (same
+// code); the repair path's two crosses through cross3f 226; the cosine clamp as one ternary 301 (1318 B).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

@@ -9,6 +9,7 @@
 #include "normalize3d.h"
 
 real function_11ce20(vector3f const *arg_0, vector3f const *arg_1);
+void rotate_vector_170d70(vector3f *v, vector3f const *axis, real sine, real cosine); /* inline in src/unknown_170d70.cpp */
 real function_11cc90(vector2f const *a, vector2f const *b);
 
 struct s_29b2e0
@@ -36,8 +37,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
     return 0.0f;
 }
 
-// score 151 (was 151): The 0x2c frame agrees. The projected J and depth stores exchange order at +0x101.
-// Rotation scheduling and first trig homes still differ.
+// score 130 (was 151): The 0x2c frame agrees. The projected J and depth stores exchange order at +0x101.
+// Rotation scheduling still differs (retail reads the dot i, k, j and finishes cross_i last, after cross_j and cross_k).
+// Earlier first line (151): rotation scheduling and first trig homes still differ.
 // Earlier detail: frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
 // difference +0x101). Left: the two rotations' product order and XMM scheduling, the first rotation's sine and cosine homes
 // (+0x3c and +0x10 for retail's +0x10 and +0x3c), the yaw clamp's zero copy below its branch and one store pair's order in
@@ -769,6 +771,16 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // workspace 420. Alternate shared normalizer for the second projection or both 289/393. Shared approach
 // operation for yaw, pitch or both 298/280/291. All regress. The exchanged depth and XY stores, yaw zero
 // copy and the first rotation's product order and spill homes remain.
+// M3 lane 11 r142 (fast with 0x29b990/0x170d70, plain confirmed with 0x29ab90/0x29bab0/0x154df0): kept 151 -> 130 (1707 B):
+// both rotations through the existing rotate_vector_170d70 (inline in src/unknown_170d70.cpp, called from other files as
+// 0x154df0 does), which reads the vector's k at each use: retail's first rotation reads that k from memory late
+// (`mulss xmm6, [esp + 0x28]`), which include/axis_rotation.h's helper, holding k in a local, cannot give. Measured on the
+// way: include/axis_rotation.h without its k local 130 (but 0x2551f0 and 0x1ff360 lose their matches and 0x117dd0 goes
+// 130 -> 147), with the k local used only by the k row 130 (0x117dd0 147), with it read after the projection 214 (0x117dd0
+// 117), the dot order i, k, j or the cross order j, k, i alone 151 (same code); named sine/cosine with either name order
+// 153/153 (names do not order those homes); cross3f with no `local_17`, on the old call form 171, with named sine/cosine
+// 141. On the kept form: only the first rotation through the helper 130 (same code); the XY vector before the second copy
+// 128 (two points, not kept); named sine/cosine 164; the axis through cross3f with no `local_17` 222 (1715 B); both 173.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
@@ -811,13 +823,13 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         local_9 += *(real *)((byte *)local_0 + 0x660);
         /* the turned facing is built in the first copy: retail keeps it in that copy's home and has two vector homes */
         local_3 = *arg_2;
-        function_x84d9e8(&local_3, g_4687b0, (real)sin(local_8), (real)cos(local_8));
+        rotate_vector_170d70(&local_3, g_4687b0, (real)sin(local_8), (real)cos(local_8));
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);
         vector3f local_18;
         local_18.i = local_17->k * local_1->forward.j - local_17->j * local_1->forward.k;
         local_18.j = local_1->forward.k * local_17->i - local_1->forward.i * local_17->k;
         local_18.k = local_1->forward.i * local_17->j - local_1->forward.j * local_17->i;
-        function_x84d9e8(&local_3, &local_18, (real)sin(local_9), (real)cos(local_9));
+        rotate_vector_170d70(&local_3, &local_18, (real)sin(local_9), (real)cos(local_9));
     }
     else
     {

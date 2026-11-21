@@ -1642,6 +1642,10 @@ PRIVATE inline long score_string_list_1608e0()
 // Shared signed team count with body/full rows 707/707. Explicit signed player/team
 // counts with body extent or conditional inset 707/708.
 // NOT kept: all retain 0x798 and raise the score.
+// M3 lane 11 r142 (fast with 0x161420/0x1600f0, MATCH; control 679, aligned 593; the fast image leaves six globals out): the
+// player's user index read once into a `short` local 733 (2840 B); the scroll offset bound once as `real &` 740 (2840 B); the
+// player as `data + index * sizeof` (the event-player getter's shape) 679 (same code). Measured, not changed: the height
+// without its `volatile` 723 (2856 B), the fade count without it 707 (2856 B). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
