@@ -625,6 +625,16 @@
 // whole third add is emitted and the body grows by 75 to 96 bytes. A zero-scaled add is therefore not what retail
 // dropped; the dead use has to be one this compiler removes after the x87 schedule is fixed, as the pointer-copy write
 // of r257 above is.
+// First +0x2 reserves 0x54 against retail's 0x60 at the same extent. Retail stores both rounded waves before SSE scaling and retains the cross products across the displacement updates. Test the rounding boundary with the original cross order and with the opposite cross between the updates, which previously recovered the frame.
+// Short wave rounded after the mixed wave 577.
+// Short wave rounded at its update 578.
+// Mixed wave rounded at its update 578.
+// Both waves rounded at their updates 578.
+// Short wave rounded after the mixed wave with overlapping crosses 599.
+// Short wave rounded at its update with overlapping crosses 599.
+// Mixed wave rounded at its update with overlapping crosses 599.
+// Both waves rounded at their updates with overlapping crosses 599.
+// NOT kept: The original cross order grows by five to six bytes and retains the 0x54 frame. With overlapping crosses the frame reaches 0x60 and the first difference moves to +0x6, at 599 and 2632 bytes. The two wave homes and the x87 schedule still differ. The original cross and wave lifetimes are restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

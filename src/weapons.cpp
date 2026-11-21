@@ -4304,6 +4304,16 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // early blocking state 1433; Boolean activity set from magazine calls 1494 or call-first OR 1464;
 // arm-owned blends 1436, with opening pool 1440. NOT kept: the pool-only form ties;
 // Boolean activity and arm-owned blends shrink the frame to 0x30 and leave the dual spill.
+// First +0x2 reserves 0x34 against retail's 0x38. The pool and header offset take EBX and EDI. Retail uses EDI and ESI, leaving BL available for the dual query and, later, the animation activity. Hold the early work result as a byte through each actual activity phase before widening to the existing long accumulator.
+// Boolean activity through animation 1410.
+// Byte activity through animation 1410.
+// Boolean activity through initial timer 1413.
+// Byte activity through initial timer 1413.
+// Boolean activity through ramp 1428.
+// Byte activity through ramp 1428.
+// Boolean activity through heat 1431.
+// Byte activity through heat 1431.
+// NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
