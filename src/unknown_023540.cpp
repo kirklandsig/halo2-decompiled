@@ -3149,6 +3149,20 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // expanded), `__assume` on the sample count or the bucket count 354. Reading: 0x235a0's inline cost follows its final code
 // (a dead local, a named constant or row pointers change nothing), and one extra store tips the second site, so retail's
 // extra weight is on the call-site side (one more split on the path); no natural split found yet.
+// M3 lane 5 r228 (h2m fast with 0x235a0/0x23600/0x23540/0x23ca0/0x22850/0x143600; control 354 at 1595 B): round 133's lead
+// (allocation through render_memory_allocate and table_entry_data, the redundant count guard on the initialised index, the
+// sample source before the `continue` test, both determinants through one inline helper) rebuilt on today's file 168 (1544
+// B). On it, 0x143600 declared in the order retail's six call setups imply (result, rotation, coefficients, order: ECX,
+// EAX, ESI after the pushed order), its definition, declaration and all seven calls changed together: 150 (1544 B; 0x143600
+// 939 and 0x22850 209 unchanged; on main's body the same reorder is 357). Left on that 150 form: the prologue's ESI/EDI
+// roles (the allocator form flips them: main plus the guard alone keeps retail's EDI for the entry count, 364 at 1484 B),
+// the level clamp's `lea edx, [eax - 1]` and loaded entry address, the first matrix copy's schedule and the determinant
+// factor orders. On it: a named last level 295; the level record read as `levels[level].offset`, through a record pointer,
+// or with the level count read into a local first 150 each (same code); the handle stored ahead of the output pointer 164;
+// the guard written `if (0 < count)` 150; the source read after the `continue` test 208 (1543 B); the determinants
+// written out 159. Without the guard (both 0x235a0 copies inlined again): the allocator form with the helper and the early
+// source 347 (1636 B), with the reorder 338; each piece removed 385/388/423 (with the reorder 376/379/414). Nothing here is
+// keepable without a match (the guard, the moved source read and the one-caller determinant helper are match-only).
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

@@ -492,6 +492,10 @@ long g_55e6c0;
 // code). Diagnostic, restored: the height stored twice (again after the +0x8c clear) 31: the first store is eliminated as
 // dead and the height/count swap stays, so an eliminated read does not raise the height's rank. On round 122's lead
 // (re-measured 31 at 484 bytes) the header address is now formed after the flag store (main's body forms it before).
+// M3 lane 5 r228 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp stored through a `long &` bound to the
+// count field (`long &levels = entry->element_count; levels = ...`) 30, with the round-51 signed packing 30 (484 B); the
+// round-51 packing with the width and height stores ahead of the kind store 31, that with round 122's late levels store and
+// header pointer 33; round 122's lead re-measured 31 (484 B). The top block's height/count swap stays in all of them.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

@@ -281,7 +281,7 @@ void function_245400(s_source_245400 const *source, long index,
 		material->field_04, material->field_05, point, material->field_06);
 }
 // MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
-// score 163 (was 164): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
+// score 163 (was 163): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
 // and independently decoded side homes differ.
 // Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
@@ -1022,6 +1022,11 @@ void function_245400(s_source_245400 const *source, long index,
 // Primary and secondary material records addressed as pointers or references,
 // with the secondary code before primary selection 163 each, or after it 164.
 // NOT kept: the earlier read gains one at 784 bytes and keeps the 0x24 frame.
+// M3 lane 5 r228 (h2m fast with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH each time; control 163 at 783 B): the
+// second plane pointer declared ahead of the first 162 (the cross's six products reorder, frame unchanged); the plane
+// indices named (`first_index`, `second_index`, each used for its pointer and the compare) 163 (same code), with the
+// sides as `((dword)code >> 15) & 1` 197; cross3f with the normals swapped and the dot negated 204; the facing test as one
+// ternary on the side relation 209 (786 B), with the swapped plane pointers 209.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

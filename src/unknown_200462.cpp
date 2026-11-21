@@ -309,6 +309,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // declared 14 (same code); the corners read from a `point2f const` copy of the stepped position 118 (866 bytes); the
 // default rectangle declared at the draw loop's top, ahead of the mask test 35. Re-measured: a named advance used by both
 // x steps 55 (the running x leaves XMM7 and the pulse call sinks below the half extents).
+// M3 lane 5 r228 (h2m fast with 0x2008fc 0x200891, control 14): the draw block's five statements (bitmap entry pointer E,
+// pulse pointer Q, pulse query P, half width W, half height H) in other orders: E Q P H W 26, Q E P W H 14 (same code),
+// Q P E W H 83 (850 B), E Q W P H 28, Q E W P H 28, E Q W H P 55; the draw pass's record pointer named as the first pass
+// names its own (one-use there) re-measured 12 (only the XMM3/XMM4 pair left; match-only, not kept).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
