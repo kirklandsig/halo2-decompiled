@@ -392,6 +392,22 @@ static __forceinline long real_to_long(real value);
 // magnitude stored by a chained assignment into its field and local 373 (same code). Retail reads +0x10, +0x14/+0x18
 // (onto the x87 stack), +0x1c, +0xc and +0x38 right after the sign step, which is what lets it forward the seed
 // through the three draws; BLOCKED-BY 0x210850 as above.
+// M3 lane 3 r292 (H2M_FAST with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373): the
+// resolver written in 0x210850's own two-arm shape on the target point 466 (1889 B); the same through a `point3f *`
+// output pointer 466 (same code); the final three sums from the offset local instead of the stored fields 429; the k
+// row's negation written `0.0f - (...)` like the i and j rows 373 (same code). BLOCKED-BY 0x210850 as above. Body
+// unchanged.
+// M3 lane 1 r148 (H2M fast with 0x210850, MATCH each run; control 373): the early-bounds form (third draw's bounds read
+// into locals with the limits, all three draws through function_259d0 on the random-state local, lower bounds as
+// `0.0f - limit` arguments) re-measured 340 (1844 B). On it, the existing 0x210850 called for the point (its
+// definition marked `inline` in its own file; the out-of-line copy still matches) 266 (1873 B, first +0x1ad: the same
+// code as the hand-written two-copy resolver, so the inline definition is how retail's resolver shape can be written);
+// with the final sums read back through a named first-output vector pointer (retail's [eax]/[eax+4]/[eax+8]) 251
+// (1867 B); the sign test as `> 0` 269; the cross vector declared ahead of the difference vector, and ahead of the
+// point, 251 each (same code). What is left at 251: retail's inlined resolver hoists the point loads above the stores
+// (its own out-of-line copy keeps them in order, so retail knew the point and the output did not overlap), the
+// up-cross block numbers the cross result xmm1/xmm2/xmm3 where ours uses xmm4/xmm3/xmm1, and the NONE path's copy.
+// All of it rests on the one-use early bound locals, so nothing is kept. Body unchanged.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

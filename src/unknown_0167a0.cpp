@@ -450,6 +450,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the reference 5 (+0x19e) (all four their base form's code); the direct store with the entry base from the `tables` local
 // 210 (974 B). Diagnostic (reverted at once): the 0x18a90 call (a contributor's, unmatched) replaced by a call of matched
 // 0x19ca0 12 on either form, the restore block unchanged, so that callee's summary does not hold `second` back.
+// M3 lane 16 r169 (h2m fast; control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7, its one difference
+// `second` loading into ESI right after the entry lea): on the direct store, the chain index named (`long chain_index =
+// (packed & 0x1ff) + second;`) 5 (+0x1a7); `first * 10` in one, two and three extra parenthesis pairs 5/5/5 (+0x1a7); the
+// restore block's word, chain value and pass in fresh block locals 5 (+0x1a7), the same on the reference form 5 (+0x19e);
+// the entry written in two steps (base, then `+= first * 10`) through the reference 5 (+0x19e), through the field 5
+// (+0x1a7). Each is its base form's code.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

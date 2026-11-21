@@ -681,6 +681,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // rigid body declared first 96 [13] (the index then arrives in EAX, the owner in ECX); no absolute-index local (the type
 // through `headers[object_index & 0xffff]`, case 0 through havok_object_get(component->object_index)) 94 [13], with a long
 // type 96 [13]. Body unchanged.
+// The repeated type lookup still preserves the caller; the header base and rigid body use different entry registers.
+// Single type and grouped body-flag cases, flag-first/type-specific/direct returns/layer pair
+// with header-first 96/103/96/95, owner-first 97/101/97/94.
+// NOT kept: all eight move the caller argument registers.
+// Flags member reference or pointer with repeated type 97/97, type after the member 94/94,
+// type before the member 88/88, and header array first 94/94. The type-first member forms with
+// direct handle or shared case-zero handle 132/132, with promoted type 135/135, and with
+// the whole rigid-body reference 117/117. NOT kept: the 88 forms make the handle a one-use copy
+// and retain the flags address where retail keeps the body. The other single-type forms lose the caller.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -1415,6 +1415,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // retail keeps the product in xmm0 and the sum in xmm1 - while the offset's own terms agree with retail's
 // (sine*offset.i - cosine*offset.j); the term order inside the dot is canonicalised by the compiler, so no spelling
 // of it moves the block.
+// M3 lane 1 r147 (fast with 0x16c6f0, 0x13cb40, 0x142d10 and 0xa9b40, all MATCH; control 126): the yaw and the distance dot
+// reading the camera's own forward (the copy's source) 332 (1700 B); only the distance dot reading it 332 (1700 B); that dot
+// as (position, camera forward) 332 (1700 B); only the yaw reading it 331 (1700 B); the origin store moved to the top of the
+// yaw block 136.
 // M3 lane 14 r138 (H2M_FAST with 0x142d10, 0x16c6f0 and 0x13cb40, all MATCH; control 126). Reading: in the plane block the
 // two sums are the same in both builds ((j + k) + i, the j term the accumulator); only the length load hoisted into the
 // plane-constant dot differs (retail left.j into XMM1, ours left.k), which sets the accumulator and so the zero register.
@@ -1426,6 +1430,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // scoped aggregate 396; distance between products and negation 397, or
 // before in-place assignment 139. NOT kept: the projection preload and
 // length/zero homes still differ, and all forms raise the score.
+// M3 lane 2 r131 (H2M_FAST with 0x16c6f0/0x13cb40/0x142d10/0x23d090/0xa9b40, all MATCH; control 126): three listed leads
+// together (0x142d10 as (out, forward, up) at its definition, declaration and call; the shared quaternion helper's length
+// summed i, j, k, w; case 2's test as `0.0f != length_squared`) 121 (aligned 98, masked 33; under the bar). On 121: 1-7 dead
+// locals (diagnostic) 395/394/394/394/394/394/121; the yaw distance dot's arguments swapped 121; the distance store ahead
+// of the first offset row 122; the timer as `0.0f != time_scale` 121; the field-of-view test as `target != 0.0f` 144 (1700
+// B). Reading on 121: the animation arm's zero copy (`movaps xmm0, xmm1`, 3 bytes) moves the field-of-view tail, so 14 jumps
+// to it differ only in their target; the copy follows from the zero's register (XMM1 here, XMM0 in retail), which the
+// plane length sets. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

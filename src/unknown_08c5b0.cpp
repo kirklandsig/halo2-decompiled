@@ -311,6 +311,14 @@ static inline long bungienet_user_voice_setting(short kind)
 // giving 1, 30; a second request pointer local for the kind read 4; the setting seeded 1 with a redundant `setting = 1;`
 // at the top of the kind arm and the availability test after it 15; diagnostic: the selector given the kind twice through
 // an extra unread parameter 4 (plain read 32): one more reference that LTCG drops does not reach the pair.
+// M3 lane 15 r127 (h2m fast with 0x8c5b0, MATCH each run; control 4): the volatile read passed straight to the selector
+// with the index read after it 23 (kind AX as retail, but the index loads after the selection, so the request lives on
+// in EDX); the kind's `== 1` test held in a bool ahead of the index read 32 (100 B: the volatile load folds into the
+// compare, then `sete`); a shared forceinline setter (index, setting) for both handlers, 0x8c5b0 calling it with 1 (still
+// MATCH), with the volatile read in the setting argument 23, with the named kind local 23 (arguments evaluate right to
+// left, so the index loads after the selection); diagnostic, a forceinline (index, kind) helper doing the selection and
+// the store 4 (same code: kind and index both load ahead of the branch, request EAX, kind CX). Reading: with both loads
+// in the entry block the request (three references) outranks the kind (two); retail's kind ranks first.
 // M3 lane 13 r135 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the reference-bound plain read
 // with the selection written in the handler (`if (kind == 1) setting = available ? payload : 1; else setting = 1;`) 4,
 // with the selector `__forceinline` 4 (both the volatile read's code, no volatile); `changed` declared first with the
@@ -318,6 +326,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // = 1` with the nested kind and availability tests 15. Diagnostics, plain reads: a switch with `case 1`, `case 0: case
 // 2:` sharing one arm and `default: __assume(0)` 37 (103 B); `__assume(kind == 0 || kind == 2)` in the else arm 32 (95
 // B, folded compare): neither gives the two late-merged compares of the identical-arm chain.
+// M3 lane 11 r148 (h2m fast with 0x8c5b0, MATCH each run; control 4): the controller index read from the request at
+// each use (no index local) 23 (99 B), with a plain kind read 30 (96 B); the selector's result stored straight into the
+// controller with the change test on the stored field 39 (88 B), plain 41 (85 B); the availability arm inverted 4 (same
+// code); the request parameter and the handler type pointer-to-const with a plain read 32 (95 B, folded).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

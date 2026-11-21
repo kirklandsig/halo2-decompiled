@@ -1896,6 +1896,16 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // 197/197, both 198, scoped separate inputs 198, scoped vector input 197,
 // shared setters 198, scoped setters 198. NOT kept: the one-point gains
 // still load the radius into XMM4 and use a separate transform destination.
+// M3 lane 5 r227 (h2m fast with 0x29a190, MATCH; control 198 at 1173 B): the desired point as two statements, y first
+// (retail computes and stores its y first) 200; the cosine with the direction's components first 198 (same code); the
+// 3-D origin declared ahead of the 3-D direction 199; the offset written `lateral * (...)` 198; the y-first desired point
+// with the direction-first cosine 200. Still first at +0x4f (radius XMM4 against XMM5).
+// M3 lane 16 r168 (h2m fast with 0x29a190, 0x29cbb0 and 0x1f9580; control 198): the cosine through the file's existing
+// function_1f9581 dot 198 (same code); the cosine's operands swapped (`direction.x * desired.x + ...`) 198 (same code);
+// the 3-D origin initialised ahead of the 3-D direction 199; the output index read once for both transforms 292 (1190
+// B); the fraction started at 1.0 and divided under `forward <= radius * 1.3f` 240 (1166 B). The XMM numbers still
+// follow the callee summaries of 0x210770/0x210690 (BLOCKED-BY 0x210690, lane 2 r117's reading); their file is held by
+// another lane this round. Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -1676,6 +1676,11 @@ PRIVATE inline long score_string_list_1608e0()
 // the left edge as memory operands because all seven registers are held there (panel EBP, viewer EBX, x EDI, screen
 // height ESI, top edge ECX), and keeps the height in memory from its definition although ESI and EDI are still free at
 // that point, so the height ranks under the screen height and x in retail and over them here.
+// M3 lane 7 r209 (h2m fast with 0x161420, MATCH; control 679): the screen height ahead of x with the width folded
+// into x's expression 698 (2888 B); the scroll clamp's upper limit named once in the else arm 720 (2856 B: one
+// conversion as retail, but computed ahead of the lower test where retail converts after it); the clamp written as
+// `else if (scroll < 0) scroll = 0; else { limit; if (scroll > limit) scroll = limit; }` 710 (2856 B); the named limit
+// with the screen height ahead of the width 693 (2879 B); that with the fade count not volatile 709 (2856 B).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

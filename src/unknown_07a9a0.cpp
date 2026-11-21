@@ -1757,6 +1757,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 872 (2796 B, and the matched 0x705f0 and 0x72330 stop matching); diagnostic, an inline_depth(0) region around the top
 // lookup statement 994 (2640 B: the top call stays out of line but the region turns off the body's other expansions);
 // `result` declared ahead of the getter 871 (same code). BLOCKED on the link-wide inline choice for the top 0x192e60 call.
+// M3 lane 8 r217 (h2m fast with 0x73530 (MATCH), 0x192e60, 0x631f0, 0x193300, 0x1932c0, 0x63220, 0x1931a0, 0x66050; control 871).
+// Diagnostics in 0x192e60's file, restored: 2, 8 and 24 redundant `result = NULL;` statements in 0x192e60 871 each (the same code
+// everywhere: the inline choice does not follow the callee's source length); 0x192e60 as nested ifs with a named element pointer
+// 853 (2796 B), but 0x192e60 itself 0 -> 20 and 0x73530 MATCH -> 8. Body unchanged; BLOCKED on the link's inline choice.
 // Complete machine-ID capture, with both words before clears, split around clears, second after identity,
 // or first after total clear 871/867/916/899. Dword histogram with the same publication forms
 // 911/933/946/946. NOT kept: the 867 form gains four and shortens to 2748 bytes. Dword cells
