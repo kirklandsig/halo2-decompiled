@@ -1803,6 +1803,10 @@ struct s_item_flags_view_10b850
 // Shared forward/up spin cosine, sine, or both 852/853/848; shared axis 932;
 // axis with cosine, sine, or both 872/878/878; all with shared cosine complement 861.
 // NOT kept: all raise the score and retain or expand the 0x154 frame. Entry Boolean and motion homes remain.
+// Settle eligibility from floor fallback, conditional fallback, slow gate, slow selection, rejected-floor
+// fallback, surface arms, qualified publication, shared support and bounce rejection
+// 859/862/871/871/892/886/817/875/903. NOT kept: the seven-point lead grows to 4099 bytes and retains frame
+// 0x154. Entry flag bytes and low motion homes still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

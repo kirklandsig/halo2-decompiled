@@ -4552,6 +4552,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // ordinary, key cases or a second dispatch 628/642/643/626/628/708.
 // NOT kept: the 595 forms gain three in the reduced image and grow the frame to 0x80.
 // The full 0x78 frame still needs the changed byte and flight threshold at +0x11 and +0x18.
+// Typed keys with Boolean special result direct or declared before admission 615/615. False-default result 606.
+// Shared mode key 611, with entry-scope byte 633, admitted byte 615, nested modes 615, or renamed changed result
+// 611. NOT kept: preview control 602 with the orientation-callee caveat. The variants recover the 0x78 frame and
+// flight spill. The two 615 direct assignment forms also recover the changed byte, with the entry key and tag
+// homes exchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

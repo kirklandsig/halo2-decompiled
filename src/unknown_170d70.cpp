@@ -1498,6 +1498,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
 // complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
 // the 0x50 frame and regress from the 337 reduced control. Unity and square homes still differ.
+// Diagonal-field squares before/after trig 370/337. Diagonal-field complements or cosine products 370/383.
+// Symmetric positive-field sine or cosine contributions 345/350. Square plus sine fields 358, diagonal and
+// symmetric cosine fields 380 (reduced control 337). NOT kept: the tied form grows to 1473 bytes, and the other
+// allocations score higher. Unity and the two square spills still differ.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1824,6 +1828,10 @@ struct s_point_pool_173520
 // (the helper folds to the same tree); the clipped count itself as the down-counter 9; `inside` at function scope 9; the
 // cursor declared ahead of the index and step 9; the pool view at the block top 9; an ascending vertex index with a
 // per-iteration vertex pointer 990 (1471 B, unrolled).
+// Staged reservation and cap with a positive-count scope 24, zero-default index 167, forward-default stride 162,
+// and paired reverse selection 167. Signed-short clip count 226 or staged 224. Shared viewport count 115. Unused
+// reservation trim 190. NOT kept: the 24 form needs an exact match for its reservation and cap binding. The
+// pool/state order, stride spill and recount remain.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2490,6 +2498,10 @@ struct s_camera_reference_171830
 // flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
 // threshold 264, and constrained comparison assignment 291. NOT kept: packed views
 // leave the early zero unchanged, while signed and split forms lengthen the plane path.
+// Center fused coordinate loop 371, separate rear and center loops 391, indexed rear alone 391, indexed center
+// alone 386, indexed scale with shared negation 391, indexed update of copied center 384, copied forward with
+// loop and negation 399, explicit plane admission plus fused loop 390. NOT kept: each grows beyond 1219 bytes
+// and raises the score. Plane-exit zero and center scheduling remain.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
