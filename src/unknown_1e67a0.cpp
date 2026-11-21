@@ -1359,6 +1359,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 1 r83's combination with the crosses swapped 78 (1382 B: left are the movement vector's home, which retail shares
 // with the turned copy, and the rotation helper's product sides); the rotation axis from the up parameter 277 (1396
 // B). The first difference is still inside the rotation helper (src/unknown_1eb8a0.cpp, locked this round).
+// M3 lane 15 r128 (plain checks with 0x1ecf50/0x26e090 MATCH and 0xe3910 79, 0xd0080 58, 0x1eb8a0 603 unchanged; control 114):
+// ours already sums the rotation's dot j, k, then i as retail; only the operand side of the four products of the vector's
+// j/k with the axis's j/k differs. The shared rotation helper's dot written out `v.j*a.j + v.k*a.k + v.i*a.i` 111 (1393 B,
+// products unchanged), written axis-first 111 (same code); its cross terms computed j, k, i 114 and its rows projection
+// term first 114 (same code); the rotated copy renamed 114 (same code). Helper and body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -1023,6 +1023,16 @@ real g_55e618;
 // 102 (same code); both coefficient loops through one forceinline helper taking the remaining mask by pointer 103 (the
 // matched sibling 0x2ba100 writes its loop out); `collision.value.unknown24 = NONE;` ahead of the three start rows on this
 // body 100 (-2); the countdown as a long 247 (1538 B). BLOCKED-BY 0x169510 and 0x244980 (the record's capture), as above.
+// M3 lane 8 r217 (h2m fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102). Match-only forms on lane 16 r162's lead,
+// re-measured 39 at 1537 B: the dot through the existing basis_dot_xzy at each product (retail's i, k, j term order) 54 (1538 B,
+// first difference back at +0xfe); with &particle->velocity as its argument 260 (1593 B); with the normal locals i, j, k or j, k, i
+// 54/54; with the tangent's first term read through the particle 54; the position through real_point3d_set nested in the call 39
+// (same code). Left on 39: the dot's first term (ours n.j*v.j, retail v.i*n.i) and the value argument's early EDX load,
+// BLOCKED-BY 0x169510 and 0x244980 as above. Body unchanged.
+// Back up the sweep origin with the shared point difference or point setter.
+// direct particle position 254/254, position snapshot 102/103.
+// With the shared sweep scale, direct 256/256 and snapshot 129/130.
+// Frame stays 0x124 and the sweep/collision slots remain displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

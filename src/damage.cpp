@@ -3696,6 +3696,7 @@ enum
 
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
+// score 371 (was 371; 470 and 661 earlier): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
 // score 371 (was 371): 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
 // (retail's bools sit at esp+0x13..0x17, then object, i, definition, info; ours orders them differently and
 // keeps region_absorbs in memory where retail holds it in bl), registers (retail's object_count is in edi, ours
@@ -3711,6 +3712,18 @@ enum
 // Stand-in image 552 -> 371: the parent walk is a while loop, so the function_d5b60 call behind it stays a call as in
 // retail (0xd7c2b; a for loop there raises the site's static frequency and LTCG inlines it); the pass loop keeps the
 // current object index in a local and calls function_d5b60, which LTCG inlines there.
+// M3 lane 12 r168 (h2m fast with 0xdb210 MATCH; control 371 at 1893 B). Frame read from the listing: retail keeps the five
+// bools at frame +3..+7 (body, friendly, reported, shield children, then the region flag), then object +8, the loop index
+// +0xc, definition +0x10, info +0x14; ours puts the loop index at +0 below the bools. In the loop the two bodies read the
+// same variables in the same order except for two extra reloads in ours (the index after the side-effect block, whose
+// team call takes its second argument in SI, and info after the kill block): retail keeps the index in EDI and info in
+// ESI, ours the other way round, so the index gets one more reference and sorts first. Tried: the reported block's
+// shield material read through the accumulator's info field (retail reads [accumulator+4] there) 365 (1890 B; info and
+// definition then take retail's homes; a gain under 8, not kept); on it the loop as `for (i = object_count; --i >= 0;)`
+// 365, `long i = object_count; while (i-- > 0)` 505 (1895 B), the test written `i > NONE` 368 (1893 B), the friendly flag
+// declared ahead of the definition 364 (a moved declaration), `kill = true;` ahead of the hit byte's store 363 (statement
+// order; match-only). Retail also computes the first index into EAX with `lea eax, [edi - 1]` where ours decrements the
+// count's register in place. All restored.
 // M3 lane 14 r138 (fast; control 371). Frame read push-normalised (F = locals base): retail packs body, friendly,
 // reported, shield, region_absorbs at F+3..F+7, then object F+8, i F+0xc, definition F+0x10, info F+0x14; ours has i at
 // F+0, a 3-byte hole, the five flags at F+7..F+0xb (body, reported, region_absorbs, friendly, shield), object F+0xc, info

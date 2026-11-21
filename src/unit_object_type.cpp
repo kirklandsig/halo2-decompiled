@@ -2375,6 +2375,11 @@ struct s_unit_motion
 // (ret 0xc) where retail takes them in xmm5/xmm4 with the time in xmm3, and the accumulator spelling that recovers
 // retail's 227 bytes (28) makes LTCG inline this body into 0xc7840 and lose the matched 0x1e5af0 and 0x1faf80:
 // BLOCKED-BY 0xc7840's call sites.
+// Conditional phase-limit selection for all seven phase subsets 86 each.
+// Separate elapsed values 86. With a velocity accumulator 70 at 218 bytes.
+// NOT kept: the accumulator takes XMM4 and returns with ret 4. It inlines
+// into 0xc7840 and loses 0x1e5af0 and 0x1faf80 in the preview. The current
+// velocity arrives on the stack and the two output paths remain split.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -3228,6 +3233,13 @@ void function_c5740(long unit_index, bool start)
 // branch, nested validation, named object definition, fallback guard and separate fallback tags
 // 123 each with the shared accessor. NOT kept: the accessor gives a 331-byte body and changes the
 // matched caller. The definition index and pool data keep their opening homes.
+// Explicit object-header lookup for unit, weapon, root, unit/weapon, weapon/root, unit/root,
+// all three or post-gate headers with typed root members: 97 each. NOT kept: no gain; the
+// definition-index and pool-data homes remain.
+// Damage-presence test before material lookup 105, masked damage slot before/after material
+// lookup 91/93, selected tag instance 97, typed damage/material/both playback indices
+// 97/97/97, and inline effect dispatcher 97. NOT kept: the six- and four-point gains
+// leave the prologue different and split the damage index into two register values.
 // Round 454: the definition index still misses EBP and the pool data stays live across the weapon gate.
 // Common object lookup for unit, weapon or root 97/97/97; for unit plus weapon, weapon plus root, unit plus
 // root or all three 97/97/97/97; post-gate common lookups with typed root forward member 97. Body restored.
@@ -5622,6 +5634,18 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // compare final clipped values 195/195, disabled early return 186/188 (scalar/paired angles).
 // NOT kept: all reach 767 bytes but raise the score. The early cross load and final
 // x87 forward-scale lifetime still differ.
+// The first cross still preloads up.i, and the angle spill homes and x87 forward scale differ.
+// Read-once yaw/pitch/both minima 187/188/212, yaw/pitch/both maxima 178/188/199, all four 244.
+// Angle declarations before the basis 169. NOT kept: bound snapshots raise the score, and
+// early declarations tie without moving the slots.
+// Forward component copy loop ascending/descending with ordinary crosses, staged first,
+// staged second or both staged: 185 each. NOT kept: the copies lengthen the body and the
+// first cross still preloads up.i.
+// Inverse transform into separate storage 300, in place 278, or through its returned
+// pointer 303. Reconstruction through the unit-scale transform with separate or
+// reused storage 233/233, in place 199, and paired transforms with separate or shared
+// direction storage 353/353. NOT kept: the transform forms shorten the body and
+// raise the score without recovering the first cross schedule.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -7848,6 +7872,11 @@ public:
 // agree with retail. Early spills and the expanded refill query remain.
 // Review (m3, 11-20): the 493 not kept: a countdown with two cursors stepped by hand at the end of the body is
 // a comma loop in separate statements (match-only, as on 0x29e0f0 11-20). Code back to main's indexed loop.
+// Masked-index helper for unit, weapon, or both 506/508/506. Object-header
+// accessor 508 for each. Initial pool data shared 508, deferred unit lookup
+// 507 at retail length, and existing single-weapon rounds query 532.
+// NOT kept: masked unit gains two with a 0x40 frame, and the deferred lookup
+// gains one with an earlier difference. The refill call boundary remains.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8751,7 +8780,8 @@ real function_50650(real cosine);
 // MiniMax C (11-17): no new form, no lower score (563, was 563): the frame is still 0x8c against retail's 0x80, and the input and vector homes and the prediction/call scheduling still differ.
 // MiniMax E (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the input and vector homes and the prediction/call scheduling still differ; a 300 s permuter run over the body (13 tries on the reduced image, with the twelve other functions of the queue as context) found no variant below its own baseline, and the two 0xc7750 calls still push position and velocity where retail passes them in XMM5/XMM4: BLOCKED-BY 0xc7750.
 // MiniMax A (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, the two 0xc7750 calls still push the position and the velocity where retail passes them in XMM5/XMM4 with the time in XMM3, and the input and vector homes and the prediction's call scheduling still differ: BLOCKED-BY 0xc7750.
-// score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
+// score 491 (was 560): frame 0x8c versus retail 0x80. Frame-space vector homes, speed initialization
+// and the 0xc7750 stack inputs differ. Earlier at 563, the vector homes and prediction/call scheduling differed.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
@@ -8905,6 +8935,11 @@ real function_50650(real cosine);
 // XMM3; giving 0xc7750 retail's own convention (28 at 227 bytes) makes LTCG inline it into this function and the
 // score goes to 995, so the two functions cannot both improve: BLOCKED-BY 0xc7750's convention.
 // MiniMax I (11-20): 491 (was 560): the velocity copy is gone - the speed comes from the pointer's own components and the axis is sampled from it inside the branch - which drops a frame slot and 30 bytes (2453 against retail's 2483); what is left is the frame at 0x8c against retail's 0x80 and the two 0xc7750 calls, which still pass position, velocity and time on the stack where retail keeps them in XMM5, XMM4 and XMM3: BLOCKED-BY 0xc7750's convention.
+// Separate speed, angle, or both outputs 498/491/498.
+// With prediction-entry defaults 635/634/634. Defaults after magnitude 542.
+// Paired outputs 591, idle-arm defaults 544, late reciprocal with
+// original/separate speed outputs 498/505. NOT kept: all forms tie or
+// regress. The frame and speed slots still differ.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -9192,6 +9227,9 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Owner declared before grenade lookup, early center or damage buffer, and both early 62 each.
 // Split owner copy 62, flag before the trailing owner words 60, library copy 62, and player field plus remaining copy 62.
 // NOT kept: the two-point gain keeps the initial owner load difference.
+// Object-header or object accessor for the grenade owner alone or with the
+// initial lookup, each with or without a named grenade handle, 62 in all
+// eight forms. The owner load order and call setup still differ.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9813,6 +9851,11 @@ struct s_unit_melee_collision
 // range snapshot 484/484/485/484, range per product 531/531/533/531.
 // NOT kept: every per-product form recovers 0x17c but shortens the body by 24 bytes.
 // The unit and both fan counters still need their retail homes.
+// Retail reads range from the tag for each product and keeps the unit in EBX across the fan.
+// Live range with up declared first 531, basis slot names 531, query output names 531, contact receiver
+// names 531, selected-hit word set after the seat byte 533, collision storage first 531, object case
+// first 531, and branch-produced damage scale 531. NOT kept: the frame reaches 0x17c but the body
+// shortens to 2205 bytes and scores rise.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

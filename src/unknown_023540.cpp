@@ -3149,6 +3149,20 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // expanded), `__assume` on the sample count or the bucket count 354. Reading: 0x235a0's inline cost follows its final code
 // (a dead local, a named constant or row pointers change nothing), and one extra store tips the second site, so retail's
 // extra weight is on the call-site side (one more split on the path); no natural split found yet.
+// M3 lane 5 r228 (h2m fast with 0x235a0/0x23600/0x23540/0x23ca0/0x22850/0x143600; control 354 at 1595 B): round 133's lead
+// (allocation through render_memory_allocate and table_entry_data, the redundant count guard on the initialised index, the
+// sample source before the `continue` test, both determinants through one inline helper) rebuilt on today's file 168 (1544
+// B). On it, 0x143600 declared in the order retail's six call setups imply (result, rotation, coefficients, order: ECX,
+// EAX, ESI after the pushed order), its definition, declaration and all seven calls changed together: 150 (1544 B; 0x143600
+// 939 and 0x22850 209 unchanged; on main's body the same reorder is 357). Left on that 150 form: the prologue's ESI/EDI
+// roles (the allocator form flips them: main plus the guard alone keeps retail's EDI for the entry count, 364 at 1484 B),
+// the level clamp's `lea edx, [eax - 1]` and loaded entry address, the first matrix copy's schedule and the determinant
+// factor orders. On it: a named last level 295; the level record read as `levels[level].offset`, through a record pointer,
+// or with the level count read into a local first 150 each (same code); the handle stored ahead of the output pointer 164;
+// the guard written `if (0 < count)` 150; the source read after the `continue` test 208 (1543 B); the determinants
+// written out 159. Without the guard (both 0x235a0 copies inlined again): the allocator form with the helper and the early
+// source 347 (1636 B), with the reorder 338; each piece removed 385/388/423 (with the reorder 376/379/414). Nothing here is
+// keepable without a match (the guard, the moved source read and the one-caller determinant helper are match-only).
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -4267,6 +4281,33 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // copy choices move together; whenever the shift is its own value (not coalesced with `input`), small's load coalesces
 // with the alpha selector's register, and retail has neither coalesced. Diagnostic: B without the shifted local in the
 // whole, alpha, fraction, input order 14 (small in CL as retail, alpha computed ahead of input).
+// M3 lane 14 r139 (H2M_FAST, control 9; r205's base B re-measured 5, no shifted local 939, B with no shifted local 941,
+// its whole/alpha/fraction/input order 14 and whole/input/fraction/alpha 976). New forms: `input` reused as the exponent
+// counter (`input = 0;` and the loop on it) 9, on B 5 (same code each: the two values stay separate); the three 16.16
+// conversions through one shared inline function 9, with no shifted local 939 (same code); a second stage-one selector
+// of the same value for the alpha word (`long input_alpha = small ? 5 : 4;`, three positions) 225/225, on B 223 (the
+// two selectors are not merged and every home moves); the stage-one words through a force-inline packing function, two
+// words or all three, on B 941 (the no-shifted-local code); on B with no shifted local the alpha selector as
+// `!small ? 24 : 4` 941 and `small == false ? 24 : 4` 941 (same code); the four selector locals declared bare in the
+// whole/fraction/input/alpha order and assigned in another order (no shifted local, on B): wfia 941, wifa 976 (4840 B),
+// iwfa 965, wiaf 963 (the callee-saved homes follow the order of first assignment, not of declaration); the shifted
+// local for the RGB word with the alpha word shifting `input` again, on B, re-measured 941.
+// Diagnostics, reverted at once: on B a store of `input` to a spare field after the stage-one words makes the selector
+// block and the shift retail's row for row (936 at 4840 B, only the extra store and what it shifts); the same store with
+// no shifted local gives the same retail rows (936); the store placed ahead of the shift 960 (input's home moves); a
+// store of `input` that a later store overwrites is removed before allocation (941, 939 on main's body: no effect).
+// Reading: retail's `input` is still live after the stage-one words when registers are chosen, so the shift copies it to
+// EAX and small's load keeps CL with an AL copy; both remaining differences come from that one fact, with or without
+// the shifted local. Left to find: the later use of `input` that leaves no instruction (a dead store does not count).
+// A second evaluation that might merge only at code generation: with no shifted local on B, one of the two words
+// shifting by `* 0x1000000` 223 / 223 (the two products are never merged: two shifts, and the homes move); the alpha
+// word packed by nested 8-bit shifts 941 (folded to the same shift: the no-shifted-local code).
+// More diagnostics on B with no shifted local (a store to a spare field after the stage-one words, removed at once): of
+// `small` 942 at 4840 B with the selector block retail's (small in CL, copied to AL); of alpha_input 244, of whole 247
+// (4832 B), of fraction 972, of a third `input << 24` 964, of `input == 5` 948: only a later use of `small` or of
+// `input` itself keeps small's load out of AL. One stage-one word shifting `input` as a signed long, either or both,
+// 941 (same code, merged); the alpha word shifting `(byte)input` 35 (two shifts, `movzx eax, bl`: a positional
+// coincidence, the selector block is still the AL form).
 // M3 lane 13 r134 (fast, control 9; aligned = lines differing after alignment, this body 6): on the no-shifted-local
 // form (re-measured 939, aligned 15: retail's shift, the small flag loaded into AL after fraction's move with no copy)
 // the two stage-one words through a forced-inline four-argument packing function 939 (same code); the input selector

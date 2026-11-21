@@ -1425,7 +1425,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax I (11-19): no new form, no lower score (175): the 0xfc frame and the body length agree, but the constant loads still come early (the 1.0f is materialised at the top of the prologue where retail loads it after the tag lookup) and the definition, material and point homes still differ.
-// score 158 (was 175): The 0xfc frame and extent agree. Tag, flags, position and material homes differ.
+// score 158 (was 175): The 0xfc frame and length agree. The definition, material and point homes differ.
+// Earlier at 175, unity loaded ahead of the retail schedule.
+// The 0xfc frame and extent agree. Tag, flags, position and material homes differ.
 // At 175 the unity load was early and the definition, material and point homes differed.
 // MiniMax A (11-18): no new form, no lower score (175): the 0xfc frame and extent agree, but the constant loads still come early and the definition, material and point homes differ.
 // MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
@@ -1866,11 +1868,22 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // references 193, animation names record 175, names record with a shared turning key 193, component
 // acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
 // The unit load and definition, animation flags and point homes remain displaced.
-// The reduction to 158 came from declaration order: state follows animation_flags and
+// `state` is declared after `animation_flags` and
 // `speed_scale` after `position` (declaration order only).
+// Scoped query gap, with zero or original distance, published on failure 448/448.
+// Gap published before successful length, at the query join or with case scope 453/440/460.
+// Selected final length or gap 448, distance before target position 160, gap beside query points 455.
+// NOT kept: moving the distance initialization leaves the tag spill displaced. Separate gaps
+// lengthen the body and raise the score.
+// The reduction to 158 came from declaration order: state follows animation_flags and
 // Tag declaration before lookup 158; animation flags declaration before lookup 158; both in either order 158/158.
 // Position before lookups or at its output call 158/158; facing at its producer 158; both outputs at their producers 158.
 // The tag, animation flags, material and position homes still differ in the retail-sized frame.
+// Shared typed state 158, stored names 158, separate driven state 158, shared control
+// 158, both accessors 158, common animated-unit view 158, typed state with walking
+// preload 137, typed state with material address 158. NOT kept: the 137 form restores
+// the low tag spill and walking load order but stages one-use settings and rate locals.
+// The animation flags, position and material homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4518,6 +4531,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 0x1012c0 argument after the 0xe5d50 call 605 at 2725 B (al 459/219: the grab block is then retail's but for
 // registers); `changed` renamed `result` 537 (same code); the wall bit read at each of its three tests 536; the
 // special key compared at its one use 598 (2700 B). All restored.
+// The changed flag occupies +0x12 in the full image and the flight rate uses +0x14.
+// Tag lookup after state address 598, inside movement gate 605. Separate flight
+// and walking lookups 677 with flight-arm acquisition or 686 with call-local
+// acquisition. One branch-local reacquisition 630 for either branch.
+// NOT kept: the reduced control is 598 and separate lookups enlarge the body.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
