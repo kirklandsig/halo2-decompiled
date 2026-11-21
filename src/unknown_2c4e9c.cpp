@@ -3315,6 +3315,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // loop body 30; the hit as `if (... != map_id) continue;` then the selection and break 33 (76 B); the iterator's stores
 // written pool, datum_index, index 29 (two NONE stores swap). Re-measured: the iterator by aggregate initialiser 15
 // (84 B, the head unchanged; the extra bytes only realign the listing).
+// M3 lane 12 r168 (h2m fast with 0x2c9a58, matched in each): the guard through a named `bool const` (`map_id != NONE`) 30;
+// the iterator declared at function scope between the id and the guard 30; the map entry alone named in the loop body 30;
+// a valid flag set with the id inside a test on the field and tested for the walk (diagnostic, match-only) 30; a NONE
+// default with the id set from the field inside the walk's own field test 30; a pool local declared in the block with the
+// iterator's pool stored first 30 (all the same direct EBX load). Re-measured the NONE-default conditional id 13 (`this` to
+// EDI first, then NONE in EAX for the compare and both iterator stores, the id loaded straight into EBX). All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

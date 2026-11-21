@@ -2197,6 +2197,10 @@ bool function_17afd0(long effect_index, long value);
 // on the flat test 138 (510 B, the plain conjunction's code); `bool available = false;` declared at the arm's top 24 (its
 // clear moves up); `bool camera_relative = false;` declared at the arm's top 45; the true default kept with the clear as
 // `if (owner != NONE && g == owner) { if (!available) same_view = false; } else same_view = false;` 105 (502 B).
+// M3 lane 12 r168 (h2m fast with 0x174420/0x1751d0; control 12): the view test written `owner != g_4b9ed8` 12; the clearing
+// test's last term `available == false` 12; the owner as a NONE default set under `effect_index != NONE` 12; the availability and
+// same_view declarations swapped (availability first) 12 (all four the same code); `attached` false by default and set by an `if`
+// on the same conjunction 133 (510 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
