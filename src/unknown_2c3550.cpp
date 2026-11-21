@@ -603,6 +603,14 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two
 // stacked score lines below are merged into this one (m3 lane 11 r102).
+// M3 lane 7 r208 (H2M_FAST with 0x270930, MATCH throughout; control 675; aligned = difflib count of differing
+// instructions, masked = with registers and esp slots masked; control 601 / 468): the search arm first, `if
+// (obstacles->count > 0) { search } else { copy out }` (retail's fall-through order: the copy is out of line) 707
+// (2986 B, masked 424); on it retail's retry flow (`avoid` first, the second search assigning `found` in each arm, one
+// `if (!found)` failure block) 759 (3025 B, frame changes at +0x1, masked 385); on it the start pair in one if/else ahead of
+// the input pointer 751 (2963 B, masked 393); that if/else alone on this body re-measured 750 (2960 B, masked 437); the
+// search arm first with `bool last` 740 (2966 B, masked 391); with first_output zeroed at entry 732 (2986 B, masked 425).
+// Lane 14 r77's shape patch still applies: 771 (2938 B, aligned 465, masked 244). Body unchanged.
 // MiniMax E (11-20): no new form and no lower score (675): retail re-tests the input's type after the obstacle setup,
 // so the collision pass is a separate top-level test, and it keeps the success result in a byte at [esp+0x13]; the
 // forms tried here (the radius as one ternary 708, the result as a bool 754, the collision pass split out 848 with
@@ -980,6 +988,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // centre-transform loops 675 (same code); the node index stored before the point copy in the value28 else arm 694. Retail
 // computes 0x2c0d60's previous-direction pointer in ECX right after pushing its last two arguments (the ninth parameter in
 // declared order); that move needs declaration and call edits in two other lanes' files this round.
+// M3 lane 7 r210 (h2m fast with 0x270930 and 0x2c4030, both MATCH each run; control 675): the radius test written
+// `radius < state->source.radius` 675 (same code); the source radius read once into a const local for the test and the
+// assignment 754; flags left undefined at its declaration and zeroed in a `!actor` arm 759; the step's input pointer
+// formed ahead of the output-count test 685; the object-index clear moved ahead of the actor block 761. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

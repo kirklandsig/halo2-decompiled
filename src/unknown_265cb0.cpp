@@ -364,6 +364,12 @@ bool function_26d370(point3f const *point, vector3f const *direction, plane3f co
 real function_30bf0(vector3f *vector);
 
 // score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// M3 lane 6 r223 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): local renames, to test name order among
+// same-size homes: `a`/`b` as occupant_secondary/occupant_primary, the facing pair as secondary_reach/primary_reach,
+// the squared distance and clip amount as distance_sq/clip_fraction, range and scale as perception_range/range_scale,
+// and (diagnostic) `result` under two names sorting first and last: 84 each (same code, homes unchanged). The frame map
+// is as round 67 found: ours shares the clip amount's slot with the seat loop's down-counter, retail with the squared
+// distance.
 // MiniMax E (11-20): no new form and no lower score (84): retail's homes run result 0x8, facing maxima 0x14/0x18, the
 // clip amount sharing 0x1c with the squared distance, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and the
 // delta at 0x4c/0x50/0x54, while this build puts the result at 0xc, the clip amount at 0x10, the range at 0x18 and the
@@ -2278,7 +2284,18 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 158 (was 168): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// score 158 (was 158; 168 earlier): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// M3 lane 6 r223 (h2m fast with 0x26be00/0x26be30/0x25d690/0x25d740/0x25d810, all MATCH; control 158): 0x26be00 is now
+// this machine's and its file is open, so its lookup was respelled there: `(index & 0xffff) * size + data` 158, the
+// multiply by a signed 0x888 158 (both the same code here and 0x26be00 still matches), `(word)index * size` 697 (0x26be00
+// 7); diagnostic, restored at once: the actor lookup here written with its operands swapped 158 (same code). The head's
+// `[eax + ecx + 0x58]` follows neither spelling (retail's own 0x26be00 body and 0x263210 use `[offset + data]` too).
+// The positive arm with the NONE case first 164 (the NONE arm then precedes the slot test; retail keeps it after the
+// arm's closing jump and cross-jumps it back to the count store); the count read into a `short` used for the test and
+// the decrement 158 (same code). Reading: the velocity dot after the velocity normalize folds the direction in both
+// builds; only after the relative normalize does retail load it into XMM1-XMM3, which earlier diagnostics reproduced
+// only with the direction escaped and that call opaque, so the lead is 0x30bf0's whole-program summary (BLOCKED-BY 0x30bf0).
+// score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
 // base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
 // takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
@@ -3003,6 +3020,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
 // each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
 // The contact-head address remains the first difference and the shared reset shortens the body.
+// M3 lane 14 r140 (h2m fast with 0x26be00/0x25d810/0x25d740, all MATCH; control 158): the not-established far-and-slow
+// decision inside the visible arm (`if (!established && !(far && slow)) positive = score > 0.0f;`) with the established
+// arm after it setting positive itself, no `visible || established` block, 160 (2885 B: the scoring block then has
+// retail's order, the established test jumping out to the bonus arm and the unseen path testing established before it, but
+// the two score tests stay separate where retail shares one, and the zero/approach XMM roles and two slot pairs swap);
+// that form with the far-and-slow test written first 233, with the visible decision as one direct boolean expression 227;
+// one `established || (visible && !(far && slow))` block holding the bonuses and the score test 247 (2856 B); the
+// established arm with `else if (!visible || (far && slow)) score = 0.0f;` and one score test 255 (2848 B).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

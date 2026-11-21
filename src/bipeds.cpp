@@ -3197,6 +3197,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
 // `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
 // All restored.
+// In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
+// with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
+// conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4528,6 +4531,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 0x1012c0 argument after the 0xe5d50 call 605 at 2725 B (al 459/219: the grab block is then retail's but for
 // registers); `changed` renamed `result` 537 (same code); the wall bit read at each of its three tests 536; the
 // special key compared at its one use 598 (2700 B). All restored.
+// The changed flag occupies +0x12 in the full image and the flight rate uses +0x14.
+// Tag lookup after state address 598, inside movement gate 605. Separate flight
+// and walking lookups 677 with flight-arm acquisition or 686 with call-local
+// acquisition. One branch-local reacquisition 630 for either branch.
+// NOT kept: the reduced control is 598 and separate lookups enlarge the body.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6258,6 +6266,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
 // the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
 // component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
+// Forward snapshot after up rotation for the side, up or both crosses 126/116/110.
+// After forward normalization for both crosses 147. Staged side cross with the
+// after-rotation or after-normalization snapshot 126/162. Both crosses with the
+// after-rotation snapshot through the setter or memcpy 113/110. The first rotation's
+// cosine-complement spill remains. The setter also shortens the body past retail's length.
 // Length local 79, direct forward field with success exit 154, length bound in
 // the exit test 79, const forward with success exit 79, both crosses staged
 // with success exit 79, ordinary crosses 203, staged crosses with direct

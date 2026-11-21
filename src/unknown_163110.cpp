@@ -617,6 +617,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 }
 
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
+// computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
+// with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
+// with plane 1 too 152 (1851 B, first +0xaf). Re-measured: d as `near_distance + -d` 423.
 // MiniMax G (11-19): no new form, no lower score (115), body unchanged. Naming the three edge coefficients in locals read
 // before the normal's copy scores 276 (1867 B): the compiler keeps them in registers and the copy's stores move behind the
 // products. Swapping the i term's operands (`planes[0].normal.i * view->vector_e4.i`) compiles to exactly the same code
@@ -1231,6 +1235,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Carry completed near/far/both offsets through normal orientation 119/119/135.
 // With both named offsets, sign near/far/both before orientation 163/183/191; read both x coefficients before the copies 235,
 // or combine the early reads with both early signs 297. The coefficient preload and zero register still differ.
+// M3 lane 14 r140 (h2m fast with 0x1648d0/0x320b0, both MATCH; control 115, difflib-aligned 73, register-masked 33):
+// retail keeps the source operand order in the clip denominator (delta first for i and k, normal first for j) and in the
+// distance (normal, point, normal first) where ours loads the other operand first for two terms of each. Forms: the
+// classification terms written i, j, k 115 (same code); the classification through a `point3f const *` element pointer
+// 265 (1867 B); the denominator as one expression 247 (1867 B); the distance as one expression 251 (1867 B); the plane
+// pointer typed const 115 (same code). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

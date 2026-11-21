@@ -502,13 +502,13 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
 // MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
 // and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
 // still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
 // spilled between the two rotations and the collision argument schedule) needs the rotation written out at the call site, so the
 // body stands.
 // MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
-// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
 // Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
@@ -1012,6 +1012,9 @@ struct s_collision_result_buffer_1697c0
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
+// Independent fallback components with aggregate output or the shared setter, by entry placement: original
+// 377/377, before fraction 377/377, after pitch-axis construction 380/380, there with fraction 380/380. NOT
+// kept: the 0xa4 frame, longer body and changed matched caller depart from retail.
 // M3 lane 5 r224 (lead, not kept): the shared in-place rotation with each cross term scaled by the sine where it is
 // computed (rows subtract the scaled term) 270 -> 199 (1433 B, plain agreed), but it raises 0x297d30 23 -> 153.
 // Yaw-axis reload after hit processing, before the fraction test, or at trace return
@@ -1023,6 +1026,11 @@ struct s_collision_result_buffer_1697c0
 // Setter with chained zero 292. Ascending short with tail less-than or terminal inequality 570 each.
 // Direct clear trace with collision-first or fraction-first fallback 339/340.
 // NOT kept: startup zero remains in XMM1 and the tail count changes the matched caller.
+// M3 lane 2 r131 (H2M_FAST with 0x297660 (MATCH), 0x297d30 (23), 0x2967b0 and 0x24590; control 270, aligned 198, masked
+// 71): the fallback test as `0.f == normalize(...)` 270 (same code); the rotate helper's rows with the sine term ahead of the
+// projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled
+// by the sine 317 (0x297d30 244); best_fraction initialised after the pitch axis 267 (under the bar); lane 5 r224's
+// sine-scaled crosses re-measured 199 (0x297d30 153). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2320,6 +2328,16 @@ struct s_actor_looking_structure_view
 // sine-scaled crosses 74 (0x296e60 198); the dot3f projection with sine-scaled crosses 139 (270); the staged dot with
 // sine-scaled crosses 153 (199); the score written forward-first 23 (same code); the clamp as a ternary then
 // `score *= fraction;` 141.
+// M3 lane 5 r226 (h2m fast with 0x296e60, 0x297660, 0x2980d0 and 0x24590; control 23, 0x296e60 270): the in-place
+// helper's rows stored i, k, j / j, i, k / k, i, j / j, k, i / k, j, i 151 (927 B) / 57 / 169 / 66 / 172 (910 B), with
+// 0x296e60 333/300/326/300/280 (the store order moves the candidate cursor, not the score's order). Every product in
+// its own parentheses (a common hand style), by site: score only 62; rows only 22 (0x296e60 282, a one-point change,
+// not kept); rows + score 25; crosses 144 (928 B); crosses + score 128; crosses + rows 144 (925 B); crosses, rows
+// and score 147; dot only 143 (0x296e60 333); dot + score 140; dot + rows 25 (0x296e60 340); dot + rows + score 37;
+// dot + crosses 62; dot + crosses + score 25; dot + crosses + rows 128; all four 166. The same styles on lane 3 r277's
+// merged-helper lead (6; 0x296e60 282): score 141 (927 B); rows 142 (926 B; 0x296e60 284); rows + score 8; crosses
+// 129; crosses + score 60; crosses + rows 54; all three 124; `(1 - cos) * dot` the same code in each. The pair count
+// acts mod 4 here too (0: 6/8, 1: 142/60, 2: 129/124, 3: 141/54), with the site deciding inside a phase.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
