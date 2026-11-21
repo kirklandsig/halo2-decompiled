@@ -1497,6 +1497,14 @@ bool c_projectile_type::v8(long a, long b)
 // flag uses) gives the flags ESI, so ESI goes to the heavier of the two; here both have three uses and retail gives the
 // tie to the object, ours to the flags. With the mask, the definition copy's pointee typed const (as the file's other
 // copies are), typed as the const device type, or as `void const` 12 each (same code).
+// M3 lane 4 r239 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, MATCH each time; control 5, mask control 12), all with the full-width
+// mask: the two device bits gathered in a second local and or-ed into the result at the return 59 (193 B); the NONE test
+// inverted with the group work in the else arm 12; the object's power read as `((real *)object)[0x50]` at both uses 12; the two
+// device bits tested on `flags >> 10` 48; the group index bound as `dword const &` and compared with `(dword)NONE` 12; the
+// unused `c` evaluated in the call's last argument 12; a by-value copy of the index inside the NONE block for the mask 12 (the
+// 12s are the mask's own code). Diagnostic (reverted): `result += 0x800` 13, still swapped, so the 0x800 pair is keyed by the
+// constant's value and not by the operation. r237's entry address ahead of the NONE test re-measured 24 (187 B): the head pair
+// is retail's there, with the index in ESI and the entry in EDI.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

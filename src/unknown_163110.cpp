@@ -1214,6 +1214,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // denominator only, for its row only, or declared after the ratio (denominator x, z, y or y, z, x) best 16. With x named and the
 // denominator x, z, y the x product loads the normal first and the z delta and the denominator swap XMM1/XMM3; with y named
 // the products are retail's but y takes XMM5; with none named the zero constant takes XMM5 and the head is lost.
+// M3 lane 4 r239 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115): the camera point copied into a local
+// vector for plane 0's d 463 (1883 B); plane 0's i negation read from the forward pointer 423 (first +0x60); plane 0's d in a
+// local stored as `near_distance - d0` 423, as `-d0 + near_distance` 423; the forward vector copied into a local normal with
+// the plane's normal written from its negation 263 (1830 B); the i product named ahead of the k and j terms and added last 251
+// (1867 B); the k and j terms assigned and the i product added by `+=` 168 (first +0x60). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
