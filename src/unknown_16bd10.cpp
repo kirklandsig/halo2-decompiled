@@ -1433,6 +1433,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // B). Reading on 121: the animation arm's zero copy (`movaps xmm0, xmm1`, 3 bytes) moves the field-of-view tail, so 14 jumps
 // to it differ only in their target; the copy follows from the zero's register (XMM1 here, XMM0 in retail), which the
 // plane length sets. Body unchanged.
+// The 0x48 frame agrees. The projection still preloads direction k instead of j and swaps the length and zero XMM homes.
+// Copied normal through displacement 427; component setter 485, aggregate normal 485, representation copy 427.
+// Snapshot squared length 435; j capture and setter with that length 485; indexed setter 485; snapshot self-dot 435.
+// NOT kept: extending the copied normal changes the entry and displaces the original direction load. The component and aggregate forms move the body away from retail length.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
