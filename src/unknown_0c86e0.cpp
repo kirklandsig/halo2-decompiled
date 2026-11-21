@@ -453,6 +453,14 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // the zoom flag declared right before the reset test 125 (350 B); the weapon flag as `weapon_index != NONE &&
 // function_100f70(weapon_index)` 104 (367 B, aligned worse); the entry unit fetch through slot_handler.h's object_get 110
 // (same code). Still BLOCKED-BY 0xbadc0.
+// M3 lane 6 r224 (H2M_FAST with 0x103b10, MATCH each run; control 110): no entry unit pointer, the unit fetched at each
+// reset store 141 (404 B); `__forceinline` on this file's declaration of the player-index getter 110 (same code); with it,
+// round 117's three forms 128 (348 B). Diagnostics, not kept: a file-local copy of the player-index getter calling 0xbadc0
+// through a function-pointer local 136 (400 B): the unit is then fetched again after the two calls exactly as retail does
+// (pool global and data reloaded, index*12 kept in ESI), but taking the callee's address moves it to the standard /Gr
+// convention for every caller (`mov edx, 3; mov ecx, edi` here); that with round 117's three forms 22 at 382 B, first
+// difference +0x1d, nothing left but that convention. So retail's two calls carry no no-write summary; nothing in this
+// file can drop it without taking the callee's address. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

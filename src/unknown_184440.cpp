@@ -539,6 +539,11 @@ __forceinline bool function_184448(long arg_0)
 // the axes read from g_440b94 at each use with a long table index 985 (4595 B, frame 0x11cc as retail, first
 // difference +0x1c), with the dominant axis long as well 985 (same code); the particle system through the existing
 // DATUM macro 965 (same code). Still BLOCKED-BY 0x48e70 for the reloads after its calls. Body unchanged.
+// M3 lane 6 r224 (H2M_FAST with the callers 0x9cca0/0x184060, MATCH unless said; control 965): the loop's two start-face
+// compares against the worklist's seed slot 974 (4593 B; the callers 18 / 11); the start face copied into a local for its
+// four reads 1004 (4541 B); the table global cast at each use with no local for it 978; the bounds-initialisation counter
+// typed short 1004 (4570 B); the record tests written on the instance argument (`arg_0 != NONE`) 989 (4599 B). Body
+// unchanged; still BLOCKED-BY 0x48e70.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

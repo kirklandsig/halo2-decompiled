@@ -1058,6 +1058,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // each: the inline parameter is a plain variable, so the fill value still loads first); a by-value inline fill helper
 // (party, first, last) as a pointer `while` 63 (199 bytes); the capacity named before the open slots 34; the call's
 // count from a local copy of the total 34 (same code). The player count still arrives in EDX.
+// M3 lane 6 r224 (H2M_FAST with 0x91e30 MATCH; control 34): the fill value `abs(next_party)` (never negative) 57 (195 B);
+// the scan and copy in a forced-inline helper returning the next party 34 (same code); the clamp in a named local 34
+// (same code); the copy loop reading through the stepped party-list pointer 82 (172 B); the fill through a slot pointer
+// from the copy's end (`*slot++ = next_party`) 35. Still BLOCKED-BY 0x7e210.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
