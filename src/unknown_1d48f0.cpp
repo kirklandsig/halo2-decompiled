@@ -481,6 +481,14 @@ const dword g_455978[81] = {
 // `if (!local_0)` (always true there, as retail's `&& !local_0` in the bounded test is) 360 (2023 B: 0x11bed0 out of
 // line, entry roles still EBX/EDI swapped and the two optional-state homes at +0x24/+0x48 for retail's +0x30/+0x40); the
 // call alone under it 367 (2028 B); with the break inside it 375 (2019 B).
+// M3 lane 8 r218 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH unless noted; control 268). Reading: retail
+// calls 0x11bed0 out of line at all 46 of its call sites (a raw call scan of retail matches the 46 calls in src); this build
+// expands it at the two loop sites only, here and 0x21a100 (whose `if (audible == 1)` loop call is a call in retail), while
+// matched 0x125920 keeps the same loop shape's call out of line. Tried: the exclusion index as a ternary with NONE 405
+// (2101 B); the sample rows written point first 268 (same code); a local location filled by 0x11bed0, copied to arg_5 and
+// tested (0x125920's shape) 311 (0x11bed0 still expanded); re-measured: the rest under `if (!local_12.found)` 268 (same
+// code), the call under the always-true `if (!local_0)` 360. Diagnostic, reverted: `/Ob1` on 0x11bed0's file 373 (a call
+// here, 0x21a100 156), but matched 0x11bed0 19 and 0x14a280 14. Still BLOCKED-BY 0x11bed0's expansion here.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

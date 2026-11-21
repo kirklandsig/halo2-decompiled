@@ -4662,6 +4662,14 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // true : false;` 110; `if (result) return result; return false;` 109; `if (!result) return false; return true;` 110 (each
 // moves the first difference to +0x26; none gives retail's `mov al, [result]; test al, al; jne <bare epilogue>`). Body
 // unchanged; the stacked score header lines above merged into this one note.
+// M3 lane 8 r218 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged). Lane 1 r144's 44 lead rebuilt
+// from its diff, 44 (1264 B, +0x94). Reading: retail's kept arms store the result through AL (`mov al, 1` then the byte
+// store) and jump past the state-8 block's reload into its bare epilogue, so the result is a register value with a stack
+// home there, not a folded constant. On the 44 lead: the kept arms `goto done;` with the label on the final `return
+// result;` 44 (the arms then reach a reload block, the store stays an immediate); with the post-disconnect test also
+// jumping there 105 (1248 B); that with the acknowledgement block ending in `result = true;` and no accept label 96; the
+// three flags declared ahead of the sender lookup 50 (+0x10); the kept arms and the post-disconnect test as `return
+// result;` 122 (1244 B).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

@@ -2215,6 +2215,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // projected separation and both roots through x/z/y dot 570, interval projection dot with retail
 // signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
 // score.
+// M3 lane 8 r218 (H2M_FAST with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, the four matched ones MATCH
+// each run): the vertex clamp as `count = 8; if (point_count <= 8) count = point_count;` 572 (2878 B); both averages as
+// three divisions by the count with no inverse local 578 (2891 B: the tail is then retail's instruction for instruction,
+// one reciprocal, each sum loaded and multiplied by it in x, y, z order, but the plane distance's rows flip operand sides
+// and the cross-product region churns); that with the distance's y row plane first 578; that with the zero-based edge
+// loop 620 (2902 B); with `radius * radius` at its use as well 612 (2898 B). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
