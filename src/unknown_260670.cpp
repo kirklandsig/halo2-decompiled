@@ -40,6 +40,7 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// score 440 (was 440): r216 unchanged. The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions (round 196's forms at the end of this note).
 // MiniMax E (11-20): no new form, no lower score (440): re-read against retail, the frame stays 0x8a8 against retail's
 // 0x8a0 because the two flags take a dword each here and share one dword in retail (our bytes at 0xb and 0x13 against
 // retail's adjacent pair at 0x6 and 0x7), so every home above them and the sorted array's start move with the frame;
@@ -55,7 +56,6 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup
 // and the other way round, and the two flags written as bytes still give each its own home (439, one point,
 // below the bar); all restored.
-// score 440 (was 440): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions (round 196's forms at the end of this note).
 // Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // MiniMax H (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the early
 // homes keep their order (ours the reference at 0x18, the flag bytes at 0xb and 0x13, the index offset at 0x20 and
@@ -301,10 +301,23 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // flags in one declaration 439 (same code), declared after the best score 440, the evaluator loop's flag declared at the
 // function's top and set before the loop 439 (same code); on main's body the sorted index as `long index =
 // sorted_indices[i]` 619 (3085 bytes). The flags still take a dword each (+3 and +0xb against retail's +6/+7).
+// M3 lane 6 r216 (fast with 0x2605d0/0x2613d0/0x2600a0/0x262a30, all MATCH; control 440): `source.unknown4c = 0.0f` stored
+// before the 0x270590 call (retail's order; 0x270590 writes only the start fields) 439; that with the sort scratch in a block of
+// its own around the sort call 438 (frame 0x8a4); the range local read once at the loop top and reused for the limit test
+// 810 (3113 B); the final test as `!finite_distance && !within_limit && ...` 440; the chosen position named once for the
+// reported copy, the reference and the unknown5b test 796 (3059 B). A two-second LTCG frame lab (this file's unit with the
+// callers' and callees' objects) reproduces the 0x8a8 frame and names its homes: within_limit +3, a 4-byte cell shared by
+// the loop counters and the normalize spill +4, finite_distance +0xb; the flags pack into one cell (frame 0x8a0 with the
+// scoped scratch) when within_limit loses one reference or finite_distance gains one (probes, 575 and 796: the lockstep
+// count follows the length, not the frame).
 // M3 lane 12 r163 (H2M_FAST with 0x2605d0/0x2613d0 MATCH; control 440): the range read once into `range` for the limit
 // test as well (main mixes the local and a field re-read) 810 (3113 B); the two flags' declarations exchanged 440 (same
 // code); `within_limit` alone declared just before the scoring loop 758 (3065 B), `finite_distance` alone there 615
 // (3081 B); the sort scratch declared at the top ahead of the result 440 (same code). Body unchanged.
+// MiniMax R (11-20): score 440 (was 440): no new form; the frame stays 0x8a8 against retail's 0x8a0, the two flags still
+// take their own dwords eight bytes apart where retail packs them adjacently at 0x6/0x7, the result still takes the slot
+// above the actor where retail puts it at 0x8, and the source and settings still sit four bytes above retail's, so every
+// parameter offset moves with the frame.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

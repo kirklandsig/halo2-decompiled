@@ -26,6 +26,14 @@ static inline void cross3f_staged(vector3f const *a, vector3f const *b, vector3f
 	result->k = k;
 }
 
+/* result = -vector (shared by 0xc1d90 and 0x224fd0) */
+static inline void vector3f_negate_ab(vector3f const *vector, vector3f *result)
+{
+	result->i = 0.0f - vector->i;
+	result->j = 0.0f - vector->j;
+	result->k = 0.0f - vector->k;
+}
+
 /* the dot product a . b summed i, then k, then j (the order 0x143120 and
    0x1f2a80 sum it in) */
 static __forceinline real basis_dot_xzy(vector3f const *a, vector3f const *b)

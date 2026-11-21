@@ -119,6 +119,7 @@ static inline void quaternion_transform_vector(
 
 /* the rotation that takes one unit vector to another */
 // MiniMax E (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four (frame 0x20 against 0x24) and the cosine half stays in xmm5 where ours swaps the two; the difference follows the three inlined quaternion_transform_vector calls, and writing that helper's body out is not allowed. The helper written with retail's own term orders (the dot as i,k,j; the i row (cross*2w + v*s) + q*dot; the j/k rows (v*s + q*dot) + cross*2w) compiles to the same 1324 bytes and the same listing, so the compiler reassociates the sums and the source's grouping does not choose them.
+// MiniMax C (11-20): no new form, no lower score (201): retail keeps five 4-byte cells below the quaternion where this build keeps four, computes s = 2w*w - 1 above the identity copy and computes w2 after it, and its frame is 0x24 against ours 0x20; the x87 roots match in shape, but the register roles (2.0 in xmm6, cosine_half in xmm5, sine_half in xmm3/xmm4) do not.
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Stacked status lines merged in r192.
 // MiniMax G (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four, and the cosine half stays in XMM5 where ours swaps the two.
@@ -522,11 +523,27 @@ static inline void quaternion_transform_vector(
 // Weighted cross/input/quaternion terms named in all rows 280/201/199, pairs 257/250/262,
 // all terms 244, left-associated partial sums 244 at retail length.
 // NOT kept: the two-point gain leaves the frame mismatch.
+// Coefficient local names in all six weight/projection orders, then cross-term names before
+// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
 // Named double cosine/sine radicands 217/217, both independently or together 201/201.
 // Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
 // All keep the 0x20 frame and miss the separate retail transform spill.
+// Basis dot with quaternion first, vector first, quadratic first, between weights, named square,
+// ordinary cross, staged cross and staged cross with quadratic first.
+// Scores 236/226/258/199/219/265/264/265.
+// On the form with the basis dot between weights, quaternion first, cross order j/k/i, ordinary
+// construction cross and ordinary repair crosses.
+// Scores 187/199/236/199.
+// NOT kept: The 187 form restores the 0x24 frame but changes the last projection’s grouping. The 199 form falls below the gain threshold.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Typed basis projection with quaternion/input first: scalar snapshot 178/212,
+// scalar doubled in place 170/212, caller-owned quadratic weight 311/304.
+// Typed-member forms 187/199 reproduce earlier projection leads.
+// Original projection with staged scalar square 151, shared scalar before doubling 154,
+// opening weight order 212, and original quadratic expression in retail order 259.
+// NOT kept: the shared dot changes the left-axis grouping. The staged square gains only
+// with both changes together, leaves frame 0x20, and changes the projection schedule.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1586,19 +1603,47 @@ void function_143250(
 // Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
 // 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
 // NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// Third-band products declared at their first coefficient: initial/later/both
+// mixed roots 1548/1497/1556; third mixed root 1515; component-weight families
+// at entries 23/25/both 1669/1689/1655; all product groups 1671. NOT kept:
+// the first three recover frame 0x300 but displace the scalar homes and
+// regress. The other forms retain the short frame.
 // The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
 // transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
 // outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
 // NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
+// Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
+// Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
+// Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
+// NOT kept: the forms raise the score and do not recover the 0x300 frame.
 // capture with matrix store for r1 1740; capture with matrix store for r4 1721;
 // capture with matrix store for r1, r4 1748; capture with matrix store for r0 1717;
 // capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
 // capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
 // NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
+// M3 lane 8 r207 (fast with 0x22850 209 and 0x23690 354 unchanged each run; control 939 at 10777 B, `ret 4`, rotation in
+// EAX): of 1766 listing lines 600 differ only in a stack offset and 352 in the instruction; the matrix and everything
+// above it sit 4 bytes lower than retail's, the scalar homes from +0x48 to +0x240 are permuted. The matrix declared after
+// the nine rotation reads 939; r0..r8 renamed (diagnostic: slot order does not follow these names) 939; `s5_s15` as
+// `s15 * s5` 939; every band temporary but the accumulator `real const` 939 (all the same code); the third band's
+// accumulated diagonal sum as one expression stored to matrix[8] 1333 (10752 B).
 // Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Direct accumulation into the matrix, third-band rows 1 through 7 independently, then all seven
+// rows.
+// Scores 1472/1380/1608/1324/1632/1220/1203/1611.
+// NOT kept: Row 1 reaches retail length and row 2 restores frame 0x300. Both raise the score. The
+// previous scalar spills remain.
+// Separate third-band copies of the second-band axial/horizontal mixed products
+// 1697/1721 and axial/horizontal squares 1751/1791. Both mixed sets 1792, both
+// square sets 1866, all products 1959, all immutable copies 1959.
+// NOT kept: the explicit copies shorten past retail and raise the score.
+// Separate third-band declarations for the up/forward pair, root-35/forward
+// component, both or both symmetric families 939/939/939/939.
+// Band-specific mixed names, root-35 axis names, both root axis families,
+// and all those role names 939/939/939/939. The scalar spill frame stays 0x2fc.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

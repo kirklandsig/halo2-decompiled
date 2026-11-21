@@ -576,6 +576,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // loads the player count into edx between the pushes and copies the count to eax last, and that caller's body lives
 // in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
 // MiniMax E (11-20): no new form, no lower score (34): the body still differs from retail only in the scratch registers - the player count is tested in edx here and in eax in retail, and the clamp's mask is built in edx here and in ecx in retail (the clamped value itself is in eax in both) - and the notes below record that retail's caller 0x7e210 hands the count over in eax, so the arrival register is not this body's to choose; swapping the two operands of the total's sum compiles to the same bytes.
+// MiniMax A (11-20): no new form, no lower score 34: the player count arrives in EDX where retail keeps it in EAX, and the exchange runs through the copy loop and the fill.
 // score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
@@ -1032,6 +1033,14 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // `long i` 34 (same code). First-pass (/Gd compile-only) screen: the player count stays in EBX (the maximum takes EAX
 // with cmovle) for the declaration order and the sum order; the named entry moves it to EDX and the party list to EDI.
 // Still BLOCKED-BY 0x7e210 (src/unknown_07a9a0.cpp, another lane's file this round).
+// M3 lane 13 r130 (fast with 0x91e30 MATCH and 0x7e210; control 34). Diagnostics, reverted: one more unconditional
+// player-count use (a store into the last slot) 40, two more 44 (193 bytes), one more extra-count use 29 (191 bytes; the
+// extra count then moves to EDI after arriving in EAX): the arrival registers do not follow reference counts here (the
+// player count stays in EDX in all three). Natural: open slots written against both counts (`team_count *
+// maximum_team_size - player_count - extra_count`) 71; the fill under `if (0 < extra_count)` 74 (198 bytes; the extra
+// count then stays on the stack); that with the fill bound written `player_count + extra_count` 74 (same code); the
+// fill value in a `long const` local declared after the copy loop 34 (same code). Nothing kept; the cause stays the
+// fill value's load ahead of the count and destination, as the rounds above describe.
 // M3 lane 1 r138 (fast with 0x91e30 MATCH and 0x7e210 871 unless given; control 34): the copy stored first and the maximum
 // taken from the copy (`parties[i] + 1`) 75 (0x7e210 879); the maximum test as `next_party - 1 <= party_indices[i]` 53
 // (next_party then held in EAX through the copy loop); the copy first with the maximum as one ternary on the copy 75

@@ -929,6 +929,24 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // On the swap order (collection, player, update, other) at definition, declaration and call, re-measured 32: the occupied
 // key through a `players` array pointer named right after or right before the slot search 27/27 (a gain of one from a
 // one-use pointer and a parameter reorder whose own callee matches either way: not kept). All restored.
+// M3 lane 8 r210 (fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/0x83570, all MATCH; control 28): re-measured the swap
+// callee as (collection, player, update, other) at definition, declaration and call 32 (swap call and occupied head
+// retail's; the key grouping then leaves the key in ECX and the destination in EDX, and the last record's `updates` and
+// field loads swap registers); on that order `controller_index` declared before `unknown14` 43, no last-record locals
+// (fields read at their stores) 106 (1053 B), the occupied key as `&collection->players[i].key[0]` 32 (same code), the
+// last record's two locals read at the else arm's top 275 (1087 B); diagnostic on that order: 1 to 8 unused
+// initialised locals at the top 32 each (no symbol-count tie). All restored.
+// M3 lane 16 r159 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied key indexed by the
+// stored `update->player_index` 103 (the store is forwarded on the swap order (collection, player, update, other), 32);
+// on that swap order: `collection` dropped from the slot search and swap (both given `&watcher->players`) and declared
+// after the swap, just before the occupied test, 32; the occupied key through a `t_player_key const &` bound to
+// `collection->players[i].key` 32; a named occupant pointer taken ahead of the count step 40. The key sum stays (inverse
+// + cursor) + collection + 4 in each; the swap order alone re-measured 32.
+// M3 lane 16 r161 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; main's swap order): a named element
+// offset (`i * sizeof(player)`) shared by the loop-top player and the occupied key 294 (1083 B); a const `players` array
+// pointer named at the occupied block's top, the key as `occupant[i].key`, 36 (the key keeps our grouping); a const
+// occupant element pointer named right after the slot search 152 (1073 B), after the swap just before the occupied test
+// 205 (1069 B); the occupant element bound to a const reference at the else arm's top 329 (1097 B).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

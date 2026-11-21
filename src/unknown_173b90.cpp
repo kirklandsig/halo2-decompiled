@@ -2182,6 +2182,16 @@ bool function_17afd0(long effect_index, long value);
 // reverted): on P the NONE constant stays in EBX through the view test before 0x155760 and the owner test after it, so the
 // owner cannot share EBP with it; P without the owner test 96 (owner and NONE share EBP, availability BL); without the view
 // test 129; this body without the owner test 102. On this body both later tests are immediates. All restored.
+// M3 lane 4 r236 (fast with 0x174420 and 0x1751d0; control 12, P re-measured 138 at 510 B): the availability as a true
+// default `g_4b9ed8 != NONE` cleared when the query fails 122 (504 B), on P 123; the availability assigned the query's
+// compare inside `if (g_4b9ed8 != NONE)` 102 (496 B), on P 121; the owner lookup moved after the availability, just
+// ahead of the clearing test, 118 (485 B). In P the conjunction's temporary takes BL and the availability spills; retail
+// writes the 1/0 straight into the flag's slot with the availability in BL. Body unchanged.
+// M3 lane 8 r207 (fast with 0x174420 and 0x1751d0; control 12): the clearing test as `!(owner != NONE && g == owner &&
+// available)` 12 (same code); split into an owner/view test and a separate `!available` test, each clearing 115 (507 B);
+// the same as an `else if (!available)` arm 105 (502 B); the availability assigned `function_155760(g) == 0` inside an
+// `if (g != NONE)` after its false default 102 (496 B); same_view initialised `owner != NONE` and cleared by a view and
+// availability test 118 (499 B); `bool same_view = available;` cleared by the owner/view test re-measured 56.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -943,14 +943,6 @@ void function_11f5f0(box2f *bounds, point2f const *points, long count);
 void function_141590(transform4x3f const *in, transform4x3f *out);
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result);
 
-/* result = -vector */
-PRIVATE inline void vector3f_negate_ab(vector3f const *vector, vector3f *result)
-{
-    result->i = 0.0f - vector->i;
-    result->j = 0.0f - vector->j;
-    result->k = 0.0f - vector->k;
-}
-
 PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vector3f const *point, point2f *result)
 {
     real vi = point->i;
@@ -1339,6 +1331,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // projection 597 (2780 B); in the sphere arm the depth from the radius local 531 (2831 B). Retail keeps 1.0 in XMM6 and
 // divides a copy after the centre (`movaps xmm2, xmm6; divss xmm2, [ebx+0x28]`), ours hoists the divide into XMM4
 // mid-projection; retail's tail reloads the entry into ECX for the flag stores, ours EDI. Body unchanged.
+// m3 lane 15 r120 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 396, register-
+// masked 160): every sphere row sums its products in exactly the reverse order of ours (x (fj vj + fi vi) + fk vk against
+// (fk vk + fi vi) + fj vj, likewise y and z). The projection helper through forward/left/up axis pointers 604 (2780 B); y
+// stored first with the pre-scale statements k, j, i 291 at 2840 B (aligned 430); the rows computed up, left, forward 318
+// (2831 B); the cone half extents as `width / origin_offset * 0.5f` (one repeated divisor, no scale local) 515 (2813 B: the
+// reciprocal still forms early); assumes at the top on count, shape and entries (1/2/3 of them) 562/600/554.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

@@ -2281,6 +2281,10 @@ __forceinline char unit_action_round(real value)
    in a combo), its damage frames, and the lunge */
 // MiniMax H (11-20): no new form, no lower score (234): the weapon-slot index compares as a byte against an immediate where retail sign-extends it to sixteen bits; the pool and index take other registers.
 // MiniMax E (11-20): no new form, no lower score (234): the best form in the notes below needs every early exit written as a goto to one return, which is kept only with a byte match, and the permuter on that form found nothing below 105; what is left is the pool, index, type and name register homes and the completion byte.
+// MiniMax D (11-20): no new form, no lower score (234): retail keeps the pool global in EBP with the unit index in EDI and compares
+// the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this build keeps the pool in EDI, the index in
+// EAX and compares the byte against an immediate; a short local for the index was measured at 297 and the 105 and 107 forms need
+// the four gotos, which the rules drop.
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below (r214 lead 105 just above the marker).
 // Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
 // control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
@@ -2599,6 +2603,12 @@ __forceinline char unit_action_round(real value)
 // 335, a shared projected header 293, and a word slot with the active and
 // short hand helpers 320. The shared header reaches 1189 bytes with the
 // displacement in ECX and the hand comparison still at byte width.
+// M3 lane 6 r214 (fast with 0xe9ed0/0xea090, both MATCH; control 234, aligned 141): retail divides by the lunge-speed
+// field read again (`divss xmm0, [eax+0x2c]`); that field read at each use (through a named settings pointer, or the full
+// chain twice: same code) 234 (aligned 126, the tail then retail's). On lane 5's 105 lead (rebuilt at 105, masked 9): the
+// same re-read 355 (1142 B: the first-person name drops to a stack home and loses its copies); the biped flag renamed to
+// sort after `result` 105 (same code: the two byte slots do not follow names); `type = NONE;` after the NONE pair 105
+// (same code); the first-person name copied from `name` after the weapon getter 317 (1191 B). Body unchanged.
 // The pool and slot still take the wrong registers, and the hand test differs in width.
 // Metadata name first 237, valid metadata with fallback else 239, name-miss branch first 242,
 // and block-local metadata name 239. With the short-slot hand getter 250/250/256/250.
@@ -2607,6 +2617,10 @@ __forceinline char unit_action_round(real value)
 // getter 297/297/297. A stable entry pool and a fresh final pool with
 // the shared displacement 311, or 325 with the short hand getter.
 // NOT kept: the stable entry pool forms move the first difference to +0x7.
+// Shared switch input and selected melee name with conditional, default/update,
+// explicit arms or Boolean bit 234/234/234/249. With the signed-short getter
+// 297/297/297/302. NOT kept: the shared name does not recover the pool,
+// hand result or completion-byte homes.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4442,6 +4456,24 @@ extern vector3f *g_4687bc;
 // 0x188180 call) 25 (the global loaded as a dword); the component bound through a `s_havok_component *const &` for the
 // 0x0b67a0 call and the element 8; the re-looked-up definition and the effect tag read as const 8; the model index
 // named ahead of the effect tag read 8 (the 8s the same code).
+// M3 lane 8 r207 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the node index through a file-local
+// forceinline helper taking the component (rigid-body index, element, node-count test, NONE result) 8 (same code); the
+// same helper as plain `inline` 114 (1057 B: it stays a call), with early returns 114. Compile-only screen (both sites
+// as the check; all the same code at both): the effect tag through a copy local, through a named masked model index,
+// through a named tag-table pointer, through a dword cast, the model index as a word cast; the rigid-body index as
+// dword; the element from the array's data by byte arithmetic with sizeof, through a reference to the data element,
+// non-const. Diagnostics (screen): without the 0x188180 call, without the damage block, without 0x1eb020's call, with
+// the strength a constant: the material still in DX and the element still data-in-EDX, so both choices are local.
+// M3 lane 8 r210 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the element pointer declared at the
+// effect block's scope and assigned after the index test 8; the rigid-body index declared before the material and
+// assigned at the call 8; the node index declared at the effect block's scope 8; the element through a named pointer
+// to the rigid-body array formed after the component lookup 8 (all the same code); the material default-constructed
+// before the component lookup and assigned a constructed value after it 10 (the load sinks to the store, in AX).
+// Compile-only screen (both sites as the check; same code at both): the element as a data local then
+// `&rigid_body[index]`, as `index + data`; the component bound as a reference; a const component pointer; `0 <
+// node_count`; an `int` index; `NONE != index`. Diagnostics (screen): the index kept live past the element goes to EBX
+// with the data still loaded first; without the node-count test the offset takes ECX, data still first. Both stores and
+// loads sit as late or early as their registers allow, so both sites are register choices, not schedules.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
