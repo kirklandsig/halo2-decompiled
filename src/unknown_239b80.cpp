@@ -1477,6 +1477,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
 // tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
 // guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
+// Ordinal before point/side, between them, before side/point, or between
+// side/point 133/132/133/130. Publishing the side in each input-acceptance
+// branch, before or after the point copy, after the mask update, or after duplicate
+// suppression 216/216/166/135. Early publication recovers count in ECX, swaps
+// the side slots and grows the body to 895 bytes. Late publication leaves the side in CL.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

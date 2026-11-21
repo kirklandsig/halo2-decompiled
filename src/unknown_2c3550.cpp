@@ -949,6 +949,11 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `bool result` 754 (aligned 610); the pathfinding pointer read from the state at both searches and the trace (no entry
 // local) 769 (2969 B); `*complete` read in `last` (no entry copy) 769 (2963 B); the actor's linked index read once into
 // a named `long linked` for the height and the flags 761 (aligned 606).
+// Accumulated actor bits, leaf-selected mask, optional low bit added, separate
+// option bits combined with base, or conditionally selected option bits 675/735/675/768/775.
+// Accumulated, leaf-selected and separate option bits with Boolean success 754/754/769.
+// The accumulated form keeps the old register homes. Boolean success moves the
+// entry allocation and keeps the stack homes different from retail's.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

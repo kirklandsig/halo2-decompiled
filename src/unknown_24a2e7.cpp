@@ -388,6 +388,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // guard 82/74/95/76, indexing all found accesses, formatted destination, plain name
 // and clear, or post-concatenation clear. NOT kept: all add an integer divide, and
 // the extra frame word in the 0x28 forms does not preserve the unscaled scan ordinal.
+// Separate copy or whole format scopes with an entry pointer/reference and indexed
+// clear 83/83/83/83. Nested suffix with a comparison cursor, advancing on inequality
+// or after the match arm, ordinal or cursor first, 84/84/84/84. The frame remains 0x24.
+// The scaled entry remains live across the appends.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
