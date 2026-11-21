@@ -129,8 +129,8 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
 // reads the type once.
 // MiniMax S (11-16): score 96 (was 96): no new form kept; the 24-point form (the type read once, the headers in
-// ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach its
-// score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
+// ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach
+// its score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
 // Earlier at 96 (was 96; m3 lane 8 r166 and r172 near the end; a score line, moved below the first in round 252): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
@@ -690,6 +690,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct handle or shared case-zero handle 132/132, with promoted type 135/135, and with
 // the whole rigid-body reference 117/117. NOT kept: the 88 forms make the handle a one-use copy
 // and retain the flags address where retail keeps the body. The other single-type forms lose the caller.
+// M3 lane 16 r172 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 118's one-read form rebuilt 28 at 256 B
+// [0]. On it: a diagnostic store of the header array and the object index to two probe globals after the type read 110
+// [9] (the object index then takes ECX as retail, but the incoming index moves to EDX; reverted); the type through
+// `headers[component->object_index & 0xffff]` with case 0 through havok_object_get(object_index) 102 [13], with case 0
+// through `headers[object_index & 0xffff].object` 102 [13]; the absolute index from the component's field first and the
+// object-index local after it 28 [0] (same code); the absolute index from the field with no object-index local 101 [0].
+// Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -1555,7 +1555,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 551 (was 580): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// score 551 (was 551): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
 // The projected and first point now have retail's stack homes.
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
@@ -2203,7 +2203,7 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
 // the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
 // Body unchanged.
-// score 551 (was 551): The first count and clearance stores and the prism ordinal still miss their retail homes.
+// Earlier at 551 (was 551; stacked header merged here in m3 lane 16 r172): The first count and clearance stores and the prism ordinal still miss their retail homes.
 // The first count and clearance stores and the prism ordinal still miss their retail homes.
 // Squaring after plane distance, projection or the vertex bound 548/548/548, after the edge walk 543.
 // Minimum first 570, count first 576, minimum and count first 570, count and minimum first 570.
@@ -2219,8 +2219,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // interval projection dot with shared point difference 559, projected-separation x/z/y dot 551,
 // direction-length x/z/y dot 568, half-span x/z/y dot 552, both square roots through x/z/y dot 568,
 // projected separation and both roots through x/z/y dot 570, interval projection dot with retail
-// signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
-// score.
+// signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise
+// the score.
 // M3 lane 8 r218 (H2M_FAST with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, the four matched ones MATCH
 // each run): the vertex clamp as `count = 8; if (point_count <= 8) count = point_count;` 572 (2878 B); both averages as
 // three divisions by the count with no inverse local 578 (2891 B: the tail is then retail's instruction for instruction,
@@ -2233,6 +2233,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // moved to just after the plane distance 548 (the FLT_MAX load and store at retail's place); with `inside = true` moved
 // up as well 545 (statement moves, a lead only); on 545 the edge loop zero-based 599 (2885 B), on main's body 602 (its
 // `vertex = 0` start becomes a loop-invariant zero in EBX where retail makes the index's zero fresh). Body unchanged.
+// M3 lane 16 r172 (H2M_FAST with 0x120790 and 0x2469b0, both MATCH each run; control 551): each average through a
+// three-use float divisor (`real divisor = (real)count; out->x = sum.x / divisor;`, P452's real divisors re-measured on this
+// body) 571 (2889 B); the half vector through vector3d_from_points3d 558 (2889 B); the clamped difference through it 552
+// (2879 B); the direction through it 584 (2891 B); the plane distance through plane_distance_to_point 567 (2893 B); one
+// `ray` scratch shared by both ray arms 592 (2865 B, first difference +0x1). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

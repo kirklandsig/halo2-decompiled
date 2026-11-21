@@ -1902,6 +1902,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // B); the fraction started at 1.0 and divided under `forward <= radius * 1.3f` 240 (1166 B). The XMM numbers still
 // follow the callee summaries of 0x210770/0x210690 (BLOCKED-BY 0x210690, lane 2 r117's reading); their file is held by
 // another lane this round. Body unchanged.
+// M3 lane 16 r172 (H2M_FAST with 0x29a190 and 0x1f9580, both MATCH; control 198): the side test as `0.0f < ...` 198,
+// the forward test as `forward_minimum < forward` 198, the fraction test as `radius * 1.3f < forward` 198 (same code each);
+// the cosine clamp as `1.0f < cosine ? 1.0 : cosine` 226 (1176 B); the pathfinding getter passed straight to the trace call
+// 198 (same code). Radius still XMM4 for retail's XMM5. Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
