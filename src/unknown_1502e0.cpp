@@ -1746,6 +1746,12 @@ void function_150820(dword *bits, bool local_only)
 // extra use of the hand instead 74 (masked 7, no exchange). So the exchange is a one-reference ranking tie that the
 // player loses by one, as 0x178c80's colour B does. Forms: the unit as a pointer to const 43 (same code); the arms' unit
 // index read once into a local ahead of the mode test 49; a second player pointer for the two arms 43 (the copy folds).
+// M3 lane 5 r228 (h2m fast with 0x151b80 (5 throughout); control 43): a redundant `result = false;` at the head of the
+// unit block 69 (202 B), at the head of the slot block 68; a trivial forceinline (player) accessor for the unit index at
+// the NONE test, the object lookup, the 0xcd7b0 argument or the 0xa8f80 argument 43 each (same code: no scratch rotation),
+// at the 0xcd4e0 argument 60 (212 B); the hand typed `dword` 43; the player as a pointer to const 43; the hand or the unit
+// pointer declared bare ahead of the player and assigned in the block 43/43 (all same code); the mode test's arms swapped
+// (`!= 4` first) 72 (219 B).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

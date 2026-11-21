@@ -1029,6 +1029,10 @@ real g_55e618;
 // 54/54; with the tangent's first term read through the particle 54; the position through real_point3d_set nested in the call 39
 // (same code). Left on 39: the dot's first term (ours n.j*v.j, retail v.i*n.i) and the value argument's early EDX load,
 // BLOCKED-BY 0x169510 and 0x244980 as above. Body unchanged.
+// Back up the sweep origin with the shared point difference or point setter.
+// direct particle position 254/254, position snapshot 102/103.
+// With the shared sweep scale, direct 256/256 and snapshot 129/130.
+// Frame stays 0x124 and the sweep/collision slots remain displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -1578,6 +1578,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // normalised through normalize2d_fast (its result unused there) in place of the file's 0x298df3 copy 569 (same code);
 // the two side lengths through distance3d with the arguments reversed (same a - b deltas) 587, with the normaliser too
 // 587. Body unchanged.
+// M3 lane 6 r224 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 569; all restored): `inline` on this file's
+// declaration of 0x2108a0 569 (a caller-side declaration leaves the summary; XMM5 kept); the radius read once through its own
+// address at its first use 569 (folded); the first 0x210770 output into its own unread vector 562 (the pivot's home; an unread
+// buffer, match-only); on that, both sector reads after both trace calls 561, both trace distances named before the arms 562,
+// the in-loop trace result declared in the loop 562; on this body both distances named 569 (same code); the body after the
+// sector read nested under `if (local_11 != NONE)` with `return true;` last 790 (3348 B). Still BLOCKED-BY 0x2108a0 (its
+// file is on this round's Avoid list).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
