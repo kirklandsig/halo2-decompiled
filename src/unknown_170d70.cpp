@@ -2490,6 +2490,10 @@ struct s_camera_reference_171830
 // flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
 // threshold 264, and constrained comparison assignment 291. NOT kept: packed views
 // leave the early zero unchanged, while signed and split forms lengthen the plane path.
+// Plane products accumulated, subtotal named, indexed accumulation, or all
+// products named with the plane arm first 281/287/281/284 or the unconditional
+// arm first 283/287/283/282. NOT kept: all keep the lookup branch difference
+// and grow the body. The zero and center SSE schedule remain displaced.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

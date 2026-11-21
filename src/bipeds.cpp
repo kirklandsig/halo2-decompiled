@@ -1891,6 +1891,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // On the retained state and speed declaration order, lexical ranks for tag, flags,
 // material, grab distance, position, facing, tag with distance, and tag with flags
 // and material each score 158. The +0x64 definition spill and other homes stay in place.
+// Modes 1, 1 and 2, 1 and 3, or 1 through 3 handled before the remaining
+// switch 480/643/637/645; ending the tag scope at the split 480/643/637/645.
+// NOT kept: first +0x51 stays at the displaced tag spill in all eight forms.
+// The point and material homes remain displaced.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4552,6 +4556,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // ordinary, key cases or a second dispatch 628/642/643/626/628/708.
 // NOT kept: the 595 forms gain three in the reduced image and grow the frame to 0x80.
 // The full 0x78 frame still needs the changed byte and flight threshold at +0x11 and +0x18.
+// Turn-selector snapshot 629, named immediate result 606, conditional result 590,
+// deferred result 606, branch-set result 590, three turn outcomes by selection
+// 618, branches 614, or a named immediate decision 614. NOT kept: the two
+// 590 forms expand the reduced frame from 0x7c to 0x84; retail uses 0x78.
+// The full changed-byte and flight-threshold homes remain displaced.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6292,6 +6301,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // with success exit 79, ordinary crosses 203, staged crosses with direct
 // forward 154, trig construction with success exit 79. The first rotation
 // still spills the complement before its dot sum finishes.
+// Alternate shared rotation for forward, up, or both with a uniform forward
+// reference 124/89/134 or direct member access 136/160/140. Alternate forward
+// or up rotation with a staged side cross 124/89. NOT kept: the altered
+// rotation loads regressed. The original complement spill and final cross remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
