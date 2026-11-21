@@ -824,6 +824,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // declared before response evaluation 645/535; copied in-place response 566;
 // first output reused in place by second 551; separate first input 542.
 // All leave the first success byte at ESP+0x13.
+// Common scalar ray length 725; seed other lengths from the first entry 516; indexed miss continuation
+// 708, with standard minimum 694. Ray scope through the query with separate hit result 522, with
+// shared scaler 519. Ray scope through the miss guard 708, with shared scaler 736.
+// NOT kept: the five-point lead shortens the body by one byte and leaves success at ESP+0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

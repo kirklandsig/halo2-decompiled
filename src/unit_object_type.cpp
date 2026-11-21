@@ -3231,6 +3231,10 @@ void function_c5740(long unit_index, bool start)
 // Explicit object-header lookup for unit, weapon, root, unit/weapon, weapon/root, unit/root,
 // all three or post-gate headers with typed root members: 97 each. NOT kept: no gain; the
 // definition-index and pool-data homes remain.
+// Scoped entry slot selection 123, conditional selection 123, scoped material tag 97,
+// both scopes 123, typed fallback material 97, one typed material for both calls 97,
+// typed material with scoped selection 123, scoped nested sentinel and call gates 123.
+// NOT kept: the 331-byte selection forms change the matched caller, and the other forms tie.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5625,6 +5629,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Forward component copy loop ascending/descending with ordinary crosses, staged first,
 // staged second or both staged: 185 each. NOT kept: the copies lengthen the body and the
 // first cross still preloads up.i.
+// Forward split copy i then jk, ij then k, k then ij, and jk then i 183/99/99/183.
+// With staged first cross 180/99/99/180. Both spans through memcpy, ij first or k first
+// 94/96, also with the staged first cross. Shared aim pointer or reference for both spans 94/94.
+// NOT kept: 94 grows to 772 bytes and retains the early up.i load. The 767-byte forms score 180.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
