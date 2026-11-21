@@ -1002,6 +1002,11 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
 // visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
 // shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
+// score 11 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), and the
+// entry local is declared with its NONE before the function_132e60 call, which gives retail's registers in the instance
+// loop (the centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call (retail stores it
+// after the visible test, 0x1346c0), and the else arm's entry read is `movsx edx, word ptr [eax + esi]` where retail
+// has `[esi + eax]` (0x134859).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -1024,10 +1029,9 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 			real_point3d_set(&corner, bounds->bounds[0][1], bounds->bounds[1][1], bounds->bounds[2][1]);
 			vector3f extent;
 			vector3d_from_points3d(&center, &corner, &extent);
-			real radius = sqrt(length_sq3f(&extent));
 			bool behind;
 			bool in_front;
-			function_132fd0(data, &center, &behind, &in_front, radius);
+			function_132fd0(data, &center, &behind, &in_front, sqrt(length_sq3f(&extent)));
 			if (data->filter && (data->flags2a60 & 1))
 			{
 				c_entry_list *list = *(c_entry_list **)((byte *)data->filter + 0xc);
@@ -1069,9 +1073,9 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 				if (*(word *)(definition + 0x24) > 0)
 				{
 					bool contained, first, second;
+					long entry = NONE;
 					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || ((char)data->flags2a60 >> 7) != 0)
 					{
-						long entry = NONE;
 						bool behind;
 						bool in_front;
 						function_132fd0(data, &instance->center, &behind, &in_front, instance->radius);
