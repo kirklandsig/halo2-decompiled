@@ -453,6 +453,7 @@ void function_3dd10(long object_index, bool force);
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
 // the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // Earlier header 77 (merged in r284): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// Earlier score line 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
 // Earlier score 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
 // Earlier detail: The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
@@ -878,6 +879,16 @@ void function_3dd10(long object_index, bool force);
 // references, at scan entry or positive-count admission 89/272. Immutable scan-entry array 89.
 // Signed weight bound with reference or shared array 636/582. NOT kept: the signed forms unroll.
 // The reference and array forms leave the ordinal, weight and mask homes unresolved.
+// M3 lane 4 r241 (H2M_FAST; control 77, aligned 28): the signed `j < choice_count` scan 636 (1309 B, unrolled); on lane 3's
+// rolled `choice_count > j` form (189 with `0 < choice_count` as the enclosing test, 227 with the test left as is, 197 without
+// the outer guard, 189 with the selection loop's bound written count first too): the choice's variant field named once and
+// read at both eligibility tests 86 (the selection loop's add is retail's again, but the found block's two hue loads swap
+// XMM0/XMM1), with no outer guard 106, with three last/mask/variant/weight declaration orders 86 each, with the blend through
+// `fmod(seed, 1.0f)` 83 (both remainders 83, without the guard 104); the negated-and eligibility test 189, eligibility as a
+// `continue` 189, the weight added before `last = j` 189. The rolled form with the float blend remainder 74 (aligned 26);
+// on it `last` as a one-element array 74 (scalarised: same code). Diagnostic (reverted at once): `long volatile last` 136,
+// aligned 9: only the guard's zero store and the not-found exit's 1.0 reload left. The positional score falls only when
+// the count/mask fight, the zero store and the 1.0 row are all fixed together.
 // Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
 // alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
 // pre-guard zero store and the count/mask homes stay different at retail length.
@@ -904,6 +915,11 @@ void function_3dd10(long object_index, bool force);
 // by last eligible or one past last 243/246. Renamed count and mask 77. Shared eligibility bit
 // operations with unequal or signed weight bound 298/298. NOT kept: the helpers expand the
 // frame and scan. The pre-guard ordinal and scan count and mask homes still differ.
+// M3 lane 12 r166 (fast screen; control 77; the two stacked score lines merged into the first): the first scan as
+// `for (j = 0; j < choice_count; ++j)` with the ineligible choice skipped by `continue` 636 (1309 B, unrolled again); the
+// mask, weight and last updates in reverse order 77; the mask typed long 77; without the outer guard and the output
+// pointer formed ahead of the definition 102; the first scan as a `for` on `!=` with j scoped to it 77 (same code).
+// Body unchanged.
 // M3 lane 15 r123 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH each time; control 77, [34] aligned rows; "plain" =
 // the first scan as `for (long j = 0; j < choice_count; ++j)` with both remainders through `fmod(seed, 1.0f)` and no outer
 // guard, 638 at 1309 B (unrolled); "rolled" = r280's `0 < choice_count` test around `for (long j = 0; choice_count > j; ++j)`

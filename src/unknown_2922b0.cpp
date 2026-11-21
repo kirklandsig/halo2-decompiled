@@ -820,6 +820,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // as before 331, taking (result, a, b) 331, computing i, j, k in that order 331 (same code each: the inlined helper's
 // parameter order does not move the folds); the axis copied into a local vector ahead of the cross 632 (2919 B). Body
 // unchanged.
+// Separate first, second or both rotated results 645/535/623; first or second result
+// declared before response evaluation 645/535; copied in-place response 566;
+// first output reused in place by second 551; separate first input 542.
+// All leave the first success byte at ESP+0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

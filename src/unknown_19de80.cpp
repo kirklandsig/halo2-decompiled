@@ -918,6 +918,9 @@ static inline bool teams_enabled_19e1c0()
 // destination and `remaining`, called at the top 691; a discarded inline predicate on `remaining` at the top 691;
 // `remaining = remaining;` at the top 691 (same code: a reference that emits nothing does not count as the entry-block
 // reference round 203 found); the empty inline on the volatile result 390. Body unchanged.
+// Complete signed clamp assignments on both branches for player/team/all names/all plus literal fallback
+// 432/433/438/436 with the existing result, 685/684/692/694 with an ordinary result.
+// The ordinary result recovers frame 0x204 and merges the length tails. The entry token preload remains absent.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

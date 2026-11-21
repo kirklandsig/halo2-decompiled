@@ -460,6 +460,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // EBX, and the result in ESI for EDI), the same on plain locals 77 (199 B); the terminator's index, or both later
 // indices, cast to unsigned 39/39 (same code; 77 on plain locals); the nested arm with the terminator through
 // `buffer` 80 (193 B).
+// M3 lane 2 r128 (H2M_FAST with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67): lane 10 r119's two-member
+// lead rebuilt 39 (204 B; left: ours pushes ESI ahead of the loop for the loaded id, keeps the index in ECX and its product
+// in EBX across the calls, where retail keeps the index itself in EBX from the start and pushes ESI in the found block).
+// On it: a `short` index 70 (214 B); the result re-indexed (`result = entries[i].field_1e4`) 51 (218 B); the tag named
+// once as a `char const *` for the test and the ascii call 39 (same code); the terminator after `result = buffer` 39
+// (same code); the found test written `index == entries[i].index` 39 (same code). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
