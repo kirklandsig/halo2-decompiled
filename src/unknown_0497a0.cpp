@@ -625,6 +625,16 @@
 // whole third add is emitted and the body grows by 75 to 96 bytes. A zero-scaled add is therefore not what retail
 // dropped; the dead use has to be one this compiler removes after the x87 schedule is fixed, as the pointer-copy write
 // of r257 above is.
+// First +0x2 reserves 0x54 against retail's 0x60 at the same extent. Retail stores both rounded waves before SSE scaling and retains the cross products across the displacement updates. Test the rounding boundary with the original cross order and with the opposite cross between the updates, which previously recovered the frame.
+// Short wave rounded after the mixed wave 577.
+// Short wave rounded at its update 578.
+// Mixed wave rounded at its update 578.
+// Both waves rounded at their updates 578.
+// Short wave rounded after the mixed wave with overlapping crosses 599.
+// Short wave rounded at its update with overlapping crosses 599.
+// Mixed wave rounded at its update with overlapping crosses 599.
+// Both waves rounded at their updates with overlapping crosses 599.
+// NOT kept: The original cross order grows by five to six bytes and retains the 0x54 frame. With overlapping crosses the frame reaches 0x60 and the first difference moves to +0x6, at 599 and 2632 bytes. The two wave homes and the x87 schedule still differ. The original cross and wave lifetimes are restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1511,6 +1521,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // second) 355; case 0's second edge before the first 459 (2580 bytes); the u step kept positive with `u -= u_step` in
 // the loop 611 (2592 bytes); the state clamp through PIN 356; the outer vertex as `vertex[1]` at each use (no `outer`
 // pointer) 662 (2552 bytes). Body unchanged.
+// M3 lane 1 r146 (H2M_FAST with 0x42c50/0x42b20, MATCH; control 351; register- and stack-masked aligned difference 44): the
+// V end in its own `v_end` local (no reuse of the width) 351; the V end formed at the outer vertex's store 353 (the sum is then
+// hoisted after the loop guard, where retail forms it ahead of the guard, so retail's V end is computed before the loop); the
+// U step negated as `0.0f - u_step` 351; case 4's neighbour pointer declared at the top of its block with the lookup left in
+// place 351; case 1/2's first.x before second.x 351 (masked 74: VC copies the product, as round 151 found).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

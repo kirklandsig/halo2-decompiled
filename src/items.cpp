@@ -924,6 +924,10 @@ struct s_item_collision_bsp
 // beside its plane workspaces. Direct stores and the shared point setter at each site all score
 // 190. NOT kept: the placement slot and 1366-byte extent stay the same.
 // MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
+// Accumulated normal by axis 194, add-scaled left/forward/both 194/194/194,
+// indexed rows with direct or local accumulation 192/192, shared contact
+// translation 190, shared normal and translation 193. The coefficient loads
+// and pending spin scale still differ.
 // Vector setter for the rotated normal 193; scalar normal rows published before or after
 // the distance translation 199 each; left product seeds all three normal rows 191;
 // instanced query result pointer 246; instanced plane output with saved equation 291;
@@ -1254,6 +1258,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Indexed scale 191, descending projection loop 195, first-component projection seed 130.
 // Origin default at transform 174, output workspace with scaled scalars 206.
 // NOT kept: the 0xc0 frame and rotation-axis spill remain. The projection seed ties.
+// Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
+// Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
+// NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1759,12 +1766,20 @@ struct s_item_flags_view_10b850
 // collision declaration with early sentinel 823. NOT kept: gains below eight.
 // The 0x154 frame and entry flag stores still differ.
 // MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
+// Typed item gravity bit, unscaled carrier add, both 824/824/824. Typed
+// collision prefix through position write, alone or with either or both
+// forms, 817/817/817/817. NOT kept: seven points at 4099 bytes, frame 0x154.
+// Hit-scoped prefix with both 904. Entry flag stores and the motion frame differ.
 // Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
 // or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
 // and the reused entry Boolean bytes still differ.
 // Working or sampled gravity step 837/837. Gravity-adjusted velocity initializer 868.
 // Working, sampled or both conditional vertical values 851/858/858. Separate height 824.
 // Single gravity observation 824. NOT kept: the frame remains 0x154 and the entry flag stores differ.
+// Endpoint declared before the carrier 824, early or late point setter 904/904,
+// copied-origin component or indexed integration 886/905, early ray setter 824,
+// paired point and displacement setters 824, and component writes through the query origin 824.
+// NOT kept: the tied forms retain the 0x154 frame. The point setter alone shortens the body and the copied-origin forms grow it.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

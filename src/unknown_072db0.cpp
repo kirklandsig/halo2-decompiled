@@ -1626,7 +1626,9 @@ static __forceinline void query_restore_pending()
 
 bool function_1900a5(long index);
 
-// score 663 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// score 663 (was 703): The aligned 0xc0 frame agrees. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
+// The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Earlier measurement 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // Earlier at 703: the frame agreed. The logon branch, user cursor and slot selection differed.
 // MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
@@ -1641,6 +1643,7 @@ bool function_1900a5(long index);
 // `dec eax` (the status minus one, then a jump) where we compare against the immediate 1, and retail keeps the users base at
 // [esp+0x18] where we keep it at [esp+0x14]; the users loop's own body (the valid test, the XUID copy, the properties copy
 // and the slot test) matches retail's shape apart from those homes.
+// Earlier at 663 (was 703). The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Earlier detail: The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
@@ -2226,6 +2229,11 @@ bool function_1900a5(long index);
 // SSE flag); after the request test the listings still lose step at the loop set-up (retail stores both zero counts
 // to their slots and loads them into ESI/EDI after the clock read).
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Shared identity flags 663, flags and admission result 663, packed XUID member 760, flags
+// and native property source 663, flags and cache members 663, property endpoint 674, duplicate
+// result 654, admission and team names 663. Direct duplicate skip, scan-test duplicate skip
+// and duplicate skip with candidate each 694. NOT kept: 654 sets a flag in the scan and tests
+// it afterwards. The direct skips lengthen the image. The packed member changes the XUID reads.
 // One player reset for either invalid or changed user 760/760; a default reset with positive or negative
 // cache-key comparisons 760/760. Complete eligibility before the two clearing paths, assigned or
 // conditionally set from positive/exclusion tests 663/663/663/663.

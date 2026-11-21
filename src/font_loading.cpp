@@ -1025,6 +1025,9 @@ static inline long font_character_pixel(long alpha, long color)
 // Next input per arm or defaulted 190/219. Next byte count per arm or defaulted 116/223.
 // With full-width parity 207/204/212/208. NOT kept: the wider parity still shortens the fills
 // and the new cursor forms leave the literal and packed-run differences.
+// Nonempty packed, ordinary or both fill guards and the ordinary inner guard:
+// byte parity 138/111/144/59, dword parity 200/200/192/199.
+// NOT kept: dword parity shortens the fills and changes run allocation. The byte-parity tie retains the narrow packed mask.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

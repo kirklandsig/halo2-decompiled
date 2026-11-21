@@ -842,6 +842,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // re-measured 158 (1938 B, first difference +0x199, the packed colour's home moves from +0x2c to +0x24); the second
 // set's extents and reciprocals declared first 162, the blend's weight named once for the aspect block's four products
 // 162, the pivot rows' complement named once in the sequence arm 162 (same code each). Body unchanged.
+// M3 lane 4 r240 (fast with 0x2243c0, 0x23ed30; control 162): the first aspect pair set in both arms of its test 223
+// (1953 B); the second test's blended terms in one statement each 162 (same code); the sequence blend as a ternary keeping
+// the old value 162 (same code); the blend declared after the packed colour 497 (1953 B); the blend set in both arms of the
+// 0x20 test 248 (1953 B). Retail computes ax, ay, by, 1/ax, 1/ay, bx, 1/bx, 1/by in that order with the blend in XMM5.
 // M3 lane 8 r213 (H2M_FAST with 0x2243c0, MATCH throughout; control 162): `remaining_blend` computed between the extents
 // and the reciprocals 335 (1985 B); the aspect defaults declared ahead of the extents 164 (1947 B); the blend written
 // first in the four next products (`blend*inv_bx`, `blend*(by*inv_bx)`) 162 (same code); the inverse sums written next
@@ -854,6 +858,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Pass horizontal/vertical/both spans to the encoder 318/194/407. Pair the origin and span
 // flip branches with those same inputs 422/420/473. Unflipped-first both or horizontal 473/422.
 // NOT kept: the explicit spans fail to preserve the native blend lifetime and raise the score.
+// Bitmap bounds stored around the pivot rows: primary then pivots then secondary
+// 185, secondary then pivots then primary 185, primary/x/secondary/y 169, and
+// x/both bounds/y 170. Both pivot inputs captured as points 377 in each order.
+// NOT kept: direct reads still spill blend at the join. Captures grow to 1995 bytes.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

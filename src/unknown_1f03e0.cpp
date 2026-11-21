@@ -1764,6 +1764,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // gravity, direct, damping 235; direct, damping, gravity, flying 246; flying, direct, damping, gravity with the input
 // pointer declared after the flags 246 (the entry block exact to +0x3d, the speed load then scheduled after the cross's
 // first products).
+// M3 lane 2 r128 (H2M_FAST with 0x1f0450/0x24590/0x1f03e0, all MATCH; control 234, aligned 194, masked 119): the damping
+// bit as a `byte` 590 (3025 B); as a `(bool)` cast of the masked shift 590 (3025 B); declared ahead of flying 238 (first
+// difference +0x5); the general arm's delta through the existing vector3d_from_points3d(current, &scaled, &delta) 485
+// (3052 B); its step computed ahead of the limited copy 244. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

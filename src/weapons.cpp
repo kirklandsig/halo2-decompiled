@@ -3262,6 +3262,7 @@ struct s_ammo_conversion_entry
 // is left is the register colouring and one test - retail keeps the destination weapon in EBP and the other weapon in
 // EBX, sets the acquisition flag with setg on the clamped count and reaches the conversion entry without a nullable
 // test, while this build holds the destination in EDI, spills the other and tests the entry for null.
+// Earlier measurement 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
@@ -3485,11 +3486,21 @@ struct s_ammo_conversion_entry
 // formed before comparison 214, shared slot with all type tests reread 212, shared slot and typed block 190,
 // also full-width total selection 191. NOT kept: the forms tie or regress and retain the saved-register
 // divergence.
+// Transfer amount and mode guards 190, Transfer amount and nested mode admission 190, Positive
+// acquisition with transfer guards 202, Positive acquisition with nested mode admission 202, Final mode
+// selects complementary acquisition outcome 203, Final mode selects positive acquisition outcome 199,
+// Final mode outcome with three kind reads 218, Positive final mode outcome with three kind reads 215.
+// NOT kept: The separated transfer gates tie. Positive acquisition shortens the body, and the final mode branches and kind reloads raise the score.
+// The 0x20 frame agrees. The destination home, delayed save and conversion-entry join still differ.
 // Bound and key in the search test 202, with the key carried 202;
 // short search ordinal and offered count 202; key shared across both arms 202;
 // single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
 // transfer cap inside the successful search 199. NOT kept: the ordinal searches shorten the body
 // to 718 bytes, and the forms at retail length still miss the destination and key registers.
+// Destination magazine bank 207, source bank 190, both runtime banks 207, both runtime
+// arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
+// and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
+// bank shortens the body, and retaining the tag bank does not recover the destination save.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3824,6 +3835,14 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
 // the magazine debit where retail stores it after admission and the magazine update.
 // The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
+// Exhaustive burst assignments 577; shared post-wake accumulator 630; selected burst before round
+// multiplication 639; separate round requirements 651; selected burst with short minimum 620;
+// named shot multiplier or debit conversion 603/603; short pre-wake minimum 608.
+// NOT kept: 577 defers the default burst store until after the wake call, which retail places before it.
+// Split admission after balance, heat, the per-shot minimum or the holder test, then
+// with separate balance and heat blocks, balance and minimum blocks, heat and minimum
+// blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
+// the extra frame word and the early magazine tag spill.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4310,6 +4329,16 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // early blocking state 1433; Boolean activity set from magazine calls 1494 or call-first OR 1464;
 // arm-owned blends 1436, with opening pool 1440. NOT kept: the pool-only form ties;
 // Boolean activity and arm-owned blends shrink the frame to 0x30 and leave the dual spill.
+// First +0x2 reserves 0x34 against retail's 0x38. The pool and header offset take EBX and EDI. Retail uses EDI and ESI, leaving BL available for the dual query and, later, the animation activity. Hold the early work result as a byte through each actual activity phase before widening to the existing long accumulator.
+// Boolean activity through animation 1410.
+// Byte activity through animation 1410.
+// Boolean activity through initial timer 1413.
+// Byte activity through initial timer 1413.
+// Boolean activity through ramp 1428.
+// Byte activity through ramp 1428.
+// Boolean activity through heat 1431.
+// Byte activity through heat 1431.
+// NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4948,6 +4977,12 @@ struct s_weapon_projectile_creation
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.
+// Fixed axis components with complete result or direct output 1154/1190; fixed axis
+// with projected products and direct output 1228. Projected products before direct
+// output or complete result 1215/1138. Named cosine complement with direct output
+// 1215. Shared dot and projected products before complete result or direct output
+// 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
+// and raise the score. The separate clipping point and opening rotation remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
