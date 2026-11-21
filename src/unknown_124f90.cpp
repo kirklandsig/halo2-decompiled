@@ -1844,6 +1844,25 @@ long function_2197f0(real gain);
 // the clamp as `1.0f > time * inverse ? time / fade_in : 1.0f` and `gain +=` 163 (648 B); the local with that ternary
 // and `gain = gain + ...` 171 (644 B; without the fade-in copy the division becomes `inverse * time` and every one of
 // these is short); the fade-out window test written `elapsed < fade_out + hold` 87 (same code). Body unchanged.
+// M3 lane 12 r165 (fast screen with 0x1251e0/0x221810, both matched; control 87 at 684 B, aligned 46/44 unmatched
+// instructions ours/retail, 13/11 with registers and stack offsets masked; body unchanged). The division form (no inverse
+// local, ternary clamp) re-measured 125 (678 B, 49/45, masked 14/10); with a fade-out local for the test, the sum and the
+// product 128 (678 B, 56/52, masked 11/7), the same with that local declared at the top of the function ahead of the gain
+// or at the top of the same-ambience block ahead of elapsed 128 each (same code: declaration order does not colour the
+// XMM registers here); with the clamp as `t = time / fade_in; if (!(1.0f > t)) t = 1.0f;` 156 (669 B, masked 6/7). 1 to 8
+// initialised unused long locals and 1 to 4 initialised unused real locals at the top of the fade-out-local form
+// (diagnostic) 128 each (same code: no symbol-count effect, also with initialised locals). Reading of arm 1 on that
+// form, where only operand roles differ from retail: retail copies fade_out and adds the hold time from memory (ours
+// loads the hold time and adds the register), adds the product into the ambience difference (ours the difference into
+// the product), divides time in place for the value ahead of the test and multiplies a copy by the reciprocal (ours
+// multiplies the reciprocal by time first and divides afterwards), and loads the gain to add the interpolation into
+// it; in each retail keeps the written left operand as the destination where this build commutes.
+// On this body with a fade-out local for the tests and the product written `(elapsed - hold) * inverse * fade_out`
+// (re-measured 92, masked 11/9) and the division-first clamp (re-measured 148 at 681 B, masked 8/7), arm 1 written
+// interpolation first 107 (685 B, first difference +0x2, masked 16/14). On the 148 form the four float values keep one
+// cyclic order of registers in both builds (fade_out, inverse, elapsed, 1.0f: retail XMM1 to XMM4, ours XMM4, XMM1,
+// XMM2, XMM3): retail gives the fade-out time the first register, as it would a load kept from its test, and this
+// build gives a named fade-out local the last one and an unnamed one no register at all.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4352,7 +4371,7 @@ struct s_128ca0
 // MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
 // Earlier at 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // MiniMax C (11-20): no new form, no lower score (72): the two gain pins still trade scratch registers (retail gives the gain byte its register ahead of the bits' copy), the field_c store still sits one slot late and the controller compares still use an immediate where retail holds NONE in edx; the body stands as found.
-// score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
+// Earlier at 72 (was 81; a second score line, merged in m3 lane 12 r165): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
 // for the count's default).
@@ -4721,6 +4740,63 @@ struct s_128ca0
 // as `!(bool)(flags & 8)` 72 (same code each); the flag3 set through flags_set_bit 48 (same code), with the
 // TEST_FIELD_BIT test 72; on the 48 form `long count = NONE` 123, `char count = NONE` 203; `long count = NONE` with the
 // TEST_FIELD_BIT test 122. Both pins still store field_c after the channel-index load where retail stores it first.
+// M3 lane 12 r165 (fast screen with 0x1293f0, matched throughout; control 48; body unchanged). Reading: retail's scratch
+// registers in both pins are a plain EAX, ECX, EDX rotation in the order the instructions stand, with the gain byte's
+// load taking its register ahead of the bits' copy (pin one EDX then EAX after the bit-9 test's ECX; pin two the byte
+// in place in EAX, then ECX, and the tail's lea EDX, voice EAX, channel ECX follow from that); ours gives the copy its
+// register first in both and then hoists the byte's load above it. Forms that give the same code (48): a file-local
+// add taking the gain (real or long) first and the decibel value second, `return decibels += gain`; the copy made
+// inside such an add from a const reference (`s_decibels result = b; return result += a;`); the gain byte passed as a
+// char parameter, first or last, with the operator sum inside; the bits copied by a 4-byte memcpy inside an inline
+// maker of the right operand. Forms where the pin's parameter copy folds away (177 at 1043 B, the copy still first):
+// an add returning a fresh long from (bits, real), from (real, bits), in place on the bits, or as a decibel value from
+// `a.value + b.value` either way round; the sum as a real expression with the bits read through a by-value accessor,
+// either operand order; the existing decibels_add(bits, bits of the gain) 177. Only a gain that goes through memory as
+// type-punned bits ahead of the copy is loaded first: decibels_add(bits of the gain, bits) 201 (1086 B: pin registers
+// as retail's in both pins, the in-place EAX included, but the gain is stored and reloaded twice), a reversed-operand
+// copy of that add 201, the gain as a by-value decibel first parameter 219 (1102 B). 1 to 8 initialised unused locals
+// at the top (diagnostic) 48 each, and on the char count form 203 each (same code: no symbol-count effect here).
+// The count: `char count = NONE` re-measured 203 (1054 B): its block is retail's (`or edx, -1`, both compares against
+// EDX, byte extraction), but the first controller block's field compare becomes `cmp dword ptr [eax + 4], -1` (one
+// scratch load fewer, the three missing bytes) and the pitch-range index is tripled in place with the definitions
+// pointer in ECX, so every scratch register from there on is one step round; `long count = NONE` 123 (retail's block
+// but for the widened extraction, nothing else moves). On the char form: the first block's field in a named long, as
+// if/else, the effect index in a local 203 each (same code), zero default then an if 207; the count block through an
+// inline taker returning char 203 (pointer or lookup passed), returning long 123.
+// LEAD 17 (1059 B, plain-confirmed with 0x1293f0, 0x128020, 0x12a810, 0x1251e0, 0x12a420 and 0x125e60 all still matched;
+// aligned 3/3, only the count block's three rows left; patch build/r165/lead-0x128ca0-17.patch; NOT kept, it is built from
+// forms that need a byte match). Its parts: (1) each pin sum through one decibel local that is declared, assigned the
+// permutation's gain and then assigned the sum (`s_decibels x; x = s_decibels((real)gain); x = x + s_decibels((dword)
+// local_6);`): the first assignment keeps the gain byte's load ahead of the bits' copy, so both pins take retail's
+// registers (EDX then EAX; in place in EAX then ECX) and the tail's scratch registers follow. The same local initialised
+// at its declaration is the old code; a function-scope decibel local for the gain alone, assigned in both arms, 107
+// (pin two then loads the copy and adds the gain into it); a long or real local for the gain 48 (same code); the sum as
+// `x += ...` 67; the bits first in the second assignment 203. (2) The second pending test back through TEST_FIELD_BIT as
+// the other two tests are written (alone 72; retail's `shr dl, 3; test dl, 1` and both byte `or`s). (1) + (2): 19.
+// (3) The voice's channel index read as `g_4e6378[arg_0].channel_index` at the first pin's call (the pointer local at
+// every other use): the field_c store then stands between the voice reload and the index load as in retail, 19 -> 17.
+// On (1) + (2) alone: the pin result written back into the local first, a named long for it, a cast on the index, the
+// index in a short local, field_c written through a packet pointer, the decibel local declared at the function's top
+// 19 each (same code); the count declared ahead of the pin 188. A 606 s annealing permuter run from (1) + (2) (62 tries)
+// found nothing below its baseline.
+// The count on the lead: `char count = NONE` 204 (aligned 37/38, masked 4/5: the block is retail's exactly, and the
+// rest is the upstream shift described above), `long count = NONE` 120 (aligned 3/2: only the widened extraction),
+// `short` 113. What moves the upstream code with a char count is the constant itself: with the first controller
+// block's two tests written against 0 (a diagnostic) the char form differs from retail in those two test rows only
+// (23, aligned 2/2 with part (3); patch build/r165/diag-0x128ca0-char-23.patch), with either test alone against NONE
+// the shift is back, with `x + 1 != 0` tests it is gone again (the tests then come out as lea / test), and with a
+// count default of -2 it is gone too (15, the count block then its own constants). So this build shares the char
+// count's -1 with every 32-bit NONE compare of the function and holds EDX for it from the block ahead of the first
+// one, and retail shares it with the count block's two compares only. Forms that keep the shift (204 each): the
+// first block's tests cast to dword, to a pointer type, to a 64-bit integer, or against 0xffffffff, or written as
+// two-case switches (either or both); that block's arms
+// swapped (`== NONE` first) 206, its inner test swapped 204; the pitch-range index named, its operands swapped, the
+// table pointer named, plain pointer arithmetic; the count taken through an inline with a pointer or reference
+// output, with the default set inside it, or written straight to the playback's byte; the whole count block in one
+// inline; 1 to 3 char, 1 short and 1 to 7 long initialised unused locals. On a long count: the extraction cast to
+// char, signed char or byte 120 each, written into the count's low byte through a cast of its address 144, masked
+// into the low byte 127. The controller's synch bits declared in a 32-bit unit (with a long count 134, a byte count
+// 140, a char count 214) grow this body and lose matched 0x127390 (32).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

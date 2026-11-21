@@ -721,6 +721,23 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 0x29a190 351); the near rotated point built in a named point2f and stored as one aggregate 375 (1725 B); the near side
 // and hit flags stored right after the angle, ahead of the rows, 313; only the facing y named in each near emission 413
 // (1772 B). All restored.
+// M3 lane 12 r165 (fast screen with 0x29a190 and 0x298c30, both MATCH throughout; control 305, aligned 171/167 = unmatched
+// instructions ours/retail in an LCS-aligned diff; "lead" = lane 1 r129's 310 form rebuilt on today's file, 310 at 1716 B,
+// aligned 72/76; body unchanged, nothing kept). The far arm's difference vector declared at function scope, at the loop
+// body's top, or declared in place and assigned by member 305 each (same code), on the lead at function or loop scope 310
+// (same code): retail's second normalization stores x before it loads y (`movss [x], xmm2; movss xmm2, [y]; mulss xmm2,
+// xmm0`), ours forms both products first at either scope. The distance assigned inside its own test (`if ((d = (real)sqrt(
+// ...)) < field_24)`, with and without the cast; a diagnostic) 305 each, on the lead 310 each (same code: the root is
+// still popped to its home ahead of the two dead differences and reloaded, where retail drops the differences with
+// `fstp st(2); fstp st(0)` and keeps the root on the x87 stack behind one `fst`). On the lead, the distance through a
+// file-local inline taking the differences as double parameters (dy, dx) with a real result, with a double result, or
+// taking the two points with double locals, each as its own statement and assigned inside the test: 300 each (six forms,
+// one code; aligned 67/71, lane 16 r154's count): the store and reload at the loop head stay in all of them. 1 to 8
+// initialised unused locals (diagnostic): on this body 305 each (same code), on the lead 310/312/310/310/310/315/315/315
+// (aligned 72/74/72/72/72/70/70/70; 6 to 8 locals shorten it to 1714 B). The lead's remaining blocks by the aligned
+// diff: the loop head's subtraction order and root store, the near rows' `y * cos` operand sides and cosine/sine slots
+// (+0x18/+0x14 for retail's +0x28/+0x1c), the second normalization's store order, the tangent dot's term order, the
+// second side's arm order, the wrapped angle's compare and slot, and the emitter reading the angle element at each use.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
