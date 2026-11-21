@@ -3310,6 +3310,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // (entry, id) predicate, `static inline` 32 (78 B: /O1 keeps it a call), `__forceinline` 30; the guard on the field
 // with a `long const` id read from the field inside the loop body 30 (LTCG keeps the one load in EBX across the calls);
 // a receiver copy declared first (used for the pool) with the else-return two-definition id 30 (same direct EBX load).
+// M3 lane 7 r204 (h2m fast with 0x2c9a58, matched in each): the id typed `int` 30; no id local, the field read at the
+// guard and at the loop compare 30 (one load, straight into EBX); the entry and the looked-up definition named in the
+// loop body 30; the hit as `if (... != map_id) continue;` then the selection and break 33 (76 B); the iterator's stores
+// written pool, datum_index, index 29 (two NONE stores swap). Re-measured: the iterator by aggregate initialiser 15
+// (84 B, the head unchanged; the extra bytes only realign the listing).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

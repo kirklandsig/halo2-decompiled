@@ -2192,6 +2192,11 @@ bool function_17afd0(long effect_index, long value);
 // the same as an `else if (!available)` arm 105 (502 B); the availability assigned `function_155760(g) == 0` inside an
 // `if (g != NONE)` after its false default 102 (496 B); same_view initialised `owner != NONE` and cleared by a view and
 // availability test 118 (499 B); `bool same_view = available;` cleared by the owner/view test re-measured 56.
+// M3 lane 7 r204 (h2m fast with 0x174420, MATCH): a false default ahead of the availability set true by one flat
+// owner/view/availability test 119 (502 B); same_view declared bare ahead of the availability with an if/else of constants
+// on the flat test 138 (510 B, the plain conjunction's code); `bool available = false;` declared at the arm's top 24 (its
+// clear moves up); `bool camera_relative = false;` declared at the arm's top 45; the true default kept with the clear as
+// `if (owner != NONE && g == owner) { if (!available) same_view = false; } else same_view = false;` 105 (502 B).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -661,6 +661,19 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct returns in every case of the main switch 24 [0]; the order object index, rigid body, absolute index, headers, type
 // 94 [13]; the type read straight from the pool with the headers local after it for case 0 24 [0] (same code). Colouring
 // unchanged in all (headers ESI, object index EDX, rigid body ECX in place). Body unchanged.
+// M3 lane 2 r126 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 118's one-read form (object index, absolute
+// index, rigid body, header array, byte type) with main's case 0 through havok_object_get rebuilt 28 at 256 B [0] (only the
+// entry's colouring and the `mov al` + `movzx` type load left, as listed). On it: the object index typed `dword` 28 [0]; the
+// rigid-body index copied into a named index local first 28 [0] (no `mov esi, ecx` copy: same code); the kind-7 route as a
+// ternary into `result` with the main switch in its else 94 [0]; the type read through a header pointer to the element 123
+// (272 B) [194]. Body unchanged.
+// M3 lane 6 r219 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 60's one-read form (object index,
+// absolute index, rigid body, header array, byte type, case 0 through the word-bitfield view at the component's index)
+// rebuilt 24 at 256 B [0] (entry: object index EDX, owner chain through ESI, header array ESI, rigid body in place in ECX,
+// `mov al` then `movzx`). On it: every entry local const 24 [0] (same code); the kind-7 route as `if (type == 1) return
+// 0xc; return 1;` 94 [0]; a named model local ahead of the object index 21 [2] (the owner then arrives in EAX and the
+// component moves to the stack); the absolute index after the header array 94 [13]; the rigid-body array named ahead of
+// the header array with the element taken after the type read 124 (276 B) [189]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

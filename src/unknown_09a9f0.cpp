@@ -992,6 +992,16 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still
 // differs is that instruction, the inner store of the object index that retail does not repeat, and two bytes
 // of padding after the last return.
+// M3 lane 2 r124 (fast with 0xa5b10/0xbb780/0x108e10/0xa5a00/0xa5b40, all matched each run; this body 8): the plain bool
+// form (no repeated store, no cast) re-measured 77 (160 B). On it, modelled on the matched sibling definitions (0x9ba90,
+// 0xa4880 and 0x9aeb0 clear their slot under a NONE test and then store): the object's entity link cleared under a NONE
+// test before the store 62 (190 B: retail's head, EBP borrowed around the header test and the data reloaded, but the
+// conditional clear stays in the code, the two object lookups not being one address to the compiler); that with the
+// store and attach on the entity's stored index 95 (201 B); an unconditional clear, then the store and attach on the
+// entity's stored index 71 (188 B). On this body: the store and attach through the existing 0xbb780, given the local 42
+// or the entity's stored index 42 (176 B each: the inlined callee's index is shared with the header test's again).
+// Retail's header test with EBP pushed and popped around it occurs in no other function of the image, so no matched
+// function shows the source form.
 // M3 lane 1 r141 (fast with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 8, left: `movzx ecx, ax`, the second
 // store and the data reload where retail has the reload, `mov ecx, eax` and `and ecx, 0xffff`). On this body: the object
 // read indexed `(short)object_index`, `(long)(word)object_index`, `(word)(short)object_index` or through a word local
@@ -1501,6 +1511,14 @@ bool c_projectile_type::v8(long a, long b)
 // flag uses) gives the flags ESI, so ESI goes to the heavier of the two; here both have three uses and retail gives the
 // tie to the object, ours to the flags. With the mask, the definition copy's pointee typed const (as the file's other
 // copies are), typed as the const device type, or as `void const` 12 each (same code).
+// M3 lane 4 r239 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, MATCH each time; control 5, mask control 12), all with the full-width
+// mask: the two device bits gathered in a second local and or-ed into the result at the return 59 (193 B); the NONE test
+// inverted with the group work in the else arm 12; the object's power read as `((real *)object)[0x50]` at both uses 12; the two
+// device bits tested on `flags >> 10` 48; the group index bound as `dword const &` and compared with `(dword)NONE` 12; the
+// unused `c` evaluated in the call's last argument 12; a by-value copy of the index inside the NONE block for the mask 12 (the
+// 12s are the mask's own code). Diagnostic (reverted): `result += 0x800` 13, still swapped, so the 0x800 pair is keyed by the
+// constant's value and not by the operation. r237's entry address ahead of the NONE test re-measured 24 (187 B): the head pair
+// is retail's there, with the index in ESI and the entry in EDI.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

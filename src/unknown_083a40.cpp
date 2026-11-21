@@ -947,6 +947,16 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // pointer named at the occupied block's top, the key as `occupant[i].key`, 36 (the key keeps our grouping); a const
 // occupant element pointer named right after the slot search 152 (1073 B), after the swap just before the occupied test
 // 205 (1069 B); the occupant element bound to a const reference at the else arm's top 329 (1097 B).
+// M3 lane 7 r204 (h2m fast with 0x84e90/0x84c90/0x83c90, all MATCH each time): re-measured the swap callee as
+// (collection, player, update, other) at definition, declaration and call 32 (swap set-up and the occupied block's load
+// order retail's; left the key grouping, the key then in ECX where retail has EDX, and the last record's controller load
+// ahead of `updates`). On that order: the last record's count step as its own statement, the two source locals, then
+// `update = &updates[*count - 1]` 32; `collection` a const pointer declared ahead of the session-mask test 32;
+// `collection` declared only in the else arm (the first arm's apply given `&watcher->players`) 32; the occupied key
+// copied by array addresses (`&update->key`, `&collection->players[i].key`) 32; the occupied record as
+// `&updates[*count]` then `++*count;` 32 (1056 B). Compile-only key screen (the file without /GL; the grouping
+// reproduced): `collection` at the loop top, through a reference, as a const pointer, the key through `&players[0] + i`
+// or a byte sum: all (inverse + cursor) + collection + 4.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

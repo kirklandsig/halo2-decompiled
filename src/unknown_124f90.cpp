@@ -3744,6 +3744,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // increment clause, the candidate as a named local, the find through the global and the whole increment through the global
 // all measure 8 with the same code, and the permuter (378 s) found nothing; the reload is a speculatable global load and
 // this compiler hoists it to the head of the increment region, above the candidate's branch, in every spelling.
+// MiniMax E (11-20): no new form, no lower score (8): the whole remaining difference is where the sound pool is loaded -
+// retail loads it at the join of the next-index ternary, after the increment, and re-reads it on every path into the
+// advance, while this build loads it at the end of the body block, so the branch that jumps into the advance skips the
+// reload; the pool read through the global at both calls, the next index named in a statement ahead of the reload, the
+// reload folded into the search call's argument and the whole advance put in an inline helper that takes only the index
+// and reads the pool global all keep the reload ahead of the compare, and every other instruction is retail's.
 // MiniMax A (11-19): no new form, no lower score (8): the pool reload stays ahead of the loop end's `cmp ebx, -1`, where
 // retail loads it after the next-index increment; the latch reading the pool through the global, the entry pool read
 // through a local, the next index computed in a comma element ahead of the reload and the pool read through the
@@ -4366,10 +4372,13 @@ struct s_128ca0
 };
 
 // score 48 (was 48): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
-// word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
-// DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
+// word bits in the header, so a byte bitfield would be needed; r122 below: the constant 8 is held in EBX for the
+// second pending test), the second pending test reads AL where retail shifts DL by 3, and the count's NONE compare
+// uses an immediate where retail holds -1 in EDX.
 // MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
 // Earlier at 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
+// word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
+// DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
 // MiniMax C (11-20): no new form, no lower score (72): the two gain pins still trade scratch registers (retail gives the gain byte its register ahead of the bits' copy), the field_c store still sits one slot late and the controller compares still use an immediate where retail holds NONE in edx; the body stands as found.
 // Earlier at 72 (was 81; a second score line, merged in m3 lane 12 r165): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
@@ -4734,6 +4743,15 @@ struct s_128ca0
 // Synchronization count as short/word/dword with the separate decrement or postdecrement
 // 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
 // NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
+// M3 lane 15 r122 (fast with 0x1293f0, 0x12a810, 0x12a420, 0x125e60, all MATCH; control 48: on it the constant 8 sits in
+// EBX for the second pending test, `test bl, al`, the flag3 set `or word ..., bx` and the stream bit `or cl, bl`): the
+// second pending test as `!TEST_FIELD_BIT(...)` 72 (1054 B: that test, the flag3 set and the stream bit's load / or /
+// store are then retail's shape, and from the flag6 test on only the scratch rotation differs, one step behind
+// retail's), as `!(bool)((flags >> 3) & 1)` 72 (same code), as `!((flags >> 3) & 1)` or `!(flags & 8)` 48 (same code
+// as now). On the 72 form: `char count = NONE` 208 and `signed char` 208 (the count block is then retail's exactly,
+// `or edx, -1` shared by both NONE compares and the count's DL, but the pitch-range lookup's EAX/ECX and every later
+// block rotate), `long count = NONE` 122; the char count declared at the top of the not-started block 230, after the
+// field_c store 235, after the first channel call 202, after the impulse call 203, at the function's top 239.
 // M3 lane 14 r133 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 48): the second
 // pending test as `!TEST_FIELD_BIT(local_1->flag3)` 72 (1054 B: from there on the test and both `or byte ..., 8` are
 // retail's, the scratch registers one step off and 0x12a420's copy an in-place `or`), as `!(bool)((flags >> 3) & 1)` 72,
@@ -5130,6 +5148,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // the helper's factor 2 placed as retail computes it (`w * w * 2`, `(...) * 2`, `w * 2`) 484 (same code); the transform
 // view declared at the top of the listener block 519; the state pointer as the old ternary 521; one state pointer at
 // the block top for both arms 566.
+// MiniMax C (11-20): no new form, no lower score (484): the frame is 0xec against retail's 0xe8, the channel pointer is
+// `lea ebp,[edx+0xb8]` against retail's [edx+0xa8] (a header offset this lane may not change), the unit index sits at
+// [esp+0x6c] against retail's [esp+0x34] and the -1 constant is held in ebx against retail's esi.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {
