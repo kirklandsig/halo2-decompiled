@@ -3725,6 +3725,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // increment clause, the candidate as a named local, the find through the global and the whole increment through the global
 // all measure 8 with the same code, and the permuter (378 s) found nothing; the reload is a speculatable global load and
 // this compiler hoists it to the head of the increment region, above the candidate's branch, in every spelling.
+// MiniMax E (11-20): no new form, no lower score (8): the whole remaining difference is where the sound pool is loaded -
+// retail loads it at the join of the next-index ternary, after the increment, and re-reads it on every path into the
+// advance, while this build loads it at the end of the body block, so the branch that jumps into the advance skips the
+// reload; the pool read through the global at both calls, the next index named in a statement ahead of the reload, the
+// reload folded into the search call's argument and the whole advance put in an inline helper that takes only the index
+// and reads the pool global all keep the reload ahead of the compare, and every other instruction is retail's.
 // MiniMax A (11-19): no new form, no lower score (8): the pool reload stays ahead of the loop end's `cmp ebx, -1`, where
 // retail loads it after the next-index increment; the latch reading the pool through the global, the entry pool read
 // through a local, the next index computed in a comma element ahead of the reload and the pool read through the
