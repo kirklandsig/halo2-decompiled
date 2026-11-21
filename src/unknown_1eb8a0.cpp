@@ -794,6 +794,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
 // second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
 // local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
+// Joined refresh and angular fallback via predicate or length 687/678, with selected-source
+// projection 671/665. Selected-source branches, combined test, and one or two conditional
+// selections 679/687/677/677.
+// NOT kept. The joined stores raise the score and leave the entry allocation unresolved.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

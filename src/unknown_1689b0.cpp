@@ -2186,6 +2186,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // second point copied from the return 617. Early signed successor with the first,
 // second or both returns 603/603/616, between both reconstructions 558.
 // NOT kept: all tie or regress. The early forms change the 0xb964 frame.
+// Face, edge or both as vector accumulators with scalar updates 618/620/613.
+// Shared vector updates for face, edge or both 623/625/624; both with aggregate initializers
+// or shared output scaling 643/624. NOT kept, higher scores and two controls changed with both vectors.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
