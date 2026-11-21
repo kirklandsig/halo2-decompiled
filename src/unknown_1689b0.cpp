@@ -2170,6 +2170,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
 // order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
 // one point, moved declarations: not kept).
+// Face/edge/both average returns 575/589/628, admitted-radius/rejected-radius/both
+// fallback returns 569/585/635, face/edge count as the result test 620/563.
+// NOT kept: all raise the score and leave the count and clearance homes displaced.
+// In-place averages by named component for face/edge/both 604/602/642, through the
+// coordinate arrays 620/618/660. Indexed accumulation with native/indexed in-place averages
+// 669/692. NOT kept: all grow the body and leave the count and clearance homes displaced.
 // M3 lane 14 r133 (fast with 0x120790/0xc2d00/0x17a380/0x2469b0, all MATCH, 0x16a440 23; control 551): the per-prism
 // separation as `inside ? 0.0f : nearest` after the closest-point test 552; the nearest distance declared at its per-prism
 // initialisation 551 (same code); the radius minimum tests as `available < radius` 551 (same code); `++face_count` ahead
@@ -2189,6 +2195,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Face, edge or both as vector accumulators with scalar updates 618/620/613.
 // Shared vector updates for face, edge or both 623/625/624; both with aggregate initializers
 // or shared output scaling 643/624. NOT kept, higher scores and two controls changed with both vectors.
+// M3 lane 11 r142 (fast with 0x120790/0x2469b0, both MATCH; control 551, aligned 564, masked 311): in post-call offsets retail
+// homes the second count (sharing the prism index's slot) at 0x88, the first radius 0x8c, the first count 0x90 and the
+// second radius 0x94, ours the radii at 0x8c/0x90 and the counts at 0x94/0x98. Names do not order these slots:
+// `face_count` renamed to sort first, or the edge and face names exchanged, 551/551 (same code). `if (shapes.counts[2] > 0)`
+// around the square and the prism loop 550 (aligned 511: the square moves after the guard as retail, but the guard's
+// compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
+// the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
+// Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

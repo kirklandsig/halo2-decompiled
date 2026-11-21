@@ -798,6 +798,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // projection 671/665. Selected-source branches, combined test, and one or two conditional
 // selections 679/687/677/677.
 // NOT kept. The joined stores raise the score and leave the entry allocation unresolved.
+// Sample dot across the zero-tick pointer choice: paired terms 660/660, three
+// products 661/661, successive sum 603/659, and complete sum 659/603, with
+// the rate applied separately or in the initializer. NOT kept: the higher scores
+// shorten past retail, and each form leaves the supplied direction in EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

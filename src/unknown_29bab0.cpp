@@ -771,6 +771,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and copied/assigned heading 671/727/503/727. The same workspace as a
 // point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
 // NOT kept: the initial position still goes to +0x8c and every score rises.
+// Per-arm Y with common X, positive/negative first: point field 718/718,
+// scalar forming point 703/703, scalar consumed by radial difference 720/720,
+// radial Y in each arm 694/686. NOT kept: the scalar Y forming a point reaches
+// position +0x80 and frame 0x88 but shortens the function to 3483 bytes and raises the score.
 // M3 lane 5 r219 (H2M_FAST; control 489): the closing test as dot3f(&local_7, &local_9) 489 (same code: retail's
 // local_7-first products there come from operand ranks, not argument order); the side flip held in a byte and converted
 // at the join (`local_21 = side != 0`, diagnostic for retail's `test al, al; setne al` after the flip: that pair then
@@ -781,6 +785,14 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
 // and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
 // position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
+// M3 lane 8 r213 (H2M_FAST with 0x1f9e70/0x110ab0/0x29b990; control 489): the side flip through a `long side` (set from
+// the cross test, negated when the side flag is clear, then `local_21 = side != 0`) 627 (3501 B: retail's `test al, al;
+// setne al` conversion appears but in 32-bit form, and the new symbol moves the homes below, first difference +0x60),
+// with `local_21 = (bool)side` 627 (same code); the side point's y as a second ternary on the side flag (arms written with
+// local_23 and -local_23) ahead of x 746 (3524 B, frame moves); local_24 and y set in each arm of an `if (local_22)`, x
+// after it 718 (3501 B: the arms tail-merge, frame 0x90); the flip as one ternary `local_22 ? cross > 0 : !(cross > 0)`
+// 693 (3525 B). Reading: retail's flip value is a byte converted to bool at the join (byte ops, then `test al, al; setne
+// al`), and local_8 sits below the shared local_13/local_14/local_25 home, the order a second local_8.y mention gives.
 // Shared i/k/j normalizer with setter, aggregate, coordinate walk, or explicit assignment 772/764/755/761.
 // Working-heading query destination on the i/k/j graph, with copy, setter, aggregate, or named
 // outcome 755/767/760/755.

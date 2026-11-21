@@ -2777,6 +2777,7 @@ dword __cdecl function_131fc0(real alpha);
 // first vertex.
 // NOT kept (coordinator screen, MiniMax H 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // NOT kept (coordinator screen, MiniMax A 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
+// NOT kept (coordinator screen, MiniMax B 11-21): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3133,6 +3134,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // source after the first position lookup 358 or second 343. NOT kept: the latter
 // moves a single-use field read across a call and grows the body by one byte.
 // Second source bound inside the optional sample 354.
+// Capacity as the success value 376; signed request size 354; rounded allocator with success from the handle 436;
+// existing bucket count field 354, with the signed node read before the empty-bucket test 354;
+// separate level count and requested level 354; exclusive level bound 372; coefficient address after acceptance 393.
+// NOT kept: both matrix copies still expand and none reaches the starting score at a shorter length.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -4234,6 +4239,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local with the alpha selector before input 19 (small in AL copied to CL, alpha in ECX; retail small in CL, alpha in
 // EAX) and with the alpha selector before whole 19 (small in CL as retail, but alpha computed in EDX before the whole
 // split, where retail computes it in EAX after fraction's move to EBP).
+// M3 lane 16 r163 (fast, control 9): the two stage-one input words through the file's combiner-inputs macro 939 (the
+// no-local code); the shifted word bound to a `dword const &` 9 (same code); on r205's B form (re-measured 5): the shifted
+// local at the RGB word only, the alpha word written out, 941 (the shift then lands after the clear as retail, but small
+// loads into AL: whenever the shifted word is not the input's own register, small takes AL); with no shifted local, one
+// `bool const` copy of small for both selectors 941, the input selector as `input = 4; if (small) input = 5;` 936 (a
+// branch); re-measured with no shifted local: whole/alpha/fraction/input 14 (small in CL, but alpha computed in EBX
+// before the fraction), whole/fraction/alpha/input 15 (small in AL, copied to CL for the neg).
 // M3 lane 6 r215 (fast, on lane 8 r205's base B re-measured 5: the span copy after the clamp plus `offset` declared after
 // `maximum`; only the shifted input word left, coalesced with `input` in EBX and hoisted above the clear): the shifted
 // local `dword const` 5; `input` typed `dword` with a `long` shifted local 5 (both the same code); the alpha input word

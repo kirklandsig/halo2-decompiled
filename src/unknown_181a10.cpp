@@ -1138,6 +1138,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // = root->entity; if (!entity) return;` 238 (same code). Matched 0x1c5400 compiles the root test as `cmp dword ptr
 // [eax + 0x18], 1` and immediate clamps, so this body's register load of the type, kept dead walk and unpropagated
 // clamp bounds all point to one shape no natural form here reproduces.
+// M3 lane 6 r219 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the head written as
+// the entity getter's ternary (`entity = root->type == 1 ? root->entity : NULL; if (!entity) return;`) 238; the type and the
+// entity tested in two early returns through an entity local 238; the entity preset NULL and set under `if (root->type ==
+// 1)` 238; the dead second walk's result assigned back to `root` 238 (all the same code: the type is still compared in
+// memory); `switch (root->type)` with `case 1: break; default: return;` 301 (register load, `dec ecx`). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -719,6 +719,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Heading, axis or separate subtotal into that workspace 286/286/286. Sine applied on write
 // from heading or axis 282/282, projected-axis scaled add followed by the cross sum 304.
 // NOT kept. The lowest form retains the extra frame word and increases the score.
+// M3 lane 6 r219 (H2M_FAST with 0x28dab0, MATCH throughout; control 173): the projection as `dot; projection *= 1 - cosine`
+// in the kept order 173 (same code); the helper's two vector parameters swapped at definition and call 173 (same code); the
+// sine taken in the caller right after the tilt draw (retail's `fld st(0); fsin` place) with the cosine taken after the
+// outer cross and both passed in 230, with the helper taking the angle and the sine and forming the dot, then the cosine
+// 230; the rotation's own cross formed in the caller ahead of the helper and passed in as a third vector, axis x vector
+// added, cosine/projection/sine 218 (1218 B, frame 0x118 as retail, first +0xa9); on that, vector x axis subtracted with
+// cosine/projection/sine 207 (1209 B, frame 0x118, first +0xa9), sine/cosine/projection added 240 (1195 B) or
+// subtracted 238 (1198 B), sine/dot/cosine added or subtracted 236/236.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

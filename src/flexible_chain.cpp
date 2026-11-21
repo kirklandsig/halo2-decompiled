@@ -907,6 +907,10 @@ void __stdcall function_1160c0(real dt)
 // Direct node indexing at input, physics and publication 275/276/242; paired boundaries 281/243/243;
 // all accesses via the record or named array base 167/280. NOT kept: these forms do not recover
 // the EDX segment and low spill at retail length.
+// Coordinate-array loops for interior position, anchor position, anchor direction and
+// both anchor values 161/161/161/643; either anchor with interior or all three
+// 161/161/643; one combined anchor pass 169. NOT kept: all regress and shift
+// attachment output homes. The segment still needs EDX and the +0x14 spill.
 // M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
 // EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
 // formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the
@@ -935,6 +939,14 @@ void __stdcall function_1160c0(real dt)
 // Last-ordinal clamp, branch clamp or bound reference 151/151/151. Indexed fields through
 // a carried array and clamped index 280/280. Array-end selection, pointer step-back or
 // end-selected reference 301/296/301. NOT kept. Bounds and pointer tests regress.
+// M3 lane 11 r142 (fast with 0x116750/0x116010/0x1160c0, all MATCH; control 144, aligned 159, masked 86, frame-blind 41):
+// retail is this body with ECX and EDX exchanged from the segment on (segment EDX, here ECX with its base in EDI; then the
+// first-node copy, the position copy, the physics index and the offset copy each take the other register), plus the low
+// slots. The physics index read once into a `long` local 144 (same code); `1.f / dt` ahead of the loop 154; the vertical
+// ahead of the loop 299; the segment selected ahead of the node pointer 278; the last-segment test as
+// `definition->segment_count == i` 145; the rotation through the existing rotate_vector_170d70 (k read at each use) 144
+// (same code), and every include/axis_rotation.h variant measured for 0x29b2e0 (k local or not, dot or cross order) 144.
+// Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
