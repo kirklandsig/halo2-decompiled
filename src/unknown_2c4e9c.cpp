@@ -3289,6 +3289,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // (`map_id != NONE && next(&iterator)`, no early test) 33 (76 B). Re-measured the NONE-default id 13 (NONE cached in
 // EAX, the id loaded straight into EBX). A byte scan of retail finds only three references to the field: the store in
 // 0x19a6f2, the read in 0x19a864 (loaded straight into ESI there) and this function's EAX load.
+// M3 lane 12 r164 (fast with 0x2c9a58, matched in each): retail's three NONE uses are immediates, so its id has one
+// definition when NONE is counted. The iterator by aggregate initializer re-measured 15 (84 B: an extra datum store); that
+// with the NONE-default id 33 (84 B), with the if/else two-definition id 41 (91 B); the id read through a const pointer to
+// the preferences' current block 30 (same code), that with the NONE default and the initializer 33; the NONE default
+// re-measured 13 (80 B: loaded straight into EBX, NONE in EAX). The campaign list's v1 reads its id from a getter call,
+// but a call result gives the copy before the compare (round 193's diagnostic). All restored.
 // M3 lane 3 r281 (fast with 0x2c9a58, matched in each): under LTCG (earlier only compile-only) a by-value inline
 // validity predicate for the guard 30 and an inline getter with a result local 30; an inline out-pointer getter that
 // stores the id and returns `*id != NONE` 30 (`__forceinline` 30); a getter storing the id only when valid and

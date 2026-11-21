@@ -860,6 +860,12 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // the four pointers of the 0x11e800 call sit in another register order, and the permuter's 35 variants found nothing below it.
 // Earlier score line (172, was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
 // the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
+// M3 lane 2 r124 (fast with 0x14a8e0/0x14af40/0xd47d0/0x16e1b0, all MATCH each run; control 172; body unchanged). Loop
+// shapes, untried above: the triangle loop bottom-tested under its range test (`if (i < first + count) do { ... } while
+// (++i < first + count);`) 205 (711 B); the vertex loop bottom-tested (`do { ...; vertex++; } while (vertex < 3);`) 263
+// (686 B: no longer unrolled); both 263; a count guard around the triangle loop (`if (0 < range->count) for (...)`) 199
+// (743 B); the three fetches as three statements (`valid = get(0); valid = valid && get(1); valid = valid && get(2);`)
+// 172 (same code).
 // Collision point transfer by coordinates 230, standard copy or backward copy 197 each.
 // Vertex transfer by coordinates 252, standard copy or backward copy 270 each. Both transfers
 // with forward or backward copy 284 each. The entry copy reaches 726 bytes but changes the early save order.

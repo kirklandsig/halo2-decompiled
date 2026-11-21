@@ -745,6 +745,20 @@ s_1a8a10 g_4453c0[] =
 // the sums and all 24 store orders, best 13 (ours); 132 perpendicular forms, best 13; the 2D perpendicular gives retail's
 // instruction order with the registers renumbered (i 1, j 2, zero 3, copy 4, x 5, y 6 against retail's zero 1, i 2, j 3,
 // x 4, y 5, copy 6) 18.
+// M3 lane 12 r164 (fast with 0x1a8c30/0x1ae820/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17). The inline-depth pragma:
+// dropped, with the score test and the call as nested ifs 214 (592 B, the callee expanded), the outer test split too 214,
+// else arms 214, a `continue` form 214. One-object link-time threshold search (the build's threshold is 81): the call
+// costs 41 as written, 48 / 64 / 96 with one / two / three extra written levels; re-spelled real branches stay 41. The
+// candidate table lies in retail's read-only data: declared const and walked by `for (entry = table; entry->id != NONE;
+// entry++)` 17 (same code, the entry test folds), and that loop counts as one level (48). Diagnostic (always-true tests,
+// not keepable): two extra levels anywhere around the call keep it out of line without the pragma, 17. On the const table:
+// fields read in place 28, an index loop 162 (552 B), a short index 205 (588 B), an entry pointer from the index 148/147;
+// a non-const table walked by `for` 112 (548 B). Compile-only screen of the float block (main's block reproduced; block
+// lines against retail's, base 10): the facing copy updated in place with a saved i (30 forms) 15-23; a four-value
+// setter helper in all 24 parameter orders 10 (same block); 2-D dot and perpendicular helpers, 224 forms, 15 at best;
+// a 2-D setter for the copy 10; one-statement transform helpers 17-22. Round 115's frame-transform lead re-screened
+// (19); its perpendicular's j taken from the copy's i gives retail's head numbering but schedules the forward sum first
+// (13). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

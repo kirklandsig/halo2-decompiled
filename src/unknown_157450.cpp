@@ -25,7 +25,7 @@ static __forceinline long real_to_long(real value);
 
 extern s_record_pool *g_509434;
 struct s_location;
-void function_ce520(long weapon_index, long unit_index, bool flag);
+void function_ce520(long unit_index, long weapon_index, bool flag);
 void function_b75a0(long object_index, point3f const *point, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool flag);
 void function_b73b0(long object_index);
@@ -46,7 +46,7 @@ void function_15e360(point3f const *point, long object_index)
 	{
 		byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
 		if (TEST_FIELD_BIT(((s_engine_item_flags *)object)->held))
-			function_ce520(object_index, *(long *)(object + 0x154), true);
+			function_ce520(*(long *)(object + 0x154), object_index, true);
 		function_b75a0(object_index, point, g_4687a8, g_4687b0, NULL, false);
 		function_b73b0(object_index);
 		long cache_index = function_3ddd0(object_index);
@@ -525,8 +525,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax E (11-15): no new form, no lower score (32): the word mask read through the pointer still gives retail's head and loop (77) but not its tail, the mask read off the field rematerialises it (129), and a one-use team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) is retail's loop and reaches 29 - not kept, it is a one-use local and 3 points is under the bar (MiniMax D's 11-14 form, dropped by the coordinator); what is left is the old mask's word load and word spill (retail's `mov cx` and a word store against our zero-extended ECX and a dword store), its one reload into ECX ahead of the first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax B (11-19): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, its reload ahead of the first jne is still split between the compare and the change block, the playing teams are still in EAX where retail keeps them in EDX, and the present update still lands in ESI where retail keeps it in EBX; a word mask with a separate dword copy folds back to the same code, and the word mask alone (77), the plain present (102), the field paths (129), the guard orders (78, 91) and the store orders all score 63 or more.
-// score 23 (was 23): Retail shares one old-mask reload and holds the playing bitmap in EDX. The present update uses a different register.
-// the word mask's one reload ahead of the first jne, and present's update in EBX remain.
+// score 23 (was 23): the word mask's one reload ahead of the first jne, and present's update in EBX remain.
+// 32 before MiniMax G's dword update local.
+// Retail shares one old-mask reload and holds the playing bitmap in EDX. The present update uses a different register.
 // the word mask's one reload ahead of the first jne, and present's update in EBX remain.
 // The score was 32 before MiniMax G's dword update local.
 // D's form, not kept: score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
@@ -920,6 +921,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // computed after the two field stores 23 (same code); an early return when neither mask changed, the change block
 // unindented 23 (same code); no team local, the team field read at each use 42 (382 B); the team mask as a `word &`
 // bound to the field in place of the pointer 23 (same code).
+// Engine index before the first mask store or between the two 23/23 from the getter,
+// 43/43 from the retained record. Engine table slot at the same two points 24/24
+// and 44/44. NOT kept: the saved word still reloads separately, and using the retained
+// record also moves the globals and pool registers.
 // The saved word form was preceded by a 32-difference form.
 // Present bitmap read/compound OR/store, explicit OR, bit-first OR, or a bit shared with the playing update:
 // 23/23/23/114. With a full-width publication OR: 24/24/24/115.
