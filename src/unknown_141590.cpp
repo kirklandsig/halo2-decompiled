@@ -1644,6 +1644,12 @@ void function_143250(
 // component, both or both symmetric families 939/939/939/939.
 // Band-specific mixed names, root-35 axis names, both root axis families,
 // and all those role names 939/939/939/939. The scalar spill frame stays 0x2fc.
+// M3 lane 8 r214 (fast with 0x143250 matched and 0x22850 209 / 0x23690 354 each run; control 939, frame-blind aligned
+// count 154): this function's parameters in retail's call-setup order (result, rotation, coefficients, order; the callers
+// set up ECX, EAX, ESI after pushing the order), definition, declaration and the seven calls 939 (same code; 0x23690 357);
+// 0x143250 as (n, matrix, coefficients, out) re-measured 935 (its three call setups then retail's; 4 points); both
+// reorders 935 (0x23690 357); on that 935 form one array per band declared in its band's block (9, 25 and 49 reals)
+// 1195 (10744 B, frame 0x320) and the first coefficient copy after band one's stores 935 (same code).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

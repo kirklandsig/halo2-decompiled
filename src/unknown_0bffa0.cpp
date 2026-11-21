@@ -1337,6 +1337,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // stored first with the pre-scale statements k, j, i 291 at 2840 B (aligned 430); the rows computed up, left, forward 318
 // (2831 B); the cone half extents as `width / origin_offset * 0.5f` (one repeated divisor, no scale local) 515 (2813 B: the
 // reciprocal still forms early); assumes at the top on count, shape and entries (1/2/3 of them) 562/600/554.
+// M3 lane 8 r214 (h2m fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned/masked/frame-blind
+// 273/126/122): the cone half extents as `width * 0.5f * scale` 290; the projection helper's scale test written
+// `1.0f != matrix->scale` 479 (2815 B); the helper returning the depth (ignored) 290 (same code); the reference-axis test
+// as `i == 3 || i == 1` 565 (at retail's 2840 B); the sphere radius bound as `real const &` to the shape field 612 (2816 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
