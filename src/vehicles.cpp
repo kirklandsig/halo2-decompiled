@@ -859,6 +859,16 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // in entry, gear or both 285/187/305; entry dot finished after speed root 107; explicit planar partial or running
 // magnitude finished after root 280/280; running magnitude finished before root 112; planar input snapshot 118.
 // Unity still occupies XMM2 instead of XMM3. Body restored.
+// Round 629: The early SSE sum and unity register still differ.
+// control norm between the two velocity copies 227.
+// control norm after the first speed square 109.
+// control norm before the speed root 109.
+// first square before the second velocity copy 107.
+// first square before the control norm and second copy 227.
+// named velocity squares after control norm 118.
+// named velocity squares around control norm 118.
+// named velocity squares before control norm 118.
+// NOT kept: every form ties or raises the score.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3733,6 +3743,16 @@ real g_47ff30 = 2.5f;
 // Round 454: the 0x100 frame and acceleration spill still differ. Shared planar cross on the original prefixes 672;
 // heading or velocity copy 729/729; both at the slip producer or in a block 757/757; named lateral cross 672;
 // two early prefix or component copies 757/738. The copy forms add frame space. Body restored.
+// Round 629: The extra mass word and the acceleration and velocity output homes still differ.
+// shared current basis 739.
+// shared desired basis 708.
+// both shared bases 706.
+// both bases scoped to conversion 707.
+// shared current basis with separate mass reads 710.
+// shared desired basis with separate mass reads 712.
+// both shared bases with separate mass reads 703.
+// scoped shared bases with separate mass reads 702.
+// NOT kept: separate mass reads recover frame 0xfc, with higher scores and nonretail lengths.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -7064,6 +7084,16 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Round 454: frame 0xfc versus 0xd8 still separates the facing and current matrix homes. Common lateral-row
 // reference or pointer 1076/1076; shared dot in drift, strafe or both 1037/978/1037; strafe-only row reference
 // 1039; shared lateral-brake scale-add 978; common row pointer with both dots 1076. Body restored.
+// Round 629: Matrix frame and entry index/displacement still differ.
+// flip copy at query 1134.
+// direct flip output into desired 1061.
+// early flip copy and reused flip output at multiply 1183.
+// direct flip output and separate relative matrix 1112.
+// shared current-basis builder 1039.
+// basis builder and early flip copy 1145.
+// basis builder and direct flip output 1063.
+// basis builder, direct flip output and separate relative matrix 1095.
+// NOT kept: early flip publication reaches 0xdc, but every form raises the score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

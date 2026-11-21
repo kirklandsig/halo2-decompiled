@@ -1888,6 +1888,16 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // preload 137, typed state with material address 158. NOT kept: the 137 form restores
 // the low tag spill and walking load order but stages one-use settings and rate locals.
 // The animation flags, position and material homes still differ.
+// Round 629: The low definition spill shared with the grab distance remains unresolved.
+// short animation-flags offset 645.
+// promoted animation-flags offset 649.
+// short common state offset 650.
+// promoted common state offset 659.
+// both offsets as shorts 657.
+// both offsets promoted 658.
+// short flags offset with promoted state 654.
+// promoted flags offset with short state 661.
+// NOT kept: storing relative offsets changes the early allocation and raises every score.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4540,6 +4550,16 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // and walking lookups 677 with flight-arm acquisition or 686 with call-local
 // acquisition. One branch-local reacquisition 630 for either branch.
 // NOT kept: the reduced control is 598 and separate lookups enlarge the body.
+// Round 629: The changed byte and flight threshold still occupy different homes.
+// turn key carried through both paths 612.
+// previous key as the selected value 615.
+// turn key selected in each facing arm 638.
+// conditional validated key override 615.
+// signed short direction 637.
+// signed short with conditional key override 655.
+// signed turn expression with explicit overrides 635.
+// signed turn expression with conditional override 635.
+// NOT kept: all eight forms raise the reduced control of 602.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
