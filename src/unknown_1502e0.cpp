@@ -1708,14 +1708,9 @@ void function_150820(dword *bits, bool local_only)
 // player esi and the hand edi, and the unit index still takes ecx where retail takes edx, so the whole body stays one
 // register rotation off; the only form that gives retail's registers (18) rereads the unit index through the player
 // getter and stays match-only.
-// score 18 (was 43): the unit index read again through the player getter at the object lookup and at the 0xcd7b0
-// argument gives retail's player ESI, hand EDI and unit index EDX; left: the player address folded into one LEA
-// instead of retail's add and move, the unit index read a second time, and the policy byte in DL.
-// MiniMax C (11-20): kept the getter reload, the idiom the matched 0x151b80 sibling already uses; the other reload
-// placements score 43, 46, 73 and 91, and the permuter over the plain body found nothing below 43; over this body the
-// unit-index local that makes MSVC emit retail's `add eax,edx` rotates the player and the hand over ESI/EDI and the
-// unit index into ECX (43), dropping the player variable folds the address into the memory operand (89), and a
-// permuter run over this body (304 s, 2 tries) found nothing below the baseline 16 differing instructions.
+// NOT kept (M3 review 11-21, MiniMax C 11-20): the unit index read again through the player getter at the object lookup
+// and the 0xcd7b0 argument scores 18 (retail's player ESI, hand EDI, unit index EDX) but is a reread device, kept only
+// with a byte match; left on it: the player address folded into one LEA, a second unit-index read, the policy byte in DL.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
