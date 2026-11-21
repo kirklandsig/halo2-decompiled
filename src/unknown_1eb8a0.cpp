@@ -822,6 +822,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // with both minima and reused limited decision 705, live limit with default-step branch first 691, live
 // limit with both default branches first 691. NOT kept: The separate limit observations and guarded
 // minima raise the score. The reused decision also moves the first difference to +0x5.
+// EBX still keeps the supplied direction instead of the sampled velocity. Working sample
+// by conditional copy 673/676, branch-wide copy 663/659, component copy 680/667,
+// and shared setter 680/667, each after/before the rate product. NOT kept: all
+// raise the score and retain the incoming register exchange.
 // M3 lane 8 r218 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, which keep fast equal to plain; control 603, 0x1eb6f0 MATCH
 // each run): d and q declared `vector3f const *` in the definition and the declaration 603; the output block reading
 // `s->counter` at each use with no counter local 603; the settle arm's alignment as `dot3f(&nq, d)` 603 (same code each);
@@ -839,6 +843,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // `0.f != limit` 604; both normalise tests `0.f == function_30bf0(...)` 653 (2884 B); the settle test's `0.f != nlen` 605
 // (2881 B, retail's length); its alignment check `len * 0.087155744f < align` 614 (2891 B); the activation delta scaled
 // factor first 603 (same code). d keeps EBX. Body unchanged.
+// Shared setters for the start copy, impulse, activation target, all target updates,
+// both direction differences, reference sample, ramp position, and activation displacement
+// with scaling and impulse 699/708/678/693/675/603/661/713.
+// NOT kept: the sample setter ties and leaves the supplied direction in EBX.
+// The impulse setter reaches retail length with earlier prologue differences.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

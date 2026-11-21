@@ -481,6 +481,11 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // after the lookup); as `local_9 = NULL; if (local_8) local_9 = ...` 429 (1565 B); the ternary with the `!local_8` exit
 // dropped 479 (1533 B); the owner's +0x3c field read before the elapsed time 419; `local_3 = true` ahead of the mode-7
 // store in the surface-missing exit 375 (statement swap, 1 point). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 14 r141 (H2M_FAST with 0x5b080/0x706f0/0x72140/0x71ff0/0x71e00, all MATCH each run; control 376, aligned 190):
+// the live tests nested positively (`if (live a) { if (!live b) ... else main } else 0x71e00`) 376 (same code); the data
+// getter called through `arg_0->owner->session_b` 419; the mode-14 exit as `return true;` 455 (1578 B); the result
+// declared after the owner and session locals 379; the data local started NULL and then assigned 376 (same code). The
+// getter stays expanded in every form. Still BLOCKED-BY 0x5b080's call-site depth.
 // M3 lane 16 r170 (h2m fast with 0x5b080, 0x706f0, 0x72140, 0x71ff0, 0x71e00, all MATCH; control 376): the first elapsed
 // time's start field named ahead of the clock 376 (same code: the read sinks past the clock); both start fields named 413
 // (the second then loads ahead of its clock as in retail, as the 0x75890-inline forms do); the player count read once into a

@@ -982,6 +982,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // spills); on the swap order the two source reads declared controller first 43 (still the second-declared read first).
 // Screen only (all ours): the key as `(collection->players + i)->key`, as `(byte *)collection + (4 + i * size)`, as
 // `((byte *)collection + 4) + i * size`, from `&players[0].key[0]` plus a scaled index. All restored.
+// M3 lane 4 r245 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): re-measured the swap callee as
+// (collection, player, update, other) 32; the conflict scan reading through `collection` (`collection->players[j]`,
+// `collection->player_mask`) 263 (the second loop's preheader and cursors are rebuilt), on the swap order 264; the
+// occupied record's apply given `&watcher->players` 28, the last record's 28 (retail rebuilds it from the parameter there
+// too; both the same code), both on the swap order 32. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
