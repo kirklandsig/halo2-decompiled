@@ -984,6 +984,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // through a new inline getter that returns the machine address and stores the player address through an out pointer
 // (live and flag test) 46; through one taking both out pointers with both preset NULL inside, the result ignored 46
 // (register-masked 1 in both: only the session ESI against retail's EBX, both callers lost).
+// M3 lane 15 r126 (h2m fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22, NULL-preset stored pair 46): the
+// opening's addresses as the arrays themselves (`!session->data4f24.data`) 22; the two addresses grouped as
+// `!(&a && &b)` 22 (both the same code); the opening as `flag ? !&a || !&b : true` 218 (361 B: the address tests fold);
+// one stored-players pointer from `flag && &a ? &b : NULL` 215 (361 B); the machine-limit helper's live test through
+// session_state_is_live() 22 on this body, 46 on the preset pair; that helper reading the state once 46 on the preset
+// pair (the tail's helper text does not move the session register).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

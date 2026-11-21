@@ -447,6 +447,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // clear 83/83/83/83. Nested suffix with a comparison cursor, advancing on inequality
 // or after the match arm, ordinal or cursor first, 84/84/84/84. The frame remains 0x24.
 // The scaled entry remains live across the appends.
+// M3 lane 2 r128 (H2M_FAST with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67): lane 10 r119's two-member
+// lead rebuilt 39 (204 B; left: ours pushes ESI ahead of the loop for the loaded id, keeps the index in ECX and its product
+// in EBX across the calls, where retail keeps the index itself in EBX from the start and pushes ESI in the found block).
+// On it: a `short` index 70 (214 B); the result re-indexed (`result = entries[i].field_1e4`) 51 (218 B); the tag named
+// once as a `char const *` for the test and the ascii call 39 (same code); the terminator after `result = buffer` 39
+// (same code); the found test written `index == entries[i].index` 39 (same code). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

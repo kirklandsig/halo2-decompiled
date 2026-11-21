@@ -480,6 +480,12 @@ const dword g_455978[81] = {
 // as normalize2d_fast, address-normalised listing identical); the transform's position copied from `*arg_11` (the values
 // the translation was set from) 305 (2072 B); the ray's difference taken from `arg_9` instead of its copy 315 (2074 B);
 // the ray end as a brace initialiser 268 (same code). Diagnostic, restored: magnitude2d's sum written j first 268.
+// M3 lane 15 r126 (h2m fast with 0x11bed0 and 0x14a280, both MATCH; control 268): the code after the query nested under
+// `if (!found)` instead of its `continue` 268, and also under `if (!ray_blocked)` 268 (two written levels, the same code:
+// 0x11bed0 stays expanded, so written nesting alone does not move this call); the call and the found assignment under
+// `if (!local_0)` (always true there, as retail's `&& !local_0` in the bounded test is) 360 (2023 B: 0x11bed0 out of
+// line, entry roles still EBX/EDI swapped and the two optional-state homes at +0x24/+0x48 for retail's +0x30/+0x40); the
+// call alone under it 367 (2028 B); with the break inside it 375 (2019 B).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

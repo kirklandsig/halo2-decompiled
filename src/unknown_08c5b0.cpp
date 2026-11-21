@@ -311,6 +311,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // giving 1, 30; a second request pointer local for the kind read 4; the setting seeded 1 with a redundant `setting = 1;`
 // at the top of the kind arm and the availability test after it 15; diagnostic: the selector given the kind twice through
 // an extra unread parameter 4 (plain read 32): one more reference that LTCG drops does not reach the pair.
+// M3 lane 13 r135 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the reference-bound plain read
+// with the selection written in the handler (`if (kind == 1) setting = available ? payload : 1; else setting = 1;`) 4,
+// with the selector `__forceinline` 4 (both the volatile read's code, no volatile); `changed` declared first with the
+// two-byte memcpy kind read 33 (94 B); the reference-bound read after the index read 5; the selector seeded `setting
+// = 1` with the nested kind and availability tests 15. Diagnostics, plain reads: a switch with `case 1`, `case 0: case
+// 2:` sharing one arm and `default: __assume(0)` 37 (103 B); `__assume(kind == 0 || kind == 2)` in the else arm 32 (95
+// B, folded compare): neither gives the two late-merged compares of the identical-arm chain.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -1023,6 +1023,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // field 42, given `(word)object_index` 45 (179 B); with no second store and the flagged arm clearing the local and
 // storing it 77 (160 B), given the entity's field 77 (the expanded lookup is merged with the header test's each time).
 // A 1200 s permuter run (121 tries) found nothing below 8. Body unchanged.
+// M3 lane 12 r166 (fast screen; control 8), all on this body: `result = false;` again at the top of the flagged arm 63;
+// the second store moved after the object field store 69; the object read through a const-reference-bound header
+// pointer taken before the second store 64; the flag test through a const-reference-bound header pointer 40 (178 B,
+// first difference back at +0x3a); the bool declared after the creation call 34. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

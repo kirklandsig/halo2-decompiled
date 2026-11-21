@@ -4244,15 +4244,15 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 295 (was 295; r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
+// score 295 (was 295; r126, r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
 // is in the paragraph below (the two stacked score lines merged in r286).
-// score 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
+// earlier header line (merged in r126): 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
 // and acknowledgement is laid out early. Rounds 275 and 234 kept the round 208 score.
-// score 295 (was 295; r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// earlier header line (merged in r126): 295 (was 295; r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // MiniMax D (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it,
 // the acknowledgement block comes last in retail, and the three boolean homes stay rotated; the timeout spill needs 0x769a0's third
 // argument, whose declaration lives in another file: BLOCKED-BY 0x769a0.
-// score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// earlier header line (merged in r126): 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
 // Earlier at 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
@@ -4668,6 +4668,11 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // result; }`) 328 (1247 B: VC still lays it out at the end); the kept arms `return result;` with the acknowledgement
 // still `goto accept` 44 (same code); on the 96 form the kept arms `return result;` 100, as `if (same) return true;
 // if (better) return true;` 129.
+// M3 lane 15 r126 (h2m fast; on m3 lane 5 r208's structured lead, 96 there with only the end of the received block
+// left): after the disconnect, an own `return result;` 109; `if (result) return true; return false;` 110; `return result ?
+// true : false;` 110; `if (result) return result; return false;` 109; `if (!result) return false; return true;` 110 (each
+// moves the first difference to +0x26; none gives retail's `mov al, [result]; test al, al; jne <bare epilogue>`). Body
+// unchanged; the stacked score header lines above merged into this one note.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

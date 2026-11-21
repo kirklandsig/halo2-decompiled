@@ -1882,12 +1882,27 @@ PRIVATE __forceinline real const &component_time_step()
 // a store that can only change the pointed-to value, direct reads at both uses (they reload the pointer), a math call
 // ahead of both reads and a by-value copy (kept in a register, or spilled to the stack under pressure, never re-read
 // through its address) do not. In the link-time build no pointer store counts and retail has no call between the reads.
+// M3 lane 8 r214 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
+// to it, at both products 26 (same code); the step as a forceinline helper returning the scale helper's result times the
+// time step 142 (476 B, the global load hoists above the mass test); `target -= position` ahead of the step product 119
+// (473 B); the pin macro as a forceinline function 89 (462 B); the step as a `real &` bound to the scaled value and
+// multiplied in place 26 (same code). Reading: retail never takes the globals pointer's address (its 876 references are
+// 875 loads and one store), so no store can kill its load between the reads; matched 0x25ae40's fold-then-add shape has
+// a call result as the base (an inline pointer parameter `result + 4`), which the load of a global never gives here.
+// Diagnostic (reverted): the globals pointer's address taken in this body (a tail compare of `ratio` with it) still
+// reads `[eax + 4]` at both products (484 B), so an address-taken global alone does not give the `add eax, 4`.
 // M3 lane 3 r287 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
 // to it at both products 26; the step as `real &step = scaled_acceleration; step *= delta_time;` 26; the globals
 // pointer copied to a local and read through a `const &` to that local at both products 26; a second `real const &`
 // time-step binding inside the stop-distance block for the second product 26; the scale helper's result initialised
 // to the acceleration at its declaration (the else arm kept) 26 (all the same code: `[eax + 4]` at both reads, the
 // scale in XMM1).
+// M3 lane 12 r167 (h2m fast; control 26): `target -= position` ahead of the time-step binding 119 (473 B); the stop distance
+// computed ahead of the force test 26 (same code); the step's magnitude taken at the return 157 (485 B); no reference, the
+// getter called at each product 26 (same code); the stop distance reading `g_510c54->rate` directly 26 (same code). Retail's
+// only other `[reg + 4]` read then `add reg, 4` on this global is matched 0xc6810, where four direct reads (the first in each
+// of two arms, float stores through an object pointer between them) make the rate's address a common subexpression; here
+// only argument-home stores sit between the two reads, and the link-time build keeps the globals pointer. Body unchanged.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
