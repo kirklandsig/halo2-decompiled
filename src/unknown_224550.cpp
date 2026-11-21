@@ -847,6 +847,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // first in the four next products (`blend*inv_bx`, `blend*(by*inv_bx)`) 162 (same code); the inverse sums written next
 // term first 162 (same code); the second bounds kept in uv_b's own bounds (no separate box) 194 (1947 B, first
 // difference +0x5b: the tint/second-UV homes swap back).
+// Eager primary products 162/162, selected primary operands 441/441, selected ratio
+// 162/162, and updating the selected primary aspect 162/162, with secondary products
+// formed in or before their branch. NOT kept: the selected operands expand the frame to
+// 0x64. The other forms tie and still spill blend at the bitmap join.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

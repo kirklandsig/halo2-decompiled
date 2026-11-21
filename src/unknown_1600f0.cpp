@@ -1211,6 +1211,7 @@ PRIVATE inline long score_string_list_1608e0()
 	return result;
 }
 // score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// Earlier reduced check 678.
 // Earlier reduced check scored 678.
 // Earlier comparison 678 in the r718 fast check.
 // MiniMax C (11-20): no new form, no lower score (679): the frame is still 0x798 against retail's 0x79c, the viewer stays in edi and the coordinate homes and the panel's timing reads still sit in this build's slots; the forms that reach retail's frame size score lower on other axes, so the body stands as found.
@@ -1635,6 +1636,9 @@ PRIVATE inline long score_string_list_1608e0()
 // NOT kept: the first six recover frame 0x79c at higher scores. The horizontal forms also recover EBX for the viewer.
 // The final two return to 0x798
 // and shorten the body. The separate ordered origin and score pointer homes still differ.
+// Team/player/both row fade quotients 679/679/679, team/player/both scaled offsets
+// 679/679/679, both final scales 679, both quotients and final scales 679.
+// The 0x798 frame, viewer register and separate origin slot still differ.
 // M3 lane 14 r133 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): the scores pointer as one ternary initialiser 719
 // (2888 B); `panel->time` as one ternary on flag1128 708 (2888 B); the screen height as a short 693 (2888 B); the width
 // as a long 679 (same code); both score flags cleared first and set under the test with no else arm 694.

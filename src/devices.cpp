@@ -1779,6 +1779,10 @@ bool function_108530(long device_index, long name)
 // named energy differences 124/124; square gated on a positive ramp time 102/102/102.
 // NOT kept: The unconditional square raises the score. A positive-ramp gate scores 102 at 532 bytes
 // and breaks both caller previews. Retail computes separate squares.
+// Shared phase-travel quotient with a direct expression, named square difference,
+// named squares, or named difference and doubled rate 116 each, with the original
+// sampled distance or a reduction of the published deceleration distance. NOT kept:
+// all tie at 523 bytes. Ramp-down stays cached and duration still uses XMM3.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

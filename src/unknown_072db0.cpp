@@ -1626,6 +1626,7 @@ static __forceinline void query_restore_pending()
 
 // score 663 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Earlier measurement 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
+// Earlier at 703: the frame agreed. The logon branch, user cursor and slot selection differed.
 // MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
 // (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
 // at +0x18, while ours takes the property bytes as the cursor and keeps it at +0x14, so the flag, the identity and the
@@ -2229,6 +2230,11 @@ bool function_1900a5(long index);
 // conditionally set from positive/exclusion tests 663/663/663/663.
 // NOT kept: The shared reset reaches 2862 bytes and raises the score. Eligibility assignment
 // reproduces the opening code, including the logon comparison and properties-based cursor.
+// Shared logon predicate on the retained request loop 766. Identity getter,
+// properties getter, both at group scope, or nested getters 760/784/778/778.
+// Shared logon predicate with identity, properties, or nested getters 756/766/754.
+// NOT kept: the logon decrement returns, but the providers stay out of line and
+// the cursor and slot selection still differ. The identity-only forms reach 2862 bytes.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

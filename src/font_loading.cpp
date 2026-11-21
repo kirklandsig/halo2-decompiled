@@ -1018,6 +1018,10 @@ static inline long font_character_pixel(long alpha, long color)
 // literal two bytes short of retail's four instructions, 103); the type 3 count and the type 2 advance are still
 // immediates where retail adds the run register (a loop-carried run, a split fill run, a merged count update and a goto
 // out of the switch were measured at 182 to 228).
+// Shared word fill taking a long or word pixel, with caller advance or a returned
+// end pointer, 59 each. With dword parity in the pixel producer, 203 each.
+// NOT kept: the parity widens but moves the packed run to EBP and shortens
+// the body to 444 bytes. The literal-byte assembly still differs.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

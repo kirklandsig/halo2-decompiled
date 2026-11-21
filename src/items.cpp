@@ -913,6 +913,9 @@ struct s_item_collision_bsp
 // Normal rows paired with translation products in coordinate order: late scale with expression or
 // accumulator 203/199, early scale 199/201; in distance-sum order, late scale 203/199, early scale 199/201.
 // NOT kept: the scalar products do not give a byte match or recover the retail coefficient homes.
+// Coordinate-array views for queried normal, matrix axes and result normal, alone and
+// in all combinations, then also at the contact join: 190 each. NOT kept: the 0xa0 frame
+// agrees, and the transformed-plane and contact-point registers still differ.
 // Left products from a carried j coefficient, j/k, all three at first use, or all three
 // with overlapping rows: 191 each through plane fields or row scalars. NOT kept: j now
 // loads before k, but its XMM home and the first axis operands still differ. The 0xa0
@@ -1742,6 +1745,9 @@ struct s_item_flags_view_10b850
 // collision declaration with early sentinel 823. NOT kept: gains below eight.
 // The 0x154 frame and entry flag stores still differ.
 // MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
+// Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
+// or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
+// and the reused entry Boolean bytes still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

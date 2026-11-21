@@ -907,6 +907,10 @@ void __stdcall function_1160c0(real dt)
 // Direct node indexing at input, physics and publication 275/276/242; paired boundaries 281/243/243;
 // all accesses via the record or named array base 167/280. NOT kept: these forms do not recover
 // the EDX segment and low spill at retail length.
+// Coordinate-array loops for interior position, anchor position, anchor direction and
+// both anchor values 161/161/161/643; either anchor with interior or all three
+// 161/161/643; one combined anchor pass 169. NOT kept: all regress and shift
+// attachment output homes. The segment still needs EDX and the +0x14 spill.
 // M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
 // EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
 // formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the

@@ -393,6 +393,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Counted named deadline with alternate forward or up normalization 93/93.
 // NOT kept: the counted forms recover traversal through +0x34a but worsen
 // the score. Pointer-bounded traversal grows by 54 to 66 bytes against retail.
+// Named indexed scheduled time 142, or from a local deadline-array base 161.
+// Shared product difference for the side, corrected up, or both 64 each, or
+// 142 each with the named scheduled time. NOT kept: the product forms tie
+// and the named read lengthens the body without recovering the spill order.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1412,6 +1416,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Horizontal or vertical conversion at the matrix call 368/395, double half-angle 345,
 // and doubled projection by addition 337. NOT kept: the addition ties the reduced control.
 // Pair forms enlarge the frame and all other forms shorten the body.
+// Shared diagonal calculation direct, with a named complement, with a named scaled
+// complement, or with a complement accumulator 339/356/386/386. With a shared
+// signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
+// construction and leaves the unity register and square spill different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

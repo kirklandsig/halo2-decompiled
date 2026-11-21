@@ -902,6 +902,11 @@ struct s_object_damage_view
 // each. Existing unchecked lookup for victim, primary credit, secondary credit or all four
 // unchecked accesses 353 each. NOT kept: all tie with the rotated team, credit and code
 // homes and the amount-biased history cursor.
+// Indexed const record references in the selection/assist/both scans 353/353/353.
+// Reference to the history array alone or with both scan records 353/353.
+// Array and selected-record references 473, with a retained selected handle 496,
+// and with indexed references at both scans 473. NOT kept: the selected-record
+// forms grow the frame to 0x54 and leave the entry homes and selection bias.
 // Fixed-range tail tests for selection, assists, both, selection with long ordinal, assists with
 // short ordinal, selection end ordinal, assists end ordinal and both end ordinals.
 // Scores 509/353/509/509/353/509/353/509.
