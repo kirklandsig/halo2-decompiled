@@ -1168,6 +1168,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // and data reloads are not that; the second node's shape in a local in the kind-24 arm 327 (1249 B); one shape local
 // for the whole body 259 (1253 B); friction and restitution at function scope 238 (same code); the 1..16 helper
 // comparing the clamp with the value it read 320 (1243 B), as `value < 1 || value > 16` 355 (1210 B).
+// M3 lane 15 r129 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800, 0x183670, all MATCH; control 238): a shape local formed
+// at the kind-24 test and used by both arms' material calls and the data read 362 (1206 B); the root's type through a
+// `long const &` 238 (same code: still compared in memory); the 1..16 classifier as a preset result bound by reference
+// (`limited = 1; long &result = limited; if (!(result > data)) { result = 16; if (!(result < data)) result = data; }`,
+// the field read at each use) 321 (preloads as retail, compares still value-first, one data load); the classifier's
+// bounds read from a file-static const two-member bounds aggregate 238 (folded to immediates); both plane side tests
+// through the existing plane_distance_to_point 238.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
