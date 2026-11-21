@@ -941,6 +941,11 @@ void function_3dd10(long object_index, bool force);
 // or one model-handle read 303. The same two forms with the opening guard 302/303.
 // NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
 // The second-bank base forms shorten the body, and the mask and count homes still differ.
+// Remaining-choice bounds for weight/selection/both 231/170/249. Completed-choice bounds
+// 61/181/161. Direct counts in both 249/161. Visit ordinal before the test, advance at lookup,
+// inclusive end with early visit, or signed cursor offset 224/293/219/250. NOT kept: the
+// 61 form recovers the count and mask homes at retail length, but compares unsigned and
+// adds an ordinal adjustment. The four signed follow-ups grow the frame to 0x58.
 // M3 lane 5 r226 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH each time; control 77). Reading: retail's
 // scan is a signed `jl` loop that is not unrolled, with the count in EBP and `last`, the mask, the variant and the weight
 // all loaded, updated and stored in memory each pass (the mask in the colours argument's home, the weight at +0x10);
@@ -959,6 +964,15 @@ void function_3dd10(long object_index, bool force);
 // choice guard as `0 < choice_count` 227 (1002 B); the scan bound as `choice_count != j` 227 (1002 B). Reading: retail
 // keeps last, weight and the mask in memory through the scan (the mask loaded into EAX for the selection loop only) and
 // gives the count EBP; ours gives the mask EBP and spills the count. Body unchanged.
+// M3 lane 2 r133 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77; N = the outer `if (0 < count)` guard
+// removed, re-measured 97: retail's pre-guard index store and prologue, but the object takes ESI and the tint-entry
+// pointer EDI, retail the reverse). On N: the position read through one `real const *` (x, y, z as [0], [1], [2])
+// 108; the entry pointer formed inside the else arm 238 (object then EDI as retail, but the colours difference and
+// the shift constant move: retail forms the entry at the loop top); the entry as `address + i` 97 (same code); the
+// tint-set address in a function-scope local indexed per pass 311 (1001 B). Compile-only screens (the harness
+// reproduces the unrolling): every natural `for`/`while` scan with `<` unrolls (pointer IV, `continue`, indexed
+// fields, `entry->count` bound, reordered updates, a dword index); an escaped variant address (diagnostic call
+// taking `&variant`) still unrolls; only a volatile variant read (diagnostic, not kept) or a short index keeps it rolled.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

@@ -1508,6 +1508,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // fifteenth parameter that its body never reads (the link drops it: 0x59e50, 0x70ea0 and 0x71e00 stay matched), fed 0,
 // the +0x104 status address, or that address named at the top, on the indexed copy 195 each (a dropped argument makes no
 // such web).
+// M3 lane 15 r129 (H2M_FAST with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination
+// replaced by an unstepped base indexed `dest + count * 3` 195 (the base folds back to the frame address); the indexed
+// copy with the loop index initialised at the top (`long i = 0;` before the close call, `for (; i < 16; i++)`) 195 (the
+// zero is propagated, no crossing web); `[count++]` with the named key-id address 89; the copy as a 64-bit id store and
+// a flags store through `dest` 225 (684 B); the destination declared in the branch with the named key-id address 53.
 // M3 lane 1 r147 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): on this body the +0x70
 // key-id address named at the top and passed by name 58, the +0x88 host identity so 60; the destination assigned again
 // at the top of the true arm with the else arm copying through it, stepping it by the count and the call passing

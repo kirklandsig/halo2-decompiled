@@ -1800,6 +1800,11 @@ bool function_108530(long device_index, long name)
 // clamps as if-statements 116 (same code); the ramp-down minimum on `duration - ramp_up_time` written twice (no
 // `remaining`) 131 (528 B, callers 31/13); the deceleration distance reduced from the motion's field instead of
 // `distance` 116 (same code); that with the if-statement clamps 116.
+// M3 lane 3 r293 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, `ret 0x14` as retail): the
+// ramp-down minimum as `if (ramp_down_time > remaining) ramp_down_time = remaining;` 116, the ramp-up minimum as `if
+// (ramp_up_time > duration) ramp_up_time = duration;` 116, both 116; the half ramp-down as `0.5f * ramp_down_time` 116; both
+// half times as `/ 2.0f` 116 (all the same code); the ramp-up minimum ahead of the ramp-down zero clamp 138 (528 B, callers
+// 31/13).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2109,6 +2114,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
 // the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three
 // the same code: the copies are coalesced before scheduling).
+// BirchWoodGod (11-21, fast; control 2): a _ReadWriteBarrier at the top of the flag block 7 (the fld then opens the
+// block, but the fstp moves ahead of `push 0`); after the animation id 12; after the time 9; between the two samples 2
+// (same code); a block-local copy of the render model ahead of a barrier 7. None kept.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

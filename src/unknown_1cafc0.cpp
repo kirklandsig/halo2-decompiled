@@ -984,6 +984,15 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // in a local 626 (0x1cccd0 59); the request's names through a `s_animation_names const &` to the found record, byte
 // success 348 (same code), bool success 478 (bool's code). The graph keeps a register for the whole inlined request in
 // every form; retail's graph has none there (BLOCKED-BY 0x1ddd00's inline copy in another lane's file, as above).
+// M3 lane 12 r171 (H2M fast with 0x1dc8c0/0x1db170/0x1dbc80/0x1ddd00/0x1cccd0/0x1cd070; control 348, aligned 53, register-
+// masked 42): the request helper's inheritance index declared in its for 348 (same code everywhere; 0x1dc8c0 MATCH). Lead,
+// not kept (declarations moved past calls, 618/611): the three fallback name locals read right after names_resolve give the
+// request retail's roles exactly (the graph loaded for `add ebx, 0x34`, reloaded into EBP per loop, the inheritance loop's
+// zero in ECX) at aligned 30 / masked 17, and with `bool success` aligned 28 / masked 15 at 1777 B (the return then retail's
+// unnormalised byte); left there: the head's early loads and the chain's registers (the graph in ESI and the names in homes,
+// where retail keeps the mode in ESI and reloads the graph per call). So the request's graph role follows the name locals'
+// live ranges, not the shared helper. The name locals read at the top of the failure arm 587 and just ahead of the chain's
+// test 613 (1766 B each, the frame moves). Diagnostic (reverted): the graph kept live past the request 602. Body unchanged.
 // M3 lane 1 r148 (H2M fast with 0x1db120/0x1cccd0/0x1cd070, all MATCH each run; control 348): success declared ahead of
 // the graph 348 (same code); success assigned from the first lookup's test (`success = index != NONE; if (!success)`)
 // 506 (1766 B, first difference +0x2d); the found names read into three locals just before the request 390; the
