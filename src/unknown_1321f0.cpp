@@ -346,7 +346,7 @@ void function_1348e0(s_bit_vector_pool *data)
 
 /* a bit field from seven flags */
 // @retail 0x132b10
-dword function_132b10(bool b, bool d, bool c, bool f, bool g, bool e, bool a)
+dword function_132b10(bool d, bool c, bool f, bool g, bool e, bool a, bool b)
 {
 	return (b ? 0x4000 : 0) | (c ? 0x2000 : 0) | (d ? 0x1000 : 0) | (e ? 0x800 : 0) | (f ? 0x400 : 0) | (g ? 0x200 : 0) | (a ? 0x8000 : 0);
 }
@@ -610,122 +610,10 @@ struct s_visibility_object_header
 	s_visibility_object *object;
 };
 
-// score 4 (was 4): only the two bool locals' stack slots differ (behind/in_front at
-// esp+0x17 and esp+0x38). Permuter: 280 tries in 600 s, best 2 — but that form
-// swaps the two pointer arguments at the matched 0x132fd0 and leaves `index`
-// uninitialized, so it was not kept.
-// Secondary output update inside the visibility branch 170, mode conjunction 115, clear-only guard 152.
-// visibility predicate at plane call 276, visibility bool reused for front plane 67, fallback assignment 161.
-// duplicate guard with return 203, new-object guard with return 4. The plane outputs still exchange homes.
-// Round 98 (m3 lane 2, fast, control 4): `in_front` renamed `ahead` 4 and `behind` renamed `rear` 4 (same code: the
-// param-home pick does not follow names); 0x132b10's first and last parameters swapped with the call 202 (0x132b10 12:
-// a register parameter's position picks its register); the plane outputs and both calls in their own block 4;
-// `contained` declared before first/second 7 (only the init stores move).
-// M3 lane 1 r119 (fast, control 4; 0x132fd0 and 0x132b10 checked each time): retail keeps in_front in flag_b's dead
-// argument slot and behind in the frame byte at 0x13, ours the other way round, every other byte equal. 0x132fd0's two
-// outputs declared in the other order (definition and all three calls) 2 here but 0x132fd0 6: its registers follow the
-// declared position, so its present order stands, and the homes do not move (only the two lea operands); in_front ahead
-// of the centre 11 (0x132fd0 6); behind last, or the radius ahead of in_front-then-behind, 2 (0x132fd0 6); the radius
-// second, third or fourth with behind before in_front 4 each (0x132fd0 MATCH, same code). 0x132b10's AL parameter at
-// each of its other four positions ahead of the last two 4 each (0x132b10 MATCH, same code); the other 29
-// interleavings of its three register parameters give 12 to 21 in 0x132b10 itself (its DL and CL parameters must be
-// the last two). first/second/contained declared c,f,s 7, c,s,f 6, s,f,c 6 (only the three init stores reorder, no
-// slot moves). The pair declared behind first 4; behind in the outer block after or before the three flags, or at the
-// function top, 4 each; in_front at the function top or in the outer block 4 each; the pair named a/z, z/a,
-// front/back, x1/x2, x2/x1 4 each; both read into named locals ahead of the packer call, either order, 4 each (same
-// code). Diagnostics, restored at once: `bool in_front = false;` alone 54, and the homes are then retail's (in_front
-// in the argument slot, behind at 0x13; only the extra store differs); `bool behind = false;` alone 56 (homes ours);
-// both initialised, either order, 128 (homes ours); in_front or behind read once more after the packer call 128/129
-// (homes ours: the second read folds into the first load); in_front or behind as a byte with a cast at the call
-// 126/130; the visibility result reused as the front output 67 re-measured (retail's homes, one extra store of AL);
-// in_front initialised from flag_b 57 (the store stays, flag_b moves to EBX), behind from flag_b 59. So the slot goes
-// to behind on a tie and to in_front only when in_front alone has an earlier direct store; declaration order, scope,
-// names and both callees' parameter orders do not decide it. Open: what gives in_front that precedence with no
-// instruction.
-// Round 101 (m3 lane 2, fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4). The rule, measured in a
-// compile-only build of this file (which gives retail's homes: in_front in flag_b's slot) and confirmed here: of two
-// equal candidates the dead parameter slot goes to the one whose first read or store comes first, address-taking not
-// counted; the packer's arguments are evaluated right to left, so behind (its last parameter) is read first and wins.
-// Compile-only, the packer's parameters reordered: in_front first / behind last gives in_front the slot (its register
-// argument is evaluated ahead of the pushes), behind first / in_front last gives behind, both as neighbouring stack
-// arguments gives whichever is further right. Here: the packer's first argument as `!!in_front`, `in_front != false`
-// or `in_front ? true : false` 126 each (retail's homes, but a test/setne pair is emitted for AL), `in_front == true`
-// 44, `(bool)in_front` 4 (same code); the packer's first parameter as `byte` or `char`, its last as `byte`, the first
-// and sixth as `byte`, all seven as `byte` 4 each (same code, 0x132b10 MATCH); after the plane call an empty
-// `if (in_front) { }`, `(void)in_front;`, an unused `bool both = in_front && behind;`, a named copy for the packer
-// call, `(in_front, in_front)` as the argument 4 each (same code); the packer reached through a force-inline wrapper
-// declared (behind, in_front, second, first, contained, flag_a, flag_b) 4 (same code: the arguments are forwarded in
-// the packer's own order); 0x134390's hand-written flag expression as a second call of the packer 4 (0x132b10 and
-// 0x133390 MATCH). Diagnostics: `!!` on both arguments 144 (607 bytes; behind is read first, into CL), on behind
-// alone 130. Open: a read or store of in_front ahead of the packer's arguments that leaves no instruction.
-// Round 103 (m3 lane 2, fast with 0x132fd0/0x132b10, both MATCH each time; control 4). Diagnostics, restored at once:
-// in_front stored to a byte global right after the plane call 52 with retail's homes (in_front in flag_b's slot; the
-// load is pinned ahead of the packer's arguments, which confirms the first-read rule); in_front or behind stored to
-// that global after the 0xbec70 call 88/89 (homes ours: the value is loaded once into BL ahead of the packer, so no
-// later memory read exists). Forms: in_front passed through a one-line inline identity function 4; a `bool const`
-// copy taken right after the plane call and passed 4; a `bool &` bound to in_front for the plane call and the packer
-// 4 (all three the same code: the read is forwarded to the argument); the list read into a local at the top of the
-// visible block 107; `long entry = NONE;` declared ahead of the two outputs 160.
-// M3 lane 6 r198 (fast, 0x132b10/0x132fd0 MATCH each time; control 4): an unused trailing packer parameter fed in_front
-// (dropped at link time) 4 (homes ours: the dropped argument's read does not count); 1 to 8 dead initialised locals at
-// the function top 4 each (not a symbol-count tie); the packer declared `__stdcall` 4 (same code), `__cdecl` 124;
-// in_front through a pointer-taking inline accessor at the packer call, plain or forced with a result local, 4/4
-// (forwarded); the outer test's arms in the other order 203 (601 B, homes still ours); a reference-bound copy of
-// in_front made after the plane call and passed to the packer, assigned through the reference or initialised then
-// bound, 4/4 (forwarded, homes ours).
-// M3 lane 12 r147 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): `__assume(in_front || behind)` after the
-// plane call 4 (same code; diagnostic, not keepable); 0x132b10's definition moved below this function (declared above)
-// 4 (same code); the centre and radius chosen by two ternaries 36; the object pointer declared ahead of the three flags
-// 8 (only the init stores move); the plane call and the packer in a forceinline helper owning the two outputs 291 (671
-// bytes). Retail's frame from the top: object +0x10, first +0xc, radius +8, second +4, behind +3, contained +2.
-// M3 lane 7 r191 (fast with 0x132fd0/0x132b10/0x132e60/0x133390, all MATCH each time; control 4): `inline` on 0x132b10's
-// definition 4; `inline` on 0x132fd0's definition 4 (both stay out of line, same code); behind read for the packer through
-// a `bool const &` bound before the plane call 4; the pair in one declarator `bool in_front, behind;` 4; `dword flags;`
-// declared ahead of the pair and assigned from the packer 4 (all the same code, homes still ours).
-// M3 lane 11 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): `in_front = in_front;` or
-// `behind = behind;` right after the plane call 4/4 (same code: the self-copy is dropped before the homes are picked);
-// the pair in one declaration, in_front first or behind first, 4/4; the packer's result declared ahead of the pair and
-// assigned at the call 4 (all the same code).
-// M3 lane 14 r119 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the visible test as an early
-// `return` with the block un-nested 4; `long flags` 4; in_front's address passed to the plane call through a pointer
-// local 4 (all three the same code); the entry as one ternary 124; an inline helper owning in_front and returning it
-// (behind still an out-parameter) 168 (582 B, the helper stays out of line), forced inline 291 (671 B, the listed
-// helper's code). Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 4 at every K (not a
-// symbol-count tie; rounds before covered 1 to 8).
-// M3 lane 4 r228 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the plane call through a
-// forceinline wrapper taking (data, center, in_front, behind, radius) 291 (671 B: 0x132fd0 is then expanded); behind's
-// address through a pointer local set before the plane call 4; in_front alone in an inner block with the plane call and
-// the packer (behind outside) 4; behind alone in that inner block 4; one loop index for the three else-arm loops 4; one
-// index for the flag_a/flag_b loops only 4 (all the 4s the same code).
-// M3 lane 13 r126 (fast with 0x132fd0/0x132b10/0x132e60/0x132220; control 4): `word flags` from the packer 4 (same code);
-// the filter as one ternary 186; the visibility fallback as a second statement 161 (repeats the listed fallback form).
-// Diagnostics, restored at once, homes read from the plane call's two lea operands: without the mode update of `second`
-// 205, with false for flag_b at the visibility call 202 (both outputs then in the frame, flag_b stays live), without the
-// entry lookup 233 (behind then takes the object index's freed slot, in_front still the frame byte), without the else
-// arm's two flag loops 279 (both in the frame): behind wins every freed parameter slot, so no other part of the body
-// changes the pair's precedence.
-// M3 lane 8 r205 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): the visibility fallback as a separate
-// `if (...) visible = true;` after the call 171 (582 B); `short entry` with a cast at the lookup 4; the entry default
-// declared ahead of the packer call 123; the radius declared ahead of the centre 4; the mode test written `== 0` 4 (each 4
-// the same code, homes still behind-first).
-// M3 lane 11 r135 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): both outputs declared
-// `register` 4, in_front alone so 4; the packer's result kept as a `short` used by the add 4; the centre and radius
-// declared ahead of the filter 4 (all four the same code); the outer test with the global stamp on the left 200.
-// Permuter (600 s, 48 tries, annealing): best 2 only by passing behind first and in_front last to the packer (the two
-// bits exchanged: wrong values, not kept), which again shows the slot going to whichever output is read first.
-// M3 lane 14 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): 0x132fd0's two outputs as `bool &`
-// parameters (definition and all three calls) 4; in_front read for the packer through a `bool const &` bound ahead of the
-// plane call 4; `register` on in_front 4; both outputs declared in the outer block ahead of the three flags 4, after them
-// 4 (all the same code). This function's register parameter `data` declared second, third, fourth or last (definition and
-// the four calls) 4 each; 0x132fd0's stack radius declared first, second, third or fourth (definition and its three calls) 4
-// each, 0x132fd0 MATCH (all the same code here).
-// M3 lane 8 r209 (fast with 0x132fd0/0x132b10/0x132e60; control 4): 0x132fd0's first two stores (and its pair stores)
-// in the other order 4 (0x132fd0 2; the caller's homes do not follow the callee's store order); 0x132fd0's outputs
-// declared (in_front, behind) at the definition and all three calls 2 here (0x132fd0 6, 0x134390 69 -> 70), with its
-// stores reordered to put behind first 2 here (0x132fd0 2, 0x134390 89): the declared third output always takes ESI, so
-// the swap only relabels the two lea lines and the packer reads still differ; the mode update of `second` inside the
-// visible block 170 (580 B). Diagnostic, restored at once: flag_b's own slot passed as the front output with a copy for
-// the packer 174 (608 B: the parameter's address escapes).
+// MATCH (m3 lane 8 r211): the flag packer 0x132b10 declares its 0x4000 flag last. Retail evidence: its call here loads the
+// register arguments AL, CL, DL in that order (0x133155, 0x13315a, 0x13315f), last to first of (..., e, a, b), and a call's
+// arguments are evaluated right to left, so in_front is read ahead of behind and takes flag_b's dead argument slot
+// (lea edx, [esp + 0x38] at 0x133136) while behind keeps the frame byte.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
@@ -758,7 +646,7 @@ void function_133050(s_bit_vector_pool *data, long object_index, short section, 
 			bool in_front;
 			bool behind;
 			function_132fd0(data, center, &behind, &in_front, radius);
-			dword flags = function_132b10(in_front, first, second, flag_a, flag_b, contained, behind);
+			dword flags = function_132b10(first, second, flag_a, flag_b, contained, behind, in_front);
 			long entry = NONE;
 			if (!(flags & 0x800) && TEST_FIELD_BIT(object->flag31))
 				entry = function_134300(data, section);
