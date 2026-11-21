@@ -105,7 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 838 (was 838): r143 unchanged; the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
@@ -636,6 +636,19 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // simulating bool as `local_1 || (...)` 845; the two step levels declared in the other order 838; the response fraction
 // declared ahead of the first zero vector 838; the element pointer as `data + index` 838; the removal's copy through the
 // element pointer 838 again. Body unchanged.
+// M3 lane 1 r143 (fast = check.py --fast; aligned [exact/stack-masked/register-masked]): on 838 the angular coefficients read
+// from the record at each use 871 (4225 B). The removal as the existing `remove_at` of the shared Havok array members
+// (s_havok_array08 declared with ELEMENTS_2D91D0_MEMBERS in include/unknown_1cec30.h, the same data/size/capacity layout),
+// called on `arg_0->unknown94`, with the loop head reading the component's field (no list local) 780 [282/139/70] at
+// 4264 B, r141's code with no moved declaration. Not kept: the full check then loses matched 0x54590 (and flips 0xc2d00
+// to matched); with the macros moved into a header free of the memory classes 0x54590 is still lost, while r141's
+// hand-written form with the headers untouched passes the full check (12325 matched, nothing lost). So the members
+// added to that header, not the 780 code, move 0x54590 (the include of the memory classes alone moved 0x185be0 60 -> 62).
+// On 780: one flags word local for the four record bit tests 813 (4270 B), for the bit-2/bit-1 pair only 780;
+// `field_20 * arg_1` for `arg_1 * field_20` 780; the shared vector3f_scale for the private scale copy at all eleven
+// calls 780; the shared dot3f for the private copy 780 (each the same code). Left at 780 as r141 lists: EBX saved around
+// the loop with EBP (retail at the entry), the frame 0x1d8 against 0x1d4, the flag pairs' copy roles, `mov cl` for
+// retail's `movzx`, product sides, and the tail's ECX/EDX rotation (ours tests the response flag through DL, retail CL).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

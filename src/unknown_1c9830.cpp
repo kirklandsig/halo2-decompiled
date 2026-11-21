@@ -384,7 +384,9 @@ PRIVATE __forceinline bool indexed_clump_walk_next(s_indexed_clump_walk *iterato
 	s_clump *result = NULL;
 	if (g_4f55d0->active)
 	{
-		result = (s_clump *)data_iterator_next_calling(&iterator->pool);
+		byte *datum = data_iterator_next_calling(&iterator->pool);
+		if (datum)
+			result = (s_clump *)datum;
 		iterator->clump_index = iterator->pool.datum_index;
 	}
 	iterator->clump = result;
@@ -419,9 +421,6 @@ PRIVATE __forceinline s_clump_node *clump_next_node(s_iterator *iterator)
 
 /* passes a change in the alliance of two teams on to the props each team's
    clumps hold of the other team */
-// score 81 (was 134): retail keeps the clump in esi, cleared at the top of
-// the loop, and places the not-found path of the pool step after the body;
-// ours keeps it in ecx and clears it on that path
 // @retail 0x1c9830
 void __stdcall function_1c9830(short team_a, short team_b, bool broken, bool removed)
 {

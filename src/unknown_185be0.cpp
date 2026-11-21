@@ -133,6 +133,7 @@ union s_185be7
 };
 
 // score 60 (was 62): r289's full check gives 60 (earlier rounds: plain 62, fast 60, the fast image building it differently); r216 unchanged. Left (see r131's lead below):
+// r143 unchanged (full check 60); r216 unchanged then, plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
 // the record copy's schedule, the second hold-time add's operand order, the quotient/1.0 XMM3/XMM4 tie, the else arm's load
 // order, the parent lookup's ECX/EDX tie, the word mask's zero-extension register and the 0.64 square order.
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
@@ -788,6 +789,11 @@ union s_185be7
 // hold-time adds 60 (same code), bound by const reference for both 58 (the second add then loads the field first as
 // retail; match-only, 2 points); the second hold time read into a named value and stored 60; added through a pointer to
 // its field 58 (the same row, match-only). Body unchanged.
+// M3 lane 1 r143 (fast; control 60, aligned exact/stack/register-masked 57/49/5): the match-only lead rebuilt (record copy
+// first, else arm local_17 first, quotient after local_19, the pool through `s_havok_component *const &`) 42 [28/20/5];
+// on it the 0.64 test through the existing dot_product2d with the field_40/44 pair viewed as a vector2f 42 (same code),
+// the second hold-time add ahead of its scale 48. On the body: the record copy as memcpy 60 and the 0.64 test through
+// dot_product2d 60 (both the same code). Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

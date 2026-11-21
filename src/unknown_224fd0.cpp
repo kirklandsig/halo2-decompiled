@@ -80,429 +80,33 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=tkj+axis_sine.i;
 }
 
-// MiniMax I (11-20): no new form, no lower score (219): this round only re-measured the body; the frame (0x6c) and the length agree, and what still differs is retail's two rotation copies taking their complement products' operands on different sides (one shared helper cannot produce that), the axis-specific rotation and cosine spills, the basis registers and the jump table sitting four bytes earlier than retail's.
-// MiniMax C (11-20): no new form, no lower score (219): a permuter run with annealing over this body (27 tries, 242 s, no
-// confirming build) found nothing below 219, and the jump table still sits four bytes earlier than retail's.
-// score 21 (was 219): both rotation cases, the frame and the tables now agree but for: the second rotation case multiplies the i-j
-// term by j then i (retail i then j); in the three basis cases the first cross product copies the up component where retail copies the
-// other operand, and the first case loads up's j ahead of its k and stores forward.j ahead of up.i. Earlier first line (219): frame
-// 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
-// MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
-// different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.
-// MiniMax G (11-19): no new form, no lower score (244): retail's two inlined copies of the rotation helper still put the
-// squares and the sine products in the other frame homes (retail squares the k component into XMM0 and keeps the sine in
-// XMM1, ours keeps the sine in XMM1 and multiplies each axis component by it), and the jump table still sits four bytes
-// before retail's. This round the helper's own order was tried with the three squares first (391), with the three sine
-// products first (383) and with the second square moved up (391), all worse than the interleaved body; the operand
-// orders, the scalar spellings and the case grouping are the ones the earlier rounds list. Body unchanged.
-// MiniMax G (11-19): no new form, no lower score (244): retail's two inlined copies of the rotation helper still take
-// the squared and the sine vector in the opposite frame homes (the first copy squared-first, the second sine-first),
-// and the basis switch still crosses from the second axis global in the other order; the helper spellings tried (the
-// cross term as `(1.0f-cosine)*axis->i*axis->j`, the sine product as `axis->i*sine`, the axis through a block-scoped
-// pointer local, the case group written first) all score the same or worse. Body unchanged.
-// MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
-// MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
-// still hoist and spill the sine products where retail keeps them in registers, and the jump table
-// still sits four bytes earlier than retail's.
-// MiniMax G (11-05): the rotation helper with retail's statement order gives 342, with forward.i moved ahead of the cross products and the products re-associated 228, and with scalar locals for the squares and the sine products 342/418/510; the case bodies' scheduling and the four-byte table placement stay unmatched; no new form, no lower score.
-// MiniMax S (11-06): moving the shared tail's two outputs out of the rotation helper into the caller scores 352 against the baseline's 244 in the fast check; no lower score, the helper and the body stay.
-// MiniMax S (11-01): no new form, no lower score.
-// Earlier at 219 (was 380): frame 0x6c and length agree; the rotation case bodies are scheduled differently
-// (retail squares k first and spills it, keeps the sine products in registers and reloads cosine), the
-// case 0 and 1/2 basis crosses colour their registers differently, and the jump tables sit 4 bytes
-// earlier (0x2256d0 against 0x2256d4).
-// Round 34 (lane A, machine 3): retail's rotation switch has two case bodies (the g_4687ac and
-// the g_4687b0 axis) and one shared tail; grouping the five cases by axis gives 435 and 430
-// (reversed groups), so the five-case form stays; a 300 s permuter run reached 321 differing
-// instructions, its only new suggestion is a wrong swap of the row-13 components.
-// Scalar axis inputs 393 plain (391 fast, frame 0x6c); all axis snapshots 754; third component
-// snapshot 820; first two 900; camera record snapshot 615. Scalar-axis factor names, product names
-// and independent square order all 391 (fast). Basis scope ends after composition 380;
-// diagonal-first stores 610; cross destination return 380; second-axis cases first 380; scales
-// after rotation 802 (fast).
-// Frame 0x64 versus 0x6c; independently scheduled axis expansions and cosine/product spills remain.
-// Scalar axis inputs 393 plain (391 fast, frame 0x6c); all axis snapshots 754;
-// third component snapshot 820; first two 900; camera record snapshot 615.
-// Scalar-axis factor names, product names and independent square order all 391 (fast).
-// Reverse scalar inputs 441; trig-first scalar inputs 441; reversed inputs with orientation snapshot 441; reversed inputs with shared axis cases 400; reversed inputs with separate trig declarations 441.
-// Round 121: Both axis pointers retained 470; complete local matrix then publication 1142; second axis pointer across switches 501; double angle 393; all three scale products factor-first 380. Original body and both helper bodies restored.
-// Complete rows forward-left-up 683; forward-up-left 1012; left-forward-up 664;
-// left-up-forward 1188; up-forward-left 1324; up-left-forward 1259; complete columns
-// jki 1056 and kij 1369. Original interleaved stores and helper bodies restored.
-// Complete native axis input copy 424; copy with complement/sine products/both
-// 430/470/418; diagonal-first copy with the same four forms 428/468/461/515.
-// All recover frame 0x6c and first +0xaf but regress; original helper restored.
-// Round 235: Real-rounded trigonometric results in double storage: sine/cosine/both
-// 465/654/764; with native double angle 448/451/576; both results with scalar axis
-// inputs 783, and with angle 449. Original real storage, helper interface and body restored.
-// Round 237: Parallel diagonal remainders with sine/complement sharing
-// 410/443/573/518; parallel diagonal cosine products with the same sharing
-// 410/443/573/518. Original helper expressions restored.
-// Rotation case orders 43210/32104/12340/02143/13042/31024/20413/41230:
-// 449/450/454/454/450/450/449/449 fast; original order restored.
-// Basis case groups 021/102/120/201/210 380/381/383/384/383; basis 102
-// with rotation orders 01243/01324/10423 393/451/393. Original order restored.
-// Round 160: native destination/both receivers 380/380; immutable product/all producer
-// lifetimes 380/380; complete cross inputs alone/with receiver 380/380; uniform
-// context-definition observations 449; combined cross/receiver/producers 380.
-// Round 76 rotation helper forms: products in i,j,k order with a named complement 429; forward/left/up row
-// stores with a named complement 1293 (frame 0x6c, cases expanded); sine products named first 921; named
-// complement alone 429; axis cases grouped 0,1,3 / 2,4 435 (aligned listing 374 -> 323).
-// Round 162: Shared row setters in FLU/FUL/LFU/LUF/UFL/ULF order 1041/1550/704/715/985/706;
-// complete complement 398, with all sine products 983. Other complemented row orders
-// 828/414/701/1561/764; complemented scalar/native axis inputs 1111/1357. The 398 form has frame
-// 0x68 versus 0x6c but still regresses. Original helper bodies, fields, arithmetic and calls
-// restored.
-// DL175: Three independent/shared-counter row scaling loops [1630, 1631]; full-width unsigned
-// count/first/both [395, 396, 402]; both with independent rows 1619; immutable word span carriers
-// alone/with rows [380, 1630]. Original helper, scaling and span carriers restored.
-// Round 309: Existing cross producer, scalar/native-vector inputs and pointer/native-result
-// outputs 468/924/705/500; with scalar rotation inputs 389/617/840/517. The 389 form
-// recovers frame 0x6c, first +0xaf, but regresses; original helpers and full body restored.
-// Scaled rotation producer with native input/complement/sine-product subsets
-// 464/639/799/979/765/605/627/612; original helper and post-switch scaling restored.
-// Round 249: Shared staged cross-product families 0 / 1-2 / 3-4, all seven
-// nonempty subsets 380 each; all with shared in-place row scaling 380. Frame
-// remains 0x64/0x6c; original helpers, include set and complete body restored.
-// Round 35 (lane 13): the camera forward read straight from the global in the case 3/4 cross (no copy)
-// 451 (frame 0x58; that case then matches retail); with `inline` for `__forceinline` 451; with a squared-axis
-// vector local in the rotation 406 (frame 0x60), with the forward copy kept 390, with grouped cases 450;
-// squared-axis and sine-axis vector locals 468 (frame 0x6c, five cases); in the order k^2, k*s, i^2, j*s,
-// s*i, forward.i, ij, ... 1137 (five cases unmerged, 2480 bytes), with the cases grouped by axis 357; ij before
-// forward.i 333 (1836 bytes); 40 random dependency-respecting orders 219..456, best (kept) 219; product
-// operand orders and the two locals' names/declaration order 218-219 (same code); scalar sine products
-// with the squared vector 328 (frame 0x64), scalar squares with the sine vector 438 (frame 0x60).
-// Round 149 (lane 4, fast): the file's own cross helper replaced by the shared cross3f (vector_products.h, the
-// same body) 219 (same code, kept); case 0's up copied before the negated forward 221; the rotation's products in
-// retail's second-case order (k^2, s*j, i*s, s*k, i^2) 382 (1812 bytes); j^2 named with the other squares 232
-// (1820); retail's first-case data flow (forward.i right after the sine products, a named complement and a shared
-// k*complement for ik/jk) 238 (1816). Retail's two rotation cases are scheduled differently from each other
-// (case 1 spills k^2 to +0x24, case 2 spills k^2 to +0x30 and s*j to +0x20), so its two inline copies got
-// different homes for the square/sine vectors.
-// J221: On native squared/sine vectors: shared complement 451; complete axis input 589; both 589; staged crosses 219; staged with complement/input/both 451/589/589; shared orientation 495. Original helper bodies, observations and complete function restored.
-// Round 129 (m3 lane 6, fast): case 0's up copied field by field k, j, i 354 (the jump tables then sit at
-// retail's address, but the copy becomes float loads and the cross recolours); the forward negations
-// written k, j, i 219 (same code); both 354; the rotation's j square moved ahead of ij 360 (1840 bytes);
-// left.j moved ahead of ik 350 (1764 bytes, frame changes). Compile-only (non-LTCG) does not reproduce
-// this function's rotation block (its schedule and loads differ from the real build), so it can't screen it.
-// J221: On native squared/sine vectors: shared complement 451; complete axis input 589; both 589; staged crosses 219; staged with complement/input/both 451/589/589; shared orientation 495. Original helper bodies, observations and complete function restored.
-// Round 452: basis before rotation, before scaling, after forward scaling or after left scaling, composed
-// into rotation 490/536/473/447; composed into basis 489/541/473/447. Original matrix lifetimes, alias
-// destination and switches restored; square/sine/cosine spills, basis registers and table placement remain.
-// Round 300: Plain coordinate products: square ascending/descending 506/505; sine
-// ascending/descending 373/501; independent square-sine/sine-square loops 518/505; paired
-// square-sine/sine-square loops 518/505. Original interleaved native products and complete body
-// restored; axis-specific square/sine/cosine homes and basis registers remain.
-// Round 239: Existing square/sine vectors through the native vector setter and complete cosine-pair
-// producer lifetime, seven subsets 422/444/351/364/407/369/452; all with reversed pair declarations 395.
-// Original private rotation producer and complete function restored; axis/cosine spill scheduling remains.
-// Round 27 (m3 lane 18, fast; register-masked aligned counts in brackets, kept form 87): the rotation in retail's first-case flow with scalar
-// squares and sines 503 (1704, frame 0x54) [76]; all values named then all stores 461 (1752) [98]; vector locals with a shared complement and k*complement
-// 396 (1844) [104]; the shared k*complement alone 220 (1836) [82]; complement alone 452 (1756) [72]; complement and k*complement 497/408 [95/82]; 28
-// dependency-respecting statement orders around retail's first case with k*complement, best 240 (1812).
-// Round 248: Native squared/sine aggregate initialization, singly/together and producer order,
-// mutable/readonly complete products: 455/485/443/486/455/485/443/486.
-// Original partial product vectors, helper and complete body restored.
-// Round 311: Native matrix return from the existing repeated rotation producer, complete axis capture,
-// immutable mixed products and staged-cross subsets 0..7: 488/531/488/531/488/531/488/531. Original
-// helper and full body restored; axis-specific square/sine/cosine spills and table placement remain.
-// Round 515: Existing shared row scaler with coherent cosine complement, shared k-complement
-// part and paired matrix names: 219/451/220/367/219/451/220/367. Native frame/product spills remain;
-// complete private producer, scaling statements, include set and body restored.
-// Round 357: Complete scalar rotation results before original output stores, six row and two column production orders 380/380/380/380/380/380/380/380. Original helper and body restored; two-axis spills remain.
-// Round 362: CRT direction/up basis inputs, singly/together and with shared row scaling, then both with shared complement and with both producers.
-// 219/219/219/219/219/219/451/451. Original executable source restored.
-// Round 288: Shared sine-vector scaling after k/before squares/after early squares/after
-// complete squares/before complete squares 440/444/436/351/444; with staged crosses/
-// complete cosine complement/native in-place sine input 440/223/404. Original helper,
-// sine observations and complete body restored; axis-specific spills remain.
-// Round 377: Native diagonal output stages and cosine-product parts 204/204/204; paired
-// output stages/results 219/219; second-pair output stages 204; complete stages 190;
-// diagonal stages with paired results 204. Original helper/body restored.
-// NOT kept: 204 has only two fewer executable rows (198 -> 196); thirteen raw points are table data.
-// NOT kept: 190 combines a tying paired-output form with diagonal stages; allocation steering.
-// F338: Actual forward/left/up output-row receivers in the existing rotation producer,
-// seven subsets then all declared at first output: 217/217/217/491/491/491/220/220.
-// NOT kept: two-point gains and unproven field-receiver shape. Original helper/body restored;
-// axis-specific product/cosine spills, basis homes and four-byte table placement remain.
-// B381: native square/sine/both workspace input copies, square-first/sine-first, then CRT
-// square/sine/both copies: 273/444/466/466/273/408/466/466. NOT kept: value-copy/input-ownership forms require
-// exact matching. Original frame, axis-specific product/cosine spills and basis homes remain.
-// Round 43 (m3 lane 2, fast): the rotation helper in retail's computation order (k square, sine
-// products j/i/k, i square and forward.i, ij rows, j square and left.j, ik rows, up.k, jk rows) 368
-// (1824 B); a named 1-cosine local 452 (1756 B, frame changes); the j/i/k sine products before the k
-// sine and i square 382; forward.i right after the sine products 357; left.j right after the j
-// square 350. Retail's second switch keeps its range check as ours does; the 4-byte table shift follows
-// the case-body schedule. Original helper restored.
-// B385: Existing camera/direction basis providers and composed-return receiver, subsets
-// 1/2/4/3/5/6/7, 222/221/622/495/623/622/628; all with basis output 429.
-// Original complete body/declarations restored; axis-specific spills and table placement remain.
-// Round 205 (m3 lane 3, fast): the rotation's statements in retail's first-case flow (k^2, k*s, i^2, j*s, s*i,
-// forward.i, ij rows, j^2, ik/jk, left.j, ik rows, up.k, jk rows) 352 (1812 bytes); four more random
-// dependency-respecting orders 400/412/426/433 (1824/1884/1780/1784 bytes). The kept order stays the best.
-// Also: the two matrices declared basis first 219, the rotation helper's axis by const reference 219 (same code).
-// Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 87 here): the rotation's statements in retail's order (forward.i straight after the sines, left.j before ik, up.k before jk) 368 (1812, masked 68);
-// with j and k first in the products 347 (1816, masked 75); with a named complement and k*complement 386 (1804, masked 80); with k*complement alone 368 (1808, masked 79), and j first in ij as well 368 (1808, masked 79);
-// complement alone on the current order 451 (1756, frame 0x68, masked 77); k*complement alone on the current order 220 (1836, masked 82). Retail's two arms multiply in different orders (j, complement, i against complement, i, j) from one helper.
-// Round 68 (m3 lane 10, fast): VC reassociates the complement products here (our case 1 computes ij as
-// (C*i)*j from `(1-c)*j*i`; retail case 1 (j*C)*i, case 2 (C*i)*j, k*C shared by ik/jk in both), so the two
-// retail copies differ by operand rank, not by source. The rotation helper as plain `inline` 219, with the
-// output by reference 219, with sine/cosine read through pointers 219, the diagonal terms through a forceinline
-// helper 219 (all same code); the orientation read once into a local for both switches 495 (1716 bytes). Restored.
-// Round 82 (m3 lane 16, fast): the rotation helper as plain `inline` 219, with the axis by const reference 219, with
-// the output parameter first 219 (all three identical code: its interface does not reach the schedule); sine and cosine
-// in separate declarations 219 (same code); the cross terms as j*(1-c)*i, k*(1-c)*i, j*(k*(1-c)) (retail's operand
-// order) 403 (1788 bytes).
-// B412: Native square/ij/ik scopes ending at their actual final reads, seven subsets
-// and all with distinct two-use mixed-product identities: 219 each. Original helper/body
-// restored; axis-specific product/cosine spills, basis homes and table placement remain.
-// B415: Actual scale-property table traversal, long/dword/short/word indices, native factor vector
-// B415: then array: 440/440/520/520/440/440/520/520. NOT kept: grouped scale outputs require exact bytes. Original layout,
-// B415: scale calls and whole body restored; axis-specific spills and table placement remain.
-// B417: Completed caller cache-mask/angle/rotation-scale phases, seven subsets then complete
-// basis lifetime ending after composition: 219/219/219/219/219/219/219/219 at 1836/1836.
-// Original helper/body restored; axis-square/sine/cosine spills and table placement remain.
-// B419: Native unit-circle coefficient pair, direct/sine-first/cosine-first/complete-scalar
-// acquisition, mutable then readonly: 254/489/254/489/254/489/254/489. NOT kept: grouped coefficients
-// do not match and move frame/extent away from retail; original helper and whole body restored.
-// B424: Incremental square/sine/mixed-product workspaces, subsets 1/2/4/3/5/6/7,
-// then all with diagonal field accumulations: 403/491/219/495/403/491/495/491.
-// NOT kept: no qualifying match or gain; original producers and complete body restored.
-// B427: Both complete square/sine product families as scalars in original producer order,
-// real/real, double/real, real/double, double/double, then immutable counterparts:
-// 489/596/534/455/489/596/534/455. NOT kept: no exact precision/frame match or gain; original helper/body restored.
-// Axis-specific product/cosine spills, basis ranks and table placement remain.
-// B431: Existing union component-array observations for axis/square/sine subsets
-// 1/2/4/3/5/6/7, then all with native output-row arrays: 219 each. NOT kept: no exact
-// observation contract or gain. Original helper/body restored; axis-specific product/cosine
-// spills, basis homes and table placement remain.
-// B433: Complete row setters on the native square/sine graph, six row orders,
-// native matrix aggregate and mixed-products-before-original-stores:
-// 445/449/441/397/413/429/428/381. NOT kept: all regress and miss retail extent;
-// original helper/body restored; axis-specific spills and table placement remain.
-// B435: Actual matrix/point-coordinate graphics publication, plain for then while,
-// long/dword/short/word ordinals: 394/394/441/441/593/593/515/515.
-// NOT kept: all regress and lose native frame or extent; complete helper/body restored.
-// Two-axis square/sine/cosine spills, basis homes and four-byte table placement remain.
-// B438: Paired off-diagonal field accumulations, seven subsets 219; whole matrix 190;
-// diagonal-only 204. NOT kept: diagonal-only removes two executable differing rows;
-// the coupled 190 is allocation steering. Original helper and full body restored.
-// m3 lane 1 r71 (--fast): a 50-minute annealed search over the rotation helper's statement order and product operand forms, 204 forms, ranked by an aligned count of the
-// rotation block: base 219 (aligned 164), retail's flow 357/1820 (147), aligned best 366/1848 (85), positional best 213/1840 (168; six under the base at the wrong length, not kept). With registers and esp offsets masked,
-// everything outside the two rotation arms already agrees (168 of 168 masked differences are in the arms). One-link harness not faithful (control 715 at 1521 bytes).
-// Round 150 (m3 lane 5, fast; m = masked aligned, control m88): retail's flow with scalar products as const refs, complement plain or const ref, all plain scalars 469 (1736) m83,
-// 505 (1708) m79, 505 (1708) m79; kept helper with ij, ik, jk, all three as const refs 495, 495, 495, 491 (1716-1720); retail's statement order on the kept vector locals, plain 357
-// (1820) m68, const refs 409 (1780) m83.
-// F403: Actual mixed-axis products in a native vector, incremental/setter/aggregate/
-// readonly aggregate, original or complete square-vector producer: 219/323/410/410/455/389/509/509.
-// NOT kept: no byte match; original private producer and complete body restored.
-// Axis-specific square/sine/cosine spills, basis homes and table placement remain.
-// AC553: Complete native diagonal-result/cosine-product vectors, initialized,
-// readonly, shared-setter or field-produced: 373/373/411/373/398/398/406/398. NOT kept:
-// grouped outputs do not match; original helper and complete body restored.
-// DL269: Native real/double sine-cosine API pairs: 491/491/204/204/204/219/495/495.
-// The 204 forms have 196 executable differences versus 198; thirteen more points are
-// table/padding rows. NOT kept: cast-only and coupled API steering; original producers restored.
-// DL271: Existing vector scaler on native diagonal complements, direct/shared setter
-// and in-place/distinct product outputs: 455/455/436/436; shared complete sums
-// 441/441/385/385. NOT kept: no equality; native frame/product spills not recovered.
-// Original producer, all output stores and complete body restored.
-// Round 89 (fast; a = aligned, kept form 214): retail's first-arm statement order with k*complement as a const reference 392 (1792) a221, as a plain local 394 (1792) a165; the kept order with
-// k*complement as a const reference 366 (1824) a194, the complement as one 409 (1796) a342, the squares as const references 445 (1768) a278.
-// Round 76 (m3 lane 10, fast): the diagonal terms written cosine first 219, the square added first 219; the i sine
-// product written axis first 219; the three cross sums written product first 219; sine and cosine declared together
-// and assigned in two statements 219 (all the same code). The four-byte table shift is a one-byte shorter case-body
-// schedule here: retail's code ends one byte later and pads to the table with a three-byte `lea ecx, [ecx]`.
-// b6C (11-06) statement-by-statement walk against retail 0x224fd0, no behaviour difference found (score 219 fast, unchanged): the span index is a signed idiv of the zero-extended
-// word (0x224fe8 cdq, 0x224fe9 idiv [edi+0x80]) into an 8-byte span (0x225014); the cache mask 0xf80f, the 173ba0 argument order (0x225005-0x22501f) and the field_44 update (0x225025-0x22502d)
-// agree; the angle is rounded to float (0x225035 mulss, 0x22503d movss) and sine then cosine are each rounded to float (0x225050 fsin, 0x225052 fstp dword, 0x225060 fcos, 0x225062 fstp dword);
-// the property order is angle 0x50, then 0x20, 0x30, 0x40 stored at +0x10/+0x14/+0x18 (0x22503d, 0x22507a, 0x22508e, 0x2250ae); the first switch has no range check (0x2250b4) and the
-// second does (0x2252a9 cmp eax, 4; 0x22532f ja); cases 0/1/3 take the g_4687ac axis and 2/4 the g_4687b0 axis in both rotation bodies, every one of the nine rotation terms and its
-// operand pairing (ij, ik, jk, sine products, (1-x^2)*cos+x^2) equals the draft's, the rows scale by x/y/z (0x2252bd-0x22530b); case 0 negates the 0x485624 vector as 0-x (0x225353-0x22536e) and copies the
-// 0x485630 up vector; cases 1/2 and 3/4 take their crosses from the same operands (0x225410-0x22546a, 0x22547a-0x225531); the composition arguments (0x22553d lea edx, 0x225541 call) and the three
-// vertex rows 0x101ac0/ad0/ae0 (0x2255a6, 0x22560a, 0x225675), the NONE test (0x225688) and color order (0x225694-0x2256a3), the span count/first loads (0x2256a8, 0x2256ac) and draw with 5
-// (0x2256c0) all agree. Shared-helper check: the row scaling is vector3f_scale (normalize3d.h) written out, and calling it gives the same 219 / 1836 bytes (fast) but needs a new #include, so it is not kept;
-// no shared helper exists for the negation, the rotation (draw_rotation is private, like 0x350e0's rotation_from_axis) or sin/cos. No new double local, no in-body pragma, no new include.
-// M3 lane 7 r167 (fast): dead-local phase scans, 1-7 longs at the top and 1-4 reals in the rotation helper, 219 each;
-// sine/cosine as `real const` parameters 219; ij/ik/jk declared at the helper's top 219; the diagonal terms written
-// square first 219 (a repeat of round 76). Retail's first case follows the helper's statement order nearly one for one
-// (k^2, k*s, i^2, j*s, s*i, forward.i, then ij as (j*C)*i); ours hoists the three sine products first.
-// P567: Ordinary inline metadata at existing cache/scalar/perpendicular/composition
-// providers, four isolated, three pairs and all: eight 219. NOT kept: unchanged
-// native square/sine/cosine spills and table placement; all declarations and bodies restored.
-// M3 lane 10 r113 (fast, control 219): in the rotation helper, ij associated as `(1.0f-cosine)*axis->i*axis->j` (retail's
-// second case multiplies (C*i)*j, its first (j*C)*i) 219 (same code); jk as `(1.0f-cosine)*axis->j*axis->k` 219 (same
-// code); both 219 (same code); ik as `(1.0f-cosine)*axis->i*axis->k` 219 (same code: VC canonicalises the inner product
-// order); the helper's statements in retail's second-case flow (k^2, s*j, i*s, s*k, i^2, forward.i, ij, left.i, forward.j,
-// j^2, left.j, ik, up.i, forward.k, up.k, jk) 368 (1824 B). Body unchanged.
-// M3 lane 12 r135 (fast, control 219): in the rotation helper, the cross terms with the complement last
-// (`axis->j*axis->i*(1.0f-cosine)`, all three) 219 (same code); with the axis product grouped (`(1.0f-cosine)*(axis->j*axis->i)`)
-// 424 (1788 B); the sine vector as a copy of the axis scaled in place 444 (1776 B); the jk pair stored left.k first 219; the ik
-// pair stored forward.k first 218 (one point, not kept).
-// M3 lane 7 r174 (fast, control 219): the rotation helper's two vectors declared sine first 219 (same code: the spill
-// homes do not follow their declaration); a file-private cross product for the four basis crosses with the products in
-// retail's register order (`b->k * a->j - a->k * b->j`, `a->k * b->i - b->k * a->i`, `b->j * a->i - a->j * b->i`) 219
-// (same code: the operand order is canonicalised; retail's case 1/2 cross loads forward.k first where ours loads up.j);
-// the first switch with no default (no `__assume`) 228 (range check added); case 0's forward copied whole then negated in
-// place 470 (1740 B); the rotation switch with the second-axis arm first 491 (1720 B). Re-measured: case 0's up copied
-// ahead of the negations 221.
-// Two cosine-weighted scalars, shared complement, and compound factors 479/421/479.
-// Incremental weighted axis, aggregate, const shared-complement aggregate, shared scaler
-// and component loop 477/477/433/446/496. All shorten the body. Square and sine spills remain.
-// AC570: Matrix return with component, aggregate, row or const row construction,
-// with and without earlier forward diagonal: 488/617/726/805/497/617/726/805. NOT kept: the returned
-// matrix grows the body and leaves the axis-specific spills and table placement.
-// Squared terms in diagonal fields 495; with named cosine corrections 437; axis copied into the
-// diagonal and squared in place 478; with named cosine corrections 476. Sine terms in the addition
-// or subtraction output fields 437/437; with squares in the diagonal fields 539/539.
-// NOT kept: each form shrinks the 0x6c frame to 0x60 or 0x54 and shortens the body.
-// M3 lane 16 r134 (fast, control 219): kept, the row scaling through the existing vector3f_scale (normalize3d.h) 219 (the
-// same code; it replaces that helper's body written out). Tried: sine and cosine passed to the rotation helper as `real const &`
-// 219 (same code); the axis passed by const reference 485 (1724 B); sine and cosine declared in two statements 219 (same code);
-// the three sine products through vector3f_scale 440 (1768 B).
-// M3 lane 3 r257 (fast; control 219, aligned differences exact / stack-offset-masked / fully masked 137 / 133 / 87).
-// Reading: the kept statement order of the rotation helper is the best of round 35's 40 random orders, not retail's;
-// retail's first copy runs k^2 (spilled at once), k*s, i^2, j*s, s*i, forward.i, ij, ... with the cosine read from its
-// home at each of its four uses (the second copy loads it into XMM2), and the helper's two vectors sit at +0x1c/+0x28
-// squared-first in the first copy and sine-first in the second (ours the other way round in both). Tried: forward.i
-// moved up to retail's place (after the i sine product, ahead of ij), nothing else changed, 357 (1820 B; aligned 130 /
-// 127 / 68: closer in real terms, 16 bytes short, the sine products are still hoisted and s*i spilled); that with the
-// cross terms in the first copy's text (`axis->j*(1.0f-cosine)*axis->i`, `axis->k*(1.0f-cosine)*axis->i`,
-// `axis->j*(axis->k*(1.0f-cosine))`) 342 (1836 B; aligned 134 / 140 / 91); with the complement named once 418 (1792 B,
-// frame changes); the second-axis cases written first in the rotation switch 491 (1720 B, frame changes), with
-// forward.i moved 407 (1784 B); the sine vector renamed to sort after the squared one, on this order and on retail's,
-// 219 / 357 (same code each: the two vectors' homes do not follow their names here).
-// M3 lane 6 r194 (fast, control 219, aligned 221, masked 157): a private forced-inline helper returning the components'
-// squares as a vector by value (an aggregate return, which elsewhere stops the scheduler hoisting across it) for the
-// rotation's squares 370; one returning the sine products by value in place of the three sine statements 419 (1884 B);
-// both 617 (2020 B); the sine helper after the i square (retail's first copy computes k^2, k*s, i^2, then the other sine
-// products) 416 (1884 B); that with forward.i moved ahead of ij 413 (1880 B).
-// Tried shared alternate axis pointer 490; shared alternate axis reference 490; direct pointer and shared
-// orientation 490; direct reference and shared orientation 490; pointer with library copy 490; reference with
-// library copy 490; pointer and orientation with library copy 490; reference and orientation with library copy
-// 490.
-// NOT kept: All eight forms shrink the frame to 0x60 and the body to 1720 bytes at a higher score.
-// M3 lane 6 r199 (fast, control 219): dead initialised `long` locals at the function's top, K = 1..31 each, 219 every time
-// (diagnostic, reverted: the symbol count does not reach this schedule); the rotation helper as a macro (the caller's
-// sine/cosine/axis spelled in place) 491 (1720 B, frame changes), the macro with the axis bound once to a pointer local
-// 485 (1724 B); `matrix3x3 basis, rotation;` 219 and the basis scoped to the second switch and the composition 219 (same
-// code each); the value array read once into a local for the four property calls and the update 495 (1716 B).
-// M3 lane 3 r262 (fast with 0x246cd0/0x142eb0/0x30bf0/0x11d000/0x173ba0, all MATCH): retail's second rotation case (the
-// g_4687b0 axis, in ECX) forms the cross terms as (t * i) * j and t * k, the operand order of the axis rotation written
-// out in the matched 0x1544e0 (squares, sine products, forward.i, t, tij, left.i, forward.j, left.j, tk, tki, up.i,
-// forward.k, up.k, tkj, up.j, left.k); its first case forms (j * t) * i and k * t. That statement order in the rotation
-// helper, squares as scalars 457 (1748 B, frame 0x60), squares and sine products as vector locals 457 (same code); on
-// this helper the ij term as `(1.0f-cosine)*axis->i*axis->j` 219, a shared `tk` for ik and jk 220, the i sine product as
-// `axis->i*sine` 219. Retail's code before the jump tables ends 1-4 bytes later (a `lea ecx, [ecx]` pad before the tables).
-// M3 lane 5 r201 (fast, control 219): a second forced-inline rotation helper in 0x1544e0's statement order (squares,
-// sine products, forward.i, (t*i)*j, t*k reused for both k products) for the second axis's cases only 459 (1752 B), for
-// the first axis's only 447 (1756 B); the same with the squares kept as a vector3f 459/447 (same code: both scalarize
-// and shrink the body); the rotation helper's output matrix passed by reference 219 (same code).
-// M3 lane 7 r183 (fast, control 219): the rotation helper's parameters as (axis, cosine, sine, out), definition and both
-// calls, 219 (same code); the helper written as the other files write the same rotation: 0x350e0's text (named squares,
-// complement and three cross terms, rows in matrix order) 392 (frame 0x60), 0x22850's (complement, squares, k*complement,
-// rows in matrix order) 394 (1824 B), 0x17fd20's (complement, squares, named cross terms, square plus scaled complement)
-// 393 (frame 0x60); diagnostic, reverted: the second-axis arm through a one-caller copy of the helper with its two vectors
-// declared sine first 219 (retail's second copy has them the other way round in the frame; the declaration does not move
-// them). Body unchanged.
-// Paired axis reads shared by squares and sine products, with separate mixed-product reads:
-// k/i/j 412/358/341; ki/kj/ij 409/412/477; all 385; all with earlier j square 476.
-// NOT kept: The paired reads change both expansions without recovering the early squared-k spill.
-// M3 lane 8 r194 (fast with 0x246cd0, 0x142eb0, 0x30bf0, 0x11d000 and 0x173ba0, all MATCH; control 219): the four basis crosses
-// through a file-private cross product in the textbook spelling 219 (byte-identical); the rotation helper taking the angle and
-// computing sine and cosine itself 447 (1780 B); the helper reading the axis through a `vector3f const &` binding 485
-// (1724 B); the orientation in a named local read at the top for both switches 501 (1732 B), read just before the rotation
-// switch 495 (1716 B). Body unchanged.
-// M3 lane 7 r185 (fast with 0x173ba0, 0x246cd0, 0x30bf0, 0x11d000 and 0x142eb0, all MATCH; control 219, aligned 225): the
-// rotation helper in the sibling spellings of this math elsewhere in the code base (all three hosts unmatched): named
-// complement, squares and a shared k*complement with the rows in matrix order and `j * complement * i` 394 (1824 B,
-// aligned 340); squares, complement and named ij/ik/jk products with `(1 - s) * c + s` diagonals 392 (aligned 354); the
-// same with `s + (1 - s) * c` diagonals 393; the kept statement order with a named complement, k*complement shared by
-// ik and jk and `j * complement * i` 497 (1712 B); named complement, squares, k*complement and ij with matrix-order
-// rows 399. Retail's code ahead of the jump tables is a few bytes longer (a `lea ecx, [ecx]` pad where ours ends
-// with int3 padding), so the equal length is a coincidence of the schedule.
-// M3 lane 14 r117 (fast; control 219): each rotation call given its axis through a block-scoped `vector3f const *axis`
-// local 485 (1724 B, the frame and prologue move); the second axis's case group written first in the rotation switch 491
-// (1720 B); in the rotation helper the i-j cross term as `(1.0f-cosine)*axis->i*axis->j` 219 and the i sine product as
-// `axis->i*sine` 219 (same code each); in the basis switch the third/fourth cases crossing straight from the second axis
-// global before copying it into `basis.up` 364 (1844 B). Body unchanged.
-// AC597: Paired sine/cosine storage passed as scalars, by value, by reference, or by pointer, each with
-// aggregate or field initialization: 252/252/366/366/252/252/252/252.
-// M3 lane 13 r125 (fast with 0x246cd0, 0x142eb0, 0x30bf0, 0x11d000 and 0x173ba0, all MATCH; control 219): sine and cosine
-// declared in two statements 219 (same code); cosine declared first 226; in the rotation helper the forward.i diagonal moved
-// right after the i sine product 357 (1820 B), the left.j diagonal right after the j square 350 (1764 B), the up.k diagonal
-// right after the i sine product 380 (1852 B). Body unchanged.
-// M3 lane 14 r123 (fast, control 219; all restored): the sine products read through a second axis pointer local (squares
-// through `axis`) 489 (1720 B); helper statement orders: the j square moved up after the i square 232 (1820 B); the three
-// squares first, then the three sine products 448 (1764 B); forward.i right after the i square 233 (1820 B); up.k moved
-// up after left.j 357. Reading: in both copies the squared and sine vectors' frame homes are swapped against retail's
-// (retail's first copy spills k^2 at once to the squared vector's +0x24 and keeps the sine products in XMM6/XMM7).
-// M3 lane 12 r156 (fast with 0x246cd0, 0x142eb0, 0x30bf0, 0x11d000 and 0x173ba0, all MATCH; control 219; the two
-// identical score lines merged): the rotation helper returning the matrix by value 447 (1852 B); the complement named
-// once in the kept order 452 (1756 B); the output parameter first in the helper and both calls 219 (same code); the
-// squared and sine vectors as one two-element array (bound by reference) 471 (1740 B); diagnostic, reverted: the rotation
-// switch without its `__assume(0)` default 228 (1836 B, first difference +0x56 at the added bounds test).
-// M3 lane 13 r128 (screened, control 219): ij as `axis->j * (1 - cosine) * axis->i` (retail's first-case operand order)
-// 219; ik/jk as `axis->k * (1 - cosine) * axis->i/j` 219; the sine product i as `axis->i * sine` 219 (all the same code:
-// the operand sides are canonicalised); forward.i moved right after the sine products (retail's first case) 357 (1820 B),
-// with the three operand orders above as well 357. The jump tables' four-byte offset is code length: ours ends at +0x700
-// with no padding, retail at +0x701 with a 3-byte `lea ecx, [ecx]` ahead of the tables (one byte of encoding).
-// The squared-k spill still follows the sine products. Complements, cosine corrections and
-// complete diagonals beside their square producers 204/204/219, together after the final square
-// 204/204/219, or corrections and diagonals after both products of each axis 204/219.
-// NOT kept: the table moves to its retail address but only two executable rows improve,
-// and the first rotation arm still lacks retail's early squared-k spill.
-// Complete rows through the vector setter, forward/left/up or forward/up/left
-// 445/449 from direct expressions and 450/449 from named component results.
-// Row aggregate assignment in the same orders 716/719 and 713/718.
-// NOT kept: the setter forms retain +0xe7 and shorten the body, while
-// row aggregate stores move the first difference to the prologue and grow it.
-// M3 lane 7 r202 (fast with 0x173ba0, 0x246cd0, 0x30bf0, 0x11d000, 0x142eb0, all MATCH, and 0xc1d90 290 unchanged; control 219,
-// aligned 225, masked 161; kept form confirmed plain). Kept: the rotation helper in the statement text of the matched 0x1544e0
-// (squares, sine products, forward.i, t, tij, left.i, forward.j, left.j, tk, tki, up.i, forward.k, up.k, tkj, up.j, left.k) with the
-// squares in a vector local and the sine products through the existing vector3f_scale, the i-j term as `(axis->j * t) * axis->i`,
-// and the first basis case's forward through the existing `(in, out)` negate helper, moved from src/unknown_0bffa0.cpp into
-// vector_products.h (0xc1d90 unchanged): 219 -> 21. The steps: the 0x1544e0 text with vector3f_scale and `(t * axis->i) * axis->j`
-// 254 at 1836 B (aligned 68: second rotation case exact, first with a cached cosine load); the i-j term as `(axis->j * t) *
-// axis->i` 237 at 1840 B (aligned 58: first case exact, second with its two multiplies swapped); the three spellings that pair t
-// with i first give the 254 code, the three that pair t with j first the 237 code, i * j first 245 / 357; on the 237 form the
-// negate helper for the first basis case 21 (the three direct `basis.forward.x = -...` statements were what flipped the cross
-// products: direct mentions of the local basis' fields re-rank them). Not kept: the up copy ahead of the negation 20 (one point,
-// a statement moved; retail's stores do have up.i ahead of forward.j); that with `real position_z = position->z;` named ahead of
-// the third vertex-data call 2 (a one-use local, the permuter's find, 50 tries in 612 s: only the second rotation case's
-// multiply order is then left); position y named 4, x 20 (same code), y and z 18, z with any colour component 2, all three
-// named at the top 142; on the 2 form: `(t * axis->i) * axis->j` 67, `t * (axis->i * axis->j)` 35, the squares ordered i, k, j
-// 2 (same code), k, j, i 408 (1788 B), j, i, k 311, the scale call ahead of the squares 410, the i-j term through a named
-// `axis->j * t` or as a compound `*=` 2 (same code), through named axis components 366 (1824 B), started from t with two `*=`
-// 85; the second axis held in a named pointer used by its rotation and its basis copy 349 (1840 B) / 444; the last basis case's
-// up through three field statements 393 or the by-value setter 396 (1780 B), its crosses reading the global axis 256 / 272.
-// Other measured forms: the old k-first order with named t / tk 242 (1808 B), that with sine and cosine by const reference 242,
-// main's order with forward.i moved up and a shared k term 368, scalar squares with a sine vector 453 (1752 B), the cosine by
-// const reference on the 254 form 254 (same code), t named ahead of forward.i 350, both by reference 316; the staged cross
-// helper for all or the first two crosses 21 (same code: the cross text is canonicalised); the first basis case's up copied per
-// field before / after the negation 310 / 310, its cross reading the global's up 242 (1844 B); 1 to 8 dead locals 21 each
-// (no symbol-count phase: the named position_z acts as a float leaf's rank, not as a count). The kept form with 0x1544e0's own
-// `(t * axis->i) * axis->j` 85: retail's first rotation case loads j, multiplies by t, then by i, which is the kept spelling.
-// M3 lane 8 r206 (h2m fast with 0x246cd0 and 0x142eb0, both MATCH; control 219, register/offset-masked aligned 163):
-// retail's first-copy flow read again (k^2 spilled at once to +0x24, k*s, i^2, j*s, s*i, forward.i, ij, left.i, forward.j,
-// j^2, k*complement spilled to the dead scale slot +0x90, left.j, ik, up.i, forward.k, up.k, jk; cosine read from +0x80 at
-// each use). In the helper: forward.i after the i sine product and left.j after the j square together (that whole flow)
-// 368 (1812 B, masked 114: cosine now takes a register, 24 bytes short); that with a named k*complement shared by ik and jk
-// 457 (frame changes); that flow with sine and cosine by const reference 368 (same code); that flow with the cross terms in
-// the first copy's text (`axis->j*(1-c)*axis->i`, `axis->k*(1-c)*axis->i`, `axis->j*(axis->k*(1-c))`) 347 (1816 B, masked
-// 137); that flow with up.k moved up beside left.j 246 (1804 B, masked 119).
-// M3 lane 3 r287 (h2m fast, control 21; screened on lane 7's 2-point form, the up copy ahead of the negation and a named
-// `position_z`, which leaves only the second rotation copy's `t * j * i` against retail's `t * i * j`): redundant paren
-// pairs (1-3) around the helper's whole i-j term 366 / 2 / 366, around `1 - cosine` 390 / 104 / 390 (control 21), around
-// a single leaf of the i-j term (i, j or t) 2 each, around the call arguments of either rotation call (axis, sine,
-// cosine, `&rotation`) 2 each (21 on main's body); around the angle or a scale product ahead of the switch 391 / 85 / 391
-// (shift 2 swaps the two copies' shapes: the first copy then takes the second copy's code; the multiply order stays j
-// before i), around the integer mask 2; the i or j leaf read through a `real const *` local, or t through a `real const
-// &`, with shifts 0-3: 2 / 391 / 85 / 391 each; the i-j term as `(t * i) * j` 67 / 413 / 129 / 413, `t * (i * j)` and `(i
-// * j) * t` 35 / 394 / 113 / 394, `tj = j * t; tij = tj * i` 2 / 391 / 85 / 391; the second-axis cases listed first 65
-// (the first-laid-out copy takes the first copy's code); a block-scoped axis pointer local for the second call 289, for
-// the first 420; the cosine through a `real const &` for the second call 393. VC7.1 reassociates this product per copy,
-// and nothing screened changes the second copy's leaf order alone.
+/* the same rotation with the i-j term as (t * i) * j, the text of the matched 0x1544e0: retail's
+   copy for the g_4687b0 axis forms the term that way and its other copy as (j * t) * i above;
+   VC keeps a parenthesised float product's order and reschedules an unparenthesised chain,
+   so function_224fd0 needs both texts (byte match) */
+PRIVATE __forceinline void draw_rotation_up(vector3f const *axis, real sine, real cosine, matrix3x3 *out)
+{
+	vector3f axis_squared, axis_sine;
+	axis_squared.i=axis->i*axis->i;
+	axis_squared.j=axis->j*axis->j;
+	axis_squared.k=axis->k*axis->k;
+	vector3f_scale(axis,sine,&axis_sine);
+	out->forward.i=(1.0f-axis_squared.i)*cosine+axis_squared.i;
+	real t=1.0f-cosine;
+	real tij=(t*axis->i)*axis->j;
+	out->left.i=tij-axis_sine.k;
+	out->forward.j=tij+axis_sine.k;
+	out->left.j=(1.0f-axis_squared.j)*cosine+axis_squared.j;
+	real tk=t*axis->k;
+	real tki=tk*axis->i;
+	out->up.i=tki+axis_sine.j;
+	out->forward.k=tki-axis_sine.j;
+	out->up.k=(1.0f-axis_squared.k)*cosine+axis_squared.k;
+	real tkj=tk*axis->j;
+	out->up.j=tkj-axis_sine.i;
+	out->left.k=tkj+axis_sine.i;
+}
+
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
@@ -528,7 +132,7 @@ void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache 
 		break;
 	case 2:
 	case 4:
-		draw_rotation(g_4687b0,sine,cosine,&rotation);
+		draw_rotation_up(g_4687b0,sine,cosine,&rotation);
 		break;
 	default: __assume(0);
 	}
@@ -538,8 +142,8 @@ void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache 
 	switch(definition->orientation)
 	{
 	case 0:
-		vector3f_negate_ab(&g_485618.forward,&basis.forward);
 		basis.up=g_485618.up;
+		vector3f_negate_ab(&g_485618.forward,&basis.forward);
 		cross3f(&basis.up,&basis.forward,&basis.left);
 		break;
 	case 1:
@@ -561,8 +165,9 @@ void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache 
 	D3DDevice_SetVertexData4f(12,rotation.forward.i,rotation.left.i,rotation.up.i,position->x);
 	D3DDevice_SetVertexData4f(13,rotation.forward.j,rotation.left.j,rotation.up.j,position->y);
 	D3DDevice_SetVertexData4f(14,rotation.forward.k,rotation.left.k,rotation.up.k,position->z);
+	/* the colour through the device's inline method: the basis crosses above then take retail's operand order (byte match) */
 	if(context->constant_index!=NONE)
-		D3DDevice_SetVertexData4f(context->constant_index,color->red,color->green,color->blue,color->alpha);
+		D3DDevice::SetVertexData4f(context->constant_index,color->red,color->green,color->blue,color->alpha);
 	word count=span->count, first=span->first;
 	function_1cf50();
 	D3DDevice_DrawIndexedVertices(D3DPT_TRIANGLELIST,count,indices+first);

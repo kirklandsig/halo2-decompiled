@@ -74,10 +74,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
-// MiniMax G (11-20): no new form, no lower score (110): the unit is still fetched once and kept across the two 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // score 110 (was 110): retail fetches the unit again after the two inlined 0x14de90 calls to 0xbadc0; ours merges that
 // fetch into the entry fetch, so the entry saves and every later register differ. BLOCKED-BY 0xbadc0 as reached through
 // the inlined 0x14de90 (see round 117 at the end: retail's 0xbadc0 itself has the no-write summary).
+// MiniMax G (11-20): no new form, no lower score (110): the unit is still fetched once and kept across the two 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // Earlier (round 199, 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list in round 199): our link knows it writes
 // MiniMax A (11-19): no new form, no lower score (110): the unit fetched at the entry and the one fetched after the two 0xbadc0 calls are still merged into a single load, so the reset still writes through the merged pointer where retail writes through the entry one, and the user index still arrives in a different register; the permuter's best variant (101) is built from a reset block copied into two identical branches and from two flags set by one test and read by the next, so it is dropped and the body is unchanged. BLOCKED-BY 0xbadc0 in src/unknown_0bad50.cpp.
 // Earlier at 110 (was 110; this score line is merged into the one above, m3 lane 6 r204): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list in round 199): our link knows it writes
@@ -455,6 +455,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // from the inlined 0x14de90 (src/unknown_14b560.cpp) and 0xbadc0 (src/unknown_0bad50.cpp), both other lanes' files this
 // round. Untested lead: whether the order the two files are compiled in decides if the summary exists when this
 // function is compiled. Body unchanged; BLOCKED-BY 0xbadc0 through 0x14de90.
+// M3 lane 16 r164 (fast with 0x103b10, MATCH each run; control 110): retail keeps index*12 in ESI from the entry fetch and
+// reloads the pool global, its data pointer and the unit after the two 0xbadc0 calls, and retail's 0xbadc0 stores nothing.
+// The zoom-out sound helper as an early return 113 (356 B); the sound index as one conditional initialiser 110 (same code);
+// the zoom flag declared right before the reset test 125 (350 B); the weapon flag as `weapon_index != NONE &&
+// function_100f70(weapon_index)` 104 (367 B, aligned worse); the entry unit fetch through slot_handler.h's object_get 110
+// (same code). Still BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

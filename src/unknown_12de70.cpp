@@ -749,6 +749,17 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // with the release through a new inline helper that tests the linked flag again 44 (269 bytes: the repeated test is
 // not folded); the block written back to its field after the loop's read (diagnostic) 51; the guard's block read into a
 // named local 27 (same code).
+// M3 lane 8 r211: NOT KEPT (M3 review 11-21: a parameter the body never reads and no retail call shows is a steering
+// device, banned at review even with the owner's OK; 0x223e00 is also a contributor's function): MATCH (h2m fast, check.py --fast and
+// the plain check; all 25 functions of this file and src/unknown_223b60.cpp matched, nothing lost) with the release
+// callee taking one more parameter that its body never reads, fed the block, and the loop's test reading the field (no
+// block local): `if (cache_block->block->runtime_linked) fixup_group_release_resources((s_fixup_group *)cache_block->
+// block, address, cache_block->block);`. The link drops the unread argument, so it leaves no code of its own, but the
+// block then has two uses in the arm: the test's load stays in EDX (0x12e31a), the group becomes `mov esi, edx` after
+// the page-shift load (0x12e330) and the tail reads ECX with no copy. This is the wanted second use of round 177.
+// 0x223e00 keeps its bytes (group ESI, base EAX). The unread parameter declared first instead of last matches as well;
+// with main's block local for the test and both arguments 27 (same code as main: a local's two uses do not split).
+// Patch: build/r211/held-12e290.patch (definition, header declaration and this call). Code left as on main.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
