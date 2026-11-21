@@ -1156,6 +1156,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax I (11-20): no new form, no lower score (33): the write block's close test written as one shared condition (the count test or the not-resized path with the handle test inside) measures 157, and the close duplicated in both arms measures 179 (994 bytes against retail's 930), so the body stands; what still differs is retail's single close block reached from the resized and the not-resized path, which needs a goto (kept only with a byte match), the swapped pair of homes (ours the query size at [esp+0x28] against retail's [esp+0x24] and the write count at [esp+0x24] against retail's [esp+0x28]), the write call's flags zero built in EAX where retail builds it in ECX, and the checksum compare taking EDX where retail takes EAX.
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
 // homes stay four bytes off, and the only lower form found so far is the goto that lane 11-16 used here, which is not
 // to be repeated; the body stands.
@@ -1985,6 +1986,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // NOT kept: The query-and-write and resize-and-write forms reach 32 at retail length. Both retain the first stack-
 // slot difference and use one-use handle copies, so the one-point gain is excluded. The other six tie or raise the
 // score.
+// M3 lane 6 r214 (fast with 0x213800 and 0x2149c0, both MATCH; control 33; lane 9 r132's 5 form rebuilt at 5, only the
+// write's flags zero in EAX ahead of the handle load left). Retail's `mov esi, 1` range bound is the register already
+// holding 1 reused for the immediate (the 7 and 5 forms have it). Looking for a no-code step after the write's wait (the
+// probe finding above), on the 5 form, same code each (5): the count copied into a named `dword` before its test; the
+// count compared as `(long)`; the close test through `file->handle`; the empty header declared ahead of `if (resized)`
+// with the strings set inside; the count compared with `sizeof(empty_header)`. The permuter on the 5 form (annealing,
+// one job, 609 s): 67 tries, none under 5 in the reduced or the full image. Body unchanged.
 // Scoped write count with conditional, branched, default-invalid, or failure-first close handle
 // 124 each. Raw selected/default-invalid close handle 124/124. File pointer selected from the
 // write outcome or failed resize first 115/137. NOT kept: correct count slots with the by-value

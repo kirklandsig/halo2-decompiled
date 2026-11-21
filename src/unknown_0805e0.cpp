@@ -869,6 +869,19 @@ void function_1537f0(s_profile_record *record);
 // through the array element 44; a named view pointer with the link pointer taken as `(short *)(&view->field4c + 3)` 18
 // (+0x5c); that with the tail through a `dword *` at the view's +0x4c field 14 (+0x5e); one `short *` at +0x4c for the links
 // and the tail (diagnostic) 14 (+0x58): through any pointer the base lands on one of the link stores.
+// M3 lane 8 r206 (h2m fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): each link through its own
+// one-use pointer in retail's store order 43 (folded: base +0x4c, NONE hoisted into EBP); a named source pointer for the
+// record initializer and the builder 18 (same code), with the `entry->` chain in retail's store order 49 (hoisted); the
+// loop as `do ... while (++index < 350)` 18 (same code); the link pointer taken at `previous_other` with the stores in
+// retail's order at offsets 0, -2, +1, -1 18 (base +0x5e: the base is that pointer's second non-zero offset, as listed);
+// the link pointer as the entry itself cast to `short *` with retail's four indices 49 (it folds into `entry`, hoisted).
+// So the hoist ends only with a link pointer at a non-zero offset from the entry, and that pointer then sets the base.
+// M3 lane 15 r121 (h2m fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the four links as `entry->`
+// statements in retail's store order re-measured 49 (base +0x4c as retail, but the record's two zero words share EBX and
+// NONE takes EBP for the whole loop), with the four heads as one chain 49, with the links as one `entry->` chain in field
+// order 49; the loop index declared at function scope 18 (same code); the flags and tail clears ahead of the link pointer's
+// chain 27. Reading: the base and the hoist trade against each other: every `entry->` link form makes NONE (shared with the
+// heads) a loop-wide register, every pointer form keeps NONE in EAX but bases the loop in the link words.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -1550,7 +1550,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
+// score 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
+// Earlier detail: the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
 // this build holds the bit in EBX and the size in EBP, and retail's size is a compare and setne on the mask byte where
@@ -2017,6 +2018,20 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Word reduction using indexed for/while, entry cursor or captured count 170/170/170/172.
 // Dword reduction using those four walks 159/159/159/155.
 // NOT kept: The local reduction shrinks the native frame and changes the matched caller.
+// M3 lane 2 r121 (fast with 0x56380/0x564c0/0x53b00/0x56000; control 60, aligned/masked 41/20; the caller 0x56380's
+// score in brackets, [0] = matched; reference forms rebuilt: capacity, size, written, kept with `include_mask ? 13 : 11`
+// 134 [0] (aligned 19/18), kept, written, capacity, size with it 137 [13]). New control shapes: the two failures as plain
+// assignments with the later stages under `if (result == 0)` guards instead of else nesting, on the capacity-first ternary
+// form 134 [0] and on the kept-first ternary form 137 [13]; the guards written `result != NONE` on the kept-first form
+// 137 [13] (each the nested form's code: the guards are threaded away); a `valid` flag set by the membership test and then
+// by the clamp, with one `else result = NONE;`, on the kept-first form 180 [13] (482 B) and on the capacity-first form
+// 84 [2] (471 B). Reading of the kept-first ternary listing: the bit takes EBX first and the kept mask EBP, so the size's
+// setne has only DL left, which moves the cursor to EDI (arriving in EAX) and the player to the stack (`ret 0x10`); in
+// retail the bit is in EBP, EBX serves as the kept scratch and then holds the size, and the result's zero stays in EAX.
+// Retained set carried in exclusion polarity, inverted initialization at dword/word width with
+// reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
+// 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
+// MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2160,6 +2175,10 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-20): no new form kept, no lower score (64): with the muted word's test first in the inner loop the body is
+// retail's 427 bytes but scores 85, because the outer body then loads the second ready byte after the first test and holds
+// the remote mask in edx, and the second port-flag query is still called out of line where retail expands it; the
+// flags-first order stands.
 // MiniMax G (11-20): no new form, no lower score (64): the outer body matches retail instruction for instruction with the
 // flags-first order (both ready bytes read up front, the remote mask in esi, the mode in ecx), and the muted-word-first order
 // with plain ready-byte reads in the two port-flag queries reproduces retail's inner loop exactly up to the last query, which
@@ -2410,6 +2429,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // the mode query and then makes an extra call to 0x53be0 whose result it halves and masks to a bit, while this build
 // asks the mode query first and keeps the two bytes' test after it; the earlier rounds' 85 point forms need the
 // active and passive mode flags, which only a byte match would keep, so the control (64) stands.
+// MiniMax R (11-20): re-checked, no new form and no lower score (64): the inner loop runs the two port flag queries before the muted word bit where retail runs the muted word bit first and expands both port flag queries in place, and this build calls the second one out of line, so the body is twelve bytes short: BLOCKED-BY 0x53bb0's per site inlining.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3936,6 +3956,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax A (11-20): no new form, no lower score (139): retail keeps the channel in EBP and walks a packet cursor in EDI, ours keeps the data base in EBP with base+offset addressing
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (139): the rewrite that advances the packet cursor on its

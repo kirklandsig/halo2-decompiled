@@ -431,6 +431,12 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax E (11-20): no new form, no lower score (404): retail's entry takes the actor index in EAX (`sub esp, 0xa0;
+// push ebx; mov ebx, eax`) and keeps it there, and its tail is a plain `ret` with no stack argument, while this body
+// takes the index from its stack slot and gives the frame 0xa4 against retail's 0xa0; that EAX convention belongs to
+// retail's own call graph and no spelling of this body reaches it, so the difference stays where it is:
+// BLOCKED-BY 0x2641c0 (its noinline declaration is in src/unknown_265cb0.cpp, another lane's file). The body's own
+// arithmetic and the rest of its homes are the same code; the score stands at 404.
 // MiniMax B (11-19): no new form, no lower score (412): the maximum as a long instead of a word gives 416 and the prior
 // state as a short instead of a word gives 413, so both were reverted and the body stands. What still differs is the
 // frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its
@@ -880,6 +886,15 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // and the first 0x25d740 site only; ours wants every one of the small ones expanded (hence the three pragmas) and one
 // 0x25c820 site, so the difference is how much this function is allowed to expand, not one callee's spelling.
 // Blockers unchanged (0x2641c0's expansion, the release site's 0x25c820 expansion, the EAX convention).
+// M3 lane 12 r162 (fast with 0x1e34e0, 25 throughout; control 404 at 1624 B): `update && sample` in the 0x264b50 test
+// 402 (1620 B); `update` as a short 408 (1628 B); `update` read through a const reference at that test 404 (same code);
+// case 1's 0x25c820 call jumping to the release block's call with a short `old_state` 452 (1600 B, frame 0xa0); that with
+// `update && sample` 431 at retail's 1616 B. The actor index stays a stack argument in each. Body unchanged.
+// M3 lane 12 r163 (H2M_FAST with 0x263210/0x264330 MATCH, 0x1e34e0 25 throughout; control 404): the tail's 0x25d690
+// lookup through the loop's `node` instead of a second prop fetch 430 at 1616 B (frame still 0xa4: the saved prop handle
+// behind the extra slot feeds our expanded 0x25c820 at the release site, not the tail); with a `short` old_state 431;
+// with `update && sample` 431; the walk through 0x26be00/0x26be30 (0x263210's idiom) re-measured 443, with the node
+// tail lookup 452 (1600 B), with the iterator's index read at each use as well 452. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

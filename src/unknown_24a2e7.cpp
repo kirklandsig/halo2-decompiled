@@ -370,6 +370,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// Carry opening/suffix, opening/closing, suffix/closing or all append results:
+// cached terminator 69/78/83/83, indexed terminator 79/73/81/80.
+// NOT kept: the 0x24 frame persists and all scores rise. The entry base stack
+// home and unscaled ordinal through the appends still differ.
 // M3 lane 11 r134 (fast with 0x24a64d, 0x24a763, 0x24a52b, 0x24a7bf and 0x24a09b, all MATCH; control 67): the suffix
 // declared at function scope 66 (195 B); `long count = 0;` 83 (192 B); the loop index as `short` 46 (202 B, aligned 20:
 // i then stays in EBX and the found entry and plain arm are formed again from it as retail, but every use of i gains a
@@ -408,6 +412,19 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // index (the entry formed inside, after the append test) and returning whether it built, with the indexed terminator
 // and plain name in the caller's if/else, 84, the same with one result variable in the helper 84 (the returned flag
 // is threaded before the sharing too); `register` on the index, on the lead, 39 (same code). Body unchanged.
+// Guarded last ordinal with indexed/selected-entry formatting 73/75;
+// guarded exact end ordinal with indexed/selected-entry formatting 67/38;
+// guarded last address 79/79 and guarded exact end address 74/74.
+// NOT kept: the 38 form restores the base spill and final ordinal multiply
+// but adds a second count test, uses inequality at the latch and retains
+// the scan cursor in ESI where retail reforms the entry after the append test.
+// Separate nonpositive-count return with selected entry and inclusive/exact end
+// 73/70, both 211 bytes. The base slot returns, but the save order differs and
+// the exact end still adds a count test.
+// Ordinal from cursor difference with selected end 84/75/93/80, or positive-count
+// guard 82/74/95/76, indexing all found accesses, formatted destination, plain name
+// and clear, or post-concatenation clear. NOT kept: all add an integer divide, and
+// the extra frame word in the 0x28 forms does not preserve the unscaled scan ordinal.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

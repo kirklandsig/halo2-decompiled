@@ -183,6 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
@@ -759,6 +760,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
 // output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
 // Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
+// Select the direction value at activation/refresh/angular threshold 604/623/667,
+// both normalizations 646, activation-plus-threshold 662, refresh-plus-threshold 672,
+// all three 664, or select a fallback pointer at all three 662. NOT kept: all raise
+// the score. The supplied direction still takes EBX ahead of the sample.
 // M3 lane 15 r116 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH: with these listed the fast count equals the plain
 // 603; control 603, aligned 658): the target copy from pos as memcpy 603, the output position copy from q as memcpy 603, both
 // 603 (same code each); the output position assigned through `out->position` before the pointer local 659 (2875 B); a, b and
@@ -785,6 +790,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the x87 stack from memory after all three impulse stores, and scales delta in the registers that still hold it:
 // the shapes of pointer-taking vector helpers at each of those statements. Every such helper measured alone so far
 // raises the positional count; the entry (d against q for EBX) has to come first. Body unchanged.
+// M3 lane 16 r162 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the settle dot as `dot3f(&nq, d)`
+// 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
+// second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
+// local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

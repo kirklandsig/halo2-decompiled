@@ -935,6 +935,13 @@ extern "C" void _ReadWriteBarrier(void);
 // block (after the data base as retail when the read follows the lookup), but ESI's save then moves to the entry and the
 // data base folds into the add or takes ESI; retail keeps the ESI save in the flags arm (shrink-wrapped) and the data base
 // in EDX. Re-measured: volatile read first, without/with the barrier 50/29; after the lookup, then the barrier 31.
+// M3 lane 4 r237 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the flags byte read into a local after the actor
+// lookup, ahead of the barrier, and tested in the NONE block 38 (205 B, first +0x1e: the entry is then retail's through the
+// add, the slot loaded into ECX between the data base and the mask, but the flags byte loads in the entry block into DL where
+// retail reads it into BL inside the NONE block); the same flags local declared first 45; actor, state, flags local, barrier
+// 38; a second actor lookup for the NONE test with the barrier 53 (212 B); the barrier moved ahead of the final 0x450 store 51
+// (190 B). Reading: a read through the slot pinned in the entry block gives retail's entry schedule exactly; retail's own
+// entry load has no such read.
 // M3 lane 7 r201 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; each without the barrier): the state through an
 // inline helper returning a one-pointer aggregate by value, declared after or before the actor, 44/44 (208 B: folded, no
 // block boundary); the NONE block as `while (...) { ...; break; }` 44 (same code); as a loop on a flag set at its end,
@@ -1652,6 +1659,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax D (11-20, round 132): no new form, no lower score (123): the body is unchanged. The frame is still 0x10
+// against retail's 0x14 (retail spills the masked flags byte to its own stack byte and keeps the loop entry in EBX, this
+// build keeps the mask in BL and the entry in memory), the actor index still arrives in ECX where retail keeps it in
+// EDX, and the split around the two root calls follows the memory summary of 0xbaf40, whose file this lane may not
+// edit.
 // MiniMax S (11-20): no new form, no lower score (123): retail keeps the iterator entry in EBX and spills the raw mask byte to its own stack byte where ours keeps the normalised mask in BL and the entry in a stack slot, and the frame is 0x10 against retail's 0x14.
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
@@ -2175,6 +2187,24 @@ void function_1f86a0(long actor_index);
 // the mask-after form 245 (868 B, a 65/26), the no-mask split 237 (869 B, a 59/46). Reading: the masked byte, the full flags
 // byte and the entry contest BL/EBX; retail spills the mask, re-reads the flags and gives the entry EBX, which none of these
 // gives at once. Body unchanged.
+// M3 lane 1 r141 (fast with 0x1b8c80, 0x1b8d40, 0x1ba990, 0x1b9e70 and 0x1ba5c0, all MATCH each run; control 123 at 861 B,
+// aligned 105, register-masked 50). The slot data-block form of build/m3-reports/FORMS-slot-data-block.md is round 39's 134
+// (listed above); it does not apply here. Reading: retail tests the spilled mask as a plain non-zero byte (`mov cl, [esp +
+// 0x13]; test cl, cl`), re-reads the flags from memory for the 0x40 test after the two root calls, and in the tail loads the
+// flags byte once ahead of the slot's byte test and tests `al, 0x20` in both arms, reloading it for the 0x29 update after
+// the object index store (the index takes EAX). Forms: the mask assigned inside the same-root test with plain non-zero tests
+// 134 (the code of the plain-mask form: the mask keeps BL); that with `== 0x20` at the later test 123 (same code as this
+// body); the same-root result set under `if ((specified = flags & 0x20) != 0)` 241; the mask computed ahead of the element
+// lookup 242 (864 B); the loop as `for (entry = first; entry != NULL; entry = next)` 123 (same code), as `entry = first;
+// while (entry != NULL) { ...; entry = next; }` 123 (same code), with the joint index read through the entry after the loop
+// 123 (threaded back, same code), the `for` with plain non-zero mask tests 134. Diagnostic, removed (a local copy serving
+// one of two reads of the same flag): the flags tested directly in the same-root test and the mask local read only at the
+// later test 244 (868 B) but frame 0x14 with the mask at +0x13 and aligned 90: the raw flags byte then takes BL across the
+// root calls for `test bl, 0x40`, so the entry still has no register. Tail: the else arm's 0x29 update written last (after
+// both radii) 122 (aligned 99: the seat, far radius and flags stores then come in retail's order; a statement order, one
+// point, not kept), object, near, seat, far, flags 122 (same code), object, flags, near, seat, far 124, object, near, far,
+// seat, flags 124; a bool read from the 0x20 bit ahead of the slot's byte test and used in both arms 236 (866 B), with the
+// update last 236; the flags byte in a local there 140, with the update last 139. Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

@@ -80,6 +80,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=tkj+axis_sine.i;
 }
 
+// MiniMax I (11-20): no new form, no lower score (219): this round only re-measured the body; the frame (0x6c) and the length agree, and what still differs is retail's two rotation copies taking their complement products' operands on different sides (one shared helper cannot produce that), the axis-specific rotation and cosine spills, the basis registers and the jump table sitting four bytes earlier than retail's.
 // MiniMax C (11-20): no new form, no lower score (219): a permuter run with annealing over this body (27 tries, 242 s, no
 // confirming build) found nothing below 219, and the jump table still sits four bytes earlier than retail's.
 // score 21 (was 219): both rotation cases, the frame and the tables now agree but for: the second rotation case multiplies the i-j
@@ -482,6 +483,14 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // field before / after the negation 310 / 310, its cross reading the global's up 242 (1844 B); 1 to 8 dead locals 21 each
 // (no symbol-count phase: the named position_z acts as a float leaf's rank, not as a count). The kept form with 0x1544e0's own
 // `(t * axis->i) * axis->j` 85: retail's first rotation case loads j, multiplies by t, then by i, which is the kept spelling.
+// M3 lane 8 r206 (h2m fast with 0x246cd0 and 0x142eb0, both MATCH; control 219, register/offset-masked aligned 163):
+// retail's first-copy flow read again (k^2 spilled at once to +0x24, k*s, i^2, j*s, s*i, forward.i, ij, left.i, forward.j,
+// j^2, k*complement spilled to the dead scale slot +0x90, left.j, ik, up.i, forward.k, up.k, jk; cosine read from +0x80 at
+// each use). In the helper: forward.i after the i sine product and left.j after the j square together (that whole flow)
+// 368 (1812 B, masked 114: cosine now takes a register, 24 bytes short); that with a named k*complement shared by ik and jk
+// 457 (frame changes); that flow with sine and cosine by const reference 368 (same code); that flow with the cross terms in
+// the first copy's text (`axis->j*(1-c)*axis->i`, `axis->k*(1-c)*axis->i`, `axis->j*(axis->k*(1-c))`) 347 (1816 B, masked
+// 137); that flow with up.k moved up beside left.j 246 (1804 B, masked 119).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

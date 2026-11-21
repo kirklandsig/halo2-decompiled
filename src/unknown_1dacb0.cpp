@@ -1083,6 +1083,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// score 812 (was 812): frame 0x2c agrees; the weapon_class/NONE register pair at entry, the result/output/candidate
+// homes, the second request's EBX/EBP roles and the later EBP zero remain (r924 and r120 entries at the end).
 // MiniMax B (11-18): no new form, no lower score (828, was 828): the frame 0x2c agrees, but retail keeps its
 // three iterator outputs at the bottom of the frame with the result four bytes above ours and gives the dead
 // found_mode argument's home to the per-pass candidate, and the opening compare still loads the weapon class
@@ -1097,7 +1099,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
 // MiniMax B (11-20): no new form, no lower score (828): the class and NONE registers are still exchanged, retail's iterator outputs sit at frame+0x8/+0xc/+0x10 and its result shorts at frame+0x14/+0x16 where ours uses the borrowed found-mode argument's slot and homes below the frame, and the later EBP zero is still missing; the form that reaches 755 needs the found-flag loop, a bool flag set by one test and read by the next, which is kept only with a match.
 // MiniMax G (11-20): no new form, no lower score (828): the frame 0x2c still agrees and the first difference is still the class compare against NONE with the operands exchanged, with the iterator outputs and the result shorts in the wrong frame homes and the later zero still missing; the form that reaches 755 needs a bool flag set by one test and read by the next, which is kept only with a match.
-// score 828 (was 828): r200 unchanged. Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// r200: 828 (was 828), unchanged. Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // Earlier lane 8 rounds 164 and 166 are recorded near the end of this note.
 // M3 lane 8 r164 and r166 forms appear at the end.
 // Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain. See also lane 8 r164 and r166 below.
@@ -1565,9 +1567,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // with reset at lookup 932, reset on a missing name 998, and a persistent empty identifier for the
 // selection and latch 978. NOT kept: the for forms reach retail length with a larger frame. The class,
 // resolved outputs and candidate still have different homes.
-// score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
+// r924 (stand-in image): 812 (was 828): the search runs inside `if (weapon_class != NONE) { ... return result; }`
 // with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
 // return is 1040.
+// M3 lane 15 r120 (fast, 812 base): the post-loop index test through a const reference to the result 812 (same code);
+// the iterator stored graph, step, entries, then mode/class/type (the siblings' order) 812 (stores move, registers
+// stay); the no-result case as an early `return result;` in the block 1011 (2837 B); the weapon_class NONE test as an
+// early return with the search in a bare block 828 (2807 B); `return result;` closing the found block instead of the
+// search block 813 (2827 B, all four registers pushed at entry). In the second request retail keeps `this` in EBX and
+// the found mode in EBP with the +0x34 table temp in found_mode's dead home; ours keeps the table temp in EBX, `this`
+// in EBP (reloaded per kind) and the found mode in that home: the two homes swap as one choice.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1647,6 +1656,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
 
+// MiniMax I (11-20): no new form, no lower score (812): this round only re-measured the body; the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // MiniMax D (11-19): no new form, no lower score (828): the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // score 828 (was 828): r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
 // MiniMax E (11-19): score 828 (was 828): no new form, no lower score. Read from the listing again: the two listings were
