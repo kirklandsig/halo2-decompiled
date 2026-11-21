@@ -929,6 +929,13 @@ struct s_object_damage_view
 // pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
 // searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
 // the reported slot declared after `selected` 358.
+// M3 lane 7 r209 (h2m fast with 0x197160 and 0xd9640, MATCH; control 353). Reading: retail's killer lives in its home
+// at +0x14 (reloaded into EDX/EDI at the joins), the friendly flag is a stack byte in reported_player's dead slot (stored
+// false, then 1) and self a byte in object_index's dead slot. Tried: the killer fallback with the `killer != NONE` arm
+// first (retail's block order; an arm swap, diagnostic) 363 (1532 B); the assist stores reading the record's player index
+// 392 (1564 B: the cursor still +4); the selected entry's player index named for the datum test and the killer 403 (1596
+// B); the friendly test passed in the 0x1ea770 call (no local) 350 (1544 B: friendly then stays in AL where retail
+// keeps a stack byte; three points, not kept); self and friendly both in the call 359 (1535 B).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
