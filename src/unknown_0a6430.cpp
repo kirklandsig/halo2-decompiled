@@ -21,6 +21,13 @@ PRIVATE byte *update_object_0a6430(long index)
 	return *(byte **)(g_4e0300->data + (index & 0xffff) * 12 + 8);
 }
 
+// MiniMax E (11-20): no new form, no lower score (14): the 0x200 head still loads the object pool into ECX before the
+// masked index and keeps the object in EAX where retail computes the index into EDX first, loads the pool into EAX and
+// the object into EDX, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX; the count
+// initialised after the model read measures 18 (the tag pool load then joins the head), a separate tag local, the
+// 0x100 call's pointer formed from the address parameter and the getter written inline all measure 14, and the
+// reference form that reaches 12 binds the 0x100 object inside 0xba690, whose body is in src/unknown_0bad50.cpp and
+// may not be edited here.
 // MiniMax H (11-20): no new form, no lower score (14): the 0x200 head loads the pool into ECX before the
 // masked index and keeps the object in EAX where retail computes the index into EDX first, loads the pool into EAX and
 // the object into EDX, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX.

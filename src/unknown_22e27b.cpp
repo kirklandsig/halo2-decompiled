@@ -570,6 +570,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // dispose declared ahead of restart 1; the loop test as `!(time < next_time)` 1; no per-pass disposal reset, an
 // `else { dispose = false; }` after the high boundary instead 1 (same code each); both loop restart expressions with
 // the flag tests ahead of the type test 216 (654 B).
+// M3 lane 5 r221 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): dispose false at its declaration with
+// `bool restart = dispose;` 1; the loop test `time >= next_time && !dispose` 1 (both the same code); the join test `if (restart |
+// dispose)` 87 (659 B, the thread breaks and the flags word takes EBX); `dispose = false;` again inside the restart break 1
+// (same code); the loop test `!restart && time >= next_time` with the join break kept 122 (652 B).
 // M3 lane 9 r146 (fast with 0x22e957/0x22eeee/0x148119, all MATCH): the owner type read once into a long local for the
 // loop's dispose and restart tests 215 (655 B); the loop as `for (; time >= next_time; next_time += frame_time, elapsed -=
 // frame_time)` with the end-time store in the body 1 (same code); both loop boundary restarts as `restart = false; if
@@ -583,6 +587,24 @@ static inline real interpolate_linear(real a, real b, real t)
 // takes EBX, frame 0xc, no zero register), that with the per-pass reset kept 207. Re-measured: the join as `restart !=
 // (frame != frame)` 87. The callees are on no call cycle with this function (0x22e957 only calls itself), so the
 // allocation does not depend on a missing callee summary.
+// M3 lane 6 r220 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the flag-8 test through the
+// existing `animation.flags.flag3` bitfield 1 (same code); no per-pass disposal reset with `if (dispose || restart) break;` at
+// the join and the bitfield flag-8 test 87 (659 B: the thread breaks, but the join reloads the flags word into BX for the next
+// pass); the same with `!ANIMATION_FLAG(animation, 3)` 224 (665 B); both boundary blocks as `dispose = ...; if (!dispose) {
+// restart = ...; switch }` (no inner break) with `if (dispose || restart) break;` at the join, per-pass reset kept, 1 (the
+// thread comes back), the same with two separate breaks (dispose, then restart) 1. Lead (diagnostics, the flag-8 test read
+// through a byte cast of the flags field, reverted): with that byte read every thread-breaking join keeps the flags word
+// out of a register and the whole function is retail's except one pair, 14 at 657 B: `restart != (dispose && type == 0)`,
+// `restart != (frame != frame)`, no per-pass reset with `dispose || restart` (also with the reset at the pass end), the wrap
+// form above without the reset, dispose declared first, the reset after the frame sum. Left in each: the loop's zero is a
+// plain constant in EAX and the `& 2` bit takes EBX (retail: the per-pass disposal clear `xor ebx, ebx` serves as the zero
+// and the bit takes EAX), because once the thread breaks the per-pass reset is folded away as known false. So retail's
+// source keeps the flag-8 read apart from the boundary blocks' flags word and still keeps the disposal clear as a real
+// definition each pass. Without the pre-loop reset (byte read, `restart != (dispose && type == 0)`) 170 (664 B). On the
+// byte read with `restart != (frame != frame)`: dispose false at its declaration, the per-pass reset at the pass end, dispose
+// set only where it breaks (`if (...) { dispose = true; break; }`) with or without the per-pass reset, a direction-first
+// frame sum: 14 each (the same pair); set-only with no reset and `dispose || restart` at the join 1 (threaded again); the
+// `& 2` bit named per block as `long` 42 (655 B), as `word` 206 (663 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

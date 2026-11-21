@@ -1370,6 +1370,10 @@ bool __stdcall function_2399da(long controller_index)
 // listed other-way-round shape, re-measured as a cleanup); the identity declared with a NULL initialiser 90; the identity
 // test with explicit `!= NULL` / `!= 0` and the own rank unsigned 90; the permission test with the member's rank on the
 // left 91; `own_rank >= rank` with `3 == rank` 90 (each 90 the same code). Identity ECX/rank EAX remain.
+// Confirmation before the remaining rank tests, after/before removal with the
+// requested comparison or leader threshold 99/99/106/106. Signed bound before the
+// removal exception, bound before authority, or authority before bound 107/134/121.
+// Conditional confirmation in its own rank arm 99. The extra removal move remains.
 // M3 lane 12 r162 (fast with 0xac050/0xac360/0x2399da, all MATCH; control 90; each 90 with the same code): the identity
 // test read through a pointer to the identity local; the member's rank store read through a pointer to the rank parameter;
 // every rank use (NONE test, over-rank test, rank-3 test, store) through that pointer; the identity declared first, and
@@ -1389,6 +1393,10 @@ bool __stdcall function_2399da(long controller_index)
 // takes the identity EAX and the rank ECX, and that swap is the whole difference: the 64-bit id test and the member's rank
 // store then follow, and the copy into eax before the removal call still costs the two bytes that move every later jump.
 // The identity declared inside the block as a const pointer scores 90 as well (same code).
+// M3 lane 16 r164 (fast with 0xac050/0xac360/0x2399da, all MATCH; control 90): the permission test held in a named bool 90
+// (same code); the over-rank test as `!(rank > own_rank)` 90 (same code); the rank stored into the member first and the
+// rank-3 test made on the stored field 89 (identity still ECX); the copy block's refusal arm ahead of the copy arm 114
+// (433 B); the two member records declared the other way round 90 (same code). Identity ECX/rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

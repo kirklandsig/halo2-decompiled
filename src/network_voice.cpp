@@ -1550,7 +1550,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
+// score 60 (was 60): The membership load displaces the zero result from EAX. Player bit and entry size use
+// opposite saved registers, and capacity failure has a separate zero exit.
+// The 0x14 frame and entry registers agree. At +0xe the inactive branch spans the longer
+// body. The first operational difference uses EAX for the membership word, where retail needs the zero result
+// through the capacity gate. Retail leaves the retained mask and written count in stack homes and carries a
+// packed entry cursor beside the ordinal. The trials change when the actual entry cursor is acquired, advanced
+// or reused across the emission and summary scans, with the original live count tests.
+// Earlier at 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
 // Earlier detail: the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
@@ -2040,6 +2047,15 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // (456 B, 0x56380 12): the arms are not merged above the branch, so retail's flag test ahead of the byte copy does not
 // come from that. Reading as before: retail's order is K, W, C, S with the mask left in memory, EBX first the mask's
 // scratch and then the size, the bit in EBP and the zero result untouched in EAX.
+// Length from input capacity 183, separate payload budget 178, or cursor displacement 196;
+// record-end payload placement 145; zero-based removed bits with repeated retained reconstruction
+// 157 or shared narrowed reconstruction 91; byte length accumulated in a local or the result
+// 159/159. NOT kept: every form regresses and the record-end and running-length forms
+// change the matched caller.
+// Emission acquisition/cursor 184; summary cursor 69; separate cursors 184; shared cursor at latch/acquisition
+// 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
+// NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
+// the player on the stack.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

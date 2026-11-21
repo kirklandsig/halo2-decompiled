@@ -578,6 +578,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // MiniMax E (11-20): no new form, no lower score (34): the body still differs from retail only in the scratch registers - the player count is tested in edx here and in eax in retail, and the clamp's mask is built in edx here and in ecx in retail (the clamped value itself is in eax in both) - and the notes below record that retail's caller 0x7e210 hands the count over in eax, so the arrival register is not this body's to choose; swapping the two operands of the total's sum compiles to the same bytes.
 // MiniMax A (11-20): no new form, no lower score 34: the player count arrives in EDX where retail keeps it in EAX, and the exchange runs through the copy loop and the fill.
 // score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
+// M3 lane 15 r124 (H2M_FAST with 0x91e30 MATCH, 0x7e210 871; control 34): the maximum update as a conditional
+// expression 34 (same code); the balance call's count written as the sum of the two counts 34 (same code); the clamp
+// compare with its operands swapped 35; the copy first and the maximum as a `>` conditional expression 82 (170 bytes).
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
 // MiniMax R (11-15): no new form, no lower score (34): the two count arguments still take the other registers - the

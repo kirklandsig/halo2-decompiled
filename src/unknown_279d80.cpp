@@ -2387,6 +2387,12 @@ void function_2818e0(void)
 // scale moved into the interpolation test's else arm 2 (same code); blend 2's translation through the existing vector3f_add
 // 4; a separate applied-destination local beside the kind-0 cursor 2 (0x289580 2); the kind-2 clamp as an unconditional
 // ternary self-assignment 2 (same code). All restored.
+// M3 lane 2 r126 (fast with 0x27dff0 and the four matched walk users; control 2): redundant parens around the blend-2
+// translation arm's first sum in function_288573, one pair 7 (the pair stays; that arm's addss operand orders move),
+// two pairs 2 (0x289580 78), three pairs 39 (0x289580 78): the arm's float keys move, and parens in an arm a user never
+// runs still move that user, so node keys are counted before dead arms go; around the blend-2 scale product one, two or
+// three pairs 2 (0x289580 78 with two or three); around the walk's group-end sum, around both its sums, around
+// node_flags_test's word index 2 each (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
