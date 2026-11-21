@@ -454,6 +454,12 @@ long g_55e6c0;
 // height through a `long const &` to the parameter 31 (all four the base's code); the header pointer declared ahead of the
 // sub-header zero stores and used for them 157 (488 bytes), also for the select and the format store 162 (471 bytes). The
 // packing ahead of the clamp re-measured 31 (483 bytes, in-place clamp), with the header pointer 33, with levels 33.
+// M3 lane 12 r161 (fast with 0x1dc40/0x1db10, both MATCH; round 122's lead re-measured 31 at 484 bytes, the top block's
+// height/count swap left). On that lead: the height stored right after the kind 33; `levels` declared bare at the block top
+// and assigned at the clamp 31; `levels = 0; if (count >= 0) levels = count > 4 ? 4 : count;` 45; `levels = 4; if (count
+// <= 4) levels = count < 0 ? 0 : count;` 137 (485 bytes); the kind stored after the +0x8c clear 31 (the kind store is
+// still scheduled first); the kind stored after the levels clamp 43 (the kind store then follows the clamp, and the count
+// still takes EAX). In none does the count take EDX at the top.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

@@ -556,6 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
@@ -876,6 +877,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
 // all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
 // follow where the shorts are declared).
+// M3 lane 12 r160 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, all MATCH; control 114): use-count forms to move
+// the spill homes: the fade time read once into a local used twice 293 (1892 bytes); the elapsed fade time named 114
+// (same code); the status player taken from `player` 535 (1861 bytes); the timer flag read through the global 114 (same
+// code); the tutorial colour as three arms each calling the unpack 215 (1890 bytes).
 // M3 lane 7 r197 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
 // 102). On the bool timer (191, 1888 B): the four flags renamed so that their names sort in each of four orders 191 each
 // (same code: the byte homes do not follow names); the three message flags declared without initialisers after the
@@ -885,6 +890,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // shares the flash value's home with the row counter (-0x18) and gives the message height its own (-0x4c); ours shares
 // the timer, flash and message height (-0x14): the packing follows the lifetimes, not the declarations.
 // MiniMax C (11-20): no lower score (114): the frame homes and the left coordinate word store differ; a word for left scores 482.
+// M3 lane 6 r217 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 114): one local for
+// g_510c94 across the timed, tutorial and default colour arms 480 (1868 B); the row loop's active test in the for
+// condition 316 (1892 B); the split-screen test as `count >= 2` 116, with the bool timer 193 (flags still -0xe/-0xd/-2);
+// the status block reusing `player` for its second lookup 535 (1861 B). Diagnostic: an extra read of origin.x 491, the
+// scripted byte stays at -2 (the packing does not follow origin's reference count). Body unchanged.
 // M3 lane 11 r141 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
 // differing rows 102, 18 with the frame offsets masked, 12 with registers masked too; body unchanged). LEAD for the
 // tutorial colour, the first spelling that gives retail's block (flag test, the a4 load, the bit test jumping back to

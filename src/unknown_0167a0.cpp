@@ -420,6 +420,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // `second` bound by `long const &` for the chain index 5 (+0x1a7); the tables field bound by `byte *const &` for the chain
 // and pass bases 6 (+0x19e: the reload moves back under the entry store and `second` stays early). The entry computed into
 // a local, stored, and the word read through the local 181 (975 B, the listed form).
+// M3 lane 12 r161 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e; the
+// direct entry store re-measured 5 at +0x1a7): the direct store typed as a long field with a long cast 5 (+0x1a7), as a
+// dword 5 (+0x1a7); the reference typed `long &` with a long cast 5 (+0x19e); on the direct store the chain and pass
+// bases read as pointer-array elements of the tables (`((word **)tables)[3]`, `((byte **)tables)[5]`) 5 (+0x1a7); the
+// direct store with the packed word read inside the chain index (no packed assignment) 5 (+0x1a7). All the same code as
+// their bases: the store's type does not hold `second` behind it.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

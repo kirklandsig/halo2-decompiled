@@ -544,6 +544,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // expansion whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload
 // into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // MiniMax G (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the request expansion in src/unknown_1dacb0.cpp, so the graph's ebx/ebp roles, the add of 0x34 and the lazy reload into ebp cannot be moved from this file; the frame and both query temporaries' homes still agree.
+// MiniMax D (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the inlined
+// graph_resources_request, whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy
+// reload into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
@@ -946,6 +949,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // test. bool success passed as the request's urgent argument with `!success` as the other 1398 (2473 B). The cause
 // sits inside the shared inline request (src/unknown_1dacb0.cpp, held by another lane this round, and used by the
 // contributor's matched 0x1dc8c0).
+// M3 lane 5 r219 (H2M_FAST with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1cccd0/0x1dc8c0/0x1cd070, all MATCH each run;
+// control 348): the request's names from an aggregate copy of the found record 504 (1766 B, first difference +0x2); the
+// request given its own graph pointer local 348 (same code: the copy folds into the graph); `byte success` declared
+// ahead of the graph 348 (same code); bool success with that graph pointer 478 (as bool alone); the graph bound as
+// `s_graph_tag *const &` to the getter's result 348 (same code). The residual is the expansion of the request helper
+// (the inheritance index's zero and the graph's register), in another lane's held file this round: BLOCKED-BY 0x1ddd00.
+// Body unchanged.
 // M3 lane 11 r141 (fast with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1dc8c0/0x1cccd0/0x1cd070, all as before; control 348 at
 // 1782 B, aligned differing rows [exact/stack-masked/register-masked] 36/36/25; body unchanged). The graph held in a
 // one-member aggregate local 348 (same code: the aggregate is scalar-replaced), with bool success 478 (bool's code); the

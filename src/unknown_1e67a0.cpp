@@ -689,6 +689,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-20): no new form, no lower score (114): the first difference is inside the inlined rotation helper, whose body lives in src/unknown_1eb8a0.cpp, a file this lane may not edit; the block copies, the side crosses and the snap exit's copy follow from it.
 // MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
 // MiniMax B (11-19): no new form, no lower score (114): the first difference is still inside the shared rotation
 // helper, whose source is in src/unknown_1eb8a0.cpp, so the block copies, the side crosses and the small-turn exit are
@@ -1308,6 +1309,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 580 (it stays out of line, 988 B here), forced inline 199 at 1382 B (first difference +0x2). With lane 1's preset
 // moved-away flag: on the by-value setter 94 (the lead's own code), on the direction local 176, on the goal copy 244
 // (1431 B). 1 to 7 unused (never referenced) locals on the flag form 145 each (dropped before they count). Nothing kept.
+// M3 lane 12 r160 (fast with 0x1eb640; control 114): 0-7 initialised unused locals 114/140/150/150/139/163/166/144
+// (1-6 give 1382 bytes; unlike never-referenced ones they count), but the four axis-by-vector products of the inlined
+// rotation keep this build's operand sides at every count; the angle scaled in place without the rotation local 186
+// (1365 bytes); the velocity scale read at each use 206 (1395 bytes); the axis copied into a local vector 230 (1406
+// bytes); `angle` declared before `movement` 114 (same code). Still BLOCKED-BY the rotation helper in src/unknown_1eb8a0.cpp.
+// Calculate sine, cosine, sine then cosine, or cosine then sine before copying
+// forward: 125/136/163/166. The same with the shared axis-rotation helper:
+// 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
 // M3 lane 2 r118 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114; the first difference is still in the
 // rotation helper, whose file is another lane's this round): initial_cross's j row as `b->i * a->k - a->i * b->k`,
 // `b->i * a->k - b->k * a->i` and `a->k * b->i - b->k * a->i` 114 each (same code: the product operands are
@@ -1318,6 +1327,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Calculate sine, cosine, sine then cosine, or cosine then sine before copying
 // forward: 125/136/163/166. The same with the shared axis-rotation helper:
 // 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
+// M3 lane 6 r217 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114 at 1389 B, aligned 61, masked 36):
+// the side dots from the `up` parameter 201 (1369 B); the alignment dot and old cross from the `forward` parameter 257 (1395 B,
+// masked 33); a named pointer to the state's forward for the copy, both turn reads and both exits 165 (1382 B); the velocity
+// scale from the `speed_scale` parameter 366 (1365 B); the velocity copied from the movement and scaled in place 213 (1390 B).
+// Body unchanged.
 // M3 lane 11 r141 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114 at 1389 B, aligned [exact, stack
 // masked, registers masked] 61/59/35; body unchanged; the rotation helper's file is another lane's again). Re-measured on
 // today's tree: the goal copied into the rotated local with one store at the end (no early return) 114 (47/47/29: both

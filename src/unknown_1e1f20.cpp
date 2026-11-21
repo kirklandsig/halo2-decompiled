@@ -592,6 +592,7 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax G (11-20): no new form, no lower score (236): the raw value turned into a bool before the 0x203ed0 call rises to 289, the prop walk through prop_node_get rises to 280 and to 274 with the cached-actor iterator compare, and calling the real 0x26ed40 instead of expanding it rises to 348 (910 bytes); the offset-first head form compiles to the same bytes as the kept body and was dropped; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp), and the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX.
 // MiniMax B (11-20): no new form, no lower score (236): the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX, and the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp); the known 216 form holds the definition bit in a byte flag set by one test and read by the next, which is kept only with a byte match; this round's permuter (2 tries, 339.9 s) reaches 205 differing instructions against its baseline of 219 only through a constant-only local and a bool flag set by one test, both banned.
 // MiniMax G (11-20): no new form, no lower score (236): the head still loads the actor pool global into eax where retail keeps it in ecx and holds the scaled actor index in ebx where retail keeps it in eax, and the tail still keeps the pool in edi where retail keeps it in ebp; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it.
 // score 59 (was 236): m3 lane 11 r141 kept the memory walk as a plain loop testing through the cached actor with the release steps as retail expands them, the prop walk through 0x26be00/0x26be30 with the node re-read after the callback, the iterator compared against the cached actor and `value` as a bool (see the end of this note). Left: the slot loop forms the slot address ahead of the handler loads where retail forms it after the test, the definition bit is tested in place where retail stores it in a byte first, and the compare's operand order. Earlier 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
@@ -1001,6 +1002,14 @@ void swarm_leader_detach(long actor_index);
 // against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
 // region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
 // re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// M3 lane 12 r160 (fast with 0x26ed40's nine callers and the matched functions of its file; control 236): the memory
+// walk calling 0x26ed40 under the type test through the cached actor 364 as a short for loop or a long do loop (a call);
+// with `inline` on 0x26ed40 301/319 (1006 bytes), 0x1bead0 and 0x26ef70 then expanding it too and losing their match;
+// its file without the inline-depth flag (diagnostic, flags unchanged) the same three expansions; `value != 0` 236 and
+// `memory + memory_index` 236 (same code). Retail keeps the call at all eight other sites. Still BLOCKED-BY 0x26ed40.
+// Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
+// fresh entry from byte distance, element distance, short index or advanced byte
+// displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
 // M3 lane 2 r118 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236): the
 // memory walk's entry through the existing element_502424_get 236 (same code); the prop walk's node through the existing
 // prop_node_get view (next_index, view_index) 236 (same code); both 236; the slot loop with a slot pointer local as
@@ -1011,6 +1020,11 @@ void swarm_leader_detach(long actor_index);
 // Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
 // fresh entry from byte distance, element distance, short index or advanced byte
 // displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
+// M3 lane 6 r217 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236, aligned
+// 82, masked 41): the invitation test through the entry actor with the body through the re-derived entry 319 (1006 B), that
+// as a `for (short ...)` walk 339 (1022 B); the first prop index read through the cached actor 309 (942 B); the invitation
+// index as short in the do-while 236 (same code); the invitation walk as a plain `for (long ...)` 526 (1182 B). Still
+// BLOCKED-BY 0x26ed40.
 // M3 lane 11 r141 (fast with 0xf0fd0, 0x1fb360, the ten callers, 0x26be00, 0x26be30, 0x203ed0, 0x1e22d0, 0x26ed40, 0x1e2150,
 // 0x258600 and 0x1e4990, all as before in every run; control 236, aligned differing rows 82, 43 with registers masked):
 // kept, 236 -> 59 at 974 B (aligned 9), plain check 59. No copy of a helper function is needed for round 115's lead: the

@@ -1196,6 +1196,24 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // 115 (same code); re-measured: the clip store through `*(outside0 ? p1 : p0)` 368 (1867 B). Diagnostic: lane 12 r123's
 // match-only 18 form rebuilt 18; one to seven unused uninitialised locals on it 18 each (only initialised ones shift it,
 // as lane 5 r203 found). Body unchanged.
+// M3 lane 2 r122 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115; body unchanged). Lane 12 r123's match-only 18
+// form rebuilt 18. New on it: retail's `add eax, esi` in the projection set-up (the per-point counter's 2 added to the total) is
+// the total counted once per projected point, so the tail needs no cursor, output or source pointer: `if (projected_points)
+// projected_points[total] = s;` with `total++` at the end of the per-point loop and the source as `&local_points[segment * 2 +
+// k]`. With 0-7 unused initialised locals after `culled` (diagnostic) that tail gives 142 (1830 B), 158 (1830 B), 37, 12, 16, 32,
+// 22, 10: at 7 the whole projection tail is retail's (total in EAX, its store after the source pointer's move) and 10 lines are
+// left, the remainder classification loop's j term (point first for retail's normal first) and the clip deltas' order (y, z, x
+// for x, z, y). The same tail with the source pointer kept 142 (1830 B), 30, 37, 12, 16, 32, 24, 140 (1830 B); `total++` per point
+// with the cursor and output pointers kept 19, 35, 42, 15, 19, 163, 155, 15. On main's body the index tail is 232 (first +0xbb),
+// so it is match-only with the lead (build/r122/lead-0x1652e0-index-tail.patch in the m3-lane2 worktree). On the lead with the
+// index tail, the clip block from the existing vector3d_from_points3d with the scale helper, with written rows, or with a
+// one-expression denominator 103-275 at every count (first +0xbb or +0xb6: the head needs a named scalar delta). Compile-only
+// screen of the clip block on that form (it reproduces the fast build from the classification on; the 10-line state reads 14
+// there), every count 0-7: 192 forms (each subset of the three deltas named, every declaration order, the six denominator
+// orders, named or written scaled rows) best 14 (the lead's own block), next 16; 468 more forms with each delta named for the
+// denominator only, for its row only, or declared after the ratio (denominator x, z, y or y, z, x) best 16. With x named and the
+// denominator x, z, y the x product loads the normal first and the z delta and the denominator swap XMM1/XMM3; with y named
+// the products are retail's but y takes XMM5; with none named the zero constant takes XMM5 and the head is lost.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
