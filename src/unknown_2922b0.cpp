@@ -814,6 +814,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the active path as retail's, but the field is loaded a second time behind the in-line exit), with `return local_0;`
 // 631 (same code). An early return is always laid out in line here, so retail's exit at the end means its `return
 // true` stands after the active block, and the per-point reads then need the array declared outside that block.
+// Separate first, second or both rotated results 645/535/623; first or second result
+// declared before response evaluation 645/535; copied in-place response 566;
+// first output reused in place by second 551; separate first input 542.
+// All leave the first success byte at ESP+0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

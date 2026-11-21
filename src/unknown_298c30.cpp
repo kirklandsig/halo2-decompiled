@@ -745,6 +745,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // diff: the loop head's subtraction order and root store, the near rows' `y * cos` operand sides and cosine/sine slots
 // (+0x18/+0x14 for retail's +0x28/+0x1c), the second normalization's store order, the tangent dot's term order, the
 // second side's arm order, the wrapped angle's compare and slot, and the emitter reading the angle element at each use.
+// Facing products staged across negative x, the negative endpoint or positive x, with real
+// or double products, 316 in all six forms. Full facing test after negative x or after the
+// negative endpoint 332/336. The 0x64 frame agrees and unity still uses XMM1 in the staged forms.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

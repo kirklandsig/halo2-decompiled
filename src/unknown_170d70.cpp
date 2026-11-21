@@ -2216,8 +2216,9 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 270 (was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
-// retail. The center trace stays matched.
+// score 155 (was 284): The 0xb8 frame and entry convention agree. First +0x3c is the branch span
+// to the zero load. The build clears XMM3 before the side branch; retail uses XMM1 at the plane test and lookup exits.
+// Earlier 270: the 0xbc frame and point in EBX differed from retail. The center trace stayed matched.
 // Earlier score 270 (was 284): the winning displacement spills before the side offsets are stored
 // and reloads for refinement. The frame and point convention still differ.
 // Earlier logic walk against retail: cluster/reference lookup, plane test (< 0), centre point, four
@@ -2326,6 +2327,9 @@ struct s_camera_reference_171830
 // convention: forward ECX, up EAX, point on the stack), the cluster is a pointer whose reference byte is re-read,
 // the blend is chosen in each arm, loop 2 builds its target point first, and the centre goes through a negated
 // scaled forward vector. Left: the float zero's load placement and the depth * forward->i operand order.
+// Shared scale and in-place or separate negation 158/158; rear-vector setter 155;
+// center-point setter 155; shared negation with center setter 158; paired setters 155;
+// zero-initialized rear vector 155; scaled-vector setter with shared negation 158.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
