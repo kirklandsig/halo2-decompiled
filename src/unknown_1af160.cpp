@@ -244,6 +244,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // long 25 (same layout as the helper); the saved reference copy declared const 12 (same code). On 0x260670's chain (with
 // that function's five trials of this round: the sort scratch in its own block, the two flags in one declaration, the flags
 // declared after the best score, the evaluator-loop flag declared at the top, a long sorted index) this function stays 12.
+// M3 lane 15 r122 (fast with 0x1e1f20, control 12; the same two swapped home pairs): the 0x1e5280 record's +0xc range
+// named once for its three uses 65; the squared distance as the vector's dot with itself 12 (same code); the 0x265c30
+// flag declared inside the record test 19; the 0x1e5280 definition index named ahead of the call 12 (same code); the
+// 0x2626b0 test written `!local_18 && !local_17` 15. Adding or dropping a symbol there leaves both pairs as they are.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

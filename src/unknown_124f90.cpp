@@ -4324,11 +4324,12 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// score 48 (was 48): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
+// word bits in the header, so a byte bitfield would be needed; r122 below: the constant 8 is held in EBX for the
+// second pending test), the second pending test reads AL where retail shifts DL by 3, and the count's NONE compare
+// uses an immediate where retail holds -1 in EDX.
 // MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
-// score 48 (was 72): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
-// word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
-// DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
-// score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
+// Earlier at 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
 // for the count's default).
@@ -4691,6 +4692,15 @@ struct s_128ca0
 // Synchronization count as short/word/dword with the separate decrement or postdecrement
 // 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
 // NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
+// M3 lane 15 r122 (fast with 0x1293f0, 0x12a810, 0x12a420, 0x125e60, all MATCH; control 48: on it the constant 8 sits in
+// EBX for the second pending test, `test bl, al`, the flag3 set `or word ..., bx` and the stream bit `or cl, bl`): the
+// second pending test as `!TEST_FIELD_BIT(...)` 72 (1054 B: that test, the flag3 set and the stream bit's load / or /
+// store are then retail's shape, and from the flag6 test on only the scratch rotation differs, one step behind
+// retail's), as `!(bool)((flags >> 3) & 1)` 72 (same code), as `!((flags >> 3) & 1)` or `!(flags & 8)` 48 (same code
+// as now). On the 72 form: `char count = NONE` 208 and `signed char` 208 (the count block is then retail's exactly,
+// `or edx, -1` shared by both NONE compares and the count's DL, but the pitch-range lookup's EAX/ECX and every later
+// block rotate), `long count = NONE` 122; the char count declared at the top of the not-started block 230, after the
+// field_c store 235, after the first channel call 202, after the impulse call 203, at the function's top 239.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

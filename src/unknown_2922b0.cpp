@@ -761,6 +761,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Paired cursors, ordinal from point or hit with countdown 659/517.
 // Paired cursors, ordinal from hit with do-end or for-end test 639/639.
 // NOT kept: The best form is four points lower at 2865 bytes and leaves the success byte at +0x13.
+// M3 lane 15 r122 (fast; control 521, LCS-aligned 270/274 unmatched, register-masked 161/165): the range test as
+// `if (field_48 > 0.0f) { ... } else return true;` 647 (2866 B, aligned 259/264, masked 150/155: the inactive exit then
+// sits last as in retail); on it the range local read before the test and tested 637 (2862 B, aligned 259/264: one
+// field_48 load shared by the test and the local as retail's XMM1, but its home is +0x14 against retail's +0x30, stored
+// before the branch); the arg_3 clear through vector3f_assign 521 (same code), on the swapped form 637 (same code); the
+// hit flags declared ahead of the minimum 521 (same code).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

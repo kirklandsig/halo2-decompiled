@@ -703,6 +703,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // `return 0.0f` 305, in 0x2b400's shape (`x = x * inv; y = inv * y;`) 305, with the reciprocal first in both products 305,
 // with both components divided by the length 305 (all the same code); the arg_0 read through its address removed 316
 // (1726 B; plain agrees, 0x29a190 MATCH -> 345).
+// M3 lane 15 r122 (fast with 0x29a190 and 0x298c30, both MATCH; control 305): lane 16 r154's lead rebuilt 300 (1716 B,
+// first difference +0x194; left: the loop head stores the root and reloads it for the radius compare where retail keeps
+// it on the x87 stack with `fst`, the near arm's cosine slot (+0x18 against retail's +0x28, the outer counter's spill
+// slot) with `cos * y` where retail loads y and multiplies by the cosine's slot, and the second emitter's argument setup).
+// On that lead: the near y row written `y * cos + x * sin` or `sin * x + cos * y` 300/300; the distance helper returning
+// double with the cast at the call 300; the side flag computed ahead of the distance 300; the radius test written
+// `field_24 > distance` 300 (all the same code). Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

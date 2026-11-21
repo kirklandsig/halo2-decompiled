@@ -218,6 +218,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // `bool const &` for its test 21 and for the 0xd1850 argument 21; the hidden test's object through a `byte *const &` 21, on
 // update-first 216 (same code each); update assigned in both arms re-measured 222 (aligned: only the false store's place in
 // the not-force arm and the missing force-arm reload differ); that with the object looked up again in the force arm 226 (813 B).
+// M3 lane 15 r122 (fast with 0xd1850 and 0x3d2c0, both MATCH; control 21; update-first re-measured 218, where only the
+// timestamps' ESI/EDI, the false store after the object's home store and the missing force-arm reload differ): on
+// update-first, both timestamps named and declared update time first 219; the hidden return in its own braces under
+// the else 218; the object through a named header-entry pointer 218 (same code each); update elapsed computed after the
+// force flag 232. On the kept order, the two named timestamps declared update time first 35.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
