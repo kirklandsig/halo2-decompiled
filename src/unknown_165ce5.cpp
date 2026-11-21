@@ -2047,6 +2047,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // callback local 188 (same code); the aiming speed computed ahead of the update call 388 (2204 B); the 0x98 overlay's
 // channel flags and set as two conditional expressions on `no_scope` 350 (2203 B); the busy test as `== 0` and the
 // countdown as `-= 1` 188 (same code). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// Existing object getter at unit/primary weapon/iterated weapon, singly, paired,
+// and together 188 each. Existing header getter and object member at all three
+// 188. The 0x30 frame, unit/mode slots and early ESI/EDI saves persist.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -929,6 +929,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
 // accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
 // (3838 B). Body unchanged.
+// Provider index into source field, then saved before defaults, short/byte/per-use slot
+// 617/613/712. Keep the index in the field with branch clears 691/735/692 or
+// with the common metadata check 726/716. NOT kept: retail uses a separate provider
+// out slot and the palette and provider registers still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
