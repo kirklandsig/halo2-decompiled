@@ -3815,6 +3815,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // for the magazine's rounds (ours spills it to frame +0x24 because EDX is needed for `mov dx, [esi+0x2a]`; retail keeps
 // it in ECX, the magazine in EAX); the rounds named once for the opening tests 599 (same code). The unit index plain,
 // read by const reference in the player helper 646 (2507 B). None reaches the bar; body unchanged.
+// Shot/holder/effect, magazine/effects, result/scale and ammunition/result names 603 each.
+// Paired tag/scale defaults 604, burst published after multiplication 638, signed minimum carried into fallback 625,
+// shared player lookup at both queries 600. NOT kept: three-point best gain and the 0x1c64 frame remains.
 // Shared shot notification 603; admission predicates producing the fired value 577;
 // plain holder plus nested feedback tests 648; named short fallback minimum 603;
 // pre-heat round predicate 603; separate magazine tag base 603; scoped owner rejection 603;
@@ -4304,6 +4307,9 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // keeps BL with a home at 0x13; masked aligned rows 887 -> 855); also without the complement local 1427; also with the
 // +0x1c clamps as float value selects 1432. The 64 bytes the double clamps add are about what the dword result stores
 // cost over retail's byte ones, so the double clamps, a bool result and the arm-local complement belong together.
+// Desired-state and handle-first transitions 1482/1477, named presence and absence 1412 each,
+// shifted flag and eager flag join 1412/1409, Boolean XOR 1412, conditional transition 1450.
+// NOT kept: three-point best gain. The pool, offset and entry result homes still differ.
 // Opening-only pool 1412; retained header slot 1449; direct owner player result 1438;
 // early blocking state 1433; Boolean activity set from magazine calls 1494 or call-first OR 1464;
 // arm-owned blends 1436, with opening pool 1440. NOT kept: the pool-only form ties;
@@ -4950,6 +4956,9 @@ struct s_weapon_projectile_creation
 // pointers 1121, fixed axis by value 1150, staged and direct shared cross 1186 each, shared i-k-j projection
 // 1131, changing vector passed and returned by value 1185. NOT kept: no gain. The setter reduces the frame to
 // 0x1e94 but shortens the body to 5105 bytes.
+// Inherited velocity aggregate 1168, named perpendicular components and staged correction 1121 each,
+// shared vector addition 1132, named actor correction, staged actor result and both staged results 1121 each,
+// named cone minimum terms 1154. NOT kept: ties and regressions. The 0x1ea4 frame still exceeds 0x1e98.
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.

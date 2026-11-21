@@ -916,6 +916,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Earlier at 129 (was 129). Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
 // The camera table loads late, the key and table registers are exchanged, and the plane
 // lookup uses a different address schedule.
+// Lead (P647, not kept): the signed camera offset by record extent as its own one-use local gives plain 11 at
+// 434 bytes (camera table still late and exchanged with the key; the key push precedes the camera address
+// addition; the distance transfer uses EAX instead of ECX). Folded into the subscript it is plain 105.
 // The one-word frame, saved EBX and later BP volume index agree. The first difference at
 // +0x10 is the map-miss branch span. At the admitted projection, retail loads the camera base into ECX before
 // the volume count calculation, then holds the camera key in EDX for the multiply and push. The trials use the
@@ -1084,6 +1087,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // one post-update key 106, or a record address before the volume 13. Byte offset with direct portal field 11 or
 // before the volume 13. NOT kept: the 11-point forms still load the camera base late and exchange its register
 // with the key. The one-use bindings and portal field reload require an exact match.
+// Native portal record 105, with separate camera offset 11. Offset by native camera extent 11,
+// byte subscript 11, output reference before count 84, direct count increment 11, selected plane
+// with the saved or direct portal field 94/94. The signed camera offset by record extent as a
+// one-use local gives plain 11 at 434 bytes; NOT kept at review: one-use locals need an exact
+// match, and folded into the subscript it is plain 105 (the fast build gives 11 for both, so
+// confirm these forms with the plain check). Retail multiplies the key before pushing it. NOT kept:
+// the output reference changes the creation span, and the selected-plane forms change its two stores.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1738,6 +1748,11 @@ struct s_point_pool_173520
 // 156, depth-read advance 125, native arena recount 190, destination stride in the loop update 9. NOT kept: the
 // 9 form still reverses the stride spill and cursor load, and exchanges the recount registers. The bindings
 // require an exact match.
+// On the staged reservation with corner and cap bindings: shared forward winding 167;
+// cursor advance at vertex binding 183; cursor and step names 9; index, step and countdown names 9;
+// complete recount as long or pointer difference 9/9; count-first end index 9; vertex binding and
+// native recount 183. NOT kept: the 9-point forms still spill the stride after loading the cursor,
+// exchange the recount registers and require an exact match for the reservation and bindings.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2041,6 +2056,11 @@ struct s_pool_view_172840
 // carried input rectangles 55, entry or polygon input with the destination pointer 55/55, and both inputs with
 // the clip output 55. NOT kept: the first publication scratches and five-byte sentinel stay different at 870
 // bytes.
+// Bounds template memcpy 55; byte-array bit map 55; complete clipped end index 55. On the
+// short-sentinel form: template memcpy 17; byte-array map 17; scalar-pair recount 115;
+// read-only point difference 17; named parent bitmap source 17. NOT kept: the 17 forms
+// reach retail length with the short sentinel but retain the reordered publication,
+// reversed copy setup and exchanged scratch registers in the recount.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

@@ -952,6 +952,9 @@ struct s_physical_block_iterator
 // inside a direct `best.previous == NONE` test 93 (+0x338: the NONE register then joins the allocation test); best.offset
 // bound to a `long const &` ahead of the walk and used by both tests 40 (same code); a plain local for it with the sum
 // written pages first 40 (same code); the walk's block through a local pointer 40 (same code). Body unchanged.
+// Updated page total 213, updated timestamp 374, both 373, winner timestamp 201,
+// winner plus updated timestamp 374, winner plus both 373, conditional timestamp 376,
+// and updated page total with named weighted products 213. NOT kept: no gain at retail length. The policy join still differs.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
