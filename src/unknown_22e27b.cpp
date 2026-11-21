@@ -570,6 +570,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // dispose declared ahead of restart 1; the loop test as `!(time < next_time)` 1; no per-pass disposal reset, an
 // `else { dispose = false; }` after the high boundary instead 1 (same code each); both loop restart expressions with
 // the flag tests ahead of the type test 216 (654 B).
+// M3 lane 5 r221 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): dispose false at its declaration with
+// `bool restart = dispose;` 1; the loop test `time >= next_time && !dispose` 1 (both the same code); the join test `if (restart |
+// dispose)` 87 (659 B, the thread breaks and the flags word takes EBX); `dispose = false;` again inside the restart break 1
+// (same code); the loop test `!restart && time >= next_time` with the join break kept 122 (652 B).
 // M3 lane 9 r146 (fast with 0x22e957/0x22eeee/0x148119, all MATCH): the owner type read once into a long local for the
 // loop's dispose and restart tests 215 (655 B); the loop as `for (; time >= next_time; next_time += frame_time, elapsed -=
 // frame_time)` with the end-time store in the body 1 (same code); both loop boundary restarts as `restart = false; if

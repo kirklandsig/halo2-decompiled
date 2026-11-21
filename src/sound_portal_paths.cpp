@@ -610,6 +610,12 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // optional outputs 318, or all with shared fill/output ordinal 318. NOT kept: the 291 form
 // gains four. The 286 form restores the 0x428 frame but grows to 1372/1363 bytes, advances
 // outputs at their stores and leaves the BSP base loads and starting-cluster register unresolved.
+// M3 lane 5 r223 (H2M_FAST with 0x18d730 (287) and 0x14b240 (MATCH); control 295, aligned 194 / register-masked 155):
+// the deep block's environment index named once (`long environment_index = other->environment_index;`, six uses)
+// 389 (1318 B); the start cluster's environment index named for the seed block 340 at 1363 B; both 389 (1330 B);
+// 0x14b240's in-plane subtraction through the existing vector3d_from_points3d 295 (0x14b240 still MATCH, same code
+// here: an expanded helper's out-pointer gives no may-write summary, so the table bases stay hoisted); the packed
+// entry as `long encoded` alone 297. Body unchanged; BLOCKED-BY 0x14b240's write summary as before.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

@@ -1715,6 +1715,12 @@ void function_150820(dword *bits, bool local_only)
 // player esi and the hand edi, and the unit index still takes ecx where retail takes edx, so the whole body stays one
 // register rotation off; the only form that gives retail's registers (18) rereads the unit index through the player
 // getter and stays match-only.
+// M3 lane 5 r222 (H2M_FAST, control 43): on the 73 lead (the lookup through the getter) every register is retail's and the
+// only rows left are retail's `add eax, edx; mov esi, eax` folded into `lea esi, [eax + edx]` (the re-read merges the sum
+// with the player). Forms from the const-reference family: the player read through `s_tail_player *const &kept = player`
+// at every use on the 73 lead 73, at the guard only 73; the player bound as `s_tail_player *const &player =
+// tail_player_get(player_index)` on the 73 lead 73, on main 43; the kept reference only at the two late reloads on main 43
+// (all the same code as their bases: the reference folds).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -2786,6 +2786,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // at the top of the 275 form 499-501 (the homes move), in the end block, ahead of the camera angle or ahead of delta 496
 // every n (inert: the camera sums' operand sides and the forward block do not follow the symbol count here).
 // MiniMax H (11-20): no new form, no lower score (417); the delta and reflection XMM allocation and the unity store schedule still differ.
+// M3 lane 5 r223 (H2M_FAST, control 281, aligned 142/65 exact/register-masked; the one extra byte is the loop's
+// draw point x product, ours `movss xmm1, reflected.i; mulss xmm1, xmm0` where retail multiplies by memory):
+// redundant paren pairs (1 to 3) around the forward's first product or one delta term 487 each (one instruction
+// fewer later, the delta/forward block unchanged), around a camera sum's first product or the draw point's x product
+// 281 each (same code); `attenuation` declared beside `animated` (retail's 1.0 store beside the colour's three) 503
+// (2290 B, aligned 164: delta then x, y, z as retail but the colour stores move after the forward block); that with
+// delta assigned i, j, k 504; with reflected as three statements j, i, k 495 at 2285 B (aligned 171), with delta
+// i, j, k too 496; the opacity arms negated with axis_scale ahead of the angle 276 (aligned 136; a swap, not kept),
+// with delta i, j, k 275, with the attenuation and reflected forms 496, with all four 497.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4739,6 +4748,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // the named row with shared displacement 530.
 // NOT kept: the stored-only form ties; the others add frame storage and length.
 // The independent velocity reads and register projection results remain.
+// M3 lane 5 r223 (H2M_FAST, control 486, aligned 485 of 487 retail lines): the velocity sums written through the
+// indexed state array with the element pointer kept for the reads 492 (2027 B, aligned 456); that with the maximum
+// read at each use 505 (2016 B); the speed test as sqrt(dot3f) on main's body 510 (2011 B); the indexed sums with that
+// test 487 (2036 B, aligned 460); that with normalize3d for the norm block 531 (1990 B). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5809,6 +5822,17 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // reflected corner offsets 441/444, and shared corner translation pass 792/798
 // (scalar alpha/four-channel color). NOT kept: the 224 form recovers frame 0xe0 and
 // 1819 bytes but gains seven. The positive-radius, negative-radius and zero homes differ.
+// M3 lane 5 r223 (H2M_FAST, control 231, aligned 209 / register-masked 192). The corner helper's rows as two
+// steps, a named first pair in each row (`real cx = forward.i * x + up.i * z;` and the y and z rows' first two
+// terms) then the third term and the position: 383 (1802 B, aligned 185); the three products named and the
+// position added after 372 at retail's 1819 B (aligned 218 / 176); each row as one store and two `+=` 614 (2030 B);
+// the rows with the grouping parenthesised 383 (same code as the named pair). With the four-channel colour (alpha
+// stored, 1.0f passed for the rest; 225 alone at 1826 B, re-measured): the named products 358 at 1819 B (with all
+// four channels stored 358); the named pair 367 (1808 B, aligned 175 / register-masked 66: each row's adds then
+// run in retail's order but for x, where ours adds up.i * z into forward.i * x's register); on that, corners 2
+// and 3 (or 3 alone) written into their own outputs and transformed in place 367 (same code: the stores are
+// forwarded). Lead for the next round: the named pair with the colour, 11 bytes short (retail's two surviving
+// offset-y stores into corners 2 and 3). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
