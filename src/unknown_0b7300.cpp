@@ -765,6 +765,27 @@ struct s_scenario_object_bits
 	}
 };
 
+PRIVATE __forceinline bool placement_creatable_d5640(s_type_4f0dcc const *datum, bool force)
+{
+	bool creatable = !(datum->flags & 1);
+	bool result = false;
+
+	if (creatable || (force & 1))
+	{
+		if (datum->bsp_policy != 2)
+		{
+			bool unplaced = datum->origin_bsp_index == NONE || datum->origin_bsp_index == g_4686c4;
+			bool named = datum->name_index != NONE || function_d59f0(datum);
+
+			if (unplaced || named)
+				return true;
+			return false;
+		}
+		result = (datum->bsp_mask & (1 << g_4686c4)) != 0;
+	}
+	return result;
+}
+
 /* makes the scenario's objects that belong on a new structure bsp and
    don't exist yet */
 // score 184 (was 203; fast build): walked statement by statement against retail, no behaviour
@@ -784,16 +805,20 @@ struct s_scenario_object_bits
 // instead of the written-out body stays out of line (call, `push 0`; 258, 494 bytes) where retail
 // inlines it, so the body stays. Tried: type declared per loop (184, same), memset as an
 // initializer or a zeroing loop (still realigns).
+// Matched in a full build with stand-in SDK headers (was 184): the object iteration keeps the object in a struct in
+// front of the iterator (as matched 0x3d380 does; retail stores it at [esp+0x28]), the creatable test is an inlined
+// copy of 0xd5910 called with force false (retail's 0xd57da..0xd5857 is that function inlined), bit_count is zeroed
+// after existing.clear(), and the palette address comes from a second local of the placement definition.
 // @retail 0xd5640
 void function_d5640()
 {
 	void *scenario = g_4e0350;
 	long first_bits[k_object_type_count];
 	s_scenario_object_bits existing;
-	long bit_count = 0;
 	long type;
 
 	existing.clear();
+	long bit_count = 0;
 	for (type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
@@ -809,16 +834,15 @@ void function_d5640()
 		}
 	}
 
-	s_type_f1af8e iterator;
-	s_placement_object *object;
+	struct { s_placement_object *object; s_type_f1af8e iterator; } iteration;
 
-	function_bae80(&iterator, NONE, 0);
-	for (object = (s_placement_object *)function_baeb0(&iterator); object;
-		object = (s_placement_object *)function_baeb0(&iterator))
+	function_bae80(&iteration.iterator, NONE, 0);
+	for (iteration.object = (s_placement_object *)function_baeb0(&iteration.iterator); iteration.object;
+		iteration.object = (s_placement_object *)function_baeb0(&iteration.iterator))
 	{
-		if ((1 << object->placement_source) & 3)
+		if ((1 << iteration.object->placement_source) & 3)
 		{
-			long bit = first_bits[object->type] + object->placement_index;
+			long bit = first_bits[iteration.object->type] + iteration.object->placement_index;
 
 			existing.bits[bit >> 5] |= 1 << (bit & 0x1f);
 		}
@@ -827,13 +851,14 @@ void function_d5640()
 	for (type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
+		s_object_type_placement_view *palette_definition = OBJECT_TYPE_PLACEMENT(type);
 
 		if (definition->scenario_datums_offset == NONE || definition->scenario_palette_offset == NONE)
 			continue;
 
 		long size;
 		s_scenario_block *block = function_x71bcc9(scenario, type, &size);
-		s_scenario_block *palette = function_x6e4ccb(scenario, type);
+		s_scenario_block *palette = (s_scenario_block *)((byte *)scenario + palette_definition->scenario_palette_offset);
 		long first_bit = first_bits[type];
 
 		function_bf380();
@@ -854,23 +879,11 @@ void function_d5640()
 
 			if (entry && entry->tag_index != NONE && function_d5990(datum->type, entry->tag_index))
 				continue;
-			if (datum->flags & 1)
-				continue;
-			if (datum->bsp_policy == 2)
+			if (placement_creatable_d5640(datum, false))
 			{
-				if (!(datum->bsp_mask & (1 << g_4686c4)))
-					continue;
+				function_bf0f0(datum, type, i, palette, true, true);
+				function_bf380();
 			}
-			else
-			{
-				bool unplaced = datum->origin_bsp_index == NONE || datum->origin_bsp_index == g_4686c4;
-				bool created = function_d59f0(datum) != 0;
-
-				if (!unplaced && !created)
-					continue;
-			}
-			function_bf0f0(datum, type, i, palette, true, true);
-			function_bf380();
 		}
 	}
 }
