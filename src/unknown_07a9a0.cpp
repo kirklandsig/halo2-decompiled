@@ -1761,6 +1761,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Diagnostics in 0x192e60's file, restored: 2, 8 and 24 redundant `result = NULL;` statements in 0x192e60 871 each (the same code
 // everywhere: the inline choice does not follow the callee's source length); 0x192e60 as nested ifs with a named element pointer
 // 853 (2796 B), but 0x192e60 itself 0 -> 20 and 0x73530 MATCH -> 8. Body unchanged; BLOCKED on the link's inline choice.
+// Complete machine-ID capture, with both words before clears, split around clears, second after identity,
+// or first after total clear 871/867/916/899. Dword histogram with the same publication forms
+// 911/933/946/946. NOT kept: the 867 form gains four and shortens to 2748 bytes. Dword cells
+// reserve 0xb0 and regress. The opening variant lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
