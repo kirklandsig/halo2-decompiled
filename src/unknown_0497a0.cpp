@@ -635,6 +635,11 @@
 // Mixed wave rounded at its update with overlapping crosses 599.
 // Both waves rounded at their updates with overlapping crosses 599.
 // NOT kept: The original cross order grows by five to six bytes and retains the 0x54 frame. With overlapping crosses the frame reaches 0x60 and the first difference moves to +0x6, at 599 and 2632 bytes. The two wave homes and the x87 schedule still differ. The original cross and wave lifetimes are restored.
+// M3 lane 3 r291 (H2M_FAST; control 536 at 2622 B): the two wave values renamed so they keep their order (mixed/short)
+// 536 and so they swap it 536, the first cross renamed so it sorts after them 536 (same code each: names do not move the
+// wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
+// the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
+// so no out-of-line copy of a wave helper exists to show the removed third use.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
