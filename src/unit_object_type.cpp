@@ -9170,6 +9170,9 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Explicit selection with both 395, both with one table 183, typed handle before the player read 64,
 // and masked typed handle before all owner reads 121. NOT kept: the 64 form advances the first difference to
 // +0xd8 at retail length but delays the object-index load and raises the score.
+// Owner declared before grenade lookup, early center or damage buffer, and both early 62 each.
+// Split owner copy 62, flag before the trailing owner words 60, library copy 62, and player field plus remaining copy 62.
+// NOT kept: the two-point gain keeps the initial owner load difference.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
