@@ -851,6 +851,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 162/162, and updating the selected primary aspect 162/162, with secondary products
 // formed in or before their branch. NOT kept: the selected operands expand the frame to
 // 0x64. The other forms tie and still spill blend at the bitmap join.
+// Bitmap bounds stored around the pivot rows: primary then pivots then secondary
+// 185, secondary then pivots then primary 185, primary/x/secondary/y 169, and
+// x/both bounds/y 170. Both pivot inputs captured as points 377 in each order.
+// NOT kept: direct reads still spill blend at the join. Captures grow to 1995 bytes.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

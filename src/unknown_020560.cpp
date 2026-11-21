@@ -1328,6 +1328,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // live candidate position with bound anchor 665. NOT kept: the last form reaches
 // frame 0x2c but grows to 2218 bytes and regresses. The second induction and its
 // offset.i spill remain unresolved at the opening extent.
+// Candidate offset squared directly, accumulated, or as three named squares
+// inside or before the projection test: 646 each with either square-sum order.
+// NOT kept: the second scan shortens to 2039 bytes and still omits the offset
+// spill and second induction address.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

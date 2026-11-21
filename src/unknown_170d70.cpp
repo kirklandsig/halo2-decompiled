@@ -397,6 +397,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Shared product difference for the side, corrected up, or both 64 each, or
 // 142 each with the named scheduled time. NOT kept: the product forms tie
 // and the named read lengthens the body without recovering the spill order.
+// Named deadline with one signed copy-width load: current first with long or
+// short coefficient width 129/145, target first 145/129. Short and long copy
+// widths agree. NOT kept: all grow to 1413 bytes. The 129 forms recover the
+// traversal through +0x2b7, but the basis correction remains farther from retail.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -2216,7 +2220,8 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 270 (was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
+// score 155 (was 284): The 0xb8 frame and incoming axes agree. The plane-lookup branch span, zero placement and center SSE schedule still differ.
+// Earlier (270, was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
 // retail. The center trace stays matched.
 // Earlier score 270 (was 284): the winning displacement spills before the side offsets are stored
 // and reloads for refinement. The frame and point convention still differ.
@@ -2326,6 +2331,13 @@ struct s_camera_reference_171830
 // convention: forward ECX, up EAX, point on the stack), the cluster is a pointer whose reference byte is re-read,
 // the blend is chosen in each arm, loop 2 builds its target point first, and the centre goes through a negated
 // scaled forward vector. Left: the float zero's load placement and the depth * forward->i operand order.
+// Reference byte captured once, with the flagged comparison assigned, separate
+// success stores, a conditional result, or an index result refined on the flagged arm:
+// unsigned 294/112/294/316, signed 296/292/296/322. Separate success stores
+// with direct reference reads and named plane offset 152, zero on the left 152, and
+// direct plane test in that split 155. NOT kept: the 112 form retains frame 0xb8
+// but adds three bytes, changes the lookup registers and still clears zero before
+// the plane expression. The agreeing 1219-byte entry is restored.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
