@@ -915,6 +915,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// score 569 (was 569): BLOCKED-BY 0x2108a0 (the radius is held in XMM5 from the entry because this build's link-time
+// summary of 0x2108a0 says it keeps the XMM registers; retail reloads the radius in each block; the lead below needs
+// `inline` on that callee's definition). M3 lane 7 r208 (H2M_FAST with 0x29a190, MATCH throughout; control 569; all
+// restored): the first pivot offset as one call with `arg_1->field_0 ? arg_6 : -arg_6` 886 (3286 B); the negated
+// radius named in the first pivot offset's false arm 569 (same code); the radius parameter declared `real const` 569
+// (same code); the negated radius named in the second pivot offset's false arm 732 (3349 B), in both false arms 732.
 // MiniMax R (11-20), NOT kept (coordinator review: an unread output buffer and a moved statement are match-only): 561
 // (was 569): the forward trace writes to its own vector, which gives the pivot retail's
 // +0x94 home, and the sector reads moved after both trace calls, which gives the trace results retail's homes. Still
@@ -927,7 +933,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // arms' XMM registers and the three rotations in the loop are still open, and the forms tried on the scale
 // expressions, the direction's components and the named scales all score the same or worse. Body unchanged.
 // MiniMax R (11-16): no new form, no lower score (569): the body is still 39 bytes shorter than retail's, the three trace results still take the homes +0xf4 and +0xd0 against retail's +0xd0 and +0xf4, and the radius still comes from one read where retail re-reads the parameter nine times.
-// score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
+// Earlier 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
 // at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
 // +0xf4/+0xd0 homes stay swapped against retail's +0xd0/+0xf4). Diagnostic, reverted at once: the radius read through a
 // volatile view at all 14 uses (retail reloads it from its argument slot 9 times) 786 at 3349 B, so the XMM5 radius is not

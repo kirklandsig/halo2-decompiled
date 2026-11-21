@@ -733,6 +733,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // (retail listing): retail loads the 1.0 for `1 - cosine` while the dot's last product still holds XMM7, so all eight
 // XMM registers are busy and the heading's zero k is dropped and rematerialised (a memory 0.0, then `xorps xmm7`); ours
 // loads the 1.0 after the dot's last add, into the freed XMM7, and keeps the zero live.
+// M3 lane 7 r209 (h2m fast with 0x28dab0/0x256bd0, MATCH; control 173), function_28dbd2 only. Reading: retail's
+// second cross is heading x axis (j and k formed after the projection and spilled, i formed inside the i row) and each
+// row is `(axis * projection + heading * cosine) - cross * sine`. Sine, dot, cosine, `projection *= 1 - cosine`,
+// cross3f(heading, axis), rows as one expression each with the cross subtracted 213 (1209 B); the same through
+// cross3f_staged 213 (same code); the cross formed before the cosine 231 (1196 B); the heading scaled in place by the
+// cosine first, rows adding it 205 (1227 B); the rows' products scalar-first 213 (same code as the first).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -4532,6 +4532,11 @@ extern vector3f *g_4687bc;
 // `component->rigid_bodies[index]` with `.node_count` / `.nodes[0]` 8 (all the same code at both sites); the component
 // through a `s_havok_component *const &` bound to the cast pool data (0xb9b90's data-first form) 47 (1099 B: the pool's
 // data then loads into ECX ahead of the material, retail's lookup is index-first).
+// M3 lane 7 r209 (h2m fast, control 8; retail's 0x0b67a0 clobbers only EAX and EDX, as ours): the material
+// default-constructed, then `material_index.m_index = g_54e898` 8; the effect tag read at both uses (no local) 145 (1101
+// B: reloaded after the call, not shared); the material set through a file-local forceinline setter 8; the first node in
+// a NONE-initialised local set inside the rigid-body and node-count tests, tested after them 8; the component's index
+// view named for the 0x0b67a0 argument with the material built after the lookup 10 (all 8s the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

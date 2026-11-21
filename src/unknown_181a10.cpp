@@ -1168,6 +1168,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // and data reloads are not that; the second node's shape in a local in the kind-24 arm 327 (1249 B); one shape local
 // for the whole body 259 (1253 B); friction and restitution at function scope 238 (same code); the 1..16 helper
 // comparing the clamp with the value it read 320 (1243 B), as `value < 1 || value > 16` 355 (1210 B).
+// M3 lane 7 r209 (h2m fast with 0x183670, MATCH; control 238). Reading: retail's kind-24 arm loads the second node's
+// shape into EBX and spills it into the second node's own home (+0x24 after the fourth push), passing it to 0x1ee410 in
+// EDX; ours keeps the second node there. Tried: the 1..16 helper's bounds from a two-element local array set to 1 and 16
+// (diagnostic) 238 (folded to immediates, same code); the helper's result through an if/else bool 238; the exclusion's
+// data word named inside `if (component != NONE && kind != 24)` 238; the material buffer declared at the kind-24 arm's
+// top 238 (all the same code); the arm-local shape for the decode and the 0x1ee410 call (re-measured for the slot
+// reading above) 327 (1249 B).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
