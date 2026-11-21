@@ -261,6 +261,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // guard around the equal arm's store 12 and around the 0x265c30 call 12 (same code: the folded tests' frequency does not
 // order these slots); the first reference test with its operands swapped 13. 0x260670 (ours) is still 440 at 3097 bytes
 // against 3077 (frame 0x8a8 against 0x8a0).
+// M3 lane 3 r288 (h2m fast with 0x1e1f20, MATCH; control 12): fresh actor lookups at one use each, to move the actor /
+// offset tie: the late +0x4ae store 128 (984 bytes), the entry flag tests 301 (996 bytes), the saved +0x418 reference copy
+// 295 (990 bytes); the not-found test as `!local_18 && !local_17` 15; the second 0x1f4a20 flag declared ahead of the
+// 0x262b40 result 12 (same code).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

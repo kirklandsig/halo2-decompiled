@@ -963,6 +963,14 @@ void function_245400(s_source_245400 const *source, long index,
 // side comparison scoped to facing 197, signed-word plane ordinals 224, rotated and staged
 // edge setters 164 each, one edge scale read 164, signed ordinals with scoped facing 215.
 // The frame and code and side homes remain unresolved. NOT kept: ties and regressions.
+// m3 lane 4 r238 (fast with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH; brackets = aligned / register-masked;
+// control 164 [134 / 103]; lane 3 r271's lead re-applied from its saved patch 53 at 789 B [34 / 34], everything through
+// the `pop ebp; je` retail's). On the lead: the point transformed ahead of the edge rotation 127 (788 B), ahead of the
+// edge copies and the scale 130 (783 B); the scale arm multiplying the edge's own components (`edge_i = scale *
+// local_6.i`, the way retail's arm reads the originals) 53 (same code), with the copies declared i, j, k 56; the
+// facing sum written cross-first, k, j, i 182 (799 B). Read from retail's cross on the lead: the first plane's k is
+// loaded once and is the register side of its two products, the other four load the second plane's member and
+// multiply by the first plane's from memory; ours loads the first plane's j twice and its k and i once each.
 // Secondary material record with late edge and split rejection 210; named side relation 231;
 // selected acceptance test 207; shared dot 212 or staged cross 210; unsigned codes 210;
 // signed sides or secondary widening first 209 each. NOT kept: the frame is 0x28 and the scores rise.
@@ -983,6 +991,11 @@ void function_245400(s_source_245400 const *source, long index,
 // 50 (41 aligned); the cross result declared with the edge 50 (same code); the dot through dot3f in either operand order
 // 56/56 (47 aligned); cross3f_staged 50 (same code); the second plane pointer declared first 54 (44 aligned). No match; the
 // lead's statement order and written-out rotation are match-only, so the body is unchanged.
+// On the separate code and ordinal decode, primary material pointer/reference 167/167,
+// early normal members with direct/staged cross 167/167, facing-scope normal lvalues
+// or facing-scope plane table 208/208, and paired widening with normal selections
+// or a primary material pointer 169/169. NOT kept: the 167 and 169 forms reach
+// frame 0x2c and 783 bytes but regress. The late plane table also loses the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

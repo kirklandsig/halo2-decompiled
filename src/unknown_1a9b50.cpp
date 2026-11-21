@@ -860,11 +860,25 @@ extern point2f *g_468778;
 // at the same boundaries 374/375. With actor lookup first 408/418/409/413.
 // NOT kept: the one-point gain leaves entry scheduling unresolved, and the
 // actor-first forms enlarge the 0x40 frame.
-// score 259 in a full build with stand-in SDK headers (was 375): the actor's table entry is formed before the
+// score 389 (was 407; 259 in a full build with stand-in SDK headers before magnitude3d was defined `inline`, 375
+// earlier): the actor's table entry is formed before the
 // 0x1e4f90 call, there is no result local (the block returns true and the function ends with return false, retail's
 // two epilogues at 0x1aa6c5 and 0x1aa6d1), a pointer to field_1c is taken at the top of the third arm, local_8 is
 // declared inside the 0x110ab0 block with the first dot written through local_7, and the planar copy is one
 // point2f assignment (retail's two integer moves at 0x1aa54f).
+// M3 lane 2 r125 (H2M_FAST, kept form confirmed with check.py --fast and plain with the file's 17 matched functions and
+// 0x265d30; base 407 at 1575 B, frame 0x44). Since 0x24590 is defined `inline`, the normalize result's `= 0.0f` declared
+// at the arm's top is live across that call and takes a frame slot; retail keeps it in the zero register of the later
+// dot test. KEPT 407 -> 389 (1563 B, frame 0x40): the result declared bare and set to zero in the branch that copies
+// the facing vector. Left: the prop pointer goes to arg_1's home where retail keeps it in EBX (the prop-view pointer
+// takes EBX and the facing pointer EDI, where retail turns one into the other in EDI with `add edi, 0x2c`), and the
+// third arm's products take the scale as the copied operand where retail loads each direction component first.
+// Tried: that declaration moved to the dot test instead 393 (a move, not kept); with it the facing dot read through
+// the facing pointer 374 (1549 B, but the callee-saved registers rotate: aligned 251), its k and j terms only 374;
+// on the kept form: the facing dot through the facing pointer 410 (1549 B), only its i term 392 (diagnostic), the
+// facing dot named ahead of the facing pointer 401; one to three redundant parenthesis pairs around the facing dot's
+// first or last product, the first row's product or the weight dot's first product 387-392; the rows written
+// `scale * component` and the weight dot written component-first 389/389 (the same code).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -929,7 +943,7 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 				else
 				{
 					vector3f const *local_20 = &local_6->field_1c;
-					real local_13 = 0.0f;
+					real local_13;
 					real local_10 = 0.0f;
 					real local_11 = magnitude3d(local_20);
 					if (local_11 > 0.0f)
@@ -939,7 +953,10 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 					local_9.k = local_20->k * local_12 + local_6->field_4.z - local_0->position.z;
 					local_9.i = local_20->i * local_12 + local_6->field_4.x - local_0->position.x;
 					if (0.0f > local_8->k * local_9.k + local_8->j * local_9.j + local_8->i * local_9.i)
+					{
 						local_9 = *local_8;
+						local_13 = 0.0f;
+					}
 					else
 					{
 						local_13 = function_30bf0(&local_9);

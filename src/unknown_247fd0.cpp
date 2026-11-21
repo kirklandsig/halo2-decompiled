@@ -964,6 +964,17 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // the scale rows through the existing scale_particle_vector_2b 338 (aligned 275); the velocity pointer as an if/else 334
 // (same code), as `local_0 == NONE ? g_4687a4 : ...` 334 (aligned 266). Compile-only: `_mm_cvtt_ss2si(_mm_load_ss(&x))` and
 // `_mm_cvtt_ss2si(_mm_set_ss(x))` both give an `and esp, -16` frame, so no intrinsic replaces the asm truncation.
+// m3 lane 4 r238 (fast with 0x247fd0, 0x248cc0, both MATCH; control 334, aligned / register-masked 188 / 101): the gate
+// flag without the volatile, as a bool started false and set under `if (local_0 != NONE)` then tested, 351 (the gate
+// code is main's exactly, store to +0x1f included: a bool with two definitions keeps its store; the rise is the scale
+// rows' operand sides, which flip); the same keeping main's two local names, declared before or after the index, 351
+// and 351; the bool set inside the NONE block with its own test 394; the effect record bound to a const reference with
+// a plain bool 396 (`test cl, 8` form); the impact's definition looked up into its own local 334 (same code).
+// Diagnostics, reverted: one, two, four probe reads of the definition after the motion branch 353 / 360 / 376; the
+// impact's second definition lookup dropped 345 (1641 B). Read from retail: the definition's home (+0x1c) has four
+// references (store, the motion branch's load into EDI that serves both the +0xc and the +0x16 tests, the loop's two
+// loads), the flag byte's one: equal references per byte, so the two sort as a tie in this 0xb0 frame; ours reads the
+// definition six times (+0xc and +0x16 tests reload it), which puts its home below the byte's.
 // Named flags byte bound as an lvalue 338; with effect reacquisition, separate impact settings, sibling particle indexing,
 // particle lvalue, child lvalue, or all record lvalues 338 each; all lvalues with separate impact settings 335.
 // The gate still folds the effect address, and the gate and settings spill slots remain displaced. Body restored.
@@ -980,6 +991,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // existing by-value vector3f_assign 336 (the x store still leads the y and z products); the age step ahead of that 350;
 // the age sum in a named real ahead of the scale rows, stored after them 334 (same code as the control), with
 // vector3f_assign 350; the first draw through the same sample local as the other three re-measured 392. Body unchanged.
+// With the split gate address, direct first draw 356, low-byte member and shared
+// draw 317, separate gate publication 421, and bitfield with direct draw 365.
+// Shared first draw with separate impact settings 317 or probe-local collision 315.
+// Split gate and velocity with shared draw 307, also with separate impact settings
+// 307. Removing the gate binding, velocity binding or both gives 405/317/392.
+// NOT kept: the 307 forms require reference bindings and still differ at the gate
+// and settings stack slots. They reach retail length and move the first difference
+// to +0x43. The larger 315 and 317 forms also retain match-only bindings.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

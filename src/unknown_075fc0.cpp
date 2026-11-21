@@ -412,7 +412,6 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // retail gives `this` EDI and the index EBP up to the has-host call and no register to the connection (ours: memory,
 // EDI, EBP), stores the two NONE locals after the found test from the NONE register, loads the connection index into
 // ECX after the pushes, and returns the first `false` from AL; 0x75910's byte result as before. Body unchanged at 356.
-// @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,
 // with this build keeping the observer in ebp and the NONE state somewhere else where retail keeps the connection in edi,
@@ -420,6 +419,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // 352 the image counts) swaps the arguments of the call to 0x765c0, which is a parameter order picked by score and not a
 // gain, so the body stands; the timed-out check's result is still tested as a long here where retail tests it as a byte,
 // and that callee (0x75910) is defined in another file, so the call's shape cannot be settled here.
+// M3 lane 7 r205 (H2M fast with 0x75910, 0x76520 and 0x765c0, all MATCH each run; control 356 at 1374 B): the first
+// threshold as `if (local_23 < local_13) goto done;` with no result store 409 (1369 B); the second as `if (local_6 < 48)
+// goto done;` 413 (1374 B); both 414 (1356 B); the two later reads of the channel's first flag through local_15 (one
+// read everywhere) 400 (1372 B); the tick count as an if/else of the global and the call 356 (same code). Body unchanged.
+// @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
 	long *arg_7, long *arg_8, long arg_9, byte *arg_10)

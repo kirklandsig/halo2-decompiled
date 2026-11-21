@@ -2404,6 +2404,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the location setup with the first spawn stores, and the colour call each through an inline taking the system, alone
 // and together. Next: a natural extra unconditional reference to colour B, or one fewer for the system that keeps its
 // three early uses; retail's 0x177040 shows the same preference of colour B over colour A.
+// M3 lane 13 r133 (h2m fast with 0x177040, and with each changed callee's own address so its file rebuilds; control
+// 128): `inline` on the definition of a callee, so callers keep no link-time summary of it: 0x178bc0, effect_location_next,
+// 0x248c60, 0x175a80, 0x1751d0 or 0x175270 128 each (same code); set_location 188 (572 B: the scale can no longer stay
+// in XMM0 across that call, which retail's does, so retail had its summary); 0x137bd0 233 (604 B). In the loop retail
+// keeps the definition in EDI and reloads the system for each spawn call, this build the other way round. The system
+// parameter renamed `system` 128 and the spawn record declared first 128 (same code each). All restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4105,6 +4111,13 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // body 105 [0], with both queries in the call 107 [0]: system ESI and next index EDI as retail, but the definition then
 // takes EBX and the type object EDI, so it is not the lever here. Left as before: the convention (retail: system index
 // in EAX, effect index on the stack with the tint and node-flag bytes in its dead home, EBX saved at entry).
+// M3 lane 13 r133 (h2m fast with 0x176f60, and with 0x178c80, 0x248c60, 0x175a80 and 0x1751d0 for the cross-file
+// forms): `inline` on the definition of 0x178bc0, effect_location_next, 0x248c60, 0x175a80 or 0x1751d0 (each alone;
+// its callers then keep no link-time summary of it) 93 each on this body and 108 each on the per-call mode form
+// (0x176f60 25 there, 0x178c80 128 throughout: the same code as without); on the per-call form the tint and node-flag
+// bytes take homes of their own (+0x13, +0x14) where retail puts both in the effect index's dead stack slot. Locals
+// renamed (slot-name tie): the system pointer `system` 93, the next index `next_system_index` 93, the location cursor
+// `location_cursor` 93, the definition `system_definition` 93 (same code each). All restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

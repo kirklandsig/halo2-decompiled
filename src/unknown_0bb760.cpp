@@ -451,6 +451,7 @@ void function_3dd10(long object_index, bool force);
 // score 77 (was 77; 97 before that): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
+// the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // Earlier header 77 (merged in r284): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // Earlier score 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
 // Earlier detail: The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
@@ -880,6 +881,10 @@ void function_3dd10(long object_index, bool force);
 // Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
 // alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
 // pre-guard zero store and the count/mask homes stay different at retail length.
+// Fixed second bank with guarded/pre-guard ordinal 311/311, with last-bounded selection 289.
+// Pre-guard ordinal and stepped second bank 113. Last-bounded indexed or cursor selection
+// 243/243, with pre-guard ordinal 251/251. NOT kept: the bank forms change the saved
+// object/output allocation, and the last-bounded forms retain the different scan homes.
 // M3 lane 3 r284 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH; "rolled" = r280's `if (0 < choice_count)`
 // around `for (long j = 0; choice_count > j; ++j)` with both remainders through `fmod(seed, 1.0f)`, 186 [33] at 1034 B:
 // the count spilled to +0x10, the mask in EBP, the weight in the dead colours home): the selection loop bounded by
@@ -915,6 +920,11 @@ void function_3dd10(long object_index, bool force);
 // file-local helper: writing through `long *`, plain or `inline`, 638 on plain and 195 on rolled (same code each);
 // returning the name 649 (1320 B) on plain and 125 on rolled; called where the scan compares it (no variant local) 1011
 // (1612 B) on plain and 247 on rolled. The count is spilled and the mask keeps EBP in every rolled form. Body unchanged.
+// Early ordinal with second-bank base 311, current color lvalue 106, both 311,
+// or supplied color bound 303. Second-bank base with signed weight scan 302
+// or one model-handle read 303. The same two forms with the opening guard 302/303.
+// NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
+// The second-bank base forms shorten the body, and the mask and count homes still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

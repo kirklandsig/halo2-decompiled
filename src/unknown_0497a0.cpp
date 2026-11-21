@@ -615,6 +615,16 @@
 // scales named ahead of both adds (`real offset0 = s0 * 0.03f; real offset1 = s1 * 0.025f;`) 650 (2594 B); s0 written
 // `0.5f * (...)` 536 (same code).
 // MiniMax H (11-20): no new form, no lower score (536); the frame is still 0x54 against retail's 0x60, and the primary shape slot, the rounded wave storage and the x87 factor lifetimes still differ.
+// M3 lane 12 r165 (fast screen with 0x4a1e0; control 536 at 2622 B, aligned 420/418 unmatched instructions ours/retail,
+// 104/102 with registers and stack offsets masked; both builds end `ret 0x20`; body unchanged). A test of whether the
+// use that retail removes late could be a third displacement with a zero amplitude (diagnostic only, the term is
+// invented): a third wave `(cos(8.2x) * cos(7.8y) * sin(x) + cos(7.75y)) * 0.5f` added along v2 scaled by `s2 * 0.0f`
+// 723 (2712 B), with the zero written first 723, with the third wave computed ahead of the mixed wave 723 (same code
+// each), with the third displacement added first 710 (2697 B), and a third wave on the unhalved phase product `8.2x *
+// cos(7.8y) * sin(x) + cos(7.75y)` 721 (2718 B, aligned 397/385): the product by 0.0f is never folded away, so the
+// whole third add is emitted and the body grows by 75 to 96 bytes. A zero-scaled add is therefore not what retail
+// dropped; the dead use has to be one this compiler removes after the x87 schedule is fixed, as the pointer-copy write
+// of r257 above is.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

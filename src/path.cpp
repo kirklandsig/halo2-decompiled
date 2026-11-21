@@ -963,6 +963,16 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Earlier note. frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
 // count compared as a dword where retail compares it as a word, and the node depth read at one address here and
 // through a lea there.
+// m3 lane 4 r238 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0, all MATCH; both builds end in `ret 0x24`
+// in today's full build too; control 286): lane 16's saved two-flag lead on today's file 2 again at 1388 B, fast and
+// plain (full image), the same back-edge pair (`mov ebp, [esp + 0x104]` / `mov edx, [esp + 0x10]`). In the scan block
+// j's register is taken first (the previous point's address in EDX) and the steps' second (the step's point in EBP);
+// retail reloads them in that order, ours in the reverse. On the 2: the link flag as one direct bool expression 322,
+// the surface flag as one direct expression 130, as a ternary 188, both direct 338 (all at 1388 B with other homes:
+// only the test-set flags give the 2); the link flag as an if / else-if / else chain with an explicit false arm 321;
+// the parent read into a named short ahead of the latch's assignment 2 (same code). Diagnostics, reverted: one to
+// three dead initialised locals in 0x270750 (earlier in the file) or one or two in the caller 0x270930 leave the
+// pair as it is (2 each), so the pair does not follow the file's other functions' symbols.
 // Word-count reconstruction with a retained edge index 396, signed flag 396, joined edge predicate 384,
 // early parent read 396; completed-step count 390, nested long 394, nested short 343, short guard first 345.
 // NOT kept: seven forms recover frame 0xe4, but all grow and score higher.
@@ -988,6 +998,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // first at function scope 2, with a copy of the steps pointer declared after it for the scan 2, the copy ahead of j 2,
 // one copy at the function top for all three loops 2 (same code each: the copies are propagated). Nothing found that
 // flips the pair. Body unchanged (286).
+// Bounded indexed fill through the first node 282, with short link count and
+// split copy increment 361, or target record lvalue 361. Short fill with link
+// and special flags 357, shared origin 404, relative scan step 321, held scan
+// successor 329, held node depth 432, or arm-local distance producers 401.
+// NOT kept: 282 gains four with the extra frame dword. Several narrow-link
+// forms recover 0xe4, and two reach retail length but regress.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
