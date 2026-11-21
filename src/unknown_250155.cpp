@@ -2806,7 +2806,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
-// score 87 (was 87; round 196's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
+// score 87 (was 87; rounds 196 and lane 11 r145's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
 // Earlier note at 87: r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
 // Earlier at 87 (was 87): r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
 // MiniMax E (11-20): no new form, no lower score (87): re-read against retail, the frame agrees at 0x788 and the three
@@ -3214,6 +3214,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // references 87 (same code); the first loop's team name initialised to 0 with no default case 234 (916 B); the local
 // team entry bound once as a const reference for its valid and team reads 241 (916 B). Body unchanged; the players[i]
 // reload is still BLOCKED-BY 0x53b40 (src/network_voice.cpp, another lane's file this round).
+// M3 lane 11 r145 (H2M fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47/0x2514fd, all MATCH each run; control
+// 87): the slot helper's default arm as two chains, `*text_a = *text_b = NONE; *bitmap_b = *bitmap_a = NONE;` (retail's
+// last loop copies text_a from text_b's register and bitmap_b from bitmap_a's) 92 (925 B); both case arms storing
+// bitmap_b before bitmap_a (retail's last loop computes bitmap_b first) on this body 88; the voice state initialised to
+// 2 and overridden in the if 116 (927 B); the `case 0: case 2:` arm ahead of `case 1:` 87 (same code); the default arm
+// first in the switch 87 (same code). Still BLOCKED-BY 0x53b40 (src/network_voice.cpp, another lane's file this round)
+// for the players[i] reload. Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

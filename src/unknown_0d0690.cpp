@@ -1666,6 +1666,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (direction2 in place, the square after the negate, three normalize orders, select stores): 0xd4080 445 to 496 (445 at
 // its retail 1870 B). Every form under 521 raises 0xd4080 above 378, so none is kept; leads saved as
 // build/r202/lead-0xd37f0-500.patch and build/r202/lead-0xd37f0-entry-565.patch. Body unchanged.
+// M3 lane 16 r166 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21 unless noted; control 529, aligned 521 by this
+// round's counter). Retail ends the found block with its own epilogue (`mov al, 1` among the pops) and has one false
+// tail (`xor al, al` at 0xd4071, the empty-block jump landing just past it with AL cleared at the top). On main's
+// parameter order: two early `return false` (empty block, nothing selected) with `return true` last 579 (aligned 526);
+// the found block ending in `return true` and `return false` after it 566 (aligned 510), without the count wrapper
+// 580 (2162 B, aligned 503), with the entries table named once ahead of the scan 566 (aligned 496); that named table
+// on main's result variable 565 (aligned 514); the scan as a counted-down `do` over a walked entry 581 (2161 B,
+// 0xd4080 380). Body unchanged.
 // primary shared negate 569, secondary shared negate and copy 591, ambient shared negate and copy 552,
 // primary shared negate and secondary shared negate and copy 549, primary shared negate and ambient
 // shared negate and copy 606, secondary shared negate and copy and ambient shared negate and copy 622,

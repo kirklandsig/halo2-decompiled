@@ -993,6 +993,21 @@ real g_55e618;
 // retail has them, but the value takes EAX for retail's EDX, later scratch registers rotate one step and the miss arm's
 // flag store tail-merges with the countdown arm's (two bytes short); that copy moved after the velocity pointer, among
 // the normal locals, ahead of the perpendicular or of impact 59 each (same code), ahead of the coefficient loop 250.
+// M3 lane 16 r166 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH each run; control 102; round 162's lead re-measured 39 at
+// 1537 B, aligned 24 by this round's counter; everything below is on that lead and match-only). Retail stores x through
+// the position pointer (`movss [ebx], xmm1`) and y, z through the particle, the code of the existing real_point3d_set
+// given `&particle->position`: that setter nested as the call's third argument 39 (aligned 23), with the sums written
+// in its arguments 40, with the impact index set ahead of the sums 39, as its own statement 39, its result named 39
+// (same code each: the three stores still run ahead of the value's load and all go through the pointer register).
+// The value type with a second short (four bytes; retail copies a dword) passed directly 39 (same code); copied into
+// a local at the block top, after the normal pointer or after `keep` 70 each (1535 B, aligned 52: the dword load and
+// the stores then sit where retail has them, but the copy takes EAX for retail's EDX and every later scratch register
+// is one step off, as rounds 162 and lane 3 r263 found); the two-byte type copied there 214. An inline tail helper
+// taking the value by value (index store, setter, placement call; eight parameters) 68 (aligned 54, the value in EAX
+// again), with the value as its first parameter 68, with the normal locals declared j, k, i 66; a five-parameter helper
+// with the setter nested at its call 39 (same code as the nested setter), with j, k, i 42. Reading: with the value
+// passed directly its load is retail's EDX (the scratch rotation is in step) but late; any earlier copy is a named
+// value that takes EAX. Retail's early EDX load is an argument's own load made before the position stores. Body unchanged.
 // M3 lane 8 r213 (H2M_FAST with 0x2ba3e0/0x2b8da0, both MATCH; control 102): the velocity copy as one aggregate
 // assignment 223 (1556 B); impact.index set ahead of the position stores 102 (same code); `collision.value.unknown24 =
 // NONE;` ahead of the displacement block 134; the tangent rows after the position stores 102 (same code); the tangent rows

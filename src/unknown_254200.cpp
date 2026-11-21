@@ -318,6 +318,10 @@ void function_254200(void)
 // 218 (1133 B); the four texture-coordinate calls through a forceinline (u, v) helper 8. Reading: a scan of every function's
 // reload groups right after a call on a skipped path finds matched functions in both orders (0x22aff1 reloads its
 // second-declared local first, 0x13f700 its first-declared), so no register, declaration or definition order sets this pair.
+// M3 lane 5 r225 (single-address fast, control 4): named real values that the optimiser merges, to change how many real
+// values the body has without adding code (round 150's reading on 0x2548f0): the y offsets through a second real copied
+// from the doubled size 4; the depth and w as two named reals (`w = depth`) 4; x and y read into two reals from the point
+// copy 4; the doubled size as a product with a named `2.f` 4; w written as the depth times `1.f` 4 (all the same code).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -737,6 +741,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // M3 lane 14 r135 (fast, control 2): the bitmap lookup helper as nested ifs 2 (same code); the two 0x14bc0 calls without
 // the (short) cast 2 (same code); a 600 s permuter run (60 tries), best 2; the last quad's corners through a forceinline
 // (u, v, x, y) helper 162 (2176 B, first +0x83); the texture-stage values by enumerator name 2 (same code).
+// M3 lane 5 r225 (single-address fast, control 2): the first quad's depth and w as two named reals (`w = depth`) 2; its
+// zero coordinates through one named real 2; its w written as the depth times `1.f` 2 (all the same code); the colour
+// call's alpha through a named `1.f` real 462 (2161 B, first +0xe); the second texture call's second lower coordinate
+// written `-(arg_1 * 0.5f - 0.5f)` 369 (2303 B).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

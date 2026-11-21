@@ -1265,6 +1265,27 @@ __forceinline long vehicle_round(real value)
 // cross3f at the side 7, the up pointer at the side cross 96 (735 B), cross3f_staged at the first cross 16, the rate on
 // vehicle->up.k with the plain side cross 9; `strength *= rate;` after the side block 72 (757 B); the entry test by De
 // Morgan 4 (same code); the tick count without the `(real)` cast 4 (same code).
+// M3 lane 11 r144 (h2m fast; a compile-only product screen of this file, exact against the fast build). Diagnostics with
+// dead forced-inline helpers holding one local each (reverted at once): the products follow the count of inlined-helper
+// locals by position, period 8, where an unused helper result, a constant argument and a long or pointer result add
+// nothing and a byte or short accessor result adds one. Four such locals between the two crosses give all 15 products as
+// retail; with the first cross through cross3f_staged (three locals of its own) ONE such local anywhere from the strength
+// to the side test does, and the fast build then MATCHES (dead helper, not kept). On that staged form the state is
+// unique: 0-7 dead function locals against 0-7 helper locals ahead of the velocity call give zero flips only at 0 and 1;
+// a local ahead of the condition, in the failure arm or any function local (any scope) leaves the side cross's
+// forward.j * up.i (2); one after the side cross leaves 4. Real forms, none a match: cross3f_staged at the first cross
+// with the up pointer 4 (the side cross's k row flips instead); that with a seconds-to-ticks wrapper round the rounding
+// helper 2 (the wrapper's result counts ahead of the rounding local, where it must count after it); compile-only on the
+// staged form: the tick rate through a short accessor 1 flip, the flip mode through a byte accessor at any subset of
+// its seven reads 1-4 flips (as a long accessor no change), the tick length through a by-value getter 2, the clamp
+// through an inline pin function (ternary, two returns, a result local, const references) 1-4, pointer-returning
+// crosses no change, the up pointer at every subset of condition, first cross, rate and side cross 1-6, the success arm
+// written first 2; 1500 random combinations of those forms with the vectors' declaration orders, the side vector's
+// scope, byte_flags_set and the dot's argument order: none under one flip. Existing inlines of other files called for
+// the rate's tick length (fast): src/devices.cpp's by-value getter 4 on the staged form (other two products flip) and 17
+// on the plain one; src/unknown_1cec30.cpp's reference getter 4 / 4 (same code). The flag clear through bit_vector.h's
+// one-local dword setter (compile-only) 3 flips and two instructions more. Lead: an existing inline with exactly one
+// local (or one byte/short result) used between the strength and the side test, on the staged first cross.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2389,6 +2410,19 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // M3 lane 15 r121 (h2m fast), at 9: arm 3's speed fraction named 13; arm 2's speed fraction named 13; the graph and
 // animation-state tests as two nested ifs 9 (same code); the second lookup written as the header-table subscript 9 (same
 // code); the two small loops' counter `short` 384 (movsx per use).
+// M3 lane 11 r144 (h2m fast), at 9. Diagnostics (reverted at once): the header lookups' base/index order is a symbol
+// count regime, not a spelling: 120 or more extra named locals anywhere in the body (function scope, block scope or
+// inside dead forced-inline helpers; 119 do not, 120 to 384 do) turn both lookups data-first as retail (7 left: the three
+// reloads and the forward-speed sum); empty inline calls with none or one argument never count (240 of them), so only
+// named locals do. Cutting the body down to any three blocks, or to the last four, also gives data-first, and that
+// reduced body turns index-first again from 36 to 512 extra locals: the lookups are index-first inside a window about
+// 500 symbols wide and this body sits 120 under its upper edge. Never moving them: 1-7 dead inline-helper locals before
+// the graph test, the update test, overlay 0 or overlay 3 (13/13/17/13/13/9/9, the last 9 each); 1-8 extra common
+// subexpressions; any one or two of the nine blocks removed; matched 0xeeb80 given this function's opening (model and
+// graph lookups, the velocity call, the animation test joined to the graph test) stays data-first. Real forms: the model
+// and graph lookups after the velocity call 128; the animation-state test ahead of the graph test 484 (2004 B); the
+// velocity call ahead of the vehicle lookup 536 (2011 B: one lookup less); no explicit stack convention 9 (same code).
+// Lead: the inlined animation helpers expanded eight times here carrying more named locals (15 each would do).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -5327,6 +5361,12 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // retail's, but `movsx eax, ax; add eax, edi`: the sum takes the extension's EAX), long second count 44. The running count
 // (the code base's `count += fill(..., markers + count, ...)` idiom) is the only form that extends into ECX and sums into
 // EDI, and it alone merges the loop's preheader into the guard (the zero shared in EAX, no padding jumps).
+// M3 lane 7 r207 (h2m fast; control 22): the definition test as an early return 22 (same code), on the running count 126;
+// the truncated sum's operands swapped 22 (same code); `short i = 0;` ahead of `long count = primary_count;` on the
+// running count 10 (the index's zero store still precedes the second fill; a declaration move, match-only); a chained
+// first count (`long count = primary_count = fill(...)`, then `+=`) 126; diagnostic `(void)&i;` on the running count
+// 126 (same code). Reading: with the index set before the second fill its zero is never live in EAX at the guard; an
+// index zero defined after the fill takes EAX ahead of the compare and merges the preheader into the guard.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
