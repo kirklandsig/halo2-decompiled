@@ -316,6 +316,21 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // convention changes). On the `{-local_8.j, local_8.i, 0.0f}` form (393 [53] re-measured, 2815 B): the side test through
 // dot_product2d 393 (same code); left_i declared after the left vector 393 (same code); with local_25 computed ahead of
 // the angle call 402 [102] (2825 B). Body unchanged at 378.
+// M3 lane 1 r140 (fast with 0x29c860/0x29cb10, both matched in every run; control 378, aligned lines with registers and offsets
+// masked [45]). The left vector through the existing vector3f_assign or real_point3d_set from left_i 378 [45], from `-local_8.j`
+// 393 [41] (the same code as the two initializers: the setters do not change the vectors' reference tie). Combined lead, match-only
+// (it needs the 0x44 setting read into a local ahead of the local_16 test): the left vector as `{-local_8.j, local_8.i, 0.0f}`, the
+// local_16 dot through dot_product2d, that early read and the path offset named: 380 (2815 B, frame 0x5b4 as retail) [29], with five
+// sites left: the second normalize's j product (retail loads j and multiplies by the inverse, ours copies the inverse), the two
+// 12-byte vectors' slots (ours left 0x78 / avoidance 0x84, retail the reverse) with the left vector's stores behind the fsqrt, the
+// left_i product in both steering blocks (retail loads left_i and multiplies by the component, ours copies the component and
+// multiplies by left_i's home), and the tail (retail reloads the actor offset from its home at each setter and pops before the last
+// one, ours reloads it once into EBX). On that lead: unused initialised locals 1-8 (diagnostic) 380 each but 382 at three, so the
+// sides are not a symbol phase; the first block's left term, both terms or all four products as accumulate statements (`x = a;
+// x *= b;`), the 0.9 block's left term that way, written left_i first, or both sums as one expression: 380 each (same code).
+// Diagnostic, reverted at once: 0x299460 called through a plain pointer global (no summary for the call) 471 on the lead and 483 on
+// this body, both at frame 0x5b4, but the two normalizes ahead of it then differ too (retail agrees with ours there) and the left_i
+// products do not move: retail's view of that call lies between ours and no summary. Body unchanged.
 // M3 lane 13 r132 (fast with 0x29c860/0x29cb10, both matched each time; control 378, 78 aligned lines with stack offsets
 // masked). `inline` on the definition of 0x210770 378 (same code here; its eight matched callers still match, 0x1f99d0 goes
 // 226 -> 194 and 0x299460's first difference moves from +0x14 to +0xd0 at 3349 B with its count up 569 -> 726, so not kept:

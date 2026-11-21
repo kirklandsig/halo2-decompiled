@@ -1891,6 +1891,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // and re-reads colour A at the colour call; measured and reverted: the two virtual calls in the other order (148), the
 // definition's location mode and placement read into locals before the loop so the definition is not live across the
 // set_location call (143, frame 0x48), so the body stands.
+// MiniMax A (11-20): no new form, no lower score 128: retail keeps the particle system in ESI and colour B in EDI, while every form here colours them the other way round.
 // score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
 // MiniMax B (11-19): no new form, no lower score (128): retail spills colour A to frame+0x00 and keeps the particle
 // system in ESI and colour B in EDI across the two indirect calls, while this build re-reads colour A from the effect
@@ -2372,6 +2373,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // initialised record ahead of the colour reads 184 (572 B); that first form with both queries as the colour call's
 // arguments and no inner block 187 (568 B); the system parameter declared `*const` with the colours read after the spawn
 // stores and the queries as arguments 181 (568 B); the first form with `multiplied` queried ahead of `tinted` 182 (572 B).
+// M3 lane 1 r142 (fast with 0x178eb0/0x179020/0x178bc0/0x177040/0x176f60/0x175a80/0x174a30, matched or unchanged unless
+// given; aligned / register-masked aligned in brackets, control 128 [85/27]): the colour block as an inline taking the
+// effect, with both colours in its own locals ahead of the type lookup, called after the spawn stores 178 at 572 B
+// [88/31]; that inline called ahead of the spawn stores 190 [92/39] (0x178eb0 32, 0x179020 28); an inline taking the
+// colours by value, called between the location-index store and the other two spawn stores 181 [90/35]; the type lookup
+// through an inline that holds the 0x1751d0 result in a local, colours read early 178 [88/31]; the first inline reading
+// colour B first 178 [88/29]. All five are the early-colour lead's code again (system in EDI through the queries, colour
+// B spilled): an inline's locals for the loaded colours do not add the reference colour B is short of.
 // M3 lane 13 r130 (fast with 0x178eb0/0x179020, both matched throughout; control 128; "lead" = the early-colour shape:
 // the location index named, the scale and location-index stores, both colours read into locals, the unknown store, both
 // type queries in the colour call, location_point_in_zone_inline; re-measured 185 at 568 B). Diagnostics, reverted at
@@ -3551,6 +3560,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 
 // MiniMax G (11-20): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, and the particle system is still in EDI.
 // The definition is still unspilled and the location mode cached where retail spills the definition and reads the mode at each call.
+// MiniMax A (11-20): no new form, no lower score 93: the same register preference as 0x178c80 - retail keeps the particle system in ESI and colour B in EDI; every form here swaps them.
 // score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
 // MiniMax H (11-19, round 95): no new form, no lower score (49): the live mode read at each location call measures 103 and moves
 // the effect index out of the stack into a register, which loses the matched caller 0x176f60, so the cached mode in the

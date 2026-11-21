@@ -570,6 +570,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // dispose declared ahead of restart 1; the loop test as `!(time < next_time)` 1; no per-pass disposal reset, an
 // `else { dispose = false; }` after the high boundary instead 1 (same code each); both loop restart expressions with
 // the flag tests ahead of the type test 216 (654 B).
+// M3 lane 9 r146 (fast with 0x22e957/0x22eeee/0x148119, all MATCH): the owner type read once into a long local for the
+// loop's dispose and restart tests 215 (655 B); the loop as `for (; time >= next_time; next_time += frame_time, elapsed -=
+// frame_time)` with the end-time store in the body 1 (same code); both loop boundary restarts as `restart = false; if
+// (...) restart = true;` on the plain body 210 (658 B); the flags local typed dword 202 (653 B), short 1 (same code).
+// All restored.
 // M3 lane 13 r131 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the restart and switch of both
 // boundary blocks under `if (!dispose)` (no break inside) with no per-pass disposal reset and the join as `if (dispose ||
 // restart) break;` 87 (659 B: the in-range miss lands on the restart test, the flags word is hoisted into BX and the zero

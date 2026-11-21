@@ -258,7 +258,7 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 
 /* advances the player's motion channels by the elapsed time, then rebuilds the forward and up
    vectors at current[10] and current[13] as an orthonormal pair when they drift */
-// score 64 (was 72): The 0x5c frame agrees. The deadline cursor and signed group ordinal spill in the opposite order, and the basis correction still differs.
+// score 64 (was 64): The 0x5c frame agrees. The deadline cursor and signed group ordinal spill in the opposite order, and the basis correction still differs.
 // Earlier (64, was 72): the current pointer is declared before the values, and the new up's j is stored as soon as it
 // is computed (the permuter found both: 70 and 66 alone). Before (72, was 81): the loop matches but for two slots
 // (the time pointer the compiler makes and
@@ -337,11 +337,23 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
 // beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
 // NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
+// M3 lane 12 r160 (fast; control 64): 0-7 initialised unused locals added at the top (a symbol-count phase scan,
+// diagnostic) change the tail's product operand sides (22 of 33 retail's at none, 27 at six) and the length, but no
+// phase gives retail's tail and the time/group slot swap never moves. Each form with its phase-0 score and its best
+// over the eight phases: left through the existing cross product helper 68/68; the new up through it 79/79; that helper
+// for left and its staged variant for up 120/116; the up pointer declared before forward 110 at 1395 bytes/88; a
+// read-only time cursor advanced at the loop end 125 at 1413 bytes (the loop is then exact)/91 at 1399 bytes; that with
+// the up pointer first 125/91.
 // Linear, low-order, whole polynomial, or delta cursor names 64 each. Read-only target,
 // derivative, or polynomial cursors 64 each. Shared unit-length checks 64. Separate target-copy
 // cursors 326, with independent deadline 316. Independent deadline with polynomial names
 // or shared unit-length checks 125 each. NOT kept: both 125 forms recover the traversal
 // through +0x2b7 but change the basis correction and grow to 1413 bytes.
+// Named deadline through a read-only cursor 94, or declared before the constant cursor 98.
+// With the named deadline: shared basis dot 70, three named alignment products 94,
+// nested alignment check or successful early return 94 each, shared side cross 94,
+// staged up cross 98. The separate deadline recovers the two traversal slots, but
+// none of these forms recovers the orientation schedule at retail length.
 // Independent cursor with a named scheduled deadline 94, or both subtraction operands named 124; signed
 // ordinal beside deadline 125; channel or shared-basis normalization range 220/309; shared basis with
 // named length predicate 124; native current/target stride 120; corrected up accumulators 124. With the
@@ -887,7 +899,8 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 105 (was 129): the creation block is now out of line and the slot (EBX) and volume index (BP) registers are retail's,
+// score 129 (was 129): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
+// the creation block is now out of line and the slot (EBX) and volume index (BP) registers are retail's,
 // at retail's 434 bytes. Left: the call setup (retail loads the camera array into ECX at the block top and the key into EDX,
 // copies the key for the multiply and pushes it afterwards; ours loads the array into EDX after the count store and
 // multiplies the key in EAX after pushing it) and, one row later, the plane lookup's operand order. Earlier (129, was 142):
@@ -988,6 +1001,14 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// M3 lane 12 r160 (fast; control 129): 0-7 initialised unused locals 129 at every count (the register tie is not a
+// symbol-count effect); the slot read again from the map for the volume's cluster store 151 (410 bytes); the entry
+// address as `pool->entries + entry_index` 129, the head cell through a short pointer 129 and `++collection->volume_count`
+// 129 (all the same code).
+// Slot/index lexical orders and immutable reservation/entry 129 each. Return the last
+// signed capacity comparison after a break or a positive arm, with or without immutable
+// entry/volume addresses: 126 each. NOT kept: the three-point gain leaves creation inline
+// and shortens the body to 425 bytes.
 // Early missing-cluster capacity guard 137, guarded miss first 159, guarded local postincrement
 // 137. Immutable reservation counts, preincrement in count publication, separate count advance,
 // immutable entry and volume addresses, or record selected by signed count 129 each.
@@ -1215,13 +1236,6 @@ static inline void rotation_matrix_transform(s_rotation_matrix const *m, vector3
 	out->k = in->j * m->m21 + in->k * m->m22 + in->i * m->m20;
 }
 
-static inline void view_cross_product(vector3f const *a, vector3f const *b, vector3f *result)
-{
-	result->i = a->j * b->k - b->j * a->k;
-	result->j = a->k * b->i - b->k * a->i;
-	result->k = b->j * a->i - a->j * b->i;
-}
-
 /* the rotation of `angle` about `axis` */
 static __forceinline void rotation_matrix_from_axis_angle_171d90(s_rotation_matrix *m, vector3f const *axis, real angle)
 {
@@ -1261,7 +1275,7 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 334 (was 346): The 0x50 frame and retail length agree. Unity still starts in XMM7 instead of XMM5, and two first-axis squares spill.
+// score 334 (was 334): The 0x50 frame and retail length agree. Unity still starts in XMM7 instead of XMM5, and two first-axis squares spill.
 // Earlier (346, was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
@@ -1354,6 +1368,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // horizontal field 356, shared original-direction setter 380.
 // NOT kept: the repeated half-angle is 1454 bytes and duplicates a computed value. The original-direction
 // setter demotes the matched initializer.
+// Saved forward, rotation workspace, second axis and unrotated-copy names 337 each.
+// Horizontal/vertical angle names, deviation component names, late matrix declaration,
+// and second axis declared beside matrix 337 each (reduced control 337).
+// The square spills and early EDI save survive all eight forms.
 // Scaled k with compound scaling 349, after the first diagonal 361, or at each mixed pair 355.
 // Separate sine conversion 364 or delayed past cosine 365. Component-first sine products 337.
 // Signed pair accumulators 349; sine products at diagonal boundaries 343.
@@ -1372,6 +1390,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Horizontal/vertical angle names, deviation component names, late matrix declaration,
 // and second axis declared beside matrix 337 each (reduced control 337).
 // The square spills and early EDI save survive all eight forms.
+// M3 lane 3 r282 (H2M_FAST, reduced control 337 against full 334): 1 to 7 dead longs at the top
+// 337/370/353/365/356/358/357 (the length moves, unity and the square spills stay); sine and cosine through
+// an inline out-pointer helper 337 (one row's operand order moves); the squares written at their uses with
+// no named squares 364 (1449 B); the axis components read once into locals 377 (1427 B); the second axis
+// through cross3f_staged 339 (1456 B). KEPT: the second axis through the shared cross3f in place of the
+// file's private copy of it (same code, 337 reduced; the copy removed).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1391,7 +1415,7 @@ void function_171d90(s_view_setup *view)
 	rotation_matrix_transform_171d90(&m, &view->up, &view->up);
 
 	vector3f axis;
-	view_cross_product(&view->forward, &view->up, &axis);
+	cross3f(&view->forward, &view->up, &axis);
 	rotation_matrix_from_axis_angle_171d90(&m, &axis, angle_b);
 	rotation_matrix_transform_171d90(&m, &view->forward, &view->forward);
 	rotation_matrix_transform_171d90(&m, &view->up, &view->up);
@@ -1560,7 +1584,13 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
+// score 37 (was 45): the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
+// destination load moves up into that copy as in retail. Still differs: result->points is stored before the pool
+// count (retail stores the count, tests the state, then publishes the pointer), the x87 clamp keeps a copy of the
+// distance where retail reloads it, the corners read result->bounds off EBP where retail reads them off the bounds
+// pointer, the loop preheader spills step*8 after the clipped pointer's lea, and the recount colours points/count
+// ECX/ESI where retail has ESI/ECX.
+// Earlier at 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
 // Earlier: logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
 // 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
 // copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
@@ -1617,9 +1647,25 @@ struct s_point_pool_173520
 // forward index 172, nonnegative count 184, guarded postdecrement 96, ascending counter with
 // separate source cursor 968. NOT kept: the postdecrement ties, the ascending counter unrolls,
 // and the reservation forms do not recover retail's count and state-test order.
-// score 45 in a full build with stand-in SDK headers (was 96): the four corners read result->bounds by name instead
+// At 45 in a full build with stand-in SDK headers (from 96): the four corners read result->bounds by name instead
 // of through the `bounds` reference the inflate writes through, so the inflated bounds are copied back out of memory
 // as retail does (0x173796 on).
+// M3 lane 3 r286 (single-address fast, control 45): the corners through `bounds` 96 (the inflate interleaves and x0 is
+// forwarded); the inflate through result->bounds with the corners through `bounds` 49, both through result->bounds 96;
+// the corners through a second `box2f const &` to result->bounds 36 (corner block exact), through a pointer to `bounds`
+// 96; the inside arm's bounds copy as `result->bounds = ...` 37 (kept, plain 37). Lead, match-only (each step a steering
+// form): the second reference plus the direct copy 28; plus the reservation as 0x172840's `point2f *allocated =
+// &pool->points[pool->count]; pool->count += 64; result->points = allocated;` 24 (store and state-test order exact; the
+// count stored first with `used` kept 41, `allocated` after the count update with `used` 33); plus the clamp's compare
+// read through `real const &distance = result->distance` 9 at 865 B (x87 block exact; the arm through it instead 9).
+// On the 24 lead the clamp as `<`, as `0.015625 > d ? d : 0.015625`, as `<=`, through an inline double minimum: 24 each.
+// On the 9 lead (left: step*8 spilled after the clipped pointer's lea, recount ECX/ESI): the recount as
+// `&result->points[result->count] - pool->points` 15 (867 B), count first 9, count in a long or short local 9, the
+// difference named 9, through a forceinline (pool, points, count) helper 9, points or count through a forceinline
+// accessor 9 each, the count stored first then `+=` the difference 36 (retail's ESI/ECX, one extra store); remaining
+// declared before the pointer 9, the pointer declared first 9, in the for-init 9; `index += step` first 121; step
+// declared first 187; an ascending `i` loop over `&clipped[i]` 990 (unrolls); a guarded do-while 72; permuter 102
+// tries in 900 s, best 9.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1679,7 +1725,7 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 					if (inside)
 					{
 						result->distance = (real)(result->distance > 0.015625 ? 0.015625 : result->distance);
-						bounds = *(box2f *)(cache->view + 0xa0);
+						result->bounds = *(box2f *)(cache->view + 0xa0);
 						result->count = *(short *)(cache->view + 0x198);
 						memcpy(result->points, cache->view + 0x19c, *(long *)(cache->view + 0x198) * sizeof(point2f));
 					}
@@ -1740,7 +1786,8 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 55 (was 134): only the publication block differs (870 B against 868): its first scratch load takes CX where retail's
+// score 134 (was 134): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
+// only the publication block differs (870 B against 868): its first scratch load takes CX where retail's
 // takes DX (the link value; the key then ECX), so the stores reorder and the sentinel is a five-byte load. Earlier (134,
 // was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
 // The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return
@@ -1845,11 +1892,26 @@ struct s_pool_view_172840
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
 // NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
 // sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
+// M3 lane 12 r160 (fast; control 134): the result flag renamed to sort first or last (five names) 134 each. Re-measured:
+// independent failure tests 152, the long ternary selection 86, both 55 (870 bytes; every home and the flag tail then
+// agree, only the publication block's schedule differs). On the 55 form, all 60 orders of the selection and the next,
+// key, cluster and portal stores (selection first among the cluster store's inputs): best 17 at 868 bytes (key, next,
+// portal, cluster), retail's store order 55; the field order of the matched 0x172bb0 (key, next, 06, 0a, 28, cluster)
+// with the selection at each position, best 19. On the 17 form: the bit-set copy without its pointer local 109, the
+// pointer taken from memcpy's return value 17 (same code), the storage-used sum count-first or with casts 17; the
+// permuter (600 s from the 17 form) found nothing lower. Left on 17: the key/next load order, the copy's esi/edi setup
+// order and the data/count scratch pair in the storage-used sum. Nothing kept (width and store order match-only).
 // With independent failure stores and signed publication, dequeued-entry, selected-cluster,
 // projection, or both traversal references 55 each. Implicit cluster narrowing 55. Direct widened
 // ring subscript 226, retained portal count 230, shared portal bit tests or tests and set 55 each.
 // NOT kept: the 55 forms still grow to 870 bytes and keep the long sentinel load and
 // displaced key store.
+// With signed list publication: native short cluster store 152, queue failure or
+// success return 241 each, queue result AND 250, pool then grouped projection/queue
+// result 78, geometry chain then queue 72, positive capacity return 255, and
+// direct pool-derived result 261.
+// NOT kept: the 72 form recovers the flag homes, but shares a geometry false
+// store that retail emits twice. The 78 form groups projection with queue handling.
 // With independent failures and signed publication, failed clip first or rollback with continue 96/96;
 // incoming cluster on the left of the comparison 56; captured short selection by equal or unequal arm
 // 55/133; positive reservation block 55; continue on full queue 59; named publication key 55. NOT kept:

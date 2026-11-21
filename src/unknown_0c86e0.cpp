@@ -74,6 +74,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax G (11-20): no new form, no lower score (110): the unit is still fetched once and kept across the two 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // score 110 (was 110): retail fetches the unit again after the two inlined 0x14de90 calls to 0xbadc0; ours merges that
 // fetch into the entry fetch, so the entry saves and every later register differ. BLOCKED-BY 0xbadc0 as reached through
 // the inlined 0x14de90 (see round 117 at the end: retail's 0xbadc0 itself has the no-write summary).
@@ -441,6 +442,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // static noinline, noinline, or noinline inline 2/2/2 (a same-file copy keeps its summary whatever its linkage), plain
 // inline expanded in place. A new copy of an existing function is barred by the coordinator's ruling of 2026-10-30, so
 // none is kept or proposed here. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
+// M3 lane 9 r147 (fast with 0x103b10, MATCH each run; control 110): the two zoom bytes cleared by one chained
+// assignment 110; the entry unit bound by a const reference for the reset block 110; the weapon slot read through a
+// const reference bound to a second fetch after the player queries 110 (same code each: the fetches still merge); the
+// `== NONE` weapon ternary with the zoom flag declared after the weapon flag 126 (350 B), with the reset reference 126.
+// Still BLOCKED-BY 0xbadc0 (its file and 0x14de90's were both avoided this round).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

@@ -576,6 +576,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // loads the player count into edx between the pushes and copies the count to eax last, and that caller's body lives
 // in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
 // MiniMax E (11-20): no new form, no lower score (34): the body still differs from retail only in the scratch registers - the player count is tested in edx here and in eax in retail, and the clamp's mask is built in edx here and in ecx in retail (the clamped value itself is in eax in both) - and the notes below record that retail's caller 0x7e210 hands the count over in eax, so the arrival register is not this body's to choose; swapping the two operands of the total's sum compiles to the same bytes.
+// MiniMax A (11-20): no new form, no lower score 34: the player count arrives in EDX where retail keeps it in EAX, and the exchange runs through the copy loop and the fill.
 // score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
@@ -1045,6 +1046,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (next_party then held in EAX through the copy loop); the copy first with the maximum as one ternary on the copy 75
 // (0x7e210 879); the strict test `next_party < party_indices[i] + 1` 35; `party_indices[i] >= next_party - 1` 53. The
 // player count still arrives in EDX in every form. All restored.
+// M3 lane 12 r163 (H2M_FAST with 0x91e30 MATCH, 0x7e210 871; control 34): `party_indices[i] + 1 >= next_party` 35; an
+// early `return false` after the count call with the clamp returned directly 63 (203 bytes); open_slots from
+// `player_count + extra_count` with total named after it 71; imbalance declared at the top 66; the equivalent test
+// `party_indices[i] >= next_party` 81 (169 bytes). The player count still arrives in EDX in each.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
