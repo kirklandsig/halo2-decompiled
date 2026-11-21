@@ -628,6 +628,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax H (11-20): no new form, no lower score (895): the frame is still 0x1f0 against retail's 0x1d4 and the first
 // difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
 // the other way round), so the stack homes below the top stay out of step: BLOCKED-BY 0xbadc0 in another file.
+// M3 lane 3 r289 (fast, single address; control 838): 0..35 unused initialised locals at the top 838 each (no symbol-count
+// state here); the two simulating bools declared at function scope 838; the marker record at function scope 838; both 838;
+// the record's bit-2 and bit-1 bools at function scope 838 (same code each: scope does not move `push ebx`, which retail has
+// with ESI/EDI at the entry and uses only for the loop's list, the simulating bool and the EBX/BL arguments of 0xb8d30 and
+// 0x1d2280); the attached-object test without the repeated NONE test of the element's index 970 (4244 B); the first
+// simulating bool as `local_1 || (...)` 845; the two step levels declared in the other order 838; the response fraction
+// declared ahead of the first zero vector 838; the element pointer as `data + index` 838; the removal's copy through the
+// element pointer 838 again. Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -1046,6 +1046,25 @@ void swarm_leader_detach(long actor_index);
 // argument through a new inline accessor returning the slot or NULL 4 (same code); the handler pointer with its stop
 // tested and called 297 (996 B, frame 0x24: the listed whole-allocation flip), with the accessor 297. Still open for the
 // match: the handler loads staying in ECX with the `lea` after the test, and the stored definition bit.
+// M3 lane 3 r289 (fast with 0x1e23c0, 0x1e22d0, 0x1e2150 and 0x1e17d0, all MATCH throughout; control 59; plain where noted).
+// Retail's sibling slot loops fall in two groups: 0x1e23c0, 0x1e2150 and 0x1e17d0 keep the actor index on the stack in the
+// loop and form the slot address right after the type load (their slot-pointer-first source matches), while 0x1e22d0 and
+// this function keep it in a callee-saved register and form the address after the stop test, the handler chain staying
+// in ECX. On the listed 4 form (flag bool + `actor != other`; 4 in the plain check too): address spellings for the call's
+// slot pointer or the type read (byte arithmetic in either association, `actor->slots + slot_index`, a `slots` pointer
+// for both) 4 each (same code); a `slots` pointer for only one of the two 264 (980 B, the flipped allocation); a
+// file-local inline accessor for the handler, the type, the stop pointer or two of them 4 each; handler and type in
+// named locals 4; the stop read twice through the type 297; the selected slot pointer in a local before or after the
+// stop read 298; references or an entry pointer for the handler, the stop field or the type 4 each; a memcpy read of
+// the stop field or of the type 4 each; 1..13 unused locals at the top 4, 14..64 8 (no matching state). Diagnostic
+// (reverted at once): the handler read through a pointer-to-volatile, as 0x1e22d0 has it, gives MATCH in the fast image;
+// so does the handler read as a four-byte memcpy of its table entry (const or plain pointer, `&table[type]` or
+// `table + type`; check.py --fast agreed, 19 of 19 in this file; without the flag 53, without the compare order 1). The
+// plain check gives 297 at 996 B for every one of them (the volatile read, the memcpy in three spellings and with a type
+// local, with 1, 2, 4 or 8 unused locals; 289 at 990 B without the flag): in the full image they push EDI only after the
+// loop, keep the actor index on the stack inside it and form the address early, the other group's shape. The fast image
+// is not faithful for this function once the loop holds such a read: trust only the plain check. Body unchanged (59).
+// Open: what keeps the actor index in EDI through the loop in the full image while the address is formed late.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

@@ -895,6 +895,15 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // behind the extra slot feeds our expanded 0x25c820 at the release site, not the tail); with a `short` old_state 431;
 // with `update && sample` 431; the walk through 0x26be00/0x26be30 (0x263210's idiom) re-measured 443, with the node
 // tail lookup 452 (1600 B), with the iterator's index read at each use as well 452. Body unchanged.
+// M3 lane 3 r289 (fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330 and 0x265680, all three MATCH; control 404):
+// 0..35 unused initialised locals at the top 404 each (no symbol-count state). Reading: retail keeps `sample` and `update`
+// in adjacent stack bytes and stores the constant 1 to each, with the actor index in EBX for the whole function (so it
+// arrives in EAX); ours gives BL to `update` inside the loop and reloads the actor index from its stack home. Both flags
+// set through an inline helper taking their addresses 404 (same code); set as two statements, update first 404;
+// `function_25d610(node)` tested ahead of `update` 524 (1708 B); the flags as two declarations 404; the 0x2641c0 result
+// in its own bool 404; the old state as a short 404 again; the node fetched from `next` with a const index 404. Still
+// BLOCKED-BY 0x2641c0's noinline declaration (src/unknown_265cb0.cpp, another lane's file this round): its expansion
+// here is what keeps the actor index in EBX. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
