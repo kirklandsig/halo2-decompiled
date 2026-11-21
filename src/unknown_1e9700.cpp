@@ -898,6 +898,10 @@ struct s_object_damage_view
 // Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
 // fallback 358/358/416/416, with conditional code selection 358/358/416/416.
 // NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
+// Typed victim, history and credit, related credit, combinations and typed player locals 353
+// each. Existing unchecked lookup for victim, primary credit, secondary credit or all four
+// unchecked accesses 353 each. NOT kept: all tie with the rotated team, credit and code
+// homes and the amount-biased history cursor.
 // Fixed-range tail tests for selection, assists, both, selection with long ordinal, assists with
 // short ordinal, selection end ordinal, assists end ordinal and both end ordinals.
 // Scores 509/353/509/509/353/509/353/509.

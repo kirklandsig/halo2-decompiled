@@ -991,6 +991,11 @@ void function_245400(s_source_245400 const *source, long index,
 // 50 (41 aligned); the cross result declared with the edge 50 (same code); the dot through dot3f in either operand order
 // 56/56 (47 aligned); cross3f_staged 50 (same code); the second plane pointer declared first 54 (44 aligned). No match; the
 // lead's statement order and written-out rotation are match-only, so the body is unchanged.
+// On the separate code and ordinal decode, primary material pointer/reference 167/167,
+// early normal members with direct/staged cross 167/167, facing-scope normal lvalues
+// or facing-scope plane table 208/208, and paired widening with normal selections
+// or a primary material pointer 169/169. NOT kept: the 167 and 169 forms reach
+// frame 0x2c and 783 bytes but regress. The late plane table also loses the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

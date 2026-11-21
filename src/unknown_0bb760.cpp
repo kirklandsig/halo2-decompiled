@@ -915,6 +915,11 @@ void function_3dd10(long object_index, bool force);
 // file-local helper: writing through `long *`, plain or `inline`, 638 on plain and 195 on rolled (same code each);
 // returning the name 649 (1320 B) on plain and 125 on rolled; called where the scan compares it (no variant local) 1011
 // (1612 B) on plain and 247 on rolled. The count is spilled and the mask keeps EBP in every rolled form. Body unchanged.
+// Early ordinal with second-bank base 311, current color lvalue 106, both 311,
+// or supplied color bound 303. Second-bank base with signed weight scan 302
+// or one model-handle read 303. The same two forms with the opening guard 302/303.
+// NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
+// The second-bank base forms shorten the body, and the mask and count homes still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

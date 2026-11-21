@@ -918,6 +918,11 @@ struct s_item_collision_bsp
 // beside its plane workspaces. Direct stores and the shared point setter at each site all score
 // 190. NOT kept: the placement slot and 1366-byte extent stay the same.
 // MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
+// Vector setter for the rotated normal 193; scalar normal rows published before or after
+// the distance translation 199 each; left product seeds all three normal rows 191;
+// instanced query result pointer 246; instanced plane output with saved equation 291;
+// named real or double random fraction 196/232. NOT kept: all scores exceed 190.
+// The transformed normal and the common x87 spin factor still use different homes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

@@ -2795,6 +2795,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // delta assigned i, j, k 504; with reflected as three statements j, i, k 495 at 2285 B (aligned 171), with delta
 // i, j, k too 496; the opacity arms negated with axis_scale ahead of the angle 276 (aligned 136; a swap, not kept),
 // with delta i, j, k 275, with the attenuation and reflected forms 496, with all four 497.
+// Displacement aggregate 280, with staged dot 486; projection then reflection 506,
+// projection then separate subtract/scale 499, per-axis stages 493, aggregate plus
+// reflection stages 505. Near endpoint before reflection 503 or between projection
+// and reflection 364. NOT kept: the aggregate gains one point and leaves the delta
+// registers and branch span different. The other forms regress.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

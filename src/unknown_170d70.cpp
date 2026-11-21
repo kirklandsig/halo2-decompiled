@@ -388,6 +388,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // through the helper, left as three reals, up as `forward + 1`, both vector pointers declared at the function top, the
 // dot through dot3f): best 84 (1399 B, six dead locals with the named or helper forms); the first normalize stays one
 // instruction long in every explicit-pointer state (the scale ranks below all three forward fields).
+// Deadline range equality, ordered range or while range 380/380/380. Named
+// deadline with for or while range 393/393, or range with alternate up normalization 393.
+// Counted named deadline with alternate forward or up normalization 93/93.
+// NOT kept: the counted forms recover traversal through +0x34a but worsen
+// the score. Pointer-bounded traversal grows by 54 to 66 bytes against retail.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1396,6 +1401,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // no named squares 364 (1449 B); the axis components read once into locals 377 (1427 B); the second axis
 // through cross3f_staged 339 (1456 B). KEPT: the second axis through the shared cross3f in place of the
 // file's private copy of it (same code, 337 reduced; the copy removed).
+// Angle pair by aggregate or fields 378/378, with shared tangent 361 or produced vertical field 390.
+// Horizontal or vertical conversion at the matrix call 368/395, double half-angle 345,
+// and doubled projection by addition 337. NOT kept: the addition ties the reduced control.
+// Pair forms enlarge the frame and all other forms shorten the body.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

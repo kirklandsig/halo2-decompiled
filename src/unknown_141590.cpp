@@ -537,6 +537,11 @@ static inline void quaternion_transform_vector(
 // NOT kept: The 187 form restores the 0x24 frame but changes the last projection’s grouping. The 199 form falls below the gain threshold.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Existing real scale for cross/input/projection contributions 299/269/291,
+// cross and input/cross and projection/input and projection 319/296/316, all three
+// 361, all three with a staged output 461.
+// NOT kept: pairwise weighted vectors recover frame 0x24 with more bytes and a higher score.
+// The quadratic spill and the first half-angle registers still differ.
 // Typed basis projection with quaternion/input first: scalar snapshot 178/212,
 // scalar doubled in place 170/212, caller-owned quadratic weight 311/304.
 // Typed-member forms 187/199 reproduce earlier projection leads.
@@ -1642,6 +1647,10 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Stage the mixed/axial/square weights at coefficients 23 and 25, singly 1213/939/1213,
+// paired 1213/939/1213, all weights 939, and complete mixed terms through the final
+// factor 1154. NOT kept: no form recovers frame 0x300 and the shorter forms move
+// away from the retail extent.
 // Direct accumulation into the matrix, third-band rows 1 through 7 independently, then all seven
 // rows.
 // Scores 1472/1380/1608/1324/1632/1220/1203/1611.

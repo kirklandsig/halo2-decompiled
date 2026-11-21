@@ -998,6 +998,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // first at function scope 2, with a copy of the steps pointer declared after it for the scan 2, the copy ahead of j 2,
 // one copy at the function top for all three loops 2 (same code each: the copies are propagated). Nothing found that
 // flips the pair. Body unchanged (286).
+// Bounded indexed fill through the first node 282, with short link count and
+// split copy increment 361, or target record lvalue 361. Short fill with link
+// and special flags 357, shared origin 404, relative scan step 321, held scan
+// successor 329, held node depth 432, or arm-local distance producers 401.
+// NOT kept: 282 gains four with the extra frame dword. Several narrow-link
+// forms recover 0xe4, and two reach retail length but regress.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
