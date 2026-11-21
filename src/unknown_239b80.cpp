@@ -869,6 +869,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
 // neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
 // above the count for the fourth callee-saved register is still open.
+// M3 lane 6 r214 (fast with 0x239d50, MATCH throughout; control 144): a retail-shaped body (one long hull counter as
+// `while ((short)hull_count < count)`, bool flag, heading zeroed before the lowest scan, memmove, return exits) whose
+// pass body ends in a `return` with the not-closed paths as `continue` (no latch block, to test for retail's top-tested
+// head) 345 (655 B: the two difference tests merge into one); with a long flag 295 (683 B); with a short hull counter
+// 343 (657 B); the plain return-exit form re-measured 269 (747 B); on it `short current = count;` at function scope
+// ahead of the classifier call 271 (748 B). Body unchanged.
 // Compaction after the complete walk uses input count 195, republished result 264, separate
 // compacted count 250, or named input bound 195. Starting each scan at the first index with
 // a predecessor gives 195/257/247/195. NOT kept: all retain the extra frame word and raise the score.
@@ -887,6 +893,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with its own bound, alone or with a signed-word candidate bound 250/250.
 // NOT kept: the copies fold, and the short pass keeps the extra frame word.
 // The result and departure homes remain.
+// Independent append increment with long or short pass 270/249, pass advanced from published length 144/263,
+// pass advanced from incremented length 242/237, short pass and short length incremented independently 249,
+// short feedback with fixed compaction prefix 249. NOT kept: the forms reaching frame 0x14 shorten the
+// function to 760–762 bytes and regress. The long published-length form ties at frame 0x18.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1044,6 +1054,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-20): no new form, no lower score (129): retail reads the count argument as a dword home (mov ecx, [ebp+8]; movsx edi, cx) and keeps it in ECX to the loop guard, where this build reads a word home and keeps the previous side in CL instead of a byte home; the count's width comes from the caller's declaration in src/unknown_17d9a0.cpp, and an int copy of the count measures 320.
 // MiniMax G (11-19): no new form, no lower score (129): retail reads the count's home as a dword and narrows it
 // afterwards (`mov ecx, dword [ebp+8]` then `movsx edi, cx`), so retail's count parameter is a four-byte type while this
 // declaration's `short count` is read as a word home and sign-extended at once; that prototype is also declared in
@@ -1478,6 +1489,18 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
 // tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
 // guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
+// M3 lane 6 r214 (fast with 0x239e50; control 129, aligned 81, masked 16). Retail keeps both side bytes in memory (the
+// copy at the loop end goes through CL into +0xd), so the count holds ECX from the top; ours keeps the previous side in
+// CL. The listed copy moved ahead of `if (inside)` re-measured 157 (masked 9: left the two side-byte slots swapped, the
+// copy's place, the XMM renaming); on it the previous side renamed to sort between the two others, the current side
+// renamed to sort last, and both renamed: 157 each (same code: the byte slots do not follow names); the current side
+// renamed on main 129 (same code); the crossing result named ahead of the copy (`bool crossed = inside !=
+// previous_inside; previous_inside = inside; if (crossed)`) 226 (894 B). Body unchanged.
+// MiniMax E (11-20): score 129 (was 129): no new form and no lower score; the first difference is the count's load width -
+// retail reads the count slot as a dword (`mov ecx, dword ptr [ebp + 8]`) and takes its low word (`movsx edi, cx`), this
+// build reads a word directly (`movsx edi, word ptr [ebp + 8]`). Retail's dword load means its count parameter is 32-bit,
+// and the declaration may not change here. Behind that: retail keeps the previous-side flag in memory at [esp + 0xd] where
+// this build keeps it in CL, and retail's zero is XMM2 where this build uses XMM4.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

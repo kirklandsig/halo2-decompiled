@@ -2424,6 +2424,7 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 // MiniMax E (11-17): no new form, no lower score (140): the flag byte is still loaded into cl before the branch where retail loads it into al after it, and the value stored to the global still comes after that load where retail stores it first; the body's length matches retail's (1729 bytes).
 
+// MiniMax A (11-20): no new form, no lower score (4): the bottom pair's v multiply has its operands in the other order, and spelling it reciprocal-first gives the same code, so the spelling does not set the operand order
 // MiniMax E (11-16): no new form, no lower score (140): the body's length matches retail's, but this build still hoists the preserve_alpha load above the `simple` branch where retail loads it after, and the callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
@@ -2456,6 +2457,14 @@ dword __cdecl function_131fc0(real alpha);
 // products, where retail loads the coordinate and multiplies by the reciprocal's home and this build loads the
 // reciprocal and multiplies by the coordinate (see the round above).
 // score 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
+// MiniMax A (11-20): 14 -> 4 (fast): the bitmap's width and height are now one point2f (x = the width, y = the
+// height, both 1.0f before the bitmap test), which puts their homes at retail's 0x10 and 0x14; the reciprocals and
+// the default rectangles now match retail, and only the bottom edge's two v products keep this build's operand
+// order (writing the reciprocal first does not change this build's code).
+// score 4 (was 14): the body is now retail's length (1729 bytes) and every instruction matches except the bottom
+// edge's two v products, where retail multiplies the stored reciprocal by source[3] and this build puts source[3]
+// in the register first.
+// Earlier score 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the order of the eight
 // default stores, the reciprocals' registers and the operand order of the UV products (see round 117 below).
 // Earlier reading (140): frame and length agree; left: retail keeps both rectangle parameters as memory
@@ -2767,6 +2776,7 @@ dword __cdecl function_131fc0(real alpha);
 // home, bottom pair reciprocal-first, two homes) appears in none; every bottom flip needs a third home or changes the
 // first vertex.
 // NOT kept (coordinator screen, MiniMax H 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
+// NOT kept (coordinator screen, MiniMax A 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2956,6 +2966,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
+// MiniMax A (11-20): no new form, no lower score (354): the frame is 0x208 against retail's 0x200
 // MiniMax E (11-16): no new form, no lower score (330): this build still inlines both copies of 0x235a0 where retail inlines the first and calls the second, so the body after that point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax B (11-13): no new form, no lower score (364): the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
 // Earlier score 530 (was 530): Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
@@ -3242,6 +3253,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax I (11-17): no new form, no lower score (54): what is left is the scheduler's order of the x87 and SSE chains of the four corners and the XMM registers they take (retail's four scale multiplies use XMM3, XMM7, XMM1, XMM6 and ours XMM1, XMM3, XMM7, XMM6); the first set's store order is 0,3,4,7,1,6,2,5 in retail and 0,3,4,6,7,1,2,5 in ours, and no spelling of the corner helper moves either.
 // MiniMax E (11-17): no new form, no lower score (54): the x87 chain's store still comes before the SSE subtract where retail takes the subtract first and stores after it, and the scheduler still places the x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527).
 
+// MiniMax A (11-20): no new form, no lower score (54): the float block mixes x87 and SSE differently
 // MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
 // MiniMax C (11-15): no new form, no lower score (54): the body is retail's length and the first difference is at +0x527, where this build places each x87 coordinate step one slot ahead of retail's in both corner sets, so what is left is the inlined rotation's schedule.
 // MiniMax H (11-14): no new form, no lower score (54).
@@ -3266,7 +3278,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // chains one slot earlier among the SSE ones than retail does (first difference +0x527); the helper's spellings and the
 // corner-call orders the earlier rounds measured all give 54 or worse.
 // MiniMax S (11-20): no new form, no lower score (54): the two corner blocks still differ in the x87 and SSE order, ours storing the x87 coordinate before the subtract where retail subtracts first, and the four scale products land in other XMM registers.
-// score 54 (was 54): r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// score 54 (was 54): r139 unchanged; r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
 // (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
@@ -3526,6 +3538,30 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // returned corner pair with named scale, bias 569;
 // returned corner pair with named rotation, scale, bias 569.
 // NOT kept: Returning the pair shrinks the frame to 0x40 and the body moves away from retail length. The corner instruction schedule still differs.
+// M3 lane 11 r139 (compile-only harness of this file, whose corner block is the fast and plain builds' exactly; counts are
+// the block's lines out of place against retail, control 54, aligned 27; h2m fast for the four forms marked fast): the
+// schedule moves with redundant parentheses inside the corner helper, which no earlier round measured. One to three extra
+// pairs at one place: around the first statement's difference (or its sum with 1.0) 52/82/89 (fast 54 for one pair: the
+// second set then starts as retail's, the first x87 store ahead of the cosine product, aligned 25); around its scale
+// product 61/81/91 (fast 63 for one pair); around its whole right side 57/81/91 (fast 59 for one pair); the second
+// statement's sum 82/94/94, its scale product 90/92/92, its right side 84/92/92; around one product of the second
+// statement 105 or 101 (other instructions). All 4096 combinations of zero to three pairs at those three places in both
+// statements: 245 distinct blocks, none retail's, one under 54 (the 52). A float cast around a whole right side gives the
+// pair's block (57); around the difference or the sum it changes nothing. Retail issues each x87 store four instructions
+// after its last multiply where ours takes three; only `0.5f + r * scale * 0.5f` (other instructions, fast 74, 2025 B)
+// reproduces retail's first-set x87 spacing. With the eight stores as separate one-coordinate helper calls, the 168
+// statement orders that keep retail's register reuse (coordinate 0 first, 1 ahead of 2 and 6, 2 ahead of 7, the x87
+// coordinates 3, 4, 5 in order anywhere) give 54 at best (19 of them main's block), so the x87 statements' place among
+// the SSE ones is not the cause. Other helper shapes: the bias as its own inline helper taking the scale 113, taking the
+// scaled value 54 (same code); the rotation halves as value-returning helpers 113; scale and bias applied to the stored
+// coordinate in place 109 and 112; named scaled u/v 108; reference outputs 108; sixteen scalar coordinates in place of
+// the arrays: the values are then computed at the vertex calls (no stored block). The back end's own option switches do
+// not turn the scheduler off, so its input order stays unseen. LEAD: with the one extra pair around the first statement's
+// difference every SSE instruction of both sets stands in retail's order, and all that is left is that each of the four
+// contested x87 stores comes three instructions after its last multiply where retail's comes four (the x87 steps behind
+// it one place early). On that form: `/ 2.0f`, `/ 2`, `+ 1`, the three commuted spellings: same code; a double 0.5 or 1.0:
+// all x87 (113 to 115); the finished value through a named local before its store, or through value-returning helpers:
+// same code or other instructions (102 to 108). Body unchanged.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -4192,6 +4228,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local with the alpha selector before input 19 (small in AL copied to CL, alpha in ECX; retail small in CL, alpha in
 // EAX) and with the alpha selector before whole 19 (small in CL as retail, but alpha computed in EDX before the whole
 // split, where retail computes it in EAX after fraction's move to EBP).
+// M3 lane 6 r215 (fast, on lane 8 r205's base B re-measured 5: the span copy after the clamp plus `offset` declared after
+// `maximum`; only the shifted input word left, coalesced with `input` in EBX and hoisted above the clear): the shifted
+// local `dword const` 5; `input` typed `dword` with a `long` shifted local 5 (both the same code); the alpha input word
+// stored ahead of the RGB word 7; the shifted local used by the RGB word with the alpha word shifting `input` again 941,
+// the reverse 941, and no shifted local with small read through a `bool const` copy for both selectors 941 (the shift is
+// then retail's `mov eax, ebx; shl eax` but small loads into AL after fraction's move with no copy); with no shifted local
+// `small` typed byte 941, typed long 494. Reading: the two
+// copy choices move together; whenever the shift is its own value (not coalesced with `input`), small's load coalesces
+// with the alpha selector's register, and retail has neither coalesced. Diagnostic: B without the shifted local in the
+// whole, alpha, fraction, input order 14 (small in CL as retail, alpha computed ahead of input).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

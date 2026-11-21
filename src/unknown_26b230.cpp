@@ -1792,6 +1792,11 @@ void function_269250(long clump_index, long actor_index);
 // MiniMax G (11-20): no new form, no lower score (87 in the reduced image, 85 in the full one): the score is still taken and compared
 // outside the team arm with an SSE compare where retail compares inside the arm on the x87 stack, the walk's pool is still
 // reloaded from its slot at each step where retail hoists it into EBX, and the selection is still kept in EDI besides its slot.
+// MiniMax E (11-20): no new form, no lower score (87): the walk's pool load still stays in memory and the selection
+// still stays in EDI, where retail hoists the pool into EBX across the 0x268bb0 call and keeps the selection on the
+// stack only; calling data_datum_iterator_next_inlined on the walk's own iterator measures 164 (with the score path
+// common to both arms) and 160 (with the compare in the arm), because the found and not-found paths then stop merging
+// and the frame drops to 0x38, so the shared walk helper stays as it is (it has four matched users). The body stands.
 // MiniMax D (11-20): no new form, no lower score (87; 89 on this build's reduced image). The in-arm compare (126 at 480 B)
 // gives retail's x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and the best (+0x1c), but ours
 // still keeps the walk's pool in memory and the selection in EDI (reloaded at the loop top), while retail hoists the pool into
@@ -2199,6 +2204,7 @@ void function_269250(long clump_index, long actor_index);
 // keeps the pool in memory, the selection in EDI and compares with comiss; the in-arm compare (126) and the selection taken
 // from the walk's datum index (128) each score worse alone, and the two walk helpers are shared with four matched functions,
 // so they stay as they are.
+// MiniMax G (11-20): no new form, no lower score (87): retail hoists the walk's pool into EBX and keeps the selection in memory only, where this build reloads the pool from its slot at each step and holds the selection in EDI (reloaded at the loop head), and the score is compared with comiss where retail compares with fcompi; the compare's operand order and the two products' operand orders were re-measured and give the same code.
 // MiniMax G (11-19): no gain (89, body unchanged). Re-measured the in-arm compare (the score taken and compared only when
 // the team matches, with the selection stored before the best): it does reproduce retail's x87 compare and retail's exact
 // length (480 B), but the score rises to 126 because retail hoists the walk's pool into EBX and keeps the selection in memory
@@ -2317,6 +2323,12 @@ void function_269250(long clump_index, long actor_index);
 // selection and best declared ahead of the walk 129; the team test as `if (team != ...) continue;` 126; the score declared
 // at loop scope 126; the activity flag read ahead of the walk's start 126; the walk record at function scope 126 (all
 // four the same code).
+// M3 lane 5 r219 (H2M_FAST with the ten matched callees and walk users, all MATCH each run; control 87): the in-arm compare
+// re-measured 126 (480 B) and the walk's datum index as the selection on it 128. On the in-arm form: the team test written
+// actor first 126; the walk record, selection and best at function scope with the datum-index selection 128; the found arm
+// storing the selection before the best 126 (all the same code as their bases); the post-walk test `if (selected ==
+// actor->unknown07c) continue;` inside the found arm 126 (same code). On this body: the score as one ternary (`team match ?
+// score call : best`) 128 (484 B). Body unchanged.
 // Walk-index candidate before/after scoring: common ranking 87/87, team-local
 // 126/126. Iterator datum-index candidate at the same boundaries: common
 // 146/146, team-local 128/128. The team-local datum form promotes the pool

@@ -71,7 +71,7 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // MiniMax H (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line where this build expands get_data_4a00; the second session state sits in ESI against retail's EAX.
 // MiniMax E (11-20): no new form, no lower score (376): the secondary state still lives in esi where retail keeps it in eax, because 0x5b080 is expanded here and called out of line in retail; 0x5b080 lives in src/unknown_05b040.cpp, which this lane may not edit, so the difference is not reachable from this file.
 // score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
-// score 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// Earlier at 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // MiniMax E (11-20): no new form, no lower score (376): the top block still reads the session state into ESI and compares ESI where retail loads it into EAX and compares EAX, and retail's out-of-line call to 0x5b080 for the session data is expanded at the call site in this build, so the two paths diverge from the first difference at 0x6b on.
 // Round 127 (m3 lane 10; fast, kept form confirmed plain with 0x706f0 and 0x5b080 matched): the property value cleared by
 // memset, as the members-ready arm already clears it, 387 -> 376 (kept: retail's seven zero stores are all `mov [..], ecx`
@@ -420,12 +420,40 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (1573 B); the two missing-input tests merged into one `||` 412 (1594 B); the data getter declared at its own test 425.
 // The state register follows 0x5b080's expansion: expanded, its state test is CSE'd with the earlier inlined state
 // tests across the 0x192e60 call (ESI); retail calls 0x5b080, so its state dies in EAX. BLOCKED-BY 0x5b080 calibration.
+// M3 lane 13 r130 (fast with 0x5b080/0x706f0/0x72140/0x71ff0/0x71e00, all MATCH; control 376). Kept: the three early
+// exits as if / else if / else in place of `goto finished` (the same code, 376; three gotos and the label gone). On it:
+// only the second-session exit as if/else 376 (same code); the property value cleared ahead of the player-count test
+// 376. The data getter's expansion follows the estimated frequency of its call site, not a per-caller count:
+// (diagnostic) 1, 2, 4 and 8 more expansions of the value getter ahead of it 464/504/629/808 and it still expands,
+// while one more conditional level keeps it a call: called only when the surface lookup succeeded 429 (1565 B), as a
+// ternary on the lookup 427 (1573 B), read inside the second missing-input test 425 (1589 B, retail's length);
+// (diagnostics) the last arm under a test of the still-false result, or under a repeat of the type test, 503 (1525 B:
+// other expansions in the arm become calls too), the getter alone under that folded result test 452 (1565 B);
+// (diagnostic, flags) the file without /Ob1 376 (same code). Retail calls the getter unconditionally right after
+// 0x192e60, so its source has one more two-way split ahead of that point than this body, and no form here supplies one
+// without emitting a test or repeating one. Still BLOCKED-BY 0x5b080's call-site calibration.
 // M3 lane 1 r138 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH; control 376): 0x5b080's own body respelled
 // (its file is machine 3's) to move its inline cost here, nested `if (state > 2) { if (state <= 8) ...` 376, a state local
 // with one three-part test 376 (both the same code; 0x5b080, 0x6d380 matched, 0x6e720 22 and 0x7e210 871 unchanged); the
 // members-ready live test as `!session_state_is_live(local_2) || !local_2->flag49e8` 376 (same code); the property value
 // as `= {0}` in place of the memset 387 (1597 B); the not-ready block's live test as two nested ifs 376 (same code). All
 // restored; still BLOCKED-BY 0x5b080 calibration.
+// M3 lane 13 r132 (fast with 0x5b080, MATCH each time; control 376). The data getter stays expanded in every form:
+// the whole last arm as a file-local forced-inline function taking the state, the owner and both sessions 495 (1629 B);
+// the last arm ending in its own `return` of the result 434 (1589 B); the type test as a one-case switch 376 (same
+// code); the value getter written at the lookup and again at the 0x71ff0 call, no local, 418 (1584 B); the data getter
+// read after the first elapsed time and the progress pointer 417 (1581 B).
+// Measured law for the getter's expansion (one-object link of this file with the getter's file, build/r132/cost717.py:
+// the smallest inline threshold that expands it, against the build's 81): 18 as the function's first statement, 22
+// under the type test, 31 in the first live-state arm, 50 in the second arm or in the last arm (this body), 86 under
+// one more `if`, about 13.5 + 4.5 * 2^depth. Depth is the count of enclosing `if`, `switch` and `?:` constructs as
+// written, also when the compiler folds their test (`if (true)`, `true ? x : NULL`, `switch (0)`, `if (local_2)` all
+// 86 with no code of their own); a bare block, `else { if` for `else if`, a `for (;;)` with a break and an `&&` leave
+// it at 50, removing or folding the type test or either live-state test leaves it at 50, statements before the call
+// in the same arm leave it at 50, and a `do ... while (false)` around the call lowers it to 15. So retail's source has
+// the getter call (or the whole last arm) under four conditional constructs where this body has three, and the fourth
+// one emits no test. No natural candidate found: a fourth test that is always true where it stands is the steering
+// form round 58 measured (`if (local_2)`, 440 then). Still BLOCKED-BY 0x5b080's call-site depth.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
@@ -434,181 +462,182 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		s_session_owner *local_0 = arg_0->owner;
 		c_class_58d20 *local_1 = local_0->session_a;
 		c_class_58d20 *local_2 = local_0->session_b;
-		if (local_1->type != 11)
-			goto finished;
-		if (!local_1->function_058d20())
+		if (local_1->type == 11)
 		{
-			function_71e00(arg_0);
-			goto finished;
-		}
-		if (!local_2->function_058d20())
-		{
-			arg_0->mode = 14;
-			local_3 = true;
-			goto finished;
-		}
-		long local_7 = local_2->get_value_49c8();
-		s_surface_description *local_8 = function_192e60(local_7);
-		byte *local_9 = local_2->get_data_4a00();
-		long local_10 = time_now() - arg_0->unknowna68;
-		byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
-		bool local_12 = false;
-		bool transition = false;
-		long local_15[16];
-		s_71730 local_16;
-		if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
-		{
-			*(dword *)((byte *)arg_0 + 0xa6c) = local_2->player_count;
-			*(long *)((byte *)arg_0 + 0xa70) = time_now();
-		}
-		long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
-		s_session_property_value local_14;
-		memset(&local_14, 0, sizeof(local_14));
-		if (!local_8)
-		{
-			arg_0->mode = 7;
-			local_3 = true;
-			goto local_28;
-		}
-		if (!local_9)
-		{
-			arg_0->mode = 7;
-			local_3 = true;
-			goto local_28;
-		}
-		if (!function_7e210(local_2, (s_matchmaking_ratings *)&local_16))
-			goto local_28;
-		if (local_16.field_358 > function_193400(local_8) &&
-			*(long *)(local_9 + 0x184) == network_session_get_maximum_players(local_2))
-			goto local_28;
-		if (*(long *)(local_11 + 8) == 0 &&
-			(local_10 > g_network_configuration.value1c0[9] * 1000 ||
-			 *(long *)(local_11 + 0x10) > g_network_configuration.value1c0[8]))
-			*(long *)(local_11 + 8) = 2;
-		transition = network_session_players_match(local_1, local_2);
-		if (!transition)
-			goto local_29;
-		if (local_16.field_360)
-		{
-			transition = false;
-			goto local_29;
-		}
-		if (local_2->player_count != *(long *)(local_9 + 0x184))
-		{
-			transition = false;
-			goto local_29;
-		}
-		{
-			long local_18 = *(long *)(local_9 + 0x184);
-			long local_19 = 0;
-			for (long local_20 = 0; local_20 < local_18; local_20++)
-				if (network_session_find_player(local_2, (const dword *)(local_9 + 0x188 + local_20 * 12)) != NONE)
-					local_19++;
-			if (local_19 != local_18)
+			if (!local_1->function_058d20())
 			{
-				transition = false;
-				goto local_29;
+				function_71e00(arg_0);
 			}
-			long local_21 = function_1931d0(local_8, local_2->player_count);
-			if (local_21 == 0x7fffffff || local_21 > local_17)
+			else if (!local_2->function_058d20())
 			{
-				transition = false;
-				session_property_value_set_kind3(&local_14, (local_21 - local_17) / 1000);
-				goto local_29;
+				arg_0->mode = 14;
+				local_3 = true;
 			}
-			if (function_1934b0(local_8) && local_16.field_358 > function_193400(local_8))
+			else
 			{
-				transition = false;
-				goto local_29;
-			}
-			dword local_22;
-			if (!network_session_members_ready(local_2, &local_22))
-			{
-				transition = false;
-				memset(&local_14, 0, sizeof(local_14));
-				local_14.kind = 4;
-				goto local_29;
-			}
-			if (!(session_state_is_live(local_2) && local_2->flag49e8))
-			{
-				s_session_id local_23;
-				function_73ae0((unsigned __int64 *)&local_23);
-				network_session_host_set_id49f0(local_2, &local_23);
-			}
-			if (*(long *)(local_11 + 8) != 1)
-				*(long *)(local_11 + 8) = 1;
-			transition = function_72140(arg_0);
-			if (!transition)
-				goto local_30;
-			if (function_1934b0(local_8))
-			{
-				long local_24;
-				bool local_25 = false;
-				if (balance_teams_by_count(local_16.field_c, local_16.field_194,
-					function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
-					function_1933d0(local_8), function_1933a0(local_8), true, &local_24) &&
-					local_24 <= function_193400(local_8))
-					local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
-						function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
-						true, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
-				if (!local_25 && !function_193470(local_8))
+				long local_7 = local_2->get_value_49c8();
+				s_surface_description *local_8 = function_192e60(local_7);
+				byte *local_9 = local_2->get_data_4a00();
+				long local_10 = time_now() - arg_0->unknowna68;
+				byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
+				bool local_12 = false;
+				bool transition = false;
+				long local_15[16];
+				s_71730 local_16;
+				if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
 				{
-					if (balance_teams_by_count(local_16.field_c, local_16.field_194,
-						function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
-						function_1933d0(local_8), function_1933a0(local_8), false, &local_24) &&
-						local_24 <= function_193400(local_8))
-						local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
-							function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
-							false, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
+					*(dword *)((byte *)arg_0 + 0xa6c) = local_2->player_count;
+					*(long *)((byte *)arg_0 + 0xa70) = time_now();
 				}
-				if (!local_25)
+				long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
+				s_session_property_value local_14;
+				memset(&local_14, 0, sizeof(local_14));
+				if (!local_8)
+				{
+					arg_0->mode = 7;
+					local_3 = true;
+					goto local_28;
+				}
+				if (!local_9)
+				{
+					arg_0->mode = 7;
+					local_3 = true;
+					goto local_28;
+				}
+				if (!function_7e210(local_2, (s_matchmaking_ratings *)&local_16))
+					goto local_28;
+				if (local_16.field_358 > function_193400(local_8) &&
+					*(long *)(local_9 + 0x184) == network_session_get_maximum_players(local_2))
+					goto local_28;
+				if (*(long *)(local_11 + 8) == 0 &&
+					(local_10 > g_network_configuration.value1c0[9] * 1000 ||
+					 *(long *)(local_11 + 0x10) > g_network_configuration.value1c0[8]))
+					*(long *)(local_11 + 8) = 2;
+				transition = network_session_players_match(local_1, local_2);
+				if (!transition)
+					goto local_29;
+				if (local_16.field_360)
 				{
 					transition = false;
+					goto local_29;
+				}
+				if (local_2->player_count != *(long *)(local_9 + 0x184))
+				{
+					transition = false;
+					goto local_29;
+				}
+				{
+					long local_18 = *(long *)(local_9 + 0x184);
+					long local_19 = 0;
+					for (long local_20 = 0; local_20 < local_18; local_20++)
+						if (network_session_find_player(local_2, (const dword *)(local_9 + 0x188 + local_20 * 12)) != NONE)
+							local_19++;
+					if (local_19 != local_18)
+					{
+						transition = false;
+						goto local_29;
+					}
+					long local_21 = function_1931d0(local_8, local_2->player_count);
+					if (local_21 == 0x7fffffff || local_21 > local_17)
+					{
+						transition = false;
+						session_property_value_set_kind3(&local_14, (local_21 - local_17) / 1000);
+						goto local_29;
+					}
+					if (function_1934b0(local_8) && local_16.field_358 > function_193400(local_8))
+					{
+						transition = false;
+						goto local_29;
+					}
+					dword local_22;
+					if (!network_session_members_ready(local_2, &local_22))
+					{
+						transition = false;
+						memset(&local_14, 0, sizeof(local_14));
+						local_14.kind = 4;
+						goto local_29;
+					}
+					if (!(session_state_is_live(local_2) && local_2->flag49e8))
+					{
+						s_session_id local_23;
+						function_73ae0((unsigned __int64 *)&local_23);
+						network_session_host_set_id49f0(local_2, &local_23);
+					}
+					if (*(long *)(local_11 + 8) != 1)
+						*(long *)(local_11 + 8) = 1;
+					transition = function_72140(arg_0);
+					if (!transition)
+						goto local_30;
+					if (function_1934b0(local_8))
+					{
+						long local_24;
+						bool local_25 = false;
+						if (balance_teams_by_count(local_16.field_c, local_16.field_194,
+							function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
+							function_1933d0(local_8), function_1933a0(local_8), true, &local_24) &&
+							local_24 <= function_193400(local_8))
+							local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
+								function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
+								true, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
+						if (!local_25 && !function_193470(local_8))
+						{
+							if (balance_teams_by_count(local_16.field_c, local_16.field_194,
+								function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
+								function_1933d0(local_8), function_1933a0(local_8), false, &local_24) &&
+								local_24 <= function_193400(local_8))
+								local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
+									function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
+									false, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
+						}
+						if (!local_25)
+						{
+							transition = false;
+							local_12 = true;
+							goto local_30;
+						}
+					}
+					else
+					{
+						for (long local_26 = 0; local_26 < local_16.field_c; local_26++)
+							local_15[local_26] = local_26;
+					}
+					function_71ff0(arg_0, local_7, (const s_match_player_list *)&local_16, local_15);
+					goto local_31;
+				}
+			local_29:
+				if (session_state_is_live(local_2) && local_2->flag49e8)
 					local_12 = true;
-					goto local_30;
+				goto local_30;
+			local_28:
+				if (arg_0->mode == 3)
+					local_12 = true;
+			local_30:
+				{
+					long local_27 = *(long *)((byte *)local_8 + 0x59c) + *(long *)((byte *)arg_0 + 0x974);
+					if (local_27 <= local_17)
+						local_12 = true;
+					else
+					{
+						if (!local_14.kind)
+							session_property_value_set_kind2(&local_14, (local_27 - local_17) / 1000);
+						network_session_host_set_data49cc(local_2, (const dword *)&local_14);
+					}
+				}
+				if (transition)
+				{
+			local_31:
+					network_session_set_mode(local_1, 12);
+					local_3 = true;
+				}
+				if (local_12)
+				{
+					if (*(long *)(local_11 + 8) != 1)
+						*(long *)(local_11 + 8) = 1;
+					network_session_set_mode(local_1, 6);
+					local_3 = true;
 				}
 			}
-			else
-			{
-				for (long local_26 = 0; local_26 < local_16.field_c; local_26++)
-					local_15[local_26] = local_26;
-			}
-			function_71ff0(arg_0, local_7, (const s_match_player_list *)&local_16, local_15);
-			goto local_31;
-		}
-	local_29:
-		if (session_state_is_live(local_2) && local_2->flag49e8)
-			local_12 = true;
-		goto local_30;
-	local_28:
-		if (arg_0->mode == 3)
-			local_12 = true;
-	local_30:
-		{
-			long local_27 = *(long *)((byte *)local_8 + 0x59c) + *(long *)((byte *)arg_0 + 0x974);
-			if (local_27 <= local_17)
-				local_12 = true;
-			else
-			{
-				if (!local_14.kind)
-					session_property_value_set_kind2(&local_14, (local_27 - local_17) / 1000);
-				network_session_host_set_data49cc(local_2, (const dword *)&local_14);
-			}
-		}
-		if (transition)
-		{
-	local_31:
-			network_session_set_mode(local_1, 12);
-			local_3 = true;
-		}
-		if (local_12)
-		{
-			if (*(long *)(local_11 + 8) != 1)
-				*(long *)(local_11 + 8) = 1;
-			network_session_set_mode(local_1, 6);
-			local_3 = true;
 		}
 	}
-finished:
 	return local_3;
 }
