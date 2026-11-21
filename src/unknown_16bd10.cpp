@@ -1395,6 +1395,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // retail preloads its y, so the squared length lands in xmm0 where retail keeps it in xmm1 and the divide and the zero
 // copy that follow stay exchanged with it; the shared dot helper's term order is fixed in a header this lane may not
 // touch, so no spelling reaches retail's preload.
+// Plane-to-origin numerator direct, named, accumulated or joined 389/382/389/389.
+// Negated residual before division direct, named, compound or joined 135/395/135/135.
+// NOT kept: the numerator alternatives change the rounding boundary, raise the
+// score and leave the preload and persistent zero unresolved.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

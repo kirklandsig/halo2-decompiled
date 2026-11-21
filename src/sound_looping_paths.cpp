@@ -810,6 +810,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // gains and portals/gains and clusters/portals and clusters 853/931/853;
 // all auxiliaries 904 or all four streams 910. Every form recovers the ESI zero,
 // but the target and primary stores still differ and all scores rise.
+// Direct prior-tag test with short query and short/long choice count 1013/1036,
+// long copied query 1030/1039, or provider count 1030/1039. Exactly one prior
+// choice with short counts 1013 or provider count and long choices 1044.
+// NOT kept: the forms replace the retail duplicate loop, shorten the body
+// and leave the entry zero and target/query homes different.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
