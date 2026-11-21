@@ -1779,6 +1779,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `input` pointer (the direct and flying arms too) 640 (2971 B); the ground-bit test as `!((flags >> 0) & 1)` 234 (same
 // code); the direct bit tested at its use with no `direct` local 620; the gravity clear's test as `flying ||
 // !limited_step` 445 (3053 B); the direct arm's fallback copy member by member 588 (3020 B). Body unchanged.
+// M3 lane 13 r140 (H2M_FAST; control 234): the direct arm with no `speed` local (state->speed read at both products, the
+// output still through vector3f_assign) 429; the history add as `vector3f_add(&difference, out + 0x64, &change)` 371 (3051 B);
+// `gravity = false;` moved to the first arm's top 233 (one point, under the bar); the history test as `stored ==
+// game_time - 1` 235; the general output through the existing pointer `vector3f_add(current, &limited, out + 0xc)` with
+// the direct arm's vector3f_assign kept 540 (rows then stored as formed, but the k row still commutes), with the moved
+// gravity clear 540. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

@@ -1030,6 +1030,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // first, and separate scan/history names with long link ordinal 286/286/286/286,
 // short ordinal 359/359/359/359. Names leave frame and allocation unchanged
 // at each width. The short ordinal removes the cursor but shortens to 1375.
+// M3 lane 13 r140 (H2M_FAST with 0x270930, MATCH each run; control 286; both builds end in `ret 0x24` with the state in EBX,
+// so the round prompt's `ret 0x28` was stale). Lane 15 r123's saved two-flag lead re-applied 2 at 1388 B (the scan latch's
+// steps/j reloads in the other order). On it: a redundant `if (count > 0)` guard on the scan loop 187 (1395 B, the test is
+// emitted); `if (node_index != NONE)` around the traversal `while` 2, around it as a `do ... while` 2 (same code each: the
+// guard block folds before allocation); the truncation test written in both distance arms 488 (1489 B, the tails are not
+// cross-jumped and the state leaves EBX); the truncation storing `complete` before `count` 4 (the two stores swap, the pair
+// stays); the previous point chosen by an if/else statement in place of the ternary 2 (same code). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
