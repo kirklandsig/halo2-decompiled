@@ -281,6 +281,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // the initialisation test 93 (292 B), declared after the second allocation 90 (293 B), a `long *const` result with the
 // arm returning NULL 12 (same code); volatile-free, a `long *const` result with the arm returning NULL 90 (277 B), the
 // size passed as a short product with `result = NULL` between the element and the call 83 (277 B).
+// M3 lane 6 r220 (h2m fast with 0x2099f0, which stays matched; volatile-free forms with the result copy at the top and
+// the arm's `result = NULL` last, control 95 at 266 B): the allocator `__forceinline` 95; the allocator bumping `frame->size`
+// directly (no size pointer) 95; the element as `arguments + argument_index` 95; `register` on the pointer 95; the
+// allocator's size formal widened to `long` 95 (all the same code: the pointer and the result still share EAX, no spill).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

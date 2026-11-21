@@ -455,6 +455,9 @@ extern real g_4c9798[36];
 // pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
 // stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
 // height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
+// Mode bit as unsigned or signed storage with Boolean, zero comparison, positive arm,
+// or Boolean tag result 302/299/190/299 and 299/299/307/299. NOT kept: the EAX forms
+// use an early high-byte test, and the remaining forms keep the EDX load.
 // M3 lane 3 r283 (fast, control 174; body unchanged): the mode declared at the top with the border 174 (same code); the
 // two limits' product named once and used three times 174 (same code); the depth and w constants stored once after the
 // if/else instead of in both arms 254 (1443 B); near and far distances named ahead of the scale 189 (1484 B); the four

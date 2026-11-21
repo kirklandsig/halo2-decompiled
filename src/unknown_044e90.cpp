@@ -23,6 +23,11 @@ struct s_visibility_bound_record
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
 // score 430 (was 430): r275 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
+// M3 lane 15 r124 (H2M_FAST with 0x458d0 and 0x45a80, both MATCH each run; control 430): the entry index read through
+// its address for the entry and the lookup (the spelling of 0x458d0/0x45a80) 430 (same code); a redundant `if (0 < view
+// count)` guard around the view loop 499 (1792 B); a redundant `if (0 < part count)` guard around the part loop 454 (1765
+// B); the part bit written at both uses instead of the local 456 (1767 B); the entry pointer declared `*const` 430 (same
+// code). Lane 11 r133's lead re-measured 396 at 1742 B (first difference +0x57). Body unchanged.
 // MiniMax S (11-17): no new form, no lower score (443): the frame 0x74a4 agrees with retail's and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from an index in eax
 // before the register saves and we form it with an add into edi after them; the part centre's body is inlined

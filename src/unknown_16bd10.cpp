@@ -1401,6 +1401,15 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // and the length sums j, i, k; the reference at the dot only 394, the copy only 395, copy and dot 394, dot and add-scaled
 // 393, copy and add-scaled 395, add-scaled only 395 (all 1700 B, the k preload back in the last three); the left copy moved
 // ahead of the three matrix copies 186; `t` as one conditional expression 126 (same code).
+// Plane-to-origin numerator direct, named, accumulated or joined 389/382/389/389.
+// Negated residual before division direct, named, compound or joined 135/395/135/135.
+// NOT kept: the numerator alternatives change the rounding boundary, raise the
+// score and leave the preload and persistent zero unresolved.
+// MiniMax C (11-20): no new form, no lower score (126): the length agrees (1696 bytes), but the plane length's dot
+// accumulates in the other register order - this build keeps the third component's product in xmm1 and the sum in xmm0,
+// retail keeps the product in xmm0 and the sum in xmm1 - while the offset's own terms agree with retail's
+// (sine*offset.i - cosine*offset.j); the term order inside the dot is canonicalised by the compiler, so no spelling
+// of it moves the block.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

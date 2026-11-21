@@ -448,6 +448,10 @@ extern long g_55c154;
 // with the create-default test straight after the load and the index store and copy in each arm 167 (576 B); that with the
 // ternary in the load's argument and `selected == NONE` tested again 173 (567 B); one load with `selected` set to `saved`
 // when it is NONE 76 (577 B).
+// Whole index-and-variant publication for edit/creation/both 161/194/203. Decode into
+// the publication record with whole or member writes 175/91, separate load arms 106/203,
+// and shared record across edit and creation 174. NOT kept: even the 91 form grows the
+// frame to 0x384 and loses retail’s EBP bias.
 // M3 lane 4 r236 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61): two load arms re-measured 174
 // (595 B: EBX takes the constant 1 in the first half, then `saved`, then &g_54e4a0; `this` in EDI); on them the copy's count
 // written as the name array's element count 174, both counts that way 174, the name pointer and count named once for the

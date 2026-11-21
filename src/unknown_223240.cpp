@@ -67,6 +67,7 @@ void function_2232a0(void)
 // score 47 (was 47): The terminal record gets its base before the stores, and the dispatch stub carries the count in EDX.
 // MiniMax D (11-20, run 131): no new form, no lower score (47): retail folds the record base into the six stores' displacement and forms the pointer with a lea after them, where this build materializes the base early, and the tail's 0x2b5d0 call takes its count in another register and lacks the `mov eax, edx` that retail has before the fstp: BLOCKED-BY 0x2b5d0 (its stub is in src/stubs/lane_k.cpp).
 // MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
+// score 47 (was 47): Earlier score 79. Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // Earlier measurement 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
 // 0x68290, 0x2f6b0, 0x2c490, 0x3f450 and the 0x2b5d0 stub) reproduces the full build's listing exactly (0 rows); against
@@ -452,6 +453,10 @@ void function_2232a0(void)
 // count formed after the loop 40 (a declaration move, seven points, not kept: the fold stays, only the tail's zero stores
 // change); the terminal record indexed by the loop counter 182 (584 B); the count written at both uses with no view_count
 // local 120; the count taken back from a terminal pointer (diagnostic) 195. Body unchanged.
+// Paired terminal count, paired clamp outcomes, total clamped directly, and
+// requested total clamped 172/192/176/174. With layout selected from the total
+// 172/187/176/173. NOT kept: all forms grow the function and still form the
+// terminal base early. The dispatch count still goes to EDX in the stub.
 // M3 lane 4 r236 (fast with 0x223080/0x223240/0x2232a0; control 47; the fast image shows matched 0x223080 at 2, a
 // reduced-image artifact): the terminal record passed as `&g_47f0f8[local_0 + 1]` (the record after the loop's last) 182
 // (584 B), as `&g_47f0f8[local_2 + 1]` 183 (583 B), as `g_47f0f8 + view_count` 47 (same code); the loop's record as

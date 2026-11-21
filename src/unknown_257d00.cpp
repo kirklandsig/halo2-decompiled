@@ -1918,16 +1918,25 @@ __forceinline s_handler_object_view *cs_creature_iterator_next(s_ai_object_itera
 	if (iterator->next_index != NONE)
 	{
 		s_object_ai_data *creature;
-		long next_index;
 
 		object = handler_object_get(iterator->next_index);
-		next_index = NONE;
-		if (!object->flags134 && (creature = (s_object_ai_data *)((byte *)object + object->ai_offset)) != NULL)
-		{
-			next_index = creature->next_creature_index;
-		}
 		iterator->index = iterator->next_index;
-		iterator->next_index = next_index;
+		if (!object->flags134)
+		{
+			creature = (s_object_ai_data *)((byte *)object + object->ai_offset);
+		}
+		else
+		{
+			creature = NULL;
+		}
+		if (creature != NULL)
+		{
+			iterator->next_index = creature->next_creature_index;
+		}
+		else
+		{
+			iterator->next_index = NONE;
+		}
 	}
 
 	return object;
@@ -1938,6 +1947,9 @@ __forceinline s_handler_object_view *cs_creature_iterator_next(s_ai_object_itera
    finished or failed, then 2 when more finished than failed, else 1 */
 // score 21 (was 100): the loop keeps the next index in esi and the creature data in edi where retail swaps them,
 // and ours steps the next index through edx where retail writes edi directly.
+// Matched in a full build with stand-in SDK headers (was 21): the creature iterator step stores index first and
+// then next_index in an if/else (retail's shape), and at both sites the ai data pointer is set in each arm of the
+// flags134 test and tested for NULL after it.
 // @retail 0x258b60
 short function_258b60(long actor_index, cs_iterate_proc proc, long cs_index)
 {
@@ -1959,7 +1971,15 @@ short function_258b60(long actor_index, cs_iterate_proc proc, long cs_index)
 			while ((object = cs_creature_iterator_next(&iterator)) != NULL)
 			{
 				byte *data;
-				if (!object->flags134 && (data = (byte *)object + object->ai_offset) != NULL)
+				if (!object->flags134)
+				{
+					data = (byte *)object + object->ai_offset;
+				}
+				else
+				{
+					data = NULL;
+				}
+				if (data != NULL)
 				{
 					short outcome = proc(actor_index, iterator.index, (s_cs_state *)(data + 0x28), cs_index);
 					*(short *)(data + 0x2c) = outcome;
@@ -2391,6 +2411,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // P449: Primary countdown, actor, animation release/index, facing, turn, delay and motion decisions:
 // 479/479/479/479/479/479/483/479. NOT kept: no exact scratch-register or completion-tail repair.
 
+// score 431 (was 431): the body gives the actor EBX and the state EDI as retail but is 20 bytes long (case 2's facing
+// copy, case 4's facing reads, case 7/8's flag, the +0x465 byte); the 2396-byte forms exchange the two registers unless
+// case 21's state use after the 0x1c1080 call reads the parameter's stack home (r238 below).
 // M3 lane 16 r114 (fast with the file and 0x110ab0; control 479, aligned 215; all restored): the +0x465 flag as `c ? 1 : 0` or
 // through a long cast 482 (2408 bytes: retail's `mov eax, 1` / `xor eax, eax`, aligned 214, four bytes longer); case 18's two
 // references in two-use locals under nested tests 619 (2400 bytes; actor EDI, state EBX); case 21's reference in a two-use local
@@ -2618,6 +2641,29 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // byte and the state declared first 629 / 2376; a pointer local for the turn facing 622 / 2376; one to three
 // parenthesis pairs in case 4's dot 622 / 2376 (regrouped, no phase effect). The switch as an inlined predicate
 // with the tail on the caller's own locals 645 / 2384 (frame changes, aligned 532).
+// m3 lane 4 r238 (fast with 0x110ab0 at 164, 0x258cf0, 0x25a130, 0x258a00; brackets = aligned / register-masked
+// counts; control 431 [109 / 82]; lane 5 r217's lead rebuilt on today's file 604 at 2396 B [191 / 64], actor EDI /
+// state EBX). The exchange is a use-count threshold after all, and one statement decides it. Diagnostics on the lead,
+// reverted: case 21's `field_3 |= 0x20` (the state's one use after the 0x1c1080 call, where EDI carries that call's
+// argument) removed gives retail's registers (440 at 2376 B, first difference back at +0x51); so does that statement
+// reading the state through a re-read of the function's own state parameter (`*(T *const volatile *)&arg_2`):
+// **421 at 2396 B [84 / 51]**, with case 18's two references in named locals 425 [82 / 46] (patch
+// build/r238/lead-259430-425-own-param.patch, m3-lane4; match-only, the function does not match, so not kept).
+// Retail does the same there: `mov eax, [esp + 0x38]; or byte ptr [eax + 3], 0x20`, and again in case 1 (`mov eax,
+// [esp + 0x38]; add eax, 8`) and at the end of each arm of case 5 (`mov edx, [esp + 0x38]; cmp word ptr [edx], ..;
+// mov edi, edx` with the actor reloaded from +0x10, although the arm's own store just before still goes through EDI).
+// Four extra actor uses in the tail (probe reads) flip the lead the same way, three do not; one or two do not.
+// On the lead, still exchanged (604 unless given): the tail's or the hold block's flag byte in a two-use local (same
+// code, also on main 431); the request cases' `|= 0x20` and type store through an inline helper taking the state, all
+// four cases or only case 21 (same code), on main 453 (2420 B); case 5's timer store through a pointer or a reference
+// to the field, declared at the case's top or in the arm (same code); the state read once through the parameter's
+// address (`T *const *home = &arg_2`) forwarded, same code, on main 431; case 18's named references 604 [183 / 61].
+// Diagnostic: the register copy made opaque (an added global offset) with case 21 reading the parameter gives the
+// actor EBX with frame 0x20 (624), with case 21 on the copy the exchange again (626).
+// Left on the 421: the tail's scratch rotation one step off from the first aggregate copy on (ECX/EDX for our
+// EAX/ECX), the 2-D dot's operand sides, case 4's first product (retail multiplies the displacement in place), the
+// post-switch test's place with the shared `sete` and `mov eax, 1`, case 5's reloads, case 6's two separate ORs and
+// global re-reads, the iterator's setup order and case 20's last arm.
 // M3 lane 16 r160 (fast with 0x110ab0; base 431 at 2416 B, difflib-aligned 165; each form as positional / bytes / aligned).
 // Layout cause: the post-switch `if (local_3)` block is placed after the first predecessor that leaves the flag in AL;
 // with case 20 last its else arm falls into it (the base), otherwise it follows case 9's call-result store. Retail has
@@ -2656,6 +2702,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI and state EBX); on it: case 1's argument through `local_2` 604, the 0x25a130 argument through
 // `local_2` 604, both 604 (same code each: the two names are one value), the facing publish with the flag store
 // last 604; the lead without case 4's direct facing 593 (2404 B). Body unchanged.
+// The dispatch bounds branch still reaches a later completion block.
+// Compound playback pending test 486. Nested playback pending test 486.
+// Unit guard then playback pending test 486. Complete playback disjunction 499.
+// Inactive target pending test 535. Active search pending test 431.
+// Pending-only search results 535. Pending-only playback and search 531.
+// NOT kept: The active-search-only update ties the calibrated control. The other calibrated forms raise
+// the score. The playback disjunction reaches 427 on the single-address image and 499 on the calibrated
+// image, where it grows to 2432 bytes and changes the retail playback result sequence.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

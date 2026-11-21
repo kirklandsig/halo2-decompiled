@@ -556,8 +556,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
 // `short const &` for the bounds store 191 (1888 bytes; the reference folds away and `left` is still stored as a dword);
@@ -908,6 +908,19 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // masked is the argument order at the three 0x24ce9d and four 0x1fa30 calls); that lead without the nested selection
 // 109 (re-measure). The frame homes are still the open part: retail allocates split flag, origin, then the scripted,
 // tutorial and timer bytes, where this build puts the scripted byte between the split flag and the origin.
+// M3 lane 7 r205 (H2M fast; control 114): round 141's lead re-measured, the bool timer, `left` and the first top as the
+// two elements of `short position[2]` (x written first, top a copy of y) and the nested tutorial selection 103 (1889 B; with
+// y written first 516 at 1899 B); with it 0x1fa30 as (bounds, text) and 0x24ce9d as (left, top, bounds, result, text)
+// (round 112's orders, both callees still matched) 92 at 1889 B, the lowest so far. With the frame offsets masked only six
+// rows differ on the 92 form (the player/offset reload pair, which follows the whole image, and the third 0x24ce9d
+// call's setup); everything else is homes: ours scripted -2, tutorial -0xd, timer -0xe, total height with the row height
+// -0x18, colour -0x28, flash with the row fade -0x2c, text bounds -0x34, player -0x38, view -0x3c, font -0x40, row counter
+// -0x44, the point -0x4c, top -0x50; retail scripted -0xd, tutorial -0xe, timer -0xf, flash with the row counter -0x18,
+// total height with the row fade -0x1c, text bounds -0x24, colour -0x34, top -0x38, the point -0x3c, player -0x40, view
+// -0x44, row height -0x4c, font -0x50. On the 92 form: a long row counter 419 (1877 B); the loop's game time read ahead of
+// the active test 326 (1880 B); the HUD state read through the global at each use 92 (same code); the count as
+// `split_screen ? 3 : 4` 479 (1886 B); one colour pair declared at the block top for all three draws 109 (1889 B). Not
+// kept (steering forms without a match); the 92 form is saved as build/r205/lead-24cf66-92.patch.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

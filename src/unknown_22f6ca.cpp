@@ -290,6 +290,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // of the flag for the model loop 23 (same code); the model call and its animation read through a `c_class_1473c9 *const
 // &` bound to the screen at the pane block's top 23 (same code); the text test written `animating && text` 26; the model
 // start under `animating && model` with the index store under its own null test 32 (420 B).
+// M3 lane 6 r220 (h2m fast with 0x22facd, 0x230427, 0x22f6ca, 0x22fa5b, all MATCH; control 23): the model loop on its own
+// `short` counter stored to value0a without a cast 152 (421 B); the text loop on its own `short` counter 55; both 153 (421
+// B); the shared counter typed `short` 112 (411 B); the model result as a `*const` local 23 (same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
