@@ -2393,6 +2393,13 @@ void function_2818e0(void)
 // runs still move that user, so node keys are counted before dead arms go; around the blend-2 scale product one, two or
 // three pairs 2 (0x289580 78 with two or three); around the walk's group-end sum, around both its sums, around
 // node_flags_test's word index 2 each (same code). All restored.
+// M3 lane 5 r225 (h2m fast with 0x27dff0 2 and the five matched walk users; control 2): commutative operand orders not
+// listed above, each the same code (2, 0x27dff0 2, controls matched): interpolate_real as `a + (b - a) * fraction` and as
+// `fraction * (b - a) + a`; orientation_vector_blend and orientation_scale_blend written base first; the destination
+// pointer as `&((s_animation_output *)field_4c)[local_4]`; node_destination_get's map bit test and node_flags_test with
+// the mask first. Diagnostic (restored at once): the blend asm's source pointer in ECX instead of EBX 393 (1652 B, the
+// aligned frame moves). Reading: the pair sits in the pass-0 join block 0x281dc3 (counter load, the two reloads, the
+// increment); pass 1's join orders flags then count in both builds, so only pass 0's order is ours.
 // @retail 0x281b60
 void function_281b60(void)
 {

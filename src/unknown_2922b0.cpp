@@ -814,6 +814,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the active path as retail's, but the field is loaded a second time behind the in-line exit), with `return local_0;`
 // 631 (same code). An early return is always laid out in line here, so retail's exit at the end means its `return
 // true` stands after the active block, and the per-point reads then need the array declared outside that block.
+// M3 lane 5 r225 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521; "lead" = lane 2 r113's 331 form rebuilt
+// on today's file, 331 at 2896 B): on the lead, for the second cross (axis x forward, where retail loads each axis
+// component into a fresh register for all six products): a staged helper taking (b, a, result) with the products written
+// as before 331, taking (result, a, b) 331, computing i, j, k in that order 331 (same code each: the inlined helper's
+// parameter order does not move the folds); the axis copied into a local vector ahead of the cross 632 (2919 B). Body
+// unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
