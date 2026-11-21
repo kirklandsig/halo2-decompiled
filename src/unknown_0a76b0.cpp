@@ -2621,6 +2621,19 @@ __forceinline char unit_action_round(real value)
 // explicit arms or Boolean bit 234/234/234/249. With the signed-short getter
 // 297/297/297/302. NOT kept: the shared name does not recover the pool,
 // hand result or completion-byte homes.
+// M3 lane 8 r213 (H2M_FAST with 0xe9ed0/0xea090/0xe9780/0xe99a0, all matched; control 234): a goto-free single exit: the
+// switch's default and the unhandled mode `break` with the name NONE, the rest under `if (name != NONE)`, the animation
+// failure clearing a `started` bool (true after 0xee7f0) that guards the tail, `result = true` in the tail, one return
+// 329 (1224 bytes); with the four lead pieces of lane 5 r214 (NONE pair chained ahead of the short-slot hand getter, the
+// 0x1b test through TEST_FIELD_BIT, the fallback names as a switch, the lunge target read after the 0x1e4 test) 301 (1202
+// bytes: the mode-2 arm's shared `first_person_name = name` sits in the join block, so its `name != NONE` test is not
+// threaded there); with that copy written in both mode-2 branches LEAD 105 (1188 bytes, match-only: the flag), the code of
+// the goto lead with no goto: retail's one exit reading the result byte, left the callee-saved rotation (pool EDI, offset
+// EBX, NONE EBP against retail's EBP, EDI, EBX), the getter's immediate -1 compare and the result/is_biped bytes swapped;
+// the both-branch copy on the plain flag form 240 (1193 bytes). On the 105 lead: the flag declared with the top locals
+// 105, the flag started false and set in both success paths 105, the switch on the expression with no `current` local 105,
+// the first-person NONE declared first (name's NONE after the actions) 105 (same code each); the channel declared at the
+// top 186 (frame 0x18, out of the dead mode parameter's home).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

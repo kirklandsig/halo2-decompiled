@@ -291,6 +291,12 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // the first step's product or the first corner's difference 12 each (twelve forms: the XMM3/XMM4 pair is not keyed on
 // expression order); the pulse read through a `real const &` at both steps 12 (same code); the half height computed ahead
 // of the pulse query 34 (first difference +0x129).
+// M3 lane 8 r211 (fast with 0x2008fc 0x200891, control 14; the first sprite record through a one-use pointer re-measured
+// 12, only the XMM3/XMM4 pair left). Diagnostics, restored at once: 0x200891 given one more parameter that its body
+// never reads (the link drops such an argument after the caller's common-subexpression pass has counted it; that gave
+// retail's scratch-and-copy load in 0x12e290), fed on the 12 form the advance product 12, the half height 12, the
+// half width 12, the pulse 12, the lower edge `y + half height` 12, and on this body the advance product 14 (all the
+// same code: a dropped second use of a float value does not move the XMM3/XMM4 pick).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

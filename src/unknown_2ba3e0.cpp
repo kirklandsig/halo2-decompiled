@@ -993,6 +993,11 @@ real g_55e618;
 // retail has them, but the value takes EAX for retail's EDX, later scratch registers rotate one step and the miss arm's
 // flag store tail-merges with the countdown arm's (two bytes short); that copy moved after the velocity pointer, among
 // the normal locals, ahead of the perpendicular or of impact 59 each (same code), ahead of the coefficient loop 250.
+// M3 lane 8 r213 (H2M_FAST with 0x2ba3e0/0x2b8da0, both MATCH; control 102): the velocity copy as one aggregate
+// assignment 223 (1556 B); impact.index set ahead of the position stores 102 (same code); `collision.value.unknown24 =
+// NONE;` ahead of the displacement block 134; the tangent rows after the position stores 102 (same code); the tangent rows
+// interleaved with the perpendicular rows 209 (1550 B, frame moves). The record's capture (0x244980's callback field, which
+// reaches the cast through 0x2df720 and 0x301800's virtual callback, and 0x169510's self call) still decides the block.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
