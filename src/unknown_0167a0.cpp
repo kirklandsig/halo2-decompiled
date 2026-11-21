@@ -414,6 +414,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
 // reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
 // and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
+// M3 lane 16 r163 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the reference form, the
+// entry, chain base and pass base all read into locals ahead of the reference entry store 181 (the bases are then
+// forwarded from the stored tables, no reload); the entry field through a `byte **` pointer local in place of the
+// reference 5 (+0x19e, same code). On the direct store: the chain and pass bases named after the store, ahead of the
+// word read, 5 (+0x1a7, same code); the range stored directly and read back into a local 178; the pass published through
+// a `byte *&` and read back 5 (+0x1a7, same code).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

@@ -1953,6 +1953,9 @@ static inline bool unit_dual_wielding(long unit_index)
 // has retail's offset-first trigger loop beside data-first lookups only through its `volatile` pool read, so that
 // lookup is a separate expression there. Left: what keeps the animation test's lookup data-first and the put-away lookup
 // offset-first (with the copy for 0xc9d00's pool copy) once the others are offset-first.
+// M3 lane 16 r163 (fast with 0xc9d00, MATCH each time), on the 2 form re-measured (2): the holder unit declared ahead of
+// the weapon class 121 (540 B); the existing 0x101f20 for the holder lookup 51 (533 B, it stays a call); lookup 3 after
+// the b7360 call 119 (525 B); per-loop counters in the two loops 2 (same code); a trigger pointer in the reset loop 130.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

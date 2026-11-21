@@ -1276,6 +1276,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // result local 44 (140 B); `NONE != player->unit_index` 5; `NONE != slot && NONE != unit->weapons[slot]` 5 (same code).
 // Matched 0x151c10 and 0x151940 open the same way and fold the data load into the add; here the getter reload gives the
 // data two uses at code generation, so it is loaded into EDX first.
+// M3 lane 16 r163 (fast with 0x152bf0, MATCH; control 5): the lookup's index as a narrow read through the player with an
+// explicit `& 0xffff` 38 (the entry is retail's; left `movzx edx, di`); a pool copy local for the first player address
+// 5 (same code); the hand as `primary ? 0 : 1` 5 (same code); the getter-reload read narrowed (`*(word const *)&` of the
+// getter's field) 43; the test through the getter with the lookup through the player 27 (138 B, a repeat).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

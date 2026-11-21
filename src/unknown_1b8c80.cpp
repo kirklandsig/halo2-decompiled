@@ -935,6 +935,11 @@ extern "C" void _ReadWriteBarrier(void);
 // block (after the data base as retail when the read follows the lookup), but ESI's save then moves to the entry and the
 // data base folds into the add or takes ESI; retail keeps the ESI save in the flags arm (shrink-wrapped) and the data base
 // in EDX. Re-measured: volatile read first, without/with the barrier 50/29; after the lookup, then the barrier 31.
+// M3 lane 16 r163 (fast, control 6): the barrier at the top of the body, ahead of the state and the lookup, 44 (208 B);
+// no barrier at the top and one at the head of the NONE block 43 (208 B); no barrier with the busy field bound to a
+// `long const &` for the test 44 (208 B); the state declared after the barrier 6 (same code); the slot's data block typed
+// through `slot->unknownc` (the slot-data-block form) declared first, no barrier, 50 (210 B). Diagnostic (reverted): an
+// empty `if (actor->unknown26c == NONE && state) ;` after the barrier folds (6, same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

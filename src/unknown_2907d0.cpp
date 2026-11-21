@@ -244,6 +244,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // (472 B). Diagnostics (reverted at once): the rotate helper scaling unconditionally 135 (436 B), no bounds test 170
 // (426 B), the point's y stored into four more fields 99 (496 B, y then in memory): the transform stays in EBX each time,
 // so neither the blocks it spans nor the y's use count decides the pair.
+// M3 lane 16 r163 (fast with 0x200e60, MATCH each time; control 19): the constructor as a placement new 51 (474 B: a NULL
+// test of the record); the bounds test as `if (in range) { node work } else return false;` 19 (same code); the object test
+// with its arms swapped (`== NONE` first) 137 (451 B); a redundant store of the forward at the head of the else arm 19 (same
+// code); `__stdcall` on the definition 19 (same code), and with no address local 33 (the transform still arrives in ECX:
+// the declared convention does not change the first pass).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
