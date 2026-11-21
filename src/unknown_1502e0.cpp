@@ -1289,6 +1289,13 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // test through an inline helper taking the unit index as `long const &` 17; on the 17 form `short hand = primary ? 0 : 1`
 // 38 (139 B); the e68c0 arm as `if (call) result = true;` 65 (150 B); the lookup's getter assigned back into the player
 // pointer inside the call argument 26 (137 B).
+// M3 lane 1 r144 (fast; control 5, the plain-read form 17 with retail's opening `add eax, [edx + 0x44]; mov edx, eax`, so
+// only the ESI/EDI pair is open there): the getter reload with the index masked twice 5 (same code); the unit fetched
+// ahead of the hand with the mode arms negated and swapped 30; a unit-index local for the test and calls with the lookup
+// reading the field, result declared first 35 (138 B); the plain-read lookup index masked again at the call 17 (same
+// code); the unit index read through the getter into a local for the test and calls with the lookup through the getter
+// again, no player local 46. Diagnostic: both of 0x14f820's calls kept out of line (an inline-depth pragma pair around
+// them, reverted) 17, so our build's inlining of this function into 0x14f820 does not set the pair.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

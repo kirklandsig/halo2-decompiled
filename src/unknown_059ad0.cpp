@@ -4625,6 +4625,27 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // Four-way switch with shared reason-1 and reason-2 exits, varying inactive, state-nine, invalid and
 // active case order, scored 366/366/366/366/366/367/366/366. Retail still uses a comparison chain and reloads
 // the acceptance byte on the rejection paths. NOT kept: the dispatch table and earlier first difference.
+// M3 lane 1 r144 (single-address fast; main's body 295, round 208's 96 lead rebuilt from its patch 96). LEAD,
+// match-only, 44 (1264 B, first difference +0x94 as the 96 form; diff in build/r144/lead-0x5e7f0-44.diff of the
+// m3-lane1 worktree): on the 96 form, the kept arms `goto accept;` (after their `result = true;`), `if (result) goto
+// accept;` after the disconnect, the acknowledgement block ending in `goto accept;` in place of its `result = true;`,
+// and `accept: result = true; return result;` after the final return. Left: our accept is folded to `mov al, 1` in
+// its own epilogue, the post-disconnect false edge jumps to an earlier epilogue, and the kept arms store an immediate
+// where retail stores AL = 1 and enters the state-8 epilogue behind its reload. On the 96 form: after the disconnect
+// `if (result) return true; return false;` 110, `return result ? true : false;` 110, `return result != false;` 51;
+// the accept label reached by the kept arms and the post-disconnect test only, its own return 56; the acknowledgement
+// under `if (!result && acknowledge)` 96 (same code); the accept label ahead of a shared `done: return result;` with
+// the acknowledgement skipped by `if (!acknowledge) goto done;` 108 (1268 B: result's byte moves to +9, and the post-
+// disconnect true edge gets its own store/reload copy); that without the post-disconnect test 96; the accept label at
+// the acknowledgement block's own `result = true;` 108 (same two causes). On main's body: a shared `accept:` exit
+// for the state-8, channel-7, kept-arm, post-disconnect and acknowledgement exits 303 (1276 B: the state-8 store and
+// reload are then pulled up behind the state-8 test as in retail, but the reason exits fold to `xor al, al`), with
+// every exit through `done:` 309 (1284 B), with the post-disconnect return kept 318. Diagnostic (reverted at once):
+// the result declared volatile on the 44 and 108 forms 114/108 (its byte moves; a memory-resident result alone is
+// not retail's shape).
+// On the 44 form: the kept arms `return true;` or `return result;` in place of the jump 44/44, as two tests each
+// jumping 44, the accept block as `return true;` 44 (all the same code: the true return is folded to `mov al, 1` and
+// not merged into the state-8 epilogue); `if (result) return result;` after the disconnect 122 (1244 B).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
