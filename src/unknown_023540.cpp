@@ -2452,6 +2452,9 @@ dword __cdecl function_131fc0(real alpha);
 // register, this build keeps the reciprocal in the destination register and multiplies by the coordinate; the
 // permuter found nothing below 4 (80 tries), and a named reciprocal always gives the coordinate first while an
 // inline reciprocal duplicates the reciprocal.
+// MiniMax B (11-20): 14 -> 4 (plain build, 1729 bytes as retail): the width and the height are one point2f read in
+// retail's order, so their homes are retail's 0x10 and 0x14 (the same form the round above records); left: the bottom
+// edge's two vertex products, where retail loads the reciprocal and multiplies by the coordinate.
 // score 4 (was 14; earlier 100, was 140): at retail's 1729 bytes everything up to the default rectangles equals retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the bottom edge's two vertex
 // products, where retail loads the coordinate and multiplies by the reciprocal's home and this build loads the
@@ -2789,16 +2792,15 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     if (!g_4b99b0[1] && alternate_target) return;
     real default_source[4];
     real default_destination[4];
-    real width = 1.0f;
-    real height = 1.0f;
+    point2f size = { 1.0f, 1.0f };
     byte *definition = tag != NONE ? g_4e3b44[tag & 0xffff].bytes : NULL;
     if (tag != NONE && bitmap_index >= 0 && bitmap_index < *(long *)(definition + 0x44))
     {
         byte *bitmap = *(byte **)(definition + 0x48) + bitmap_index * 0x74;
         real w = (real)*(short *)(bitmap + 4);
-        width = 1.0f > w ? 1.0f : w;
+        size.x = 1.0f > w ? 1.0f : w;
         real h = (real)*(short *)(bitmap + 6);
-        height = 1.0f > h ? 1.0f : h;
+        size.y = 1.0f > h ? 1.0f : h;
     }
     if (alternate_target) function_14bc0(*(short *)(g_4b99b0 + 0x38), 0, false);
     else if (screen_target) function_14bc0(0, 0, false);
@@ -2879,29 +2881,29 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1c710(g_51f0f0);
     default_source[0] = 0.0f;
     default_source[2] = 0.0f;
-    default_source[1] = width;
-    default_source[3] = height;
-    default_destination[0] = 320.0f - width * 0.5f;
-    default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
-    default_destination[1] = 320.0f + width * 0.5f;
-    default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
+    default_source[1] = size.x;
+    default_source[3] = size.y;
+    default_destination[0] = 320.0f - size.x * 0.5f;
+    default_destination[2] = 240.0f - size.y * 0.5f + arg_af5a49;
+    default_destination[1] = 320.0f + size.x * 0.5f;
+    default_destination[3] = arg_af5a49 + size.y * 0.5f + 240.0f;
     if (!source) source = default_source;
     if (!destination) destination = default_destination;
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
-    real inverse_height = 1.0f / height;
-    D3DDevice_SetVertexData2f(1, source[0] / width, source[2] * inverse_height);
+    real inverse_height = 1.0f / size.y;
+    D3DDevice_SetVertexData2f(1, source[0] / size.x, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] / width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / size.x, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] / width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / size.x, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[0] / width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[0] / size.x, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
