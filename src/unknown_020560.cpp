@@ -834,8 +834,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// score 418 (was 439): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
-// score 418 (was 439):
+// score 418 (was 418, 439 earlier):
+//
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
 // Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
@@ -1277,6 +1279,17 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // alone or with nearest 418 each. Named projection with opposite or both 1236 each.
 // Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
 // one-point gain, extent grows past retail, and the separate frame homes remain.
+// M3 lane 3 r284 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH; [n] = aligned rows, control [205]): after
+// scan 2 retail threads opposite == NONE straight to the first sample's copy (`cmp esi, -1; je 0x2330c`) and tests
+// `second` on the add's flags (`add esi, ecx; mov ebx, esi; je`), where ours materialises the NULL (`xor ebx, ebx` ...
+// `test ebx, ebx`). `second = NULL; if (opposite != NONE) second = ...;` 422 [208] (2092 B); `if (opposite != NONE) {
+// second = ...; if (second) fraction = ...; }` 440 [205] (2088 B: retail's tail exactly, but a repeated test); `first`
+// and `fraction` declared ahead of the ternary `second` 439 [208] (2088 B, plain fast check agrees: retail's threaded tail
+// without the repeated test, but `opposite` then takes ESI through the remainder loop where retail keeps it at +0x10);
+// `fraction` ahead of `first` 418 (same code); `second` as an if/else 418 (same code), with `first` and `fraction` ahead
+// of it 439. The threaded tail needs nothing between `second` and its test.
+// Search-role names for the vectors, winning ordinals and pass counters in all seven subsets,
+// then all with both cutoffs renamed: 418 each. These names leave the frame and second induction unchanged.
 // One direction workspace for anchor and fallback 419, with scan-scope offset or a shared candidate
 // position 419/419. One candidate position with aggregate or shared setter offset 433/418. Shared
 // direction and aggregate or setter offset 433/419, or with a candidate read from the live table 550.

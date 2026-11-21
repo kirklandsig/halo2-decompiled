@@ -11,6 +11,7 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
+// MiniMax E (11-20): no new form, no lower score (430): the frame 0x74a4 agrees with retail's, but the head still differs - retail forms the entry address with a lea into EBX from the scaled index and keeps the tag table in ESI from there to the bottom arm, while this build reads the tag through a displacement from the scaled index and hoists the table into ECX at the top, with the entry spilled at [esp+0x48] against retail's [esp+0x30]; making the header's geometry lookup take the caller's entry pointer leaves 0x458d0 and 0x45a80 matched but gives 449 here, so the lookup stays index-based.
 // MiniMax E (11-16): no new form tried this round, no lower score (443): the frame still agrees with retail's, and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from a sign-extended index before the
 // register saves and this build forms it with a shifted copy added to the table after them; the part centre's body is inlined
@@ -601,6 +602,25 @@ struct s_visibility_bound_record
 // with an else-arm aggregate copy 440 (1760 B); the containment flag declared inside the visibility test 430 (same code).
 // Reading: retail's plane copy sits 8 bytes higher (+0x34, ours +0x2c) and the query count at +0x44 (ours +0x3c), with the
 // tag table held in ESI from the head to the bottom arm (ours in ECX). Body unchanged.
+// M3 lane 1 r141 (fast with 0x458d0, 0x45a80 and 0x1428b0, all MATCH each run; control 430 at 1751 B, aligned 267, register-
+// masked 129). New reading of the inner plane loop: the order in which the copy after the transform reads the plane's
+// components sets the XMM numbers of the inlined 0x1428b0 (its loads ahead of the scale test and its first sum's operand
+// sides) and the member the loop's output pointer is anchored on. Retail reads i, k, j (XMM4 / XMM5 / XMM6, the distance
+// sum as y * j + z * k), anchors the pointer on k (`lea edx, [esp + 0x58]`) and stores i, j, k, -d upward. LEADS, not
+// kept (statement order or one-use locals with no match): the copy written i, k, j, -d 427 (aligned 241, masked 122:
+// the whole inlined transform is then retail's instruction for instruction and the pointer is anchored on k; left in the
+// loop only the j and k stores in the other order); the components read into three locals in the order i, k, j and
+// stored i, j, k, -d 427 (aligned 243: retail's registers and store order, but the pointer anchored on j). Other
+// forms: the normal as an aggregate copy then d 418 (1744 B, aligned 336, masked 162: the copy goes through integer
+// registers and the transform loses retail's shape, as lane 1 r132 found; not kept); d first 430; k, j, i, -d 430
+// (aligned 275); d negated in the copy and the whole plane assigned 431; the normal through the existing vector3f_assign
+// then d 430 (aligned 274: arguments are read k, j, i, pointer anchored on k, stores i, j, k), with d stored first 430,
+// with the normal's own members as arguments 430; i, j, then d, then k 430; a named negated d ahead of the three
+// stores 430 (same code); a plane temporary filled i, j, k, -d or i, k, j, -d and assigned whole 464 / 461 (1783 B, each
+// member goes through the stack). Diagnostics, removed at once: the four reals through an SSE set intrinsic in
+// either argument order 446 / 446 (1767 B: built on the stack and copied with movaps), through the existing four-real
+// vector's set member 430 (as vector3f_assign), i stored and then j and k through a two-real setter 427 (pointer
+// anchored on i). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
