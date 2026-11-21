@@ -2404,6 +2404,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the location setup with the first spawn stores, and the colour call each through an inline taking the system, alone
 // and together. Next: a natural extra unconditional reference to colour B, or one fewer for the system that keeps its
 // three early uses; retail's 0x177040 shows the same preference of colour B over colour A.
+// Partial spawn initialization with early colours A/B or B/A. After the location
+// setter, scale only 212/212, both scalars 209/209. Before the setter, scale only
+// 216/216, both scalars 211/211. NOT kept: the forms retain overwritten zero
+// stores, grow to 588 bytes and reserve 0x48. The colour-A spill and ESI system
+// lifetime still differ.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4105,6 +4110,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // body 105 [0], with both queries in the call 107 [0]: system ESI and next index EDI as retail, but the definition then
 // takes EBX and the type object EDI, so it is not the lever here. Left as before: the convention (retail: system index
 // in EAX, effect index on the stack with the tint and node-flag bytes in its dead home, EBX saved at entry).
+// First query reading the definition and continuation using the saved mode,
+// for/while with direct or named multiplication 119/129 each. Reversing the
+// mode observations scores 112/114 each. NOT kept: named multiplication
+// recovers frame 0x54 and preserves the caller, but the body grows. The
+// definition spill and system/successor registers still differ.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
