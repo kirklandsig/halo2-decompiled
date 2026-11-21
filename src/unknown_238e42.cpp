@@ -1389,6 +1389,18 @@ bool __stdcall function_2399da(long controller_index)
 // takes the identity EAX and the rank ECX, and that swap is the whole difference: the 64-bit id test and the member's rank
 // store then follow, and the copy into eax before the removal call still costs the two bytes that move every later jump.
 // The identity declared inside the block as a const pointer scores 90 as well (same code).
+// M3 lane 11 r144 (h2m fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x239a3d, all MATCH; control 90): the identity
+// declared with the register keyword 90; the rank copied into a function-scope local used for the four rank reads 90;
+// the id test as the two dwords OR-ed through a dword view 90; the member's rank store cast to the field's type 90;
+// explicit `!= NULL` and `!= 0` on both halves of the identity test 90 (all the same code); the member's rank store as
+// the first statement of the rank arm 89 (the listed store move, re-measured); the removal's identity fetched again from
+// the selection 147 (465 B, re-measured). Diagnostic (reverted): 16 to 256 dead locals leave identity ECX / rank EAX, so
+// the pair is not a symbol-count state either; one more read of the identity ahead of the permission test (116, 448 B)
+// or one more of the rank (110, 443 B) leaves it too, so it is not a use-count tie. The member's rank store sequenced
+// in the set-rank call's first argument (diagnostic) 90 and the store with the call through a file-local inline taking
+// the rank 90 (both the same code: the store still precedes the pushes). Retail's late member store (after the three
+// pushes) is the same colouring seen from the other side: with the rank in ECX the store need not precede the argument
+// address in EAX.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

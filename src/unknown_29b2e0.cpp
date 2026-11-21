@@ -781,6 +781,17 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // 153/153 (names do not order those homes); cross3f with no `local_17`, on the old call form 171, with named sine/cosine
 // 141. On the kept form: only the first rotation through the helper 130 (same code); the XY vector before the second copy
 // 128 (two points, not kept); named sine/cosine 164; the axis through cross3f with no `local_17` 222 (1715 B); both 173.
+// M3 lane 11 r144 (h2m fast with 0x29b990, 0x170d70, 0x154df0; control 130, aligned 162): the yaw scale as a conditional
+// assignment (`yaw_limit = 0.0f > x ? yaw_limit : yaw_limit * arg_4`) 130, for both angles 130 (same code); as a multiply by
+// a selected factor (`yaw_limit *= 0.0f > x ? 1.0f : arg_4`) 234 (1726 B); both scales through a file-local inline taking
+// the limit, the product and the factor 248 (frame 0x28); both clamps through a file-local inline pin of (value, limit)
+// 130 (same code); all 64 operand orders of the second axis's six products 130 each (same code: the written order is
+// ignored). Diagnostics (reverted): 1-7 dead inline-helper locals at the top, before the gate, before the first
+// rotation or before the second axis give two states only, 222 (frame 0x28) for 1-3 and 130 for 4-7, and 1-7 dead
+// function locals 222/219/219/126/126/126/126; in every state the second axis keeps its six products
+// (uj*fk, ui*fk, uj*fi, fj*uk, fi*uk, ui*fj as loaded; retail uj*fk, uk*fj, fi*uk, fk*ui, fi*uj, fj*ui), so this body's
+// product sides follow neither the spelling nor the symbol phase that moves 0xef870's. A lower-bound local started at
+// zero ahead of the yaw scale and reduced after it (diagnostic for retail's zero copy above the branch) 295.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
