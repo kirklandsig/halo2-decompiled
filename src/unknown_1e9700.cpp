@@ -902,6 +902,11 @@ struct s_object_damage_view
 // each. Existing unchecked lookup for victim, primary credit, secondary credit or all four
 // unchecked accesses 353 each. NOT kept: all tie with the rotated team, credit and code
 // homes and the amount-biased history cursor.
+// Indexed const record references in the selection/assist/both scans 353/353/353.
+// Reference to the history array alone or with both scan records 353/353.
+// Array and selected-record references 473, with a retained selected handle 496,
+// and with indexed references at both scans 473. NOT kept: the selected-record
+// forms grow the frame to 0x54 and leave the entry homes and selection bias.
 // Fixed-range tail tests for selection, assists, both, selection with long ordinal, assists with
 // short ordinal, selection end ordinal, assists end ordinal and both end ordinals.
 // Scores 509/353/509/509/353/509/353/509.
@@ -915,6 +920,15 @@ struct s_object_damage_view
 // 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
 // all three or all with the credited team 353/353. The three homes and the
 // amount-biased history cursor stay in place.
+// M3 lane 14 r135 (fast, control 353): the selection amount read once into a local inside the time test 454 (1578 B; the
+// walk moves to retail's +0x2f0 base, but selected drops to memory); killer, victim team and code as fields of one local
+// record (diagnostic) 369; 0x197160's code parameter typed byte 354 (the code is then loaded once and pushed twice as in
+// retail; 0x197160 still matches); `best` read through `selected` 353 (same code); the amount local with the byte code
+// parameter 454.
+// M3 lane 16 r165 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640, 0x197160; control 353): a typed record
+// pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
+// searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
+// the reported slot declared after `selected` 358.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

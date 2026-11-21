@@ -1953,6 +1953,9 @@ static inline bool unit_dual_wielding(long unit_index)
 // has retail's offset-first trigger loop beside data-first lookups only through its `volatile` pool read, so that
 // lookup is a separate expression there. Left: what keeps the animation test's lookup data-first and the put-away lookup
 // offset-first (with the copy for 0xc9d00's pool copy) once the others are offset-first.
+// M3 lane 16 r163 (fast with 0xc9d00, MATCH each time), on the 2 form re-measured (2): the holder unit declared ahead of
+// the weapon class 121 (540 B); the existing 0x101f20 for the holder lookup 51 (533 B, it stays a call); lookup 3 after
+// the b7360 call 119 (525 B); per-loop counters in the two loops 2 (same code); a trigger pointer in the reset loop 130.
 // M3 lane 14 r133 (fast with 0xc9d00 and 0x1058b0, both matched each time; control 17): the 0xc9d00-call forms rebuilt
 // 27 / 4 (`result` first) / 2 (and weapon_get_102e10 at lookup 1, O O O O D). On the 2 form: the trigger loop through an
 // inline (weapon index, trigger index) clear helper 2 (same code); both reset loops through one inline helper taking the
@@ -1960,6 +1963,16 @@ static inline bool unit_dual_wielding(long unit_index)
 // in the animation block 121 (540 B); the weapon-kind value declared before the animation pointer 2 (same code); that
 // value as one ternary initialiser on the dual-wield test 39. In our build lookups 1-4 always share one order and the
 // put-away lookup takes its own (main D D D D O, the 2 form O O O O D); retail's lookup 4 is the odd one.
+// M3 lane 2 r126 (fast with 0xc9d00, MATCH each time), on lane 9 r143's 2 form rebuilt (2): the put-away lookup through a
+// reference-bound header array 14 (533 B: the lookup takes retail's offset-first order, but 0xc9d00's data load is then
+// no longer shared and the `mov eax, ecx` copy is lost), through a named header local re-bound by a const reference 14;
+// the put-away pointer bound to a const reference 49 (537 B), re-bound by a const reference 2; the animation test
+// through a reference-bound header array 31 (534 B, still offset-first), through a named header local re-bound by a
+// const reference 31, through a const-reference-bound pointer 2, through a named pointer re-bound by a const reference 2;
+// the 0xb7360 call ahead of the lookup-3 pointer 119 (525 B); a reference-bound header array at lookup 1 in place of the
+// getter 21; both helpers `__forceinline` 2; the existing weapon_get_owner_unit_index in place of the holder helper 2
+// (same code; on main's body 17, same code); redundant parens around the animation test, the put-away NONE test, the
+// gate's state read, the 0xc9d00 argument, the holder call or the animation-pointer sum 2 each (same code).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -4756,7 +4769,12 @@ struct s_weapon_projectile_creation
 	byte unknown4c[0xc4 - 0x4c];
 };
 
-// score 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
+// score 1121 (was 1121): The first difference at +0x1 is the 0x1ea4-byte stack probe against retail’s 0x1e98.
+// Entry lookup and indexing agree before the first spills. Retail’s 0x88-byte damage event sits above the
+// distinct clipping output and the creation request. The trials replace the raw damage buffer with the existing
+// event layout and test whether direct member publication changes the workspace allocation while preserving the
+// values and call tuples.
+// Earlier at 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
 // writes the code as a dword at 0x104450 and reads a word back from the slot at 0x105233), which gives the function
 // retail's length (5212 bytes). What still differs is the frame (0x1ea4 against retail's 0x1e98, twelve bytes bigger)
 // and the parameter offsets that follow from it, the game mode read (a byte load plus a sign extension where retail
@@ -4918,6 +4936,9 @@ struct s_weapon_projectile_creation
 // pointers 1121, fixed axis by value 1150, staged and direct shared cross 1186 each, shared i-k-j projection
 // 1131, changing vector passed and returned by value 1185. NOT kept: no gain. The setter reduces the frame to
 // 0x1e94 but shortens the body to 5105 bytes.
+// Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
+// Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
+// 1158. NOT kept: none improve the opening frame or score.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

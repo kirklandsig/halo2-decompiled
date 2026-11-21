@@ -451,6 +451,7 @@ void function_3dd10(long object_index, bool force);
 // score 77 (was 77; 97 before that): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
+// the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // Earlier header 77 (merged in r284): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // Earlier score 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
 // Earlier detail: The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
@@ -880,6 +881,10 @@ void function_3dd10(long object_index, bool force);
 // Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
 // alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
 // pre-guard zero store and the count/mask homes stay different at retail length.
+// Fixed second bank with guarded/pre-guard ordinal 311/311, with last-bounded selection 289.
+// Pre-guard ordinal and stepped second bank 113. Last-bounded indexed or cursor selection
+// 243/243, with pre-guard ordinal 251/251. NOT kept: the bank forms change the saved
+// object/output allocation, and the last-bounded forms retain the different scan homes.
 // M3 lane 3 r284 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH; "rolled" = r280's `if (0 < choice_count)`
 // around `for (long j = 0; choice_count > j; ++j)` with both remainders through `fmod(seed, 1.0f)`, 186 [33] at 1034 B:
 // the count spilled to +0x10, the mask in EBP, the weight in the dead colours home): the selection loop bounded by
@@ -899,6 +904,22 @@ void function_3dd10(long object_index, bool force);
 // by last eligible or one past last 243/246. Renamed count and mask 77. Shared eligibility bit
 // operations with unequal or signed weight bound 298/298. NOT kept: the helpers expand the
 // frame and scan. The pre-guard ordinal and scan count and mask homes still differ.
+// M3 lane 15 r123 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH each time; control 77, [34] aligned rows; "plain" =
+// the first scan as `for (long j = 0; j < choice_count; ++j)` with both remainders through `fmod(seed, 1.0f)` and no outer
+// guard, 638 at 1309 B (unrolled); "rolled" = r280's `0 < choice_count` test around `for (long j = 0; choice_count > j; ++j)`
+// with the same remainders and no outer guard, 195 at 1034 B). Re-measured: rolled with the guard 186, the volatile variant
+// diagnostic on plain 128 (one row left, the not-found exit's 1.0) and on rolled 143 (1019 B), volatile last on plain 130.
+// Diagnostics on rolled (volatile probes, reverted at once): a volatile local touched only at the top of the arm 233, read in
+// the scan body 304 (1081 B), written in the scan's found block 240 (1037 B), read in the selection loop 321 (1085 B), a
+// volatile weight 99 (1035 B): none gives the count EBP, so it is the variant (or last) leaving the register candidates that
+// does, not a volatile access in the loop. Source forms on plain: the variant as an anonymous union-typed local, as a one-member
+// aggregate local (assigned or brace-initialised), filled by a 4-byte memcpy from the model's record, `last` as a union-typed or
+// one-member aggregate: 638 each (same code as plain: the aggregates are scalar again before the loop is unrolled). The
+// choice count read from the entry at every use with no local 638 (636 with the outer guard: one load, still unrolled), in
+// the scan and the selection loop 638, in the scan only or the test and the scan 647 (1316 B). The variant lookup in a
+// file-local helper: writing through `long *`, plain or `inline`, 638 on plain and 195 on rolled (same code each);
+// returning the name 649 (1320 B) on plain and 125 on rolled; called where the scan compares it (no variant local) 1011
+// (1612 B) on plain and 247 on rolled. The count is spilled and the mask keeps EBP in every rolled form. Body unchanged.
 // Early ordinal with second-bank base 311, current color lvalue 106, both 311,
 // or supplied color bound 303. Second-bank base with signed weight scan 302
 // or one model-handle read 303. The same two forms with the opening guard 302/303.

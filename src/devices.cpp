@@ -1311,6 +1311,8 @@ bool function_108530(long device_index, long name)
    time, cruising, and decelerating to a final velocity */
 // score 116 (was 116): The frame-free XMM6 entry and retail length agree. Duration and position use different registers. Ramp-down stays cached across the upper clamp and cruise speed stays cached in deceleration.
 // Earlier at 116 (was 116; earlier 116, was 127). Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Earlier measurement 116 (was 127).
 // Previously noted: Both denominator arms compute the cruise speed, then a shared
 // store publishes it at the join. The body is 523 bytes and both callers still match.
 // Duration and position use different XMM registers. The ramp-down clamp caches its value,
@@ -1780,6 +1782,14 @@ bool function_108530(long device_index, long name)
 // separate bounded ramp-up 134, common initial cruise numerator 116.
 // NOT kept: 109 gains seven. The early span and separate bound displace the initial-velocity
 // register and lose both matched callers. Other forms tie.
+// One cruise-speed square shared across both ramps, calculated/field/cached speed 124/124/124;
+// named energy differences 124/124; square gated on a positive ramp time 102/102/102.
+// NOT kept: The unconditional square raises the score. A positive-ramp gate scores 102 at 532 bytes
+// and breaks both caller previews. Retail computes separate squares.
+// Shared phase-travel quotient with a direct expression, named square difference,
+// named squares, or named difference and doubled rate 116 each, with the original
+// sampled distance or a reduction of the published deceleration distance. NOT kept:
+// all tie at 523 bytes. Ramp-down stays cached and duration still uses XMM3.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

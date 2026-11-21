@@ -470,6 +470,10 @@ void function_2232a0(void)
 // player first with saved address or ordinal 239/216, shared record cursor 273.
 // One-based player slots with terminal from the cursor 175, also using that cursor as dispatch count 163,
 // and terminal address from its predecessor 47. NOT kept: the combined traversal moves the matching prefix.
+// M3 lane 5 r222 (H2M_FAST with 0x223240/0x2232a0 MATCH, 0x223080 2 as before; control 47, aligned 20): the terminal record
+// as `&g_47f0f8[0] + view_count` 47, through its first field 47, through a named record pointer 47, `unsigned long
+// view_count` 47 (all the same code: the base still adds before the stores); as `&g_47f0f8[local_2] + 1` 183 (583 B).
+// Still BLOCKED-BY 0x2b5d0 for the tail's count register.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

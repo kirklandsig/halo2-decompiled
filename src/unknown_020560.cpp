@@ -834,8 +834,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 418 (was 439): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
+// score 418 (was 418): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
+// Earlier header (418, was 418, 439 earlier):
 // Earlier score 418 (was 418, 439 earlier):
 //
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
@@ -1279,6 +1280,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // alone or with nearest 418 each. Named projection with opposite or both 1236 each.
 // Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
 // one-point gain, extent grows past retail, and the separate frame homes remain.
+// Opposite scan with projection continue inside the ordinal arm, separate ordinal/projection guards,
+// all rejecting guards, grouped rejection in the ordinal arm, or distance continue inside either
+// set of admission arms: 418 each. Split ordinal ranges with positive or rejecting projection 600/600.
+// NOT kept: the single scans retain the missing offset and pass-counter homes, and the two ranges regress.
 // M3 lane 3 r284 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH; [n] = aligned rows, control [205]): after
 // scan 2 retail threads opposite == NONE straight to the first sample's copy (`cmp esi, -1; je 0x2330c`) and tests
 // `second` on the add's flags (`add esi, ecx; mov ebx, esi; je`), where ours materialises the NULL (`xor ebx, ebx` ...
@@ -1299,6 +1304,24 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 433, named sample count 433, opposite scan state declared before delta 417, loop-top ordinal
 // skip 433, candidate point pointer 433. NOT kept: the best form gains one, keeps the 0x28 frame
 // and lacks retail's second induction address.
+// M3 lane 15 r123 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418, [276] aligned rows).
+// Reading: scan 1 of this body is retail's byte for byte. In the all-direct form (549, 2122 B [223]: retail's scan-2 pointer
+// pair and pass counter home) `opposite` owns EDI outside scan 2, scan 1's unroll limit takes EDI (`lea edi, [ebx - 3]`,
+// retail EBP) and `nearest` has no register in either scan; retail keeps `nearest` in EDI through both scans and spills it
+// only around the scan-2 latch, as this body does. Diagnostic: with scan 2's skip test removed `nearest` gets EBP in scan 1
+// (628), so its scan-2 use is what costs it the register there. On the all-direct form: every entries read through a
+// file-local inline accessor 549 (same code); the accessor with `first` ahead of the delta, a named scan-2 sample pointer,
+// dot3f(&offset, &delta) and length_sq3f(&offset) 635 (2051 B), the same without the accessor 635 (same code), the accessor
+// with length_sq3f only 628 (2057 B); scan 1 in a file-local helper returning the index, `inline` 1018 (1649 B, stays a
+// call), forceinline 549 (same code); scan 2 in a helper taking the nearest index by value, `inline` 1413 (1251 B),
+// forceinline 584 (2086 B); both helpers, `inline` 1969 (726 B), forceinline 584, with length_sq3f(&offset) 628;
+// `opposite` and its distance declared ahead of or right after `nearest` 583/583 (2097 B); `second` as NULL then
+// `if (opposite != NONE)` 541 (2122 B [268]: the count moves to EDI, `nearest` still in memory); the skip as
+// `if (i == nearest) continue;` 549 (same code); a second, redundant `i != nearest` in the update 549 (folded,
+// diagnostic); `second` kept as a pointer set in the loop 563 (2122 B [339]); `first` ahead of the delta with the delta
+// through it 554 (2112 B [216]); that with the skip as a pointer compare against `first` 593 (2066 B). Re-measured: the
+// offset's fields assigned directly 433 (2122 B [259]), with a const reference to the entries field 691 (2228 B), with
+// length_sq3f(&offset) 649/650. Body unchanged.
 // Anchor record bound once 439, candidate position before ordinal test 593, both 439,
 // or both with live entry-field indexing 554. Opposite scan unequal or preincrement
 // latch 1236/418. Complete distance before the projection gate 668, or through the

@@ -2777,6 +2777,7 @@ dword __cdecl function_131fc0(real alpha);
 // first vertex.
 // NOT kept (coordinator screen, MiniMax H 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // NOT kept (coordinator screen, MiniMax A 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
+// NOT kept (coordinator screen, MiniMax B 11-21): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3542,6 +3543,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // returned corner pair with named scale, bias 569;
 // returned corner pair with named rotation, scale, bias 569.
 // NOT kept: Returning the pair shrinks the frame to 0x40 and the body moves away from retail length. The corner instruction schedule still differs.
+// Round 499: whole corner by value, reference, pointer, two-real row, scalar reads from a local or static square or
+// from named corners, and whole corner with point output.
+// Fast scores in order 685/326/326/326/326/54/326/685.
+// NOT kept: The static square ties at 54 and preserves the opening schedule. The automatic square and named-corner
+// forms change inlining or storage and raise the score. All three matched controls remain exact.
+// The first corner set still schedules its x87 coordinate-3 store ahead of the SSE subtract.
 // M3 lane 11 r139 (compile-only harness of this file, whose corner block is the fast and plain builds' exactly; counts are
 // the block's lines out of place against retail, control 54, aligned 27; h2m fast for the four forms marked fast): the
 // schedule moves with redundant parentheses inside the corner helper, which no earlier round measured. One to three extra
@@ -4232,6 +4239,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local with the alpha selector before input 19 (small in AL copied to CL, alpha in ECX; retail small in CL, alpha in
 // EAX) and with the alpha selector before whole 19 (small in CL as retail, but alpha computed in EDX before the whole
 // split, where retail computes it in EAX after fraction's move to EBP).
+// M3 lane 16 r163 (fast, control 9): the two stage-one input words through the file's combiner-inputs macro 939 (the
+// no-local code); the shifted word bound to a `dword const &` 9 (same code); on r205's B form (re-measured 5): the shifted
+// local at the RGB word only, the alpha word written out, 941 (the shift then lands after the clear as retail, but small
+// loads into AL: whenever the shifted word is not the input's own register, small takes AL); with no shifted local, one
+// `bool const` copy of small for both selectors 941, the input selector as `input = 4; if (small) input = 5;` 936 (a
+// branch); re-measured with no shifted local: whole/alpha/fraction/input 14 (small in CL, but alpha computed in EBX
+// before the fraction), whole/fraction/alpha/input 15 (small in AL, copied to CL for the neg).
 // M3 lane 6 r215 (fast, on lane 8 r205's base B re-measured 5: the span copy after the clamp plus `offset` declared after
 // `maximum`; only the shifted input word left, coalesced with `input` in EBX and hoisted above the clear): the shifted
 // local `dword const` 5; `input` typed `dword` with a `long` shifted local 5 (both the same code); the alpha input word

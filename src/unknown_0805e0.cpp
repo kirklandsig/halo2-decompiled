@@ -863,6 +863,12 @@ void function_1537f0(s_profile_record *record);
 // the top of the body 14; `entry->` links as chained pairs 46, as four statements 46 (NONE hoisted). No `entry` local
 // at all (view, link pointer and tail from the element, the links in retail's pairs) 44. The base still follows the
 // link pointer.
+// M3 lane 7 r203 (h2m fast): the builder's view from the array element, the link pointer's stores as two chained pairs in
+// retail's order and the tail through a `dword *` 14 (base +0x5e; the tail stores 0x64 first); the view from the element with
+// four `entry->` link statements in retail's order and the `dword *` tail 47 (NONE hoisted); the link pointer and the tail
+// through the array element 44; a named view pointer with the link pointer taken as `(short *)(&view->field4c + 3)` 18
+// (+0x5c); that with the tail through a `dword *` at the view's +0x4c field 14 (+0x5e); one `short *` at +0x4c for the links
+// and the tail (diagnostic) 14 (+0x58): through any pointer the base lands on one of the link stores.
 // M3 lane 8 r206 (h2m fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): each link through its own
 // one-use pointer in retail's store order 43 (folded: base +0x4c, NONE hoisted into EBP); a named source pointer for the
 // record initializer and the builder 18 (same code), with the `entry->` chain in retail's store order 49 (hoisted); the
@@ -876,6 +882,15 @@ void function_1537f0(s_profile_record *record);
 // order 49; the loop index declared at function scope 18 (same code); the flags and tail clears ahead of the link pointer's
 // chain 27. Reading: the base and the hoist trade against each other: every `entry->` link form makes NONE (shared with the
 // heads) a loop-wide register, every pointer form keeps NONE in EAX but bases the loop in the link words.
+// M3 lane 14 r136 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18): the four heads filled by one
+// 16-byte 0xff memset from the first head with the `entry->` links as two chained pairs in retail's order 74 (260 B: no
+// hoist and base +0x4c, but the heads go out in ascending order between the pushes and the links rise above the view's
+// byte stores); with the builder's view from the array element as well 74 (the loop's tail is then retail's but for the
+// 0x52/0x53 byte pair; the head block and the loop's zero registers differ); the heads as main's statements with the
+// element view and the `entry->` link pairs 46 (NONE hoisted). Diagnostics (not kept): that last form with the heads set
+// to -2 gives retail's whole loop (only the head constant differs), and with the link pairs stored as 16-bit 0xffff
+// through word casts (heads NONE) only `mov eax, 0xffff` for retail's `or eax, -1` is left: the element view with the
+// `entry->` pairs is retail's loop, and the open cause is the heads' -1 sharing a register with the links' -1.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -964,12 +964,33 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // the scale rows through the existing scale_particle_vector_2b 338 (aligned 275); the velocity pointer as an if/else 334
 // (same code), as `local_0 == NONE ? g_4687a4 : ...` 334 (aligned 266). Compile-only: `_mm_cvtt_ss2si(_mm_load_ss(&x))` and
 // `_mm_cvtt_ss2si(_mm_set_ss(x))` both give an `and esp, -16` frame, so no intrinsic replaces the asm truncation.
+// m3 lane 4 r238 (fast with 0x247fd0, 0x248cc0, both MATCH; control 334, aligned / register-masked 188 / 101): the gate
+// flag without the volatile, as a bool started false and set under `if (local_0 != NONE)` then tested, 351 (the gate
+// code is main's exactly, store to +0x1f included: a bool with two definitions keeps its store; the rise is the scale
+// rows' operand sides, which flip); the same keeping main's two local names, declared before or after the index, 351
+// and 351; the bool set inside the NONE block with its own test 394; the effect record bound to a const reference with
+// a plain bool 396 (`test cl, 8` form); the impact's definition looked up into its own local 334 (same code).
+// Diagnostics, reverted: one, two, four probe reads of the definition after the motion branch 353 / 360 / 376; the
+// impact's second definition lookup dropped 345 (1641 B). Read from retail: the definition's home (+0x1c) has four
+// references (store, the motion branch's load into EDI that serves both the +0xc and the +0x16 tests, the loop's two
+// loads), the flag byte's one: equal references per byte, so the two sort as a tie in this 0xb0 frame; ours reads the
+// definition six times (+0xc and +0x16 tests reload it), which puts its home below the byte's.
 // Named flags byte bound as an lvalue 338; with effect reacquisition, separate impact settings, sibling particle indexing,
 // particle lvalue, child lvalue, or all record lvalues 338 each; all lvalues with separate impact settings 335.
 // The gate still folds the effect address, and the gate and settings spill slots remain displaced. Body restored.
 // Entry declarations with original assignments: allocation handle, record, both, reused sample,
 // handle/sample, record/sample, all three, or those plus settings, each 334.
 // NOT kept: the folded gate address, AL and the two stack slots are unchanged.
+// M3 lane 15 r123 (h2m fast screen with 0x247fd0 and 0x248cc0, both MATCH each time; control 334, 245 aligned rows). Reading
+// of retail: after the 0x1751d0 call it loads the allocated index (ECX) ahead of the old list head (EAX), copies the
+// system's age through XMM0, and computes the three scale products and the age sum before any of their four stores (x
+// through ESI, y and z at [ebp + 0x20] / [ebp + 0x24], then the age). Forms: the list link through a file-local inline
+// taking the index by value (`*link = *head; *head = index;`) 334 (same code: the head is still loaded first); the cache
+// test in 0x247fd0's form re-measured 346 (241 aligned), with the link helper 346 (same code); the age copy through a
+// file-local inline setter taking the real by value 337 (still an integer move); all three 346; the scale through the
+// existing by-value vector3f_assign 336 (the x store still leads the y and z products); the age step ahead of that 350;
+// the age sum in a named real ahead of the scale rows, stored after them 334 (same code as the control), with
+// vector3f_assign 350; the first draw through the same sample local as the other three re-measured 392. Body unchanged.
 // With the split gate address, direct first draw 356, low-byte member and shared
 // draw 317, separate gate publication 421, and bitfield with direct draw 365.
 // Shared first draw with separate impact settings 317 or probe-local collision 315.

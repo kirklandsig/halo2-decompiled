@@ -810,6 +810,16 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // gains and portals/gains and clusters/portals and clusters 853/931/853;
 // all auxiliaries 904 or all four streams 910. Every form recovers the ESI zero,
 // but the target and primary stores still differ and all scores rise.
+// M3 lane 5 r222 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; without the three the reduced image builds
+// lane 11 r133's lead at 3216 B / 953 instead of 3291 B / 879, so screen with them). Retail evidence for that lead's counted
+// lists: the choices' count sits at frame+0x24 right below the elements, is incremented ahead of the stores and saved
+// (`inc esi; mov [esp + 0x34], esi`), and the element is addressed as `count - 1` after it. On the lead (879, aligned
+// 305), the fraction: retail tests `0.0001 > |range|` with the long path falling through, zeroes a scratch XMM in each
+// path and leaves the result in the quotient's XMM0; the lead hoists the zero into XMM2 and keeps the result there.
+// Fraction as an if/else 879 (same code); the long path through the file's const-reference pin 885 (3286 B), also as an
+// if/else 885, with `0.0f > distance` 885; the long path first under `>=` 861 (3302 B, aligned 343: retail's block order
+// but an `fxch` and the zero still hoisted); `0.0001f <= fabs(-range)` as an if/else or a ternary 862 (3303 B, the same
+// `fxch`). Main's body unchanged.
 // Direct prior-tag test with short query and short/long choice count 1013/1036,
 // long copied query 1030/1039, or provider count 1030/1039. Exactly one prior
 // choice with short counts 1013 or provider count and long choices 1044.
