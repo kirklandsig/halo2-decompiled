@@ -632,6 +632,11 @@ struct s_visibility_bound_record
 // first difference +0x7). The part centre through the existing transform4x3f_apply_point (0x142570) 633 (1539 B, a call);
 // with `inline` on 0x142570's definition as well (diagnostic) it is inlined here, 432 at 1744 B, but 0x1396c7 (48) and
 // 0x24e59f (42) then stop matching (retail calls it there), so 0x142570 stays out of line. Body unchanged.
+// M3 lane 16 r170 (h2m fast with 0x458d0, 0x45a80, 0x44720, 0x45560, 0x1428b0, all MATCH; control 430): the query data as
+// a plain if/else with the field read in each arm, `!parts` first (retail's fall-through arm) 456 (1763 B, first +0x12),
+// `parts` first 449 (1760 B); the geometry lookup ahead of the entry pointer 430 (same code); the bottom arm's node transforms
+// named once from the tag 436 (1749 B); the visibility word as a `dword *` formed once per part for the test and the set 430
+// (same code).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
