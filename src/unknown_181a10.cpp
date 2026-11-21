@@ -1186,6 +1186,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data word named inside `if (component != NONE && kind != 24)` 238; the material buffer declared at the kind-24 arm's
 // top 238 (all the same code); the arm-local shape for the decode and the 0x1ee410 call (re-measured for the slot
 // reading above) 327 (1249 B).
+// M3 lane 1 r152 (h2m fast, control 238): the kind decode named (`long kind = data >> 29;` then `if (kind != 1)`) 238
+// (same code); `short material` declared at the top of the kind-24 block (ahead of `data`) 238 (frame stays 0x40); the
+// two NONE outputs declared bare and set by one chained `index = other_index = NONE;` 237 (one point, under the bar);
+// the hit read through real_point3d_set and published by aggregate assignment (retail's dword copy-out) 309 (1249 B);
+// origin and hit declared `point3f const` 238 (same code).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

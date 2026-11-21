@@ -751,6 +751,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // cross3f(heading, axis), rows as one expression each with the cross subtracted 213 (1209 B); the same through
 // cross3f_staged 213 (same code); the cross formed before the cosine 231 (1196 B); the heading scaled in place by the
 // cosine first, rows adding it 205 (1227 B); the rows' products scalar-first 213 (same code as the first).
+// M3 lane 1 r152 (h2m fast with 0x28dab0, MATCH each time; control 173), all in function_28dbd2: the dot as
+// dot3f(v, axis) 173 (same code); the sine and then the cosine taken at the helper's top, ahead of the dot 182; sine,
+// the bare dot, cosine, then `projection *= 1.0f - cosine` ahead of the cross 182; the closing sums through the existing
+// vector3f_add twice 233 (1200 B); the axis passed const, its projection added by the existing vector3f_add_scaled and the
+// scaled cross by vector3f_add (no in-place scale of the axis) 204 (1223 B). Helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

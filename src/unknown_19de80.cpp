@@ -938,6 +938,13 @@ static inline bool teams_enabled_19e1c0()
 // scores, local timers, or opponent score only, 438/432/434/389. With ordinary
 // result storage, 666/642/646/691. NOT kept: opponent-only gains one but
 // keeps the 0x208 frame. Ordinary results merge name preparation.
+// M3 lane 1 r152 (h2m fast with 0x19e0f0, MATCH each time; control 390, plain result 691): every formatter failure as
+// `result = result < 0 ? remaining : result;` 573 (1570 B), on the plain result 691; the name clamps as a named length and
+// `length < remaining ? length : remaining` on the plain result 692; the two player cases with the index in a named
+// `player_index` local 390 (same code), on the plain result 691. Reading (plain result): the merge starts at the player
+// cases' `lea esi` / zero store / 0x19ea60 call, which both cases emit in one order; retail's first player case stores the
+// zero from SI (the zero result) ahead of the `lea esi` and its second case stores an immediate after it, and the
+// following wcslen/cmovle tails take different scratch registers, so only the final copy call is shared.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
