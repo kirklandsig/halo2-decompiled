@@ -4657,11 +4657,46 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // shared `result = true` block sits at the end instead of after the state-8 test. On the 94 lead: the kept arms jumping
 // to `accepted` with no store ahead of them 246 (1276 B), with the store kept ahead 95 (1268 B: the post-disconnect test
 // turns into `je`); the kept arms `return true;` or `return result;` 103/103 (1270 B, a return block of their own).
+// M3 lane 4 r242 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; lane 1 r144's 44 lead rebuilt, 44).
+// Reading of retail on the 44 lead: retail's state-8 block (store 1, reload, epilogue) is the shared accept exit: the
+// acknowledgement's state-not-7 edge jumps to its start, and the kept arms and the post-disconnect true edge jump past
+// its reload with AL already 1 (the kept arms test `same`/`better` in CL and store `result` through AL), so on those
+// edges the return value is the constant; ours folds the accept exit to `mov al, 1` in an epilogue of its own. On the
+// 44 lead: the kept arms `goto done` with `done:` on the shared `return result;` 44 (same code), with the
+// post-disconnect test also `goto done` 105 (1248 B), with the acknowledgement ending `result = true;` and falling
+// into `done` as well 96; the accept exit written inside the state-8 arm (`else { accept: result = true; return
+// result; }`) 328 (1247 B: VC still lays it out at the end); the kept arms `return result;` with the acknowledgement
+// still `goto accept` 44 (same code); on the 96 form the kept arms `return result;` 100, as `if (same) return true;
+// if (better) return true;` 129.
 // M3 lane 15 r126 (h2m fast; on m3 lane 5 r208's structured lead, 96 there with only the end of the received block
 // left): after the disconnect, an own `return result;` 109; `if (result) return true; return false;` 110; `return result ?
 // true : false;` 110; `if (result) return result; return false;` 109; `if (!result) return false; return true;` 110 (each
 // moves the first difference to +0x26; none gives retail's `mov al, [result]; test al, al; jne <bare epilogue>`). Body
 // unchanged; the stacked score header lines above merged into this one note.
+// M3 lane 8 r218 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged). Lane 1 r144's 44 lead rebuilt
+// from its diff, 44 (1264 B, +0x94). Reading: retail's kept arms store the result through AL (`mov al, 1` then the byte
+// store) and jump past the state-8 block's reload into its bare epilogue, so the result is a register value with a stack
+// home there, not a folded constant. On the 44 lead: the kept arms `goto done;` with the label on the final `return
+// result;` 44 (the arms then reach a reload block, the store stays an immediate); with the post-disconnect test also
+// jumping there 105 (1248 B); that with the acknowledgement block ending in `result = true;` and no accept label 96; the
+// three flags declared ahead of the sender lookup 50 (+0x10); the kept arms and the post-disconnect test as `return
+// result;` 122 (1244 B).
+// M3 lane 14 r141 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; lane 1 r144's 44 lead rebuilt, 44,
+// aligned 21). On the 44 lead: the acknowledgement ending `result = true;` and falling into the final return 56 (+0x26); the
+// kept arms `goto received_done;` 99 (aligned 21); that without the post-disconnect test 105 (1248 B, aligned 11); with the
+// acknowledgement also falling into the final return (no accept block) 96 (1264 B, aligned 17); the post-disconnect `if
+// (result) goto accepted;` with the label on the acknowledgement's final `result = true;` 107 (+0x26, the byte homes rotate);
+// that with the state-8 `result = true` also written `goto accepted;` 94 (1264 B, aligned 11: one block left, retail's
+// kept arms store the result through AL, test `same`/`better` in CL and jump into the state-8 copy's bare epilogue, and its
+// post-disconnect true edge does the same; ours stores an immediate, tests in AL and jumps to the acknowledgement's copy;
+// build/r141/lead-5e7f0-g7-94.patch in m3-lane14). On that 94 form: the kept arms `return result;` 103 (1270 B: a `mov al,
+// 1` return block of their own), `goto accepted;` 95 (1268 B, aligned 9); the accepted label inside the state-8 arm with the
+// acknowledgement jumping back to it 403 (frame 0xe0: the backward jump stops the flag threading). Also on the 94 form:
+// after the disconnect `if (result) return result;` 113 (+0x26: one more reference moves the result byte to +9), that with
+// the kept arms `return result;` 117, with the kept arms `goto accepted;` 113; that test with the channel-7 `result = true`
+// written `goto accepted;` 100 (homes back, but the test folds into the final return); the channel-7 jump alone 94 (same
+// code); the kept arms `return true;` 103 (1270 B), as two tests each `return true;` 131 (1269 B), as `if (same || better)
+// return result = true;` ahead of the plain store 237 (frame 0xe0).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

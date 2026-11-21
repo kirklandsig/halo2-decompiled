@@ -831,6 +831,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // choice with short counts 1013 or provider count and long choices 1044.
 // NOT kept: the forms replace the retail duplicate loop, shorten the body
 // and leave the entry zero and target/query homes different.
+// M3 lane 11 r146 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): the three 1.0f choice defaults
+// as three statements in member order (retail stores inside, portal, outside upward; the chained assignment stores them
+// downward) 846; that with the detail tag as a ternary initializer 845; plus the fade scan's datum index formed inside its
+// `if` 848 (3332 B); the defaults and ternary with the four choice stores in retail's order (tag, source, decibels,
+// cluster) 845; that with the audible update through a `word *` to the flags (0x18a720's spelling) 862 (3302 B).
 // M3 lane 14 r138 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846). Reading: retail's entry zero
 // in ESI is the choice count's own register (`cmp esi, 2` in the query loop, `inc esi; mov [esp + 0x34], esi` before
 // each choice is addressed), with the query count read as a dword; ours keeps both counts as shorts in memory and gives
@@ -842,6 +847,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Long accepted count with short/word ordinals at selection or repair, short query bound
 // 937/937/939/946, full query bound 967/967/952/952.
 // NOT kept: all recover the ESI zero but shorten the body and leave the target and buffer homes displaced.
+// Choice cap at scan-body entry with short/short, short/long, long/short and long/long query/choice counts
+// 846/964/919/965. Cap after choice publication in the same width order 950/965/965/995. Widening the accepted
+// count restores the ESI zero but shortens the body and leaves the array homes displaced.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

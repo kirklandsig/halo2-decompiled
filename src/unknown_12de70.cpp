@@ -771,6 +771,20 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // release step as a new forceinline helper taking (cache block, block index) and reading the field at each use 27 (same
 // code); the loop as `if (busy) do { ... } while (busy);` 27 (same code); the tail's root clear through a new forceinline
 // helper taking the group (offset read, count and pointer cleared) 51 (+0x9), with the each-use loop 51.
+// M3 lane 4 r243 (h2m fast with 0x12e210, which stays matched; control 27; the reduced image builds 0x223e00 differently,
+// so these are screens): round 89's form (the count named, the linked flag read from the field ahead of the count's store,
+// the arm re-reading the field) re-measured 18 (266 B: the block loads into EDX as retail, but the store stays after the
+// test and the arm reloads ESI where retail copies EDX); the group named from the field ahead of the linked test, the test
+// reading the field, 27 (same code); a group local for the tail's pointer with the tail's test on the field 51, that with
+// the loop's group form 51, with the loop read at each use 51 (EDI/EBP swap in all three). Diagnostics (a probe global,
+// removed): the count stored to a never-address-taken global 27 on main's body and 27 on round 89's form (the store is then
+// scheduled ahead of the load and the block goes straight to ESI), so the count's store order is not kept by the async
+// aggregate's taken address.
+// M3 lane 1 r150 (h2m fast with 0x12e210, which stays matched; control 27): the arm as `if (!local_1->runtime_linked)
+// continue;` then the release 27 (same code); the block read ahead of the task-count store 71 (first difference +0x9);
+// the busy result in a named flag re-tested at the loop's end 27 (same code); a second named pointer `group` copied from
+// the block local and passed to the release 27 (same code: the copy folds, no second use); the loop test as `busy(...)
+// == true` 28.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

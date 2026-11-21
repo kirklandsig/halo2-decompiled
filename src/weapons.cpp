@@ -3497,10 +3497,24 @@ struct s_ammo_conversion_entry
 // single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
 // transfer cap inside the successful search 199. NOT kept: the ordinal searches shorten the body
 // to 718 bytes, and the forms at retail length still miss the destination and key registers.
+// Cached conversion membership as shifted bool, masked bool, result of a test or shifted byte 214/214/209/214.
+// Byte or word type mask 204/190. Boolean membership with conditional retention or ternary retention 197/188.
+// NOT kept: the two-point gain leaves the source and destination register roles unresolved.
 // Destination magazine bank 207, source bank 190, both runtime banks 207, both runtime
 // arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
 // and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
 // bank shortens the body, and retaining the tag bank does not recover the destination save.
+// The destination save and conversion-scan homes still differ in the 0x20 frame.
+// Separate short transfer, arm-selected or capacity-initialized, with negative/positive
+// acquisition 192/195 and 190/202. Long transfer equivalents 205/202 and 205/206.
+// NOT kept: the short form ties and the positive or widened forms tie no lower or shorten the body.
+// Conversion candidate as mutable or const reference before the match test 214/214;
+// with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
+// NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
+// Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
+// Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
+// NOT kept: the joined conversion paths tie or shorten the body, and holding the pickup amount adds a frame word. The caller and both callee controls retain their scores.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3835,6 +3849,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
 // the magazine debit where retail stores it after admission and the magazine update.
 // The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
+// Post-heat loaded short retained through the holder test, with native compound debit, signed balance, short
+// difference, or word balance. The shared and separate threshold and holder gates all score 603. Frame 0x1c64
+// and separate magazine-tag and round spills remain.
 // Exhaustive burst assignments 577; shared post-wake accumulator 630; selected burst before round
 // multiplication 639; separate round requirements 651; selected burst with short minimum 620;
 // named shot multiplier or debit conversion 603/603; short pre-wake minimum 608.
@@ -3843,6 +3860,22 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // with separate balance and heat blocks, balance and minimum blocks, heat and minimum
 // blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
 // the extra frame word and the early magazine tag spill.
+// The magazine tag and admitted round count still compete for frame homes.
+// Late shot result with full/balance/heat/minimum/holder admission split 652/597/634/600/660,
+// explicit no-magazine arms 652, explicit magazine result arms 646, default no-magazine success 648.
+// NOT kept: the 597 form gains six, grows to 2541 bytes and still publishes fired ahead of the debit.
+// Reduced control 636. Captured tag array indexed throughout 752; tag element reference 636;
+// runtime barrel indexed throughout 598; runtime and tag indexed 732; runtime indexed with tag reference 598;
+// runtime element reference 636, with indexed tag 752, with tag reference 636.
+// NOT kept: full check of the indexed runtime form scores 645 and shortens to 2518 bytes.
+// The 0x1c60 stack probe returns, but the barrel offset is formed after the wake call and still takes EBX.
+// Required rounds scoped to ammunition 603. Magazine selector by field
+// reference 568. Loaded balance by field reference, both field references,
+// or both scoped to ammunition 647/647/647. Late tag defaults 630, late scale
+// defaults 674, both after scoped ammunition 665. Selector reference after
+// the sentinel test 603. NOT kept: the 568 form shares the first selector load
+// with sign extension where retail reads twice. The later binding restores
+// those reads and ties. Required rounds and the original field reads restored.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4339,6 +4372,22 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Boolean activity through heat 1431.
 // Byte activity through heat 1431.
 // NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
+// The pool and header displacement still occupy EBX and EDI. Dual remains spilled.
+// Stable magazine, trigger and barrel count values 1418/1416/1417. The trigger
+// count gives frame 0x38 and first difference +0x8 at 5680 bytes. Live count
+// references individually, beside each walk or acquired together 1412 each.
+// NOT kept: retail reloads the bounds. Stable values raise the score and the
+// live references retain the 0x34 frame.
+// Persistent weapon/tag names, player/weapon names, weapon/scale names, and tag/player/weapon/scale names,
+// target/heat names, trigger outputs/heat names, barrel stop outputs/activity names, and all phase names: 1412 each.
+// Flag-first selected barrel value 1423, tag field reference 1578, reference with shifted control bit 1577,
+// and separate selected-barrel assignments 1426. NOT kept: the names leave the 0x34 frame and early dual spill.
+// The flag-first forms grow the body and allocate 0x34 with a value or 0x3c with a reference.
+// Player presence from an owner-path assignment 1429, short-circuit
+// tests 1422, absence 1422, explicit owner arms 1422, or typed owner lookup
+// for presence/absence 1422/1422. Shared trigger test from the signed player
+// index 1419 or from a selected index 1442. NOT kept: all regress and
+// hold a 0x30 frame against retail's 0x38. The signed player index is restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4977,12 +5026,23 @@ struct s_weapon_projectile_creation
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.
+// Marker-average scalar sums, indexed with direct seeds or initial point copy and component/point stores
+// 1194/1139/1135/1142. The same four forms with a marker cursor 1171/1141/1130/1204. NOT kept: the 0x1ea4 frame
+// remains and the scores rise.
 // Fixed axis components with complete result or direct output 1154/1190; fixed axis
 // with projected products and direct output 1228. Projected products before direct
 // output or complete result 1215/1138. Named cosine complement with direct output
 // 1215. Shared dot and projected products before complete result or direct output
 // 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
 // and raise the score. The separate clipping point and opening rotation remain.
+// The rotation still needs the retail scalar homes at the 0x1e98 frame.
+// Dot before cosine, cross before cosine, dot then cross, or cross then dot:
+// vector result 1121 each, staged scalar result stores 1239 each.
+// NOT kept: the vector forms tie and the scalar forms reserve 0x1e94 and shorten the body to 5115 bytes.
+// Caller-owned rotation output, component stores or setter: one result for both saved inputs 1132/1132,
+// separate results 1214/1210, direct marker input with separate results 1273/1273, or direct marker input
+// with a shared result 1142/1142. NOT kept: one result for the saved inputs recovers 0x1e98 and first +0x75
+// at 5195 bytes, but raises the score. The separate trace point and original rotations remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

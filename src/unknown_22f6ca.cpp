@@ -303,6 +303,16 @@ void function_22fba9(c_class_1473c9 *screen)
 // does not come from the model's EDI); the text loop nested like the others with the zero above the pane lookup 25; the zero
 // above the pane lookup with the model loop on its own `for` counter 25; the model loop on its own counter with the shared
 // counter uninitialised and zeroed by the first loop's `for (i = 0;` 66; only the shared counter zeroed that way 66.
+// M3 lane 4 r243 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23 at 416 B): the text loop on its own
+// counter declared and zeroed above the pane lookup 144 (421 B: that zero is live across the call), with the model loop
+// on its own counter as well 168 (433 B), with the shared counter declared bare and zeroed by the first loop's `for (i =
+// 0;` 155 (423 B); the text loop's own counter declared at the pane block's top 137 (421 B); the text loop's tests nested
+// together with the model loop in 0x22facd's shape (`if (model && animating)` start, the store under its own `if
+// (model)`) 23 (same code).
+// M3 lane 1 r150 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the pane test as an early return
+// (`if (!pane) return;`, and as `pane == NULL`) 23/23; the screen parameter declared `*const` 23; the model's animation
+// type named inside its animating block 23; the model's `(short)i` named at the top of its `if (model)` block 23 (all five
+// the same code: the swapped text/model zero stores and the model loop's EAX copy of the screen stay).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

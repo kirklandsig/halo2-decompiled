@@ -253,6 +253,15 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // named flag) 161 (first difference +0x21), the same on the update-first order 161; the object looked up right after the
 // cache, ahead of the elapsed time, 124 (830 B); update elapsed computed between the object lookup and force 215;
 // `bool update = false;` as the function's first statement 228, right after the cache lookup 228.
+// M3 lane 16 r169 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21): update typed `long` 65 (837 B); force as
+// `!(cache->initialized && cache->valid)` 21 (same code); the hidden test in an else block through a `byte const *` copy of
+// the object 21 (same code); the hidden bit read into a named bool next to `bool update = false;` 157 (829 B); the object's
+// position named once as a `point3f *` for its three uses 245 (814 B).
+// M3 lane 16 r171 (h2m fast; control 21; `bool update = false;` just above force re-measured 218): on that update-first
+// form the hidden test on a fresh lookup 218 (the lookup merges; on the kept order 21, already listed); the object lookup
+// ahead of update elapsed, then update and force (object, update elapsed, update, force) 186; on the kept order `bool update
+// = force;` after the clamp with `if (!update && hidden) return;` 231; force renamed `stale` 21 and the object local renamed
+// `body` 21 (name-order probes for the swapped homes: same code each).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

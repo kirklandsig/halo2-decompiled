@@ -226,7 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 8 (was 49): The entry and header check agree. The object lookup still uses movzx and an extra index store.
+// score 8 (was 8): The entry and header check agree. The object lookup still uses movzx and an extra index store.
 // MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
 // makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
 // one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
@@ -1023,10 +1023,25 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // field 42, given `(word)object_index` 45 (179 B); with no second store and the flagged arm clearing the local and
 // storing it 77 (160 B), given the entity's field 77 (the expanded lookup is merged with the header test's each time).
 // A 1200 s permuter run (121 tries) found nothing below 8. Body unchanged.
+// M3 lane 7 r208 (H2M_FAST with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 8).
+// On retail's shape (77): the flag test through an inline predicate taking the index by const reference 77; the object
+// read through an inline getter taking the index by const reference 77 (both the shape's code). A new retest: the
+// flagged arm storing NONE inside the NONE test and the valid block under `if (entity->object_index == object_index)`
+// 56 (176 B: the data pointer is reloaded as retail, but the scaled index is shared, `shl ecx, 2`, and the retest
+// `cmp [edi + 8], eax` stays in the code), with the comparison's operands exchanged 56. On this body: the object read
+// indexed `(dword)object_index` re-measured 42 (shared index). Reading: the scaled index is shared whenever the object
+// read is dominated by the header test, even across a join; retail's recomputed index needs a path to the object read
+// that skips the header test until after CSE. Body unchanged.
 // M3 lane 12 r166 (fast screen; control 8), all on this body: `result = false;` again at the top of the flagged arm 63;
 // the second store moved after the object field store 69; the object read through a const-reference-bound header
 // pointer taken before the second store 64; the flag test through a const-reference-bound header pointer 40 (178 B,
 // first difference back at +0x3a); the bool declared after the creation call 34. Body unchanged.
+// M3 lane 6 r224 (H2M_FAST; control 8): the second store replaced by `__assume(entity->object_index == object_index)` with
+// the plain object read 77 (160 B, retail's-shape code); the `(dword)` cast on the header test's index only, second store
+// kept, plain object read 42 (lookups shared); `result` declared ahead of `value` 8 (same code); no store before the NONE
+// test, the index stored at the top of the non-NONE arm and in the NONE else arm 68 (179 B: the two arm stores are not
+// merged into one store ahead of the test, and the header address is formed whole and reused for the object read); the
+// entity's index field bound by a reference and used as the index everywhere 82 (157 B). Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1525,6 +1540,14 @@ bool c_projectile_type::v8(long a, long b)
 // 12s are the mask's own code). Diagnostic (reverted): `result += 0x800` 13, still swapped, so the 0x800 pair is keyed by the
 // constant's value and not by the operation. r237's entry address ahead of the NONE test re-measured 24 (187 B): the head pair
 // is retail's there, with the index in ESI and the entry in EDI.
+// M3 lane 15 r128 (H2M_FAST with 0xa5e70, MATCH each time; word read 5, mask 12): the group index as `((dword)index << 16)
+// >> 16` 12 (folds to the mask); as `(dword)(word)index & 0xffff` 5 (same code as the word read: the movzx stays, the mask
+// is dropped); with the mask, the 0x400 compare written object-first 13, both compares written value-first 16, the object
+// pointer typed `byte const *` 12 (same code). Word-read body kept (5).
+// M3 lane 14 r141 (H2M_FAST with 0xa5e70, MATCH each time; mask control 12), all with the full-width mask: the object
+// bound through a `byte *const &` used for the 0x800 arm's index read 12; the group pool pointer read into a local at the
+// top, ahead of the call, 49 (188 B); the index as a const value local 12; the object pointer itself const 12; the entry's
+// value read as `((real *)entry)[1]` at the compare and the store 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

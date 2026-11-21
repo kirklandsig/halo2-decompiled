@@ -219,10 +219,11 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 25 (was 25; 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
-// copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below), the forward agreement's i product, and the
-// order of the final up/forward loads and stores (retail runs the three up loads first and interleaves the rest, ours
-// pairs each load with its store).
+// score 15 (was 15; 25 and 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
+// copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below) and the forward agreement's i product (ours
+// loads the object's forward.i first, retail the local's). At 25 the order of the final up/forward loads and stores also
+// differed (retail runs the three up loads first and interleaves the rest, ours paired each load with its store); the
+// 0x1faf80 exit as an if/else around the rest (round 127 below) gives retail's interleaved copies.
 // Earlier 51 (was 223): Frame 0x6c restored. The early call setup, the two discarded basis-output offsets and final
 // vector-store scheduling differ.
 // MiniMax A (11-18): no new form, no lower score (218): the 0x1faf80 exit written as an if/else around the rest of the body measures 216 on the reduced image (a gain of two, under the keep bar) and the frame stays 0x78 against retail's 0x6c: BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp).
@@ -557,6 +558,16 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // else arm read from the object's forward 192: the test's i product stays facing-first whatever facing's other uses
 // are. Retail's 0xe01d0 call (0xe0264-0xe0286) also computes the facing address after the control and settings
 // addresses, so both callers put facing ahead of control. Still BLOCKED-BY 0x1faf80.
+// M3 lane 15 r127 (h2m fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0x109290 and 0xbba20;
+// control 25). Kept: the 0x1faf80 exit written as an if/else around the rest of the body (one exit, no early `return`) 15
+// (the tail's up and forward copies then interleave as retail's). Before it: the forward agreement through
+// `&object->forward` with the field pointer kept for the store 25; both agreement tests constant-first (`0.9999f >
+// dot3f(...)`) 25; the object pointer `s_forward_object *const` 25; diagnostic, the moved dispatch given copies of
+// new_forward and up 157 (1074 B: the tail's copies interleave, so the dispatch's address escape held them on the
+// early-return form). On the if/else form: the forward agreement's arguments swapped 15, both agreements' arguments
+// swapped 15, both agreements named ahead of the test 15, `vector3f new_forward, up;` 15 (all the forward i product
+// object-first), no forward field pointer (`&object->forward` in the test, `object->forward =` store) 40 (1032 B);
+// diagnostic, 1/2/3 unused locals at the top 17 each.
 // M3 lane 13 r135 (h2m fast with 0x118700, 0x11f0d0, 0x1faf80, 0x109290, 0x11d180, 0x11ce20, 0xbba20 and 0x118e80;
 // control 25): the agreement test as `!(up >= 0.9999f && forward >= 0.9999f)` 29 (both compares reversed); the tests on
 // `&object->up` / `&object->forward` with the two field pointers declared inside the store block 45 (1032 B);
@@ -567,6 +578,24 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // forward agreement's i product stays object-first), so the dispatch's escape is the tail's barrier and the i product
 // is separate; 0x1faf80 as (object_index, facing, settings, control, threshold, turn) re-measured 12 here, 0x1faf80 2
 // (only its test's `object->forward.i * facing->i` loads facing first). Still BLOCKED-BY 0x1faf80.
+// M3 lane 15 r129 (H2M_FAST with 0x1faf80, 0xe01d0, 0x118700, 0x11f0d0, 0x109290, 0x11d180, 0x11ce20, 0xbba20 and
+// 0x118e80; control 15). Lead, not kept (build/r129/lead-1197b0-1faf80-reorder.patch of this round): 0x1faf80 declared
+// (object_index, facing, settings, control, threshold, turn) at its definition, both declarations and both calls (both
+// retail callers form the facing address after the settings and control addresses) gives 2 here (only the forward
+// agreement's i product left: ours loads the object's forward.i, retail the local's), but 0x1faf80 2 (its test's i
+// product loads facing first) and 0xe01d0 537 -> 569. On that order, here: the two field pointers declared forward first
+// 2 (the up agreement's i product flips instead); only the forward pointer, up through `&object->up` 2 (up flips); no
+// field pointers 27 (1032 B); both pointers ahead of the dispatch block 4, the up or the forward pointer alone there 4 / 4;
+// the stores swapped 14; the test through `&object->...` with the stores through the pointers 6; the stores through
+// `object->...` 2; the forward test through `&object->forward` 2; `vector3f new_forward, up;` 2; either or both
+// agreements' dot3f arguments swapped 2; diagnostics: `up = target_up` as a memcpy 2, a self-copy of new_forward.i ahead
+// of the test 2. So exactly one agreement keeps retail's i product: the one whose field pointer is declared first (up
+// with no pointers). In 0x1faf80 on that order (sweeps of 101 forms): the three magnitude tests through length_sq3f with
+// the facing test through `dot3f(&object->forward, facing)` puts its test right, and the two cross products sharing up.k
+// then trade (one spelling of up.k: left.j's `up.k * forward.i` flips; two spellings: left.i's `forward.j * up.k` flips;
+// 2 either way); the forward.i and forward.j spellings, the value dot through dot3f, the then-arm copy's spelling, the
+// cross components in k-i-j or i-k-j order (14-31), cross3f(forward, up) (12, 8 with the value dot), the test's written
+// orders, a parenthesised pair, `threshold <`, a facing alias and a threshold copy do not give both.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -575,56 +604,58 @@ void function_1197b0(long object_index)
 	if ((bool)((definition->flags >> 4) & 1))
 	{
 		function_1faf80(object_index, definition->settings, &object->control, 0.9f, &object->requested_forward, &object->turn);
-		return;
 	}
-	vector3f turn_velocity;
-	vector3f up, new_forward;
+	else
 	{
-		vector3f target_up, first_left, basis_forward, left;
-		real max_angle = definition->max_angle;
-		real acceleration = definition->acceleration;
-		if (object->speed_mode == 1)
+		vector3f turn_velocity;
+		vector3f up, new_forward;
 		{
-			max_angle *= definition->speed_scale;
-			acceleration *= definition->speed_scale;
-		}
-		vector3f forward;
-		if (max_angle == 0.0f && acceleration == 0.0f)
-		{
-			forward = object->requested_forward;
-			turn_velocity = *g_4687a4;
-		}
-		else
-		{
-			function_118e80(object_index, &forward);
-			turn_velocity = object->turn_velocity;
-			function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
-		}
-		vector3f temporary_velocity = *g_4687a4;
-		world_up_1197b0(object_index, &up);
-		function_11d180(&forward, &object->requested_up, &new_forward, &first_left, &target_up);
-		function_11d180(&forward, &up, &basis_forward, &left, &up);
-		if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
-		{
-			function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
+			vector3f target_up, first_left, basis_forward, left;
+			real max_angle = definition->max_angle;
+			real acceleration = definition->acceleration;
+			if (object->speed_mode == 1)
+			{
+				max_angle *= definition->speed_scale;
+				acceleration *= definition->speed_scale;
+			}
+			vector3f forward;
+			if (max_angle == 0.0f && acceleration == 0.0f)
+			{
+				forward = object->requested_forward;
+				turn_velocity = *g_4687a4;
+			}
+			else
+			{
+				function_118e80(object_index, &forward);
+				turn_velocity = object->turn_velocity;
+				function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
+			}
+			vector3f temporary_velocity = *g_4687a4;
+			world_up_1197b0(object_index, &up);
+			function_11d180(&forward, &object->requested_up, &new_forward, &first_left, &target_up);
 			function_11d180(&forward, &up, &basis_forward, &left, &up);
+			if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
+			{
+				function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
+				function_11d180(&forward, &up, &basis_forward, &left, &up);
+			}
+			else
+				up = target_up;
 		}
-		else
-			up = target_up;
+		{
+			point3f position = object->position;
+			object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
+		}
+		vector3f *object_up = &object->up;
+		vector3f *object_forward = &object->forward;
+		if (dot3f(object_up, &up) < 0.9999f || dot3f(object_forward, &new_forward) < 0.9999f)
+		{
+			*object_up = up;
+			*object_forward = new_forward;
+			function_bba20(object_index);
+		}
+		object->turn_velocity = turn_velocity;
 	}
-	{
-		point3f position = object->position;
-		object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
-	}
-	vector3f *object_up = &object->up;
-	vector3f *object_forward = &object->forward;
-	if (dot3f(object_up, &up) < 0.9999f || dot3f(object_forward, &new_forward) < 0.9999f)
-	{
-		*object_up = up;
-		*object_forward = new_forward;
-		function_bba20(object_index);
-	}
-	object->turn_velocity = turn_velocity;
 }
 
 struct s_impulse_definition_119020

@@ -879,6 +879,27 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // ray record local_19 declared at function scope 1386 (6243 B); the magnitude helper taking its vector by value (the
 // copy as its parameter) 1346 (same code: still one 12-byte copy per site); the contact loop placed under the query
 // call's `count > 0` test 1456 (6257 B).
+// M3 lane 13 r139 (fast with 0x2056e0, MATCH each run; control 1346): the magnitude helper's input read directly 1624
+// (5990 B, frame 0x590), through a const reference 1686 (5958 B), as three scalar copies 1624; the snapshot kept with double
+// products 1393 (6238 B); the snapshot summed i, j, k 1346 (same code). The direct form's instruction count is within two
+// of the control's, so its short length is displacement size: its busiest locals sit below +0x80 where retail's sit above.
+// M3 lane 8 r217 (h2m fast with 0x2056e0, MATCH each run; control 1346). Retail pads the two join points after the contact
+// loop's skip calls (0x207420, 0x207640) to 16 bytes as if they were loop heads; ours pads neither. Tried: the disabled
+// contact's skip call written first (`if (field_b3) skip; else { ... }`, no inverted test) 1349 (6238 B); the zero-depth skip
+// call written first 1366 (6238 B); both 1402 (6211 B); the first loop's cross through function_206092 re-measured 1405 (6238 B);
+// both skip calls first with that cross 1451 (6195 B). Body unchanged.
+// Entry object identifier 1370, typed lookup with entry identifier 1370, scoped component index 1346,
+// scoped component with entry identifier 1370, both identifiers scoped through velocity call 1370,
+// entry identifier with shared zero-vector pointer 1346, typed lookup and scoped component 1346,
+// typed lookup and both identifiers 1370. NOT kept: the 0x5d0 frame, velocity homes and 6243-byte
+// extent persist in all eight forms.
+// M3 lane 12 r172 (H2M_FAST, 0x2056e0 MATCH each run; control 1346, difflib-aligned 1399, register-and-slot-masked
+// 1355): the magnitude helper's terms written i, j, k with the snapshot kept 1346 (6243 B; aligned 1388, masked 1161:
+// every magnitude then evaluates k*k, j*j, i*i in retail's order, where the current text gives i*i, j*j, k*k; a lead,
+// the count does not move); the magnitude read directly with i, j, k terms 1624 (5990 B, masked 1099); the two velocity
+// outputs declared local_5 first 1346 (same code); on the i, j, k form, the contact cross written into the contact's
+// velocity field with the base velocity added there 1419 (6185 B); the scale helper copying its input vector (retail
+// copies the normal before the projection at 0x206d0c) with the magnitude read directly 1543 (6358 B, frame 0x5e8).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

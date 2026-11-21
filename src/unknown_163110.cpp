@@ -616,7 +616,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115; m3 lane 8 r220 unchanged, its line just above the marker): coefficient XMM roles, classification operands and projection staging still differ.
+// M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
+// computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
+// with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
+// with plane 1 too 152 (1851 B, first +0xaf). Re-measured: d as `near_distance + -d` 423.
 // MiniMax G (11-19): no new form, no lower score (115), body unchanged. Naming the three edge coefficients in locals read
 // before the normal's copy scores 276 (1867 B): the compiler keeps them in registers and the copy's stores move behind the
 // products. Swapping the i term's operands (`planes[0].normal.i * view->vector_e4.i`) compiles to exactly the same code
@@ -1224,9 +1228,26 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // local stored as `near_distance - d0` 423, as `-d0 + near_distance` 423; the forward vector copied into a local normal with
 // the plane's normal written from its negation 263 (1830 B); the i product named ahead of the k and j terms and added last 251
 // (1867 B); the k and j terms assigned and the i product added by `+=` 168 (first +0x60). Body unchanged.
+// Direct clipped endpoint through point setter, component writes or vector sum 394/377/377.
+// Endpoint chosen before fraction, with setter, component writes or sum 382/366/366.
+// Branch-selected endpoint with point setter or vector sum 371/377.
+// NOT kept: direct output advances the first difference to +0x15 and loses retail length.
 // Carry completed near/far/both offsets through normal orientation 119/119/135.
 // With both named offsets, sign near/far/both before orientation 163/183/191; read both x coefficients before the copies 235,
 // or combine the early reads with both early signs 297. The coefficient preload and zero register still differ.
+// M3 lane 14 r140 (h2m fast with 0x1648d0/0x320b0, both MATCH; control 115, difflib-aligned 73, register-masked 33):
+// retail keeps the source operand order in the clip denominator (delta first for i and k, normal first for j) and in the
+// distance (normal, point, normal first) where ours loads the other operand first for two terms of each. Forms: the
+// classification terms written i, j, k 115 (same code); the classification through a `point3f const *` element pointer
+// 265 (1867 B); the denominator as one expression 247 (1867 B); the distance as one expression 251 (1867 B); the plane
+// pointer typed const 115 (same code). Body unchanged.
+// M3 lane 8 r220 (h2m fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115): the far-plane mask as `if
+// (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B, first +0x26); the classification store without its
+// `? 1 : 0` 320 (1835 B); the outside flags typed bool with the same store and a bool `outside0` 115 (same code); the
+// remainder loop's j term written point first 115 (same code) and the clip distance's first two products written with
+// their operands swapped 115 (same code): the emitted load order of a product does not follow its written operand order
+// here (retail loads in written order, ours the other operand first for the j term and the first two distance terms).
+// Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

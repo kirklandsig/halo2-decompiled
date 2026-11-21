@@ -789,6 +789,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // 153/153 (names do not order those homes); cross3f with no `local_17`, on the old call form 171, with named sine/cosine
 // 141. On the kept form: only the first rotation through the helper 130 (same code); the XY vector before the second copy
 // 128 (two points, not kept); named sine/cosine 164; the axis through cross3f with no `local_17` 222 (1715 B); both 173.
+// Round 454: the 0x2c frame agrees, with the XY J and depth stores inverted at +0x101. Native XY aggregate 346;
+// XY from full input copy 303; vector setter for second, first or both input copies 413/418/426; second setter
+// plus XY aggregate 393; setter for degenerate restore 271; setter for second copy and restore 398. Body restored.
 // M3 lane 7 r207 (h2m fast with 0x170d70 and 0x29b990, both MATCH; control 130): both rotations through a private copy
 // of matched 0x194a10's written-out rotation (its rows and cross order are retail's here) 130 (same code: the text is
 // canonicalised); the turned facing as its own function-scope vector 227 (frame grows); declared in the arm with the
@@ -807,6 +810,29 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // (uj*fk, ui*fk, uj*fi, fj*uk, fi*uk, ui*fj as loaded; retail uj*fk, uk*fj, fi*uk, fk*ui, fi*uj, fj*ui), so this body's
 // product sides follow neither the spelling nor the symbol phase that moves 0xef870's. A lower-bound local started at
 // zero ahead of the yaw scale and reduced after it (diagnostic for retail's zero copy above the branch) 295.
+// Full fallback value selected before validation, on the valid-angle path, after yaw, or before
+// current pitch 379/386/386/391. Fallback address selected at those sites 364/256/291/367.
+// NOT kept: the original J/depth pair remains or the first difference moves earlier.
+// M3 lane 6 r225 (H2M_FAST with 0x170d70, 0x154df0 and 0x29b990; control 130, difflib-aligned 162, register- and
+// offset-masked 80, all of it the two rotations' schedule plus the +0x101 store pair and the yaw zero copy). The shared
+// rotate_vector_170d70's text, measured as a diagnostic and restored (0x170d70 and contributor 0x154df0 use it too): the dot
+// parenthesised as retail's (i + k) + j 127 (0x170d70 48, 0x154df0 28), as (k + i) + j 127 (0x170d70 48), (i + j) + k 128
+// (0x170d70 111), i + (j + k) 216 (0x170d70 7); the j and k rows with the projection term first 130 (same code in all
+// three); the rows parenthesised as (v * c + p * a) - x * s or (p * a + v * c) - x * s 214 (0x170d70 kept, 0x154df0 17),
+// the i row alone 214, the j and k rows alone 130 (0x170d70 106), v * c + (p * a - x * s) 171 (0x170d70 106), p * a + (v * c
+// - x * s) 168 (0x170d70 79): no text keeps 0x170d70 and lowers this body (explicit parentheses are reassociation barriers;
+// unparenthesised rows and sums are reordered by the compiler). In this body: both clamps' lower bounds as named locals
+// (`real yaw_lower = -yaw_limit;`) 292 (1706 B, frame 0x28); the first rotation through include/axis_rotation.h with the
+// second through rotate_vector_170d70 222 (1695 B); the second copy declared ahead of the first 130 (same code); the
+// existing rotate_direction (src/unknown_1eb8a0.cpp) screened with 0x1ecf50 listed, so that its file is in the reduced
+// image (round 84's 817 had it out of line): both rotations 222 (1695 B), the first only 222, the second only 130 (same code).
+// M3 lane 7 r210 (h2m fast with 0x29b990 and 0x170d70, both MATCH; control 130): the second axis as one aggregate
+// initializer 130 (same code); the up-vector pointer declared at the top after the object pointer 239 (1710 B); the second
+// copy's depth clear written ahead of the XY vector 130 (same code); a const copy of the object's forward vector for the six
+// cross products 203 (1726 B); the actor's current yaw and pitch read once into const locals 267 (1685 B). Body unchanged.
+// Full fallback value selected before validation, on the valid-angle path, after yaw, or before
+// current pitch 379/386/386/391. Fallback address selected at those sites 364/256/291/367.
+// NOT kept: the original J/depth pair remains or the first difference moves earlier.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

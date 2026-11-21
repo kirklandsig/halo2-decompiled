@@ -243,6 +243,19 @@ bool function_1946f0(s_bitstream *stream)
 // `&data[index] + 1` with `count * sizeof(byte)`, the bound test `size > index` and the mask through `*(data + index)` 4;
 // `saved / 8` written at the bound test and the masked byte with a block-local data local and the index named after the mask
 // block 35; the same without the data local 2 (same code).
+// M3 lane 4 r243 (h2m fast with 0x1957d0/0x195820, both MATCH): `saved / 8` written at every use with the clear from
+// `&stream->data[saved / 8 + 1]` and the count as `size_in_bytes - (saved / 8 + 1)` 2; that with the two accounting stores
+// swapped 13; a named index with the masked byte as `*(stream->data + byte_index)` and the clear from `stream->data +
+// (byte_index + 1)` 2, that with `if (!discard) return;` ahead of the block 2, that with the index named at the
+// function's top beside `saved` 26. Both LEAs stay data first in every 2.
+// M3 lane 1 r150 (h2m fast with 0x1957d0/0x195820, both MATCH each time): the count computed ahead of the bound test 47;
+// `int` for saved, the index and the count 2 (same code); a `size_t` count 3; a data local read just ahead of the index
+// for both addresses 40 (re-measured); the count as `size_in_bytes - (byte_index + 1)` 2 (same code). Compile-only (the
+// file's flags, both LEAs reproduced): the same body as a member function of the stream type keeps both LEAs data first;
+// a data local read anywhere ahead of the index (function top, before the mode test, mode block top, after the accounting
+// stores) gives the clear index first but folds the mask's address into `[index + data]` memory operands (no LEA); the
+// index or saved typed `int`, a `size_t` count, `saved / 8` written at the addresses only, and a byte pointer to the end
+// byte formed at the index all keep both LEAs data first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

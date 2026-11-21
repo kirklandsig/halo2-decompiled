@@ -1195,10 +1195,26 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // (1093 B), the pathfinding selection ahead of the direction copy 159 (1096 B), the trace origin pointer formed once ahead
 // of the ring loop 20 (M's code), the sector field read at the trace call 261 (1067 B), the angle ahead of the direction
 // copy 233 (1104 B).
+// M3 lane 12 r168 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26; M = the collision record, its marker
+// store and the entry pointer between the trace endpoint and the 0.5 lift loop, re-measured 20): the pathfinding selection
+// moved between the direction copy and the angle 150 (1095 B), on M 145 (1095 B); the trace origin pointer formed right after
+// the rotation, ahead of the pathfinding selection, 26 (same code); the record's count read once into a `long count` used for
+// the entry, the 0x444 table and the activation call 146 (1095 B), on M 149 (1095 B). Reading: retail's other rotation sites
+// spell their dots in fixed orders, but this one's (j + i) + k and 0x1ecf50's (k + j) + i cannot both come from the one
+// shared helper, so the held private-copy match stays the only route found. All restored.
 // M3 lane 7 r206 (h2m fast with 0x1ecf50/0x26d100/0x26dde0, MATCH each time): the direction copied member by member from
 // the global vector 232 (1081 B); this file's declaration of the shared rotate helper marked `__forceinline` 26; the angle
 // written ring term first 26; `rings_remaining` declared ahead of `ring` 26; the trace distance named ahead of the trace
 // call 26 (the 26s the same code).
+// M3 lane 13 r138 (h2m fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26): the trace endpoint through the
+// existing vector3f_add_scaled 45; the endpoint as three member statements 45; the trace distance read from the trace
+// result at each use 146 (1085 B); the 0.5 lift through vector3f_add_scaled 177 (1082 B); the pathfinding selection as one
+// ternary initialiser 199 (1090 B). A compile-only build of the file with the shared rotation pasted in sums the dot
+// (k + j) + i, neither ours nor retail's, so only the linked build screens the dot. All restored.
+// M3 lane 4 r245 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26, M re-measured 20): on M, 0-3
+// redundant pairs over the angle's two products, the endpoint's x product, the lift product and the 0.1 offset's x product
+// (56 forms): 20 (4 forms), 23, 39, 41, 71, 73, 179, 181; the pair count cycles the states the statement orders give (179
+// is the statement-lift state, retail's dot with the axis k as memory operands), none below M. All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

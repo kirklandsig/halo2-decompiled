@@ -447,12 +447,38 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // const reference bound to a second fetch after the player queries 110 (same code each: the fetches still merge); the
 // `== NONE` weapon ternary with the zoom flag declared after the weapon flag 126 (350 B), with the reset reference 126.
 // Still BLOCKED-BY 0xbadc0 (its file and 0x14de90's were both avoided this round).
+// M3 lane 3 r289 (fast, single address; control 110): 0..35 unused initialised locals at the top 110 each (no symbol-count
+// state). Diagnostics (reverted): the player-index helper as a file-local inline copy 110 (same code: a same-file copy
+// merges the fetches too); that copy calling 0xbadc0 through a pointer local, plain or const, 136 (400 B, an indirect call)
+// and through a file-scope const pointer 138 (402 B); through `(&function)(...)` 107 at 365 B with 0xbadc0 itself built
+// differently (its address escapes). So no call-site form here loses the callee's no-write summary; the two calls come
+// from the inlined 0x14de90 (src/unknown_14b560.cpp) and 0xbadc0 (src/unknown_0bad50.cpp), both other lanes' files this
+// round. Untested lead: whether the order the two files are compiled in decides if the summary exists when this
+// function is compiled. Body unchanged; BLOCKED-BY 0xbadc0 through 0x14de90.
 // M3 lane 16 r164 (fast with 0x103b10, MATCH each run; control 110): retail keeps index*12 in ESI from the entry fetch and
 // reloads the pool global, its data pointer and the unit after the two 0xbadc0 calls, and retail's 0xbadc0 stores nothing.
 // The zoom-out sound helper as an early return 113 (356 B); the sound index as one conditional initialiser 110 (same code);
 // the zoom flag declared right before the reset test 125 (350 B); the weapon flag as `weapon_index != NONE &&
 // function_100f70(weapon_index)` 104 (367 B, aligned worse); the entry unit fetch through slot_handler.h's object_get 110
 // (same code). Still BLOCKED-BY 0xbadc0.
+// M3 lane 11 r147 (fast with 0x103b10, MATCH each run; control 110): the sound block nested inside the reset block (the
+// only place the zoom flag is set) 130 (346 B), with the zoom flag tested first 128 (348 B); the keep flag read through its
+// address at the sound test 110 (diagnostic, same code); the weapon slot through a second named fetch of the unit 110 (same
+// code: the fetches still merge); the zoom flag declared after the weapon flag 125 (350 B). Still BLOCKED-BY 0xbadc0
+// (src/unknown_0bad50.cpp avoided this round).
+// M3 lane 6 r224 (H2M_FAST with 0x103b10, MATCH each run; control 110): no entry unit pointer, the unit fetched at each
+// reset store 141 (404 B); `__forceinline` on this file's declaration of the player-index getter 110 (same code); with it,
+// round 117's three forms 128 (348 B). Diagnostics, not kept: a file-local copy of the player-index getter calling 0xbadc0
+// through a function-pointer local 136 (400 B): the unit is then fetched again after the two calls exactly as retail does
+// (pool global and data reloaded, index*12 kept in ESI), but taking the callee's address moves it to the standard /Gr
+// convention for every caller (`mov edx, 3; mov ecx, edi` here); that with round 117's three forms 22 at 382 B, first
+// difference +0x1d, nothing left but that convention. So retail's two calls carry no no-write summary; nothing in this
+// file can drop it without taking the callee's address. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
+// M3 lane 11 r147 (fast with 0x103b10, MATCH each run; control 110): the sound block nested inside the reset block (the
+// only place the zoom flag is set) 130 (346 B), with the zoom flag tested first 128 (348 B); the keep flag read through its
+// address at the sound test 110 (diagnostic, same code); the weapon slot through a second named fetch of the unit 110 (same
+// code: the fetches still merge); the zoom flag declared after the weapon flag 125 (350 B). Still BLOCKED-BY 0xbadc0
+// (src/unknown_0bad50.cpp avoided this round).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

@@ -837,7 +837,6 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // score 418 (was 418; 439 earlier): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
 // Earlier header (merged r240): 418 (was 418, 439 earlier):
-// score 418 (was 418): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // Earlier header (418, was 418, 439 earlier):
 // Earlier score 418 (was 418, 439 earlier):
 //
@@ -1335,10 +1334,53 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // live candidate position with bound anchor 665. NOT kept: the last form reaches
 // frame 0x2c but grows to 2218 bytes and regresses. The second induction and its
 // offset.i spill remain unresolved at the opening extent.
+// M3 lane 5 r226 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418; "pass" = scan 2's
+// first unrolled pass compared instruction by instruction with retail's 29, registers included; control 7 of 28).
+// Reading: in retail's pass the y and z products have the offset first, the x product the delta first, both sums end
+// on x, x is stored to the offset's home just ahead of the `jb` and never read back, and delta.j keeps XMM6: the
+// offset's x behaves as a member stored directly into an address-taken vector, its y and z as values stored through
+// a pointer. Diagnostic (a pointer to the whole local that the body writes through, not kept): `offset.i = ...`
+// written directly with j and k through `vector3f *out = &offset`, dot3f(&delta, &offset) and the helper distance:
+// 417 (2112 B, frame 0x28), pass 18 of 29: the whole dot block is retail's, registers included (offset XMM2/XMM3/
+// XMM1, delta XMM5-7, temporaries XMM4/XMM0, the x store ahead of the `jb`); the 11 left are the distance, which sums
+// (k + i) + j as 0x24550 does where retail sums (k + j) + i, and it still walks one pointer. The same with x stored
+// last 559 (2122 B). With length_sq3f(&offset) both lose the home again (649, 2039 B, frame 0x1c), though both sums
+// then run k, j, i with retail's operand sides: the store survives only while nothing after the `jb` reads the
+// offset. With the delta's i direct as well 418 (the helper form's code: the store is gone). Forms that do not give
+// the mix: all three members through the pointer local 418 (same code as the helper); the difference helper as a
+// local copy that is plain, forceinline, takes a reference, returns its pointer (statement or chained into dot3f)
+// 418 each, stores j, k, i 422, returns the vector by value 654 (2306 B, frame 0x30); `(&offset)->i` spellings 433
+// and a `real n[3]` local indexed 0..2 433 (both the same code as direct members, pass 3 of 29); direct members in
+// the orders ijk/ikj/jik/jki/kij/kji 433/427/435/435/469/469 (pass 3/3/3/2/3/0: all three products delta first).
+// Reads do not matter: the dot and the length written out with `offset.i` direct and j, k through the pointer, on
+// direct, mixed or helper stores, 649/649/646 (418 with the helper distance). On the entries-field scan (549, 2122 B,
+// two pointers, pass 8 of 28): the mixed stores with the helper distance 760 (2320 B, frame 0x2c: each direct x
+// store makes the entries field and the samples be read again), with length_sq3f(&offset) 572 (2109 B); direct
+// members 859 (2366 B) / 572; three named differences then the members 859 / 572. Lead: retail's scan 2 needs a
+// direct store of the offset's first member that does not make the entries field be read again, with j and k as
+// plain values; no source form here gives both.
+// Exclude nearest by sample or position address, winner bound before/after anchor
+// delta, captured/indexed candidate forms 615/615/639/615 for either address.
+// All shorten the body and reserve 0x14. The second induction address and offset.i
+// spill remain unresolved.
 // Candidate offset squared directly, accumulated, or as three named squares
 // inside or before the projection test: 646 each with either square-sum order.
 // NOT kept: the second scan shortens to 2039 bytes and still omits the offset
 // spill and second induction address.
+// Absolute four-record chunks for nearest/opposite/both 626/577/669, relative chunks 635/669/761.
+// Advance the next ordinal before the nearest/opposite reduction 947/1190. NOT kept: the closest
+// chunk frame is 0x28 at 2224 bytes, and advancing the ordinal suppresses unrolling.
+// M3 lane 12 r170 (h2m fast with 0x24550 in the image; control 418): `vector3f offset` declared beside `delta` outside
+// scan 2 with the distance as length_sq3f(&offset) 646 (2039 B), with the distance helper kept 418 (same code); scan 2
+// inside a redundant `if (0 < count)` 585 (2100 B); on the entries-read scan 2 (549 re-measured) that guard 557; scan 2's
+// skip test through a const reference to `nearest` 549 there and 418 here (same code each). Body unchanged.
+// M3 lane 2 r133 (h2m fast with 0x24550, 0x22750, 0x22c30, all MATCH; control 418): the distance from a second
+// difference vector (`vector3d_from_points3d(&samples[i].position, position, &difference)` then length_sq3f) 416
+// (2094 B: the distance now sums (k + j) + i as retail, but the dot keeps delta.j/k spilled and its i product
+// offset-first, and the offset.i store and second pointer are still missing); that with dot3f(&offset, &delta)
+// 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
+// dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
+// fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

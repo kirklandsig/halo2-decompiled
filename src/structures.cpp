@@ -882,6 +882,21 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // nested if 172, the vertex array at function scope 172, the three 0x16e1b0 outputs at function scope 172, the vertex
 // test as `if (valid) valid = ...` 172 (all the same code); the strip-index pointer formed after the 0x16e1b0 call 202
 // (736 B).
+// M3 lane 12 r171 (H2M fast; control 172, aligned 95, register-masked 48): result (bool), definition and section set at
+// their declarations in that order with no else arm and unknown18 stored ahead of part_index, the vertex getter unchanged,
+// 198 (713 B, aligned 84, masked 39); the vertex getter's result left unset on a miss alone 226 (751 B, aligned 46, masked
+// 38: retail's miss path re-reads that result's home, so retail's getter has this shape); the BSP local declared ahead of
+// the point copy 172 (same code); the three vertex fetches as an && chain inside the triangle test 264 (681 B); the
+// reference table selected by the instance test, then indexed, 220 (727 B). Retail's success stores run part_offset,
+// lightmap part, part_index, unknown18, cluster, instance (this body's order). Body unchanged.
+// M3 lane 1 r148 (H2M fast; control 172): lane 3 r268's lead re-measured 133 (733 B; 217 at 717 B without the vertex
+// getter's success-only result). On that lead every remaining row is EBP and the frame offsets it shifts: retail gives
+// EBP to the range in the type-1 arm and the join (home +0x18, reloaded at the join edge from the type-3 arm) and keeps
+// the section in memory in the loop; ours pushes EBP only before the loop and holds the section in EDX from the join
+// test into the loop (NONE then takes ESI). Diagnostic: without the unknown18 clear the range takes EBP (182, 729 B)
+// but the section stays in EDX. On the lead: the loop index declared at function scope 133, the range declared first
+// 133, the section declared ahead of the definition 133, the range typed const 133 (all the same code); the loop bound
+// in a local 209; the unknown18 clear at the top 237 (744 B). Body unchanged.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

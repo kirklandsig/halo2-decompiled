@@ -1008,12 +1008,35 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // successor 329, held node depth 432, or arm-local distance producers 401.
 // NOT kept: 282 gains four with the extra frame dword. Several narrow-link
 // forms recover 0xe4, and two reach retail length but regress.
+// M3 lane 8 r219 (h2m fast with 0x270930 and 0x270750, both MATCH; control 286; both builds end in `ret 0x24`). Lane 16's saved
+// two-flag lead applied to today's file is 2 again (the scan latch reloads EBP then EDX; retail EDX then EBP, ascending, as in
+// 0x254490 and 0x2548f0). On the lead: one vector for both distance arms 2; `real distance` after the origin pointer 2; the
+// margin declared at the top 2; `special` declared at the loop head 2; the edge and offset vectors declared together 2; the
+// distance test nested 2; `++j` 2; the usable flag at the loop head 2; the link copy as an aggregate assignment 2 (same code each);
+// the parent pointer ahead of the type chain 351 (1400 B); count declared at the top 348; the latch with `previous = node;` first
+// 4 (the two latch stores swap: retail keeps the source order); previous from the lookup by index 2; the parent read through
+// `previous` 2; the parent through `lookup->nodes[node_index]` 347 (1404 B); the depth test inverted 132; the link copy with
+// `link_count++` in its index 304; special with an explicit else 130; `j + 1 < count` 5 and `count - 1 > j` 4 (the compare
+// operands swap, the pair stays); the data pointer at the loop head 329; count as a ternary with a self-copy arm 288 (pair
+// unchanged); the previous point as an aggregate ternary 388 (1357 B); special as `? true : false` 130. Diagnostic: the scan
+// index renamed with 2 to 128 characters 2 each (no name-length effect). Body unchanged (286).
 // Signed-word link ordinal with guarded admission 357, exhaustive admission
 // 361, or a shared admission and transition target 361.
 // With a visit-owned predecessor 367, one reconstruction depth 421, or an
 // entry node receiver 361. Traversal-lifetime count with long/short link
 // ordinal 341/373. NOT kept: the forms regress even when the frame is 0xe4.
 // The entry depth load still folds and the predecessor/flag homes differ.
+// Traversal predecessor/count names, edge-vector names first, converted-endpoint names
+// first, and separate scan/history names with long link ordinal 286/286/286/286,
+// short ordinal 359/359/359/359. Names leave frame and allocation unchanged
+// at each width. The short ordinal removes the cursor but shortens to 1375.
+// M3 lane 13 r140 (H2M_FAST with 0x270930, MATCH each run; control 286; both builds end in `ret 0x24` with the state in EBX,
+// so the round prompt's `ret 0x28` was stale). Lane 15 r123's saved two-flag lead re-applied 2 at 1388 B (the scan latch's
+// steps/j reloads in the other order). On it: a redundant `if (count > 0)` guard on the scan loop 187 (1395 B, the test is
+// emitted); `if (node_index != NONE)` around the traversal `while` 2, around it as a `do ... while` 2 (same code each: the
+// guard block folds before allocation); the truncation test written in both distance arms 488 (1489 B, the tails are not
+// cross-jumped and the state leaves EBX); the truncation storing `complete` before `count` 4 (the two stores swap, the pair
+// stays); the previous point chosen by an if/else statement in place of the ternary 2 (same code). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

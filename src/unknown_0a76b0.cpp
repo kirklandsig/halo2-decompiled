@@ -2279,374 +2279,19 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// MiniMax H (11-20): no new form, no lower score (234): the weapon-slot index compares as a byte against an immediate where retail sign-extends it to sixteen bits; the pool and index take other registers.
-// MiniMax E (11-20): no new form, no lower score (234): the best form in the notes below needs every early exit written as a goto to one return, which is kept only with a byte match, and the permuter on that form found nothing below 105; what is left is the pool, index, type and name register homes and the completion byte.
-// MiniMax D (11-20): no new form, no lower score (234): retail keeps the pool global in EBP with the unit index in EDI and compares
-// the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this build keeps the pool in EDI, the index in
-// EAX and compares the byte against an immediate; a short local for the index was measured at 297 and the 105 and 107 forms need
-// the four gotos, which the rules drop.
-// score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below (r214 lead 105 just above the marker).
-// Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
-// control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
-// play block, `result = true` at the end of each arm with the animation failure skipping it, the tail under
-// `if (result)`) 328 (1224 B: the NONE test is threaded and the 0xe9780 call block is copied onto the mode-1
-// animation path); the 0xe9780 fallback as a switch whose combo cases fall into the 0xe000607 case 252 (1183 B);
-// TEST_FIELD_BIT on the 0x1b test 249 (1193 B); both 275 (1184 B); both with first_person_name = NONE declared first
-// 312 (1178 B).
-// Round 189 (m3 lane 8, fast with 0xe9ed0/0xea090, both MATCH throughout; control 234): the unit lookups through one
-// header pointer local (UNIT_ACTION_HEADER_GET, used for the unit, the 0x1b test and the 0x399 test) 328 (1178 B); for
-// the unit and the 0x1b test only 300 (1184 B); the 0x399 test's lookup through UNIT_ACTION_HEADER_GET 234 (same code);
-// `current` as NONE plus an if 234 (same code); first_person_name declared right after actions 312 (1191 B), that with
-// the short-slot hand getter 314 (1195 B). Reading: retail keeps the result in its stack byte at every exit and merges
-// them into one, which is what a spilled phi of 0 and 1 gives; every goto-free spelling in these notes folds it.
-// MiniMax I (11-17, run 103): no new form, no lower score (234): retail still keeps the pool global in EBP with the unit
-// index in EDI and compares the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this
-// build keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
-// scores 297 and the sentinel declared ahead of it 298, so the body stands.
-// MiniMax G (11-18): no new form, no lower score (234): the pool global still sits in this build's registers against
-// retail's EBP, the 0x212 field is still compared as a byte against retail's sign-extended short, and the 0x1e and 0x1d
-// tag constants still land in EBX and EBP the other way round.
-// Earlier (score 234, was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
-// MiniMax H (11-18): no new form, no lower score (234): retail still loads the pool global into EBP with the unit index
-// in EDI and compares the sign-extended hand index in sixteen bits against the -1 it keeps in EBX, where this build
-// keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
-// reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
-// compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
-// stands.
-// Earlier comparison: MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
-// Earlier (234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
-// NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
-// compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
-// `goto done`s, which the rules drop. Body unchanged.
-// MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
-// (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
-// reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
-// Earlier: 234 (235 before the b5Q walk). Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
-// MiniMax E (11-16): no new form, no lower score (234); the prologue still loads the pool into EDI where retail uses
-// EBP and the getter's NONE compare is 8-bit against retail's 16-bit `cmp ax, bx`; the short-slot getter alone measures
-// 297 and the reordered statements 314, so both bodies were reverted.
-// MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
-// 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
-// is the same code; the permuter over this function found nothing (2 tries, best 227 against a baseline of 227), so the
-// pool and the index keep their register homes and the completion byte's home stays.
-// MiniMax B (11-13): reading the weapon index as a 16-bit short, so that the compare is retail's 16-bit one (movsx
-// ax, byte / cmp ax, bx against our 8-bit cmp dl, 0xff), scores 297 - the register allocation shifts - so the byte
-// compare stays; the pool header is still in edi where retail keeps it in ebp and the index in eax where retail keeps
-// it in edi.
-// MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
-// MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
-// MiniMax B (11-11): no new form, no lower score (234); the frame is retail's 0x14 but the pool, index, type and name
-// homes and the completion byte's home still differ, and the total-tick expression is still one product order away
-// from retail's, so the body stays at retail's 1188 bytes.
-// Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
-// single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
-// Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
-// shared actions receiver 328; single exit with hand/bit 315; per-use speed with hand/bit 302.
-// Entry name default/or hand/or bit/or both 312/314/299/299; with single exit 362;
-// original-graph single exit 241; per-use speed 235; entry name/single exit/per-use speed 362.
-// Round 187: the fallback-name tests as a switch (retail's `sub eax, 0xc000073; je; sub eax, 2; je`
-// and `cmp 0xe000607; je; jle; cmp 0xe00060a; jg` are switch code) 238; with the 0x1b test through
-// unit_action_active 256, + single exit 244, + per-use speed 256/341 (0xea090 broke); a pool local for
-// the 0x1b lookup 312. First-person default first + hand getter + Boolean 0x1b bit + switch 305, + single
-// exit 110 (not kept, see above; the bit through a pool lookup 110, through unit_action_active the convention changes
-// and 0xe9ed0/0xea090 break). Without the default/hand getter/Boolean bit/switch/single exit
-// 317/116/361/252/305; fewer `goto done` (default+else, animation, default, else, default+animation,
-// else+animation) 222/157/198/300/128/300; + per-use speed 357; declaration orders 110 (result before
-// the unit 362); is_biped renamed 110; switch on the field 110. Left: retail rotates pool/index/
-// first-person name through EBP/EDI/EBX (ours EDI/EBX/EBP, then type EBP vs EBX), the is_biped/result
-// stack bytes swap (0x13/0x12), `current` in ESI vs EAX, the frame-count products' order and the
-// lunge-speed division from memory.
-// Round 46 (lane 13): `real seconds = frame_count * 0.033333335f;` then `seconds * (real)field_2_3` 234 (retail's
-// product order; in one expression VC reassociates to field*frames*k); with the lunge speed read at each use too
-// 234 (both blocks are then retail's code, one line off for retail's result byte store); with first_person_name
-// = NONE declared first and the short-slot hand getter 314 (1195 B; the entry is retail's except pool/offset/NONE
-// in EDI/EBX/EBP where retail has EBP/EDI/EBX); with a function-top pool local as well 314; is_biped renamed to
-// sort after result 235 (same code: ours keeps result in a register, retail in the stack byte at 0x12).
-// On the seconds and per-use speed form: the two animation exits merged into one `goto done` 277 (1213 B);
-// TEST_FIELD_BIT on the 0x1b test 249 (1193 B).
-// J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
-// Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
-// all with success at the final return 278. Sub-eight forms and all other trials restored.
-// DH274: First-person default only in the two unsynchronized arms, separate/chained paired names, name/type first and original/common animation-failure exits: 305/306/305/306/305/306/305/306. All restored; frame 0x14 agrees, pool/index/type/name homes remain.
-// AC468: Object-kind predicate byte/long/direct with Boolean result 235/325/331;
-// with byte result 235/325/331; direct/byte predicate with long result 331/235.
-// Original domains and observations restored; frame 0x14 agrees, pool/type/name and success-byte homes remain.
-// M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
-// with Boolean active test 297/299; both 295/297. All regress and are restored;
-// pool/index/type/name register ownership and result-byte home remain.
-// M311: Native bounded event type short/word/char/byte, original/numeric actual-case order:
-// 243/243/243/243/270/270/270/270; restored.
-// M313: Uniform per-use unit/actions, each with short-hand helper; both with Boolean active test; original body restored;
-// fast 326/379/549/338/382/552/556/559.
-// Round 537: failure-result lifetime at play/pre-call/post-call/fallback boundaries,
-// bool 235/235/235/235; byte 235/235/235/235. Every original selection, call and
-// complete body restored; pool/type/name ranks and completion-byte home remain.
-// M317: Channel entry lifetime/function-owned animation/conditional animation acquisition subsets
-// 1/2/4/3/5/6/7, all with common missing-animation return: 318/235/235/318/318/235/318/318.
-// Pool/index/type/name and result-byte homes remain. Original executable body restored.
-// N323: Dual-use mode-two selection in bool/byte/short/long, each with original/default-first combo results: 320/337/320/337/322/340/319/337. Original body restored; pool/type/name and completion-byte homes remain.
-// F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
-// ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
-// Original complete body restored; pool/type/name and completion-byte homes remain.
-// B386: Paired zero-byte/absent-tick chained stores and existing full-width rounding, subsets 1/2/4/3/5/6/7,
-// then late constant success: 237/237/235/239/237/237/239/239. Original stores, conversion consumers and body
-// restored; pool/type/name and completion-byte homes remain.
-// P287: Animation admission owns return truth and gates common publication; four
-// producers, special success before/after work: 290/307/303/305/290/306/257/239.
-// All restored; pool/index/type/name and completion-byte homes remain; callers stay exact.
-// Y558: Complementary final attack-failure bool/byte/short/long 235/235/235/235;
-// each with the existing signed-short hand accessor 297/297/297/297. NOT kept:
-// negative completion ties and the native-width lookup still regresses. Original
-// getter, completion result, all calls and complete body restored.
-// Lane 17 r39 (fast): the 0xe000607 fallback tested before the three-name/range arm 235 (same code); the range
-// as `>= 0xe000608` 235; name/type/first-person declarations reversed 235, type first 235; is_biped computed
-// before the weapon 307 (1191 bytes). Original body restored.
-// J251: Weapon getter forceinline 235; byte-round inline 267; full-round inline 253;
-// weapon/byte, weapon/full, byte/full and all expansion pairs 267/253/253/253;
-// all with the short-hand consumer 277. NOT kept: rounding contracts regress and
-// lose twelve or sixteen matched users. Original provider declarations and body restored;
-// frame 0x14 and first +9 remain, with pool/type/name ranks and completion-byte home unresolved.
-// AC514: Strength-owned target producers default/explicit arms/conditional/per-use 254/234/278/254;
-// existing shared dot directions 235/235; complete longitudinal-speed/ratio parts 235/235.
-// NOT kept: gain one below gate; all unmatched helper/grouping and receiver forms restored.
-// Pool/index/type/name and completion-byte homes remain.
-// M363: Native single-exit completion char/byte/short/long, then each with the existing
-// signed-short hand accessor:
-// 318/318/324/326/319/319/325/327. NOT kept: no eligible byte match or native-supported closer.
-// Original complete body restored; pool/index/type/name and completion-byte homes remain.
-// M371: Shared mode-one truth bool/byte/short/long at selection 273/273/231/214;
-// at entry 350/350/348/358. NOT kept: four-point short lead below gate; long 214
-// adds cached ECX/sete before the active test where retail compares mode in each
-// selection path. Original full body restored; pool/name/result homes remain.
-// M373: Unit/actions/weapon/selection role names eight 235; whole-function success default,
-// bool/byte at original/entry declarations 286/338/287/336. NOT kept: ties or regressions;
-// original names, false default, exits and full body restored; pool/name/result homes remain.
-// Round 128 (m3 lane 7, fast; none kept, no match): round 187's form with the first lookup through a pool local,
-// the 0x1b test by the field bit and four `goto done` 110 (1188 bytes); the 0x1b test's lookup by the macro 107
-// (1188: the byte flag in dl and the pool callee-saved, but offset ebx and pool edi against retail's edi and ebp);
-// both lookups by the macro 107 (1188); first_person_name after actions, with that test by macro, 107 (1188).
-// first_person_name declared after the weapon (retail's `or reg, -1; cmp ax, reg; mov [esp + 0x18], reg`) 198 (1188),
-// with that test by macro 320 (1192: the weapon takes ebx and first_person_name its own `or`), a local weapon copy
-// in the mode arm 320 (1192) and 198 (1188). One-file LTCG harness: register probes of is_biped, first_person_name or
-// the pool, is_biped through the field bit or written as a test, index references added through lookups for is_biped,
-// the weapon or actions, weapon getter written out, first_person_name at four positions, crossed with pool and
-// macro lookups: none gives the flag in dl with the pool in ebp and NONE in ebx. is_biped/result stay 0x12/0x13
-// against retail's 0x13/0x12 with up to two more result reads (diagnostic).
-// M3 lane 14 r68 (fast, on round 187's single-exit form, 110 at 1188 bytes, register-blind 14; match-only):
-// lunge speed read from the field at both uses (retail divides from memory) 357 (1142: the allocation flips),
-// through a melee-globals pointer read twice 357; first_person_name after actions 110; `real seconds =
-// frame_count * 0.033333335f;` times the field 107 (retail's product order); on 107 the lunge target read at each
-// use 161, read inside the `>= 1.0f` test with the NONE/0xbae20 test nested and target_index in both failure
-// arms 105 (retail's jb before the field load; regblind 10). On the 235 body: seconds + nested lunge read 233.
-// Lane 15 round 61 (fast; plain listing identical): first_person_name = NONE declared first, before the unit, 312
-// (1191 bytes; aligned 142 -> 117, the NONE register and the weapon's NONE default become retail's); is_biped
-// computed after the declarations 235, result declared before the weapon getter 235, the switch on
-// actions->melee_name with no local 235 (same code each); the channel declared with the top locals 301.
-// b5Q walk (11-06, fast): every block checked against retail 0xe9a20-0xe9ec1 (entry/hand getter, the 0x1b bit and the melee_name
-// switch, mode 2 and mode 1 selection, the e9780 fallbacks, the damage/end/total ticks, the lunge arm, the 0x7f/0xff tail):
-// fields, offsets, constants (1.0, 0.0, 0.9, 2.0, 1/30), condition directions, callees and arguments agree. One change to retail's evaluation order:
-// the total ticks are (frame_count * 0.033333335f) rounded to float, then * the field (retail 0xe9d61-0xe9d6d: cvtsi2ss,
-// mulss k, cvtsi2ss field, mulss); the single expression compiled as (field * frames) * k (235 -> 234). Left (no
-// behaviour difference): register homes, the result byte at [esp+0x12] vs duplicated returns, the divide from memory.
-// m3 lane 11 r83 (fast): re-measured round 187's form (first_person_name = NONE first, the short-slot hand getter,
-// TEST_FIELD_BIT on the 0x1b test, the fallback switch, four `goto done`) 107 (1188 B, aligned 68, masked 12) and lane 14
-// r68's nested lunge-target read on it 105 (masked 10); on 105, re-measured: first_person_name after the weapon getter
-// 317, is_biped renamed to sort after result 105; new: result renamed to sort before is_biped 105 (the bytes do not follow
-// names), the existing unit_action_pool_hand_weapon_get(g_4e0300, unit_index, 0) 320 (1193), `current` declared at
-// function scope 105, the weapon getter before the actions lookup 360 (1144); on this body the pool hand getter 306
-// (1202); permuter 600 s, 12 tries, best 105. Left on 105: retail's NONE register is first_person_name's EBX and also
-// serves the hand getter's `cmp ax, bx` and the weapon default store (ours EBP, immediates), type EBX vs EBP,
-// pool/offset EDI/EBX vs EBP/EDI, the result/is_biped bytes, current in EAX vs ESI and the divide from memory.
-// m3 lane 5 r169 (fast): the six `goto play` and the label are gone at the same code (234): mode 1's two by a NONE
-// name default with `name == NONE` tests, the combo cases' four by switching on `active ? melee_name : NONE` with the
-// mode selection inside the NONE/0xe000607-0xe00060a case. Tried: the whole choice without gotos under an
-// `if (name == NONE)` after the switch 264 (1189 B); on the kept body, the default and mode-else exits folded into
-// `if (name != NONE)` round the play block 351 (1228 B); the channel declared with the top locals 300. Retail has one
-// exit reading the result byte, which every goto-free spelling tried here leaves as separate returns.
-// MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
-// M3 lane 14 r83 (fast; same code: `result = true;` after the lunge-speed read, the arms swapped with the lunge arm first,
-// `if (!animation && channel)` then one `if (!animation) return`, `current` as NONE plus an if): the default and mode-else
-// exits as `break` with `if (name == NONE) return result;` after the switch 324 (1224 B: the 0xe9780 fallback block is
-// duplicated), the same without the type initialiser 324; goto-free single exit (`if (name != NONE)` round the play block,
-// a `play` flag cleared when no animation is found, the tail under `if (play)`; a flag form) 329 (1224 B); the 0xe9780
-// fallback as a switch re-measured 237 (1192 B, masked 35 against 51); the lunge target defaulting to target_index with
-// the 0x1c8 read nested in the `>= 1.0f` test 254 (1201 B); the short-slot hand getter with the fallback switch 267 (1191 B).
-// m3 lane 1 r95 (plain; the fast check carries a CAVEAT for callee 0x168470; register-masked aligned counts in brackets,
-// base 48): re-measured the existing short-slot unit_action_hand_weapon_get(unit, 0) alone 297 (1196 B) [46] and the lunge
-// speed read at its compare and at the divide (here through one `byte *` melee-globals local) 234 (1197 B) [47] (the
-// whole tail block, from the speed load to the 0x399 test, is then retail's code but for retail's `mov byte [esp+0x12], 1`
-// result store); new: with that, the 0xe9780 fallback as a switch (retail's sub/je and range-tree code) 237 (1192 B) [34];
-// with both and the short-slot getter 252 (1191 B) [32]; those with first_person_name = NONE declared first 311 (1191 B)
-// [24]: left at that masking are the prologue's pool load (retail loads it before `push esi`), the getter's NONE compare
-// and default store (retail `cmp ax, bx` and a register store from first_person_name's EBX, ours an immediate), the 0x1b
-// bit (retail `shr eax, 0x1b; test al, 1`), and retail's single exit through the result byte at [esp+0x12]; the switch
-// and per-use speed with TEST_FIELD_BIT on the 0x1b test 311 (1188 B, retail's length) [32], that with the short-slot
-// getter 241 (1188 B) [31].
-// m3 lane 4 r191 (plain, with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090; aligned/masked 141/51; retail's prologue pushes EBX
-// before writing it, so no register argument there): the damage/end tick stores as conditional expressions 236 (1194 B);
-// the 0x1b test on the `actions` already fetched 343 (1167 B; 0xe9ed0 MATCH -> 27, 0xea090 MATCH -> 3); the mode selection
-// as `switch (mode)` 244 (1193 B); `target_index != NONE && is_biped` 234 (3 lines differ); `first_person_name != NONE &&
-// weapon_index != NONE` 234 (2 lines differ).
-// P473: Whole mode-dependent selection group interleaved with the four original
-// continuation groups, EABCD/AEBCD/ABECD/ABCED/EDCBA/DECBA/DCEBA/DCBEA:
-// 234/234/234/234/234/234/234/234. NOT kept: no native register/result-home equality; original full body restored.
-// P488: Complete longitudinal inner-product/accumulated-product producers, forward/reverse traversal,
-// default/explicit operators and direct/staged products: 234/309/255/323/272/307/280/315. NOT kept: No native
-// equality; reordered float groups and staged products are exact-only. All original observations, float
-// grouping, helpers, result graph and full body restored.
-// M3 lane 7 r161 (fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470, = full 234):
-// one `goto` to the single exit (the switch's default and mode-else fall out as `name == NONE` under `if (name != NONE)`,
-// the animation failure is the goto) 329 (1224 B), the score and length of lane 14 r83's goto-free single exit (threading
-// copies the 0xe9780 fallback block into the mode-1 path). No unlisted form for the seven causes the masked diff shows.
-// P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
-// 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
-// not recovered; original body restored.
-// MiniMax R (11-16): no new form, no lower score (234): the body is the 1197-byte form (the earlier 101 form was a
-// register pooling and was dropped), and the first difference at +0x9 is in the prologue's saved registers, with the
-// name, the type and the current pointer still landing in other registers than retail's.
-// m3 lane 9 r124 (fast with 0xe9ed0/0xea090/0xe9780, all matched throughout; diagnostics, all restored): retail never
-// constant-folds the result, even on the success path (`mov byte [esp+0x12], 1` ... `mov al, [esp+0x12]` after the
-// 0x7f/0xff stores), as if the byte lived in memory; the result declared volatile (forbidden, diagnostic only) gives the one
-// exit and retail's result/is_biped homes (0x12/0x13): 299 alone; with first_person_name = NONE first 300; with the
-// short-slot hand getter too 304; with TEST_FIELD_BIT on the 0x1b test too 250; with the fallback switch too 101 (1188 B,
-// below round 187's goto form, re-measured here 107; the goto form alone 240); the hand getter, bit and switch without
-// first_person_name first 315; type declared ahead of first_person_name on the 101 form 101. Left on 101: pool EDI for EBP,
-// offset EBX for EDI, the NONE carrier EBP for EBX (retail's first_person_name, also the getter's compare register),
-// type EBX for EBP, `current` EAX for ESI.
-// M3 lane 14 r103 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0; none kept): the whole body as a forceinline helper called
-// from a one-line wrapper (its returns become one exit after inlining) 234 (same code: the result is still folded, retail
-// reads it from its stack byte at the exit); is_biped typed byte 234 (same code); the channel declared with the top locals
-// 300 (re-measured); the weapon through the existing unit_get_current_weapon (short slot, own unit lookup) 297 (1196 B),
-// with first_person_name = NONE declared first 314 (1195 B).
-// M3 lane 14 r105 (fast with 0xe9ed0/0xea090; none kept): a goto-free selection with one goto to the only return (the
-// switch's default and mode-else `break` with the rest under `if (name != NONE)`, the animation failure as `if
-// (!animation && channel) animation = ...; if (!animation) goto done;`) and the 0xe9780 fallback as a switch 326 (1199 B:
-// no threaded copy of the fallback block, and the exit is retail's single one reading the result byte, though result
-// sits at 0x13 and is_biped at 0x12); the same with the old fallback test 329 (1224 B, lane 7 r161's form). On the 326
-// form: first_person_name = NONE first 296 (1184 B), the short-slot hand getter 329, TEST_FIELD_BIT on the 0x1b test 331,
-// the lunge speed read through a melee-globals pointer at both uses 325, all four 310 (1188 B: the 16-bit NONE compare
-// is retail's, but the callee-saved homes rotate: ours NONE/pool/offset/actions in ESI/EDI/EBX/EBP, retail
-// actions/offset/NONE/pool), with is_biped renamed to sort after result 310 (same code), result declared first 313,
-// result before is_biped 310; pairs and triples with first_person_name first 291-317 (with the hand getter 291).
-// Kept: the lunge test's velocity/forward dot as the existing dot3f 234 (identical code, either operand order).
-// M3 lane 13 r105 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0, matched each time; control 234, register-masked aligned 32):
-// `(void)&result;` after the declaration 234 (same code: the address folds); first_person_name = NONE declared first, the
-// short-slot hand getter, TEST_FIELD_BIT on the 0x1b test, the 0xe9780 fallback as a switch and the lunge speed read at both
-// uses through a melee-globals pointer, together, 305 (1188 B, retail's length; masked aligned 15: left are the entry's pool
-// load into EBP and NONE in EBX (ours EDI/EBP, the getter compares an immediate), and the result byte that retail stores 0/1 and
-// reads at its one exit); that with an unused `bool *success = &result;` 305, with `*success = true;` as the success store 305
-// (both fold); that with the four returns as `goto done` 357 (1142 B).
-// M3 lane 1 r118 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0/0xe7900/0xe8420, all matched throughout; control 234, aligned
-// 141, register-masked 51): a goto-free single exit with the shared tail written at the end of both arms (the switch
-// leaving the name NONE, `if (name != NONE)` round the play block, `if (animation)` round the ticks) 552 (1408 B: the
-// two tails are not merged); the same exit as `do { ... } while (false)` with two breaks 536 (1384 B), and with
-// first_person_name declared first, the short-slot hand getter, TEST_FIELD_BIT on the 0x1b test and the fallback switch
-// 549 (1363 B). Re-measured round 187's four-`goto done` form with those four 107 (1188 B, aligned 68, masked 12); on it:
-// result declared before is_biped 107 (the two byte stores swap, the homes stay), result declared first 362 (1140 B),
-// is_biped declared after type 107 (same homes), is_biped ahead of the weapon getter 353 (1151 B), first_person_name
-// after actions 107 (same code). Left on 107, by the aligned listing: the pool in EDI for EBP with the offset in EBX for
-// EDI and NONE in EBP for EBX (retail loads the pool right after `push ebp`, and its NONE register serves `cmp ax, bx`
-// and the weapon default store where ours compares and stores immediates), type EBX for EBP, the two bytes' homes,
-// `current` in EAX for ESI, the 0x1c8 read ahead of retail's `jb`, the lunge divide from a register for retail's
-// memory operand, and EAX/ECX swapped in the last lookup. Body unchanged.
-// M3 lane 13 r111 (fast with 0xe9ed0/0xea090, matched each time; the one-file harness is not faithful here, 1200 B): on
-// the single-exit goto form (lane 11 r83's u2, re-measured 105 at 1188 B, aligned 66, masked 10): `long name = NONE;`
-// 105 (same code); name and type both NONE 105; the weapon default taken from the first-person name 105 (same code); the
-// hand getter writing through an out pointer 105, an out reference 105 (same code); the lunge speed read at both uses
-// 357 (1142 B), with the NONE name 357. Diagnostics (not usable): a volatile weapon index 349 (1155 B: the hand compare
-// still uses an immediate), with a volatile result too 317 (1194 B).
-// Reading: callee-saved registers go ESI, EDI, EBP, EBX by priority (measured on 0x18dc90), so retail ranks actions >
-// index*12 > pool > first-person name and ours actions > pool > first-person name > index*12; retail's `or ebx, -1` is one
-// hoisted NONE serving the name's initial value, the hand getter's 16-bit compare and the weapon default store, which no
-// form here produces; `channel` lives in the dead `mode` parameter's home; `current` takes the dying actions register.
-// M3 lane 14 r118 (fast with 0xe9ed0, 0xea090, 0xe9780, 0xe99a0, all matched throughout; aligned 141): first_person_name
-// declared between name and type 234 (same code); no result variable, `return false;` at each failure and `return true;`
-// at the end 234 (same code: the result is folded either way, where retail keeps it in its stack byte and has one exit);
-// that with first_person_name = NONE declared first 312 (1191 B, aligned 115); that with the 0xe9780 fallback as a switch
-// 237 (1192 B, aligned 126); is_biped without the byte cast 234 (same code).
-// A shared masked datum slot for all three lookups as word/long/dword or through the
-// header accessor with a word 316/311/311/316; each with the short-slot hand getter
-// 319/311/311/319. The long slot forms recover EDI and the saved slot offset; the pool
-// still loads into EDX and the completion byte remains different.
-// Sparse equality checks in case order and pivot-first order score 325/323. Guarded switch default
-// 325. Range before the sparse switch 256. The short-slot forms score 322/320/322/308.
-// Both short-slot equality chains reach 1188 bytes. NOT kept: pool, displacement and completion
-// byte allocation remain different and scores rise.
-// M3 lane 16 r148 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0, matched each time; control 234): the lunge-target test
-// written as `< 1.0f || == NONE || !function_bae20(...)` 235; the six arms' `first_person_name = name` as a chained
-// `first_person_name = name = X` 234 and `long type = NONE;` 234 (same code each); re-measured: the fallback switch 237
-// (1192 B), the short-slot hand getter 297 (1196 B), both 267 (1191 B).
-// MiniMax C (11-19): no gain (234, baseline; body restored). The best known forms of this function (101-107) need a goto to the shared exit, which is kept only with a byte match, and the goto-free single-exit forms measured 536-552. What is left is the register homes: retail ranks actions, index*12, pool and the first-person name in ESI, EDI, EBP and EBX, ours ranks actions, pool, the name and index*12, and the hoisted NONE initialisation has no form here.
-// MiniMax H (11-19): no new form, no lower score (234): retail keeps the pool in EBP, the unit's index in EDI and
-// compares the sign extended hand index in sixteen bits against the NONE in EBX, while this build keeps the pool in
-// EDI, the index in EAX and compares the byte against an immediate; the forms tried by the earlier rounds (a short
-// local for the index, a local for the pool, the masked datum slot as a word, a long or a dword) are recorded above
-// and none of them recovers retail's register split, so the control (234) stands.
-// M3 lane 5 r214 (fast with 0xe9ed0/0xea090, both MATCH; control 234): single exit without goto (switch default and
-// the unhandled mode leave the name NONE, the rest under `if (name != NONE)`) 351 (1228 bytes); `name = first_person_name
-// = NONE` chained in place 234 (same code); that pair ahead of the weapon getter 312 (1191 bytes; retail's -1 register at
-// the top); plus the 0x1b test as TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(...)) (this file's own form, retail's shr/test al)
-// 299 at retail's 1188 bytes; plus the fallback names as a switch 311, plus a short hand index in the one-caller getter
-// 299, both 305 (1188 bytes). LEAD 105 (match-only): that last body with every early exit as `goto done` to the one
-// return (retail's result byte at every exit) 107, plus the lunge target read after the 0x1e4 test (NONE default, then
-// target_index when NONE or not valid) 105, retail's code except the callee-saved rotation (ours pool EDI, offset EBX,
-// first-person name EBP, type EBX, the melee name EAX; retail EBP, EDI, EBX, EBP, ESI), the -1 compare as an immediate
-// (retail `cmp ax, bx`) and the result/is_biped bytes swapped; on it the lunge speed at each use 355 (1142 bytes), a
-// named pool local at the top 108 (offset EDI as retail, pool EDX), after the result 105, the declaration orders,
-// the per-case statement order, the existing short hand getter, renames and dead locals K = 0..7 105 each; the
-// permuter on it (909 s, 34 tries) found nothing below 105. Also on it: the mode-2 arm's first-person copy in both
-// branches 105, the first-person NONE alone ahead of the getter (name's NONE after it) 105, both NONEs as separate
-// initialisers ahead of the getter 105 (same code each: the first-person name keeps EBP and the compare its immediate).
-// One entry table read with the short hand getter 332, a shared
-// pool with a word slot 318 or long slot 295, one entry table read 328,
-// a shared pool with the short hand getter 298, a separate active receiver
-// 335, a shared projected header 293, and a word slot with the active and
-// short hand helpers 320. The shared header reaches 1189 bytes with the
-// displacement in ECX and the hand comparison still at byte width.
-// M3 lane 6 r214 (fast with 0xe9ed0/0xea090, both MATCH; control 234, aligned 141): retail divides by the lunge-speed
-// field read again (`divss xmm0, [eax+0x2c]`); that field read at each use (through a named settings pointer, or the full
-// chain twice: same code) 234 (aligned 126, the tail then retail's). On lane 5's 105 lead (rebuilt at 105, masked 9): the
-// same re-read 355 (1142 B: the first-person name drops to a stack home and loses its copies); the biped flag renamed to
-// sort after `result` 105 (same code: the two byte slots do not follow names); `type = NONE;` after the NONE pair 105
-// (same code); the first-person name copied from `name` after the weapon getter 317 (1191 B). Body unchanged.
-// The pool and slot still take the wrong registers, and the hand test differs in width.
-// Metadata name first 237, valid metadata with fallback else 239, name-miss branch first 242,
-// and block-local metadata name 239. With the short-slot hand getter 250/250/256/250.
-// A header byte displacement shared at all lookups, only at entry, or from
-// entry to the final lookup 234/234/234, with the existing short hand
-// getter 297/297/297. A stable entry pool and a fresh final pool with
-// the shared displacement 311, or 325 with the short hand getter.
-// NOT kept: the stable entry pool forms move the first difference to +0x7.
-// Shared switch input and selected melee name with conditional, default/update,
-// explicit arms or Boolean bit 234/234/234/249. With the signed-short getter
-// 297/297/297/302. NOT kept: the shared name does not recover the pool,
-// hand result or completion-byte homes.
-// M3 lane 8 r213 (H2M_FAST with 0xe9ed0/0xea090/0xe9780/0xe99a0, all matched; control 234): a goto-free single exit: the
-// switch's default and the unhandled mode `break` with the name NONE, the rest under `if (name != NONE)`, the animation
-// failure clearing a `started` bool (true after 0xee7f0) that guards the tail, `result = true` in the tail, one return
-// 329 (1224 bytes); with the four lead pieces of lane 5 r214 (NONE pair chained ahead of the short-slot hand getter, the
-// 0x1b test through TEST_FIELD_BIT, the fallback names as a switch, the lunge target read after the 0x1e4 test) 301 (1202
-// bytes: the mode-2 arm's shared `first_person_name = name` sits in the join block, so its `name != NONE` test is not
-// threaded there); with that copy written in both mode-2 branches LEAD 105 (1188 bytes, match-only: the flag), the code of
-// the goto lead with no goto: retail's one exit reading the result byte, left the callee-saved rotation (pool EDI, offset
-// EBX, NONE EBP against retail's EBP, EDI, EBX), the getter's immediate -1 compare and the result/is_biped bytes swapped;
-// the both-branch copy on the plain flag form 240 (1193 bytes). On the 105 lead: the flag declared with the top locals
-// 105, the flag started false and set in both success paths 105, the switch on the expression with no `current` local 105,
-// the first-person NONE declared first (name's NONE after the actions) 105 (same code each); the channel declared at the
-// top 186 (frame 0x18, out of the dead mode parameter's home).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	long weapon_index = unit_action_weapon_get(unit, false);
+	long weapon_index = unit_action_hand_weapon_get(unit, 0);
 	bool is_biped = (byte)(1 << unit->object_type) & 1;
-	bool result = false;
 	long name = NONE;
 	long type;
 	long first_person_name = NONE;
+	bool result = false;
 
-	long current = UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1b) ? actions->melee_name : NONE;
+	long current = TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1b)) ? actions->melee_name : NONE;
 
 	switch (current)
 	{
@@ -2697,13 +2342,14 @@ bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byt
 			{
 				name = 0x130005bc;
 				type = 0x27;
+				first_person_name = name;
 			}
 			else
 			{
 				name = 0xa0005bb;
 				type = 0x25;
+				first_person_name = name;
 			}
-			first_person_name = name;
 		}
 		else if (mode == 1)
 		{
@@ -2731,98 +2377,98 @@ bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byt
 				first_person_name = name;
 			}
 		}
-		else
-		{
-			return result;
-		}
 		break;
-	default:
-		return result;
 	}
-
-	c_animation_channel *channel = NULL;
-
-	if (!function_e9780(unit_index, name, false, NULL, &channel))
+	if (name != NONE)
 	{
-		if (name == 0xc000073 || name == 0xc000075 || name == 0xc000077 || name > 0xe000607 && name <= 0xe00060a)
+		c_animation_channel *channel = NULL;
+
+		if (!function_e9780(unit_index, name, false, NULL, &channel))
 		{
-			if (!function_e9780(unit_index, 0xe000607, false, NULL, &channel))
-				function_e9780(unit_index, 0x500000a, false, NULL, &channel);
-		}
-		else if (name == 0xe000607)
-		{
-			function_e9780(unit_index, 0x500000a, false, NULL, &channel);
-		}
-	}
-	function_ee7f0(unit_index, type);
-
-	if (name != 0xa0005bb && name != 0x130005bc)
-	{
-		s_animation const *animation = NULL;
-
-		if (weapon_index != NONE && first_person_name != NONE)
-			animation = first_person_weapon_animation_get(weapon_index, first_person_name, NULL);
-		if (!animation)
-		{
-			if (!channel)
-				return result;
-			animation = channel->function_1c6440();
-			if (!animation)
-				return result;
-		}
-		if (is_biped && target_index != NONE)
-			function_dee60(unit_index, target_index, false);
-
-		long damage_frame = function_1dae20(animation);
-		long end_frame = function_1dae50(animation);
-		long frame_count = animation->frame_count;
-
-		if (damage_frame != NONE)
-			actions->melee_damage_ticks = (char)function_1469f0(damage_frame * 0.033333335f);
-		else
-			actions->melee_damage_ticks = NONE;
-		if (end_frame != NONE)
-			actions->melee_end_ticks = (char)function_1469f0(end_frame * 0.033333335f);
-		else
-			actions->melee_end_ticks = NONE;
-		real seconds = frame_count * 0.033333335f;
-
-		actions->melee_ticks = unit_action_round(seconds * (real)g_510c54->field_2_3);
-	}
-	else
-	{
-		if (is_biped)
-		{
-			long lunge_target_index = *(long *)((byte *)unit + 0x1c8);
-
-			if (!(*(real *)((byte *)unit + 0x1e4) >= 1.0f && lunge_target_index != NONE &&
-				function_bae20(lunge_target_index, 3)))
+			switch (name)
 			{
-				lunge_target_index = target_index;
+			case 0xc000073:
+			case 0xc000075:
+			case 0xc000077:
+			case 0xe000608:
+			case 0xe000609:
+			case 0xe00060a:
+				if (!function_e9780(unit_index, 0xe000607, false, NULL, &channel))
+					function_e9780(unit_index, 0x500000a, false, NULL, &channel);
+				break;
+			case 0xe000607:
+				function_e9780(unit_index, 0x500000a, false, NULL, &channel);
+				break;
 			}
-			if (lunge_target_index != NONE)
-				function_dee60(unit_index, lunge_target_index, true);
 		}
-		actions->melee_damage_ticks = NONE;
-		actions->melee_end_ticks = NONE;
-		actions->melee_ticks = unit_action_round((real)g_510c54->field_2_3 * 2.0f);
+		function_ee7f0(unit_index, type);
+		if (name != 0xa0005bb && name != 0x130005bc)
+		{
+			s_animation const *animation = NULL;
+
+			if (weapon_index != NONE && first_person_name != NONE)
+				animation = first_person_weapon_animation_get(weapon_index, first_person_name, NULL);
+			if (!animation && channel)
+				animation = channel->function_1c6440();
+			if (animation)
+			{
+				if (is_biped && target_index != NONE)
+					function_dee60(unit_index, target_index, false);
+
+				long damage_frame = function_1dae20(animation);
+				long end_frame = function_1dae50(animation);
+				long frame_count = animation->frame_count;
+
+				if (damage_frame != NONE)
+					actions->melee_damage_ticks = (char)function_1469f0(damage_frame * 0.033333335f);
+				else
+					actions->melee_damage_ticks = NONE;
+				if (end_frame != NONE)
+					actions->melee_end_ticks = (char)function_1469f0(end_frame * 0.033333335f);
+				else
+					actions->melee_end_ticks = NONE;
+				real seconds = frame_count * 0.033333335f;
+
+				actions->melee_ticks = unit_action_round(seconds * (real)g_510c54->field_2_3);
+				result = true;
+			}
+		}
+		else
+		{
+			if (is_biped)
+			{
+				long lunge_target_index = NONE;
+
+				if (*(real *)((byte *)unit + 0x1e4) >= 1.0f)
+					lunge_target_index = *(long *)((byte *)unit + 0x1c8);
+				if (lunge_target_index == NONE || !function_bae20(lunge_target_index, 3))
+					lunge_target_index = target_index;
+				if (lunge_target_index != NONE)
+					function_dee60(unit_index, lunge_target_index, true);
+			}
+			actions->melee_damage_ticks = NONE;
+			actions->melee_end_ticks = NONE;
+			actions->melee_ticks = unit_action_round((real)g_510c54->field_2_3 * 2.0f);
+			result = true;
+		}
+		if (result)
+		{
+			actions->active[0] |= 0x8000000;
+			actions->melee_name = name;
+			actions->melee_flags = flags;
+			actions->melee_unknown31 = 0;
+			actions->melee_counter = 0;
+
+			byte *melee_globals = *(byte **)((byte *)g_4e034c + 0x134);
+
+			if (*(real *)(melee_globals + 0x2c) > 0.0f && dot3f(&unit->linear_velocity, &unit->forward) / *(real *)(melee_globals + 0x2c) > 0.9f)
+			{
+				actions->melee_unknown31 = 0x7f;
+			}
+			if (unit->object_type == 0 && *((char *)UNIT_ACTION_UNIT_GET(unit_index) + 0x399) > 0xf)
+				actions->melee_unknown31 = (char)0xff;
+		}
 	}
-
-	actions->active[0] |= 0x8000000;
-	actions->melee_name = name;
-	actions->melee_flags = flags;
-	actions->melee_unknown31 = 0;
-	actions->melee_counter = 0;
-	result = true;
-
-	real lunge_speed = *(real *)(*(byte **)((byte *)g_4e034c + 0x134) + 0x2c);
-
-	if (lunge_speed > 0.0f && dot3f(&unit->linear_velocity, &unit->forward) / lunge_speed > 0.9f)
-	{
-		actions->melee_unknown31 = 0x7f;
-	}
-	if (unit->object_type == 0 && *((char *)UNIT_ACTION_UNIT_GET(unit_index) + 0x399) > 0xf)
-		actions->melee_unknown31 = (char)0xff;
 	return result;
 }
 
@@ -4498,6 +4144,17 @@ extern vector3f *g_4687bc;
 // `component->rigid_bodies[index]` with `.node_count` / `.nodes[0]` 8 (all the same code at both sites); the component
 // through a `s_havok_component *const &` bound to the cast pool data (0xb9b90's data-first form) 47 (1099 B: the pool's
 // data then loads into ECX ahead of the material, retail's lookup is index-first).
+// M3 lane 7 r209 (h2m fast, control 8; retail's 0x0b67a0 clobbers only EAX and EDX, as ours): the material
+// default-constructed, then `material_index.m_index = g_54e898` 8; the effect tag read at both uses (no local) 145 (1101
+// B: reloaded after the call, not shared); the material set through a file-local forceinline setter 8; the first node in
+// a NONE-initialised local set inside the rigid-body and node-count tests, tested after them 8; the component's index
+// view named for the 0x0b67a0 argument with the material built after the lookup 10 (all 8s the same code).
+// M3 lane 7 r211 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the Havok push block (the effect
+// tag through the 0x188180 call) as a file-local forceinline helper 8; the pool's data in a named pointer ahead of the
+// material, the component indexed after it 8; the masked component index named ahead of the material, data + index after
+// it 8; the rigid-body data pointer read into a local ahead of the 0x0b67a0 call 8 (the load sinks past the call); 0x188180
+// given `c_type_47f957(material_index.m_index)` 8; the effect test held in a named bool 8; the rigid-body test held in a
+// named bool 8 (all the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

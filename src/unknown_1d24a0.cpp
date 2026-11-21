@@ -628,6 +628,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax H (11-20): no new form, no lower score (895): the frame is still 0x1f0 against retail's 0x1d4 and the first
 // difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
 // the other way round), so the stack homes below the top stay out of step: BLOCKED-BY 0xbadc0 in another file.
+// M3 lane 3 r289 (fast, single address; control 838): 0..35 unused initialised locals at the top 838 each (no symbol-count
+// state here); the two simulating bools declared at function scope 838; the marker record at function scope 838; both 838;
+// the record's bit-2 and bit-1 bools at function scope 838 (same code each: scope does not move `push ebx`, which retail has
+// with ESI/EDI at the entry and uses only for the loop's list, the simulating bool and the EBX/BL arguments of 0xb8d30 and
+// 0x1d2280); the attached-object test without the repeated NONE test of the element's index 970 (4244 B); the first
+// simulating bool as `local_1 || (...)` 845; the two step levels declared in the other order 838; the response fraction
+// declared ahead of the first zero vector 838; the element pointer as `data + index` 838; the removal's copy through the
+// element pointer 838 again. Body unchanged.
 // M3 lane 1 r143 (fast = check.py --fast; aligned [exact/stack-masked/register-masked]): on 838 the angular coefficients read
 // from the record at each use 871 (4225 B). The removal as the existing `remove_at` of the shared Havok array members
 // (s_havok_array08 declared with ELEMENTS_2D91D0_MEMBERS in include/unknown_1cec30.h, the same data/size/capacity layout),
@@ -641,6 +649,26 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // calls 780; the shared dot3f for the private copy 780 (each the same code). Left at 780 as r141 lists: EBX saved around
 // the loop with EBP (retail at the entry), the frame 0x1d8 against 0x1d4, the flag pairs' copy roles, `mov cl` for
 // retail's `movzx`, product sides, and the tail's ECX/EDX rotation (ours tests the response flag through DL, retail CL).
+// M3 lane 11 r147 (fast, single address, control 838): the entry test as one `if` around the body in place of the early
+// return 838 (same code: EBX is still saved around the loop, retail saves it with ESI and EDI); the removal in
+// src/unknown_1cec30.cpp's form `data[i] = data[--size]` on the array's own element type 838; the element pointer as a
+// cast of `&list->data[i]` 838; the final free through a named list local 838 (all the same code); the half rate named
+// once for both rounding calls 869 (4230 B: retail converts it twice). Body unchanged.
+// M3 lane 4 r244 (h2m fast; control 838; body unchanged): the removal in the sibling contact-removal function's form
+// (`data[i] = data[--list->size]` through the list local) 838; the object-type byte read into a long local for the shift
+// 838 (still `mov cl`, the table data still in EDI where retail reuses EDX); local_2 and local_3 initialised ahead of
+// local_0/local_1 851; the two angular coefficients bound `real const &` to the record 871 (4225 B, as the reads at each
+// use); the element pointer as `data + index` 838 (same code). Reading: retail's head forms and spills the element pointer
+// because its data pointer is not kept across the attached-object lookup to the removal; ours keeps it in EBX for that path.
+// M3 lane 13 r140 (H2M_FAST, single address; control 838, difflib-aligned 340 with call targets masked): the angular
+// coefficient field_5c read from the record at its two uses (field_58's local kept) 843 at 4242 B (aligned 317): the frame is
+// then retail's 0x1d4 and the first difference moves to +0x14 (left there: `push ebx` at the entry, which this body saves around
+// the loop); field_58 read at each use with field_5c's local kept 857 (4238 B, frame 0x1d4, aligned 316); all four response
+// fractions through the one `response_fraction` local 876 (4243 B), with field_5c at each use 888. Lead (match-only, a statement
+// order): field_5c at each use plus the first level's step ahead of the target test (lane 11 r141's 807 form) 809 at 4245 B,
+// aligned 299: the whole entry block, frame and `push ebx` are then retail's to the loop head, where this body still keeps the
+// element list's data pointer in a register (retail re-reads it; r141's 780 removal form). With r141's list local moved to the
+// removal as well 739 at 4254 B (aligned 239; three match-only forms together). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -2037,6 +2037,26 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // and the frame store as well 202 (2189 B); the look angles read from the global's entry at each use with no look pointer
 // 415 (2208 B); `first_weapon = user->weapons` 188 (same code); the set-active flag passed straight to the call with no named
 // bool 378 (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// Round 627. Direct scope result from named or const overlay ID 220/220,
+// weapon-scope ID with branch or direct result 362/373, signed overlay index
+// with direct result or sentinel branch 213/197, direct result with scoped
+// look pair 220, renamed overlay ID with direct result 220. NOT kept: the
+// 0x30 frame and swapped unit/mode slots remain, and all forms regress.
+// M3 lane 3 r291 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `active` renamed weapon_active
+// 188 (same code: the active byte still shares the unit slot, so the slot packing does not follow the names); `bool active
+// = false;` as a dead initialiser 188 (same code, no early store); the overlay flags and set passed as two `no_scope ?`
+// conditionals 350 (2203 B); the four definition overrides tested as `0.0f != field` 539 (2193 B); the zoom test as
+// `0.1f < zoom` with the blend test as `1.0f == ...` 191. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 16 r168 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the weapon object looked up
+// inside the 0xb000067 arm, its only use, 245 (2197 B); the sound callback selected in the update call's argument with no
+// callback local 188 (same code); the aiming speed computed ahead of the update call 388 (2204 B); the 0x98 overlay's
+// channel flags and set as two conditional expressions on `no_scope` 350 (2203 B); the busy test as `== 0` and the
+// countdown as `-= 1` 188 (same code). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// Round 666. The 0x30 frame and early register saves persist.
+// Unit handle 188, early unit guard 188, guard with reused handle 188, named mutable
+// or immutable clamp targets with the look record 188/188, separate scalar inputs
+// 196/196, unit handle with immutable weapon flag 188, shared raw clamp target 188,
+// and separate clamp-target scopes 188. Scalar spring inputs reserve 0x28 instead of 0x2c.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

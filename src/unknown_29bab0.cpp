@@ -59,7 +59,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489; m3 lane 8 r220 unchanged, its line just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 4 r230 (fast; control 489, difflib-aligned 224, register/offset-masked 77). With local_6.i/.j set before the k
 // test (retail's order: its `movaps xmm7, xmm5` / `movaps xmm6, xmm1` copies sit ahead of the branch, the zero is made once
@@ -810,6 +810,31 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // but `inv * j` and an in-place `inv * k`. Plain: normalize_inline 761 (3502 B); squares written j, k, i through
 // vector3f_scale (diagnostic) 741 (3499 B, aligned 174); a file-local copy of the projectiles normalize 763 (3501 B), with
 // local_9 filled j, k, i 585; local_11/local_13 declared at the top 489 (same code). Body unchanged.
+// M3 lane 12 r170 (plain each; control 489): the side distance as `local_24 = local_23; if (!local_22) local_24 =
+// -local_24;` 648 (3501 B); the side point as a planar copy of local_8 with `+=` of each offset 701 (3504 B, the frame
+// moves); the side distance read from field_20 at each use with no local_23 727 (3480 B); the flip as `local_21 = (cross >
+// 0.0f) == local_22;` 658; `bool local_21 = false;` at its declaration 489 (same code). Body unchanged.
+// Low-priority position name 654, target as radial difference by fields/helper
+// 718/718, and shared query-target overwritten by fields/helper 714/714.
+// Side point as radial difference by fields/helper, or with shared query target,
+// 656 each. NOT kept: the reduced control scores 654 against 489 full, and the
+// 3499-byte forms change the frame or early stack stores.
+// Returned position for path query, side coordinates, or steering query 752/789/773.
+// Path query with target translation, side coordinates, or steering query 818/767/784.
+// Side coordinates and steering 782, or all fallback geometry 695. NOT kept: the last
+// form shortens to 3479 bytes and grows the frame to 0x8c. The frame-preserving forms
+// move the first difference into the entry stores and raise the score.
+// Scaled side translation with aggregate axis, vector or point output, with direct or shared
+// planar difference 656/656/656/656. Axis through setter at the same uses 654/654/654/654.
+// Reduced control 654; full score 489. NOT kept: the length-exact forms move the first difference
+// earlier, and the setter forms leave the position slot displaced.
+// M3 lane 8 r220 (plain each: the reduced image still builds this body differently, 654 with or without 0x30bf0,
+// 0x1f38c0 and 0x29b990 listed; control 489): the side distance as `if (local_22) local_24 = local_23; else local_24 =
+// -local_23;` 489 (retail duplicates the y row's product and add into both arms of that select, ours computes it after
+// the join); the sum point written into the 0x1f9760 output vector (one 12-byte local for both, local_14 dropped) 489
+// (same homes: local_8 stays at +0x8c); local_9 filled field by field i, k, j 765 (3486 B: squares j, k, i), j, k, i 767
+// (3481 B: retail's i, k, j squares but its loads and the frame move); `perpendicular` declared after local_18-local_20
+// 501. Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
