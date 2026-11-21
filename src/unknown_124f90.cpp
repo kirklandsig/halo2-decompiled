@@ -1873,6 +1873,14 @@ long function_2197f0(real gain);
 // (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
 // fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
 // the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
+// M3 lane 12 r170 (h2m fast with 0x1251e0/0x221810, both matched; control 87; D0 = the division form, no inverse local,
+// ternary clamp, re-measured 125 at 678 B): the sum with an inline reciprocal `(elapsed - hold) * (1.0f / fade_in) *
+// fade_out` 125 (same code as D0); the clamp as `t = time / fade_in; if (!(1.0f > time / fade_in)) t = 1.0f;` 127 (672 B);
+// the product term first, then `time += ambience - elapsed` 125; on D0 the fade-out time bound once as `real const &`
+// for the window test and the product 125, the window test summed hold first 125 (same code each). Reading: every division
+// form reassociates the product to `(elapsed - hold) * fade_out * reciprocal` with fade_out read from memory, where retail
+// keeps the window test's fade-out load in XMM1 and multiplies by it last; that missing register shifts elapsed to XMM2
+// (retail XMM3) at +0x22. Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4845,6 +4853,15 @@ struct s_128ca0
 // controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
 // shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
 // swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
+// M3 lane 12 r170 (h2m fast with 0x1293f0, matched throughout; control 48; L = the LEAD 17 above, re-measured 17; Lc = L
+// with `char count = NONE`, re-measured 204): on L, the playback byte stored in both arms of the controller test (no count
+// local) 207 (1064 B); a `char count;` declared after the controller pointer and set in both arms 204; the count from a
+// conditional on the controller's field, the countdown under its own test, 210 (1064 B); on Lc, the first controller block
+// written NONE-first with the zero default set ahead of an inner `if` 208 (1052 B). Every one still moves the scratch
+// rotation from the pitch-range index (+0x12a). Diagnostics on Lc (reverted): a file-local accessor returning the effect
+// index, or returning the playback pointer itself, used at one site each (the count block's test, the first block's test,
+// the pitch-range index, the field_2c store, the playback byte store, the 0x200 flag store) 204 each (same code: such
+// accessors fold away and do not move the scratch rotation here).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

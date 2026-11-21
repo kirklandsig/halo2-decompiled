@@ -941,6 +941,11 @@ void function_3dd10(long object_index, bool force);
 // or one model-handle read 303. The same two forms with the opening guard 302/303.
 // NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
 // The second-bank base forms shorten the body, and the mask and count homes still differ.
+// M3 lane 12 r170 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all matched; control 77): the selection loop as a `for` on
+// `j < choice_count` 199 (1045 B); one `j` for both loops 77 (same code); `target` declared ahead of `cumulative` 80; the
+// choice guard as `0 < choice_count` 227 (1002 B); the scan bound as `choice_count != j` 227 (1002 B). Reading: retail
+// keeps last, weight and the mask in memory through the scan (the mask loaded into EAX for the selection loop only) and
+// gives the count EBP; ours gives the mask EBP and spills the count. Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

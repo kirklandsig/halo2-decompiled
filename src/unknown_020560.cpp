@@ -1339,6 +1339,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // inside or before the projection test: 646 each with either square-sum order.
 // NOT kept: the second scan shortens to 2039 bytes and still omits the offset
 // spill and second induction address.
+// M3 lane 12 r170 (h2m fast with 0x24550 in the image; control 418): `vector3f offset` declared beside `delta` outside
+// scan 2 with the distance as length_sq3f(&offset) 646 (2039 B), with the distance helper kept 418 (same code); scan 2
+// inside a redundant `if (0 < count)` 585 (2100 B); on the entries-read scan 2 (549 re-measured) that guard 557; scan 2's
+// skip test through a const reference to `nearest` 549 there and 418 here (same code each). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
