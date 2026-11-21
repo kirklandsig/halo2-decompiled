@@ -571,6 +571,9 @@ static inline void quaternion_transform_vector(
 // product and m and reloads 2.0 after the identity copy for w2 and the doubled dots, and spills m twice (+0x18 from an
 // XMM6 copy, +0x20 from XMM4), which is the fifth cell; ours holds one 2.0 for every use and reuses +0x18. The repair path's
 // two crosses also load the other operand first in five products (three in the first, two in the second).
+// Caller-provided basis dot, raw or doubled, with the original weights or a staged quadratic:
+// opening sums 277/247/280/268, per-axis sums 271/238/272/234.
+// NOT kept: the lighter projection lifetimes shorten the body and raise the score. The separate quadratic spill remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1696,6 +1699,9 @@ void function_143250(
 // (same code); entries 23 and 25 both accumulated 1095. Reading: the masked rows are scheduling and spill placement
 // spread over the body (retail keeps 0.071428575 in XMM5 for entries 23 and 25), and retail's one extra spill cell
 // sits below the 49-entry matrix (frame 0x300 against 0x2fc).
+// Higher bands read back first-band entries for r0/r1/r4: 1754/1741/1658;
+// pairs r0-r1, r0-r4, r1-r4 1770/1767/1743; all three 1785; all five positive entries 1816.
+// NOT kept: the forms regress and move the scalar frame away from 0x300.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

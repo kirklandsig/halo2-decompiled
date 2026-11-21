@@ -2350,6 +2350,13 @@ void function_269250(long clump_index, long actor_index);
 // on it the selection declared after `best` with the arm storing the selection first (retail's arm stores the selection,
 // then jumps to the best store it shares with the initialiser) 126; `real const score` 126; `register long selected`
 // 126 (all the same code: the selection keeps EDI across the post-walk calls, where retail reloads it from +0x14).
+// M3 review (11-21, Codex P r650): a byte MATCH (480 B; full check 12340, 0 lost) passes the existing bounded scan
+// (data_find_index) as a new defaulted function-pointer parameter through data_datum_iterator_next_inlined and the clump
+// walk, so only this walk uses it, with the score taken and compared inside the team arm. Not kept: the parameter is
+// invented and exists only to pick the scan's spelling at one call site, the same ruling as a per-site copy of a helper.
+// data_find_index in the shared iterator step for every caller also matches this function but drops 0x268c90 to 2; the
+// scan and the datum step composed here measure 165 (452 B), and the same composition inside the clump walk 160. Open
+// lead: a source-level reason this walk scans differently from the other walks in the file. Body is main's (87).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

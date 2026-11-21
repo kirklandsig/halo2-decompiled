@@ -4983,6 +4983,9 @@ struct s_weapon_projectile_creation
 // 1215. Shared dot and projected products before complete result or direct output
 // 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
 // and raise the score. The separate clipping point and opening rotation remain.
+// Rotation result by value, explicit destination, returned destination, or staged component stores:
+// saved axis 1121/1121/1121/1239, direct marker axis 1141/1141/1141/1273.
+// NOT kept: the saved-axis result forms tie. The separate clipped point and retail frame remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
