@@ -1368,7 +1368,12 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
     out->k = m->up.k * z + m->left.k * y + m->forward.k * x;
 }
 
-// score 987 (was 1005): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// score 967 (was 988 at r914): retail keeps a bool result set true at entry in a dead argument home (0x17ef59) and returns it at the
+// success exit (0x17fcc6) while both failures return 0, so the texture failure clears `result` and the projection is built only
+// when it holds. Earlier: a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// Score 966 in a full build with stand-in SDK headers (was 987): the result is a bool set true at entry (retail stores
+// 1 into a dead argument home at 0x17ef59 and reads it back at the success exit), the texture failure clears it, and
+// the 0x17d9a0 call and the orientation stores run under if (result).
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,
@@ -1377,6 +1382,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
 {
     s_decal_definition_17ef10 const *definition =
         (s_decal_definition_17ef10 const *)g_4e3b44[tag_index & 0xffff].bytes;
+    bool result = true;
     point3f position = placement->position;
     if (transform)
     {
@@ -1619,14 +1625,17 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
             _mm_prefetch((char const *)data->texture, _MM_HINT_T0);
             if (!texture_cache_bitmap_get_texture((s_bitmap_data *)data, 2, 0.0f)
                 && !function_12ce00((s_bitmap_data *)data, 2, 0.0f))
-                return false;
+                result = false;
         }
     }
-    function_17d9a0(matrix, (real const *)&preparation->projection.bounds, &preparation->projection.quad);
-    preparation->projection.orientation_bounds[0] = preparation->projection.orientation_bounds[1] = normal.i;
-    preparation->projection.orientation_bounds[2] = preparation->projection.orientation_bounds[3] = normal.j;
-    preparation->projection.orientation_bounds[4] = preparation->projection.orientation_bounds[5] = normal.k;
-    return true;
+    if (result)
+    {
+        function_17d9a0(matrix, (real const *)&preparation->projection.bounds, &preparation->projection.quad);
+        preparation->projection.orientation_bounds[0] = preparation->projection.orientation_bounds[1] = normal.i;
+        preparation->projection.orientation_bounds[2] = preparation->projection.orientation_bounds[3] = normal.j;
+        preparation->projection.orientation_bounds[4] = preparation->projection.orientation_bounds[5] = normal.k;
+    }
+    return result;
 }
 
 struct s_effect_source;
