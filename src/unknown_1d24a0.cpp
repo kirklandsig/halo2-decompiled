@@ -641,6 +641,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // calls 780; the shared dot3f for the private copy 780 (each the same code). Left at 780 as r141 lists: EBX saved around
 // the loop with EBP (retail at the entry), the frame 0x1d8 against 0x1d4, the flag pairs' copy roles, `mov cl` for
 // retail's `movzx`, product sides, and the tail's ECX/EDX rotation (ours tests the response flag through DL, retail CL).
+// M3 lane 4 r244 (h2m fast; control 838; body unchanged): the removal in the sibling contact-removal function's form
+// (`data[i] = data[--list->size]` through the list local) 838; the object-type byte read into a long local for the shift
+// 838 (still `mov cl`, the table data still in EDI where retail reuses EDX); local_2 and local_3 initialised ahead of
+// local_0/local_1 851; the two angular coefficients bound `real const &` to the record 871 (4225 B, as the reads at each
+// use); the element pointer as `data + index` 838 (same code). Reading: retail's head forms and spills the element pointer
+// because its data pointer is not kept across the attached-object lookup to the removal; ours keeps it in EBX for that path.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
