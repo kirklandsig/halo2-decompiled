@@ -895,6 +895,14 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // right after the palette call, ahead of the flag and the three source stores, 700 (3828 B); the short slot read ahead
 // of the palette call 617 (3828 B); the flag declared after the three source stores 607 (same code); the three source
 // stores in reverse field order 607 (same code); a `long` slot read ahead of the palette call 689 (3823 B).
+// M3 lane 14 r140 (h2m fast with 0x130f60/0x131030/0x1317a0, all MATCH; control 607): retail re-reads the palette byte
+// for the source-index store (`movsx edx, byte ptr [esi + 0x6f]` after the accumulators) and widens the first read once,
+// ahead of the previous-index branch, for the range test and the index. Forms: a `long` slot index named in the palette
+// arm for the range test, the index and the source store, on a char slot 751 (3842 B, first +0x2e), on the short slot 797
+// (3862 B); the palette lookup with the scenario pointer in a local and the record cleared inside the else arm
+// (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
+// accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
+// (3838 B). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

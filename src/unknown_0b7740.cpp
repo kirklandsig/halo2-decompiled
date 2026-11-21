@@ -1234,6 +1234,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // for the +0xb3 byte as retail and the parameter a scratch register from entry (ECX, with the pool data in EDX, where
 // retail has EDX and ECX; `definition` still keeps a register). Reading: the entry roles follow the parameter's weight
 // in the final_matrices block; no natural statement was found that reads it twice more there.
+// M3 lane 14 r140 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0xbfc90, all MATCH; control 240): lane 4 r225's lead rebuilt
+// 170 (826 B). On it: the two early tests and the model test as early returns (three exits, as retail's three tail
+// epilogues) returning the parameter or `result` 290/290 (829 B, same code); the object's flags word read into a local
+// ahead of the mask copy (retail loads it before the copy) 170 (same code); `result` read once through the matrices
+// parameter's address 170 (same code); the header index read once through object_index's address 170 (same code: both
+// indirections fold before allocation and the parameter roles at entry stay ESI/EDX swapped). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
