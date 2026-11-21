@@ -420,6 +420,18 @@ PRIVATE inline byte const *material_parameters(long tag)
 // reference 5 (+0x19e, same code). On the direct store: the chain and pass bases named after the store, ahead of the
 // word read, 5 (+0x1a7, same code); the range stored directly and read back into a local 178; the pass published through
 // a `byte *&` and read back 5 (+0x1a7, same code).
+// M3 lane 11 r140 (H2M_FAST; control 5 at +0x19e; the direct entry store, `**(word **)(state + 0x14)` read back, re-measured
+// 5 at +0x1a7). On the direct store: the chain and pass bases named after the packed read 5 (+0x1a7), named ahead of the
+// entry store 183 (+0x148); the chain index's packed word read again from the stored entry with `second` first 5 (+0x1a7);
+// `second` bound by `long const &` for the chain index 5 (+0x1a7); the tables field bound by `byte *const &` for the chain
+// and pass bases 6 (+0x19e: the reload moves back under the entry store and `second` stays early). The entry computed into
+// a local, stored, and the word read through the local 181 (975 B, the listed form).
+// M3 lane 12 r161 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e; the
+// direct entry store re-measured 5 at +0x1a7): the direct store typed as a long field with a long cast 5 (+0x1a7), as a
+// dword 5 (+0x1a7); the reference typed `long &` with a long cast 5 (+0x19e); on the direct store the chain and pass
+// bases read as pointer-array elements of the tables (`((word **)tables)[3]`, `((byte **)tables)[5]`) 5 (+0x1a7); the
+// direct store with the packed word read inside the chain index (no packed assignment) 5 (+0x1a7). All the same code as
+// their bases: the store's type does not hold `second` behind it.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

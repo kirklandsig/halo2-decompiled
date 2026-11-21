@@ -518,6 +518,7 @@ real g_55e618;
 // measure worse, and the permuter made five tries over this body without beating its baseline of 93 differing
 // instructions.
 // MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged.
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged; the dot's three products written the way retail adds them measures 103, the same sum written with explicit parentheses measures 191, the tangent kept as three scalars instead of one vector3f measures 188, and a 300-second permuter run over the body (15 tries) found nothing below the baseline, so all of them were reverted and the body stands.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
@@ -949,6 +950,22 @@ real g_55e618;
 // 247/247. Back up then extend by component stores, the in-place particle
 // scaler or the point setter and shared scaler 246/246 in all three forms.
 // NOT kept: all reach 1541 bytes but leave the sweep and hit record displaced.
+// M3 lane 2 r121 (fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH unless noted; control 102, aligned/masked 60/43).
+// Round 75's form rebuilt 44 (1537 B, aligned/masked 9/8); on it the value as an explicit temporary of a four-byte value
+// type 59 (1535 B, 30/9): its load is early but in EAX and every later scratch register is one rotation step off, so that
+// temporary is not a rotating scratch value, where retail's EDX is one. Reading: retail's block is what main's plain
+// body gives when the collision record does not count as captured. Diagnostics on main's body, all restored: the
+// collision query 0x1697c0 handing a scratch record to both callees that take one (0x244980 and 0x169510) 380 (1540 B:
+// frame homes at retail's offsets, the value pushed ahead of the position stores, x stored through the position pointer
+// and y, z through the particle, as retail); only the 0x244980 call cut 102, only the 0x169510 call cut 102 (same code
+// each); with the 0x169510 call cut, 0x244980's ray-cast callback given no record 380, the callback not handed to the
+// cast 374; with the 0x244980 call cut, 0x169510's call to itself given no record 380, its transform helper given none
+// 102, its record as a reference parameter 102 (0x169510 still MATCH); a never-taken call from 0x244980 back to the
+// particle dispatcher, so that this function and the query sit on one call cycle, 104. So in this build the record is
+// captured through exactly two statements: 0x244980 storing the record pointer in the callback it hands to the cast, and
+// 0x169510 passing the record to itself. A compile-only build of this file orders the position stores first too, so an
+// unknown callee is the pessimistic case. Retail's 0x169510 also pushes its own record parameter at the recursive call,
+// so what frees retail's block is still open. BLOCKED-BY 0x169510 (a contributor's) and 0x244980.
 // M3 lane 16 r162 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102). LEAD 42 (1537 B, first difference +0x2e7,
 // aligned 26; match-only; build/r162/lead-0x2b9060-42.patch in m3-lane16's worktree): lane 1 r130's 61 form rebuilt from
 // its note (velocity pointer, normal components in locals, the dot written at each product with its first term read as

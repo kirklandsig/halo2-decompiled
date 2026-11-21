@@ -44,7 +44,7 @@ bool __stdcall function_bbec0(long object_index, bool value);
 void __stdcall function_ba410(long object_index, long a, long b);
 bool __stdcall function_1071e0(long device_group_index, real value);
 bool __stdcall function_107ed0(long device_index, long name, real value);
-void __stdcall function_1e1a00(long index, long value);
+void __stdcall function_1e1a00(long index, bool value);
 void __stdcall function_2736c0(long ai_index);
 void __stdcall function_273ac0(long ai_index, long other_ai_index);
 long __stdcall function_272ea0(long ai_index);

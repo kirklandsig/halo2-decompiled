@@ -303,6 +303,16 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // plain-read form (no reference): the started test `NONE != object_index` 116, the request test `NONE == object_index`
 // 116, the marker test `NONE != object_index` 116, all three 116 (531 B, the plain-reads code); on the kept form the
 // request and marker tests constant-first 11 (same code). The operand side does not move the object/tag contest for EBP.
+// M3 lane 8 r208 (fast with the eight callees listed, which reproduces the plain 11 and the plain-reads 116; every form
+// without the reference, object reads plain, control 116): the lookup in 0x18c250's form (tag view `.data`, a class-index
+// local, a classes local, the existing spatialization helper) 154 (541 bytes); a second tag lookup for the spatialization flags test
+// in the same block (CSE'd away; diagnostic for a pre-CSE tag use) 118 (530 bytes, tag still EDI); an early object copy
+// bound by a const reference for the early tests and marker calls 116; the late uses (call, started test, dispatch) through
+// a const reference bound to the parameter 116; positioned read through the spatialization bit-field 116 (same code each).
+// M3 lane 8 r210 (fast with the eight callees; control 11, plain-reads control 116): `positioned` computed after the clamp
+// with every object read plain 141, on the kept form 146 (536 bytes); the spatialization pointer `const` (plain reads) 116
+// (same code); the request arm's result chained into the slot store (plain reads) 127 (534 bytes); the started test read
+// through the reference with its volatile cast away (`*(long const *)object_reference`) 116 (the address folds, object EBP).
 // M3 lane 16 r159 (plain, with the five matched callers, all matched each time; on the kept form): the started test
 // written `NONE != *object_reference` 11 (same code); an early `if (tag_index == NONE)` exit with its own duration reset
 // in place of the outer tag block 11 (same code, the resets merge); the playback label call named before 0x189340 16

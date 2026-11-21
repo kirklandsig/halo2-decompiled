@@ -923,6 +923,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `sizeof(t_player_key)` 28 (same code); the swap's update as `updates + ++*count - 1` 28 (same code). Reading (from the
 // preheader): the two stack cursors are watcher + 0xb0 stepped by 0xb4 and its negation -(watcher + 0xb0), so the key's
 // `i * 0xb4` is their sum; retail adds `collection` to the negated start first, ours adds the two cursors first.
+// M3 lane 8 r210 (fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/0x83570, all MATCH; control 28): re-measured the swap
+// callee as (collection, player, update, other) at definition, declaration and call 32 (swap call and occupied head
+// retail's; the key grouping then leaves the key in ECX and the destination in EDX, and the last record's `updates` and
+// field loads swap registers); on that order `controller_index` declared before `unknown14` 43, no last-record locals
+// (fields read at their stores) 106 (1053 B), the occupied key as `&collection->players[i].key[0]` 32 (same code), the
+// last record's two locals read at the else arm's top 275 (1087 B); diagnostic on that order: 1 to 8 unused
+// initialised locals at the top 32 each (no symbol-count tie). All restored.
 // M3 lane 16 r159 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied key indexed by the
 // stored `update->player_index` 103 (the store is forwarded on the swap order (collection, player, update, other), 32);
 // on that swap order: `collection` dropped from the slot search and swap (both given `&watcher->players`) and declared

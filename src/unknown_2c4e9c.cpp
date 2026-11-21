@@ -3289,6 +3289,16 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // (`map_id != NONE && next(&iterator)`, no early test) 33 (76 B). Re-measured the NONE-default id 13 (NONE cached in
 // EAX, the id loaded straight into EBX). A byte scan of retail finds only three references to the field: the store in
 // 0x19a6f2, the read in 0x19a864 (loaded straight into ESI there) and this function's EAX load.
+// M3 lane 3 r281 (fast with 0x2c9a58, matched in each): under LTCG (earlier only compile-only) a by-value inline
+// validity predicate for the guard 30 and an inline getter with a result local 30; an inline out-pointer getter that
+// stores the id and returns `*id != NONE` 30 (`__forceinline` 30); a getter storing the id only when valid and
+// returning a result flag, `static inline` 27 (83 B: it stays a call in this /O1 file), `__forceinline` 30 (all the
+// 30s the same direct EBX load). Retail's shape (compare in EAX, then the EBX copy) matches 0x11a570's inlined
+// result phi, whose second definition (NONE) is reached on a live path; no single-definition form reproduces it.
+// M3 lane 8 r210 (fast with 0x2c9a58, matched in each): a const entry pointer named for the lookup argument 30; the lookup
+// result cast to a const definition pointer 30; the iterator's pool written `this->data` 30; the selection written
+// `this->select_datum` 30; the guard as `if (map_id == NONE) return;` with the iterator in the following block 30 (all the
+// same direct EBX load).
 // M3 lane 16 r161 (fast with 0x2c9a58, matched in each): the guard on the field with an `unsigned long` id copied from
 // it at the block's top 30, or assigned after the iterator set-up 30; the loop compare through a file-local by-value
 // (entry, id) predicate, `static inline` 32 (78 B: /O1 keeps it a call), `__forceinline` 30; the guard on the field

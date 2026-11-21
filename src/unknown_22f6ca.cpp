@@ -272,6 +272,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // store 23 (same code). Diagnostics (not kept): the block-18 loop deleted 229 (327 B; the copy appears in the bitmap,
 // block-24 and model loops), the bitmap loop deleted with the block-24 loop starting from the shared zero 194 (353 B; the
 // model reset becomes `mov` as retail, but its EAX copy of the screen stays).
+// M3 lane 3 r285 (h2m fast, control 23): a second named local `c_class_1a2c81 *parent = screen;` at the pane block's top
+// used only for the model call 23; a `c_class_1473c9 *owner = screen;` used only for the text call 23; the model loop's
+// flag test through a `bool const &` to the flag 23; a redundant `i = 0;` ahead of the model loop's `for (i = 0;` 23, ahead
+// of the text loop's 23 (all five the same code).
 // M3 lane 16 r159 (h2m fast; control 23): diagnostics on the model loop's EAX copy of the screen: the model's animation
 // started without the flag test 25 (410 B; the copy stays though only the null test's branch separates the call from the
 // push); the model started with no null test or flag test 139 (403 B; the push then reads `[esi + 0x34]` directly, as
