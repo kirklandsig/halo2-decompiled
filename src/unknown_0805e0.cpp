@@ -891,6 +891,11 @@ void function_1537f0(s_profile_record *record);
 // to -2 gives retail's whole loop (only the head constant differs), and with the link pairs stored as 16-bit 0xffff
 // through word casts (heads NONE) only `mov eax, 0xffff` for retail's `or eax, -1` is left: the element view with the
 // `entry->` pairs is retail's loop, and the open cause is the heads' -1 sharing a register with the links' -1.
+// M3 lane 15 r127 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18): the four head stores ahead of the
+// three counter stores with the `entry->` link pairs in retail's store order 50 (still hoisted); the same head-first order
+// on main's link pointer 28; a `short` loop index 80 (275 B), a `dword` loop index 80 (275 B: the index is kept and
+// compared, no pointer bound); the builder's view from the array element with `entry` declared after the builder call
+// for the `entry->` link pairs and the tail 46 (hoisted).
 // @retail 0x7f930
 void function_7f930(void)
 {

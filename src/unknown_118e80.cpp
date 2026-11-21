@@ -219,10 +219,11 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 25 (was 25; 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
-// copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below), the forward agreement's i product, and the
-// order of the final up/forward loads and stores (retail runs the three up loads first and interleaves the rest, ours
-// pairs each load with its store).
+// score 15 (was 25; 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
+// copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below) and the forward agreement's i product (ours
+// loads the object's forward.i first, retail the local's). At 25 the order of the final up/forward loads and stores also
+// differed (retail runs the three up loads first and interleaves the rest, ours paired each load with its store); the
+// 0x1faf80 exit as an if/else around the rest (round 127 below) gives retail's interleaved copies.
 // Earlier 51 (was 223): Frame 0x6c restored. The early call setup, the two discarded basis-output offsets and final
 // vector-store scheduling differ.
 // MiniMax A (11-18): no new form, no lower score (218): the 0x1faf80 exit written as an if/else around the rest of the body measures 216 on the reduced image (a gain of two, under the keep bar) and the frame stays 0x78 against retail's 0x6c: BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp).
@@ -557,6 +558,16 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // else arm read from the object's forward 192: the test's i product stays facing-first whatever facing's other uses
 // are. Retail's 0xe01d0 call (0xe0264-0xe0286) also computes the facing address after the control and settings
 // addresses, so both callers put facing ahead of control. Still BLOCKED-BY 0x1faf80.
+// M3 lane 15 r127 (h2m fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0x109290 and 0xbba20;
+// control 25). Kept: the 0x1faf80 exit written as an if/else around the rest of the body (one exit, no early `return`) 15
+// (the tail's up and forward copies then interleave as retail's). Before it: the forward agreement through
+// `&object->forward` with the field pointer kept for the store 25; both agreement tests constant-first (`0.9999f >
+// dot3f(...)`) 25; the object pointer `s_forward_object *const` 25; diagnostic, the moved dispatch given copies of
+// new_forward and up 157 (1074 B: the tail's copies interleave, so the dispatch's address escape held them on the
+// early-return form). On the if/else form: the forward agreement's arguments swapped 15, both agreements' arguments
+// swapped 15, both agreements named ahead of the test 15, `vector3f new_forward, up;` 15 (all the forward i product
+// object-first), no forward field pointer (`&object->forward` in the test, `object->forward =` store) 40 (1032 B);
+// diagnostic, 1/2/3 unused locals at the top 17 each.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -565,56 +576,58 @@ void function_1197b0(long object_index)
 	if ((bool)((definition->flags >> 4) & 1))
 	{
 		function_1faf80(object_index, definition->settings, &object->control, 0.9f, &object->requested_forward, &object->turn);
-		return;
 	}
-	vector3f turn_velocity;
-	vector3f up, new_forward;
+	else
 	{
-		vector3f target_up, first_left, basis_forward, left;
-		real max_angle = definition->max_angle;
-		real acceleration = definition->acceleration;
-		if (object->speed_mode == 1)
+		vector3f turn_velocity;
+		vector3f up, new_forward;
 		{
-			max_angle *= definition->speed_scale;
-			acceleration *= definition->speed_scale;
-		}
-		vector3f forward;
-		if (max_angle == 0.0f && acceleration == 0.0f)
-		{
-			forward = object->requested_forward;
-			turn_velocity = *g_4687a4;
-		}
-		else
-		{
-			function_118e80(object_index, &forward);
-			turn_velocity = object->turn_velocity;
-			function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
-		}
-		vector3f temporary_velocity = *g_4687a4;
-		world_up_1197b0(object_index, &up);
-		function_11d180(&forward, &object->requested_up, &new_forward, &first_left, &target_up);
-		function_11d180(&forward, &up, &basis_forward, &left, &up);
-		if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
-		{
-			function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
+			vector3f target_up, first_left, basis_forward, left;
+			real max_angle = definition->max_angle;
+			real acceleration = definition->acceleration;
+			if (object->speed_mode == 1)
+			{
+				max_angle *= definition->speed_scale;
+				acceleration *= definition->speed_scale;
+			}
+			vector3f forward;
+			if (max_angle == 0.0f && acceleration == 0.0f)
+			{
+				forward = object->requested_forward;
+				turn_velocity = *g_4687a4;
+			}
+			else
+			{
+				function_118e80(object_index, &forward);
+				turn_velocity = object->turn_velocity;
+				function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
+			}
+			vector3f temporary_velocity = *g_4687a4;
+			world_up_1197b0(object_index, &up);
+			function_11d180(&forward, &object->requested_up, &new_forward, &first_left, &target_up);
 			function_11d180(&forward, &up, &basis_forward, &left, &up);
+			if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
+			{
+				function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
+				function_11d180(&forward, &up, &basis_forward, &left, &up);
+			}
+			else
+				up = target_up;
 		}
-		else
-			up = target_up;
+		{
+			point3f position = object->position;
+			object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
+		}
+		vector3f *object_up = &object->up;
+		vector3f *object_forward = &object->forward;
+		if (dot3f(object_up, &up) < 0.9999f || dot3f(object_forward, &new_forward) < 0.9999f)
+		{
+			*object_up = up;
+			*object_forward = new_forward;
+			function_bba20(object_index);
+		}
+		object->turn_velocity = turn_velocity;
 	}
-	{
-		point3f position = object->position;
-		object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
-	}
-	vector3f *object_up = &object->up;
-	vector3f *object_forward = &object->forward;
-	if (dot3f(object_up, &up) < 0.9999f || dot3f(object_forward, &new_forward) < 0.9999f)
-	{
-		*object_up = up;
-		*object_forward = new_forward;
-		function_bba20(object_index);
-	}
-	object->turn_velocity = turn_velocity;
 }
 
 struct s_impulse_definition_119020

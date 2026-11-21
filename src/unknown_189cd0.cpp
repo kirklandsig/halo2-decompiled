@@ -341,6 +341,16 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // flag read by `movzx` with the late object load ahead of the push); the flag reset and marker block in a forceinline
 // helper with an early return on NONE 116 (same code); the marker block split into two `object_index != NONE` tests
 // (0xb8d30 under one, 0x1892a0 under the next) 116 (same code); `bool attached` declared after the clamp 96 (523 bytes).
+// M3 lane 15 r127 (h2m fast with the eight callees; kept-form control 11, plain-reads control 116), every form with no
+// reference and plain reads: one plain read of the object through its own address (`long const *` to the parameter) at
+// the request test 116 (folds); an early `tag_index == NONE` exit with its own duration reset 116, the same for the slot
+// test 116, the closing `sound_index != NONE` return as one return with the reset under `sound_index == NONE` 116 (the
+// duplicated resets merge before allocation); the object read for the started test copied by a 4-byte memcpy just ahead
+// of it 116 (folds). Diagnostics (a new one-caller helper, not keepable): the started test and dispatch in a static
+// helper taking the object by `long const *` (`&object_index` passed) 35 (521 B): the helper stays out of line and the
+// escaping address keeps the object memory-resident, so everything up to the 0x189340 call is retail's (tag EBP,
+// spatialization EDI, the late object in EBX copied to ESI); the same helper `inline` 116 or `__forceinline` 116 (once
+// inlined the address folds and the object takes EBP again).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
