@@ -1215,6 +1215,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // redundant pairs over the angle's two products, the endpoint's x product, the lift product and the 0.1 offset's x product
 // (56 forms): 20 (4 forms), 23, 39, 41, 71, 73, 179, 181; the pair count cycles the states the statement orders give (179
 // is the statement-lift state, retail's dot with the axis k as memory operands), none below M. All restored.
+// M3 lane 14 r142 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26): the rotation through the existing
+// scalar-axis inline helper of src/unknown_146240.cpp (axis components as arguments) 243 (1110 B); the marker store and the
+// 0x26d100 call through a forceinline wrapper taking the unread pathfinding pointer with its address named (0x26d0e0's
+// unread-parameter form) and a plain local for it 164 (1058 B: the unread store is dropped, so retail's store is not an
+// inlined parameter's); a `vector3f const *up` local for the 0.5 lift loop only 26 (same code); the angle, sine and cosine
+// in their own block 26 (same code); M with that lift-only pointer 20 (M's code). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

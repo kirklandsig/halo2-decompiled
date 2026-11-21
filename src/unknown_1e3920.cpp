@@ -1292,6 +1292,11 @@ void function_1e3b60(long actor_index);
 // block's call 495 (1672 B, one 0x25c820 call); that with `update` long 499 (1676 B). In each the update flag keeps EBX
 // (a byte, then the long) and the actor index arrives in EDI from the stack and is re-read from its home after the
 // inlined copy's `rep movsd` takes EDI. All restored. Still BLOCKED-BY 0x262ba0 (update flag in EBX).
+// M3 lane 14 r142 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form; 0x2641c0's noinline declaration
+// is in another lane's file again): in 0x262ba0, the old state a `short` read after the flag declarations 404 (same code);
+// the sampling threshold read through a fresh actor lookup 452 (1636 B); `sample = update = sampled_one = true;` ahead of
+// the field clear 405; the node and byte-view pointers `*const` 404 (same code); `update` typed `byte` 404 (same code).
+// Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion keeps retail's actor index in EBX).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

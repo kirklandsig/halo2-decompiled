@@ -2219,6 +2219,11 @@ bool function_17afd0(long effect_index, long value);
 // with the owner/view arm setting true then clearing it when unavailable 129 (506 B); the true default with `else same_view
 // = true;` on the clearing test 138; the true default with that arm and `else` false 148; a NONE-defaulted owner with the
 // false-default arm 149 (517 B). All restored.
+// M3 lane 14 r142 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the plain conjunction as an if/else of
+// constants into a one-member aggregate, copied out 138 (510 B), the member read at every use 138; into a one-element array
+// 138 (both promoted like a scalar: retail's memory-resident flag is not an aggregate's); `same_view = owner != NONE &&
+// g == owner ? available : false` 56; the true default at the loop body's top 51; the availability as a ternary initialiser
+// 96. All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

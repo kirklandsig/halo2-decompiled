@@ -586,6 +586,10 @@ static inline void quaternion_transform_vector(
 // product and m and reloads 2.0 after the identity copy for w2 and the doubled dots, and spills m twice (+0x18 from an
 // XMM6 copy, +0x20 from XMM4), which is the fifth cell; ours holds one 2.0 for every use and reuses +0x18. The repair path's
 // two crosses also load the other operand first in five products (three in the first, two in the second).
+// M3 lane 14 r142 (h2m fast with 0x143120/0x11d000/0x30bf0, all MATCH; control 201 at 1324 B): in the transform helper, m
+// first with the doubled scalar written at each use (no w2 local) 326 (1245 B); m written `2.f * w * w - 1.f` 201 (same
+// code); the order w2, d, m, then the crosses 203 (1323 B); the rows grouped `cross * w2 + (v * m + q * d)` 250 (1330 B);
+// in the body the construction scale computed ahead of the cross product 240 (1319 B). All restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
