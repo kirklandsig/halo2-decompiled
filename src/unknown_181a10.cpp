@@ -1143,6 +1143,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // entity tested in two early returns through an entity local 238; the entity preset NULL and set under `if (root->type ==
 // 1)` 238; the dead second walk's result assigned back to `root` 238 (all the same code: the type is still compared in
 // memory); `switch (root->type)` with `case 1: break; default: return;` 301 (register load, `dec ecx`). Body unchanged.
+// M3 lane 7 r207 (h2m fast with 0x1829b0, 0x1821d0, 0x182800, 0x183670, all MATCH; control 238): diagnostic (never
+// kept) global optimisation off around the body 1266 (1997 B, an EBP frame), so the head's register-held clamp bounds
+// and data reloads are not that; the second node's shape in a local in the kind-24 arm 327 (1249 B); one shape local
+// for the whole body 259 (1253 B); friction and restitution at function scope 238 (same code); the 1..16 helper
+// comparing the clamp with the value it read 320 (1243 B), as `value < 1 || value > 16` 355 (1210 B).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
