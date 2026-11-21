@@ -4845,6 +4845,11 @@ struct s_128ca0
 // controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
 // shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
 // swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
+// Both pin scratch pairs and the synchronization default still differ.
+// Converted gain member before each sum 48, separate assigned offset and sum 50, shared pin workspace 107.
+// Staged pins with direct channel reads in both calls 17. NOT kept: mixed direct and saved voice access.
+// Signed count governing the controller update 101, debit from the selected count 161, separate count producers
+// 101, separate validity-arm publication 194. NOT kept: all four change the early sentinel allocation.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
