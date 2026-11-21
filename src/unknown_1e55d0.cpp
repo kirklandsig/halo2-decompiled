@@ -403,6 +403,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // read into a local ahead of the shape block 323 (1180 B); the object index read ahead of the shape block 325 (1180 B);
 // the mode byte read into a named long ahead of the countdown 321. Body unchanged.
 // MiniMax R (11-20): re-checked, no new form and no lower score (319): retail keeps the result pointer in ebx and the input pointer in edi while this build keeps the input pointer in ebx and the result pointer in edi, so every instruction from the prologue on differs, and the spilled address of the velocity field lands in [esp + 0x20] where this build uses [esp + 0x1c]; replacing the reference bound local with a pointer and reordering the aliases change nothing.
+// M3 lane 2 r127 (fast; control 319, aligned / register-masked 320 / 247): the component as
+// `(s_havok_component *)g_51e9b8->data + (index & 0xffff)` 319 (same code; retail loads the pool before masking here);
+// round 138's `compound ? (a || b) : a` re-measured 335 (1204 B, 228 / 129); the compound test written in that ternary's
+// condition with the shape reloaded in its arm 388 (1212 B, 268 / 135: retail's shape block, lane 18's 388 layout); on
+// the ternary the 0x20 flag as `(flags >> 5) & 1` 335 and the state read through the parameter at each use 335 (both the
+// same code). On the ternary the masked rows left are mostly the expanded 0x1c4a80 (retail calls it from the inlined
+// 0xb7430 position move, which is disabled: BLOCKED-BY 0xb7430), the output/input register trade (BLOCKED-BY 0x1ec690)
+// and the state pointer held in ESI where retail re-reads it.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

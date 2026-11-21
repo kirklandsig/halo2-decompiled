@@ -465,6 +465,12 @@ void function_2232a0(void)
 // player first with saved address or ordinal 239/216, shared record cursor 273.
 // One-based player slots with terminal from the cursor 175, also using that cursor as dispatch count 163,
 // and terminal address from its predecessor 47. NOT kept: the combined traversal moves the matching prefix.
+// M3 lane 2 r127 (fast; control 47): round 55's held activation of 0x2b5d0 (its body in a new file, the stub removed)
+// re-measured on today's main: 0x2b5d0 MATCH and this function 28, but 0x223240 0 -> 19, 0x12b450 0 -> 120 and
+// 0x12b690 0 -> 23 again (the named `double` locals in the unmatched deep callees round 55 listed, three of them in
+// avoid-listed files, still flip 0x223240's EBX save), so not kept. The terminal record indexed as `local_2 + 1` 183
+// (583 B); as the address of its first member 47; the view count declared const right after the clamp 47 (both the
+// same code); indexed from the loop counter (`local_0 + 1`, equal there) 182 (584 B).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

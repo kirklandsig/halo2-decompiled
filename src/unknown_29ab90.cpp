@@ -585,6 +585,19 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // Typed actor reset and target, direction and request flag, and turn status, alone and combined,
 // scored 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
 // The object/settings spills still differ with the 0x64 frame in place.
+// M3 lane 2 r127 (fast; control 286 at 1865 B, aligned / register-masked / offset-masked 234 / 191 / 73): LEAD for site 1:
+// the matched 0xedff0's file-local planar normalize in src/unknown_0a76b0.cpp (one length local, scaling path falling
+// through, `m = 0` in the else, scale-first products through a separate out pointer) compiles to retail's site-1 and
+// site-3 code here (the zero stored into the length's own home, y reloaded after the x store). Screened through a copy of
+// it at site 1 306 (1863 B, retail's length; first difference +0x42 -> +0x54; 185 / 134 / 62: the length shares its
+// home, which frees one 4-byte slot, and the object pointer and both planar vectors take retail's homes); at sites 1
+// and 3 306 (same code); plus lane 4 r180's planar copy of local_27 309 (1856 B, 155 / 102 / 41); plus local_2 named
+// `settings` 309 (same code); plus the +0x50 scale read into a local ahead of the third planar step 302 (1868 B, first
+// +0xbb, 138 / 89 / 36: the definition and magnitude homes are then retail's); plus the correction written into
+// local_5 302 (141 / 89 / 36). Left on that form: local_4 and local_5 swap homes (retail's local_5 slot also holds the
+// correction's i, from the x87 result), site 2's loads in another order, the floors' xmm numbers and the dot's operand
+// order, the blend rows. Not kept: the count rises, and keeping the helper needs it moved from that file to a shared
+// header (the existing 2-D helpers there are the zero-first shape). Patch in build/r127/lead-29ab90-302.patch.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
