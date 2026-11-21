@@ -1133,7 +1133,7 @@ void function_1e2a90(long actor_index);
 bool function_1e35f0(long actor_index);
 void function_1e3b60(long actor_index);
 
-// score 25 (was 25; 26 before round 183): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
+// score 25 (was 25; 26 before round 183; m3 lane 8 r220 at the end): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
 // 0x1f9e70, became a PIN_126660 clamp), so its call now passes the actor in EAX as retail. Left: retail passes the actor index
 // to function_262ba0 in EAX, ours pushes it, because 0x262ba0's body keeps it as a stack argument.
 // Earlier at 26: retail passes the actor index to function_262ba0 and to
@@ -1282,6 +1282,16 @@ void function_1e3b60(long actor_index);
 // stack cell); that with case 1's 0x25c820 call jumping to the release block's call 442; main's body with `update` long
 // and that single call 436 (1616 B); the first form with `sampled_one` long 435 (1624 B); main's body with `sample` and
 // `update` long and the single call 437 (1616 B). Still BLOCKED-BY 0x2641c0's expansion into 0x262ba0.
+// M3 lane 8 r220 (h2m fast with 0x262ba0, 0x264210, 0x2641c0, 0x263210 and 0x2641c0's five other callers; 25 here in
+// every form; both 0x262ba0's file and 0x2641c0's declaration file were free): 0x2641c0's noinline declaration dropped
+// re-measured 0x262ba0 509 (1696 B), 0x264210 114 (139 B); with that, 0x264210 defined ahead of 0x2641c0 in its file
+// (diagnostic: the inline decision does not follow source order) 509 / 114; in 0x262ba0 on that inline base, the sampler
+// as `if (!sampler(...)) sample = false; else if (update && ...) 0x264b50(...)` (retail stores the flag only on the
+// failed path) 504 (1700 B); that with the walk through 0x26be00/0x26be30 and `iterator.index` at each use 523 (1692 B,
+// frame 0xa0 and the {index, next} cells at 0x14/0x18 as retail); that with case 1's 0x25c820 call jumping to the release
+// block's call 495 (1672 B, one 0x25c820 call); that with `update` long 499 (1676 B). In each the update flag keeps EBX
+// (a byte, then the long) and the actor index arrives in EDI from the stack and is re-read from its home after the
+// inlined copy's `rep movsd` takes EDI. All restored. Still BLOCKED-BY 0x262ba0 (update flag in EBX).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

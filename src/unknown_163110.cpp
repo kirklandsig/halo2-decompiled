@@ -616,7 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115; m3 lane 8 r220 unchanged, its line just above the marker): coefficient XMM roles, classification operands and projection staging still differ.
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1241,6 +1241,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // classification terms written i, j, k 115 (same code); the classification through a `point3f const *` element pointer
 // 265 (1867 B); the denominator as one expression 247 (1867 B); the distance as one expression 251 (1867 B); the plane
 // pointer typed const 115 (same code). Body unchanged.
+// M3 lane 8 r220 (h2m fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115): the far-plane mask as `if
+// (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B, first +0x26); the classification store without its
+// `? 1 : 0` 320 (1835 B); the outside flags typed bool with the same store and a bool `outside0` 115 (same code); the
+// remainder loop's j term written point first 115 (same code) and the clip distance's first two products written with
+// their operands swapped 115 (same code): the emitted load order of a product does not follow its written operand order
+// here (retail loads in written order, ours the other operand first for the j term and the first two distance terms).
+// Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
