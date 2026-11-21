@@ -603,6 +603,13 @@
 // compound depth reciprocals with named denominators 535;
 // compound perspective reciprocals initialized before crosses 536.
 // NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
+// M3 lane 15 r122 (fast; control 536, LCS-aligned 420/418 unmatched, register-masked 275/273): in the input tail retail
+// scales the second input in place in its copy (each product stored back over the component and reloaded for the maxima
+// and the clamps) while the first input's products stay in XMM registers, and the maxima nest right as here. Tried:
+// the six products all `v * scale` or all `scale * v` 536/536 (same code); the maxima nested left 599 (690 instructions,
+// register-masked 238); that with the uniform products 599; the second input scaled in place (`d.i *= scale` ...) 536
+// (register-masked 265), ahead of the first input's products 534, through vector3f_scale 536; both inputs scaled in
+// place, first input first 536, second first 534 (the same code as the second input alone).
 // M3 lane 3 r284 (h2m fast screen; control 536): s1 and s0 ahead of the first cross 654 (2590 B); s0 before s1 536 and
 // s1 between the cross and s0 536 (same code: VC evaluates s0 first and sinks s1 to its use either way); the two wave
 // scales named ahead of both adds (`real offset0 = s0 * 0.03f; real offset1 = s1 * 0.025f;`) 650 (2594 B); s0 written

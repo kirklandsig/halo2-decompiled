@@ -981,6 +981,16 @@ void function_245400(s_source_245400 const *source, long index,
 // or after side tests, 165/205/205/218 each. After sides with second material bound first 218;
 // separate side/ordinal decodes 199, long codes from records 198, both 167.
 // NOT kept: the final two-decode form reaches the 0x2c frame and 783 bytes but scores 167.
+// M3 lane 15 r123 (h2m fast screen with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH unless noted; control 164). Lane 5 r213's
+// saved lead re-measured on today's file 50 at 789 B (40 aligned rows). Reading of retail's cross on it: the six products run
+// first-plane j (with the second plane's k, then its i), first-plane k (loaded once, with the second's j, then its i),
+// first-plane i (with the second's k, then its j), so the k row's second product is computed second; the loaded operand is
+// the second plane's member except where the first plane's k takes part. On the lead: the scale select's copies declared
+// i, j, k (retail's copy order) 54 (46 aligned); the two normals in named pointers ahead of the cross, first or second
+// declared first, 205/205 at 783 B (0x245aa0 48: the frame changes); the plane table in a local ahead of the plane pointers
+// 50 (41 aligned); the cross result declared with the edge 50 (same code); the dot through dot3f in either operand order
+// 56/56 (47 aligned); cross3f_staged 50 (same code); the second plane pointer declared first 54 (44 aligned). No match; the
+// lead's statement order and written-out rotation are match-only, so the body is unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
