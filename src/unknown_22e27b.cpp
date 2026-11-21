@@ -574,6 +574,19 @@ static inline real interpolate_linear(real a, real b, real t)
 // `bool restart = dispose;` 1; the loop test `time >= next_time && !dispose` 1 (both the same code); the join test `if (restart |
 // dispose)` 87 (659 B, the thread breaks and the flags word takes EBX); `dispose = false;` again inside the restart break 1
 // (same code); the loop test `!restart && time >= next_time` with the join break kept 122 (652 B).
+// M3 lane 9 r146 (fast with 0x22e957/0x22eeee/0x148119, all MATCH): the owner type read once into a long local for the
+// loop's dispose and restart tests 215 (655 B); the loop as `for (; time >= next_time; next_time += frame_time, elapsed -=
+// frame_time)` with the end-time store in the body 1 (same code); both loop boundary restarts as `restart = false; if
+// (...) restart = true;` on the plain body 210 (658 B); the flags local typed dword 202 (653 B), short 1 (same code).
+// All restored.
+// M3 lane 13 r131 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the restart and switch of both
+// boundary blocks under `if (!dispose)` (no break inside) with no per-pass disposal reset and the join as `if (dispose ||
+// restart) break;` 87 (659 B: the in-range miss lands on the restart test, the flags word is hoisted into BX and the zero
+// moves to EAX), the join as `if (restart || dispose) break;` 1 (same code as now, the skip stays), the join as two
+// breaks, dispose then restart, 87; the first form with the flags read from the field in the loop 207 (657 B: next time
+// takes EBX, frame 0xc, no zero register), that with the per-pass reset kept 207. Re-measured: the join as `restart !=
+// (frame != frame)` 87. The callees are on no call cycle with this function (0x22e957 only calls itself), so the
+// allocation does not depend on a missing callee summary.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

@@ -276,6 +276,20 @@ void function_22fba9(c_class_1473c9 *screen)
 // `c_class_1473c9 *const &` bound to the screen ahead of the loop 23, the text loop's read so 23, both 23; the flag returned into
 // a `started` local read through a `bool const &` 23; a screen copy declared ahead of the model loop for its call and read 23
 // (all five the same code: the reference and the copy fold, the EAX copy and the swapped resets stay).
+// M3 lane 3 r285 (h2m fast, control 23): a second named local `c_class_1a2c81 *parent = screen;` at the pane block's top
+// used only for the model call 23; a `c_class_1473c9 *owner = screen;` used only for the text call 23; the model loop's
+// flag test through a `bool const &` to the flag 23; a redundant `i = 0;` ahead of the model loop's `for (i = 0;` 23, ahead
+// of the text loop's 23 (all five the same code).
+// M3 lane 16 r159 (h2m fast; control 23): diagnostics on the model loop's EAX copy of the screen: the model's animation
+// started without the flag test 25 (410 B; the copy stays though only the null test's branch separates the call from the
+// push); the model started with no null test or flag test 139 (403 B; the push then reads `[esi + 0x34]` directly, as
+// retail, so our build keeps the call's ESI only inside one block); the animation type read ahead of the model call 166
+// (431 B); the same in the text loop 84 (431 B); a dead self-store of the text's value0a 23 (folded away).
+// M3 lane 16 r161 (h2m fast with 0x22facd, 0x230427, 0x22f6ca, 0x22fa5b, all MATCH; control 23): the model's animation
+// type named right after the model call, ahead of the null test, 23 (same code, the EAX copy stays); a `bool const` copy
+// of the flag for the model loop 23 (same code); the model call and its animation read through a `c_class_1473c9 *const
+// &` bound to the screen at the pane block's top 23 (same code); the text test written `animating && text` 26; the model
+// start under `animating && model` with the index store under its own null test 32 (420 B).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

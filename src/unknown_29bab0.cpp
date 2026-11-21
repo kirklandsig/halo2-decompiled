@@ -59,7 +59,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 4 r230 (fast; control 489, difflib-aligned 224, register/offset-masked 77). With local_6.i/.j set before the k
 // test (retail's order: its `movaps xmm7, xmm5` / `movaps xmm6, xmm1` copies sit ahead of the branch, the zero is made once
 // before `cmp di, 2` and the field_68 test compares against it) the whole mode-2 block is retail's but for the MIN operand
@@ -764,6 +765,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Position remains at +0x8c for retail's +0x80. Both path vectors declared together before
 // the heading, before the position, before or after its query, or after normalization 489 each;
 // one path vector before the position or before or after its query 489 each.
+// Translated target as two scalars, query-vector coordinates, explicit planar writes, or shared setter into the query vector before planar normalization 702/669/546/487.
+// The same forms inside side selection 775/775/763/764. NOT kept: the setter gains two and retains the wrong position home.
 // Shared planar radial and heading vector with direct/helper subtraction
 // and copied/assigned heading 671/727/503/727. The same workspace as a
 // point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
@@ -774,6 +777,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // appears, but the new byte takes a home and every slot below moves) 663 at 3499 B; local_25 assigned y first 708
 // (3488 B, frame moves); that with the byte flip 718 (3481 B); y first with local_26 through the existing
 // vector2d_from_points2d 721 (3476 B). Body unchanged.
+// Branch-owned side Y 720, advancing the planar base 718, selecting full Y 693 or its
+// displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
+// and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
+// position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -232,6 +232,20 @@ union s_6ec80
 // +0xc3), that with the mask zeroed before the guard 228 (982 B); the loop through a player-record pointer stepped at the body's
 // end with the mask in the guard 228, with the mask before the guard 9; the else-arm default plus that pointer, mask in the guard
 // 226 (981 B).
+// M3 lane 9 r146 (fast with 0x6ec10/0x5b120, both MATCH; base 5): the mask zeroed in the guard with the 0x49c8 NONE default
+// moved after the 0x18 read (retail's store position) 225; that move alone 7; the mask zeroed in the guard with the NONE
+// default ahead of the 0x4dac block (an earlier 18 lead) re-measured 33; mask and counter both declared among the top
+// declarations and both zeroed at the guard's top 225; mask and counter both zeroed just before the guard 87 (the entry
+// registers shift). All restored.
+// M3 lane 13 r131 (fast with 0x6ec10/0x72a90/0x5b120; base 5; the mask zeroed in the guard re-measured 225: with it the
+// name/second_id and data/short homes swap as the zero and NONE swap registers, so each home follows the constant
+// stored to it): a leading unused parameter at the definition and both calls 5, with the mask zeroed in the guard 225
+// (the link drops the parameter; retail's callers load only EDX and push the flag); the 0x18 read written ahead of the
+// 0x49c8 NONE default 7, with the mask zeroed in the guard 225; the mask as a one-member flags type with inline
+// clear/set/test methods, cleared in the guard, do loop 225, `for` loop 348 (1059 B, still unrolled), cleared before
+// the guard 5 (same code); with the mask zeroed in the guard, the loop's first bit named before the guard 225, the
+// player count named before the guard with the do loop 225, with a `for` loop 348 (1059 B): named constants fold
+// before allocation, so nothing stays live across the two pointer tests.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

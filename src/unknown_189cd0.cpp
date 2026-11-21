@@ -317,6 +317,22 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // two stores are not merged into retail's one store at the arm's top, and the request test's edges are threaded past the
 // marker compare (object edge into the marker block, positioned edge to the no-object store), so that compare, one object
 // use, is what retail's allocation does not count while its code still has it.
+// M3 lane 8 r208 (fast with the eight callees listed, which reproduces the plain 11 and the plain-reads 116; every form
+// without the reference, object reads plain, control 116): the lookup in 0x18c250's form (tag view `.data`, a class-index
+// local, a classes local, the existing spatialization helper) 154 (541 bytes); a second tag lookup for the spatialization flags test
+// in the same block (CSE'd away; diagnostic for a pre-CSE tag use) 118 (530 bytes, tag still EDI); an early object copy
+// bound by a const reference for the early tests and marker calls 116; the late uses (call, started test, dispatch) through
+// a const reference bound to the parameter 116; positioned read through the spatialization bit-field 116 (same code each).
+// M3 lane 8 r210 (fast with the eight callees; control 11, plain-reads control 116): `positioned` computed after the clamp
+// with every object read plain 141, on the kept form 146 (536 bytes); the spatialization pointer `const` (plain reads) 116
+// (same code); the request arm's result chained into the slot store (plain reads) 127 (534 bytes); the started test read
+// through the reference with its volatile cast away (`*(long const *)object_reference`) 116 (the address folds, object EBP).
+// M3 lane 16 r159 (plain, with the five matched callers, all matched each time; on the kept form): the started test
+// written `NONE != *object_reference` 11 (same code); an early `if (tag_index == NONE)` exit with its own duration reset
+// in place of the outer tag block 11 (same code, the resets merge); the playback label call named before 0x189340 16
+// (526 bytes); the audible argument as `positioned + 1` 40 (521 bytes: the flag is read with `movzx` and the late
+// object load moves ahead of the push, where retail reads the flag into BL first); the audible argument as an if-set
+// `long audible` 37 (532 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

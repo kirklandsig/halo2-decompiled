@@ -2174,6 +2174,16 @@ bool function_17afd0(long effect_index, long value);
 // false 56; a false default ahead of the availability with `if (available) same_view = true;` nested in the owner/view
 // arm 119 (502 B, register-masked 6: NONE and the owner leave EBP); the copy form with the availability as one
 // conjunction 48 (494 B).
+// M3 lane 4 r236 (fast with 0x174420 and 0x1751d0; control 12, P re-measured 138 at 510 B): the availability as a true
+// default `g_4b9ed8 != NONE` cleared when the query fails 122 (504 B), on P 123; the availability assigned the query's
+// compare inside `if (g_4b9ed8 != NONE)` 102 (496 B), on P 121; the owner lookup moved after the availability, just
+// ahead of the clearing test, 118 (485 B). In P the conjunction's temporary takes BL and the availability spills; retail
+// writes the 1/0 straight into the flag's slot with the availability in BL. Body unchanged.
+// M3 lane 8 r207 (fast with 0x174420 and 0x1751d0; control 12): the clearing test as `!(owner != NONE && g == owner &&
+// available)` 12 (same code); split into an owner/view test and a separate `!available` test, each clearing 115 (507 B);
+// the same as an `else if (!available)` arm 105 (502 B); the availability assigned `function_155760(g) == 0` inside an
+// `if (g != NONE)` after its false default 102 (496 B); same_view initialised `owner != NONE` and cleared by a view and
+// availability test 118 (499 B); `bool same_view = available;` cleared by the owner/view test re-measured 56.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

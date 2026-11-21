@@ -217,6 +217,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax D (11-20, round 132): no new form, no lower score (117): the body is unchanged. Masking the fallback tag index
+// in place gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX and hoists its load above the frame
+// (152), while the word cast keeps the table in EDI and gives `movzx eax, dx` (117); the stage and pass homes (ESI and EBP
+// against ours' EBP and EDX) and the unfused element loads still differ, and the tag table's own address moves between
+// the reduced and the full image.
 // MiniMax C (11-20): no new form, no lower score (117): read the earlier rounds' forms; the only lower one known is the
 // score-8 chain, and it rests on one-use element bindings and moved stores, so it is kept only with an exact match. The
 // stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged.
@@ -837,6 +842,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
 // base or material field address 164/152. NOT kept: ties or regressions. The fallback still
 // zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
+// M3 lane 4 r237 (fast with 0x2243c0 and 0x224d90, both MATCH; control 117): the tag bound as a `long const &` to the
+// definition's +0x1c field with the word fallback 135 (first +0x0), with the `& 0xffff` fallback 156; the group read in place
+// at both compares (no instance pointer) 165 (first +0xe), with the masked fallback 135; the instance pointer const 117 (same
+// code).
 // M3 lane 5 r219 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each run; main 117): lane 1 r59's reference
 // chain rebuilt on this main 8 at +0x9e (the same eight lines). Permuter on the chain (--fast --anneal --jobs 1, 600 s,
 // the full check here took 4 minutes): 50 tries, best 8. On the chain, each the same code (8): the three pointer zeros

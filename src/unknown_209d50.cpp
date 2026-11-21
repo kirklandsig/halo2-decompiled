@@ -265,6 +265,22 @@ static inline void *function_xc5914d(long thread_index, short size)
 // spill moves to the argument-index pointer and the three allocations rotate); `long *result;` assigned from the pointer just
 // before the count/type test 95 (266 B); the argument index widened once into a `long index` for the compare, the type lookup
 // and the element 96 (265 B).
+// M3 lane 3 r285 (h2m fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the result set
+// in an else arm of the evaluation test with the frame reference declared after the three allocations 90 (290 B); two
+// returns (`return NULL` in the arm, `return arguments` at the end) with the frame reference after the allocations 90
+// (290 B); the result copied in both arms of the initialisation test with `result = NULL` first in the evaluation arm 92
+// (280 B), with the frame reference after the allocations instead 96 (287 B); a thread pointer local with the init block
+// reading its frame field directly (no frame reference) and `result = NULL` first in the arm 83 (277 B).
+// M3 lane 16 r159 (h2m fast with 0x2099f0, which stays matched; volatile-free forms): the frame reference declared after
+// the second allocation, the element taken from `result` and `result = NULL` between them 89 (272 B); the result copy made
+// after the initialisation block with `result = NULL` first in the arm 83 (277 B); `long *result;` declared first and
+// set only in an else arm of the test, NULL first in the arm 89 (277 B); the parameter count read once into a `long
+// count` for the size and the test, NULL first 90 (282 B), into a `short count` 83 (277 B). Every form keeps the first
+// allocation's frame load folded (`mov esi, [eax + ecx + 0x10]`) and has no spill slot.
+// M3 lane 16 r161 (h2m fast with 0x2099f0, which stays matched): with the volatile home, the result copy made just before
+// the initialisation test 93 (292 B), declared after the second allocation 90 (293 B), a `long *const` result with the
+// arm returning NULL 12 (same code); volatile-free, a `long *const` result with the arm returning NULL 90 (277 B), the
+// size passed as a short product with `result = NULL` between the element and the call 83 (277 B).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
