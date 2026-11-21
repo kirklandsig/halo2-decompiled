@@ -968,6 +968,11 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // const reference at both searches and the trace 675, the source radius bound to a const reference for the clamp 675,
 // `result` declared after maximum_height 675 (same code each); `bool result` with either reference 754; `bool result`
 // declared after maximum_height 773 (2990 B).
+// M3 lane 8 r214 (h2m fast with 0x270930 MATCH; control 675, aligned/masked/frame-blind 601/523/536): the flag bits
+// accumulated with `|=` 675 (same code); the node walk reading the parent index before the entry's stores 725 (2960 B);
+// the inserted points copied by `while (inserted_count > 0)` from `inserted[--inserted_count]` 727 (2966 B); the state
+// point's radius and object read into named locals ahead of the count test (where retail loads them) 725 (2966 B); the
+// previous-direction pointer set inside the actor test and passed to 0x2c0d60 725 (2976 B).
 // M3 lane 16 r164 (fast with 0x270930/0x2c4030, both MATCH; control 675, aligned 418/362/276): the matching runs of the
 // aligned listing sit at row offsets from -5 to +57 (retail lays several blocks out in another order), so single forms only
 // reshuffle rows. The enabled bit as `(bool)((g_557c40[0] >> 9) & 1)` 702 (retail's shr/test shape); a short index in both

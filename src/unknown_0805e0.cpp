@@ -891,6 +891,13 @@ void function_1537f0(s_profile_record *record);
 // to -2 gives retail's whole loop (only the head constant differs), and with the link pairs stored as 16-bit 0xffff
 // through word casts (heads NONE) only `mov eax, 0xffff` for retail's `or eax, -1` is left: the element view with the
 // `entry->` pairs is retail's loop, and the open cause is the heads' -1 sharing a register with the links' -1.
+// M3 lane 13 r135 (h2m fast with 0x7f8b0, 0x1537f0 and 0x80490, all MATCH each run; control 18): on round 136's lead
+// (the builder's view from the array element, the `entry->` links as two chained pairs; re-measured 46) the four links
+// as one `entry->` chain in retail's store order 46; the first link stored and the other three copied from that field
+// 46; the links from a `short const` local 46; the heads as two chained pairs in retail's order 46; the record declared
+// ahead of the loop 46 (NONE hoisted into EBP each time). Reading: when NONE takes EBP, the record's first zero word
+// (retail's EBP) loses its register and its uses are served by the second word's EBX (`mov eax, ebx; mov [edx], eax`),
+// so the contest is NONE against that record word; the link-pointer form avoids it only because its base IV changes.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -655,6 +655,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // for the flag tests 24 [0] (both the same code); the rigid body as the array pointer with `+= rigid_body_index` after the
 // type read 111 (268 B) [9], right after its definition 24 [0], and as `rigid_body_index + rigid_bodies` 24 [0] (same code).
 // None splits the index from the rigid body (retail copies the index ECX to ESI and gives the object index ECX). Body unchanged.
+// M3 lane 12 r166 (fast screen, caller 0x1d5bf0 in brackets; control 96 [0]; round 60's one-read form rebuilt 24 [0], long type
+// re-measured 89 [0]: movzx as retail but still after the kind test). On the 24 form: the object pool global in a local read
+// at both lookups 88 [0] (252 B: the model's array base folds into the add); object and absolute index typed dword 24 [0];
+// direct returns in every case of the main switch 24 [0]; the order object index, rigid body, absolute index, headers, type
+// 94 [13]; the type read straight from the pool with the headers local after it for case 0 24 [0] (same code). Colouring
+// unchanged in all (headers ESI, object index EDX, rigid body ECX in place). Body unchanged.
 // M3 lane 2 r126 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 118's one-read form (object index, absolute
 // index, rigid body, header array, byte type) with main's case 0 through havok_object_get rebuilt 28 at 256 B [0] (only the
 // entry's colouring and the `mov al` + `movzx` type load left, as listed). On it: the object index typed `dword` 28 [0]; the
@@ -668,6 +674,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 0xc; return 1;` 94 [0]; a named model local ahead of the object index 21 [2] (the owner then arrives in EAX and the
 // component moves to the stack); the absolute index after the header array 94 [13]; the rigid-body array named ahead of
 // the header array with the element taken after the type read 124 (276 B) [189]. Body unchanged.
+// M3 lane 4 r241 (H2M_FAST, caller 0x1d5bf0 in brackets): round 118's one-read form with case 0 through havok_object_get
+// rebuilt 28 [0] (aligned 22); on it a `long` type 89 [0] (aligned 23: retail's single `movzx eax, byte ptr` load, but one
+// instruction fewer moves the positional score); the type and case 0 both through `headers[object_index & 0xffff]` 133 [213],
+// with a long type 136 [213] (220 B: case 0 then reuses the element address, where retail masks the index again); the
+// rigid body declared first 96 [13] (the index then arrives in EAX, the owner in ECX); no absolute-index local (the type
+// through `headers[object_index & 0xffff]`, case 0 through havok_object_get(component->object_index)) 94 [13], with a long
+// type 96 [13]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

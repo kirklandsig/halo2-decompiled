@@ -1022,6 +1022,9 @@ static inline long font_character_pixel(long alpha, long color)
 // end pointer, 59 each. With dword parity in the pixel producer, 203 each.
 // NOT kept: the parity widens but moves the packed run to EBP and shortens
 // the body to 444 bytes. The literal-byte assembly still differs.
+// Nonempty packed, ordinary or both fill guards and the ordinary inner guard:
+// byte parity 138/111/144/59, dword parity 200/200/192/199.
+// NOT kept: dword parity shortens the fills and changes run allocation. The byte-parity tie retains the narrow packed mask.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
