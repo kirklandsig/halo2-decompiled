@@ -1250,6 +1250,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 133.
 // NOT kept: The quaternion forms grow the frame to 0xc4 and raise the score.
 // The 0xc0 frame exceeds 0xb4. The cross product has a separate stack home and the alignment products are scheduled differently.
+// Scoped normalized scalars 206, initialized scaled vector 206, shared setter for scaling 204.
+// Indexed scale 191, descending projection loop 195, first-component projection seed 130.
+// Origin default at transform 174, output workspace with scaled scalars 206.
+// NOT kept: the 0xc0 frame and rotation-axis spill remain. The projection seed ties.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1758,6 +1762,9 @@ struct s_item_flags_view_10b850
 // Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
 // or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
 // and the reused entry Boolean bytes still differ.
+// Working or sampled gravity step 837/837. Gravity-adjusted velocity initializer 868.
+// Working, sampled or both conditional vertical values 851/858/858. Separate height 824.
+// Single gravity observation 824. NOT kept: the frame remains 0x154 and the entry flag stores differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

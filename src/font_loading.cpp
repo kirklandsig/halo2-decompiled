@@ -1022,6 +1022,9 @@ static inline long font_character_pixel(long alpha, long color)
 // end pointer, 59 each. With dword parity in the pixel producer, 203 each.
 // NOT kept: the parity widens but moves the packed run to EBP and shortens
 // the body to 444 bytes. The literal-byte assembly still differs.
+// Next input per arm or defaulted 190/219. Next byte count per arm or defaulted 116/223.
+// With full-width parity 207/204/212/208. NOT kept: the wider parity still shortens the fills
+// and the new cursor forms leave the literal and packed-run differences.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

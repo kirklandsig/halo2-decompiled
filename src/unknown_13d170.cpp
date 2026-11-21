@@ -949,6 +949,11 @@ struct s_physical_block_iterator
 // Updated page total 213, updated timestamp 374, both 373, winner timestamp 201,
 // winner plus updated timestamp 374, winner plus both 373, conditional timestamp 376,
 // and updated page total with named weighted products 213. NOT kept: no gain at retail length. The policy join still differs.
+// Retirement before winner copy 243, ordinal before eligibility 355, read-only ranked record 201.
+// Page total before timestamp 367, tie break 284.
+// Ordinal before candidate updates 250, retirement and policy rejection continue 324.
+// NOT kept: the tied forms leave case zero threaded. The other forms disturb the matching prefix.
+// Retirement with an explicit end-of-ring check 254. NOT kept: the matching limit setup changes.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
