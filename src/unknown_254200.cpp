@@ -312,6 +312,12 @@ void function_254200(void)
 // the size 17 (the colour reloads then xmm2, xmm1, xmm0 from 0x24, 0x18, 0x20: neither slot nor register order); the size
 // parameter doubled in place with the point copy after the 0x1cf50/0x1c710 calls 30; the point copy at the top of the
 // readiness block, ahead of the bitmap choice 96 (1093 B). All restored; the x, y + size, constant group stays ours.
+// M3 lane 14 r135 (fast, control 4): the bitmap lookup helper as two nested ifs 4 (same code); each corner through a
+// forceinline (u, v, x, y) helper issuing the texture-coordinate and position calls 4 (same code); the drawing block in a
+// forceinline helper taking the point, scale, size and colour 230 (1095 B); the colour helper taking the colour by value
+// 218 (1133 B); the four texture-coordinate calls through a forceinline (u, v) helper 8. Reading: a scan of every function's
+// reload groups right after a call on a skipped path finds matched functions in both orders (0x22aff1 reloads its
+// second-declared local first, 0x13f700 its first-declared), so no register, declaration or definition order sets this pair.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -728,6 +734,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // value 2, every quad's 2 (both the same pair: the reference that reverses 0x254490's colour reloads does not reach this
 // pair); the lower texture coordinate written `-(arg_1 * 0.5f) + 0.5f` 2; the upper written constant first 2; the first
 // quad's reference with the upper constant first 2 (all the same code). All restored.
+// M3 lane 14 r135 (fast, control 2): the bitmap lookup helper as nested ifs 2 (same code); the two 0x14bc0 calls without
+// the (short) cast 2 (same code); a 600 s permuter run (60 tries), best 2; the last quad's corners through a forceinline
+// (u, v, x, y) helper 162 (2176 B, first +0x83); the texture-stage values by enumerator name 2 (same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

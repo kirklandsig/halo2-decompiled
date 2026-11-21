@@ -464,6 +464,17 @@ const dword g_455978[81] = {
 // reverted: eight dead real_point3d_set expansions just before the 0x11bed0 call 268 (no caller-wide inline budget
 // moves the expansion); 0x279740's file without /Ob1 427 (0x1d01c0 207), the same as `inline`, so retail's single
 // expanded range check is the helper's code (round 212's reading), not an auto-inlined 0x279740.
+// M3 lane 8 r212 (h2m fast with 0x279740, 0x11bed0 and 0x14a280, all MATCH; control 268, aligned 206, register-masked 130).
+// Retail expands 0x279740's range check in only two game functions: this one's first release and matched 0x1d01c0, whose
+// file writes it through a local rigid-body release helper (component_body_release, the check written out). Diagnostic:
+// the first release through a file-local copy of that helper gives retail's release block instruction for instruction
+// (`dec; mov ax; mov ebx, 1; jne; cmp edi, 0x80061000 ...`) but 367 positional (2131 B: 0x11bed0 is still expanded here),
+// aligned 187, masked 111; with the always-true `if (arg_11)` guard as well 331 (2057 B), aligned 171, masked 70 (lead
+// diff kept outside the tree). Tried: the first release under `do { } while (0)` 268 (same code, still a call); on the
+// helper form, the code after the query nested under `if (!found)` 367 (same code, 0x11bed0 still expanded), the direction
+// count as `arg_8 ? 27 : 18` 448 (2119 B), the helper forceinline 367 (same code). Diagnostics: the 0x11bed0 call removed
+// 382 (0x279740 still a call at both releases), the second release removed 534. So the first release's expansion is that
+// helper's code, not an inlining budget shared with 0x11bed0; what keeps 0x11bed0 out of line here is still open.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

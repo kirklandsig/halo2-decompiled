@@ -1276,6 +1276,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // result local 44 (140 B); `NONE != player->unit_index` 5; `NONE != slot && NONE != unit->weapons[slot]` 5 (same code).
 // Matched 0x151c10 and 0x151940 open the same way and fold the data load into the add; here the getter reload gives the
 // data two uses at code generation, so it is loaded into EDX first.
+// M3 lane 16 r163 (fast with 0x152bf0, MATCH; control 5): the lookup's index as a narrow read through the player with an
+// explicit `& 0xffff` 38 (the entry is retail's; left `movzx edx, di`); a pool copy local for the first player address
+// 5 (same code); the hand as `primary ? 0 : 1` 5 (same code); the getter-reload read narrowed (`*(word const *)&` of the
+// getter's field) 43; the test through the getter with the lookup through the player 27 (138 B, a repeat).
 // M3 lane 2 r123 (fast; control 5): the player bound as `s_tail_player *const &` to the getter's result 17 (plain reads)
 // and 5 (with the getter reload, same code); the player as an `s_tail_player &` 17, with the getter reload 5 (same code);
 // the first player address in the byte-offset spelling with the typed getter reload 5, the reverse 5, the reload as a
@@ -1715,6 +1719,15 @@ void function_150820(dword *bits, bool local_only)
 // player esi and the hand edi, and the unit index still takes ecx where retail takes edx, so the whole body stays one
 // register rotation off; the only form that gives retail's registers (18) rereads the unit index through the player
 // getter and stays match-only.
+// M3 lane 5 r222 (H2M_FAST, control 43): on the 73 lead (the lookup through the getter) every register is retail's and the
+// only rows left are retail's `add eax, edx; mov esi, eax` folded into `lea esi, [eax + edx]` (the re-read merges the sum
+// with the player). Forms from the const-reference family: the player read through `s_tail_player *const &kept = player`
+// at every use on the 73 lead 73, at the guard only 73; the player bound as `s_tail_player *const &player =
+// tail_player_get(player_index)` on the 73 lead 73, on main 43; the kept reference only at the two late reloads on main 43
+// (all the same code as their bases: the reference folds).
+// NOT kept (M3 review 11-21, MiniMax C 11-20): the unit index read again through the player getter at the object lookup
+// and the 0xcd7b0 argument scores 18 (retail's player ESI, hand EDI, unit index EDX) but is a reread device, kept only
+// with a byte match; left on it: the player address folded into one LEA, a second unit-index read, the policy byte in DL.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

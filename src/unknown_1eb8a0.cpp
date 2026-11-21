@@ -794,6 +794,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
 // second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
 // local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
+// Sample dot across the zero-tick pointer choice: paired terms 660/660, three
+// products 661/661, successive sum 603/659, and complete sum 659/603, with
+// the rate applied separately or in the initializer. NOT kept: the higher scores
+// shorten past retail, and each form leaves the supplied direction in EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

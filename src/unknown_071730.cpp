@@ -463,6 +463,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // in retail but scores 452 (1565 B: the frame, the entry registers and the dead state stores all move), so the rest
 // of the body fits only the expanded getter. Reading: retail's [esp + 0xf] before `push edi` and [esp + 0x13] after it
 // are the same result byte, so there is no second, unset result.
+// M3 lane 2 r125 (H2M_FAST with 0x5b080/0x706f0, plus 0x6d380/0x6e720 for the getter trial; control 376): the data
+// getter's own body as one three-part test with an early return 409 here (0x5b080 itself 13 at 36 B, 0x6e720 126; restored);
+// diagnostic, reverted: the getter called through a file-local inline forwarding function 376 (the wrapper and the getter
+// both expand); the type test as an early `return` 457 (1594 B); the second live-state test written positively with the
+// main work in its arm and the mode-14 exit in the else 376 (same code); the two later live tests through the session's
+// own live-test member (`function_058d20()`) 376 (same code). Still BLOCKED-BY 0x5b080's call-site depth.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
