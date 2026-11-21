@@ -1112,6 +1112,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax D (11-20, round 132): no new form, no lower score (234): the body is unchanged. The first cross still
 // multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the
 // same code for all sixty-four operand spellings and is used by nine matched functions in this file, so that product
@@ -1128,7 +1129,6 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // where retail's ends in XMM0.
 // MiniMax B (11-20): no new form, no lower score (234): the first cross multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the same code for all sixty-four operand spellings and is used by nine matched functions here, so that difference needs this one cross written out in place; the damping bit's first extraction also still uses ECX where retail uses EDX.
 // MiniMax G (11-20): no new form, no lower score (234): the permuter reaches 230 only in a variant that casts the facing pointer to volatile, which is barred, and the four flag declarations in the order that puts the damping bit in EDX give 230 as well, under the keep bar; the first arm's cross still reverses only retail's two `a->j * b->X` products, which the shared helper cannot change without moving the functions that already match.
-// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
 // (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
@@ -1772,6 +1772,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // three named reals (i, j, k declared in either order) for the length 506/506 (3026 B); the direct arm's limited pair computed
 // first with the delta copied from it 433; the step computed ahead of the delta 577 (3031 B); the general arm's length through
 // the existing magnitude3d 297 (3036 B). Retail loads the length's components k, j, i; ours j, i, k. Body unchanged.
+// M3 lane 2 r131 (H2M_FAST with 0x1f0450/0x24590/0x1f03e0, all MATCH; control 234): the damping, direct and gravity flags
+// as mask tests (`(state->flags & 0x10) != 0` and so on) one at a time and all three 234 each (same code); the history
+// test's second half as `!direct` 622 (3052 B: retail reads the flags byte again there). Body unchanged.
+// M3 lane 16 r168 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 234): every input read through the
+// `input` pointer (the direct and flying arms too) 640 (2971 B); the ground-bit test as `!((flags >> 0) & 1)` 234 (same
+// code); the direct bit tested at its use with no `direct` local 620; the gravity clear's test as `flying ||
+// !limited_step` 445 (3053 B); the direct arm's fallback copy member by member 588 (3020 B). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

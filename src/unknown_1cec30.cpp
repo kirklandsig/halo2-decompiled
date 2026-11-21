@@ -1709,7 +1709,7 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
-// score 26 (was 26): the scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
+// score 26 (was 26): r130 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
 // M3 lane 11 r135 (fast; control 26): the magnitude helper taking its value by `real const &` 26; `target -= position`
 // through a forceinline helper writing through a pointer 26; the stop distance in a forceinline (velocity, step, `real
 // const *` time step) helper given `&delta_time` 26; the scale helper writing its result through an out parameter 26 (all
@@ -1903,6 +1903,14 @@ PRIVATE __forceinline real const &component_time_step()
 // only other `[reg + 4]` read then `add reg, 4` on this global is matched 0xc6810, where four direct reads (the first in each
 // of two arms, float stores through an object pointer between them) make the rate's address a common subexpression; here
 // only argument-home stores sit between the two reads, and the link-time build keeps the globals pointer. Body unchanged.
+// M3 lane 2 r130 (h2m fast; control 26): the force arm's step written as the product again 45 (the product is shared,
+// the zero register moves); the head's time-step reference in its own block with a second binding in the stop block 26
+// (same code); the time step's address in a pointer local taken ahead of the scale 142 (476 B); the ratio computed and
+// stored right after the subtraction 153 (488 B, the rate still read as `[eax + 4]` after it); the stop distance halved
+// by `/ 2.0f` 26 (same code). Diagnostic (wrong code): a third surviving rate read (the low-step lower bound times the
+// time step) 88 at 479 B, all three `[eax + 4]`, so the kept `add eax, 4` is not a use-count effect. Matched 0xc6810's
+// `add ebx, 4` follows a call (0xb58c0) between its reads, which kills the value but not the pointer; retail here has no
+// call and no store that can reach the globals between its two reads.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

@@ -327,6 +327,11 @@ void function_254200(void)
 // flag read into a bool ahead of the texture block 238; the bitmap lookup index as a word cast 279 (1100 B). Reading: in this
 // function, 0x2548f0 and 0x270d90 ours emits each reload group in descending register order (here x, then xmm1, xmm0), retail
 // in ascending order after any plain load (x, then xmm0, xmm1). All restored.
+// M3 lane 11 r147 (single-address fast, control 4): a dead forceinline helper holding 1-8 named locals called at the top,
+// ahead of the size, ahead of Begin, ahead of the first or the second vertex 4 each (40 runs); one to three redundant
+// paren pairs around the size product, the y sums, every sum, the first x or y sum or a colour product 4 each (17 runs);
+// 0-40 unused initialised locals at the top 4 each (no period-8 or period-32 state); diagnostic, the depth as a non-const
+// file-scope real 259 (1205 B); the point read through pointers to its x and y (0x2548f0's form) 341 (1162 B).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -754,6 +759,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // (2192 B), its first texture-coordinate call in C form 369 (2209 B), its Begin in C form 446 (2196 B); file-level forms measured
 // with 0x254490's trials: the system headers first 2, the view getter as a ternary 2, the colour helper moved 2, the lookup index
 // as a word cast 527. Retail reloads xmm0 (the lower coordinate) before xmm1 (the depth); ours always descending. All restored.
+// M3 lane 11 r147 (fast, control 2): 0-40 unused initialised locals at the top 2, except at n = 4 mod 8 18 (the last
+// quad's y + size fold returns: a period-8 state for the fold, none for the reload pair); a dead forceinline helper with
+// 1-4 named locals ahead of the colour fetch, of the first quad's 0x1cf50 call or of the second texture call 2 each (12
+// runs); diagnostic, the depth as a non-const file-scope real 369 (2276 B).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

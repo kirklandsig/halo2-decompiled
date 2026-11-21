@@ -1626,7 +1626,8 @@ static __forceinline void query_restore_pending()
 
 bool function_1900a5(long index);
 
-// score 663 (was 703): The aligned 0xc0 frame agrees. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// score 643 (was 663): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// Earlier at 663 (was 703): the same differences at 2878 bytes.
 // Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Earlier measurement 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
@@ -2249,6 +2250,17 @@ bool function_1900a5(long index);
 // Limit from the running total 662, count from the first request index 664. NOT kept: the
 // 642 forms reach retail length but move the quota check out of the retail loop head. The
 // logon comparison, validity-based cursor and slot selection remain.
+// M3 lane 16 r168 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 663, aligned
+// 301 by difflib with addresses masked). Kept, 663 -> 643 at retail's 2862 B: the request loop reaches each group
+// through a group pointer (`values`, the users loop's name) for the player, the scan key and the owner; the group
+// cursor then sits at +0x18 and the player cursor steps from group + 0x1c as in retail (aligned 415: the alignment
+// shifts, the positional count falls). Tried on 663: the delay as `> 3 ? 300000 : 2000` with the last request time in
+// a local read ahead of the request test 660; with that local under a nested test 658 (an arm swap, not kept). On
+// 643: the last request time in a local under a nested test 643 (same positional count); the free space named
+// (`record_space`, `property_space`) 663 (2846 B, aligned 281: retail's `sub` pair, but the positional rows shift); a
+// properties pointer with `properties_used += record->count` ahead of the rolled fill 723 (2910 B), with the add after
+// the fill 670 (2894 B); the variant lookup nested under the state test (no assignment inside the condition) 643 (same
+// code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -2305,10 +2317,11 @@ void function_074aa0(void)
             long now = query_time_now();
             for (long group = 0; group < 5; group++)
             {
+                s_search_value_group *values = &g_509454[group];
                 long added = 0;
                 for (long i = 0; i < 16 && added < 4; i++)
                 {
-                    s_search_player_values *player = &g_509454[group].players[i];
+                    s_search_player_values *player = &values->players[i];
                     s_surface_description *variant;
                     if ((player->state == 1 ||
                         (player->state == 4 && now - player->time >= g_network_configuration.valuec74)) &&
@@ -2318,7 +2331,7 @@ void function_074aa0(void)
                         long existing = records_used;
                         if (variant->type == 5)
                         {
-                            memcpy(&identity, g_509454[group].unknown10, 12);
+                            memcpy(&identity, values->unknown10, 12);
                             for (existing = 0; existing < records_used; existing++)
                             {
                                 if (!memcmp(g_50c474[existing].identity, &identity, 12) &&
@@ -2327,7 +2340,7 @@ void function_074aa0(void)
                             }
                         }
                         else
-                            identity = g_509454[group].owner;
+                            identity = values->owner;
                         if (existing == records_used)
                         {
                             s_cache_property_record *record = &g_50c474[records_used];

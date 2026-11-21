@@ -65,6 +65,12 @@ void function_2232a0(void)
 }
 
 // score 47 (was 47): The terminal record gets its base before the stores, and the dispatch stub carries the count in EDX.
+// M3 lane 7 r208 (H2M_FAST with 0x223240 and 0x2232a0, MATCH throughout; control 47, aligned 20): the terminal record
+// indexed `local_0 + 1` (the loop counter, equal to the view count after the loop) 182 (584 B, first difference +0x0); that
+// with the stub call's count `local_0 + 1` and no view-count local 99 (575 B); the terminal record indexed `local_2 + 1`
+// 183 (583 B); the view count declared after the loop re-measured 40 (the record base still added before the six stores);
+// the terminal call given `local_2, local_3` for the two layout arguments its constant-mode path never reads 47 (same code).
+// 0x2b5d0's real body is in src/unknown_023540.cpp, a file another lane holds this round: still BLOCKED-BY 0x2b5d0.
 // MiniMax D (11-20, run 131): no new form, no lower score (47): retail folds the record base into the six stores' displacement and forms the pointer with a lea after them, where this build materializes the base early, and the tail's 0x2b5d0 call takes its count in another register and lacks the `mov eax, edx` that retail has before the fstp: BLOCKED-BY 0x2b5d0 (its stub is in src/stubs/lane_k.cpp).
 // MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
 // score 47 (was 47): Earlier score 79. Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
@@ -480,6 +486,12 @@ void function_2232a0(void)
 // as `&g_47f0f8[0] + view_count` 47, through its first field 47, through a named record pointer 47, `unsigned long
 // view_count` 47 (all the same code: the base still adds before the stores); as `&g_47f0f8[local_2] + 1` 183 (583 B).
 // Still BLOCKED-BY 0x2b5d0 for the tail's count register.
+// M3 lane 1 r148 (H2M fast with 0x223240/0x2232a0 MATCH, 0x223080 2 on the reduced image as before, check.py --fast agrees;
+// control 47): the terminal record indexed `local_2 + 1` with the view count kept for the stub call 183 (583 B, first
+// difference +0x0); the outer loop as a `for` with the counter set in its init 161 (first +0x30); the source pointer
+// declared inside the loop (no outer declaration, no found-arm clear) 110 (first +0xa8); the view count computed right
+// after the player count, ahead of the counter and layout 47 (same code); the view count declared const 47 (same code).
+// Body unchanged.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

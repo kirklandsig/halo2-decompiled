@@ -364,6 +364,12 @@ bool function_26d370(point3f const *point, vector3f const *direction, plane3f co
 real function_30bf0(vector3f *vector);
 
 // score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// M3 lane 6 r223 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): local renames, to test name order among
+// same-size homes: `a`/`b` as occupant_secondary/occupant_primary, the facing pair as secondary_reach/primary_reach,
+// the squared distance and clip amount as distance_sq/clip_fraction, range and scale as perception_range/range_scale,
+// and (diagnostic) `result` under two names sorting first and last: 84 each (same code, homes unchanged). The frame map
+// is as round 67 found: ours shares the clip amount's slot with the seat loop's down-counter, retail with the squared
+// distance.
 // MiniMax E (11-20): no new form and no lower score (84): retail's homes run result 0x8, facing maxima 0x14/0x18, the
 // clip amount sharing 0x1c with the squared distance, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and the
 // delta at 0x4c/0x50/0x54, while this build puts the result at 0xc, the clip amount at 0x10, the range at 0x18 and the
@@ -1009,6 +1015,10 @@ real function_30bf0(vector3f *vector);
 // Direct default-level returns at mode, settings, unscaled radius or scaled radius failure 315/320/254/238.
 // Paired entry guards, paired radius guards, mode with unscaled radius, and all four guards 325/222/360/317.
 // NOT kept. The exits raise the score and leave the result/clip allocation unresolved.
+// Default primary threshold carried across the scaled test, with fallback block, selected secondary,
+// selected pair or final fallback 90/90/90/104. Conditional threshold initializers in both orders
+// 101/90, carried primary with one joined pair 90, separate default primary declaration 90.
+// NOT kept: the threshold lifetime variants raise the score. Result, clip and range homes still differ.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2274,7 +2284,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 158 (was 168): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// score 158 (was 158; 168 earlier): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// M3 lane 6 r223 (h2m fast with 0x26be00/0x26be30/0x25d690/0x25d740/0x25d810, all MATCH; control 158): 0x26be00 is now
+// this machine's and its file is open, so its lookup was respelled there: `(index & 0xffff) * size + data` 158, the
+// multiply by a signed 0x888 158 (both the same code here and 0x26be00 still matches), `(word)index * size` 697 (0x26be00
+// 7); diagnostic, restored at once: the actor lookup here written with its operands swapped 158 (same code). The head's
+// `[eax + ecx + 0x58]` follows neither spelling (retail's own 0x26be00 body and 0x263210 use `[offset + data]` too).
+// The positive arm with the NONE case first 164 (the NONE arm then precedes the slot test; retail keeps it after the
+// arm's closing jump and cross-jumps it back to the count store); the count read into a `short` used for the test and
+// the decrement 158 (same code). Reading: the velocity dot after the velocity normalize folds the direction in both
+// builds; only after the relative normalize does retail load it into XMM1-XMM3, which earlier diagnostics reproduced
+// only with the direction escaped and that call opaque, so the lead is 0x30bf0's whole-program summary (BLOCKED-BY 0x30bf0).
 // MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
 // base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
 // takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
@@ -2991,6 +3011,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 585, nested state and one view influence read 605, combined state and one view influence read 605.
 // NOT kept: The state-first forms tie. The other forms shorten the body and raise the score. The one-read forms also disagree with retail’s two influence loads.
 // The 0x80 frame agrees. The contact-head address reverses base and index, and the player iterator and direction registers still differ.
+// Player-pointer and slot searches with bounded header tests, independently and together 363/353/179.
+// Bounded slot with failure default 164, bounded pointer initialized by selection 362, shared table
+// across separate scans 158, shared table with bounded scans 179, block-scoped bounded cursors 364.
+// NOT kept: the shared table ties and the other forms regress at retail length. Contact-head address
+// encoding and the player iterator's table register still differ.
 // Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
 // each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
 // The contact-head address remains the first difference and the shared reset shortens the body.

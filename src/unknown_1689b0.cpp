@@ -2203,6 +2203,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
 // the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
 // Body unchanged.
+// score 551 (was 551): The first count and clearance stores and the prism ordinal still miss their retail homes.
+// The first count and clearance stores and the prism ordinal still miss their retail homes.
+// Squaring after plane distance, projection or the vertex bound 548/548/548, after the edge walk 543.
+// Minimum first 570, count first 576, minimum and count first 570, count and minimum first 570.
+// NOT kept: 548 gains only three points. The 543 form reproduces the already-rejected late
+// one-use square, and the accumulator orders grow and raise the score.
 // M3 lane 12 r167 (h2m fast with 0x120790 and 0x2469b0, MATCH in each; control 551): the side vector through the existing
 // cross3f_staged 553; the perpendicular through cross3f_staged 553; relative and edge through vector3d_from_points3d 599
 // (2873 B); the side test as `0.0f > dot3f(...)` 551 and with the side vector as the dot's first operand 551 (same code
@@ -2221,6 +2227,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // one reciprocal, each sum loaded and multiplied by it in x, y, z order, but the plane distance's rows flip operand sides
 // and the cross-product region churns); that with the distance's y row plane first 578; that with the zero-based edge
 // loop 620 (2902 B); with `radius * radius` at its use as well 612 (2898 B). Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x120790 and 0x2469b0, both MATCH; control 551): the face count, radius and sum renamed
+// 551 (identical code: names do not break these homes' ties); `relative` computed j, k, i 567 (2882 B); the second point
+// reconstructed before the first 569 (2869 B, retail's clamp select but the second point stored first); the nearest reset
+// moved to just after the plane distance 548 (the FLT_MAX load and store at retail's place); with `inside = true` moved
+// up as well 545 (statement moves, a lead only); on 545 the edge loop zero-based 599 (2885 B), on main's body 602 (its
+// `vertex = 0` start becomes a loop-invariant zero in EBX where retail makes the index's zero fresh). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

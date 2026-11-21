@@ -1020,6 +1020,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // operands swap, the pair stays); the data pointer at the loop head 329; count as a ternary with a self-copy arm 288 (pair
 // unchanged); the previous point as an aggregate ternary 388 (1357 B); special as `? true : false` 130. Diagnostic: the scan
 // index renamed with 2 to 128 characters 2 each (no name-length effect). Body unchanged (286).
+// Signed-word link ordinal with guarded admission 357, exhaustive admission
+// 361, or a shared admission and transition target 361.
+// With a visit-owned predecessor 367, one reconstruction depth 421, or an
+// entry node receiver 361. Traversal-lifetime count with long/short link
+// ordinal 341/373. NOT kept: the forms regress even when the frame is 0xe4.
+// The entry depth load still folds and the predecessor/flag homes differ.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
