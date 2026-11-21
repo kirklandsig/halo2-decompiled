@@ -3163,6 +3163,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // (67), so the second lookup is not what frees the register; the count through `biped` at both places plus one or two
 // extra unconditional uses of the index (a probe store) 76 / 80: the cached byte keeps EBX and the argument then arrives
 // in EDI, so a higher reference count for the index does not give retail's EBX argument with an uncached byte either.
+// Component index shared by admission and lookup: signed byte count 82, nested
+// count 63, short body getter 75, nested with getter 75, guarded query rejection
+// 90/103 with long/short selector, unsigned byte count 82, byte with getter 88.
+// The guarded exits defer the EBP save to pool lookup and lengthen the function.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4482,6 +4486,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // shortens), plus the sine's forward through a pointer 597 (2691 B; LTCG still folds two of its reads to biped-relative
 // loads), both up and goal through pointers 552 (2696 B). Retail reads the sine's forward through EBX throughout and sums
 // it (up.k * t3 + up.j * t2) + t1 * up.i.
+// Defaulted special-state byte with two result name ranks 661/661, both admitted
+// assignments 628, stationary branch first 599, previous turn key cases 608,
+// key before sine fallback 623, predicate arms 630, key cases with special byte 634.
+// NOT kept: the reduced 602 control differs from full 537. Stationary-first gains
+// three in the reduced image and grows by a byte. Result and rate homes still differ.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6212,6 +6221,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
 // the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
 // component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
+// Length local 79, direct forward field with success exit 154, length bound in
+// the exit test 79, const forward with success exit 79, both crosses staged
+// with success exit 79, ordinary crosses 203, staged crosses with direct
+// forward 154, trig construction with success exit 79. The first rotation
+// still spills the complement before its dot sum finishes.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

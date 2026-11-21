@@ -1488,9 +1488,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the direction's x with both in registers where this build copies the direction's x and takes the facing's y from
 // memory; the side vector's y replaced by the direction's x gives 256, the facing's x and y read into named locals
 // before the test 270, and the helper's multiply order and temporaries 239.
-// score 226 (was 239): since m3 lane 2 r115 the entry (zero XMM1, result copied to XMM0), the three exits and the
-// 0x3c frame are retail's at 1176 bytes against 1173; left are the XMM numbers (radius XMM4 for XMM5, the direction
-// XMM6/XMM2 for XMM2/XMM3), the type-zero arms' shared tail, the lateral spill and the trace call's radius temporary.
+// score 198 (was 226): The 0x3c frame and the 1173-byte extent agree. The radius
+// remains in XMM4 instead of XMM5. Direction allocation, radial branch threading,
+// the lateral spill and trace radius transport still differ. One forward-distance
+// minimum now serves the gate and the fraction (198).
+// At 226, the entry result register and three exits already agreed. The previous
+// extent was 1176 bytes, with the radius in XMM4 and direction in XMM6/XMM2.
 // Before r115: the zero and radius had different XMM homes, and unsupported types used a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
@@ -1871,6 +1874,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // MiniMax R (11-20): score 226 (was 226): no new form; the first difference is still the radius in xmm4 where retail
 // loads it into xmm5 at +0x4f, and the cosine block keeps its own allocation of the direction, the desired vector and
 // the zero, so the whole body stays 223 instructions away from retail's.
+// Delayed lateral with shared minimum 306, early forward rejection 306, two fraction
+// assignments with shared minimum 198, shared lateral dots 226, shared forward dots
+// 198, both projections 249, both with delayed lateral 303. The common minimum
+// alone recovers the radius product's shared lifetime and retail's length.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
@@ -1918,9 +1925,10 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
     center.y += adjustment.j;
     real lateral = center.y * side.j + center.x * side.i - (local_1->y * side.j + local_1->x * side.i);
     real forward = center.y * direction.y + center.x * direction.x - (local_1->x * direction.x + local_1->y * direction.y);
-    if (forward > radius * 0.11f)
+    real forward_minimum = radius * 0.11f;
+    if (forward > forward_minimum)
     {
-        real fraction = forward > radius * 1.3f ? 1.0f : (forward - radius * 0.11f) / (radius * 1.189999938f);
+        real fraction = forward > radius * 1.3f ? 1.0f : (forward - forward_minimum) / (radius * 1.189999938f);
         real offset = (fraction * 1.5f - 1.0f) * lateral;
         point2f desired = { center.x + offset * side.i - local_1->x, center.y + offset * side.j - local_1->y };
         real distance = movement_normalize2d(&desired);
