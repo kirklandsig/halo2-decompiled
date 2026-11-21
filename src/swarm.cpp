@@ -184,7 +184,7 @@ s_swarm_spawn_slot *g_5044c4;
 
 void function_26ae30(long object_index);
 void __stdcall function_b8540(long object_index);
-void __stdcall function_1e1a00(long actor_index, long value);
+void __stdcall function_1e1a00(long actor_index, bool value);
 
 /* deletes a swarm: takes its creatures out of the world and lets go of its
    actor and of the spawn slots that name it */

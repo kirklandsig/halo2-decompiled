@@ -2031,9 +2031,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 431 (was 433): r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 431 (was 431): r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
+// Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier note: r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
@@ -2616,9 +2618,35 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // byte and the state declared first 629 / 2376; a pointer local for the turn facing 622 / 2376; one to three
 // parenthesis pairs in case 4's dot 622 / 2376 (regrouped, no phase effect). The switch as an inlined predicate
 // with the tail on the caller's own locals 645 / 2384 (frame changes, aligned 532).
+// M3 lane 16 r160 (fast with 0x110ab0; base 431 at 2416 B, difflib-aligned 165; each form as positional / bytes / aligned).
+// Layout cause: the post-switch `if (local_3)` block is placed after the first predecessor that leaves the flag in AL;
+// with case 20 last its else arm falls into it (the base), otherwise it follows case 9's call-result store. Retail has
+// it after case 0. Diagnostics (wrong code): case 9 removed puts it after case 0 and gives retail's case 5 (compare in
+// each arm) and case 10 (jump into case 0's `sete`); case 0 as a call result puts it after case 0; a byte from CL does
+// not. Case 9 spellings (field first, `== false`, `? 0 : 1`, `? : true` ternary, early break, named bool, inline
+// helper) all keep it after case 9. Forms: case 20 before case 14 419 / 2400 (case 20's else arm becomes retail's
+// `mov al, [d1]; jmp` into the test); case 13 as `break` or `default: break` after case 20 479; case 13 as the shared
+// exit placed after case 20 445 / 2420 / 144 (test after case 0, cases 5, 9, 10 exactly retail's; a case moved by
+// score, match-only), as `return 1` there 513; on that base: case 7/8's flag as `arg_1 == unknown018 ? unknown264 :
+// true` 492 / 2420 / 142; case 20's main arm as `if (!ac && !d0) { local_30 = 1; goto local_31; } local_3 = false;`
+// 503 / 2428 / 134 (retail's own return-1 epilogue there; `!(ac || d0)` and the conditional clear 492, `ac ? false :
+// !d0` 464 / 2396 / 165); its else arm as `else local_3 = b0 == NONE || d1;` 504 / 2424 / 150 (retail's AL form, the
+// tail's scratch rotation moves), `d1 != 0` 501; plus `? 1 : 0` at +0x465 and cases 9 and 11 field first 509 / 2428 /
+// 147; plus case 5 as `!function_e70e0(arg_1) ? 0 : rate` 385 / 2416 / 130 (arms swapped, match-only); plus the
+// second facing publish in the first's order (0x456, 0x458, 0x454) 384 / 2416 / 129 (that order alone on the base 429).
+// LEAD, not kept (case moved and arms swapped, match-only): the 384 form. Adding case 2's aggregate copy or case 4's
+// direct facing reads (retail's code at both) gives retail's 2396 bytes but exchanges actor and state again (518 /
+// 2384 / 207 with both; 504 / 2396 / 183 with case 18's targets held); the margin is two or three references (removing
+// case 14's two state references, wrong code, restores actor EBX). Not flipped by: case 4's facing through a pointer
+// local or a const reference, case 2 member by member (no exchange, but not retail's `lea` copy, 494 / 2416 / 184),
+// declarations state first 518, flag first 540, datum first 584, `arg_2` for `local_2` at both uses 518, a repeated
+// actor read in one condition (folded) 518, case 7/8 falling into case 0 518.
 // The dispatch bounds branch still reaches a later completion block.
 // Early pending assignment, joined or split motion exits, motion-result clear with nested or early guards,
 // inactive animation guard, named admission and switch-joined release 431 each. NOT kept: all tie.
+// One completion result through the sole return, byte/bool/short/long 708/708/672/669;
+// the same result guarding the whole pending tail 708/708/672/669.
+// NOT kept: every form lengthens the callback and loses the agreeing dispatch prefix.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
