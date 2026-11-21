@@ -438,6 +438,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // (+0x1a7: the restore block unchanged, the tail worse); on the direct store the five shader-record calls in a new
 // forceinline helper taking the state 5 (+0x1a7), in their own block 5 (+0x1a7) (both the direct form's code); the
 // restore block's word read from a recomputed entry address instead of the stored field 294 (981 bytes).
+// M3 lane 1 r145 (h2m fast; control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// word read through `*(word const *)*(byte *const *)` of the field 5, the chain lookup as byte arithmetic on the chain base
+// 5, the tail's shader-record reference bound at the function's top 5, the shader record re-read into `record` before each
+// of the five tail calls 5 (all +0x1a7, the direct form's code); on the reference form the chain index reading the word
+// straight from the stored field with no packed reassignment 293 (980 bytes). The tail's 0x18a90 (a contributor's, 146 at
+// 715 bytes against 736) is in the group of calls whose removal gives retail's restore block (round 118).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

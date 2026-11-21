@@ -605,6 +605,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // compare as `length - count >= start` 35 [35]; the sign tests as an early `return false` ahead of the result 41 (107
 // bytes) [match]; a `char *const` destination 21 [match]; a `long const` start 21 [match]; the length through a new
 // one-caller bounded helper taking the maximum (0x1ff) as a parameter 21 [match] (the last three the same code).
+// M3 lane 1 r145 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time), each with round 221's second
+// length helper (walk local set after the counter): the volatile string with `start += (long)string` at the top of the
+// length arm 36 [6]; the same with a plain string 49 (92 bytes) [6]; the volatile string with the source named after
+// the clamp 40 [35]; a plain string with main's early source 49 (92 bytes) [6]; a plain string with `start += (long)
+// string` after the clamp 40 (104 bytes) [35].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

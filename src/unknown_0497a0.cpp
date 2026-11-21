@@ -1511,6 +1511,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // second) 355; case 0's second edge before the first 459 (2580 bytes); the u step kept positive with `u -= u_step` in
 // the loop 611 (2592 bytes); the state clamp through PIN 356; the outer vertex as `vertex[1]` at each use (no `outer`
 // pointer) 662 (2552 bytes). Body unchanged.
+// M3 lane 1 r146 (H2M_FAST with 0x42c50/0x42b20, MATCH; control 351; register- and stack-masked aligned difference 44): the
+// V end in its own `v_end` local (no reuse of the width) 351; the V end formed at the outer vertex's store 353 (the sum is then
+// hoisted after the loop guard, where retail forms it ahead of the guard, so retail's V end is computed before the loop); the
+// U step negated as `0.0f - u_step` 351; case 4's neighbour pointer declared at the top of its block with the lookup left in
+// place 351; case 1/2's first.x before second.x 351 (masked 74: VC copies the product, as round 151 found).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

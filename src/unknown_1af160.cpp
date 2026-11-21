@@ -265,6 +265,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // offset tie: the late +0x4ae store 128 (984 bytes), the entry flag tests 301 (996 bytes), the saved +0x418 reference copy
 // 295 (990 bytes); the not-found test as `!local_18 && !local_17` 15; the second 0x1f4a20 flag declared ahead of the
 // 0x262b40 result 12 (same code).
+// M3 lane 1 r145 (h2m fast with 0x1e1f20, MATCH; control 12): the search record's `type = 0` store after its memset
+// dropped 233; the saved +0x418 reference copy read after the 0x1e4be0 call 17; the second 0x25d690 position passed
+// straight to the difference (no point pointer local) 12 (same code); the result flag declared ahead of the cleared flag
+// and its five clears 12 (same code); the marker pointer chosen right after the 0x1ac610 call, ahead of the search
+// record, 181 (975 bytes).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
