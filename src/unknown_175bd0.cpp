@@ -2438,6 +2438,16 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the existing location_point_in_zone_inline (NULL zone index) for both zone tests 166, a 44/27; the 0x1751d0 result's
 // tag index named ahead of the 0x137bd0 call 128 (same code). The entry (system in EDI, colours read at the call) is
 // unchanged in all. All restored.
+// Round 627. Early color A with cursor, spawn or matrix renamed 187/187/187;
+// spawn declaration at initialization 187, aggregate 187, aggregate with named
+// or test-scoped cursor 187/187, scoped spawn with direct multiply query 146.
+// NOT kept: color A takes a register while the cursor spills, the system stays
+// in EDI, and all forms score above 128.
+// Round 666. The 0x40 frame and late color reads remain.
+// Immutable tag and flag values 128, confined virtual receiver 128. Capture color A
+// or both before the spawn record 187/184, between tag read and type lookup 189/191,
+// and between type lookup and virtual queries 187/189. Single captures recover 0x44
+// but the system remains in EDI and the body grows to 572 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4178,6 +4188,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // call's arguments (no tint local) 120 (325 B; 0x176f60 25); that with the colours read at the call 135 (310 B); with the
 // cached mode as a long 120 (325 B); with the mode read from the definition at each call 103 (331 B); with colour B read
 // ahead of colour A 120 (0x176f60 25 in all five: the shorter body changes the caller). All restored.
+// The frame is 0x4c versus 0x54. Retail keeps the system in ESI and reloads the traversal mode from the spilled definition.
+// Post-gate classification from a signed/unsigned node word 93/94; sentinel/high-bit split 93/102.
+// The same four forms with per-call mode reads 108/109/108/116.
+// NOT kept: The cached forms tie or regress. Per-call mode recovers the 0x54 frame and passes the effect index in a register, raising matched caller 0x176f60 to 25 in each preview.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

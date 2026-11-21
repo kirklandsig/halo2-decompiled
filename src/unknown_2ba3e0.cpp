@@ -1029,6 +1029,11 @@ real g_55e618;
 // 54/54; with the tangent's first term read through the particle 54; the position through real_point3d_set nested in the call 39
 // (same code). Left on 39: the dot's first term (ours n.j*v.j, retail v.i*n.i) and the value argument's early EDX load,
 // BLOCKED-BY 0x169510 and 0x244980 as above. Body unchanged.
+// M3 lane 8 r219 (h2m fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102): retail's dot term order (i, k, j) is the
+// existing basis_dot_xzy's: through it on main's copy 103 (the `+=` order); on `&particle->velocity` with the copy kept for the
+// tangent 201 (1557 B); no copy, the tangent from the particle 200 (1543 B); a velocity pointer for the helper and the tangent
+// 194 (1541 B); no copy, the tangent through the existing vector3d_from_points3d 198 (1543 B). Retail reads v.i twice from the
+// particle and v.j, v.k through a pointer to the velocity. Body unchanged.
 // Back up the sweep origin with the shared point difference or point setter.
 // direct particle position 254/254, position snapshot 102/103.
 // With the shared sweep scale, direct 256/256 and snapshot 129/130.
