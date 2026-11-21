@@ -1395,6 +1395,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // retail preloads its y, so the squared length lands in xmm0 where retail keeps it in xmm1 and the divide and the zero
 // copy that follow stay exchanged with it; the shared dot helper's term order is fixed in a header this lane may not
 // touch, so no spelling reaches retail's preload.
+// m3 lane 6 r221 (H2M fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126): case 2's squared length accumulated
+// through a reference in retail's (j + k) + i order 401 (1700 B); a redundant `t = 0.0f;` ahead of the length test 126;
+// `t` initialised at its declaration with the else arm kept 126; the field-of-view target bound by `real const &` 395
+// (1700 B); diagnostic: the yaw distance written with position first in i and forward first in j and k 126 (same code:
+// the compiler orders each product's operands itself).
 // M3 lane 5 r222 (H2M_FAST with 0x142d10 and 0x16c6f0, both MATCH; control 126, aligned 103): the camera point's left vector
 // through a `vector3f const &left` reference at the copy, the length dot and the add-scaled call 393 (1700 B, aligned 120):
 // the first form here to hoist retail's left.j (`movss xmm1, [esi + 0x54]`), but the normal then takes XMM5/3/4 for i/j/k

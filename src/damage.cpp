@@ -2725,6 +2725,12 @@ struct s_unit_event
 // 1868 B [113 / 35]; the section switch's four section words 565 at 1912 B [146 / 50]; the seat-name block's type and
 // tag 521 [144 / 42]; the child walk's start 481 at 1888 B [135 / 43]. None kept (positional rises, and retail reads
 // the home at each of those sites).
+// m3 lane 6 r221 (H2M fast with 0xdaaa0/0xdae60/0xdb760, all MATCH; control 420): both attachment notifications as a
+// file-local forceinline helper taking the object index and the mask 420; the mode block as a forceinline helper taking
+// the three indexes 420 (both the same code: the inlined parameter copies fold); per-notification named object pointers
+// 416 (listed), on the named-region-states lead 519 (1852 B; the lead re-measured 523). Reading: the notifications'
+// address operand order differs too (`[edx + ecx + 8]` here, `[ecx + edx + 8]` in retail): retail's offset there is an
+// allocated piece of its ESI web, ours a spill reload.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3541,6 +3547,13 @@ enum
 // for the call 98, the count on the left of the test 115; the named marker name MATCH. Without the wrapper parameter
 // the named marker name alone 193 (not kept); 0x188690 called through a pointer cast to the wrapper-parameter type
 // matches this function but pins 0x188690's convention (0x188690 23, 0xcf040 7, 0x184060 123, 0xd9110 167).
+// m3 lane 6 r221 (H2M fast): the held wrapper form re-applied, still MATCH. With an `operator short() const` added to the
+// wrapper, contributor 0xd9020 needs no text change and the plain stores keep main's text (0xd82e0 MATCH, every matched
+// neighbour as before), but 0xcf040's call line still needs the explicit construction: an implicit conversion of a
+// by-value class-type argument builds a frame temporary (0xcf040 236, also with the constructor taking long), and a
+// user-declared copy constructor changes the passing (0xd82e0 237, 0x184060 115, 0xd9110 162). HELD patch:
+// build/r221/held-d82e0.patch (m3-lane6 worktree). On main's body: the material index bound by `short const &` for the
+// test and both calls 203.
 // @retail 0xd82e0
 void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
 {
@@ -5402,6 +5415,11 @@ struct s_damage_object_creation
 // (re-measured 112 at 811 B, `movzx` ahead of the count guard and `test edi, edx`): the test written mask first 112
 // (same code); the local declared under a redundant `if (0 < section_count)` guard 163 (both masks hoist, the count
 // spills to +0x14), with the test reversed 163. Nothing kept.
+// m3 lane 6 r221 (H2M fast, control 167): the section loop as a forceinline helper taking the object, the bound as a
+// by-value count and both masks 167; `section_count` declared at function scope 167; the piece search with its own
+// counter 167; `attached_nodes` declared ahead of the section loop 167 (all the same code); the bound read at each test
+// 179 (listed). Downstream of the section rotation the definition reload is scheduled ahead of the attached-mask store
+// (ECX here, EAX after the store in retail), which carries the g_51e9b8 and node-lookup rotations.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
