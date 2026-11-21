@@ -460,6 +460,14 @@ long g_55e6c0;
 // <= 4) levels = count < 0 ? 0 : count;` 137 (485 bytes); the kind stored after the +0x8c clear 31 (the kind store is
 // still scheduled first); the kind stored after the levels clamp 43 (the kind store then follows the clamp, and the count
 // still takes EAX). In none does the count take EDX at the top.
+// M3 lane 14 r137 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; base: round 122's lead, the signed pitch/packed packing with
+// the clamp in a `long levels` local stored after the packing and `long *header` for the header word and the register call,
+// re-measured 31 at 484 bytes): everything from the header zero stores to the end of the level loop in a forceinline helper
+// (entry, width, height, alternate, linear, count, levels, data) with the offset declared inside 41 (the offset store moves),
+// with the offset kept in the caller and passed by `long &` 31 (same code); `(void)&width;` 31; the count's sign test named
+// ahead of the kind store (`bool negative = count < 0;`) 31 (the compare sinks to the branch); the format call's count as
+// `(dword)count` 31 (all the lead's code). Re-measured: the round-121 select-first form 38 at 483 bytes (retail's top block,
+// the height kept in EAX to the call's push and the select in EBX; in retail the select's EAX forces the height reload).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

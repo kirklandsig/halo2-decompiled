@@ -2146,6 +2146,13 @@ void function_27dd10(void)
 // flags read 348; `__assume(local_3 <= arg_7)` after the group end 348; `__assume(arg_5 < arg_7)` ahead of the bit test 348
 // (0x288570 362); the flags local declared `register long` 2 (same code). Every run-time assume in the walk unfolds the
 // node tests, whatever it states. All restored.
+// M3 lane 14 r137 (H2M_FAST with 0x281b60 and the five matched walk users): the pair sits in the counter block that joins
+// the destination-miss exits and the interpolation path (the bit-clear path enters below it); pass 1's identical join (EDX
+// flags, ECX count) reloads the flags first in both builds, so the order is not the register number. The wrapper's count
+// read after the three counter resets 6 (0x281b60 6, the four other walk users 4: the spill store sinks, the pair stays);
+// the inner group loop as a while with the index step at its end 2; the node lookup as a single-exit result 2 (both the
+// same code everywhere); the destination-mask test as `mask ? node_flags_test(...) : true` 2 (0x281b60 39, 0x288570 120);
+// function_288573's output pointer as `s_animation_output *const &` 365 (1742 bytes; 0x281b60 354, 0x285750 386). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
