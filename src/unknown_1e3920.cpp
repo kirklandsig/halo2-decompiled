@@ -2018,6 +2018,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // no callee's write summary is what keeps it out of EDI; 0x259a0 given a link-time summary (an inline kept out of
 // line in an ordinary file) 306 [137 / 49], the pool still loaded three times. No object built without link-time code
 // generation refers to the pool, seed or tag globals. Nothing kept.
+// M3 lane 13 r137 (h2m fast; control 251): a `long` loop index with the weapon read once per pass into `long weapon`
+// 278 (1191 B, frame 0x10); the rounds sum written lower bound first 251 (same code); the tick store as a signed
+// char like its read 251 (same code); the halved fraction as a conditional argument to 0x101a10 260 (1223 B); the rounds
+// pair cleared by `rounds[1] = 0;` in place of the memset 253. Still BLOCKED-BY 0x259a0 (its file's no-LTCG flag).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

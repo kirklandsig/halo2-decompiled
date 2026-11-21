@@ -972,6 +972,16 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // (collection, player, update, other) each of those 32 (the swap order's code); `collection` a const pointer set
 // between the two loops 277 (1072 B, the key's own induction variable). Compile-only: the helper's parameter and the
 // late declaration keep (inverse + cursor) + collection + 4.
+// M3 lane 13 r138 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; compile-only key screen, which
+// reproduces ours: the cursor and the inverse start are SR temporaries summed first, `collection` a hoisted temporary
+// added last; `collection` before the loop gets its own induction variable): the occupied block re-pointing the loop-top
+// `player` at `&collection->players[i]` for the key 41; the second loop's counter typed `dword` 28 (same code); the
+// machine pointer formed after the `unknown14 == NONE` continue 182 (1071 B); the swap order (collection, player, update,
+// other) re-measured 32 (on main's order the last record's loads are retail's; on the swap order ours loads the
+// second-declared source read first, the controller, where retail loads `updates`, unknown14, then the controller it
+// spills); on the swap order the two source reads declared controller first 43 (still the second-declared read first).
+// Screen only (all ours): the key as `(collection->players + i)->key`, as `(byte *)collection + (4 + i * size)`, as
+// `((byte *)collection + 4) + i * size`, from `&players[0].key[0]` plus a scaled index. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

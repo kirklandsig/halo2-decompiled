@@ -3327,6 +3327,10 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // (87 B); `long const &` bound straight to the field 30; the hit breaking the loop and the selection after it on
 // `iterator.datum` with the iterator block-scoped 28 (84 B). A 606 s annealing permuter run (32 tries) reached 26 only
 // with a volatile id and a local holding NONE (both forbidden).
+// M3 lane 13 r138 (h2m fast with 0x2c9a58, matched in each): the walk ended by a found flag in the loop condition in place
+// of the break 40 (90 B); the selection as a file-local free function taking the list pointer, v1 passing `this`, 30 (the
+// list still arrives in EAX); the definition placed after v1's, in retail's address order, 30; the id read into its local
+// and the guard reading the field again 30; the guard through a named bool 30 (all the 30s the same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
