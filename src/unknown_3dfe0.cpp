@@ -223,6 +223,22 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // update-first, both timestamps named and declared update time first 219; the hidden return in its own braces under
 // the else 218; the object through a named header-entry pointer 218 (same code each); update elapsed computed after the
 // force flag 232. On the kept order, the two named timestamps declared update time first 35.
+// M3 lane 3 r285 (h2m fast with 0x3d2c0 and 0xd1850, both MATCH; control 21, update-first re-measured 216): a redundant
+// `update = false;` just ahead of `if (force)` 24 (the false store then follows the object's reload), the same on the
+// update-first form 24; on update-first, `bool const force` 216 and the rest of the body nested under `if (elapsed)` 216
+// (both the update-first code), the sample decision ahead of the force block 221.
+// M3 lane 8 r206 (h2m fast with 0x3db00 and 0xd1850, both MATCH; control 21, aligned 12): the elapsed clamp between the
+// force flag and `bool update = false;` 24 (aligned 12: the false store moves below the clamp); `bool update = false;` and
+// the clamp ahead of force 239 (816 B); force computed ahead of the object lookup 241 (830 B); `bool update = false;`
+// between the object lookup and force 218 (the update-first code: entry homes and EBX as retail, but ESI/EDI swapped for
+// the two timestamps and the late object index, no force-arm reload); the hidden test through its own lookup with the
+// object local declared after the force block 250 (838 B: the lookup is not merged).
+// M3 lane 8 r208 (h2m fast with 0x3d2c0, 0x3db00, 0xd1850 and 0x3e4e0, all MATCH; control 21; `bool update = false;` just
+// above force re-measured 218: entry, object EBX load and homes as retail, then the two timestamps in EDI/ESI, the false
+// store after the object's home store and no force-arm reload): on that update-first form, the sample time read through a
+// const reference to its field 218, the update time so 218, both 218, the sample time copied and bound by a const
+// reference 218, force bound by a const reference for its test and the 0xd1850 argument 218 (same code each: none moves
+// the timestamps' ESI/EDI tie).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

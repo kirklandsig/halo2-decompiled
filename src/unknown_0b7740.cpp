@@ -1211,6 +1211,18 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // assigned again before the mask copy 240 (same code: the dead first assignment goes with its load), on the 170 lead 170
 // (same code); the parameter renamed to sort first or last on the lead (diagnostic) 170/170; round 132's 283 form with
 // `result` initialised from final_matrices 283 (same code). Body unchanged.
+// M3 lane 9 r147 (fast with 0xbfe20, MATCH each run; control 240): lane 4 r225's 170 lead and round 132's 283 form
+// rebuilt (170 at 826 B, 283 at 837 B). A grid of 216 bodies on the 0xbfc90 awake test and the 0xbfe20 clear: the first
+// test's object through header->object, the written-out table lookup or object_get(), `object` through the same three,
+// bit 29/+0x34b through those three or `object`, final_matrices at the top or late, and three exit shapes (single exit,
+// early returns with the model block returning inside and after it, early returns): best 166 (843 B) with the first test
+// through the lookup or object_get(), `object` through header->object, bit 29 through object_get() or the lookup,
+// final_matrices at the top and the mixed exits; 169 (eight forms), 170 (two), 259 (twelve); the same grid with the
+// awake test written out (144 bodies) best 166 (same code). Every one loads object_index into EDX at entry. On the 170
+// lead: `definition` read through a const reference for the object-type test 170, `header` bound by a const reference
+// for the bit-29/+0x34b reads 170 (same code each); `sample` declared at the top (diagnostic) 284 (837 B). Diagnostic:
+// 1 to 8 dead initialised longs at the top of the 170 lead 170 each, of the 166 form 166 each (the entry roles are not
+// a symbol-count tie on the leads either). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

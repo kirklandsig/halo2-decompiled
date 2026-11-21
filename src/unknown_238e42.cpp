@@ -1370,11 +1370,25 @@ bool __stdcall function_2399da(long controller_index)
 // listed other-way-round shape, re-measured as a cleanup); the identity declared with a NULL initialiser 90; the identity
 // test with explicit `!= NULL` / `!= 0` and the own rank unsigned 90; the permission test with the member's rank on the
 // left 91; `own_rank >= rank` with `3 == rank` 90 (each 90 the same code). Identity ECX/rank EAX remain.
+// M3 lane 12 r162 (fast with 0xac050/0xac360/0x2399da, all MATCH; control 90; each 90 with the same code): the identity
+// test read through a pointer to the identity local; the member's rank store read through a pointer to the rank parameter;
+// every rank use (NONE test, over-rank test, rank-3 test, store) through that pointer; the identity declared first, and
+// last, among the locals. Diagnostic (reverted): the identity test without the id read 105 (422 B, the identity then
+// loaded only at the removal). Identity ECX/rank EAX remain.
 // M3 lane 15 r120 (fast with 0xac050/0xac360/0x2399da/0x23955e, all MATCH; control 90): the membership call's result kept
 // in an unused bool local 90 (same code); the have_member block as `if (!have_member) { if (may_change) copy; else refuse;
 // }` 92 (430 B, the colouring stays); an assume that the identity pointer is not NULL at the top of the identity block 90
 // (same code); the member's current rank named before the permission test 90 (same code); the rank read through a
 // `long const *` to its own address in the dispatch 90 (same code).
+// MiniMax E (11-20): score 90 (was 90): no new form and no lower score; the difference is still the colouring of the two
+// values the matched callee 0xac050 takes - retail loads the selected identity pointer into EAX and the requested rank into
+// ECX, this build keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call, which costs
+// two bytes and shifts every later jump. Fixing it needs 0xac050's parameter order changed in src/online_teams.cpp, a file
+// this lane may not edit.
+// MiniMax R (11-20): score 90 (was 90): no new form; the identity still takes ECX and the requested rank EAX where retail
+// takes the identity EAX and the rank ECX, and that swap is the whole difference: the 64-bit id test and the member's rank
+// store then follow, and the copy into eax before the removal call still costs the two bytes that move every later jump.
+// The identity declared inside the block as a const pointer scores 90 as well (same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

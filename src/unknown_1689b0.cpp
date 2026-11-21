@@ -2170,6 +2170,22 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
 // order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
 // one point, moved declarations: not kept).
+// M3 lane 14 r133 (fast with 0x120790/0xc2d00/0x17a380/0x2469b0, all MATCH, 0x16a440 23; control 551): the per-prism
+// separation as `inside ? 0.0f : nearest` after the closest-point test 552; the nearest distance declared at its per-prism
+// initialisation 551 (same code); the radius minimum tests as `available < radius` 551 (same code); `++face_count` ahead
+// of the face radius minimum 566 (2885 B); the averages' reciprocal as `1.0f / (real)count` 551 (same code). The
+// averages multiply `inverse * sum` from memory where retail loads each sum and multiplies by the inverse, x, y, z in order.
+// Prism while, ordinal before the fill, square at prism entry or clearance, edge while, both while
+// loops, and both with the square at prism entry or clearance 551/553/548/543/551/551/548/543.
+// Last-index prism bound with square at entry 573. Named square at clearance with the original for
+// loop 543 reduced and 543 ordinary.
+// NOT kept: the clearance-local square was already rejected as a moved one-use local without a
+// match. Its alternate loop forms produce the same score and square slot. The count and clearance
+// homes still differ.
+// First or second reconstructed point through the returned address 555/553, both 551,
+// second point copied from the return 617. Early signed successor with the first,
+// second or both returns 603/603/616, between both reconstructions 558.
+// NOT kept: all tie or regress. The early forms change the 0xb964 frame.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -67,15 +67,16 @@ struct hkVector4
 
 	void operator=(hkVector4 const &v) { m_quad = v.m_quad; }
 	real const &operator()(long i) const { return m_quad.m128_f32[i]; }
+	real &operator()(long i) { return m_quad.m128_f32[i]; }
 
+	/* each component is stored through the element accessor, so the four
+	   stores keep this order in every caller (0x1d7ef0, 0x1d87b0) */
 	void set(real x, real y, real z, real w = 0.0f)
 	{
-		real *components = (real *)&m_quad;
-
-		components[0] = x;
-		components[1] = y;
-		components[2] = z;
-		components[3] = w;
+		(*this)(0) = x;
+		(*this)(1) = y;
+		(*this)(2) = z;
+		(*this)(3) = w;
 	}
 };
 

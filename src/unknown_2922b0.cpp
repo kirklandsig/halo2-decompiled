@@ -75,7 +75,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
 }
 
-// score 521 (was 521): Earlier scores 558, 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// score 521 (was 521): The 0x108 frame agrees. First +0x31 stores success at ESP+0x13 instead of +0x17. The hit slots and inactive exit still differ.
+// Earlier scores: 576, 592 and 618. Before round 111: 558.
+// Earlier scores 558, 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // Earlier at 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
 // Earlier at 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
@@ -734,6 +736,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // local_6 = field_48;` read once for the test and every later use) 667 (2852 B); the same with the positive test and the
 // block ending in the common return 664 (2863 B); the output cleared through vector3f_assign 521 (same code); `*arg_5 = 0.0f`
 // after the hit flags 521 (same code); the minimum declared after the hit flags 522. Stacked score lines merged into this note.
+// Earlier declarations for the origin cursor or hit cursor alone, initialized at query setup, 517/517;
+// both at entry, before the guard, before basis setup, before origin copy, or split between entry and basis
+// 522/522/522/522/522/522. NOT kept: four-point best is below the threshold and the success slot stays low.
 // M3 lane 4 r232 (fast; control 521; all on lane 2 r113's 331 lead, re-measured 331 at 2896 B, 138 aligned rows): the
 // lead's first difference is the second cross only (retail loads each component of the global axis into a fresh register
 // and multiplies it by the cached input component; ours folds the global as the memory operand), and the block after it is
@@ -767,6 +772,27 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // field_48 load shared by the test and the local as retail's XMM1, but its home is +0x14 against retail's +0x30, stored
 // before the branch); the arg_3 clear through vector3f_assign 521 (same code), on the swapped form 637 (same code); the
 // hit flags declared ahead of the minimum 521 (same code).
+// M3 lane 2 r121 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned/masked 274/165). Slot map from the
+// listings (main-body offsets, retail / ours): point cursor 0x14 / 0x18, success byte 0x1b / 0x17, ray index 0x1c / 0x24,
+// minimum 0x20 / 0x20, hit flags 0x24 / 0x28, cross vector 0x28 / 0x2c, hit cursor 0x34 / 0x38, range 0x38 / 0x1c; from
+// 0x3c up the two agree. Lane 2 r113's 331 lead rebuilt on this source 331 (2896 B, 131/45): its slot map equals retail's
+// at every offset. New forms: the early return kept with no `else`, the rest of the body at function level (no
+// declaration moved) 648 (2865 B, 223/148); that with the four crosses through cross3f_staged and the second output as
+// `local_4 / local_6` 631 (2887 B against 2886, 140/51: head and slot map are retail's; left at the head are the inline
+// exit block, where retail jumps to an exit after the main return, and the range's second read); that with the range
+// named ahead of the test 636 (2886 B, 143/55); the lead with one shared `return local_0;` 411 (first difference +0x1d,
+// the success flag in BL); the lead with the range named ahead of the test in place of first in the block 340 (132/46);
+// the lead with the second angle declared first 327 (129/44, re-measure). Reading of the lead's listing: the second cross
+// loads the global axis component into a fresh register for all six products, where this build multiplies the dying
+// local component by the memory operand in two of them; the first two rays' root products are limit x root with the
+// limit copied ahead of the square root and the last two root x limit, this build root x limit in all four.
+// M3 lane 5 r220 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): retail's ray loop head is reached by fall
+// through at +0x440 with no pad, ours 8 bytes earlier with a jmp and a 6-byte pad (the code ahead is shorter). The range
+// test positive with `return local_0;` closing its block and `return true;` last 647 (2866 B: the early exit is then laid
+// out last as retail's 0x292de9, but the range is read again after the test and the slots move); the shared cross3f at
+// the four crosses 660 (2848 B); the ray loop as a plain counted for loop 708 (2820 B); the angle limit as a default
+// then an if 641; the root clamp's product written root first 521 (same code). Lane 2 r113's 331 lead re-measured 331 at
+// 2896 B on today's file (opening exact to +0x91, first difference the second cross's operand order). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

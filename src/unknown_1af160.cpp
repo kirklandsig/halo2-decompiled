@@ -248,6 +248,19 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // named once for its three uses 65; the squared distance as the vector's dot with itself 12 (same code); the 0x265c30
 // flag declared inside the record test 19; the 0x1e5280 definition index named ahead of the call 12 (same code); the
 // 0x2626b0 test written `!local_18 && !local_17` 15. Adding or dropping a symbol there leaves both pairs as they are.
+// M3 lane 11 r140 (H2M_FAST with 0x1e1f20, MATCH; control 12): the homes now differ as two swapped pairs, actor/offset
+// temporary at +0x24/+0x28 (retail +0x28/+0x24, the 0x262b40 result sharing the temporary's cell) and prop node/bool output
+// at +0x30/+0x34 (retail +0x34/+0x30). The late actor flag clear re-fetched into the actor local 12; through a new const
+// actor local 12; the actor and node locals `*const` 12; the actor local declared, then assigned 12; the bool output declared
+// ahead of the long output 12 (all the same code). Diagnostics, reverted: the late clear through the actor local 257 (954 B);
+// the rounding as a plain C cast (no asm block) 209, with both pairs still swapped, so the asm block does not order them.
+// M3 lane 12 r161 (`--fast 0x1af160 0x1e1f20`, control 12; the frame slots: ours 0x24 the offset temporary shared with
+// the 0x262b40 result and 0x28 the actor, retail the other way; ours 0x30 the prop node and 0x34 the bool output, retail
+// the other way): the equal arm's lookup assigned back to the actor pointer 12 (same code: the lookup is CSE'd); the
+// node looked up again into its pointer before the second 0x25d690 call 87 (1002 bytes); diagnostics, a folded redundant
+// guard around the equal arm's store 12 and around the 0x265c30 call 12 (same code: the folded tests' frequency does not
+// order these slots); the first reference test with its operands swapped 13. 0x260670 (ours) is still 440 at 3097 bytes
+// against 3077 (frame 0x8a8 against 0x8a0).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

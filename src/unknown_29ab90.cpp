@@ -39,6 +39,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
+// 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
+// view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
+// actor's direction into [esp+0x38] and the global vector into [esp+0x44], retail the reverse), so declaring the two
+// vectors the other way round measures 290 (their copies then come out in the other order) and is reverted; site 1's
+// planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper (BLOCKED-BY 0x2b400),
+// so the body stands.
 // MiniMax S (11-19): no new form, no lower score (286): site 1 planar normalize written out with its own zero path measures 309, because retail reloads the second component after storing the first while ours folds that multiply into the memory operand; the frame homes still take each other slots and the working-vector group is still a rotation off retail, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
 // where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
@@ -474,6 +481,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // whole copies are all listed above).
 // MiniMax C (11-14): no new form, no lower score (286); the stack homes still sit 8 and 4 bytes above
 // retail's (ours at +0x24 against retail's +0x1c, ours at +0x14 against retail's +0x10).
+// MiniMax G (11-20): no new form, no lower score (286): the magnitude and the query output still take the frame's earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working vectors is still stored in a different order; the two scaling sites are 0x2b400's shape, which is not matched yet.
 // MiniMax I (11-14): no new form, no lower score (286): the magnitude and the query output still take the frame's
 // earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working
 // vectors is still stored in a different order than retail's.
@@ -574,6 +582,9 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // main's declaration-plus-if form (ours colours local_19 XMM6 and local_24 XMM5, where retail gives local_24 XMM1), so
 // the 275 only drops the early load and re-aligns later rows. The forward-gain clamp as `local_16 < local_30` 286; the
 // sign test as `0.0f > local_25` 286; local_18 declared ahead of local_19 286.
+// Typed actor reset and target, direction and request flag, and turn status, alone and combined,
+// scored 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
+// The object/settings spills still differ with the 0x64 frame in place.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

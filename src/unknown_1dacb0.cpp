@@ -1656,6 +1656,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
 
+// MiniMax I (11-20): no new form, no lower score (812): this round only re-measured the body; the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // MiniMax D (11-19): no new form, no lower score (828): the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // score 828 (was 828): r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
 // MiniMax E (11-19): score 828 (was 828): no new form, no lower score. Read from the listing again: the two listings were
@@ -2103,6 +2104,14 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
 // with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
 // return is 1040.
+// M3 lane 7 r202 (fast with the twin 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd560, 0x2963f0, 0x1236f0, all but the twin MATCH
+// each time; control 812, aligned 578, masked 74): the three iterator outputs as one aggregate local (a three-long type)
+// 807 (aligned 561): they then stay together in the frame and both inheritance counters take the dead argument homes as
+// retail's, but the result sits below them (retail above) and the zero register and second request do not change; the
+// aggregate declared at function scope ahead of the result 807 (same code); three plain longs declared there 812 (same
+// code as this body). Diagnostics: the request's urgent flag in a named local re-measured 787 (2805 B); the other flag in
+// a named local 913 (2789 B). Reading: retail's entry takes NONE in ECX and the compared argument in EDX (ours the reverse) and
+// makes a second NONE in EAX for the outputs once ECX is reused for the mode. Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
