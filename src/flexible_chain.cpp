@@ -924,6 +924,11 @@ void __stdcall function_1160c0(real dt)
 // (1375 B), passed by value 309 (1384 B), by const reference 144; `segment = base; segment += index` re-measured 272 (1369
 // B). Diagnostics on the 0x211060 site: no call 418 (1261 B), the call without its test 295, a constant tag 262 (base EDI,
 // segment ECX in each).
+// M3 lane 11 r138 (fast with 0x116750 and 0x1160c0, matched throughout; control 144): the delta length through the
+// existing magnitude3d 144 (same code: it expands); through distance3d(&previous, &position) 313 (1408 B, a call);
+// `inverse_dt` declared at the velocity rows 292; the loop counter declared ahead of the loop 144 (same code); the
+// stiffness computed in the non-initial arm after the target 303 (1356 B).
+// MiniMax B (11-20): no new form, no lower score (144): the selected segment still sits in EDI and ECX at +0x20 where retail keeps it in EDX at +0x14; this round's permuter (76 tries in 604.8 s) found nothing below its baseline of 141 on the reduced image.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -852,6 +852,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // the loop's first index named before the loop, and the declarations as definition, section, range, result 133 each (same
 // code). In the 133 form EBP is pushed only before the loop, at its first use, so range never holds EBP in the head as in
 // retail.
+// frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
+// MiniMax D (11-20): no new form, no lower score (172): the frame 0x58 still agrees, but retail keeps the BSP in EBX and the
+// section in its own stack home where this build keeps the BSP in EBP and the section in EBX; the range and plane homes rotate and
+// the four pointers of the 0x11e800 call sit in another register order, and the permuter's 35 variants found nothing below it.
 // score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
 // the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
 // M3 lane 2 r124 (fast with 0x14a8e0/0x14af40/0xd47d0/0x16e1b0, all MATCH each run; control 172; body unchanged). Loop
@@ -860,6 +864,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // (686 B: no longer unrolled); both 263; a count guard around the triangle loop (`if (0 < range->count) for (...)`) 199
 // (743 B); the three fetches as three statements (`valid = get(0); valid = valid && get(1); valid = valid && get(2);`)
 // 172 (same code).
+// Collision point transfer by coordinates 230, standard copy or backward copy 197 each.
+// Vertex transfer by coordinates 252, standard copy or backward copy 270 each. Both transfers
+// with forward or backward copy 284 each. The entry copy reaches 726 bytes but changes the early save order.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

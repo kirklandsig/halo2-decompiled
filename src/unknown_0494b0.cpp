@@ -95,7 +95,7 @@ PRIVATE real normalize(real value, real lower, real upper)
 }
 
 // @retail 0x494b0
-void function_0494b0(real const *bounds, real const *window)
+void function_0494b0(real const *window, real const *bounds)
 {
 	real width = bounds[1] - bounds[0];
 	real left = 1.0f - (window[0] - bounds[0]) / width;

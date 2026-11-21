@@ -32,7 +32,7 @@ struct s_1c9f32
 };
 void function_26ae30(long object_index);
 void function_a7bc0(long index);
-void __stdcall function_1e1a00(long actor_index, long value);
+void __stdcall function_1e1a00(long actor_index, bool value);
 void function_201a50(long squad_index, long object_index);
 void __stdcall function_205320(long group_index);
 void function_211640(long arg_0);
