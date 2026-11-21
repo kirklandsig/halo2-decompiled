@@ -738,6 +738,15 @@ struct s_24e9c7_points
 // retail, but negated after the product and kept in XMM2/XMM6, the result still at [ebp-8]); all four copies after the
 // result 143 (746 B); the 141 form with `side.x = (real)half_width * side.x` 141; the copy after up 126 (743 B); the 126 form
 // with `size * (0.0f - forward_j)` 147 (739 B). Body unchanged.
+// M3 lane 15 r130 (H2M_FAST with 0x24e59f/0x22a664, both MATCH each time; control 125): true `__assume(p != NULL)` on
+// placement (P), marker (M), kind (K), group (G) and bitmap (B) at their definitions, one or two at a time, PMKG and
+// PMKGB 125 each, every set of three (KGB, PMK, MKG, PKG) 139 (738 B: a count effect, the 1.0 constant still in
+// XMM4); one bitmap assume at
+// each statement of the float block: after the size 125, after across_i 139 (746 B: across_i then evaluates early, but
+// as `-(size * forward_j)` where retail computes `size * (0 - forward_j)`), after across_j or any later statement 144
+// (746 B); across_i as `size * (0.0f - forward_j)` alone 138 (739 B), with the assume after across_i 140 or after
+// across_j 139 (742 B); the side point set to the across products in that form and scaled in place 139 (742 B), with an
+// assume after it or three top assumes 139. Across j still gets no frame home. Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

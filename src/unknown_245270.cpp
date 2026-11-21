@@ -1032,6 +1032,10 @@ void function_245400(s_source_245400 const *source, long index,
 // indices named (`first_index`, `second_index`, each used for its pointer and the compare) 163 (same code), with the
 // sides as `((dword)code >> 15) & 1` 197; cross3f with the normals swapped and the dot negated 204; the facing test as one
 // ternary on the side relation 209 (786 B), with the swapped plane pointers 209.
+// M3 lane 15 r130 (H2M_FAST with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH each time; control 163): the sides
+// as `(code >> 15) & 1` on the signed long codes 226 (760 B); the first index read after the second material's code
+// (retail loads +0xa first) 165; both 226 (760 B); the transformed point declared at function scope 163, the cross
+// result at the block top 163 (same code each).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

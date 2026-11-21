@@ -932,6 +932,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 473 (1580 B); diagnostics, noinline dropped: with the flags after the call 509 (1696 B, still `ret 4`: the expansion alone
 // does not give retail's EAX convention), with the `for` walk 454 (1640 B, `ret 4`). BLOCKED-BY 0x2641c0's expansion and the
 // stacked actor index, as before.
+// M3 lane 15 r130 (H2M_FAST with 0x1e34e0 25 and 0x263210 MATCH throughout; control 404): `maximum` as a plain word,
+// long, dword or short 432 each (1620 B); the tracked prop index (actor +0x338) read once into a named local for its two
+// tests 423 (1616 B, frame 0xa0); the maximum compare written `(short)maximum < value` 405; `update` assigned false in
+// the else arm instead of at its declaration 439 (1616 B); both flags assigned false in the else arm 428. Diagnostic,
+// reverted at once: the flags as volatile locals 428 / 418 (EBX then goes to the prop index) and every form keeps
+// `ret 4`, so the flags' register is not what keeps the actor index on the stack; the retail call graph has no cycle
+// through this function or its caller.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -327,6 +327,10 @@ void function_254200(void)
 // paren pairs around the size product, the y sums, every sum, the first x or y sum or a colour product 4 each (17 runs);
 // 0-40 unused initialised locals at the top 4 each (no period-8 or period-32 state); diagnostic, the depth as a non-const
 // file-scope real 259 (1205 B); the point read through pointers to its x and y (0x2548f0's form) 341 (1162 B).
+// M3 lane 15 r130 (single-address H2M_FAST, control 4): true `__assume(p != NULL)` on the point and colour parameters at
+// the top, ahead of the point copy, both, and on the chosen bitmap inside its test 4 each (6 runs); the minus edges
+// written `x + -size` 4; the two dimension locals, the chosen bitmap, or the size and point copy declared bare at the top
+// and assigned in place 4 / 4 / 4 (all the same code: the x, y + size, constant group stays ours).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -754,6 +758,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // quad's y + size fold returns: a period-8 state for the fold, none for the reload pair); a dead forceinline helper with
 // 1-4 named locals ahead of the colour fetch, of the first quad's 0x1cf50 call or of the second texture call 2 each (12
 // runs); diagnostic, the depth as a non-const file-scope real 369 (2276 B).
+// M3 lane 15 r130 (single-address H2M_FAST, control 2): true `__assume(... != NULL)` on the point parameter at the top or
+// ahead of the coordinate pointers, on the colour getter's result, and both 2 each; the offset quad's half size or the
+// two coordinate pointers declared bare at the top 2 / 2; the coordinate pointers declared y first 2; the minus edges
+// written `x + -size` 2 (all the same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

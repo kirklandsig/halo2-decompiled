@@ -4331,6 +4331,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // left (plus the reload pairs lane 8 r205's base fixes), and retail's block needs one more integer load, or a second
 // use of the input selector, between the fixed-point conversion and the exponent loop's entry test; no statement that
 // folds away was found.
+// M3 lane 15 r130 (H2M_FAST, control 9; lane 8 r205's B re-measured 5): both selectors `long const` 9, on B 5 (same
+// code); a true `__assume` on the input selector's range (`input == 4 || input == 5`, `input >= 4`, `input <= 5`) after
+// the stage-one words, ahead of the exponent loop or right after the selectors 9 each, on B 5 each (18 runs: the assume
+// does not keep `input` live past the shift); the selector read through a reference (a `long const &` used by the shifted
+// local, by both words with no shifted local, or a `long &` it is assigned through) 9 / 939 / 9, on B 5 / 941 / 5;
+// `exponent` declared bare at the top or after the selectors and set to 0 at the loop 9 / 9, on B 5 / 5; the stage-one
+// constant and input words stored right after the clear 149, on B 146. Body unchanged.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
