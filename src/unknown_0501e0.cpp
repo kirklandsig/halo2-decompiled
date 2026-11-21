@@ -747,6 +747,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Copied basis matrix with in-place, separate first, separate second, or separate views 379/306/359/301.
 // Copied transform matrix with the same output choices 335/306/292/301. NOT kept: the explicit axes
 // workspace grows the frame and all eight forms exceed retail length and raise the score.
+// M3 lane 12 r172 (H2M_FAST with 0x30290 and 0x30bf0, both MATCH; control 221, aligned 249): lane 8 r201's macro lead
+// rebuilt 252 (1136 B, aligned 174); on it, both offsets in one component loop with the second or the first point first
+// 251/252. On this body: the view helper taking its input vector by value 371 (1228 B); returning the view vector by
+// value 314 (1179 B); its rows written forward, up, right 221 (aligned 251).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
