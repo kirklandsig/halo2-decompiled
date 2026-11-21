@@ -1102,6 +1102,16 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // match, and folded into the subscript it is plain 105 (the fast build gives 11 for both, so
 // confirm these forms with the plain check). Retail multiplies the key before pushing it. NOT kept:
 // the output reference changes the creation span, and the selected-plane forms change its two stores.
+// M3 lane 3 r290 (H2M_FAST, control 105; the one-use camera offset local rebuilt, 11 at 434 B: left are the camera table
+// in EDX loaded after the count store for retail's ECX at the block top, the key in ECX for retail's EDX, and the distance
+// copied through EAX for retail's ECX): `&cameras[entry->key * 0x1bc]` in the call 105; the offset as `0x1bc * key` 11
+// and typed `dword` 11 (both the offset lead's code); the key and the offset both named 105 (forwarded back); the portal
+// index read from the entry at both uses (no local) 105; the distance through a local 105 (both the same code).
+// Projection-typed output 11, output through identifier 11, volume reselected on success 13,
+// early volume-array base with shared key 105, rectangle through leading coordinate 11, native
+// count postincrement in the admitted arm 11, rectangle binding after displacement 11, and camera
+// row before output selection 13. NOT kept: the gains rely on the one-use displacement or pointer
+// and leave the camera table and key in exchanged registers.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1473,6 +1483,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // one_minus_c 309; sine products j, k, i 341; squares as a vector 339; sine-axis vector before the squares 337. On main's
 // body: the deviation as a component vector squared from its fields 361 fast (1438 B; retail's interleaved store, fld,
 // fmul tail but in i, j, k order), the float sum of the named differences 339 fast.
+// Vector diagonal complements: separate or in-place scale 395/408, separate or in-place
+// scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
+// complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
+// the 0x50 frame and regress from the 337 reduced control. Unity and square homes still differ.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1777,6 +1791,23 @@ struct s_point_pool_173520
 // on it the cull test through a named view pointer 9, the recount's points in a named pointer 9, the recount count-first
 // with a long cast 9, the recount through a const pointer to the result 9 (all the same code); dead initialised locals 1..7
 // 9 each (diagnostic: the stride store order and the recount registers do not follow the phase).
+// M3 lane 3 r290 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
+// `point2f const *points` local 9, count first 9, `&pool->points[0]` 9; the guard on `count` with `remaining` scoped to the
+// for 9; the step as `state != 1 ? 1 : -1` 9; `for (remaining = count; remaining > 0; --remaining)` 932 (unrolls);
+// `while (remaining-- > 0)` 9; the inverse computed ahead of the destination point 9; the vertex through a per-iteration
+// `point3f const *vertex` 9. Reading: retail 0x172840 gives the same recount's points the first free scratch register,
+// so here (EAX pool, EDX cache) retail's points take ESI and the count ECX; ours the reverse. Also on the lead: the
+// recount as `(points + count) - pool->points` 15 (867 B) and as `count + points - pool->points` 15 (867 B): the count is
+// then loaded first into ECX and the points take ESI as retail, but the shift folds into `shl ecx, 3; lea`; as `count -
+// (pool->points - points)` 35 (867 B); through the cache's own count and points fields 190 (857 B; no shared base);
+// `long used = count; used += points - pool->points;` 9, `long used = count + (...)` 9, `(long)count + (...)` 9 (all
+// propagated to the lead's code); `(void)result->count;` ahead of it 9; the recount in a forceinline (pool, polygon)
+// helper 9; the cull test through a `byte const *view` local 9.
+// Reserved points used for corners 139, inside copy 69, or both 110; cache array publication
+// 186. With staged reservation and cap/corner bindings: reserved-pointer recount 45, native
+// arena origin 190, signed byte-offset recount 9, and advance destination index at the depth
+// minimum 18. NOT kept: the 9 and 18 forms require exact equality on the staged shapes.
+// The scaled stride spill and the recount registers still differ.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2085,6 +2116,18 @@ struct s_pool_view_172840
 // read-only point difference 17; named parent bitmap source 17. NOT kept: the 17 forms
 // reach retail length with the short sentinel but retain the reordered publication,
 // reversed copy setup and exchanged scratch registers in the recount.
+// M3 lane 3 r290 (H2M_FAST, control 55; round 160's 17 form, key/next/portal/cluster store order, rebuilt 17 at 868 B with
+// retail's key ECX, link DX, portal CX and `or eax, -1`; left: the stores' order, the copy's esi/edi set-up order and the
+// recount's points ECX / count EDX for retail's EDX / ECX, the same swap as 0x173520's recount). Reading: the five-byte
+// sentinel is `mov eax, -1` because EAX was last written by the 16-bit portal load; with the portal in CX the last write is
+// the `movsx` and the short `or` follows. On the 17 form the recount as `pool->data_used = (next->data - pool->data) / 2 +
+// next->count` 115 (878 B, cdq), with `>> 1` 42 (871 B: sar 3, but the base formed as `sub 0x6c08`); on this body the `/ 2`
+// form 128 (880 B). On this body, read ahead of the link store and used at its place: the polygon distance 62 (874 B), the
+// default rectangle pointer 55, the new entry's portal-bit pointer 55.
+// Key and predecessor staged together 55/55, shared signed predecessor 55, bound predecessor bitmap
+// array 203. On the reordered short-sentinel form: signed byte-offset recount 17, native arena origin
+// 42, staged key and predecessor 17, earlier predecessor bitmap pointer 22. NOT kept: the 17 and 22
+// forms reach retail length but keep the reordered publication and the exchanged recount registers.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2419,6 +2462,10 @@ struct s_camera_reference_171830
 // padding; that with separate success stores 283, with retail's arm order (flagged arm first, `else narrow = true`) 281;
 // dead locals 1..7 on the helper form at the top, before the depth or before the side vector 280 to 285 (the centre and
 // cross sites never move); the side vector right after the 0x171d00 call 254, before the up copy 262.
+// Packed low bits 155, packed unsigned flag 155, both packed fields 155, packed signed
+// flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
+// threshold 264, and constrained comparison assignment 291. NOT kept: packed views
+// leave the early zero unchanged, while signed and split forms lengthen the plane path.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

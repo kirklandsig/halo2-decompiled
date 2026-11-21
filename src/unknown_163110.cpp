@@ -617,6 +617,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 }
 
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
+// computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
+// with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
+// with plane 1 too 152 (1851 B, first +0xaf). Re-measured: d as `near_distance + -d` 423.
 // MiniMax G (11-19): no new form, no lower score (115), body unchanged. Naming the three edge coefficients in locals read
 // before the normal's copy scores 276 (1867 B): the compiler keeps them in registers and the copy's stores move behind the
 // products. Swapping the i term's operands (`planes[0].normal.i * view->vector_e4.i`) compiles to exactly the same code
@@ -1224,6 +1228,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // local stored as `near_distance - d0` 423, as `-d0 + near_distance` 423; the forward vector copied into a local normal with
 // the plane's normal written from its negation 263 (1830 B); the i product named ahead of the k and j terms and added last 251
 // (1867 B); the k and j terms assigned and the i product added by `+=` 168 (first +0x60). Body unchanged.
+// Direct clipped endpoint through point setter, component writes or vector sum 394/377/377.
+// Endpoint chosen before fraction, with setter, component writes or sum 382/366/366.
+// Branch-selected endpoint with point setter or vector sum 371/377.
+// NOT kept: direct output advances the first difference to +0x15 and loses retail length.
 // Carry completed near/far/both offsets through normal orientation 119/119/135.
 // With both named offsets, sign near/far/both before orientation 163/183/191; read both x coefficients before the copies 235,
 // or combine the early reads with both early signs 297. The coefficient preload and zero register still differ.

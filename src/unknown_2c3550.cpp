@@ -603,6 +603,14 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two
 // stacked score lines below are merged into this one (m3 lane 11 r102).
+// M3 lane 7 r208 (H2M_FAST with 0x270930, MATCH throughout; control 675; aligned = difflib count of differing
+// instructions, masked = with registers and esp slots masked; control 601 / 468): the search arm first, `if
+// (obstacles->count > 0) { search } else { copy out }` (retail's fall-through order: the copy is out of line) 707
+// (2986 B, masked 424); on it retail's retry flow (`avoid` first, the second search assigning `found` in each arm, one
+// `if (!found)` failure block) 759 (3025 B, frame changes at +0x1, masked 385); on it the start pair in one if/else ahead of
+// the input pointer 751 (2963 B, masked 393); that if/else alone on this body re-measured 750 (2960 B, masked 437); the
+// search arm first with `bool last` 740 (2966 B, masked 391); with first_output zeroed at entry 732 (2986 B, masked 425).
+// Lane 14 r77's shape patch still applies: 771 (2938 B, aligned 465, masked 244). Body unchanged.
 // MiniMax E (11-20): no new form and no lower score (675): retail re-tests the input's type after the obstacle setup,
 // so the collision pass is a separate top-level test, and it keeps the success result in a byte at [esp+0x13]; the
 // forms tried here (the radius as one ternary 708, the result as a bool 754, the collision pass split out 848 with

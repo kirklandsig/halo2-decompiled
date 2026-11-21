@@ -505,6 +505,16 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
 // the table global in ECX the other way round, so every later home is one slot off.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// M3 lane 6 r223 (plain each; the reduced image builds this function differently, 834; control 535): the first loop as
+// a do-while with its index declared at function scope 533 (frame 0x21e4: the tag then spills at retail's +0x94 and the
+// secondary count sits at retail's +0x54, but the face list moves to +0x1f0 and the count to +0x1c), with the index in
+// its own braces 533 (the same frame: the loop shape, not the index's scope, reshuffles the homes); the index advanced by
+// the loop (`faces[i]`, `i++` in the for) 548; one `short i` at function scope for the first loop and the group loop 563
+// (3631 B), with one `short j` for the three inner loops too 575; that shared index with the do-while 533 (frame 0x21dc,
+// homes as main's), with the shared `j` as well 715 (3599 B); the inner plane declared with the first plane 535 and the
+// quad declared at the top of the group pass 535 (same code each); counters renamed to sort first/last 535 (diagnostic:
+// names do not move these homes). Retail still advances the first loop's index between the pushes, ours after the call
+// (MSVC defers the postfix in the argument to the end of the call).
 // M3 lane 4 r230 (plain each; base 535, aligned 672, register/offset-masked 355). Retail keeps 1.0f (XMM0), 0.0f and the
 // three scaled axis components (XMM5-7) live from the normalize through the sign and the angle clamp: its equal-normals
 // path jumps past the reloads that follow the arccosine call, so the sign's cross product has only XMM1/XMM3/XMM4 and
@@ -1069,6 +1079,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // to -1 559 (the 1.0f is still divided in place and loaded again), and that sign used as the reciprocal's numerator (a
 // diagnostic only) 577 (3631 B: still `divss` in place on the register that held it). In every form the constant is
 // rematerialised, so nothing here makes this build keep 1.0f across the cross product as retail does.
+// Nested positive angular and two distance tests, three groupings 535/535/535.
+// Named angular product in the combined test and the three nested forms 726 each.
+// Named reciprocal-distance result after the angular test 574.
+// NOT kept: the nested tests tie. The named limit grows the frame and restores no tag/count home.
 // Primary count reused after secondary admission, before its first test, or as the initial bound 533/532/532.
 // With a mandatory first collection loop 551/551/551; with the primary count declared before the secondary count 533/532.
 // The two- and three-point gains leave the definition at ESP+0xb4 and the addressed counts displaced.

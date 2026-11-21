@@ -632,6 +632,11 @@ struct s_visibility_bound_record
 // first difference +0x7). The part centre through the existing transform4x3f_apply_point (0x142570) 633 (1539 B, a call);
 // with `inline` on 0x142570's definition as well (diagnostic) it is inlined here, 432 at 1744 B, but 0x1396c7 (48) and
 // 0x24e59f (42) then stop matching (retail calls it there), so 0x142570 stays out of line. Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH; control 430): the geometry lookup
+// ahead of the entry pointer 430 (same code); the part-count test as `>= 1` (diagnostic of the EBX zero) 453 (1760 B); the
+// four list counts as separate stores 430 (same code); `view_ranges` computed inside the parts arm 451; the parts bit as
+// `(entry->unknown00 >> 12) & 1` 430 (same code). Retail keeps the tag table in ESI from above the tag test to the bottom
+// arm and has no function-level zero; ours loads the table into ECX for the lookup only and keeps a zero in EBX.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
