@@ -499,6 +499,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	}
 	return false;
 }
+// score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
+// the range and plane homes; the 0x11e800 pointer registers now agree (lane 5 r197). One note: the two earlier score
+// lines below are kept as "Earlier score line".
 // MiniMax B (11-20): no new form, no lower score (172): the prologue still differs in one more place - retail interleaves
 // the point's three stores with its pushes (the third component at [esp+0x34] after the first push and the second at
 // [esp+0x38] after three), while this build stores the third component before any push and the second after two, so the
@@ -507,7 +510,6 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // branch's clear measures 208 (726 bytes), so the definition's two clears are not what holds the prologue apart.
 // MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
-
 // MiniMax R (11-16): no new form, no lower score (172): retail pushes EBX first and keeps the BSP root in EBX with the section in its own home, where this build keeps the BSP in EBP and the section in EBX, and the frame's slot order follows that allocation; the permuter's six tries reach no variant under 172.
 // MiniMax D (11-14): no new form, no lower score (172): the frame 0x58 agrees, but the BSP global still sits in ebp where retail keeps it in ebx, and the prologue still pushes two registers where retail pushes three.
 // MiniMax G (11-13): no new form, no lower score (172): the BSP global sits in ebp where retail
@@ -552,7 +554,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax E (11-20): no new form, no lower score (172): the BSP stays in EBP here and the section in EBX where retail
 // keeps the BSP in EBX with the section in its stack home, and the vertex flag is initialised here where retail sets
 // it only when a vertex exists: BLOCKED-BY 0x11e800.
-// score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
+// Earlier score line (172, was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
 // tested only after the first vertex); that uninitialised success-only flag gives 165 (163 with
@@ -856,11 +858,20 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax D (11-20): no new form, no lower score (172): the frame 0x58 still agrees, but retail keeps the BSP in EBX and the
 // section in its own stack home where this build keeps the BSP in EBP and the section in EBX; the range and plane homes rotate and
 // the four pointers of the 0x11e800 call sit in another register order, and the permuter's 35 variants found nothing below it.
-// score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
+// Earlier score line (172, was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
 // the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
 // Collision point transfer by coordinates 230, standard copy or backward copy 197 each.
 // Vertex transfer by coordinates 252, standard copy or backward copy 270 each. Both transfers
 // with forward or backward copy 284 each. The entry copy reaches 726 bytes but changes the early save order.
+// M3 lane 7 r205 (H2M fast with 0x14a8e0, 0x14af40 and 0xd47d0, all MATCH each run; control 172 at 733 B). Round 268's
+// lead rebuilt (the vertex getter's result unset on a miss, definition and section NULL at their declarations, bool result
+// after section, no else arm, unknown18 stored before part_index) 133 at 733 B; every line left on it is EBP (retail
+// pushes it in the prologue and gives it to the range from the arms to the loop's first test, ours pushes it before the
+// loop) and the section, which ours keeps in EDX from its test into the loop where retail reloads it at the 0x16e1b0
+// call. On 133: the unknown18 clear moved ahead of the type tests 237 (744 B); the strip-index pointer taken after the
+// 0x16e1b0 call 194 (734 B); `section != NULL` with the loop index declared in the block 133 (same code). On the body:
+// the strip-index pointer after the 0x16e1b0 call 202 (736 B); the vertex loop as `vertex < 3 && valid` with a plain
+// assignment 263 (686 B). Body unchanged.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
