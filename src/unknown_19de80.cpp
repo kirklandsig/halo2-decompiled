@@ -938,6 +938,13 @@ static inline bool teams_enabled_19e1c0()
 // scores, local timers, or opponent score only, 438/432/434/389. With ordinary
 // result storage, 666/642/646/691. NOT kept: opponent-only gains one but
 // keeps the 0x208 frame. Ordinary results merge name preparation.
+// M3 lane 5 r230 (h2m fast with 0x19e0f0, MATCH; control 390, plain result 691 at 1170 B). Reading: the plain result
+// ranks result ESI, token EDI, token length EBX, event EBP with `remaining` on the stack (retail: result ESI, token
+// length EDI, event EBX, remaining EBP, token on the stack), and its opponent loop counts down an extra EBX counter where
+// retail runs `inc edi; cmp edi, 8; jl`. On the plain result: `remaining` renamed with an `a_` prefix 691, `token`
+// renamed with a `z_` prefix 691, `long const remaining` 691, the text buffer declared ahead of the result 691 (same code
+// each: no name or declaration tie); the loop counter typed long 688 (1172 B); the score test written
+// `best_score <= score` 691, with the long counter 688. On the volatile result: `best_score <= score` 388.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
