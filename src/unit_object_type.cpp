@@ -3240,6 +3240,9 @@ void function_c5740(long unit_index, bool start)
 // lookup 91/93, selected tag instance 97, typed damage/material/both playback indices
 // 97/97/97, and inline effect dispatcher 97. NOT kept: the six- and four-point gains
 // leave the prologue different and split the damage index into two register values.
+// Round 454: the definition index still misses EBP and the pool data stays live across the weapon gate.
+// Common object lookup for unit, weapon or root 97/97/97; for unit plus weapon, weapon plus root, unit plus
+// root or all three 97/97/97/97; post-gate common lookups with typed root forward member 97. Body restored.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)

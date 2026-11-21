@@ -1360,6 +1360,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // members 859 (2366 B) / 572; three named differences then the members 859 / 572. Lead: retail's scan 2 needs a
 // direct store of the offset's first member that does not make the entries field be read again, with j and k as
 // plain values; no source form here gives both.
+// Exclude nearest by sample or position address, winner bound before/after anchor
+// delta, captured/indexed candidate forms 615/615/639/615 for either address.
+// All shorten the body and reserve 0x14. The second induction address and offset.i
+// spill remain unresolved.
 // Candidate offset squared directly, accumulated, or as three named squares
 // inside or before the projection test: 646 each with either square-sum order.
 // NOT kept: the second scan shortens to 2039 bytes and still omits the offset

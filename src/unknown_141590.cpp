@@ -574,6 +574,11 @@ static inline void quaternion_transform_vector(
 // with double literals as well 1028 (591 B: the helper is no longer expanded). The quaternion passed by value 456
 // (1446 B); its vector part and w as separate parameters 201 (same code), with m, d, w2 259 (1294 B); the dot kept
 // undoubled with `* 2.f` written in the rows 279 (1364 B), with m first 288 (1345 B).
+// Transform cross scratch through cross3f after doubled scalar, after quadratic, before
+// all coefficients or before doubled scalar 260/198/271/254. Through cross3f_staged
+// 260/202/271/254. With both coefficients before cross and doubling last, frame and
+// length agree at 0x24 and 1317 bytes. The half-angle registers and quadratic schedule
+// still differ. NOT kept. The three-point gain reduces the frame to 0x18.
 // M3 lane 2 r128 (H2M_FAST with 0x143120/0x11d000/0x30bf0, all MATCH; control 201): the transform helper's three scalars
 // re-ordered on today's body, m,w2,d 247 / m,d,w2 248 / d,m,w2 250 / d,w2,m 252 (1336 B) / w2,d,m 203 (1323 B); its dot
 // through the existing basis_dot_xzy (the i,k,j sum) as (v, q) 226 and (q, v) 236; the identity copy as memcpy 201 (same
