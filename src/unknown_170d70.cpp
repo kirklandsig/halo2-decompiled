@@ -910,6 +910,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 
 // score 105 (was 129): The camera table loads late, the key and table registers are exchanged, and the plane
 // lookup uses a different address schedule.
+// The one-word frame, saved EBX and later BP volume index agree. The first difference at
+// +0x10 is the map-miss branch span. At the admitted projection, retail loads the camera base into ECX before
+// the volume count calculation, then holds the camera key in EDX for the multiply and push. The trials use the
+// actual camera stride and test when the camera table base, record, or byte offset becomes live across volume
+// reservation.
 // Earlier at 129 (was 129): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
 // the creation block is now out of line and the slot (EBX) and volume index (BP) registers are retail's,
 // at retail's 434 bytes. Left: the call setup (retail loads the camera array into ECX at the block top and the key into EDX,
@@ -1065,6 +1070,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // fixed camera records and shared key 106; entry reference and shared key 106; volume
 // reference with byte table and offset 105; bound volume count and shared key 106.
 // NOT kept: the explicit key coalesces into the same multiply and push schedule.
+// Camera byte base at reservation or entry selection 11/11. Native record base at those points 105/105, with
+// one post-update key 106, or a record address before the volume 13. Byte offset with direct portal field 11 or
+// before the volume 13. NOT kept: the 11-point forms still load the camera base late and exchange its register
+// with the key. The one-use bindings and portal field reload require an exact match.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1610,6 +1619,11 @@ struct s_point_pool_173520
 
 // score 37 (was 45): The reservation publishes the pointer before the pool count and state test. The stride spill,
 // cap reload, corner loads, and recount registers still differ.
+// The 0x610 frame agrees. The visited-branch span first differs at +0x36. Retail commits the
+// used count and tests polygon state before publishing the point pointer. It then spills the scaled step before
+// loading the clipped-vertex cursor. The trials test the native pool members and the order in which the two
+// projection cursors are produced and consumed. Four forms change the remaining stride or recount on the
+// earlier match-only foundation.
 // Earlier at 37 (was 45): the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
 // destination load moves up into that copy as in retail. Still differs: result->points is stored before the pool
 // count (retail stores the count, tests the state, then publishes the pointer), the x87 clamp keeps a copy of the
@@ -1698,6 +1712,11 @@ struct s_point_pool_173520
 // state byte scoped to the active arm 9; separate published count and point-offset locals 9.
 // NOT kept: the reference and staged slot forms require an exact match. The nine-point
 // forms retain the late stride spill and reverse the recount registers.
+// Native pool reservation and recount 189; byte stride before/within the count guard 158/173; source advance at
+// the last depth read 127. With the separate bounds and distance bindings and staged reservation: byte stride
+// 156, depth-read advance 125, native arena recount 190, destination stride in the loop update 9. NOT kept: the
+// 9 form still reverses the stride spill and cursor load, and exchanges the recount registers. The bindings
+// require an exact match.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1820,6 +1839,11 @@ struct s_pool_view_172840
 
 // score 55 (was 134): The selected cluster and portal stores exchange scratch registers with the link and key, and
 // the sentinel load adds two bytes to the publication block.
+// The 0x30 frame and all four entry flag homes agree. The first difference at +0x24 is the
+// empty-queue branch span. The successful clip publication uses CX for the predecessor where retail uses DX and
+// leaves ECX for the key. The retail listing carries the destination rectangle address across clipping,
+// template publication and bounds calculation. The trials test whether that address and the existing input
+// rectangle bindings change the scratch-register allocation at the first stores.
 // Earlier at 134 (was 134): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
 // only the publication block differs (870 B against 868): its first scratch load takes CX where retail's
 // takes DX (the link value; the key then ECX), so the stores reorder and the sentinel is a five-byte load. Earlier (134,
@@ -1986,6 +2010,10 @@ struct s_pool_view_172840
 // five-byte sentinel.
 // Default rectangle snapshot before linking or before the key store 272/271.
 // NOT kept: both grow the frame and body.
+// Carried rectangle pointer/reference 55/55, clip bounds receiver 55, clip bounds and point receiver 58, both
+// carried input rectangles 55, entry or polygon input with the destination pointer 55/55, and both inputs with
+// the clip output 55. NOT kept: the first publication scratches and five-byte sentinel stay different at 870
+// bytes.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

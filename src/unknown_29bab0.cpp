@@ -771,6 +771,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and copied/assigned heading 671/727/503/727. The same workspace as a
 // point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
 // NOT kept: the initial position still goes to +0x8c and every score rises.
+// Per-arm Y with common X, positive/negative first: point field 718/718,
+// scalar forming point 703/703, scalar consumed by radial difference 720/720,
+// radial Y in each arm 694/686. NOT kept: the scalar Y forming a point reaches
+// position +0x80 and frame 0x88 but shortens the function to 3483 bytes and raises the score.
 // M3 lane 5 r219 (H2M_FAST; control 489): the closing test as dot3f(&local_7, &local_9) 489 (same code: retail's
 // local_7-first products there come from operand ranks, not argument order); the side flip held in a byte and converted
 // at the join (`local_21 = side != 0`, diagnostic for retail's `test al, al; setne al` after the flip: that pair then

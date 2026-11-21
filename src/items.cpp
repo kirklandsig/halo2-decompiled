@@ -1235,6 +1235,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // conditional point selections 130; normalized vector value 246.
 // NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
 // vector value grow the body, and the earlier doubled half-root regresses.
+// Scalar scale after doubled or undoubled projection 133/130; later forward binding 130;
+// named alignment products with one sum or staged accumulation 148/148; weighted cross
+// contribution, with shared operations, or via the output workspace 224/277/277.
+// NOT kept: the 0xc0 frame remains throughout and weighted cross forms grow the body.
 // Item cross 130, mixed-product scale 130, shared rotation with axial or forward
 // contribution first 273/278, shared i-k-j projection 154, value-returning cross
 // with shared scale 248, and staged cross in place on the marker or facing operand

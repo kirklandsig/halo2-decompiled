@@ -704,6 +704,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
 // offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
 // component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
+// Input-coordinate cursors for first, second or both displacements 221/221/226;
+// with destination cursors in those passes 222/221/222. A fused source-cursor
+// loop with indexed or cursor destinations 218/221.
+// NOT kept: the fused indexed form gains three and retains the 0x20 frame.
 // M3 lane 14 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the view helper taking the vectors by
 // reference 221 (same code); the scaled vector assigned in an if/else (`scaled = *in` when the scale is 1) 310 (1187 B);
 // the scaled vector initialised by aggregate copy 317 (1187 B); the weights as unary minus 221 (same code); the else

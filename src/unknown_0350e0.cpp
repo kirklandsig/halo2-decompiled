@@ -490,6 +490,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // named complement 340/351; named sine 340/346; named sine and complement
 // 340/357. The frame stays 0x90, but the first axis register and square spills
 // remain and every form increases the length.
+// Indexed axis squares with direct diagonals, early diagonal stores, diagonal loop after
+// cross products or diagonal loop before cross products. Ascending 351/370/342/361, descending 345/375/356/345.
+// NOT kept: the frame moves from 0x90 (0x7c, 0x88, 0x8c) and every score rises.
 // M3 lane 14 r132 (H2M_FAST with 0x137ed0, MATCH each run; control 334): the builder in the shape of 0x1546f0's file-local
 // rotation builder (squares and sine products as vector3f locals, the complement named after forward.i, (t * j) * i and a
 // shared t * k) with this function's cosine/sine parameters: that file's store order 382 (1735 B, frame changes), retail's
@@ -2382,7 +2385,12 @@ real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
 // MiniMax E (11-20): no new form, no lower score (281): the opacity branch's polarity, the angle and axis_scale order and the delta order each lower the score (275 together), but they are reorderings, kept only with a byte match, so they are not kept; what is left is retail's register-first multiply and its source order for the independent float statements, which the source does not steer.
-// score 281 (was 281): The frame and output homes agree. The delta/forward schedule, draw-point X load, and loop XMM assignments still differ.
+// score 281 (was 281): The 0x94 frame and decoder output homes agree. The first difference at +0x76 is the tag-
+// rejection branch displacement. The first differing computation is the camera displacement. Retail starts with
+// position X in XMM1 and takes its Y-axis load before computing the Y and Z deltas. This build loads the
+// forward-axis terms first and puts the deltas in different registers. The trials separate the camera-origin
+// and projected-vector lifetimes, leaving the decoder and graphics calls unchanged.
+// Earlier at 281 (was 281): The frame and output homes agree. The delta/forward schedule, draw-point X load, and loop XMM assignments still differ.
 // Earlier (417, was 492): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // product operand sides, the loop's XMM numbering (lead at the end of this note).
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
@@ -2812,6 +2820,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // reflection stages 505. Near endpoint before reflection 503 or between projection
 // and reflection 364. NOT kept: the aggregate gains one point and leaves the delta
 // registers and branch span different. The other forms regress.
+// Camera origin by value with the point difference, vector setter or direct components 541/537/537. In-place
+// position translation 280. In-place projected reflection by scale/difference, setter/difference or
+// scale/setter 554/499/539. Camera origin with shared difference and in-place reflection 595. NOT kept: the
+// one-point gain is below the threshold and still one byte over retail.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3265,7 +3277,12 @@ real magnitude3d(vector3f const *v);
 // clamp tests, where this build leaves it on the x87 stack and lets the clamped value take its place. Note for the
 // next round: with this function alone in the reduced image the length drops to 997 bytes and the score to 315,
 // because magnitude3d stays out of line there, so measure it with the rest of the file's functions present.
-// score 170 (was 170): The raw current length shares the bounded slot at ESP+4. Retail reuses ESP+0xc for it and the real dot and angle.
+// score 170 (was 170): The 0x38 frame and 1045-byte extent agree. First +0x30 is the x87 rounding store for the
+// raw current length, at +4 in this build and +0xc in retail. Retail reuses its transfer slot for the real dot
+// and angle. This build keeps a separate promoted dot for inverse cosine. The trials alter the overlap of
+// inverse cosine, angle multiplication and cross-product production to test whether the earlier slot exchange
+// follows that later x87 lifetime.
+// Earlier at 170 (was 170): The raw current length shares the bounded slot at ESP+4. Retail reuses ESP+0xc for it and the real dot and angle.
 // the raw current length, the dot's double copy and the angle reload (below).
 // MiniMax S (11-17): no new form, no lower score (170): retail still keeps the raw current length in its own slot
 // and the pinned value in another, where this build reuses one slot for both, so the later homes shift; retail
@@ -3566,6 +3583,9 @@ real magnitude3d(vector3f const *v);
 // Shared squared-length producer under the current or target root at the lower
 // test, upper test, in-range result, or all three sites: eight at 170.
 // The raw current root still shares the bounded slot; the promoted dot stays.
+// Fused angle after the first/second/all axis components 201/213/237. Unscaled arccosine kept across
+// first/second/all axis productions 216/217/241. Arccosine after the first component, with final angle after
+// the second/all 217/241. NOT kept: the transfer slot remains displaced and every score rises.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4018,7 +4038,12 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 
 // MiniMax G (11-20): no new form, no lower score (317): the body is retail's 1324 bytes and only the register plan differs - retail keeps the state pointer in ebp and the swap counter in edx (homes [esp + 0x10] and [esp + 0x14]) while this build takes ebp for the counter and edx for the state, with the two homes swapped.
 // MiniMax A (11-20): no new form, no lower score (317): the prefix and state registers and the ordinal homes
-// score 317 (was 317): EBP and EDX hold the prefix and state in reverse order, with swapped ordinal homes.
+// score 317 (was 317): The 0x30 frame and 1324-byte extent agree. The exit span first differs at +0x15. Retail
+// holds the retained prefix in EDX and the list in EBP after the limit gate, with the creation ordinal in EBP
+// later. This build exchanges the early register roles and the prefix and ordinal homes. The swap expansions
+// consume ECX, ESI and EDI and influence which values interfere across the copy. The trials test their real
+// copy operands and the point where the creation ordinal becomes live.
+// Earlier at 317 (was 317): EBP and EDX hold the prefix and state in reverse order, with swapped ordinal homes.
 // MiniMax E (11-16): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
 // MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
@@ -4319,6 +4344,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // with payload/both 359/366; return the last tested count with payload/initial/both
 // 357/382/354. NOT kept: all regress, and the list and prefix keep their exchanged registers.
 // MiniMax H (11-20): no new form, no lower score (317); the state and prefix registers and the ordinal homes are still exchanged, and the body stays longer than retail's.
+// Swap destination first in paired/fallback/creation/duplicate passes 319/323/317/316. Both admissions, both
+// removals, paired plus creation, or all four 325/316/319/324. Creation ordinal seeded before the guard, shared
+// or local 357/393. NOT kept: the one-point gain remains below the threshold and the early register roles still
+// differ.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

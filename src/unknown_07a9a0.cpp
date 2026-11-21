@@ -1710,6 +1710,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
 // bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
 // body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
+// Histogram pointer endpoints for all groups, eligible parties, both with separate counts,
+// or both with a shared count, word buckets 886/886/845/927, dword buckets 919/915/916/929.
+// NOT kept: the lower word score replaces two retail signed countdowns with pointer tests.
+// The opening lookup still expands and the upper-capacity selector still calls.
 // M3 lane 2 r122 (fast with 0x73530, 0x192e60, 0x192db0, 0x63220, 0x66050 and 0x1934f0; control 871; body unchanged). The top
 // 0x192e60 call is not this body's choice: (a) cut down to three lines (the index accessor, the call, a store and a return) this
 // file still expands the lookup at the top, as do cuts after the type-5 scan (274 B), the player loop, the group loop and the

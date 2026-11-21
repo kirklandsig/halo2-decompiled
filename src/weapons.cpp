@@ -4769,7 +4769,12 @@ struct s_weapon_projectile_creation
 	byte unknown4c[0xc4 - 0x4c];
 };
 
-// score 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
+// score 1121 (was 1121): The first difference at +0x1 is the 0x1ea4-byte stack probe against retail’s 0x1e98.
+// Entry lookup and indexing agree before the first spills. Retail’s 0x88-byte damage event sits above the
+// distinct clipping output and the creation request. The trials replace the raw damage buffer with the existing
+// event layout and test whether direct member publication changes the workspace allocation while preserving the
+// values and call tuples.
+// Earlier at 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
 // writes the code as a dword at 0x104450 and reads a word back from the slot at 0x105233), which gives the function
 // retail's length (5212 bytes). What still differs is the frame (0x1ea4 against retail's 0x1e98, twelve bytes bigger)
 // and the parameter offsets that follow from it, the game mode read (a byte load plus a sign extension where retail
@@ -4931,6 +4936,9 @@ struct s_weapon_projectile_creation
 // pointers 1121, fixed axis by value 1150, staged and direct shared cross 1186 each, shared i-k-j projection
 // 1131, changing vector passed and returned by value 1185. NOT kept: no gain. The setter reduces the frame to
 // 0x1e94 but shortens the body to 5105 bytes.
+// Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
+// Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
+// 1158. NOT kept: none improve the opening frame or score.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

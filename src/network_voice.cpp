@@ -1552,6 +1552,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 
 // score 60 (was 60): The membership load displaces the zero result from EAX. Player bit and entry size use
 // opposite saved registers, and capacity failure has a separate zero exit.
+// The 0x14 frame and entry registers agree. At +0xe the inactive branch spans the longer
+// body. The first operational difference uses EAX for the membership word, where retail needs the zero result
+// through the capacity gate. Retail leaves the retained mask and written count in stack homes and carries a
+// packed entry cursor beside the ordinal. The trials change when the actual entry cursor is acquired, advanced
+// or reused across the emission and summary scans, with the original live count tests.
 // Earlier at 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
 // Earlier detail: the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
@@ -2039,6 +2044,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 157 or shared narrowed reconstruction 91; byte length accumulated in a local or the result
 // 159/159. NOT kept: every form regresses and the record-end and running-length forms
 // change the matched caller.
+// Emission acquisition/cursor 184; summary cursor 69; separate cursors 184; shared cursor at latch/acquisition
+// 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
+// NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
+// the player on the stack.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
