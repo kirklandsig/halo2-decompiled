@@ -1681,6 +1681,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // shared negates with separate rotation input 634.
 // NOT kept: All eight forms shorten away from the retail extent and raise the score.
 // The 0x2c frame exceeds 0x28. The selection byte still spills and the block and query arrive in exchanged registers.
+// M3 lane 2 r129 (h2m fast with 0xd4080, 0x117c80, 0x13b390, 0x3db00, 0x3dfe0; control 529, 0xd4080 378, 0x3db00 MATCH;
+// this build already returns `ret 0xc`): the input normal pointer and the normal copy moved ahead of the count test 532
+// (2189 B; the block then arrives in EAX and the query in EDX as retail, 0xd4080 380, 0x3db00 still MATCH, but the copy
+// runs in the entry block); that with `if (parameters) { ... return true; } return false;` 567 (frame 0x28 as retail,
+// 2190 B); the mask written into the loop test (no named mask) 575 (2172 B; the mask still takes EDI); that with the
+// constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
+// test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
+// mask takes EDI ahead of the query in every form where the copy stays in the found block.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

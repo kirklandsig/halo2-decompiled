@@ -873,6 +873,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // returns success, early success 1405.
 // NOT kept: All eight forms retain the 0x5d0 frame and raise the score. Three reach retail length.
 // The 0x5d0 frame exceeds 0x58c. The component and velocity homes remain displaced.
+// M3 lane 2 r129 (h2m fast, 0x2056e0 MATCH each run; control 1346 at 6243 B, first loop's element pointer at +0xe4 against
+// retail's +0xe0): the first loop's offset and velocity rows bound as references instead of pointers 1346 (same code);
+// local_2 declared ahead of local_1 1346 (same code: retail stores local_2's home first, ours local_1's, unchanged); the
+// ray record local_19 declared at function scope 1386 (6243 B); the magnitude helper taking its vector by value (the
+// copy as its parameter) 1346 (same code: still one 12-byte copy per site); the contact loop placed under the query
+// call's `count > 0` test 1456 (6257 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

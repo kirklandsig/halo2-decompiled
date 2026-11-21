@@ -878,6 +878,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // 0x16e1b0 call 194 (734 B); `section != NULL` with the loop index declared in the block 133 (same code). On the body:
 // the strip-index pointer after the 0x16e1b0 call 202 (736 B); the vertex loop as `vertex < 3 && valid` with a plain
 // assignment 263 (686 B). Body unchanged.
+// M3 lane 7 r207 (h2m fast with 0x14a8e0, 0x14af40, 0xd47d0, all MATCH; control 172): the surface-index test as a
+// nested if 172, the vertex array at function scope 172, the three 0x16e1b0 outputs at function scope 172, the vertex
+// test as `if (valid) valid = ...` 172 (all the same code); the strip-index pointer formed after the 0x16e1b0 call 202
+// (736 B).
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

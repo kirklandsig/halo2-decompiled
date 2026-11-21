@@ -957,6 +957,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `&updates[*count]` then `++*count;` 32 (1056 B). Compile-only key screen (the file without /GL; the grouping
 // reproduced): `collection` at the loop top, through a reference, as a const pointer, the key through `&players[0] + i`
 // or a byte sum: all (inverse + cursor) + collection + 4.
+// M3 lane 7 r206 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): `collection` declared just ahead of
+// the slot search (the first arm's apply given `&watcher->players`) 28; the slot search, swap and occupied step as a
+// file-local forceinline helper taking (collection, i, source, count, updates) 28 (same code); on the swap order
+// (collection, player, update, other) each of those 32 (the swap order's code); `collection` a const pointer set
+// between the two loops 277 (1072 B, the key's own induction variable). Compile-only: the helper's parameter and the
+// late declaration keep (inverse + cursor) + collection + 4.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

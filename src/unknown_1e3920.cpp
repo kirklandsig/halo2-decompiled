@@ -1269,6 +1269,13 @@ void function_1e3b60(long actor_index);
 // going to the release block's call 436 at 1616 B (frame 0xa0 as retail, actor index still stacked); that with a short
 // old state 440 (1620 B); the walk through 0x26be00/0x26be30 with the first form 447 (1620 B), with the second 442
 // (1616 B; walk alone 443). Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion).
+// M3 lane 2 r129 (h2m fast with 0x262ba0, 0x25c820, 0x25c780 and 0x25c820's three inlining callers; 0x262ba0 control 404 at
+// 1624 B with 35 calls against retail's 34; 0x262ba0's and 0x2641c0's files were other lanes' this round, so nothing there):
+// 0x25c820 reading the datum through prop_ref_get at each use 25 (0x25c820 25 at 69 B: the lookup is redone after the
+// 0x25c780 call; 0x262ba0 423); diagnostic, a second test nested around 0x25c820's 0x25c780 call 25 (0x262ba0 423, still 35
+// calls: more written depth in the callee does not stop the release-site expansion); here the not-active case as an early
+// return storing NONE 75; the `g_46fc80` store ahead of the actor lookup 25 (same code); the clear and the two NONE stores
+// through a fresh actor_get each 69 (276 B). BLOCKED-BY 0x262ba0 (stacked actor).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

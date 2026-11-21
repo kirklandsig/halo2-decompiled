@@ -730,6 +730,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // First displacement initializer, in-place/separate view 220/219; second 218/217;
 // both first-endpoint first 218/217; both second-endpoint first 220/218.
 // NOT kept: gains of at most four, with frame 0x20 and different second-offset homes.
+// M3 lane 2 r129 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221): the second
+// offset loop first with the depth limits written in the condition 260 (1114 B); the else arm's weights set as local_5,
+// scale, then local_4 from local_5 221 (same code); the blend terms written first point first 221 (same code: the
+// operands canonicalise, ours still adds into the first point's product); the helper reading the camera's scale itself
+// (no scale parameter) on this body 218 (1115 B, -3); the origin copied once into a const local for both offset loops 262
+// (1136 B, retail's length, but the copy goes through the frame as dwords; frame still 0x20).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

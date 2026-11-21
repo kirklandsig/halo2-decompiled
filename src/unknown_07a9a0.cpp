@@ -1750,6 +1750,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // with dword buckets 911.
 // NOT kept: The 870 forms gain one point. Dword cells cut the frame to 0xb0 but shorten the body to 2748 bytes and raise the score.
 // The 0xd0 frame exceeds 0xb4. The opening variant lookup still expands and the upper-capacity selector remains a call.
+// M3 lane 2 r129 (h2m fast with 0x73530, 0x192e60, 0x192db0, 0x63220, 0x66050, 0x1934f0, 0x193300 and its three callers;
+// control 871 at 2780 B; the session already arrives in EAX with `ret 4` as retail): a folded second test nested inside
+// 0x192e60's valid arm (more written depth in the callee) 871 (the top lookup still expands; 0x192e60 still MATCH); the
+// forceinline redeclaration of 0x193300 re-measured 871 (the capacity call stays a call); `inline` on 0x193300's definition
+// 872 (2796 B, and the matched 0x705f0 and 0x72330 stop matching); diagnostic, an inline_depth(0) region around the top
+// lookup statement 994 (2640 B: the top call stays out of line but the region turns off the body's other expansions);
+// `result` declared ahead of the getter 871 (same code). BLOCKED on the link-wide inline choice for the top 0x192e60 call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
