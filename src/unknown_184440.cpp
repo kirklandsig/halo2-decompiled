@@ -181,12 +181,12 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
-// MiniMax D (11-20): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so every later slot sits
-// at another offset, and the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI); the 0x48e70 call sets
-// the rest and its definition is in another machine's file: BLOCKED-BY 0x48e70.
 // score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
 // the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
 // EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
+// MiniMax D (11-20): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so every later slot sits
+// at another offset, and the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI); the 0x48e70 call sets
+// the rest and its definition is in another machine's file: BLOCKED-BY 0x48e70.
 // M3 lane 15 r124 (H2M_FAST with the callers 0x9cca0/0x184060, both MATCH each run; control 965): the start face
 // parameter read through its address for the group read 965 (same code); the surface list declared ahead of the record
 // pointer 965 (same code); the record pointer read through a const reference at its two tests and calls 984 (4573 B);
@@ -534,6 +534,11 @@ __forceinline bool function_184448(long arg_0)
 // pointer for its group read 965 (same code). On the 952 lead: the named count and the element pointer together 954
 // (aligned 886, masked 358); the record pointer cleared ahead of the test 970 (4600 B). Still BLOCKED-BY 0x48e70 (its
 // file is another machine's this round) for the reloads after each of its calls. Body unchanged.
+// M3 lane 11 r145 (H2M fast with the callers 0x9cca0/0x184060, both MATCH each run; control 965): the four clamped
+// cell bounds named first and then floored/ceiled 991 (4562 B); the zero-spacing arm first (`== 0.0f`) 976 (4595 B);
+// the axes read from g_440b94 at each use with a long table index 985 (4595 B, frame 0x11cc as retail, first
+// difference +0x1c), with the dominant axis long as well 985 (same code); the particle system through the existing
+// DATUM macro 965 (same code). Still BLOCKED-BY 0x48e70 for the reloads after its calls. Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

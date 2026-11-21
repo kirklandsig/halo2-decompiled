@@ -796,6 +796,16 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // or both 925 each. Complete conditional unit selection with explicit or
 // conditional-expression type arms 942 each at 3741 bytes.
 // NOT kept: the accessor forms tie and the complete selections grow past retail.
+// M3 lane 2 r128 (H2M_FAST with 0x29a190/0x29cbb0/0x2c41b0/0x2c0d00, which did not move; control 925 = plain; [aligned,
+// masked] difflib counts): lane 5 r218's 514 lead rebuilt on today's file 514 [170, 77] at 3740 B (all five forms
+// match-only). On it: the entry dot's k and j products written previous-direction first 514 (same code); the entry dot
+// through the existing dot3f 503 [170, 74] at retail's 3731 B (only the sphere loop's XMM numbers and the padding move);
+// on that the object's squared distance through length_sq3f 503 (same code); `bool enabled = true;` with the per-object
+// defaults plus the sphere test written `!(squared <= r * r)` 498 [168, 64]; on that a long type local for the four arm
+// tests 495 [150, 52] at 3745 B (retail's `movsx eax`/`push eax`). Left on 495: the object-table and component-table
+// globals loaded ahead of the index where retail scales the index first (loop head, type 11, sphere node), the object
+// distance radius computed first (retail after the three differences), the marker-loop and sphere-loop dot term orders,
+// the location copy's scratch registers and the loop-entry `jmp` over padding. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -2328,6 +2338,13 @@ long function_1fa7f0(void);
 // [ebp+0xc], where ours keeps the count in BX, the cursor in ESI and the step pointer in EDI; retail's emit keeps the
 // output element in EAX, its point in ESI and the emitted count in EBX; the tail is 0x210a30's inlined body (BLOCKED-BY
 // 0x210a30, as above). Body unchanged.
+// M3 lane 8 r214 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked
+// 350/256): the edge left uninitialised at the loop top and set to 0xffff at the scan hit (retail stores it there,
+// 0x2c219e, as well as at the loop top) 417 (1765 B); that with the side flipped in place ahead of the second tangent
+// call (no other_side local) 389 (1755 B, frame 0x114; the initialiser moved into the hit arm, so steering: not kept);
+// the side negated in the second tangent call's argument and flipped at the attempt loop's end 434 (1715 B, frame 0x10c
+// as retail, first difference +0x24, aligned/masked 299/199: closer in shape, shorter); that with the edge set only at
+// the hit 418 (1743 B, frame 0x114), with the repeated hit store and the top initialiser 426 (1728 B, frame 0x10c).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

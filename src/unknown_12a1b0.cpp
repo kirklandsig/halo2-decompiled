@@ -1473,6 +1473,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // restored); the two iterator helpers plain `static` 77 (189 B: not expanded; 0x21b870 49, 0x21bd00 116); the curve
 // parameter typed long 24 (same code); a named element read through a `*const &` for the state test, call kept, 24.
 // 0x126df0's own reference counts (round 111's lead) sit in a file other lanes hold this round.
+// M3 lane 13 r135 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; `ret 8` and 210 B in both builds, the 24
+// still only the index ESI / element EDI swap): the state test on `iterator.index` with the call on `index` 24; the
+// iterator's new step storing the count first 25 (0x21b870 2, 0x21bd00 2: restored); the iterator built ahead of the
+// guard with the guard on `iterator.first` 58 (205 B); the state test through an `s_sound_playback &` 24; `long index`
+// declared ahead of the iterator 24. Reading: both retail fade functions push the index's register before the
+// element's, as ours does, so the index is allocated first in both builds and retail gives it EDI; 0x126df0's
+// fade-in half (another lane's file this round) is still the untried lever.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -2620,6 +2627,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Gain-phase handle, gated pitch-phase handle, early ring head and their four combined forms: 305 each.
 // All three with complete play-state storage: 305. NOT kept: the handles and ring head leave the
 // opening code intact. The full state still reserves 0x12c, with one extra scalar word.
+// Shared datum slot 305, One pool read at the datum latch 305, Shared datum slot and latch pool 418,
+// Shared datum slot and latch pool with explicit start branches 418, Shared datum slot with complete
+// request 305, One pool read at the datum latch with complete request 305, Shared datum slot and latch
+// pool with complete request 418, Shared datum slot and latch pool with explicit start branches with
+// complete request 418.
+// NOT kept: Sharing either datum value alone ties. Sharing both raises the score to 418. The complete request reserves 0x12c against retail 0x128 while preserving the opening extent.
+// The 0x120 frame, datum-handle spill and pitch-range register homes still differ.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

@@ -2016,6 +2016,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // handle is loaded after the flags zero). Without the reference-bound checksum 114 (aligned 6, checksum in ECX).
 // Reading: any by-value parameter loads the handle ahead of the call and takes no scratch-rotation step, an unnamed
 // `*handle` at the call takes the step but loads after the flags zero; retail has both. Body unchanged.
+// Separate completion bytes: query 58; query with resize, write or close 50/50/50;
+// query with any two of those 105/105/105; all four 94. NOT kept: completion byte
+// homes shift and the three- and four-byte sets grow the frame to 0x1148. The query
+// and write output slots, write setup and checksum join still differ.
 // M3 lane 2 r126 (H2M_FAST with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33): lane 9 r132's 5 form
 // rebuilt at 5 (the write's flags zero in EAX, so the handle load cannot rise above its push; retail's zero in ECX with
 // the handle loaded first). On it, same code each (5): the write's handle argument read as

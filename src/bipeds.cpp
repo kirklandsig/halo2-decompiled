@@ -1425,7 +1425,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax I (11-19): no new form, no lower score (175): the 0xfc frame and the body length agree, but the constant loads still come early (the 1.0f is materialised at the top of the prologue where retail loads it after the tag lookup) and the definition, material and point homes still differ.
-// score 175 (was 183): The 0xfc frame and length agree. Unity loads early, and the definition, material and point homes differ.
+// score 158 (was 175): The 0xfc frame and extent agree. Tag, flags, position and material homes differ.
+// At 175 the unity load was early and the definition, material and point homes differed.
 // MiniMax A (11-18): no new form, no lower score (175): the 0xfc frame and extent agree, but the constant loads still come early and the definition, material and point homes differ.
 // MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
 // still sits at frame+0x0c where retail has it at frame+0x08, so the argument slots after the prologue pair with the wrong rows;
@@ -1865,8 +1866,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // references 193, animation names record 175, names record with a shared turning key 193, component
 // acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
 // The unit load and definition, animation flags and point homes remain displaced.
-// score 158 in a full build with stand-in SDK headers (was 175): `state` is declared after `animation_flags` and
+// The reduction to 158 came from declaration order: state follows animation_flags and
 // `speed_scale` after `position` (declaration order only).
+// Tag declaration before lookup 158; animation flags declaration before lookup 158; both in either order 158/158.
+// Position before lookups or at its output call 158/158; facing at its producer 158; both outputs at their producers 158.
+// The tag, animation flags, material and position homes still differ in the retail-sized frame.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3169,6 +3173,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // (67), so the second lookup is not what frees the register; the count through `biped` at both places plus one or two
 // extra unconditional uses of the index (a probe store) 76 / 80: the cached byte keeps EBX and the argument then arrives
 // in EDI, so a higher reference count for the index does not give retail's EBX argument with an uncached byte either.
+// Component index shared by admission and lookup: signed byte count 82, nested
+// count 63, short body getter 75, nested with getter 75, guarded query rejection
+// 90/103 with long/short selector, unsigned byte count 82, byte with getter 88.
+// The guarded exits defer the EBP save to pool lookup and lengthen the function.
 // M3 lane 13 r133 (h2m fast with 0x1d5120, 0x1c3770 and 0xe0d70; control 63, entry EBX and plain `ret` already retail's).
 // Retail's matched 0xe0d70 reads the +0x3aa byte once and reuses it, so this function's re-read at the call is a
 // reload under pressure, not a second read in the source. `inline` on the definition of 0x1d5120 (its one caller)
@@ -4495,6 +4503,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // shortens), plus the sine's forward through a pointer 597 (2691 B; LTCG still folds two of its reads to biped-relative
 // loads), both up and goal through pointers 552 (2696 B). Retail reads the sine's forward through EBX throughout and sums
 // it (up.k * t3 + up.j * t2) + t1 * up.i.
+// Defaulted special-state byte with two result name ranks 661/661, both admitted
+// assignments 628, stationary branch first 599, previous turn key cases 608,
+// key before sine fallback 623, predicate arms 630, key cases with special byte 634.
+// NOT kept: the reduced 602 control differs from full 537. Stationary-first gains
+// three in the reduced image and grows by a byte. Result and rate homes still differ.
 // M3 lane 13 r133 (plain checks; al = aligned differing rows / registers masked, 442/230 on this body). Retail keeps
 // three byte flags in memory (changed +0x11, special +0x12, wall +0x13), this build two (changed +0x12, wall +0x13).
 // The mode tests nested (`if (mode != 3) { changed = true; if (mode != 6) ... }`, retail's store order) 537 (same
@@ -6237,6 +6250,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
 // the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
 // component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
+// Length local 79, direct forward field with success exit 154, length bound in
+// the exit test 79, const forward with success exit 79, both crosses staged
+// with success exit 79, ordinary crosses 203, staged crosses with direct
+// forward 154, trig construction with success exit 79. The first rotation
+// still spills the complement before its dot sum finishes.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

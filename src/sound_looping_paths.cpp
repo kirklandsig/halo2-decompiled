@@ -810,6 +810,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // gains and portals/gains and clusters/portals and clusters 853/931/853;
 // all auxiliaries 904 or all four streams 910. Every form recovers the ESI zero,
 // but the target and primary stores still differ and all scores rise.
+// m3 lane 6 r221 (H2M fast with 0x18bb80/0x188f90/0x18a5a0, all MATCH; control 846): the target's step named once for
+// both clamps 849; the used bit through bit_vector_set 912; the override target's decibels stored before its gain 880
+// (3305 B: retail stores decibels, the 1.0f gain, audible and priority in one tail after the three decibel paths, ours
+// duplicates them into each path), that with the single-exit decibel encoder 902 (3279 B), that with the targets and
+// their count as one local aggregate (count first, as retail's +0x88 count ahead of the +0x8c elements suggests) 933
+// (3305 B).
 // M3 lane 5 r222 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; without the three the reduced image builds
 // lane 11 r133's lead at 3216 B / 953 instead of 3291 B / 879, so screen with them). Retail evidence for that lead's counted
 // lists: the choices' count sits at frame+0x24 right below the elements, is incremented ahead of the stores and saved
@@ -825,6 +831,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // choice with short counts 1013 or provider count and long choices 1044.
 // NOT kept: the forms replace the retail duplicate loop, shorten the body
 // and leave the entry zero and target/query homes different.
+// M3 lane 14 r138 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846). Reading: retail's entry zero
+// in ESI is the choice count's own register (`cmp esi, 2` in the query loop, `inc esi; mov [esp + 0x34], esi` before
+// each choice is addressed), with the query count read as a dword; ours keeps both counts as shorts in memory and gives
+// the zero to EBP (the query index). Tried: both counts long re-measured 965 (3264 B); the long choice count with the
+// out count read directly (no query-count local) 965 (3264 B, same code); the choices alone as a counted list (count,
+// then the two choices; the count incremented first and the choice addressed through it) 975 (3268 B, first difference
+// +0x2); the query loop ending on `choice_count < 2` 846 (same code); the target count incremented after the target's
+// stores 923 (3305 B).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

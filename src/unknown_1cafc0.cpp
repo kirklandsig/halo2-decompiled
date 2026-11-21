@@ -977,6 +977,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // 579 (1734 B); the request given a fresh graph_get() 633 (and 0x1cccd0 59, 0x1cb970 17). Body unchanged: from +0x1de
 // the graph / graph+0x34 register roles belong to the inlined request helper in src/unknown_1dacb0.cpp (another lane's
 // file this round).
+// M3 lane 16 r167 (H2M fast with 0x1cccd0/0x1ddd00/0x1dc8c0, all matched unless noted; control 348; body unchanged): the
+// request's names read into locals in retail's load order (class, mode, the graph, type) 353; bool success with the
+// request under `if (success == true)` 507 (1809 B, first difference +0x96); bool success returned as `success != false`
+// 351 (1784 B, the byte form's code but for the return); bool success with the request's graph from a fresh graph_get()
+// in a local 626 (0x1cccd0 59); the request's names through a `s_animation_names const &` to the found record, byte
+// success 348 (same code), bool success 478 (bool's code). The graph keeps a register for the whole inlined request in
+// every form; retail's graph has none there (BLOCKED-BY 0x1ddd00's inline copy in another lane's file, as above).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

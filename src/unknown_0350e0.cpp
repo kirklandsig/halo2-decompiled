@@ -2816,6 +2816,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // at the top of the 275 form 499-501 (the homes move), in the end block, ahead of the camera angle or ahead of delta 496
 // every n (inert: the camera sums' operand sides and the forward block do not follow the symbol count here).
 // MiniMax H (11-20): no new form, no lower score (417); the delta and reflection XMM allocation and the unity store schedule still differ.
+// Distance bounds pointer 281, Distance bounds reference 281, Angle bounds pointer 281, Angle bounds
+// reference 281, Distance and angle bounds pointers 281, Distance and angle bounds references 281,
+// Distance bounds with branch result initialization 424, Both bounds with distance result handed to
+// angle phase 497.
+// NOT kept: The typed bounds tie at the opening extent. Both branch-produced fade forms raise the score, and the staged form lengthens the body.
+// The camera delta and reflection registers still differ, and the attenuation default still stores after the tint.
 // M3 lane 5 r223 (H2M_FAST, control 281, aligned 142/65 exact/register-masked; the one extra byte is the loop's
 // draw point x product, ours `movss xmm1, reflected.i; mulss xmm1, xmm0` where retail multiplies by memory):
 // redundant paren pairs (1 to 3) around the forward's first product or one delta term 487 each (one instruction
@@ -3606,6 +3612,13 @@ real magnitude3d(vector3f const *v);
 // Fused angle after the first/second/all axis components 201/213/237. Unscaled arccosine kept across
 // first/second/all axis productions 216/217/241. Arccosine after the first component, with final angle after
 // the second/all 217/241. NOT kept: the transfer slot remains displaced and every score rises.
+// M3 lane 1 r146 (H2M_FAST, control 170; the reduced image now gives 170 like the full build): one `cosine` local for the
+// dot (the cosine between the unit vectors) and the step angle's cosine 170 (the raw current length then shares the dot's
+// transfer cell +8 as retail shares +0xc, but the dot's double copy stays at +0xc); the angle held in that local as well
+// 170 (propagated); the dot read through a `real const &` for the test and the arccosine 172; `fabsf` 170, `acosf` 170 and
+// both 170 (the header's float overloads already route there); the parallel test on a recomputed dot3f 198 (1039 B: the
+// products move to the x87) and the arccosine of a recomputed dot3f 198 (the same). Reading: retail keeps the dot in a
+// float home and loads it twice (fabs, then acos), where ours converts once and keeps the double across the a/b tests.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4368,6 +4381,12 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // removals, paired plus creation, or all four 325/316/319/324. Creation ordinal seeded before the guard, shared
 // or local 357/393. NOT kept: the one-point gain remains below the threshold and the early register roles still
 // differ.
+// M3 lane 1 r146 (H2M_FAST with 0x4b160, MATCH; control 317): pass 3 spellings that earlier rounds had screened only
+// compile-only, now under the link: the removable test held in a named bool 317; the test negated with `continue` 317; the
+// entry pointer declared ahead of the loop 317; postfix steps with `last--` apart from the swap 317; the flag byte read
+// through a `byte *flags` as pass 1 does 317 (all five `first` in EBP). R149's always-true `last >= i &&` re-measured 227
+// (1305 B): pass 3 is then retail's instruction for instruction, the first differences are the sort call's setup order
+// and the decay loop's base, so the open cause is still only how pass 3's body is weighted.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
