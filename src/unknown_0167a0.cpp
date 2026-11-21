@@ -414,6 +414,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
 // reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
 // and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
+// M3 lane 16 r163 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the reference form, the
+// entry, chain base and pass base all read into locals ahead of the reference entry store 181 (the bases are then
+// forwarded from the stored tables, no reload); the entry field through a `byte **` pointer local in place of the
+// reference 5 (+0x19e, same code). On the direct store: the chain and pass bases named after the store, ahead of the
+// word read, 5 (+0x1a7, same code); the range stored directly and read back into a local 178; the pass published through
+// a `byte *&` and read back 5 (+0x1a7, same code).
 // M3 lane 11 r140 (H2M_FAST; control 5 at +0x19e; the direct entry store, `**(word **)(state + 0x14)` read back, re-measured
 // 5 at +0x1a7). On the direct store: the chain and pass bases named after the packed read 5 (+0x1a7), named ahead of the
 // entry store 183 (+0x148); the chain index's packed word read again from the stored entry with `second` first 5 (+0x1a7);
@@ -426,6 +432,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // bases read as pointer-array elements of the tables (`((word **)tables)[3]`, `((byte **)tables)[5]`) 5 (+0x1a7); the
 // direct store with the packed word read inside the chain index (no packed assignment) 5 (+0x1a7). All the same code as
 // their bases: the store's type does not hold `second` behind it.
+// M3 lane 3 r288 (h2m fast; control 5 at +0x19e; the direct entry store with the word read back re-measured 5 at +0x1a7,
+// its one difference `second` loading into ESI right after the entry lea where retail loads it after the pass base): the
+// tail's shader record as a plain pointer local (no reference) 60 on main's body (+0x19e) and 60 on the direct store
+// (+0x1a7: the restore block unchanged, the tail worse); on the direct store the five shader-record calls in a new
+// forceinline helper taking the state 5 (+0x1a7), in their own block 5 (+0x1a7) (both the direct form's code); the
+// restore block's word read from a recomputed entry address instead of the stored field 294 (981 bytes).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

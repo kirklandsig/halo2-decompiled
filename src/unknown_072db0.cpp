@@ -1625,6 +1625,7 @@ static __forceinline void query_restore_pending()
 }
 
 // score 663 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Earlier measurement 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // Earlier at 703: the frame agreed. The logon branch, user cursor and slot selection differed.
 // MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
 // (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
@@ -2224,6 +2225,11 @@ bool function_1900a5(long index);
 // SSE flag); after the request test the listings still lose step at the loop set-up (retail stores both zero counts
 // to their slots and loads them into ESI/EDI after the clock read).
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// One player reset for either invalid or changed user 760/760; a default reset with positive or negative
+// cache-key comparisons 760/760. Complete eligibility before the two clearing paths, assigned or
+// conditionally set from positive/exclusion tests 663/663/663/663.
+// NOT kept: The shared reset reaches 2862 bytes and raises the score. Eligibility assignment
+// reproduces the opening code, including the logon comparison and properties-based cursor.
 // Shared logon predicate on the retained request loop 766. Identity getter,
 // properties getter, both at group scope, or nested getters 760/784/778/778.
 // Shared logon predicate with identity, properties, or nested getters 756/766/754.

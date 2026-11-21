@@ -79,7 +79,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 321 (was 367): the callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
+// score 321 (was 321): the callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
 // group index, EBX for the group table and the record; retail the reverse), and the pass scan's record index is
 // strength-reduced into a callee-saved register where retail recomputes it from the record base at the latch.
 // Earlier 367 (was 329 with MiniMax C's hand-inverted loop, reverted at review; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
@@ -88,6 +88,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // reverse), and the three -1 homes and the best-distance float sit at 0x24/0x0c/0x2c and 0x40 against retail's
 // 0x44/0x28/0x24 and 0x38.
 // Earlier 367 (was 367; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// score 321 (was 367; 382 before MiniMax G's memset and bit-vector group form): retail's root group table and pool table take EBX and EBP the other way round, the best distance and the selected indexes have different stack homes, and the found flag and local_29 sit in other slots (retail: the dead argument slot and a dword at +0x4c). The group loop shares the bitmap mask and address where retail recomputes them.
 // M3 lane 4 r230 (fast with 0x29e730/0x29de20, both MATCH; control 367, difflib-aligned 323, register/offset-masked 135).
 // Retail's output loop indexes the output by the count each pass (`imul eax, eax, 0x1c`), walks a separate cursor (SI)
 // and keeps the group's record in EDI. The output written to `&arg_4->field_30[local_37]` with a `short` cursor copied
@@ -784,6 +785,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Bounded for, index before bitmap, both, immutable early index, separate record guards,
 // early index with separate guards, immutable record base/index, and named range predicate all 321.
 // The best-distance slot and reduced record-index induction still differ.
+// M3 lane 3 r287 (H2M_FAST, control 321, aligned 218 / masked 96): the point bitmap's set, test or both through the
+// existing bit_vector_set / bit_vector_test 321 each; the root pointer as a ternary 321; the table range test joined to
+// the root tests with `&&` 321; the point scan as `for (...; local_23 < count; ++local_23) { if (group != local_15)
+// break; ...` (retail's guarded loop shape; ours already compiles to it) 321; the scan's link element, or the group
+// entry, through a `s_29e0f4 const &` 321 (all the same code). Re-measured on 321: local_29 `short` 428, `long` 412.
+// M3 lane 11 r143 (h2m fast with 0x29e730/0x29de20, both MATCH; control 321): local_29 `short` 428 and `long` 412 (the r163
+// forms re-measured, the same); the record index computed at the top of the pass loop's body 321 (same code: still an
+// induction variable in EBX); the group index read once into local_15 ahead of its bitmap test 461 (1554 B); the found
+// flag declared first in the pass 321 (same code); on local_29 `long`, the record search as a forced-inline helper
+// storing the index through a pointer (diagnostic, to make local_20 memory-resident) 412 (same code as without it).
+// Reading: retail recomputes the record index from local_20 at the latch (`mov eax, [esp+0x20]; add eax, ebp`), so
+// EBX stays free for the group index across the pass loop and the group index's home can share the dead argument slot
+// with the found flag; once something stops the strength reduction, local_29 `long` should give retail's frame 0x64.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

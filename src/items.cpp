@@ -910,6 +910,9 @@ struct s_item_collision_bsp
 // Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
 // Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
 // contact registers still differ at the 1366-byte extent.
+// Normal rows paired with translation products in coordinate order: late scale with expression or
+// accumulator 203/199, early scale 199/201; in distance-sum order, late scale 203/199, early scale 199/201.
+// NOT kept: the scalar products do not give a byte match or recover the retail coefficient homes.
 // Coordinate-array views for queried normal, matrix axes and result normal, alone and
 // in all combinations, then also at the contact join: 190 each. NOT kept: the 0xa0 frame
 // agrees, and the transformed-plane and contact-point registers still differ.
@@ -921,6 +924,11 @@ struct s_item_collision_bsp
 // beside its plane workspaces. Direct stores and the shared point setter at each site all score
 // 190. NOT kept: the placement slot and 1366-byte extent stay the same.
 // MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
+// Vector setter for the rotated normal 193; scalar normal rows published before or after
+// the distance translation 199 each; left product seeds all three normal rows 191;
+// instanced query result pointer 246; instanced plane output with saved equation 291;
+// named real or double random fraction 196/232. NOT kept: all scores exceed 190.
+// The transformed normal and the common x87 spin factor still use different homes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1227,11 +1235,21 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // conditional point selections 130; normalized vector value 246.
 // NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
 // vector value grow the body, and the earlier doubled half-root regresses.
+// Scalar scale after doubled or undoubled projection 133/130; later forward binding 130;
+// named alignment products with one sum or staged accumulation 148/148; weighted cross
+// contribution, with shared operations, or via the output workspace 224/277/277.
+// NOT kept: the 0xc0 frame remains throughout and weighted cross forms grow the body.
 // Item cross 130, mixed-product scale 130, shared rotation with axial or forward
 // contribution first 273/278, shared i-k-j projection 154, value-returning cross
 // with shared scale 248, and staged cross in place on the marker or facing operand
 // 241/271. NOT kept: the shared projection recovers frame 0xb4 and 848 bytes but
 // raises the score and changes its sum grouping.
+// quaternion vector output 133, quaternion with direct components 133, quaternion scalar before scaling
+// 187, quaternion scalar before cross 144, quaternion cross before root 133, quaternion with staged
+// cross 133, staged quaternion with direct components and early scalar 187, quaternion with shared scale
+// 133.
+// NOT kept: The quaternion forms grow the frame to 0xc4 and raise the score.
+// The 0xc0 frame exceeds 0xb4. The cross product has a separate stack home and the alignment products are scheduled differently.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1960,6 +1978,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax A (11-20): no new form, no lower score (140): the release flag is still cleared with a load, an and and a
+// store where retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf,
+// and the release impulse is still one shared copy where retail keeps two that differ in where the flag clear sits;
+// splitting the impulse so that the flag-5 path clears the flag before the velocity is computed and the flag-6 path
+// clears it after measures 223, and clearing through the flag bits themselves measures 257, so the body stands.
 // MiniMax B (11-18, round 2): no new form, no lower score (140): the permuter over this body (17 tries, 301 s) found
 // nothing below the 140, and the one new form - the spin flag's local lifted to the function's scope so that it
 // takes a frame slot of its own - compiles to the same code (140 at 892 bytes, the first difference still at

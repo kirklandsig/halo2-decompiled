@@ -381,18 +381,23 @@ bool function_17ce60(void)
 	return false;
 }
 
+// Matched in a full build with stand-in SDK headers (was 105): the definition index is the first parameter (retail
+// receives first_index in EAX and the definition in ECX), the globals pointer is a local assigned once in each arm of
+// the first_index test (retail loads it into ESI in each arm, after first_index dies), and the group head is named.
 // @retail 0x17cfa0
-long function_17cfa0(long first_index, long definition_index, short cluster_index, short decal_type, bool permanent)
+long function_17cfa0(long definition_index, long first_index, short cluster_index, short decal_type, bool permanent)
 {
-	bool first = false;
 	s_record_pool *decals = g_4ea950;
 	long decal_index = record_pool_allocate(decals);
 
 	if (decal_index != NONE)
 	{
 		s_decal_datum *decal = DECAL(decal_index);
+		s_decal_globals *globals;
+		bool first;
 
 		decal->definition_index = definition_index;
+		first = false;
 		if (first_index != NONE)
 		{
 			decal->first_index = first_index;
@@ -405,30 +410,33 @@ long function_17cfa0(long first_index, long definition_index, short cluster_inde
 			{
 				decal->flag0 = false;
 			}
+			globals = g_4ea94c;
 		}
 		else
 		{
+			globals = g_4ea94c;
 			decal->first_index = decal_index;
 			first = true;
 		}
 		decal->next_in_group_index = NONE;
-		if (DECAL(decal_index)->first_index == decal_index)
-			g_4c8798[DECAL(decal_index)->definition_index & 0xffff] = decal_index;
+		s_decal_datum *head = DECAL(decal_index);
+		if (head->first_index == decal_index)
+			g_4c8798[head->definition_index & 0xffff] = decal_index;
 		if (permanent)
 		{
 			decal->flags = 2;
-			g_4ea94c->permanent_count++;
+			globals->permanent_count++;
 		}
-		else if (random_next(&g_4e7408->seed) * 100 < 10 * 0xffff && first)
+		else if ((long)(random_next(&g_4e7408->seed) * 100) < 10 * 0xffff && first)
 		{
 			decal->flags = 1;
-			g_4ea94c->fading_count++;
+			globals->fading_count++;
 		}
 		else
 		{
 			decal->flags = 0;
 		}
-		if (g_4ea94c->fading_count > 0x100 && !function_17ce60())
+		if (globals->fading_count > 0x100 && !function_17ce60())
 		{
 			record_pool_release(decals, decal_index);
 			return NONE;
