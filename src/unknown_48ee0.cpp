@@ -447,6 +447,9 @@ extern real g_4c9798[36];
 // pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
 // stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
 // height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
+// Mode bit as unsigned or signed storage with Boolean, zero comparison, positive arm,
+// or Boolean tag result 302/299/190/299 and 299/299/307/299. NOT kept: the EAX forms
+// use an early high-byte test, and the remaining forms keep the EDX load.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

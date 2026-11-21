@@ -443,6 +443,10 @@ extern long g_55c154;
 // with the create-default test straight after the load and the index store and copy in each arm 167 (576 B); that with the
 // ternary in the load's argument and `selected == NONE` tested again 173 (567 B); one load with `selected` set to `saved`
 // when it is NONE 76 (577 B).
+// Whole index-and-variant publication for edit/creation/both 161/194/203. Decode into
+// the publication record with whole or member writes 175/91, separate load arms 106/203,
+// and shared record across edit and creation 174. NOT kept: even the 91 form grows the
+// frame to 0x384 and loses retail’s EBP bias.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
