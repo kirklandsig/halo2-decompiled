@@ -2415,6 +2415,13 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // in XMM0 across that call, which retail's does, so retail had its summary); 0x137bd0 233 (604 B). In the loop retail
 // keeps the definition in EDI and reloads the system for each spawn call, this build the other way round. The system
 // parameter renamed `system` 128 and the spawn record declared first 128 (same code each). All restored.
+// M3 lane 11 r146 (h2m fast with 0x178eb0/0x179020/0x177040, matched or unchanged; control 128): colour A named right after
+// set_location with both type queries as the colour call's arguments 130 (552 B, frame 0x44, colour A at +0x10 as retail; the
+// system in EDI through the queries and colour B read at the call); that with colour B named after colour A 187 (568 B,
+// colour B spilled); with colour B read at the call through a const reference to that named copy 187 (same code: the
+// reference folds); the first form with the definition's location index named 131 (head exact), plus the existing
+// location_point_in_zone_inline for both zone tests 151. The three pre-loop callees that could take a code-free extra
+// colour B use (set_location, 0x1751d0, 0x175a80) live in another lane's file this round.
 // M3 lane 8 r215 (h2m fast with 0x178eb0/0x179020, both matched throughout; control 128): the type lookup and colour
 // call as a plain static helper in this file taking the effect and the system (not marked inline, so that a late
 // link-time expansion could keep a parameter copy, as 0xb8bd0's expansion does in 0xbd090) 233 (488 B: it stays a call),
@@ -4133,6 +4140,15 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // bytes take homes of their own (+0x13, +0x14) where retail puts both in the effect index's dead stack slot. Locals
 // renamed (slot-name tie): the system pointer `system` 93, the next index `next_system_index` 93, the location cursor
 // `location_cursor` 93, the definition `system_definition` 93 (same code each). All restored.
+// M3 lane 11 r146 (h2m fast with 0x176f60, matched throughout; control 93): lane 1 r138's per-call form rebuilt 90 at 340 B
+// (parameters as (effect index, system index) at the definition, declaration and call; the effect index read once through
+// its own address; spawn-record cursor; colours B then A; named second 0x1751d0 result; both queries in the colour call;
+// mode read from the definition at each call: retail's convention, system index EAX and the effect index on the stack).
+// On it: the definition and location cursor grouped in one two-member local 92 (the mode still takes ECX after the reload
+// into EAX, `xor`/`mov cx` where retail reuses EAX with `movzx`); the address read into a named index local after the
+// system lookup 116 (342 B: EBX then pushed first as retail but given the system pool's data, where retail gives it the
+// effect pool's); the node flag written into the 0x248c60 call 97 (341 B); the tint named ahead of the colour call 126
+// (352 B); both colours read ahead of the cursor store 91.
 // M3 lane 8 r215 (h2m fast with 0x176f60, still matched throughout; control 93): colour B declared ahead of colour A 93
 // (same code); the cached mode as a long 92 (337 B, retail's length; one point, not kept), as a short 93; the long mode
 // with colour B first 92, with the second 0x1751d0 result named 92. This build already has retail's convention here

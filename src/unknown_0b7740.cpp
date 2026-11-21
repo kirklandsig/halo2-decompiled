@@ -1223,6 +1223,19 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // for the bit-29/+0x34b reads 170 (same code each); `sample` declared at the top (diagnostic) 284 (837 B). Diagnostic:
 // 1 to 8 dead initialised longs at the top of the 170 lead 170 each, of the 166 form 166 each (the entry roles are not
 // a symbol-count tie on the leads either). Body unchanged.
+// M3 lane 11 r146 (h2m fast with 0xbfe20/0xbfc90/0x137800, all matched throughout; control 240): lane 4 r225's lead rebuilt
+// 170 (826 B: object_index EDX, the parameter ESI, result its EDI copy). On it: an unread trailing parameter (definition,
+// declaration and the one call in 0x137800 together) 170, the same parameter first 170 (same code each: parameter
+// numbering does not break the ESI/EDX choice); final_matrices assigned as the first statement of the outer block (after the
+// two early tests) 196 (837 B: object_index then takes ESI, the +0xb3 byte BL with EBX pushed before it, result in EDI, as
+// retail, but the parameter value sits in EAX and is stored right after the tests); that assignment after the model index
+// read 169 (the 170 roles come back once the parameter value crosses the object/definition block), first in the model
+// block 169; on the 196 form the header through slot_handler.h's object_header_get 196 (same code), `result` declared
+// ahead of the header 194 (837 B: the table, parameter, object_index, header loads are then in retail's order with the
+// header in EAX; left: the table/object in EDX where retail has ECX and the parameter in ECX where retail has EDX, and
+// final_matrices stored after the tests where retail stores it after the orientations pointer). Retail reads as a
+// parameter value held in EDX from entry to that late store with object_index in ESI; every form here that keeps the
+// value that long gives it ESI instead.
 // M3 lane 13 r134 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): lane 4
 // r225's lead rebuilt 170 (826 B, aligned 100, masked 43); on it the awake test dropped (diagnostic) 337 (783 B), the
 // awake test written out through the header with `object` from header->object 316 (801 B: the three object reads share

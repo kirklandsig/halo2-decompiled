@@ -831,6 +831,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // choice with short counts 1013 or provider count and long choices 1044.
 // NOT kept: the forms replace the retail duplicate loop, shorten the body
 // and leave the entry zero and target/query homes different.
+// M3 lane 11 r146 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): the three 1.0f choice defaults
+// as three statements in member order (retail stores inside, portal, outside upward; the chained assignment stores them
+// downward) 846; that with the detail tag as a ternary initializer 845; plus the fade scan's datum index formed inside its
+// `if` 848 (3332 B); the defaults and ternary with the four choice stores in retail's order (tag, source, decibels,
+// cluster) 845; that with the audible update through a `word *` to the flags (0x18a720's spelling) 862 (3302 B).
 // M3 lane 14 r138 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846). Reading: retail's entry zero
 // in ESI is the choice count's own register (`cmp esi, 2` in the query loop, `inc esi; mov [esp + 0x34], esi` before
 // each choice is addressed), with the query count read as a dword; ours keeps both counts as shorts in memory and gives
