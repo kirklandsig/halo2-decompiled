@@ -480,6 +480,11 @@ extern real g_4c9798[36];
 // height limit 253 (1484 B); the border as a conditional at its assignment 320 (1479 B, entry changes at +0x2); the
 // offset as a conditional initialiser 323 (1488 B). Still BLOCKED-BY 0x48e70 (machine 1's file): retail keeps the
 // size and aspect in memory across its two calls.
+// M3 lane 5 r229 (h2m fast with 0x48e70/0x1cf50/0x1ddd0, all MATCH; control 174; still BLOCKED-BY 0x48e70): the mode-1
+// tag test as `!*(short const *)(tag + 0x14)` 174; the overflow product written `height * width` 174 (same code each);
+// the overflow test as `max_width * max_height < width * height` 176; `real border = 0.0f;` declared just ahead of its
+// `mode > 0` test 316 (1479 B: the entry's zero store moves); the width limit's test without the `(bool)` casts 278
+// (1479 B: the state then arrives in EDX).
 // M3 lane 16 r170 (h2m fast with 0x48e70, 0x1cf50, 0x1ddd0, all MATCH; control 174): the offset as one conditional
 // expression at its declaration 323 (1488 B, first +0x2a); the mode defaulted to 0 at its declaration with the two set arms
 // 180 (re-measured); the forward vector at matrix+0x28 named once for the first block's seven reads 321 (1479 B, the entry

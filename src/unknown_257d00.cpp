@@ -2051,7 +2051,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 431 (was 431): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 431 (was 431; m3 lane 8 r220 unchanged, its line just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2750,6 +2750,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Selector comparison chains 0/1/2, 0/2/1, 1/0/2, 1/2/0, 2/0/1 and 2/1/0:
 // 596/596/596/595/596/595. Long selector 615, pending flag arm first 596.
 // NOT kept: the chains reverse the retail entry allocation and raise the score.
+// M3 lane 8 r220 (h2m fast with 0x110ab0 and 0x258a00; control 431; without 0x110ab0 listed the image gives 477-484, so
+// list it): case 20's iterator set up data, index, datum_index (the order the matched player walks use and retail's stores
+// show) 431 (same score); that with cases 9 and 11 comparing the actor field first 430; that with the second facing publish
+// storing the flag ahead of the copy (retail's store order) 428 (three retail-evidenced changes, under the bar); case 6's
+// 0x48 OR written through the global (two stores as retail, but the global is reloaded) 484 (2432 B); case 4's dot terms
+// written k, j, i 431 (same code: the sum is re-sorted to i, j, k, where retail forms k*dz + j*dy first from the state's
+// facing read in place). Body unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

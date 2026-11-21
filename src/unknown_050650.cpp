@@ -1022,6 +1022,10 @@ struct s_collision_result_buffer_1697c0
 // 282/282/283. Axis reference before candidate initialization or after the pitch turn
 // 282/283. NOT kept: the carried pointer changes the matched caller and the per-attempt
 // bindings lengthen the sampler. The startup zero and trigonometric spills still differ.
+// Axis height initialized from fraction, fraction from axis height, and chained zeros 271 each.
+// Setter with chained zero 292. Ascending short with tail less-than or terminal inequality 570 each.
+// Direct clear trace with collision-first or fraction-first fallback 339/340.
+// NOT kept: startup zero remains in XMM1 and the tail count changes the matched caller.
 // M3 lane 2 r131 (H2M_FAST with 0x297660 (MATCH), 0x297d30 (23), 0x2967b0 and 0x24590; control 270, aligned 198, masked
 // 71): the fallback test as `0.f == normalize(...)` 270 (same code); the rotate helper's rows with the sine term ahead of the
 // projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled
@@ -2334,6 +2338,14 @@ struct s_actor_looking_structure_view
 // merged-helper lead (6; 0x296e60 282): score 141 (927 B); rows 142 (926 B; 0x296e60 284); rows + score 8; crosses
 // 129; crosses + score 60; crosses + rows 54; all three 124; `(1 - cos) * dot` the same code in each. The pair count
 // acts mod 4 here too (0: 6/8, 1: 142/60, 2: 129/124, 3: 141/54), with the site deciding inside a phase.
+// M3 lane 4 r245 (h2m fast with 0x296e60/0x297660/0x2980d0/0x24590; control 23, 0x296e60 270): lane 12 r152's lead
+// rebuilt (score `(i + k)` then `+= j`, three redundant pairs on the clamp product) 9; its whole residual is one leaf, the
+// axis j taking the other operand side in cross k's first product, cross i's second and the j row's accumulator. On the
+// `(i + k) += j` score, 0-3 pairs spread over the angle, the fraction product, the three score products and the clamp
+// product (70 forms): count 0 124; count 1 143-148; count 2 59 at every site but the angle (83); count 3 with an angle
+// pair 44-76, without one 9 (12 forms), 23, 29, 31, 33: the count sets the products, no site mix flips the axis j. On the
+// lead: the fraction as a ternary initialiser after the trace 100; one `direction` pointer for the copy, rotation and
+// trace 128 (928 B); the score read through a `vector3f const &` to the candidate 146 (928 B). All restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

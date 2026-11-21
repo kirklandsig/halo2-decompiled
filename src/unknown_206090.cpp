@@ -879,6 +879,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // ray record local_19 declared at function scope 1386 (6243 B); the magnitude helper taking its vector by value (the
 // copy as its parameter) 1346 (same code: still one 12-byte copy per site); the contact loop placed under the query
 // call's `count > 0` test 1456 (6257 B).
+// M3 lane 13 r139 (fast with 0x2056e0, MATCH each run; control 1346): the magnitude helper's input read directly 1624
+// (5990 B, frame 0x590), through a const reference 1686 (5958 B), as three scalar copies 1624; the snapshot kept with double
+// products 1393 (6238 B); the snapshot summed i, j, k 1346 (same code). The direct form's instruction count is within two
+// of the control's, so its short length is displacement size: its busiest locals sit below +0x80 where retail's sit above.
 // M3 lane 8 r217 (h2m fast with 0x2056e0, MATCH each run; control 1346). Retail pads the two join points after the contact
 // loop's skip calls (0x207420, 0x207640) to 16 bytes as if they were loop heads; ours pads neither. Tried: the disabled
 // contact's skip call written first (`if (field_b3) skip; else { ... }`, no inverted test) 1349 (6238 B); the zero-depth skip
