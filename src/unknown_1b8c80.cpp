@@ -2240,6 +2240,14 @@ void function_1f86a0(long actor_index);
 // difference +0x4); the decline's test through a bool named from the mask after `same` 241 (866 B); every selection field
 // read and written through the slot state view (`state->unknown1c`, `seat_index`, `flags`, `unknown28`, `unknown2c`, the
 // siblings' spelling), the selection kept only for 0x1b9e70's argument, 220 (864 B). Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1b8c80/0x1ba990/0x1b9e70, all MATCH each run; control 123): diagnostic re-run of the
+// no-mask-local form (244, 868 B): the flags load is shared across both root calls (so the root call is treated as
+// writing nothing), the 0x20 result is spilled to [esp+0x13] as retail, and only the shared flags byte in BL for the 0x40
+// test keeps the entry out of EBX. New forms: joint index declared first with the sibling 0x1b47b0's `for` iterator loop
+// 123 (same code); the selection pointer declared after the parent test 234 (862 B); no state local (slot cast at the
+// element-index and timer stores) 123 (same code); no mask local with both 0x20 tests through `state->flags` 243 (865 B);
+// the decline decided by a positive `accept` bool (`u ? (flags & 0x40) && same : specified != 0x20 || same`) 123 (same
+// code). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

@@ -1415,6 +1415,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // retail keeps the product in xmm0 and the sum in xmm1 - while the offset's own terms agree with retail's
 // (sine*offset.i - cosine*offset.j); the term order inside the dot is canonicalised by the compiler, so no spelling
 // of it moves the block.
+// M3 lane 1 r147 (fast with 0x16c6f0, 0x13cb40, 0x142d10 and 0xa9b40, all MATCH; control 126): the yaw and the distance dot
+// reading the camera's own forward (the copy's source) 332 (1700 B); only the distance dot reading it 332 (1700 B); that dot
+// as (position, camera forward) 332 (1700 B); only the yaw reading it 331 (1700 B); the origin store moved to the top of the
+// yaw block 136.
 // M3 lane 14 r138 (H2M_FAST with 0x142d10, 0x16c6f0 and 0x13cb40, all MATCH; control 126). Reading: in the plane block the
 // two sums are the same in both builds ((j + k) + i, the j term the accumulator); only the length load hoisted into the
 // plane-constant dot differs (retail left.j into XMM1, ours left.k), which sets the accumulator and so the zero register.

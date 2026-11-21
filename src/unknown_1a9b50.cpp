@@ -413,7 +413,8 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
-// score 389 (was 407): Frame 0x40 agrees. The optional prop spills into the second argument home.
+// score 389 (was 389): one note (the r125 header below gives the current state). Earlier 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
+// Frame 0x40 agrees. The optional prop spills into the second argument home.
 // Earlier 375 (was 375): The actor loaded after the settings call, with different actor, settings and prop homes.
 // Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
@@ -861,6 +862,7 @@ extern point2f *g_468778;
 // at the same boundaries 374/375. With actor lookup first 408/418/409/413.
 // NOT kept: the one-point gain leaves entry scheduling unresolved, and the
 // actor-first forms enlarge the 0x40 frame.
+// Round 125 header: 389 (was 407; 259 in a full build with stand-in SDK headers before magnitude3d was defined `inline`, 375
 // Earlier 389 (was 407; 259 in a full build with stand-in SDK headers before magnitude3d was defined `inline`, 375
 // earlier): the actor's table entry is formed before the
 // 0x1e4f90 call, there is no result local (the block returns true and the function ends with return false, retail's
@@ -880,6 +882,26 @@ extern point2f *g_468778;
 // facing dot named ahead of the facing pointer 401; one to three redundant parenthesis pairs around the facing dot's
 // first or last product, the first row's product or the weight dot's first product 387-392; the rows written
 // `scale * component` and the weight dot written component-first 389/389 (the same code).
+// M3 lane 1 r147 (fast; control 389, register-masked aligned 49): the first facing dot through the facing pointer (all
+// three terms) 410 (1549 B: the prop takes EBX and the view becomes the facing pointer in place, `add esi, 0x2c`, but
+// the slot, view and actor rotate to EBP/ESI/EDI with the actor spilled, frame 0x44; the sum comes out k, i, j); its
+// products written actor-first 410, its terms written i, j, k 410 (same code); the dot as `dot3f(facing, &actor->...)`
+// 412 and the other way round 412 (1549 B, sums j, k, i); only its i term through the facing pointer 392 (1568 B, the
+// load folds back onto the view's base); no facing pointer, every use read as `local_7->unknown2c` 392 (1564 B).
+// LEAD (not kept, a gain of 5): the facing pointer taken straight from the 0x25d740 call (no view local) with the dot
+// through it 384 (1551 B, masked 39 against main's 49; the pointer is formed before the 0x110ab0 call where retail
+// forms it after it from the view kept in EDI, and the same rotation as above); on it the slot declared first 384 and
+// the settings test as its own `if` around the flag tests 384 (same code).
+// LEAD (match-only, not kept: a one-use named part): the first facing dot named through the existing dot3f
+// (`real local_21 = dot3f(&local_7->unknown2c, &local_0->unknown290);`) ahead of the facing pointer, tested as
+// `-0.4f > local_21` 377 (1549 B, plain-confirmed with the file's functions, which stay as they were): the dot is then
+// retail's to the instruction (view first, k and j off the view, `add esi, 0x2c` in place, i through the facing pointer)
+// and the prop takes EBX, but arg_0/view/facing take ESI, the actor EDI (spilled, frame 0x44) and the slot EBP where
+// retail has EDI, EBP and ESI; with the weight dot also through dot3f 377 (register-masked aligned 30 against main's
+// 49; left the rotation, the actor spill, one copy tail and the second prediction's store order). Without the name:
+// the same dot3f call in the condition 414; no facing pointer with that call 386 (1558 B, a gain of 3); that with the
+// weight dot through dot3f 413 (1578 B), and the sign dot too 435 (1575 B); main's body with only the weight dot
+// through dot3f 389 (same code); on the 377 form the slot declared first 377 and the sign dot through dot3f 377 (same code).
 // Absent-prop arm first 390, inactive-slot nesting 399, both 404.
 // Direct slot argument 395, with absent-prop arm first 396; entry slot reference 389.
 // Checked prop binding 402, with absent-prop arm first 403.
