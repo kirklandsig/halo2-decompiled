@@ -259,6 +259,11 @@ union s_6ec80
 // scoped: a `for` loop with `if (!active) continue;` 348 (1059 B, unrolled), the 0x49c8 NONE default at the top beside the id
 // defaults 245, the live/flag test for the two block pointers as nested ifs 225, that plus the 0x49c8 read in the file's
 // `if (live) value = field;` idiom 195 (first difference +0x101, as round 96's hand read).
+// M3 lane 4 r243 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5): 0x6ec10 moved ahead of this function in the file
+// (retail's address order, with a prototype above it): with the mask zeroed in the guard 225, with the mask as now 5 (same
+// code), so source order is not the lever. On round 96's hand-written 0x49c8 read with the mask zeroed in the guard
+// (re-measured 195): the guard tested players first 195; both NULL stores, both assignments and the guard players first
+// 192 (first difference +0x10a); the counter zeroed ahead of the mask 194.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

@@ -620,6 +620,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
 // the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child
 // iterator declared ahead of the seat test 117 (all the same code).
+// M3 lane 1 r148 (H2M fast with 0x1e83c0, MATCH each run; control 117): the entry lookup ahead of the player lookup 585
+// (first +0x3); the result declared after both lookups 128 (re-measure of the listed form); the state's byte alias
+// dropped (every byte access through `(byte *)state`) 117 (same code); the state computed after both lookups 318 (first
+// +0x3); the entry's flag tested through its typed field instead of a raw offset 117 (same code); the unit looked up
+// from `player->unit_index` with the local kept for the test 117 (same code). Body unchanged.
 // M3 lane 7 r208 (H2M_FAST with 0x1e83c0, MATCH throughout; control 117, aligned 57, register-masked 4): the entry test as
 // `!(flag && state == 2)` re-measured 117; the entry assigned inside the condition (`(entry = entry_420_get(type)) !=
 // NULL`) 606 (2324 B); the player index and the entry declared const 117; the entry's flag byte at +0x10 read through a

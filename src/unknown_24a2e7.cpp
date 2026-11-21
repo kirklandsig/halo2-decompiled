@@ -447,12 +447,31 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // clear 83/83/83/83. Nested suffix with a comparison cursor, advancing on inequality
 // or after the match arm, ordinal or cursor first, 84/84/84/84. The frame remains 0x24.
 // The scaled entry remains live across the appends.
+// M3 lane 5 r226 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67). Reading: retail's
+// arm forms `&entries[i]` once into ESI through a scratch product (`mov ecx, ebx; imul ecx, ecx, 0x248`), keeps the
+// index in EBX across the five calls and multiplies it again for the terminator and for the plain name; with the
+// entries pointer in memory ours puts the arm's product in EBX and reuses it for the terminator, so the index dies at
+// the arm. On a two-member view of the entries and the count (lane 10 r119's lead, re-measured): every access indexed
+// 64 (207 B: frame 0x28 and the base spill, the product in EBX from the arm, the base read again after the first
+// call), with the terminator through `buffer` 65 (195 B); every access through a member accessor taking the index by
+// value or by const reference, or a forceinline free accessor on the view, 64 each (same code as indexed); the arm
+// nested (`if (append) { entry = &entries[i]; if (entry->field_4c[0]) ...`) returning the buffer, terminator and
+// plain name indexed, 39 (206 B: left are the product's register, EBX for retail's ECX, with the index in ECX for
+// EBX, and the result in ESI for EDI), the same on plain locals 77 (199 B); the terminator's index, or both later
+// indices, cast to unsigned 39/39 (same code; 77 on plain locals); the nested arm with the terminator through
+// `buffer` 80 (193 B).
 // M3 lane 2 r128 (H2M_FAST with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67): lane 10 r119's two-member
 // lead rebuilt 39 (204 B; left: ours pushes ESI ahead of the loop for the loaded id, keeps the index in ECX and its product
 // in EBX across the calls, where retail keeps the index itself in EBX from the start and pushes ESI in the found block).
 // On it: a `short` index 70 (214 B); the result re-indexed (`result = entries[i].field_1e4`) 51 (218 B); the tag named
 // once as a `char const *` for the test and the ascii call 39 (same code); the terminator after `result = buffer` 39
 // (same code); the found test written `index == entries[i].index` 39 (same code). Body unchanged.
+// M3 lane 12 r170 (h2m fast with 0x24a64d matched; control 67; E0 = the terminator indexed as `entries[i].field_1e4[49] = 0`
+// on this body, 84 at 197 B: the whole entry address is then kept in EBX across the calls, where retail keeps the index in
+// EBX, spills the entries pointer and multiplies again): E0 with the built name read as `entries[i].field_1e4` at every use
+// 84, with the index declared ahead of the loop 84 (same code each); `buffer` declared ahead of the suffix conversion 69
+// (203 B, two `lea edi` copies); `result = buffer;` ahead of the indexed terminator 84; the terminator after the if/else
+// under `if (result == entries[i].field_1e4)` (diagnostic) 73 (209 B). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

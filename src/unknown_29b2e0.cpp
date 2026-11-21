@@ -789,6 +789,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // 153/153 (names do not order those homes); cross3f with no `local_17`, on the old call form 171, with named sine/cosine
 // 141. On the kept form: only the first rotation through the helper 130 (same code); the XY vector before the second copy
 // 128 (two points, not kept); named sine/cosine 164; the axis through cross3f with no `local_17` 222 (1715 B); both 173.
+// Round 454: the 0x2c frame agrees, with the XY J and depth stores inverted at +0x101. Native XY aggregate 346;
+// XY from full input copy 303; vector setter for second, first or both input copies 413/418/426; second setter
+// plus XY aggregate 393; setter for degenerate restore 271; setter for second copy and restore 398. Body restored.
 // M3 lane 7 r207 (h2m fast with 0x170d70 and 0x29b990, both MATCH; control 130): both rotations through a private copy
 // of matched 0x194a10's written-out rotation (its rows and cross order are retail's here) 130 (same code: the text is
 // canonicalised); the turned facing as its own function-scope vector 227 (frame grows); declared in the arm with the
@@ -811,6 +814,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // initializer 130 (same code); the up-vector pointer declared at the top after the object pointer 239 (1710 B); the second
 // copy's depth clear written ahead of the XY vector 130 (same code); a const copy of the object's forward vector for the six
 // cross products 203 (1726 B); the actor's current yaw and pitch read once into const locals 267 (1685 B). Body unchanged.
+// Full fallback value selected before validation, on the valid-angle path, after yaw, or before
+// current pitch 379/386/386/391. Fallback address selected at those sites 364/256/291/367.
+// NOT kept: the original J/depth pair remains or the first difference moves earlier.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

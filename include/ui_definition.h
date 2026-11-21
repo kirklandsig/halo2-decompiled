@@ -76,7 +76,7 @@ typedef char assert_ui_mode_definition_settings[(offsetof(s_user_interface_share
 /* ui_definition.cpp (ui_definition_get is declared in
    unknown_234c64.h, ui_definition_get_skin in unknown_19b516.h) */
 s_user_interface_shared_globals *ui_mode_definition_get(void);
-void ui_game_variant_build_default(long engine_type, s_game_variant *variant);
+void ui_game_variant_build_default(s_game_variant *variant, long engine_type);
 
 /* ui_definition_lookups.cpp */
 void ui_definition_get_subtitle_text(long subtitle_type, word *buffer);

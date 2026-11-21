@@ -727,6 +727,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // added, cosine/projection/sine 218 (1218 B, frame 0x118 as retail, first +0xa9); on that, vector x axis subtracted with
 // cosine/projection/sine 207 (1209 B, frame 0x118, first +0xa9), sine/cosine/projection added 240 (1195 B) or
 // subtracted 238 (1198 B), sine/dot/cosine added or subtracted 236/236.
+// M3 lane 11 r146 (h2m fast with 0x28dab0, MATCH throughout; control 173): the jitter arm as a copy of the position offset
+// in x and y and copied back (retail's z is rewritten onto itself through XMM0 between the draws and the x/y adds) 260
+// (1250 B: the copy goes through memory as three dword moves); in function_28dbd2 the cross taken ahead of the cosine and
+// projection 210 (1198 B), the cross scaled by the sine ahead of the axis scale 227 (1209 B); the flag-2 arm's forward
+// store after the outer cross 190 (1209 B); both 0.1 position updates through the existing vector3f_add_scaled 180 (1209 B,
+// lane 2 r111's 180 re-measured on the kept helper).
 // M3 lane 8 r215 (h2m fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the helper's four opening statements
 // (cosine C, sine S, the projection D = dot * (1 - cosine), the cross X) in six orders, the rest unchanged: C X D S 210
 // (1198 B, first +0xa9), C D S X 183, S C X D 238 (1198 B), C S D X 226, S C D X 182, C X S D 239 (1198 B). Reading

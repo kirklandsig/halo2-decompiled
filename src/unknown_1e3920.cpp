@@ -1276,6 +1276,12 @@ void function_1e3b60(long actor_index);
 // calls: more written depth in the callee does not stop the release-site expansion); here the not-active case as an early
 // return storing NONE 75; the `g_46fc80` store ahead of the actor lookup 25 (same code); the clear and the two NONE stores
 // through a fresh actor_get each 69 (276 B). BLOCKED-BY 0x262ba0 (stacked actor).
+// M3 lane 5 r227 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form; 0x2641c0's noinline declaration
+// is in another lane's file again, so all five in 0x262ba0): the walk through 0x26be00/0x26be30 with the iterator's
+// index read at every use and `update` long 427 (1616 B: the index takes EBX, a zero constant EDI and the long flag a
+// stack cell); that with case 1's 0x25c820 call jumping to the release block's call 442; main's body with `update` long
+// and that single call 436 (1616 B); the first form with `sampled_one` long 435 (1624 B); main's body with `sample` and
+// `update` long and the single call 437 (1616 B). Still BLOCKED-BY 0x2641c0's expansion into 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2012,6 +2018,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // no callee's write summary is what keeps it out of EDI; 0x259a0 given a link-time summary (an inline kept out of
 // line in an ordinary file) 306 [137 / 49], the pool still loaded three times. No object built without link-time code
 // generation refers to the pool, seed or tag globals. Nothing kept.
+// M3 lane 13 r137 (h2m fast; control 251): a `long` loop index with the weapon read once per pass into `long weapon`
+// 278 (1191 B, frame 0x10); the rounds sum written lower bound first 251 (same code); the tick store as a signed
+// char like its read 251 (same code); the halved fraction as a conditional argument to 0x101a10 260 (1223 B); the rounds
+// pair cleared by `rounds[1] = 0;` in place of the memset 253. Still BLOCKED-BY 0x259a0 (its file's no-LTCG flag).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
