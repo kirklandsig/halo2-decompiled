@@ -681,6 +681,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // rigid body declared first 96 [13] (the index then arrives in EAX, the owner in ECX); no absolute-index local (the type
 // through `headers[object_index & 0xffff]`, case 0 through havok_object_get(component->object_index)) 94 [13], with a long
 // type 96 [13]. Body unchanged.
+// M3 lane 11 r149 (H2M_FAST, caller 0x1d5bf0 in brackets): round 118's one-read form rebuilt 28 at 256 B [0]; on it the
+// rigid-body index parameter `unsigned long` 28 [0] and the kind parameter `dword` 28 [0] (definition and the caller's
+// declaration together; same code each); case 0 through `headers[(word)component->object_index]` 94 [208]; a long type
+// with the kind-7 route as `if (type == 1) return 0xc; return 1;` 101 [0]; the type read through a const pointer to the
+// header's type byte 123 (272 B) [194]; on main's body the same two parameter types 96 [0] each (same code). Body
+// unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

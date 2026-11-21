@@ -1359,6 +1359,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 1 r83's combination with the crosses swapped 78 (1382 B: left are the movement vector's home, which retail shares
 // with the turned copy, and the rotation helper's product sides); the rotation axis from the up parameter 277 (1396
 // B). The first difference is still inside the rotation helper (src/unknown_1eb8a0.cpp, locked this round).
+// M3 lane 11 r149 (H2M_FAST with 0x1eb640 and 0x1e5af0, both MATCH; control 114): the snap exit through a goal copy
+// (`vector3f goal = *facing_goal;` then the store and the flag) 140 (1382 B); the flag update ahead of the snap copy
+// 107 (1384 B: our flag update is then `or [edi+0x14], 0x20`, retail loads, ors and stores it between the goal's loads
+// and stores; a statement order picked by score, under the bar); the moved-away dot as `dot3f(&rotated, facing_goal)`
+// 114 (same code); a named pointer to the state's forward for the alignment dot and the old cross 165 (1382 B); the old
+// side dot named ahead of the test 140 (1382 B); the snap exit through the existing vector3f_assign 122 (1397 B), both
+// exits through it 171 (1383 B). Body unchanged; the first difference is still inside rotate_direction
+// (src/unknown_1eb8a0.cpp, another lane's file this round).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

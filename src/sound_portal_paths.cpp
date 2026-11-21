@@ -281,6 +281,12 @@ __forceinline long portal_path_gain(real distance, real range)
 // take [base + index] where retail has [index + base]); that with the deep block's `sound` pointer dropped 15; the pointer
 // drop alone 261; the read as an assignment inside the condition 250; as `closer ? cluster->sound_index : NONE` 250; a
 // long local 293. Body unchanged here (see 0x18dc90's note for the twin's forms).
+// M3 lane 11 r149 (H2M_FAST with 0x18dc90; control 287): the index output written `indices[i]` with the found arm's
+// gain store as `if (index != NONE) gains[i] = ...; else gains[i] = 0xc2800000;` 302 (1360 B); the if/else gain store
+// alone 288; the valid words cleared before the cluster lookup 289; the nearest test through `short source_sound =
+// cluster->sound_index;` declared ahead of it 287 (same score on main's callee); in the shared gain helper the
+// degenerate test as one ternary 287 (same code), the smoothstep fraction computed ahead of the two decibel gains 283
+// (1364 B; 0x18dc90 299, so not kept). Body unchanged; BLOCKED-BY 0x14b240's write summary as above.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -647,6 +653,15 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // test first in the nearest test 326; a `while` walk 338; a redundant count guard around the walk 22; the deepest stores
 // portals first 21; the nearest stores distance first 22; a long portal index 325; a 600 s permuter run on the 4 form
 // (75 tries) best 4. Body unchanged here.
+// M3 lane 11 r149 (H2M_FAST with 0x18d730; control 295): the index output written `indices[i]` (no cursor) 306 (1352 B:
+// the index array becomes the strength-reduced base, where retail's base is the gain array); that with the found arm's
+// gain store as `if (index != NONE) gains[i] = ...; else gains[i] = 0xc2800000;` (retail's two separate gain stores)
+// 298 (1358 B, frame 0x434; the output loop's setup is then retail's: the gain cursor in ESI as the base, the index
+// array at gains + [esp+0x34], the order array relative to the index array); the if/else gain store alone 295 (same
+// code); in the shared gain helper the degenerate test as one ternary 295 (same code) and the fraction computed ahead
+// of the two decibel gains 299 (1358 B; the twin 283). On lane 15 r126's held lead (4 here, the twin 8, 0x18ae80 846 ->
+// 911): no portal-index variable (the masked index written at the lookup and both stores) 325 with the direct nearest
+// test, 323 with the early read (the movsx folds away, so the short local is needed). Body unchanged.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
