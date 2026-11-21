@@ -246,6 +246,10 @@ union s_6ec80
 // the guard 5 (same code); with the mask zeroed in the guard, the loop's first bit named before the guard 225, the
 // player count named before the guard with the do loop 225, with a `for` loop 348 (1059 B): named constants fold
 // before allocation, so nothing stays live across the two pointer tests.
+// M3 lane 6 r220 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5), with the mask zeroed before the guard as now: the
+// loop's bit named in the loop body (`dword bit = 1 << local_15; local_14 |= bit;`) 234 (the entry allocation moves); the
+// players walked through a `s_session_player const *` stepped each pass 9; a `word` mask 15 (974 B); the data and mask tests
+// as two separate ifs 156 (978 B); with the mask scoped in the guard, the bit named in the loop body 109 (re-measured).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
