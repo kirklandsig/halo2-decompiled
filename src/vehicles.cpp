@@ -1888,6 +1888,12 @@ long function_10f5f0(long object_index);
 // Velocity sample, center delta and effect requests names, alone and in every combination,
 // plus the collision bounds name with all three: eight at 561. Frame 0x1990 persists,
 // and the six-real bounds and three-real velocity still use separate homes. Body restored.
+// Axis-aligned box output 561 / Box before state 561 / Matrix declared beside box 561 / Box with scoped
+// request names 561 / Box with scoped zero-initialized names 567 / Box with scoped first velocity sample
+// 561 / Box with branch-owned state 561 / Returned physics state 614.
+// NOT kept: The box and disjoint scopes leave frame 0x1990 and the bounds and velocity addresses apart.
+// Zero-initializing the scoped names raises the score. The returned state shortens the body to 2216
+// bytes and raises the score to 614.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -6260,6 +6266,13 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Brake with ground/wheels 757/757, action with ground/wheels 762/762.
 // NOT kept: brake-only recovers 2974 bytes with a three-point gain. The zero still
 // takes XMM4 and the separate definition in EBP is missing.
+// Raw result in free speed ratio 759 / Raw result in ground-contact ratio 759 / Raw result in admitted
+// wheel ratio 759 / Raw result in lateral rejection ratio 759 / Raw result in two-ratio speed case 759 /
+// Raw result in all paired-limit paths 781 / Raw result in the other two magnitude paths 759 / Raw
+// result at every normalized magnitude 781.
+// NOT kept: The single-case and two-path forms reproduce 759 at 2976 bytes. Changing all three paired-
+// limit paths grows the body to 3024 bytes and scores 781. The XMM zero and entry definition remain
+// different.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

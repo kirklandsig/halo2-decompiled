@@ -3217,6 +3217,13 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
 // with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
 // conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
+// Named high byte before follow-up 64 / Named high byte after follow-up 65 / Named high byte on failure
+// 72 / Named high byte at both successful clears 94 / Named high byte before follow-up and on failure 73
+// / Named high byte after follow-up and on failure 74 / Named high byte at all clears 103 / Named high
+// byte at all clears and shared failure flag setter 93.
+// NOT kept: The named pre-call clear is closest at 64 and 246 bytes. Clearing all three sites through
+// the byte shifts the entry and grows the body, including with the shared failure flag setter. The saved
+// pool base, step transport and signed body selection remain different.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
