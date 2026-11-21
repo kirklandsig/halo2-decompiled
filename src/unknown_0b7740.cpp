@@ -1427,6 +1427,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // score 20 (was 20; 87 before b10C, 97 earlier): ours is 5 bytes longer (1399 against 1394). Left: only the
 // no-model branch's parent lookup (ours takes the index in ECX and reloads the pool, retail has the index in ESI
 // copied to EAX and the pool still in ECX from the current-object lookup).
+// M3 lane 6 r223 (h2m fast with 0xb8bd0/0xbdc40/0xbfa40, all MATCH; control 20 at 1399 B): `inline` added to this
+// file's own declaration of 0xb8bd0 with the no-model arm calling it 47 (1385 B, the same code as the plain call: a
+// caller-side inline declaration does not make the /Ob1 definition expandable); the render and no-model arms swapped
+// under `render_index == NONE` 297 (1388 B); in the no-model arm the flag read first, then the matrix through the 0xb8bd0
+// call 19 (1395 B: the index takes ESI across the call and the flag reads the data pointer still in EDI, where retail
+// re-reads data from the pool in ECX), that with the defaults in an else arm 23 (1395 B); the else-arm defaults with both
+// lookups indexed by `(word)parent_index` 24 (1392 B). Re-measured: the else-arm defaults with the flag first 18.
 // Earlier head (at 87, was 87; 97 before): retail was 2 bytes longer. Left then: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
 // in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
