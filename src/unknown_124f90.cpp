@@ -1361,6 +1361,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax C (11-20): no new form, no lower score (87): retail forms the reciprocal first (xmm2), keeps the fade-out time in xmm1 from the earlier test, divides eagerly before the compare and adds the gain into a register at the end, while this build forms the reciprocal late, sinks the division into the branch and adds the gain from memory; every form written here leaves the reciprocal's register and the division's schedule where they are.
 // MiniMax H (11-19, round 95): no new form, no lower score (87): the permuter over this function's forms made no gain either
 // (best was the baseline), and the fade block still keeps 1.0f/fade_in_time in xmm2 where retail keeps it in xmm3, so the join
 // with the (elapsed - hold) * inverse * fade_out term stays in other registers than retail's.
@@ -1834,6 +1835,15 @@ long function_2197f0(real gain);
 // named scaled test with conditional quotient or in-place quotient 143/143;
 // direct quotient accumulated before cap 143; selection in interpolation argument 143.
 // NOT kept: the cap and quotient forms raise the score; separate gain load and late join remain.
+// M3 lane 5 r220 (fast with 0x1251e0/0x221810, both MATCH; control 87, masked aligned rows 20): three local causes are left,
+// arm 1's schedule (retail forms 1/fade_in first, multiplies by the fade-out still in the test's XMM1, subtracts elapsed
+// after the product and divides eagerly), arm 1's add (retail loads the gain and adds the interpolation into it) and
+// the arm-3/arm-4 join (ours carries the gain in XMM0 into arm 4 behind a jmp and a load, about the six extra bytes).
+// The three ducking pointers const 87 (same code); a fade-out local for the tests and the product
+// `(elapsed - hold) * inverse * fade_out`, the clamp value divided eagerly and `gain +=` 169 (644 B); without the local,
+// the clamp as `1.0f > time * inverse ? time / fade_in : 1.0f` and `gain +=` 163 (648 B); the local with that ternary
+// and `gain = gain + ...` 171 (644 B; without the fade-in copy the division becomes `inverse * time` and every one of
+// these is short); the fade-out window test written `elapsed < fade_out + hold` 87 (same code). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3708,6 +3718,13 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// MiniMax C (11-20): no new form, no lower score (8): the pool reload still lands ahead of the next-slot diamond in every form
+// tried this round (the seed as its own statement ahead of the reload, the advance as two body statements with the mode-1 arm
+// broken instead of continued, and the seed through a comma), and retail's mode dispatch (`movsx eax, ax; sub eax, 0; jne`)
+// needs the continue, so the body is unchanged. Later in the same round: the candidate computed before the reload in the
+// increment clause, the candidate as a named local, the find through the global and the whole increment through the global
+// all measure 8 with the same code, and the permuter (378 s) found nothing; the reload is a speculatable global load and
+// this compiler hoists it to the head of the increment region, above the candidate's branch, in every spelling.
 // MiniMax A (11-19): no new form, no lower score (8): the pool reload stays ahead of the loop end's `cmp ebx, -1`, where
 // retail loads it after the next-index increment; the latch reading the pool through the global, the entry pool read
 // through a local, the next index computed in a comma element ahead of the reload and the pool read through the
@@ -4329,10 +4346,12 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
-// score 48 (was 72): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
+// score 48 (was 48): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
 // word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
 // DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
+// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
+// Earlier at 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
+// MiniMax C (11-20): no new form, no lower score (72): the two gain pins still trade scratch registers (retail gives the gain byte its register ahead of the bits' copy), the field_c store still sits one slot late and the controller compares still use an immediate where retail holds NONE in edx; the body stands as found.
 // score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
@@ -4696,6 +4715,12 @@ struct s_128ca0
 // Synchronization count as short/word/dword with the separate decrement or postdecrement
 // 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
 // NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
+// M3 lane 14 r133 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 48): the second
+// pending test as `!TEST_FIELD_BIT(local_1->flag3)` 72 (1054 B: from there on the test and both `or byte ..., 8` are
+// retail's, the scratch registers one step off and 0x12a420's copy an in-place `or`), as `!(bool)((flags >> 3) & 1)` 72,
+// as `!(bool)(flags & 8)` 72 (same code each); the flag3 set through flags_set_bit 48 (same code), with the
+// TEST_FIELD_BIT test 72; on the 48 form `long count = NONE` 123, `char count = NONE` 203; `long count = NONE` with the
+// TEST_FIELD_BIT test 122. Both pins still store field_c after the channel-index load where retail stores it first.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4884,8 +4909,12 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax E (11-20): 0x127400 484 -> 432: the listener transform's three left components are stored in reverse order
+// (k, j, i), which is the order retail emits the cross product's stores in; the body is 2312 bytes against retail's 2290.
+// Review (m3, 11-20): not kept: the three stores in another order is a statement-order change, kept only on a
+// byte match; code back to i, j, k (484). Lead: the k, j, i order gives 432.
 // MiniMax B (11-20): no new form, no lower score (484): our frame is 0x130 against retail's 0xe8, the fallback reverb is copied into a 48-byte stack block where retail reads the existing table, and 0x16f3a0, 0x1420f0 and 0x11c120 still expand here although retail calls them out of line; their noinline declarations live in other files.
-// score 484 (was 535): one note; the older score lines below now read "Earlier (535)". Still different: the
+// score 484 (was 484; MiniMax E's 432 not kept at review, see below): one note; the older score lines below now read "Earlier (535)". Still different: the
 // 0x155760 result is spilled (frame 0xec against retail's 0xe8, every slot 4 off) while this build keeps NONE in EBX
 // through the loop head, where retail keeps that result in EBX and compares with immediates; the expanded rotate
 // block's term order and XMM homes; the two fallback copies' shared tail; and the scale test ahead of the velocity

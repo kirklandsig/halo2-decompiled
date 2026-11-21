@@ -183,6 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
@@ -773,6 +774,26 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Real estimate before the cast on the first or both arms, or one shared store 693/693/693.
 // All eliminate the repeated elapsed-count calculation but move the first gap earlier
 // and shorten the body to 2865 bytes. EBX still keeps the supplied direction.
+// M3 lane 7 r201 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless noted; control 603, which this screen
+// reproduces; aligned = register/offset-masked difflib count over the listing, 281 at the control). The void return
+// 603 (same code); with `s->counter++` and the closing test reading the field 604 (2887 B: the counter block is then
+// retail's, the pops still sit in each exit); `s->counter++` with the long return 612 (2893 B). The 0.866 test through
+// dot3f(&s->direction, d) 604 (aligned 283, d still EBX). Lane 8 r198's saved lead (the 12/8 factor ahead of t with
+// the clamps as PIN, the limit read at each use, the impulse through vector3f_scale) rebuilt 729 (2892 B, aligned 219:
+// b moves to EDI and the time globals to EDX at the entry, d still EBX). Diagnostics (reverted): an unreachable call
+// taking d's address 603 (the same code: in this function it does not keep the parameter in its home); the three dots
+// with d and the three fallback copies behind out-of-line probes 816 (2788 B, 0x1eb6f0 lost at 2: the globals take
+// EBX and `a` EDI, so calls at d's sites are no model for it). Read again against retail: d's home [esp+0x3c] and q's
+// [esp+0x40] are reused as float spill slots on the paths where each is dead, so d is an ordinary unregistered
+// variable (not address-taken); retail forms `&s->target` in EAX and `&s->direction` in EDI and reads and writes all
+// three components through them (ours the first component only), sums the three delta components with the impulse on
+// the x87 stack from memory after all three impulse stores, and scales delta in the registers that still hold it:
+// the shapes of pointer-taking vector helpers at each of those statements. Every such helper measured alone so far
+// raises the positional count; the entry (d against q for EBX) has to come first. Body unchanged.
+// M3 lane 16 r162 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the settle dot as `dot3f(&nq, d)`
+// 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
+// second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
+// local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -842,6 +842,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // re-measured 1624 (5990 B, frame 0x590), so retail's extra length is elsewhere. The helpers' bodies as the existing
 // shared ones: the cross product as cross3f_staged 1357; the in-place add as vector3f_add(a, b, a) 1346 (same code); the
 // scale as vector3f_scale 1412 (6238 B, retail's length); the normalize as normalize3d 1470 (6131 B).
+// Point velocity snapshots at the arm/cross (angular), sum (linear), or both
+// boundaries 1415/1415/1417/1490. Contact equivalents 1361/1361/1362/1469.
+// NOT kept: all regress. Point copies retain 0x5d0; contact copies add frame storage.
+// The 0x58c frame and the escaped velocity homes remain.
+// Projected heading aggregate 1424, tangent aggregate 1440, both 1510, unpowered projection aggregate 1374,
+// all three 1460, kinetic direction normalized in the force output 1433, translated impact point aggregate
+// 1349, both projections through component setters 1524. NOT kept: all regress from the reduced control. The
+// 1374 and 1349 forms reach retail length but retain a frame difference.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

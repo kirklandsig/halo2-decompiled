@@ -181,6 +181,9 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// MiniMax D (11-20): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so every later slot sits
+// at another offset, and the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI); the 0x48e70 call sets
+// the rest and its definition is in another machine's file: BLOCKED-BY 0x48e70.
 // score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
 // the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
 // EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
@@ -433,6 +436,7 @@ __forceinline bool function_184448(long arg_0)
 // its entry-then-count stores; a moved declaration, so match-only), the same with the count assigned before the entry 958
 // (same code); that with the lookup as one `&&` test and the table pointer declared first 955 [543] (the table load then
 // sits above the tests where retail loads it after them), with the table global written at both uses 971 [542].
+// MiniMax G (11-20): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later home sit at a different offset, and the scene and geometry homes are still rotated from retail's (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx).
 // MiniMax C (11-17): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later slot sit at a different offset, and the scene and geometry homes are rotated (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx); the earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 // 463: shared two-axis projection at vertices/samples/both 1034/1056/1033, or with long
 // vertex traversal 1037/1083/1037. Both with Boolean orientation 1037, direct table
@@ -513,6 +517,18 @@ __forceinline bool function_184448(long arg_0)
 // minus 965 (same code); the plane copied first and negated in place under the flip test 987 (4602 B), with unary minus 987;
 // the else arm's copy written field by field 1017 (4544 B); the three magnitudes through fabsf 965 (same code), computed
 // k, j, i 965 (same code).
+// M3 lane 1 r141 (fast with the callers 0x9cca0 / 0x184060 and 0x184250, all MATCH unless said; control 965, aligned 938,
+// register-masked 459, frame 0x11d4). Lane 11 r131's 952 lead re-applied and re-measured 952 (frame 0x11cc, aligned 890,
+// masked 371; still a moved-declaration form, not kept). Reading of the head on that lead: retail loads the start face
+// into EDI for the head only (later uses read its parameter home, `cmp eax, [ebp + 0x14]`), never gives the record
+// pointer a register (an immediate zero or EAX stored to its home in each arm, reloaded at each test) and takes the group
+// count into EBX for `cmp eax, ebx`; the lead takes the start face in EBX and carries the record pointer in EDI to one
+// store at the join. On this body: the record pointer cleared at its declaration and set only in the instance arm 966;
+// the instance arm written first with the world arm in the else 986 (both callers lose their match, 15 each: arg_0
+// moves); the group count read into a named long for the bounds test 965 (same code); the start face through an element
+// pointer for its group read 965 (same code). On the 952 lead: the named count and the element pointer together 954
+// (aligned 886, masked 358); the record pointer cleared ahead of the test 970 (4600 B). Still BLOCKED-BY 0x48e70 (its
+// file is another machine's this round) for the reloads after each of its calls. Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

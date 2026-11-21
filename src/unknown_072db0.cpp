@@ -1624,6 +1624,7 @@ static __forceinline void query_restore_pending()
         }
 }
 
+// score 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
 // (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
 // at +0x18, while ours takes the property bytes as the cursor and keeps it at +0x14, so the flag, the identity and the
@@ -1636,7 +1637,8 @@ static __forceinline void query_restore_pending()
 // `dec eax` (the status minus one, then a jump) where we compare against the immediate 1, and retail keeps the users base at
 // [esp+0x18] where we keep it at [esp+0x14]; the users loop's own body (the valid test, the XUID copy, the properties copy
 // and the slot test) matches retail's shape apart from those homes.
-// score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// score 663 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Earlier detail: The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
@@ -2180,10 +2182,47 @@ bool function_1900a5(long index);
 // the same code); the properties copied ahead of the identity re-measured 705. The slot test's cmovne still needs the
 // SSE file flag (a build-flag question). All restored.
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Indexed player or state, reference or pointer before descriptor lookup, 703 each. Indexed player or
+// state pointer after lookup, 703 each. Advancing player cursor under ordinal or pointer-end bound,
+// 702/805. The ordinal-bound form moves one address setup and gains one point. The pointer-end
+// form adds 32 bytes. The user flags load uses +9 from the user record in both listings.
 // Shared logon task index 703; queried-or-absent status selected, initialized or assigned in separate arms 703/703/703.
 // Offline cleanup first with selected or initialized status 800/800; assigned connection result 819;
 // offline cleanup first with a short-circuit task query 703.
 // NOT kept: the connection result emits the decrement but materializes a Boolean; the offline-first status forms change the first branch and raise the score.
+// M3 lane 14 r134 (fast, confirmed plain with the file's 41 functions, 0x641a0, 0x8df50, 0x1900a5 and 0x192e60, all
+// matched; aligned = difflib count with addresses masked, 330 at 703). The count is positional and most lines after the
+// users loop were one or two instructions out of step, so this round worked from the first place the listings lose
+// step. Kept, 703 -> 663 at 2878 B (aligned 301): the first variant loop's index as `dword` (retail counts 16 down in
+// EBX and re-reads the availability word and the team byte each pass; a signed `long` index makes this compiler test
+// the variant pointer instead and hoist the word into EBX; `short`, `word` and `byte` give the same code) 695; with it
+// the request identity held by value with an index scan of the earlier records and the property fill bound
+// `record->count` (retail's three-register identity, counted scan and rolled fill) 663. On that: the incomplete arm's
+// `failed = true` (round 136's form) 663; the named free space (round 136's) 663; both 664 (2846 B, aligned 297), so
+// neither is kept. LEAD, not kept (a switch in place of an if is not a kept form without a match;
+// build/r134/lead-0x74aa0-switch.patch): the polls as a switch on the task state (cases 0 and 1 pending, 2 done,
+// default failed), retail's `jl / cmp 1, jle / cmp 2, jne` chain at both: the read poll 650, the write poll 660, both
+// 652, both with failed and space 648 (aligned 284); as nested range tests in place of the switches the write poll is
+// the same code as now and the read poll 10 worse. Pieces without the request loop: `dword` + failed 692; + space
+// 694; + both 677; + write switch 679 (with case 2 falling into the cleanup, same code); + read switch 682; + both
+// switches 666; + failed, space and both switches 667; the 648 set without `dword` 721; a `long` index with `i != 16`,
+// `i <= 15` or a `(long)` sizeof bound 703 each. On the 648 set: the 48 request-loop combinations of a group pointer
+// local, the by-value identity, the rolled fill, a properties pointer, the used-count add ahead of the fill and a
+// candidate pointer give 648 to 801 (30 of them grow the frame to 0xc8; pointer identity with the rolled fill 715,
+// by-value with the unrolled fill 801, group pointer with by-value and rolled 688 at aligned 282, group pointer with the
+// pointer identity and `+= 6` ahead of an unrolled fill 652 at retail's 2862 B); a user record pointer in the users
+// loop 648 (aligned 285) and 744 with the later copy through it; the existing online_logon_connected() with its
+// header 768 (retail's `dec eax`, but the loop pad and the team byte's slot move); the completion identity as a
+// member-address ternary 661; the last read time in a local under a nested test 676 (EDI then holds the delay and ESI
+// the time as in retail, one `mov esi, eax` short), assigned inside the test 667; the last write time the same way
+// 656; the delay as `> 3 ? 300000 : 2000` 667 (retail's setle, an arm swap). Diagnostics, reverted at once: `inline`
+// on 0x1934f0's definition 703 (same code, its 17 callers unchanged); the variant check as an unresolved call 760 (the
+// word is then re-read, the team byte takes EBX). Still differs and not a source form here: retail expands the two
+// user getters 0x647a0/0x647d0, the elapsed-time function 0x75890 (its by-value time is the `mov esi, eax` after each
+// `test eax, eax`) and the logon test's helper, all in files built /Ob1 (marking the getters `inline` instead makes
+// their two size-optimised callers expand them in a loop, where retail calls), and selects the slot with cmovne (the
+// SSE flag); after the request test the listings still lose step at the loop set-up (retail stores both zero counts
+// to their slots and loads them into ESI/EDI after the clock read).
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
 // @retail 0x74aa0
 void function_074aa0(void)
@@ -2212,7 +2251,7 @@ void function_074aa0(void)
                         memcpy((byte *)values + 0x10, properties + 0x70, 12);
                         for (long i = 0; i < 16; i++) values->players[i].state = 0;
                     }
-                    for (long i = 0; i < 16; i++)
+                    for (dword i = 0; i < 16; i++)
                     {
                         s_surface_description *variant = function_192e60(i);
                         if (variant)
@@ -2250,27 +2289,34 @@ void function_074aa0(void)
                         (player->state == 4 && now - player->time >= g_network_configuration.valuec74)) &&
                         (variant = function_192e60(i)) != NULL)
                     {
-                        const byte *identity = (const byte *)&g_509454[group] + (variant->type == 5 ? 0x10 : 4);
-                        s_cache_property_record *candidate = g_50c474 + records_used;
+                        XUID identity;
+                        long existing = records_used;
                         if (variant->type == 5)
-                            for (candidate = g_50c474; candidate < g_50c474 + records_used; candidate++)
-                                if (!memcmp(candidate->identity, identity, 12) &&
-                                    candidate->type == variant->field_8)
+                        {
+                            memcpy(&identity, g_509454[group].unknown10, 12);
+                            for (existing = 0; existing < records_used; existing++)
+                            {
+                                if (!memcmp(g_50c474[existing].identity, &identity, 12) &&
+                                    g_50c474[existing].type == variant->field_8)
                                     break;
-                        if (candidate == g_50c474 + records_used)
+                            }
+                        }
+                        else
+                            identity = g_509454[group].owner;
+                        if (existing == records_used)
                         {
                             s_cache_property_record *record = &g_50c474[records_used];
-                            memcpy(record->identity, identity, 12);
+                            memcpy(record->identity, &identity, 12);
                             record->type = variant->field_8;
                             record->count = 6;
                             record->properties = &g_50cbf8[properties_used];
                             records_used++;
-                            for (long j = 0; j < 6; j++)
+                            for (long j = 0; j < record->count; j++)
                             {
                                 *(word *)&record->properties[j].unknown00 = (word)(j + 1);
                                 record->properties[j].type = 1;
                             }
-                            properties_used += 6;
+                            properties_used += record->count;
                             added++;
                             player->state = player->state == 1 ? 2 : 5;
                         }
