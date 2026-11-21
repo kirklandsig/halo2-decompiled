@@ -1538,6 +1538,10 @@ bool c_projectile_type::v8(long a, long b)
 // >> 16` 12 (folds to the mask); as `(dword)(word)index & 0xffff` 5 (same code as the word read: the movzx stays, the mask
 // is dropped); with the mask, the 0x400 compare written object-first 13, both compares written value-first 16, the object
 // pointer typed `byte const *` 12 (same code). Word-read body kept (5).
+// M3 lane 14 r141 (H2M_FAST with 0xa5e70, MATCH each time; mask control 12), all with the full-width mask: the object
+// bound through a `byte *const &` used for the 0x800 arm's index read 12; the group pool pointer read into a local at the
+// top, ahead of the call, 49 (188 B); the index as a const value local 12; the object pointer itself const 12; the entry's
+// value read as `((real *)entry)[1]` at the compare and the store 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

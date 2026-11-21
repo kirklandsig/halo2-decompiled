@@ -758,6 +758,23 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 305 (same code); the near rows' y staged in the output element (`field_c.y = y * cos; field_c.y += x * sin;`) 392 (1745 B);
 // separate cosine/sine/turned-y locals for the second near emission 305 (same code); the root summed y-first with
 // `field_24 > distance` 305 (same code). Body unchanged.
+// M3 lane 14 r141 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; control 305, aligned 257; aligned = LCS-aligned
+// differing instructions). Lane 16 r154's 300 lead rebuilt 300 (1716 B, aligned 98). LEAD, match-only, 229 (1732 B, aligned 59;
+// build/r141/lead-298d90-229.patch in m3-lane14): on that lead the second side's ternary as `!local_4 ? 2pi - x : x`, the wrapped
+// angle as `x >= 0.0f ? x - 2pi : x + 2pi` with the array element read at each use (no element local) 247 (1732 B, aligned 65);
+// the emitter's angle taken by `real const &` 251 (1728 B, aligned 61: the first emission then reads the element from memory at
+// each use and copies it through ECX as retail); the sine argument as `(double)-x : (double)x` 229 (aligned 59: retail's `fld`
+// in each arm, where `-(double)x` hoists one load ahead of the branch). Also on 251: the sine as `-x : x` in float 309 (+0x2,
+// 1747 B), an if/else with a sine call in each arm 251 (same code), the rotated y row's terms swapped 251 (same code). On 229:
+// the far arm's trig pair renamed (sine/cosine) or the names swapped 229 (same code); cosine declared ahead of the sine 229;
+// the rotated y row stored ahead of the x row 166 (positional only: aligned 70, retail stores x first); the rows' products
+// written point-first 229; the sine, the cosine or both kept as double 242/240/246; the tangent dot, the emitter's facing dot or
+// both through the existing dot_product2d 229 (same code). Left on 229: the loop head stores the root and reloads it (retail
+// `fstp st(2); fstp st(0); fst`), the near arm's `cos * y` (retail `y * cos`, the cosine in +0x28 and the sine in +0x1c; ours
+// +0x18/+0x14), the distance slot (+0x14 against +0x1c) and the wrapped angle's (+0x1c against +0x14), the second
+// normalization (retail stores x before it forms `y * inv`), the tangent dot and the rotated y row taking the x product first
+// where retail takes the y product first (every source order gives the same code), the emitter copy's x/y registers and its
+// field_c stores after the first push.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
