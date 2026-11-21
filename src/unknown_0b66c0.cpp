@@ -629,6 +629,14 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // summed into EAX); that with `start += (long)string` after the clamp 27 (same code: the sum still lands in EAX); on it the
 // bound as `count <= length - start` 27, `length - count >= start` 28, `length >= start + count` 28; the count tested first
 // 39; the volatile read into a named `text` used by the scan and the source 48 (93 B).
+// M3 lane 1 r151 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the shared length helper taking
+// `char const *const &` and walking a local cursor, plain natural body 41 (104 B) [35] (the volatile parameter cannot bind
+// to it); the helper `static inline` or `inline` 21/28/41 (same code), plain `static` (the file is /Ob1: out of line) 50
+// (91 B), natural 56 (87 B), 0xb61d0 49; `start += (long)string` after the clamp with the cursor helper, plain 41 [35]; the
+// natural body with no length local 28 [6] (plain 41); the sign and bound tests merged into one `&&` 28 [6] (plain 41).
+// Reading of the natural listing: only start and the walk differ (start arrives in EDX and stays, the walk takes EDI saved
+// around the loop; retail moves start to EDI at entry and walks in EDX), and retail loads the string into EAX before
+// `add edi, eax` where ours folds the read.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

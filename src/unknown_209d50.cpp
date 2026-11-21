@@ -305,6 +305,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // + argument_index` 95; the allocation stored through a type-punned `*(void **)&arguments` 95 (all promoted to one register
 // with the result, no spill); the parameter types copied into a local at the top 95 (same code); `long *result =
 // arguments = allocation` with a plain pointer 95. VC promotes every non-volatile address form tried here.
+// M3 lane 1 r151 (h2m fast with 0x2099f0, which stays matched; volatile-free forms): `if (!result) return NULL; return
+// arguments;` 103 (286 B); the count test as an early `return result;` ahead of the type test 83 (284 B); the test held in
+// a named `evaluate` bool 95 (266 B); the tests nested with `result = NULL` first in the inner arm and the element passed
+// straight 83 (277 B); re-measured: `result = NULL` first with the element passed straight 83, the copy declared just
+// before the test 95.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
