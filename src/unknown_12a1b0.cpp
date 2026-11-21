@@ -2610,6 +2610,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Gain-phase handle, gated pitch-phase handle, early ring head and their four combined forms: 305 each.
 // All three with complete play-state storage: 305. NOT kept: the handles and ring head leave the
 // opening code intact. The full state still reserves 0x12c, with one extra scalar word.
+// Shared datum slot 305, One pool read at the datum latch 305, Shared datum slot and latch pool 418,
+// Shared datum slot and latch pool with explicit start branches 418, Shared datum slot with complete
+// request 305, One pool read at the datum latch with complete request 305, Shared datum slot and latch
+// pool with complete request 418, Shared datum slot and latch pool with explicit start branches with
+// complete request 418.
+// NOT kept: Sharing either datum value alone ties. Sharing both raises the score to 418. The complete request reserves 0x12c against retail 0x128 while preserving the opening extent.
+// The 0x120 frame, datum-handle spill and pitch-range register homes still differ.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

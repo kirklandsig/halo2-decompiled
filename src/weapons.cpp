@@ -3249,7 +3249,7 @@ struct s_ammo_conversion_entry
 // is left is the register colouring and one test - retail keeps the destination weapon in EBP and the other weapon in
 // EBX, sets the acquisition flag with setg on the clamped count and reaches the conversion entry without a nullable
 // test, while this build holds the destination in EDI, spills the other and tests the entry for null.
-// score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
+// Earlier measurement 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
 // Earlier: frame 0x24 versus 0x20; destination/tag saved roles and conversion staging differ.
@@ -3472,6 +3472,12 @@ struct s_ammo_conversion_entry
 // formed before comparison 214, shared slot with all type tests reread 212, shared slot and typed block 190,
 // also full-width total selection 191. NOT kept: the forms tie or regress and retain the saved-register
 // divergence.
+// Transfer amount and mode guards 190, Transfer amount and nested mode admission 190, Positive
+// acquisition with transfer guards 202, Positive acquisition with nested mode admission 202, Final mode
+// selects complementary acquisition outcome 203, Final mode selects positive acquisition outcome 199,
+// Final mode outcome with three kind reads 218, Positive final mode outcome with three kind reads 215.
+// NOT kept: The separated transfer gates tie. Positive acquisition shortens the body, and the final mode branches and kind reloads raise the score.
+// The 0x20 frame agrees. The destination home, delayed save and conversion-entry join still differ.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {

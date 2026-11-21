@@ -2647,6 +2647,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // One completion result through the sole return, byte/bool/short/long 708/708/672/669;
 // the same result guarding the whole pending tail 708/708/672/669.
 // NOT kept: every form lengthens the callback and loses the agreeing dispatch prefix.
+// Animation and base timers with case admission 556, Animation and base timers with shared rejection
+// 628, Turn and base timers with case admission 627, Turn and base timers with shared rejection 647,
+// Animation, turn and base timers with case admission 688, Animation, turn and base timers with shared
+// rejection 709, Timer object guard and separate animation start tests 431, Timer object guard and
+// branch stores 592.
+// NOT kept: Grouping the timer cases adds subtype tests and changes the agreeing entry. The separate animation start tests tie, and branch stores disturb allocation.
+// The bounds branch still reaches the late success epilogue and the countdown tests have different joins.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
