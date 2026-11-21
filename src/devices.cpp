@@ -1800,6 +1800,11 @@ bool function_108530(long device_index, long name)
 // clamps as if-statements 116 (same code); the ramp-down minimum on `duration - ramp_up_time` written twice (no
 // `remaining`) 131 (528 B, callers 31/13); the deceleration distance reduced from the motion's field instead of
 // `distance` 116 (same code); that with the if-statement clamps 116.
+// M3 lane 3 r293 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, `ret 0x14` as retail): the
+// ramp-down minimum as `if (ramp_down_time > remaining) ramp_down_time = remaining;` 116, the ramp-up minimum as `if
+// (ramp_up_time > duration) ramp_up_time = duration;` 116, both 116; the half ramp-down as `0.5f * ramp_down_time` 116; both
+// half times as `/ 2.0f` 116 (all the same code); the ramp-up minimum ahead of the ramp-down zero clamp 138 (528 B, callers
+// 31/13).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
