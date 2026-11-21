@@ -1006,6 +1006,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // NOT kept: the 307 forms require reference bindings and still differ at the gate
 // and settings stack slots. They reach retail length and move the first difference
 // to +0x43. The larger 315 and 317 forms also retain match-only bindings.
+// M3 lane 8 r219 (h2m fast with 0x247fd0 and 0x248cc0, both MATCH; control 334). Reading: retail gives EDI to the definition
+// pointer (loaded once after the 0x249170 call and used by the +0xc and +0x16 tests across the motion branch); ours gives EDI to
+// the address of the record's +0x28 vector, shared from the second rotation call through the collision copy to the bit-4 adds,
+// and reloads the definition at each test; retail re-forms that address at each site. Forms: one function-scope effect pointer
+// assigned at the gate and at the velocity 334 (same code; gate only 334, velocity only 334); the bit-4 adds through the
+// existing vector3f_add 341; the collision copy through the existing vector3f_assign rows 359 (1665 B); the second rotation's
+// output through a named vector pointer used for both arguments 334 (same code); the kind test as a switch with case 0 and
+// default 349. Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

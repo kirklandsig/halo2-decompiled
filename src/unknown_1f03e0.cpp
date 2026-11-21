@@ -1768,6 +1768,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // bit as a `byte` 590 (3025 B); as a `(bool)` cast of the masked shift 590 (3025 B); declared ahead of flying 238 (first
 // difference +0x5); the general arm's delta through the existing vector3d_from_points3d(current, &scaled, &delta) 485
 // (3052 B); its step computed ahead of the limited copy 244. Body unchanged.
+// M3 lane 8 r219 (h2m fast with 0x1f0450 and 0x24590, both MATCH; control 234): the general arm's input components read into
+// three named reals (i, j, k declared in either order) for the length 506/506 (3026 B); the direct arm's limited pair computed
+// first with the delta copied from it 433; the step computed ahead of the delta 577 (3031 B); the general arm's length through
+// the existing magnitude3d 297 (3036 B). Retail loads the length's components k, j, i; ours j, i, k. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
