@@ -282,6 +282,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // point into its own `point3f` then copied to the shared point 131; the vector declared ahead of a bare point assigned from
 // the global 19; the else arm's copies through a `transform4x3f const &` bound to `**local_4` 19, the node arm's two calls
 // through that reference 19 (the 19s the same code: transform EBX, y EBP, the constant 1 shared).
+// M3 lane 16 r171 (h2m fast with 0x200e60 and 0x142570, MATCH each time; control 19): the record fill in its own `{}`
+// block 19; the address local declared after the point and the vector 19; the node count declared at function scope 19;
+// the transform, point and vector renamed `transform`, `point` and `facing` 19; the address local declared inside the node
+// arm only, the else arm copying from the parameter directly 19 (all the same code: transform EBX, y EBP, constant 1
+// shared).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
