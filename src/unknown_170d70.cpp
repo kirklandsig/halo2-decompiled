@@ -1102,6 +1102,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // match, and folded into the subscript it is plain 105 (the fast build gives 11 for both, so
 // confirm these forms with the plain check). Retail multiplies the key before pushing it. NOT kept:
 // the output reference changes the creation span, and the selected-plane forms change its two stores.
+// Projection-typed output 11, output through identifier 11, volume reselected on success 13,
+// early volume-array base with shared key 105, rectangle through leading coordinate 11, native
+// count postincrement in the admitted arm 11, rectangle binding after displacement 11, and camera
+// row before output selection 13. NOT kept: the gains rely on the one-use displacement or pointer
+// and leave the camera table and key in exchanged registers.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -2395,6 +2400,10 @@ struct s_camera_reference_171830
 // Shared scale and in-place or separate negation 158/158; rear-vector setter 155;
 // center-point setter 155; shared negation with center setter 158; paired setters 155;
 // zero-initialized rear vector 155; scaled-vector setter with shared negation 158.
+// Packed low bits 155, packed unsigned flag 155, both packed fields 155, packed signed
+// flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
+// threshold 264, and constrained comparison assignment 291. NOT kept: packed views
+// leave the early zero unchanged, while signed and split forms lengthen the plane path.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

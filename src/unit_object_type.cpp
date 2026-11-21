@@ -3228,6 +3228,10 @@ void function_c5740(long unit_index, bool start)
 // branch, nested validation, named object definition, fallback guard and separate fallback tags
 // 123 each with the shared accessor. NOT kept: the accessor gives a 331-byte body and changes the
 // matched caller. The definition index and pool data keep their opening homes.
+// Damage-presence test before material lookup 105, masked damage slot before/after material
+// lookup 91/93, selected tag instance 97, typed damage/material/both playback indices
+// 97/97/97, and inline effect dispatcher 97. NOT kept: the six- and four-point gains
+// leave the prologue different and split the damage index into two register values.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5619,6 +5623,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // compare final clipped values 195/195, disabled early return 186/188 (scalar/paired angles).
 // NOT kept: all reach 767 bytes but raise the score. The early cross load and final
 // x87 forward-scale lifetime still differ.
+// Inverse transform into separate storage 300, in place 278, or through its returned
+// pointer 303. Reconstruction through the unit-scale transform with separate or
+// reused storage 233/233, in place 199, and paired transforms with separate or shared
+// direction storage 353/353. NOT kept: the transform forms shorten the body and
+// raise the score without recovering the first cross schedule.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

@@ -961,6 +961,11 @@ void __stdcall function_1160c0(real dt)
 // base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
 // the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
 // +0x20.
+// Displacement before position publication with velocity setter 150, existing point
+// difference 150, or component stores 150. Complete velocity before commit 346, scaled
+// difference output before commit 343, saved old position 346, next prediction after
+// commit 175, and coordinate loop for the staged velocity 170. NOT kept: all regress,
+// and the segment carrier and +0x20 spill persist in the closest forms.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
