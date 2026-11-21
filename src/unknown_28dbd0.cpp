@@ -73,6 +73,7 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax I (11-20): no new form, no lower score (173): the permutation search over the body ran on the full image (2 tries in 311.4 s, best 173 against a baseline of 173); the frame is still 0x11c against retail's 0x118 because the rotation helper gives its cross vector a stack home where retail keeps the components in registers, and the cosine is still taken with fcos before the sine where retail takes the sine first and stores it after the dot.
 // MiniMax D (11-20): no new form, no lower score (173): the frame is still 0x11c against retail's 0x118; retail's
 // homes are 0xc (the random int), 0x10 (the rotation's cosine), 0x14/0x18/0x1c (the angle vector), 0x20 (the second
 // draw's int), 0x24 (the rotation's sine) and 0x28/0x2c (the rotation's temps) with a hole at 0x30, ours are 0xc,
@@ -701,6 +702,19 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // cosine, sine, projection 237, the dot first or named 236 / 236, sine and cosine as arguments 236, the named-draw
 // jitter 234 (1227), cross terms declared j, k, i 226 (1216) [171 / 41], include/axis_rotation.h's statement shape 234
 // (1216). No form reaches the 0x118 frame with the zero in XMM3. Helper and body unchanged.
+// M3 lane 8 r206 (h2m fast with 0x28dab0 and 0x256bd0, both MATCH; control 173, register/offset-masked aligned 66): the
+// frame word is the cross vector's aggregate home (cross i and k spilled at +0x24/+0x2c, its unused j slot the hole at
+// +0x28); retail's spills are separate scalar slots (cosine +0x10, sine +0x24, cross j +0x28, cross k sharing +0x20 with the
+// second draw's integer). Tried: the jitter as one real_point3d_set with both draws as its arguments and z passed back 215
+// (block order moves); the cross scale folded into the sums re-measured 193 (frame 0x128); all three scales folded into the
+// sums 228 (1198 B); the cross taken as heading x axis and subtracted with its sine scale folded into each row 199 (1219
+// B), that with sine and cosine taken first 197 (1219 B); the helper taking sine and cosine from the caller (named, sine
+// first, right before the call) with its body otherwise unchanged 230 (frame 0x120).
+// Published forward as rotation source with direct/staged cross at tilt or entry
+// 235/235, 256/256, 295/295, 271/271. The launch velocity field as the cross
+// workspace with scale at the producer or at the sums 276/276 and 252/252.
+// Completing the rotation in the same field scores 282/282 and 263/263.
+// NOT kept: the velocity-field forms lengthen and keep different frame and trig homes.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

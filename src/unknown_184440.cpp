@@ -181,6 +181,9 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// MiniMax D (11-20): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so every later slot sits
+// at another offset, and the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI); the 0x48e70 call sets
+// the rest and its definition is in another machine's file: BLOCKED-BY 0x48e70.
 // score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
 // the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
 // EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
@@ -433,6 +436,7 @@ __forceinline bool function_184448(long arg_0)
 // its entry-then-count stores; a moved declaration, so match-only), the same with the count assigned before the entry 958
 // (same code); that with the lookup as one `&&` test and the table pointer declared first 955 [543] (the table load then
 // sits above the tests where retail loads it after them), with the table global written at both uses 971 [542].
+// MiniMax G (11-20): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later home sit at a different offset, and the scene and geometry homes are still rotated from retail's (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx).
 // MiniMax C (11-17): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later slot sit at a different offset, and the scene and geometry homes are rotated (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx); the earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 // 463: shared two-axis projection at vertices/samples/both 1034/1056/1033, or with long
 // vertex traversal 1037/1083/1037. Both with Boolean orientation 1037, direct table

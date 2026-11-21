@@ -880,6 +880,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // remaining 718 (458/193); height first 718 (455/217); colours, intensity, distance, weight, height, remaining 718
 // (455/188); colours, weight, remaining, scalars 607 (488/201). None gives the in-place scalar products. Diagnostic: 1 to 7
 // dead initialised locals 606-608 (al 487-488/222-232), so the product sides are not a symbol-count phase here.
+// Condition-declared record, cached-record initializer, cache-miss scenario receiver, and conditional scenario entry:
+// short slot 607/683/683/705; signed-byte slot 700/700/700/607.
+// The last form ties in 3830 bytes with the provider, sentinel and palette registers displaced. Body restored.
+// Split cluster lookup into ordinal before table, table before ordinal,
+// displacement before table, or typed table before ordinal 606/606/606/606.
+// With the signed-byte slot 699/699/699/699. NOT kept: the short forms gain
+// one point and retain the cluster-base, provider and palette registers.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

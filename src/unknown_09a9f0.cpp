@@ -226,6 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 8 (was 49): The entry and header check agree. The object lookup still uses movzx and an extra index store.
 // MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
 // makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
 // one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
@@ -234,7 +235,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // MiniMax H (11-20): the false result is now set before the creation call and the true one at the attachment, the entity's index is
 // stored again between the header test and the object read, and the object read's index is a word, so the two addresses are formed
 // independently; the second store is one more than retail makes and the object read masks with movzx where retail masks with and.
-// score 8 (was 49): the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
+// Earlier score 8 (was 49). the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
 // independently with the table's data pointer reloaded. The object read masks its index with movzx where retail masks with and,
 // and the index is stored once more than retail stores it.
 // share a scaled index and data load where retail forms each address independently.
@@ -980,6 +981,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
 // the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
 // from the two separate lookups, not the other way round.
+// Attachment helper after repeated/guarded single publication 42/73; invalid-index guard 69; two guards 73; header rejection first and full index 75.
+// Attachment helper with late success 79; publication in the admission test 77; single accepted-or-rejected publication 75. NOT kept: all raise the score.
+// MiniMax R (11-20): no new form, no lower score (8): the second lookup truncates its index with a word cast where
+// retail masks the full-width index, and the object index is stored again inside the branch where retail stores it
+// once; the shared mask form gives both lookups one index computation (42) and the store-free form moves the value's
+// stack home and adds a frame pointer (77).
 // MiniMax G (11-20): the second lookup's index is only independent of the header lookup with the word cast,
 // and that gives retail's `movzx ecx, ax` where retail has `mov ecx, eax; and ecx, 0xffff`; an unsigned-long
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still
@@ -1470,6 +1477,26 @@ bool c_projectile_type::v8(long a, long b)
 // full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
 // a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
 // flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
+// M3 lane 4 r237 (fast with 0xa5e70, MATCH each time; control 5), with the full-width mask: the group field read in place at the
+// NONE test and inside the masked address at the compare and the store 15; the masked entry address (used twice) computed
+// before the NONE test 24 (187 B, first +0x70: the head then has retail's object ESI and flags EDI with the mask, but the entry
+// is formed ahead of the compare); a two-use `long group = index & 0xffff` before the NONE test with the address written at
+// both uses 25 (188 B, the head flipped the same way), the same local inside the NONE block 15; a one-use masked index, group
+// data base or scaled offset before the test 12 each (forwarded to the use); the entry declared outside and assigned in the
+// NONE block 12; the call's mask from `b` with the object looked up after the call 18. Diagnostic (semantics changed,
+// reverted): the call's mask 0x3fe 13, still swapped. Reading: only a two-use group computation anchored ahead of the NONE
+// compare gives retail's head pair with the mask.
+// M3 lane 7 r201 (fast with 0xa5e70, 0xa02e0, 0xa0be0, 0xa3a00 and 0x9d450, matched each time; word read 5, mask control
+// 12): 0xa5e70 given a fourth, unused parameter taking the definition by const reference, every v27 passing `this`, and no
+// definition copy here, 55 (the unused argument and its temporary are both removed: no `push ecx`, so the dead store
+// is not a dropped by-reference argument); the definition copy as a plain local with an unreachable call taking its
+// address (diagnostic) 7 with the word read, 14 with the mask (the store stays but lands one instruction early, flags
+// still ESI with the mask). Diagnostics with the mask (unreachable address-takers, reverted): `b` kept in its stack home
+// with the flags a real copy made after the object 12 (same code: the flags still take ESI, so it is not the parameter
+// against a local), `a` in its home 12, `d` in its home 60 (196 bytes). Reading: matched 0xa02e0 (one object read, two
+// flag uses) gives the flags ESI, so ESI goes to the heavier of the two; here both have three uses and retail gives the
+// tie to the object, ours to the flags. With the mask, the definition copy's pointee typed const (as the file's other
+// copies are), typed as the const device type, or as `void const` 12 each (same code).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
