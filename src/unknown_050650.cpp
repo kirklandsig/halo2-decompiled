@@ -1012,6 +1012,11 @@ struct s_collision_result_buffer_1697c0
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
+// Yaw-axis reload after hit processing, before the fraction test, or at trace return
+// 370/317/314. Axis pointer before the draws, after them, or between the turns
+// 282/282/283. Axis reference before candidate initialization or after the pitch turn
+// 282/283. NOT kept: the carried pointer changes the matched caller and the per-attempt
+// bindings lengthen the sampler. The startup zero and trigonometric spills still differ.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

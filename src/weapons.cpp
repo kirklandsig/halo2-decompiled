@@ -3497,6 +3497,10 @@ struct s_ammo_conversion_entry
 // single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
 // transfer cap inside the successful search 199. NOT kept: the ordinal searches shorten the body
 // to 718 bytes, and the forms at retail length still miss the destination and key registers.
+// Destination magazine bank 207, source bank 190, both runtime banks 207, both runtime
+// arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
+// and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
+// bank shortens the body, and retaining the tag bank does not recover the destination save.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3828,6 +3832,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
 // the magazine debit where retail stores it after admission and the magazine update.
 // The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
+// Split admission after balance, heat, the per-shot minimum or the holder test, then
+// with separate balance and heat blocks, balance and minimum blocks, heat and minimum
+// blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
+// the extra frame word and the early magazine tag spill.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4946,6 +4954,12 @@ struct s_weapon_projectile_creation
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.
+// Fixed axis components with complete result or direct output 1154/1190; fixed axis
+// with projected products and direct output 1228. Projected products before direct
+// output or complete result 1215/1138. Named cosine complement with direct output
+// 1215. Shared dot and projected products before complete result or direct output
+// 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
+// and raise the score. The separate clipping point and opening rotation remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

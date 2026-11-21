@@ -3224,6 +3224,10 @@ void function_c5740(long unit_index, bool start)
 // record pointer 27. A 600 s permuter run on the 27 form (full image 26): 24 tries, none below 26. Left at 27: the weapon
 // definition load's destination (ECX for retail's EAX), the 0x188180 argument setup (ours loads the material first into
 // EDX, retail unit_index first into ECX), the first 0x189060 call's unit register and the fallback's table register.
+// Weapon view for the gated slot or at both slot uses 97/97. Shared slot accessor, fallback-first
+// branch, nested validation, named object definition, fallback guard and separate fallback tags
+// 123 each with the shared accessor. NOT kept: the accessor gives a 331-byte body and changes the
+// matched caller. The definition index and pool data keep their opening homes.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
