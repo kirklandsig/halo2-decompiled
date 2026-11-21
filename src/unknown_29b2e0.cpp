@@ -826,6 +826,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // second through rotate_vector_170d70 222 (1695 B); the second copy declared ahead of the first 130 (same code); the
 // existing rotate_direction (src/unknown_1eb8a0.cpp) screened with 0x1ecf50 listed, so that its file is in the reduced
 // image (round 84's 817 had it out of line): both rotations 222 (1695 B), the first only 222, the second only 130 (same code).
+// M3 lane 7 r210 (h2m fast with 0x29b990 and 0x170d70, both MATCH; control 130): the second axis as one aggregate
+// initializer 130 (same code); the up-vector pointer declared at the top after the object pointer 239 (1710 B); the second
+// copy's depth clear written ahead of the XY vector 130 (same code); a const copy of the object's forward vector for the six
+// cross products 203 (1726 B); the actor's current yaw and pitch read once into const locals 267 (1685 B). Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

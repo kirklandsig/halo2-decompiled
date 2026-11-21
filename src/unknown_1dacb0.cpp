@@ -1617,6 +1617,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // call in the loop body 812 (same code). Reading: ours gives found_mode's dead home to iterator_mode and keeps the candidate
 // at F+0xc, retail gives that home to the candidate and keeps iterator_mode at F+0; retail also carries the loop's result
 // in ECX past the output stores (its NULL exit reloads it, hence its `jne exit; jmp top` loop tail).
+// M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
+// same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
+// aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
+// `or eax, -1` after loading the iterator's mode, ours reuses the compare's NONE); that with the output defaults chained
+// after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
+// first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
+// 1011 (2837 B). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2182,6 +2189,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // `= c_type_709360()` 812 (same code); a redundant `else { animation_id = c_type_709360(); }` arm 1013 (2837 B); the
 // outputs set by one chained `= NONE` 812 (same code); the found id copied into a const local for 0x1dd9d0 812 (same
 // code); the first request's keys read from the iterator's input fields 943 (2839 B). The twin's forms are in its note.
+// M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
+// same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
+// aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
+// `or eax, -1` after loading the iterator's mode, ours reuses the compare's NONE); that with the output defaults chained
+// after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
+// first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
+// 1011 (2837 B). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
