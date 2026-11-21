@@ -491,6 +491,18 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // 457 (frame changes); that flow with sine and cosine by const reference 368 (same code); that flow with the cross terms in
 // the first copy's text (`axis->j*(1-c)*axis->i`, `axis->k*(1-c)*axis->i`, `axis->j*(axis->k*(1-c))`) 347 (1816 B, masked
 // 137); that flow with up.k moved up beside left.j 246 (1804 B, masked 119).
+// M3 lane 3 r287 (h2m fast, control 21; screened on lane 7's 2-point form, the up copy ahead of the negation and a named
+// `position_z`, which leaves only the second rotation copy's `t * j * i` against retail's `t * i * j`): redundant paren
+// pairs (1-3) around the helper's whole i-j term 366 / 2 / 366, around `1 - cosine` 390 / 104 / 390 (control 21), around
+// a single leaf of the i-j term (i, j or t) 2 each, around the call arguments of either rotation call (axis, sine,
+// cosine, `&rotation`) 2 each (21 on main's body); around the angle or a scale product ahead of the switch 391 / 85 / 391
+// (shift 2 swaps the two copies' shapes: the first copy then takes the second copy's code; the multiply order stays j
+// before i), around the integer mask 2; the i or j leaf read through a `real const *` local, or t through a `real const
+// &`, with shifts 0-3: 2 / 391 / 85 / 391 each; the i-j term as `(t * i) * j` 67 / 413 / 129 / 413, `t * (i * j)` and `(i
+// * j) * t` 35 / 394 / 113 / 394, `tj = j * t; tij = tj * i` 2 / 391 / 85 / 391; the second-axis cases listed first 65
+// (the first-laid-out copy takes the first copy's code); a block-scoped axis pointer local for the second call 289, for
+// the first 420; the cosine through a `real const &` for the second call 393. VC7.1 reassociates this product per copy,
+// and nothing screened changes the second copy's leaf order alone.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

@@ -273,7 +273,8 @@ struct s_unit_animation
 	short unknown06;
 	byte unknown08[0x68 - 0x8];
 	long unknown68;
-	byte unknown6c[0x7c - 0x6c];
+	word flags;
+	byte unknown6e[0x7c - 0x6e];
 	long name;
 };
 
@@ -7186,7 +7187,7 @@ done:
 // addresses. The side bit cannot have both halves: every form that keeps retail's sete/test/je (a bool local, with
 // either the compound or the assignment form in the branches, or a signed char state pointer) makes the compiler merge
 // the two arms into one load of the byte, one register update and one store.
-// score 125 (was 187): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
+// Earlier score 125 (was 187): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
@@ -7384,6 +7385,13 @@ done:
 // paired animation/state setters 125, shared setters for all bits 121, separate side-arm setters 130,
 // nested early animation gate 125, typed animation object 129. NOT kept: all shared setters gain
 // four at retail length. The byte results and the side and animation memory updates still differ.
+// MATCH (m3 lane 3 r287; fast and plain, 125 -> 0, callers 0xc42e0 MATCH and 0xca0b0 62 unchanged): each definition-flag
+// test in its own named bool with its own `if` (retail's dead `and cl, 1` byte stores and the hoisted `mov ecx, 2`) 33;
+// the side bit through the existing setter on the byte (`sete` / `test`, the arms still merged through AL) 41; the
+// state read as word flags, as the other readers of that offset do, with the existing word setter (retail's `or` /
+// `and byte ptr [edi]` in each arm) 57 positional; the animation block's word flags at +0x6c named as a field of its own and
+// ORed through UNIT_ANIMATION 23 (a dead `lea` of the field where retail has a dead `add` of the block's base); the
+// animation block in a named pointer for that OR: MATCH.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7402,12 +7410,16 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		if (planar_normalize((vector2f *)&toward) > 0.0f && normalize2d(&facing) > 0.0f)
 		{
 			angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
-			if (!TEST_FIELD_BIT((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
+			bool facing_fixed = TEST_FIELD_BIT((definition->unit.flags >> 9) & 1);
+			if (!facing_fixed)
 			{
-				if (function_e70b0(unit_index).value == NONE)
+				if (unit->type == 0 && unit->parent_index == NONE)
 				{
-					facing = toward;
-					turn = true;
+					if (function_e70b0(unit_index).value == NONE)
+					{
+						facing = toward;
+						turn = true;
+					}
 				}
 			}
 		}
@@ -7442,7 +7454,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	{
 		return false;
 	}
-	byte *state = (byte *)unit + unit->unknown33e;
+	word *state = (word *)((byte *)unit + unit->unknown33e);
 	if (flag)
 	{
 		function_ba350(unit_index, 0.1335f);
@@ -7471,14 +7483,19 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		{
 			unit->unknown1f5 = 0;
 		}
-		*state = (side == 3) ? (byte)(*state | 8) : (byte)(*state & ~8);
+		word_flags_set(state, 3, side == 3);
 		if (!animated)
 		{
-			*((byte *)unit + unit->animation_offset + 0x6c) |= 1;
+			s_unit_animation *animation = UNIT_ANIMATION(unit);
+			animation->flags |= 1;
 			*state |= 4;
-			if ((definition->unit.flags >> 1) & 1 && !function_a7670(unit_index))
+			bool dies_unanimated = TEST_FIELD_BIT((definition->unit.flags >> 1) & 1);
+			if (dies_unanimated)
 			{
-				function_d6bc0(unit_index);
+				if (!function_a7670(unit_index))
+				{
+					function_d6bc0(unit_index);
+				}
 			}
 		}
 	}
