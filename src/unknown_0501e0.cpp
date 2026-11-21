@@ -712,6 +712,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // rows 216/217. Per-coordinate scaled selection with direct/shared scale tests,
 // aggregate 289/256 and loop 303/279. NOT kept: the four displacement forms gain at
 // most five. The frame stays 0x20, and the second displacement and coefficient homes differ.
+// M3 lane 16 r166 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221, aligned
+// 249). On lane 8 r201's macro lead (re-measured 252 at 1136 B, frame 0x14, aligned 172): the camera scale read into a
+// named local between the offsets and the views 256 (aligned 169; first difference +0x2); the first coefficient
+// (right.i) read into a named local there and used in both views 277 (1160 B, aligned 187); both locals, scale first
+// 250, coefficient first 250 (aligned 174 each); the lead with the second offset loop first re-measured 249 (aligned
+// 174), with both locals 249 (aligned 172). No named local makes retail's choice (scale loaded into the origin z's
+// XMM6 after the last origin use, right.i carried in XMM7 across both views). Body unchanged.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

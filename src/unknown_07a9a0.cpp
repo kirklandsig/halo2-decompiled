@@ -1734,6 +1734,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // test as returns (also with two of its five conditions) and expands with everything else when the test is a value
 // or sets `result`; a test at 0x71730's call changes nothing.
 // MiniMax B (11-20): no new form, no lower score (871): the frame is 0xd0 against retail's 0xb4 and retail calls 0x192e60 out of line where ours expands it; the histogram as a long array reads 911 and as a memset read 936, both worse than the kept body.
+// M3 lane 16 r166 (fast with 0x73530, 0x63220 and 0x192e60, all MATCH unless noted; control 871 at 2780 B, aligned 1016).
+// Retail's own 0x63220 calls 0x192e60 under its one test and retail's loop here has the lookup expanded (0x63220's body
+// brought in), so retail expands that lookup only at loop depth. The top lookup through a file-local inline wrapper
+// 871, forced inline 871 (same code: the wrapper folds and the lookup is still expanded); through an inline helper that
+// reads the index into an out pointer 1009 (2624 B: the helper itself stays a call); the lookup's argument read from
+// the session again 875 (2796 B); the lookup after the summary read only 858 (2796 B, 0x73530 lost, 8). Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
