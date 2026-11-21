@@ -1550,7 +1550,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 60 (was 60): The 0x14 frame and entry registers agree. At +0xe the inactive branch spans the longer
+// score 60 (was 60): The membership load displaces the zero result from EAX. Player bit and entry size use
+// opposite saved registers, and capacity failure has a separate zero exit.
+// The 0x14 frame and entry registers agree. At +0xe the inactive branch spans the longer
 // body. The first operational difference uses EAX for the membership word, where retail needs the zero result
 // through the capacity gate. Retail leaves the retained mask and written count in stack homes and carries a
 // packed entry cursor beside the ordinal. The trials change when the actual entry cursor is acquired, advanced
@@ -2037,6 +2039,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
 // 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
 // MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
+// Length from input capacity 183, separate payload budget 178, or cursor displacement 196;
+// record-end payload placement 145; zero-based removed bits with repeated retained reconstruction
+// 157 or shared narrowed reconstruction 91; byte length accumulated in a local or the result
+// 159/159. NOT kept: every form regresses and the record-end and running-length forms
+// change the matched caller.
 // Emission acquisition/cursor 184; summary cursor 69; separate cursors 184; shared cursor at latch/acquisition
 // 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
 // NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes

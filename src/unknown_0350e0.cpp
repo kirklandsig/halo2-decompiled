@@ -498,6 +498,14 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // shared t * k) with this function's cosine/sine parameters: that file's store order 382 (1735 B, frame changes), retail's
 // pair order (forward.j ahead of left.i, forward.k ahead of up.i, left.k ahead of up.j) 368 (1747 B), no shared t * k 382,
 // squares as scalars 377 (1741 B), squares as scalars in retail's pair order 355 (1759 B).
+// The first-axis register assignment and the early square spills still differ.
+// Scale then two in-place scaled adds 371. Separate up and left scales then forward scaled add 468.
+// Left scaled add then separate forward scale and sum 454. Three independent scales before the two sums 632.
+// Distinct up-plus-left vector 478. Up product setter then two scaled adds 371.
+// Three scales with a separate two-axis subtotal 648. Two-axis product setter then forward scaled add 418.
+// NOT kept: All eight forms grow the body and raise the score. The form with a separately scaled forward
+// contribution keeps the 0x90 frame and the first difference at +0x10, while the other seven change the
+// frame. The matched caller at 0x137ed0 stays exact throughout.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2784,6 +2792,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // equality-first with helper or bound arms 496/507; bound selected raw ratio or conditional
 // input 417/418; named distance span and numerator with helper or bound arms 487/501.
 // The distance result still does not bring the unity store forward with the three tint stores.
+// Named products in the forward, angular attenuation and camera-angle dots alone 500/281/281;
+// forward+attenuation, forward+camera, attenuation+camera and all four dots 500/500/281/500;
+// all four with finished camera sums 500. NOT kept: the 0x94 frame stays, and the opening
+// delta and axis schedule still differs.
 // M3 lane 14 r132 (H2M_FAST, = full 281 for the control): the opacity arms negated with axis_scale ahead of the angle and
 // delta assigned in each of the six orders 275-276 (2286 B; reorderings, match-only); with `real attenuation = 1.0f;`
 // declared beside `animated` 504-505 (2290 B: the first clamp then stores in each arm and keeps the value in XMM4 as
@@ -2794,6 +2806,20 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // at the top of the 275 form 499-501 (the homes move), in the end block, ahead of the camera angle or ahead of delta 496
 // every n (inert: the camera sums' operand sides and the forward block do not follow the symbol count here).
 // MiniMax H (11-20): no new form, no lower score (417); the delta and reflection XMM allocation and the unity store schedule still differ.
+// M3 lane 5 r223 (H2M_FAST, control 281, aligned 142/65 exact/register-masked; the one extra byte is the loop's
+// draw point x product, ours `movss xmm1, reflected.i; mulss xmm1, xmm0` where retail multiplies by memory):
+// redundant paren pairs (1 to 3) around the forward's first product or one delta term 487 each (one instruction
+// fewer later, the delta/forward block unchanged), around a camera sum's first product or the draw point's x product
+// 281 each (same code); `attenuation` declared beside `animated` (retail's 1.0 store beside the colour's three) 503
+// (2290 B, aligned 164: delta then x, y, z as retail but the colour stores move after the forward block); that with
+// delta assigned i, j, k 504; with reflected as three statements j, i, k 495 at 2285 B (aligned 171), with delta
+// i, j, k too 496; the opacity arms negated with axis_scale ahead of the angle 276 (aligned 136; a swap, not kept),
+// with delta i, j, k 275, with the attenuation and reflected forms 496, with all four 497.
+// Displacement aggregate 280, with staged dot 486; projection then reflection 506,
+// projection then separate subtract/scale 499, per-axis stages 493, aggregate plus
+// reflection stages 505. Near endpoint before reflection 503 or between projection
+// and reflection 364. NOT kept: the aggregate gains one point and leaves the delta
+// registers and branch span different. The other forms regress.
 // Camera origin by value with the point difference, vector setter or direct components 541/537/537. In-place
 // position translation 280. In-place projected reflection by scale/difference, setter/difference or
 // scale/setter 554/499/539. Camera origin with shared difference and in-place reflection 595. NOT kept: the
@@ -4314,6 +4340,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // lock 387. Both admission passes 418, removal and decay 410, all masks 415, shifted paired
 // bytes 419. NOT kept: the word-based predicates grow the body, and the retained-prefix
 // and state registers still differ.
+// Copy-out overlap-safe payload, initial value and both 359/381/366; named live count
+// with payload/both 359/366; return the last tested count with payload/initial/both
+// 357/382/354. NOT kept: all regress, and the list and prefix keep their exchanged registers.
 // MiniMax H (11-20): no new form, no lower score (317); the state and prefix registers and the ordinal homes are still exchanged, and the body stays longer than retail's.
 // Swap destination first in paired/fallback/creation/duplicate passes 319/323/317/316. Both admissions, both
 // removals, paired plus creation, or all four 325/316/319/324. Creation ordinal seeded before the guard, shared
@@ -4762,12 +4791,32 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Selected original or scaled projection coordinates 518, with world scale read once 505.
 // World point setter 521, with world scale read once 524, or with selected projection coordinates 508.
 // NOT kept: the smallest frame is still 0x5c and shortens the body; all eight raise the score.
+// Round 499: indexed velocity for speed/advance, normalization, cap, normalization/cap, speed/normalization,
+// speed/cap, all three limit stages, and normalization/advance.
+// Fast scores in order 520/496/490/495/486/503/521/558.
+// NOT kept: Indexed loads for the speed test and normalization recover both velocity memory reads at a 0x5c frame
+// and tie 486 at 2039 bytes. Indexing all three limit stages shortens the function and raises the score. Neither
+// gives the native addressing or frame.
+// The 0x38 frame still needs independent stored-velocity loads and register-only projection results.
 // Y inversion at the moved, stored or both projections 530/486/530,
 // with both inverted and a shared displacement 513. Screen-y result in the
 // projection helper as field, named row or direct expression 517 each;
 // the named row with shared displacement 530.
 // NOT kept: the stored-only form ties; the others add frame storage and length.
 // The independent velocity reads and register projection results remain.
+// M3 lane 5 r223 (H2M_FAST, control 486, aligned 485 of 487 retail lines): the velocity sums written through the
+// indexed state array with the element pointer kept for the reads 492 (2027 B, aligned 456); that with the maximum
+// read at each use 505 (2016 B); the speed test as sqrt(dot3f) on main's body 510 (2011 B); the indexed sums with that
+// test 487 (2036 B, aligned 460); that with normalize3d for the norm block 531 (1990 B). Body unchanged.
+// The excess frame and the separate stored-velocity and projection homes remain.
+// In-place random pointer 485. In-place random reference 485.
+// Random value and output pointer 486. Random value and output reference 486.
+// Double adjustment with a pointer 525. Double adjustment with a reference 525.
+// Accumulated value with a pointer 485. Accumulated value with a reference 485.
+// NOT kept: The four direct-update forms reach retail length and gain one point while growing the frame to
+// 0x64. Passing the previous value separately keeps 0x60 and ties. Naming the double-precision adjustment
+// shrinks the frame to 0x5c and raises the score to 525 at 1995 bytes. The reduced controls for 0x36b50
+// and 0x39e50 stay at 251 and 334.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5838,6 +5887,25 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // reflected corner offsets 441/444, and shared corner translation pass 792/798
 // (scalar alpha/four-channel color). NOT kept: the 224 form recovers frame 0xe0 and
 // 1819 bytes but gains seven. The positive-radius, negative-radius and zero homes differ.
+// M3 lane 5 r223 (H2M_FAST, control 231, aligned 209 / register-masked 192). The corner helper's rows as two
+// steps, a named first pair in each row (`real cx = forward.i * x + up.i * z;` and the y and z rows' first two
+// terms) then the third term and the position: 383 (1802 B, aligned 185); the three products named and the
+// position added after 372 at retail's 1819 B (aligned 218 / 176); each row as one store and two `+=` 614 (2030 B);
+// the rows with the grouping parenthesised 383 (same code as the named pair). With the four-channel colour (alpha
+// stored, 1.0f passed for the rest; 225 alone at 1826 B, re-measured): the named products 358 at 1819 B (with all
+// four channels stored 358); the named pair 367 (1808 B, aligned 175 / register-masked 66: each row's adds then
+// run in retail's order but for x, where ours adds up.i * z into forward.i * x's register); on that, corners 2
+// and 3 (or 3 alone) written into their own outputs and transformed in place 367 (same code: the stores are
+// forwarded). Lead for the next round: the named pair with the colour, 11 bytes short (retail's two surviving
+// offset-y stores into corners 2 and 3). Body unchanged.
+// The positive radius, negative radius and scaled depth still need their retail spill offsets.
+// Aggregate offset before basis 240. Early zero depth 231.
+// Early point setter 385. Early origin initializer 231.
+// Early aggregate and four channels 233. Early zero depth and four channels 225.
+// Early setter and four channels 379. Early origin and four channels 225.
+// NOT kept: All four color forms recover 0xe0. The early depth and origin-initialized color forms gain six
+// points and grow to 1826 bytes. Their first differing spill still keeps the radius at +0xc. The scalar
+// versions of those two forms tie the baseline. Both collision and basis controls stay matched.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

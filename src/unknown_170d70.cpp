@@ -388,6 +388,15 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // through the helper, left as three reals, up as `forward + 1`, both vector pointers declared at the function top, the
 // dot through dot3f): best 84 (1399 B, six dead locals with the named or helper forms); the first normalize stays one
 // instruction long in every explicit-pointer state (the scale ranks below all three forward fields).
+// Deadline range equality, ordered range or while range 380/380/380. Named
+// deadline with for or while range 393/393, or range with alternate up normalization 393.
+// Counted named deadline with alternate forward or up normalization 93/93.
+// NOT kept: the counted forms recover traversal through +0x34a but worsen
+// the score. Pointer-bounded traversal grows by 54 to 66 bytes against retail.
+// Named indexed scheduled time 142, or from a local deadline-array base 161.
+// Shared product difference for the side, corrected up, or both 64 each, or
+// 142 each with the named scheduled time. NOT kept: the product forms tie
+// and the named read lengthens the body without recovering the spill order.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -899,7 +908,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 105 (was 129): The one-word frame, saved EBX and later BP volume index agree. The first difference at
+// score 105 (was 129): The camera table loads late, the key and table registers are exchanged, and the plane
+// lookup uses a different address schedule.
+// The one-word frame, saved EBX and later BP volume index agree. The first difference at
 // +0x10 is the map-miss branch span. At the admitted projection, retail loads the camera base into ECX before
 // the volume count calculation, then holds the camera key in EDX for the multiply and push. The trials use the
 // actual camera stride and test when the camera table base, record, or byte offset becomes live across volume
@@ -1054,6 +1065,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // (diagnostic value: the array then takes ECX at the block top as in retail, the key is loaded twice). 1..7 dead locals
 // on the 22, 13 and 11 forms: no change (not a numbering state). Diagnostics (restored): an extra store of the array
 // ahead of the camera pointer 91, an extra store of the key 110, the count store after the volume pointer 87.
+// Shared camera key before volume selection 106; camera-record size as byte stride 105;
+// key and offset before volume selection 106; table bound before the count with key read after it 106;
+// fixed camera records and shared key 106; entry reference and shared key 106; volume
+// reference with byte table and offset 105; bound volume count and shared key 106.
+// NOT kept: the explicit key coalesces into the same multiply and push schedule.
 // Camera byte base at reservation or entry selection 11/11. Native record base at those points 105/105, with
 // one post-update key 106, or a record address before the volume 13. Byte offset with direct portal field 11 or
 // before the volume 13. NOT kept: the 11-point forms still load the camera base late and exchange its register
@@ -1405,6 +1421,14 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // no named squares 364 (1449 B); the axis components read once into locals 377 (1427 B); the second axis
 // through cross3f_staged 339 (1456 B). KEPT: the second axis through the shared cross3f in place of the
 // file's private copy of it (same code, 337 reduced; the copy removed).
+// Angle pair by aggregate or fields 378/378, with shared tangent 361 or produced vertical field 390.
+// Horizontal or vertical conversion at the matrix call 368/395, double half-angle 345,
+// and doubled projection by addition 337. NOT kept: the addition ties the reduced control.
+// Pair forms enlarge the frame and all other forms shorten the body.
+// Shared diagonal calculation direct, with a named complement, with a named scaled
+// complement, or with a complement accumulator 339/356/386/386. With a shared
+// signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
+// construction and leaves the unity register and square spill different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1593,7 +1617,9 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 37 (was 45): The 0x610 frame agrees. The visited-branch span first differs at +0x36. Retail commits the
+// score 37 (was 45): The reservation publishes the pointer before the pool count and state test. The stride spill,
+// cap reload, corner loads, and recount registers still differ.
+// The 0x610 frame agrees. The visited-branch span first differs at +0x36. Retail commits the
 // used count and tests polygon state before publishing the point pointer. It then spills the scaled step before
 // loading the clipped-vertex cursor. The trials test the native pool members and the order in which the two
 // projection cursors are produced and consumed. Four forms change the remaining stride or recount on the
@@ -1680,6 +1706,12 @@ struct s_point_pool_173520
 // declared before the pointer 9, the pointer declared first 9, in the for-init 9; `index += step` first 121; step
 // declared first 187; an ascending `i` loop over `&clipped[i]` 990 (unrolls); a guarded do-while 72; permuter 102
 // tries in 900 s, best 9.
+// Pool count committed from the saved arena index 42; native count commit with staged slot 60;
+// cap comparison field reference alone 22. With staged reservation and cap and corner references:
+// scoped clipped cursor 9; named offset from two endpoint locals 9; shared arena base 56;
+// state byte scoped to the active arm 9; separate published count and point-offset locals 9.
+// NOT kept: the reference and staged slot forms require an exact match. The nine-point
+// forms retain the late stride spill and reverse the recount registers.
 // Native pool reservation and recount 189; byte stride before/within the count guard 158/173; source advance at
 // the last depth read 127. With the separate bounds and distance bindings and staged reservation: byte stride
 // 156, depth-read advance 125, native arena recount 190, destination stride in the loop update 9. NOT kept: the
@@ -1805,7 +1837,9 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 55 (was 134): The 0x30 frame and all four entry flag homes agree. The first difference at +0x24 is the
+// score 55 (was 134): The selected cluster and portal stores exchange scratch registers with the link and key, and
+// the sentinel load adds two bytes to the publication block.
+// The 0x30 frame and all four entry flag homes agree. The first difference at +0x24 is the
 // empty-queue branch span. The successful clip publication uses CX for the predecessor where retail uses DX and
 // leaves ECX for the key. The retail listing carries the destination rectangle address across clipping,
 // template publication and bounds calculation. The trials test whether that address and the existing input
@@ -1968,6 +2002,14 @@ struct s_pool_view_172840
 // selection forms; propagated). Diagnostics (restored): one extra load/store statement between the selection and the
 // link store gives retail's DX link, ECX key and `or eax, -1` sentinel (126, the stores then reorder); ahead of the
 // selection it changes nothing (138). So retail has one more scratch temporary at the start of the publication block.
+// Widen selected short after rectangle/distance or bitset 150/150;
+// narrow linkage sentinel after rectangle/distance 54. On the portal-before-cluster form:
+// widen after rectangle/distance 150; shared source bitset 201; shared clipped points 41;
+// shared clipped count 108. NOT kept: 41 reaches 868 bytes but reverses the retail cluster
+// and portal stores and shares a point pointer retail reloads. The one-point gain leaves the
+// five-byte sentinel.
+// Default rectangle snapshot before linking or before the key store 272/271.
+// NOT kept: both grow the frame and body.
 // Carried rectangle pointer/reference 55/55, clip bounds receiver 55, clip bounds and point receiver 58, both
 // carried input rectangles 55, entry or polygon input with the destination pointer 55/55, and both inputs with
 // the clip output 55. NOT kept: the first publication scratches and five-byte sentinel stay different at 870

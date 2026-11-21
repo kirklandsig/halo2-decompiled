@@ -3167,6 +3167,13 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // count 63, short body getter 75, nested with getter 75, guarded query rejection
 // 90/103 with long/short selector, unsigned byte count 82, byte with getter 88.
 // The guarded exits defer the EBP save to pool lookup and lengthen the function.
+// M3 lane 13 r133 (h2m fast with 0x1d5120, 0x1c3770 and 0xe0d70; control 63, entry EBX and plain `ret` already retail's).
+// Retail's matched 0xe0d70 reads the +0x3aa byte once and reuses it, so this function's re-read at the call is a
+// reload under pressure, not a second read in the source. `inline` on the definition of 0x1d5120 (its one caller)
+// 63, on 0x1c3770 63 (same code: neither callee's link-time summary steers it); the component index in a named
+// two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
+// `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
+// All restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4491,6 +4498,13 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // key before sine fallback 623, predicate arms 630, key cases with special byte 634.
 // NOT kept: the reduced 602 control differs from full 537. Stationary-first gains
 // three in the reduced image and grows by a byte. Result and rate homes still differ.
+// M3 lane 13 r133 (plain checks; al = aligned differing rows / registers masked, 442/230 on this body). Retail keeps
+// three byte flags in memory (changed +0x11, special +0x12, wall +0x13), this build two (changed +0x12, wall +0x13).
+// The mode tests nested (`if (mode != 3) { changed = true; if (mode != 6) ... }`, retail's store order) 537 (same
+// code but the mode-6 tail's two adds); the grab arm's first weapon through unit_get_current_weapon inside the
+// 0x1012c0 argument after the 0xe5d50 call 605 at 2725 B (al 459/219: the grab block is then retail's but for
+// registers); `changed` renamed `result` 537 (same code); the wall bit read at each of its three tests 536; the
+// special key compared at its one use 598 (2700 B). All restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

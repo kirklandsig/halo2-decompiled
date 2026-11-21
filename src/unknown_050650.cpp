@@ -1004,6 +1004,11 @@ struct s_collision_result_buffer_1697c0
 // in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
 // vector)` 282 (1437 B; 0x297d30 144); its cross terms with the axis as the left operand of each product 270 (same code);
 // its output rows with the cosine product written `cosine * vector->i` 270 (same code).
+// Separate normalizer source and destination for axis 340, clear sample 333, best hit 342,
+// axis and clear 338, axis and best 331, clear and best 343, all three 349. Normalizer owns
+// both the scaled and unchanged direction writes 554.
+// NOT kept: the separate forms grow the frame to 0xb0 and the best-output forms change its
+// matched caller. The complete output form outlines the math and reserves 0xac.
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
