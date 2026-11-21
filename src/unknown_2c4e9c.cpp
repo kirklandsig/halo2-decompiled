@@ -3315,6 +3315,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // loop body 30; the hit as `if (... != map_id) continue;` then the selection and break 33 (76 B); the iterator's stores
 // written pool, datum_index, index 29 (two NONE stores swap). Re-measured: the iterator by aggregate initialiser 15
 // (84 B, the head unchanged; the extra bytes only realign the listing).
+// M3 lane 7 r206 (h2m fast with 0x2c9a58, matched in each): `inline` on the out-of-line definition 30; a file-local
+// forceinline getter writing the field or NONE through an out-pointer and returning a flag, the walk under
+// `if (getter(&map_id))` 30 (the NONE store dies on the threaded path); `inline` with the if/else two-definition id 36
+// (87 B); `long const &` bound straight to the field 30; the hit breaking the loop and the selection after it on
+// `iterator.datum` with the iterator block-scoped 28 (84 B). A 606 s annealing permuter run (32 tries) reached 26 only
+// with a volatile id and a local holding NONE (both forbidden).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

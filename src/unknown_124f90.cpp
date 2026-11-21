@@ -1863,6 +1863,16 @@ long function_2197f0(real gain);
 // cyclic order of registers in both builds (fade_out, inverse, elapsed, 1.0f: retail XMM1 to XMM4, ours XMM4, XMM1,
 // XMM2, XMM3): retail gives the fade-out time the first register, as it would a load kept from its test, and this
 // build gives a named fade-out local the last one and an unnamed one no register at all.
+// M3 lane 16 r167 (H2M fast with 0x1251e0/0x221810, both matched; control 87; body unchanged). Reading of arm 1: the
+// division form (both quotients by the fade-in time, no inverse local) is turned into one shared reciprocal by the
+// compiler, so retail's eager `divss` and `time * inverse` compare follow from it; what differs is that retail keeps the
+// fade-out time in the test's XMM1 for the product and loads the ambience fade into XMM1 only after that product (the
+// register reuse keeps the load late), where this build reads the fade-out time from memory, so the ambience load is free
+// to take XMM4 at the top of the block. On the division form with the ternary clamp (124 at 678 B): the time sum written
+// product first `fade_out * (...) + (ambience - elapsed)` 124, quotient first `(elapsed - hold) / fade_in * fade_out +
+// (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
+// fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
+// the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4815,6 +4825,26 @@ struct s_128ca0
 // char, signed char or byte 120 each, written into the count's low byte through a cast of its address 144, masked
 // into the low byte 127. The controller's synch bits declared in a 32-bit unit (with a long count 134, a byte count
 // 140, a char count 214) grow this body and lose matched 0x127390 (32).
+// M3 lane 7 r206 (h2m fast with 0x1293f0/0x1251e0/0x12a420/0x125e60/0x12a810, matched throughout; control 48; L = the LEAD
+// 17 above, re-measured 17; Lc = L with `char count = NONE`, re-measured 204): on L, a char count declared inside the
+// effect-index block with its NONE in an else arm 204, declared there with the default 204; the count as `(char)0xff`,
+// `signed char`, `'\xff'` or `~0` 204 each, `(byte)NONE` or `byte` 255 17 each, `int` NONE or `unsigned long` 0xffffffff
+// 118 each (only `xor edx, edx` ahead of the extraction left in the count block); the playback byte stored NONE then
+// overwritten under the controller test 200 (1055 B). On Lc: the first controller block as a file-local forceinline
+// helper 204; a file-local pointer-or-NULL controller getter for the first block 59 (1056 B), for both blocks 65; the
+// count step as `synch_count = count - 1` 207; the two packet stores ahead of the pitch lookups 67 (1057 B), the pitch
+// bound read ahead of the permutation 45 (1058 B), the permutation sum swapped 204, the effect-index store first 208, the
+// bound read right after the range 81. A char count with each subset of L's three parts 203-209 (all shift at +0x12a).
+// A 604 s annealing permuter run on Lc (39 tries) reached 165 only with swapped call arguments. The compile-only build
+// gives `or dl, -1` for a char count too and shares nothing, so it cannot screen the swap.
+// M3 lane 16 r167 (H2M fast with 0x1293f0, matched throughout; control 48; body unchanged): lane 12's lead 17 re-measured
+// 17, and `char count = NONE` on it 204 again. On that char form: the count declared inside the effect-index block as its
+// first statement 204, after the controller pointer 204; `count = controller->synch_count--;` 204; the effect index read
+// once into a long for the test and the lookup 204. On this body: both pins' gain through an inline getter returning the
+// decibel value 48 (same code), the getter returning a named decibel local 50 (1054 B). Also on the char form: one
+// controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
+// shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
+// swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5151,6 +5181,16 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // MiniMax C (11-20): no new form, no lower score (484): the frame is 0xec against retail's 0xe8, the channel pointer is
 // `lea ebp,[edx+0xb8]` against retail's [edx+0xa8] (a header offset this lane may not change), the unit index sits at
 // [esp+0x6c] against retail's [esp+0x34] and the -1 constant is held in ebx against retail's esi.
+// M3 lane 16 r167 (H2M fast with 0x220790, matched throughout; control 484; body unchanged). Reading: this build's NONE
+// in EBX is one constant register for the loop-top player test, every NONE compare of the then-path (unit index, both
+// state-global tests, the parent index, the 0x1fc short) and the else arm's two stores, so the 0x155760 result has no
+// register left and is spilled (the frame's extra dword); retail's -1 (ESI) serves only the loop-top test and the else
+// arm, compares in the then-path with immediates and gives that result EBX. The leaf and cluster written once after the
+// if/else from locals initialised to NONE at the loop top (long and short) 543 (2270 B: retail's head, the result in
+// EBX and `cmp esi, -1`, but two NONE registers and frame 0xe4), the same with a long cluster local 543; the location
+// local itself initialised to NONE at the loop top and copied after the if/else 531 (2284 B); the else arm as one
+// chained assignment 484 (same code); the loop head as `function_14de70(...) != NONE` 530 (2298 B). MiniMax E's left
+// rows k, j, i re-measured 432 (the anchor stays +0xb8; not kept, a statement order).
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

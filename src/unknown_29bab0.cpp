@@ -785,6 +785,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
 // and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
 // position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
+// M3 lane 12 r166 (fast screen; control 489, aligned 156, register-masked 43): the 0x47c arm's dot with its operands
+// swapped 489 (same code); `local_24 *= (local_26 * 0.5f);` 503 (3506 B, masked 47: the half product is then formed apart
+// as retail, but the 0x47c arm stores its own result and the zero register stays XMM4); the byte side flag re-measured
+// 663 (3499 B, slot homes move); the dot and its floor ahead of the speed floor 498 (3500 B); local_25 folded into
+// local_26's initializer 711 (3484 B). Body unchanged.
 // M3 lane 8 r213 (H2M_FAST with 0x1f9e70/0x110ab0/0x29b990; control 489): the side flip through a `long side` (set from
 // the cross test, negated when the side flag is clear, then `local_21 = side != 0`) 627 (3501 B: retail's `test al, al;
 // setne al` conversion appears but in 32-bit form, and the new symbol moves the homes below, first difference +0x60),
@@ -798,6 +803,13 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // outcome 755/767/760/755.
 // NOT kept: Setter and aggregate with the working-heading query output recover the +0x80 position
 // and postpone the first mismatch to +0x123. All eight forms raise the score.
+// M3 lane 4 r241 (plain check: the reduced image scores this body 654; control 489, aligned 178): retail squares i, k, j and
+// scales `inv * i`, `j * inv`, `k * inv`, the shape of src/projectiles.cpp's file-local normalize (`j*j + k*k + i*i`). Compile-
+// only grid of three normalizers by eight ways to fill local_9: only the aggregate copy gives retail's scale, and with it every
+// square-sum spelling starts at k (field ranks k > j > i); a field-by-field fill in the order j, k, i gives retail's squares
+// but `inv * j` and an in-place `inv * k`. Plain: normalize_inline 761 (3502 B); squares written j, k, i through
+// vector3f_scale (diagnostic) 741 (3499 B, aligned 174); a file-local copy of the projectiles normalize 763 (3501 B), with
+// local_9 filled j, k, i 585; local_11/local_13 declared at the top 489 (same code). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

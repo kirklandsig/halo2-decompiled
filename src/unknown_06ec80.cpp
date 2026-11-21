@@ -254,6 +254,11 @@ union s_6ec80
 // the loop's active test 225 (folded before allocation); the machine copy declared at its assignment 225; `value_18` declared
 // at its read 225; both block pointers declared at their NULL stores 225 (as lane 16 r135). Entry listing: NONE's EDI web is
 // a register operand at the 0x4d0c, 0x49c8 and second_id compares, where retail compares 0x49c8 with an immediate.
+// M3 lane 15 r125 (h2m fast; control 5): the mask scoped re-measured with a listing 225 (NONE in EDI for its whole range and
+// never re-formed; one zero register for both block-pointer NULLs where retail zeroes EBX and EDI separately); with the mask
+// scoped: a `for` loop with `if (!active) continue;` 348 (1059 B, unrolled), the 0x49c8 NONE default at the top beside the id
+// defaults 245, the live/flag test for the two block pointers as nested ifs 225, that plus the 0x49c8 read in the file's
+// `if (live) value = field;` idiom 195 (first difference +0x101, as round 96's hand read).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

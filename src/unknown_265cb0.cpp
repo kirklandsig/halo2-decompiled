@@ -1006,6 +1006,9 @@ real function_30bf0(vector3f *vector);
 // with chained, conditional, explicit-tier or fallback result selection 84/153/84/153.
 // NOT kept: Two zero-result fallback forms reach 1308 bytes at 90. The named tests tie or regress.
 // The result and clip slots remain displaced.
+// Direct default-level returns at mode, settings, unscaled radius or scaled radius failure 315/320/254/238.
+// Paired entry guards, paired radius guards, mode with unscaled radius, and all four guards 325/222/360/317.
+// NOT kept. The exits raise the score and leave the result/clip allocation unresolved.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2988,6 +2991,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 585, nested state and one view influence read 605, combined state and one view influence read 605.
 // NOT kept: The state-first forms tie. The other forms shorten the body and raise the score. The one-read forms also disagree with retail’s two influence loads.
 // The 0x80 frame agrees. The contact-head address reverses base and index, and the player iterator and direction registers still differ.
+// Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
+// each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
+// The contact-head address remains the first difference and the shared reset shortens the body.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

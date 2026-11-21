@@ -2627,6 +2627,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Gain-phase handle, gated pitch-phase handle, early ring head and their four combined forms: 305 each.
 // All three with complete play-state storage: 305. NOT kept: the handles and ring head leave the
 // opening code intact. The full state still reserves 0x12c, with one extra scalar word.
+// Shared datum slot 305, One pool read at the datum latch 305, Shared datum slot and latch pool 418,
+// Shared datum slot and latch pool with explicit start branches 418, Shared datum slot with complete
+// request 305, One pool read at the datum latch with complete request 305, Shared datum slot and latch
+// pool with complete request 418, Shared datum slot and latch pool with explicit start branches with
+// complete request 418.
+// NOT kept: Sharing either datum value alone ties. Sharing both raises the score to 418. The complete request reserves 0x12c against retail 0x128 while preserving the opening extent.
+// The 0x120 frame, datum-handle spill and pitch-range register homes still differ.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3330,6 +3337,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Earlier at 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
 // Earlier score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // MiniMax G (11-20): no new form, no lower score (597): the entry still differs - retail tests the state before the definition index and reads the flags byte inside the definition guard, masking it with 1 kept in ebx, while this build reads the flags byte into bl at the top and computes the alternate flag before the guard; a constant-one local is folded away and swapping the two top statements changes nothing.
+// Earlier: retail length recovered; saved-register order, record homes, energy-loop
 // Earlier at 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
@@ -3782,6 +3790,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // definition test, 731/731/725/731. The latter recover the entry to +0x1c
 // but the acquisition outcome then uses different stores and the scores rise.
 // Stopped state set from the resume bit 737, same with alternate decoded inside the definition guard 663.
+// Active/pending/both phase snapshots 597/597/597. Late alternate-phase mask
+// with direct, active, pending, both, or both and predecessor-first table input
+// 650/650/650/650/650. The entry request-byte register and track homes still differ.
 // Fallback from both inputs, with or without guarded alternate 762/773. Shared definition test, with or without
 // guarded alternate 780/769. Stopped-state assignment under the definition gate, with or without guarded
 // alternate 631/622. Direct missing/unavailable exits, with alternate between or after the gates 804/792. NOT
