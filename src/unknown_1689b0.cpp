@@ -2200,6 +2200,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
 // the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
 // Body unchanged.
+// The 0xb964 frame and query setup agree. Count and clearance homes, pre-branch radius square and late
+// signed remainder still differ. Tried interval projection dot with aggregate displacement 553,
+// interval projection dot with shared point difference 559, projected-separation x/z/y dot 551,
+// direction-length x/z/y dot 568, half-span x/z/y dot 552, both square roots through x/z/y dot 568,
+// projected separation and both roots through x/z/y dot 570, interval projection dot with retail
+// signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
+// score.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

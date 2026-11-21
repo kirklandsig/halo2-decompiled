@@ -798,6 +798,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // products 661/661, successive sum 603/659, and complete sum 659/603, with
 // the rate applied separately or in the initializer. NOT kept: the higher scores
 // shorten past retail, and each form leaves the supplied direction in EBX.
+// The 0x24 frame and clock home agree. EBX still keeps the supplied direction rather than the sampled
+// velocity, and the limit and coefficient schedules differ. Tried live limit and reused limited
+// decision 680, live limit and separate distance stores 698, live limit with guarded step minimum 693,
+// live limit with guarded distance minimum 721, live limit with both guarded minima 721, live limit
+// with both minima and reused limited decision 705, live limit with default-step branch first 691, live
+// limit with both default branches first 691. NOT kept: The separate limit observations and guarded
+// minima raise the score. The reused decision also moves the first difference to +0x5.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

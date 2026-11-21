@@ -944,6 +944,14 @@ void __stdcall function_1160c0(real dt)
 // `definition->segment_count == i` 145; the rotation through the existing rotate_vector_170d70 (k read at each use) 144
 // (same code), and every include/axis_rotation.h variant measured for 0x29b2e0 (k local or not, dot or cross order) 144.
 // Body unchanged.
+// The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX
+// and +0x14. Tried rest offset at constraint join 176, rest offset after vertical setup 176, rest
+// offset after cross product 186, rest offset produced by both constraint exits 290, rest offset
+// produced before reach by each constraint arm 322, segment base advanced with offset at constraint
+// join 272, segment base advanced with offset after cross product 267, selected arm advances segment
+// base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
+// the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
+// +0x20.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

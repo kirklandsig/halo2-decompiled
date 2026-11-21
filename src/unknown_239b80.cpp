@@ -917,6 +917,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // lose their registers); the departure flag declared at function scope ahead of the hull count 262 (764 B); the lowest
 // scan's two coordinates in their own `{}` block 144; the classifier's result named before its test 144; a named point
 // pointer in the lowest scan 144 (the last three the same code).
+// The frame stays at 0x18 rather than 0x14. The departure flag and produced count still need the dead
+// argument byte and EBX. Tried candidate decision from three ranking branches 144, three ranking
+// branches with one start-index read 144, candidate rejection gates with one start-index read 144,
+// distance and ranking rejection gates 144, three ranking branches with Boolean departure 264, three
+// ranking branches and one start read with Boolean departure 264, candidate rejection gates with
+// Boolean departure 264, distance and ranking rejection gates with Boolean departure 264. NOT kept: The
+// four ranking forms tie with the original departure width. A Boolean departure shortens the body and
+// changes the caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
