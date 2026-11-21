@@ -1508,6 +1508,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // fifteenth parameter that its body never reads (the link drops it: 0x59e50, 0x70ea0 and 0x71e00 stay matched), fed 0,
 // the +0x104 status address, or that address named at the top, on the indexed copy 195 each (a dropped argument makes no
 // such web).
+// M3 lane 1 r147 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): on this body the +0x70
+// key-id address named at the top and passed by name 58, the +0x88 host identity so 60; the destination assigned again
+// at the top of the true arm with the else arm copying through it, stepping it by the count and the call passing
+// `dest - count * 3` 129 (721 B); a source player pointer stepped beside the index 202; `[count++]` with the key-id
+// address named at the top 89 (first difference +0x82). Re-measured: the indexed copy with `long identity_count =
+// count` at the call 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

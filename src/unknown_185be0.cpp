@@ -132,7 +132,8 @@ union s_185be7
     vector2f field_8;
 };
 
-// score 60 (was 60): r143 unchanged (full check 60); r216 unchanged then, plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
+// score 60 (was 62): r289's full check gives 60 (earlier rounds: plain 62, fast 60, the fast image building it differently); r216 unchanged. Left (see r131's lead below):
+// r143 unchanged (full check 60); r216 unchanged then, plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
 // the record copy's schedule, the second hold-time add's operand order, the quotient/1.0 XMM3/XMM4 tie, the else arm's load
 // order, the parent lookup's ECX/EDX tie, the word mask's zero-extension register and the 0.64 square order.
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
@@ -782,11 +783,21 @@ union s_185be7
 // initialised locals just before the second hold-time add leave its operand order (argument first); the pool reference
 // gives retail's `movzx edx, ax` there in the lab, and with a const-reference parent pointer retail's
 // `mov edx, [edx + eax*4 + 8]`, but that moves the parent index into EBX (other code).
+// M3 lane 3 r289 (fast with 0x24590/0x185b30/0x186ab0/0x187b30, all MATCH; control 60, and 60 in this round's full check):
+// 0..35 unused initialised locals at the top: 60, but 62 at 2..6, 10, 11, 14 and 24 (only the post-pow 1.0/zero pair moves;
+// no lower state); the second hold time through a reference to the record 62; the frame step in a named local for both
+// hold-time adds 60 (same code), bound by const reference for both 58 (the second add then loads the field first as
+// retail; match-only, 2 points); the second hold time read into a named value and stored 60; added through a pointer to
+// its field 58 (the same row, match-only). Body unchanged.
 // M3 lane 1 r143 (fast; control 60, aligned exact/stack/register-masked 57/49/5): the match-only lead rebuilt (record copy
 // first, else arm local_17 first, quotient after local_19, the pool through `s_havok_component *const &`) 42 [28/20/5];
 // on it the 0.64 test through the existing dot_product2d with the field_40/44 pair viewed as a vector2f 42 (same code),
 // the second hold-time add ahead of its scale 48. On the body: the record copy as memcpy 60 and the 0.64 test through
 // dot_product2d 60 (both the same code). Body unchanged.
+// M3 lane 11 r147 (fast, single address, control 60): the two look-sensitivity reads through the sibling files' gamepad
+// preferences record (a pointer to the player's record, read twice) 545 (first +0xcd); that record indexed at each use 60
+// (same code); the turn pair defaulted to the unscaled values at its declaration, the else arm dropped, 654 (3784 B); the
+// quotient `real const` 60 (same code); the scaled turn products written angle first 60 (same code). Body unchanged.
 // M3 lane 4 r244 (h2m fast with 0x24590, 0x185b30, 0x186ab0, 0x187b30, all MATCH; control 60 = plain 60; body unchanged). New:
 // the two hold-time arms through one new helper written once and called per axis (turn pointer, hold-time pointer, stick,
 // threshold, the {ramp time, maximum scale} pair, dt): plain `static inline` 806 (3713 B, left out of line), returning the

@@ -332,6 +332,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // restored: 1-3 folded `count > 0` guards around the sorted loop on this body 440 each (no change); on the first-pass call
 // three 607, four 602 (3026 B, masked 86: site 2 then calls 0x2600a0 as retail, leaving retail's inlined owner lookup as
 // the length gap), so retail's site 2 sits about four frequency levels lower than ours.
+// M3 lane 15 r128 (H2M_FAST with 0x2600a0 MATCH; control 440). Reading of retail: the sorted loop's counter lives in the
+// low temporary cell (`inc eax; cmp ax, count` through [esp+0x10]) because 0x2600a0 is called there; that cell then sorts
+// ahead of both flags, which pack at +0x6/+0x7. Tried: the chosen position named after the reported copy for the
+// reference and the unknown5b test 577 (3096 B); `__forceinline` on this file's declaration of 0x262a30 440 (no effect);
+// the sorted loop's body nested under the negated break test with `else break;` 440 (same code), with the first pass as
+// the 0x2600a0 call 604 (same as the call alone). Diagnostic, restored: `inline` on 0x262a30's definition 499 (3191 B,
+// 0x13e2d0 expands too; 0x2623a0 stays 65). Retail's expanded owner lookup with 0x13e2d0 still a call fits an
+// auto-inlined 0x262a30, which its /Ob1 file prevents (a flags question). Body unchanged.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

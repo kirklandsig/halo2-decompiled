@@ -616,6 +616,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // over a separate walk pointer 21 [match] (all four the same code: the loop shape is canonicalised, the walk ECX / counter
 // EDX split stays); no result local, the sign tests and the bound test as early `return false`s 46 (96 bytes) [6]; the clamp
 // as `count = __min(count + 1, 0x200);` 36 [104].
+// M3 lane 16 r169 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the natural body
+// (source at the copy) with the bound sum named `long end = start + count;` for the compare 28 [6] (start arrives in EDX
+// and stays, walk EDI, counter ECX); main's early source with the clamp on a new `long size = count + 1` 35 [104: the caller
+// grows to 262 bytes]; that with the source at the copy 51 (92 bytes) [104]; the source named ahead of the length scan 37
+// [84]; the source named at the function's top, ahead of the sign tests, 40 [match] (start ECX then EDI, but the source is
+// summed at entry and the scan walks in EBP).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
