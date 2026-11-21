@@ -3591,6 +3591,14 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // under `if (globals->unknown9c == 0)` in place of the early return; the final store under `if (!failed && last_unit !=
 // NONE)`; `if (root != NONE)` ahead of the busy test; `!busy && unit != NONE`; `last_unit != NONE &&` ahead of loop 2's
 // player tests.
+// M3 lane 4 r242 (H2M_FAST with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00 and 0x6b380,
+// all MATCH but 0x14f2e0 (5, as in the full build); control 103; with only 0x14d3a0 and 0x13cb40 listed the same body is
+// 193 at 592 B, so that list is needed for a faithful screen): loop 1 stepped by include/data_iterator.h's existing
+// data_datum_iterator_next_called in place of the file's copy 155 (597 B), loop 2 through it as well 173 (566 B, first
+// difference +0x3e: the prologue then takes ESI as retail, but loop 2's out-of-line step is gone); loop 2's datum index
+// passed as `iterator.datum_index` at both calls 103; both set-ups as `iterator.datum_index = iterator.index = NONE;`
+// 103; loop 1's body nested under `if (unit != NONE)` in place of the `continue` 103 (all three the same code).
+// BLOCKED-BY 0xb8540 stands.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

@@ -506,6 +506,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // NOT kept: All eight forms grow the body and raise the score. The form with a separately scaled forward
 // contribution keeps the 0x90 frame and the first difference at +0x10, while the other seven change the
 // frame. The matched caller at 0x137ed0 stays exact throughout.
+// M3 lane 4 r242 (H2M_FAST with 0x137ed0, MATCH each run; control 334): each cross term in two steps without sharing
+// (`xy = inverse * axis->j; xy *= axis->i;`, xz and yz alike, so complement * k is written twice as retail forms it)
+// 344 (1791 B); that with i, k, j sine products named after the squares 377 (1818 B); the diagonals written square
+// first (`xx + (1.0f - xx) * cosine`) 334 (same code); the rotated rows summed forward first 334 (same code); the axis
+// read through a const reference bound to the pointer parameter 394 (1827 B). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2824,6 +2829,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // position translation 280. In-place projected reflection by scale/difference, setter/difference or
 // scale/setter 554/499/539. Camera origin with shared difference and in-place reflection 595. NOT kept: the
 // one-point gain is below the threshold and still one byte over retail.
+// M3 lane 4 r242 (H2M_FAST with 0x2f2d0/0x2e3f0, control 281): the first distance clamp as a ternary initialiser
+// (`near != far ? clamp : 1.0f`) 424, as if/else with `attenuation = 1.0f` in the else arm 424 (both 2286 B); the saved
+// record taken at the count and the count incremented in its own statement 281 (same code: retail stores the count
+// before the tag); the draw point's x product as `reflected.i * displacement` 281, with the position added first 281,
+// all three rows position-first 281 (same code). Reading of the retail-length lead (attenuation beside `animated`,
+// reflected as three statements, 495 at 2285 B): it has retail's per-arm stores at the first clamp; left are one more
+// instruction in the delta/forward block (retail multiplies each loaded axis in place by `forward`, ours copies
+// `forward`), the far-angle product (retail loads `far` and multiplies by `inverse`), the unoccluded product's sides,
+// the opacity arms, the draw point's y product and the vertex-data clamp's store form.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

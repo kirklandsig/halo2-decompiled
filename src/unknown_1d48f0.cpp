@@ -475,6 +475,11 @@ const dword g_455978[81] = {
 // count as `arg_8 ? 27 : 18` 448 (2119 B), the helper forceinline 367 (same code). Diagnostics: the 0x11bed0 call removed
 // 382 (0x279740 still a call at both releases), the second release removed 534. So the first release's expansion is that
 // helper's code, not an inlining budget shared with 0x11bed0; what keeps 0x11bed0 out of line here is still open.
+// M3 lane 4 r242 (H2M_FAST with 0x11bed0 and 0x14a280, both MATCH each run; control 268): the planar length through the
+// existing planar_normalize of include/vector2f_normalize.h 268, with the radial as `local_17 * 0.0f` 268 (the same code
+// as normalize2d_fast, address-normalised listing identical); the transform's position copied from `*arg_11` (the values
+// the translation was set from) 305 (2072 B); the ray's difference taken from `arg_9` instead of its copy 315 (2074 B);
+// the ray end as a brace initialiser 268 (same code). Diagnostic, restored: magnitude2d's sum written j first 268.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
