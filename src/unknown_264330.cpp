@@ -895,6 +895,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // behind the extra slot feeds our expanded 0x25c820 at the release site, not the tail); with a `short` old_state 431;
 // with `update && sample` 431; the walk through 0x26be00/0x26be30 (0x263210's idiom) re-measured 443, with the node
 // tail lookup 452 (1600 B), with the iterator's index read at each use as well 452. Body unchanged.
+// M3 lane 5 r223 (H2M_FAST with 0x1e34e0 (25 throughout) and 0x263210 (MATCH); control 404 at 1624 B): retail's case code
+// order 0/4/2/1/3 with the release calls as the switch's last labelled arm (the tracking_complete goto gone) 412 (1628 B);
+// that with case 1's 0x25c820 call jumping to the release block's 0x25c820 call 436 (1616 B, frame 0xa0, first
+// difference +0x6: the actor index still read from the stack); that with a short old state 440 (1620 B); the walk
+// through 0x26be00/0x26be30 re-measured 443 (1616 B), with the first form 447 (1620 B), with the second 442 (1616 B).
+// Body unchanged; BLOCKED-BY 0x2641c0's inline as before.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
