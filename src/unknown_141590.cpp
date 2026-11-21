@@ -527,6 +527,10 @@ static inline void quaternion_transform_vector(
 // All keep the 0x20 frame and miss the separate retail transform spill.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// The separate quadratic spill and copy boundary still differ.
+// Rotation accumulation in the destination per axis, first product/two-term sum, 310/266;
+// by arithmetic phase 411/379. In a complete result vector per axis 251/260, phased 405/316.
+// NOT kept: the destination forms that reach frame 0x24 extend the body by at least 30 bytes.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1603,6 +1607,10 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// One recalculated product local across the two higher bands, for r6*r0/r6*r3/both 1216/1231/1238,
+// transverse mixed pair 1282, axial squares 1281, diagonal squares 1296, off-diagonal squares 1205,
+// and the r0 mixed pair 1280. NOT kept: the off-diagonal squares reach frame 0x300 and first +0x39,
+// but all forms shorten the body past retail and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
