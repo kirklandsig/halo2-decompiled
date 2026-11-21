@@ -847,6 +847,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `actor_index != NONE` 947 (3772 B); the reference test as `if (actor)` 921 (retail compares the index with NONE there:
 // `cmp ebx, ebp` with EBP = -1, so not retail's form); the actor and self-unit pointers declared ahead of the four
 // priorities 925 (same code). Body unchanged.
+// Frame 0x2cb0 versus 0x2cac; actor index and self-unit zero still exchange registers.
+// Raw tracked-unit index with entry default, two complete arms, or conditional selection after actor setup:
+// 914/921/874 in both filter orders. Early raw capture with a later Boolean result: 921 in both orders.
+// NOT kept: the raw forms compare a dword with NONE at the sphere filter where retail tests a saved byte.
+// The 874 form grows to 3744 bytes. Late Boolean materialization grows the frame to 0x2cb4.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
