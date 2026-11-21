@@ -392,6 +392,11 @@ static __forceinline long real_to_long(real value);
 // magnitude stored by a chained assignment into its field and local 373 (same code). Retail reads +0x10, +0x14/+0x18
 // (onto the x87 stack), +0x1c, +0xc and +0x38 right after the sign step, which is what lets it forward the seed
 // through the three draws; BLOCKED-BY 0x210850 as above.
+// M3 lane 3 r292 (H2M_FAST with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373): the
+// resolver written in 0x210850's own two-arm shape on the target point 466 (1889 B); the same through a `point3f *`
+// output pointer 466 (same code); the final three sums from the offset local instead of the stored fields 429; the k
+// row's negation written `0.0f - (...)` like the i and j rows 373 (same code). BLOCKED-BY 0x210850 as above. Body
+// unchanged.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

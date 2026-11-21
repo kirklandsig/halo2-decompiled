@@ -620,6 +620,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
 // the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child
 // iterator declared ahead of the seat test 117 (all the same code).
+// M3 lane 3 r292 (H2M_FAST with 0x1e83c0 and 0x1e8d50, both MATCH; control 117): the entry through the existing
+// 0x1e8d50 re-measured 165 (2312 B: the head retail's through the switch; case 4 left: the parent in ECX for retail's
+// ESI, the 0xd0590 argument setup order, and the child test's `test cl, 1` for retail's two-byte `test al, 1`, which
+// moves the jump table four bytes); on it the child's seat index in a named `short` used for its NONE test and the
+// index 165 (same code); that named child seat on this body 117 (same code); case 4's `if (!blocked) result = true;` as
+// `result = !blocked;` 527 (2328 B). Still BLOCKED-BY 0xd0590 (its file is on this round's avoid list, so the held
+// order was not re-measured). Body unchanged.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -2037,6 +2037,21 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // a raw-handle local passed through its own address as the aggregate 114 (same code each); the empty header passed
 // through a named pointer 5; the count through a named pointer 5 (same code each); the named header pointer with the
 // write-handle local 114. Body unchanged.
+// M3 lane 3 r292 (H2M_FAST with 0x213800, 0x213760, 0x2138f0 and 0x2149c0, all MATCH; control 33): the close as
+// `(!resized || bytes_written != 0x800) && open` with no else arm 157 (frame 0x1140: `resized` packs beside `done` and
+// is tested again after the write); that with the count declared at the loop body's scope 157 (same code); a redundant
+// `valid = false;` at the top of the size-mismatch arm 33 (same code). New form: the write's count scoped in the write
+// block and copied into an outer `dword written_size = 0;` after the wait, the close testing `written_size != 0x800`
+// with no else arm, 83 at 930 B, first difference +0x155 -> +0x1e1 (the size/count homes, the not-resized jump to the
+// close test and the whole close are retail's; left: the write's flags zero in EAX ahead of the handle load, the range
+// test's ESI 1 and the checksum register). It is a one-use copy, so match-only. On it: the listed `else if
+// (cache_file_header_read(index))` + `valid = true` 7 (the 7 plateau without a write flag); with the listed
+// reference-bound checksum 5 (only the write's argument setup left); either with a named write-handle local 114 (917 B:
+// the write exact, the close's `mov ecx, eax` copy lost, as before); one handle local for the write and the close 127
+// (915 B); one for the resize and the write 139, for the resize alone 122 (917 B each); with the named write-handle
+// local, the close tested as `bool written = written_size == 0x800; if (!written && open)` 114, through `file->handle`
+// 114, through the table element 114 (same code each), with the handle test first 135 (930 B, the `resized` test
+// materialised again). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

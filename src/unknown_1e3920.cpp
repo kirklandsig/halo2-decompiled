@@ -2012,6 +2012,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // no callee's write summary is what keeps it out of EDI; 0x259a0 given a link-time summary (an inline kept out of
 // line in an ordinary file) 306 [137 / 49], the pool still loaded three times. No object built without link-time code
 // generation refers to the pool, seed or tag globals. Nothing kept.
+// M3 lane 3 r292 (H2M_FAST with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240 and 0x1e5280, all MATCH; control 251):
+// block 1's two slot queries through the unit already looked up (`unit->current_weapon`, `unit + 0x213`) 361 (1171 B);
+// block 2's grenade query reading the type through its own lookup ahead of the `unit` local 251 (same code, CSE'd);
+// `short ticks = (short)function_1469f0(delay);` 251 (same code); the options lookup declared ahead of the actor 300
+// (first difference +0x0); the two weapon indices as the array's initializer 251 (same code). Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
