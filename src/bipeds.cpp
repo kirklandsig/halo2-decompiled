@@ -3184,6 +3184,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
 // `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
 // All restored.
+// Captured raw byte with signed conversion at query, original selection, shared short getter,
+// direct body-field bounds and signed local bounds 82/89/76/76. The raw dword forms 83/90/77/77.
+// NOT kept: the count still needs a saved carrier, and all eight move the first difference to entry.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -6250,6 +6253,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // with success exit 79, ordinary crosses 203, staged crosses with direct
 // forward 154, trig construction with success exit 79. The first rotation
 // still spills the complement before its dot sum finishes.
+// Generic object forward getter as pointer, named receiver with pointer, direct member and
+// member reference 79/153/89/79. With an ordinary final cross 203/197/83/203.
+// NOT kept: the ties leave the early complement spill and the final memory operand unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

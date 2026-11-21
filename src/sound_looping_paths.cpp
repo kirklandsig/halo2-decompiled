@@ -839,6 +839,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // then the two choices; the count incremented first and the choice addressed through it) 975 (3268 B, first difference
 // +0x2); the query loop ending on `choice_count < 2` 846 (same code); the target count incremented after the target's
 // stores 923 (3305 B).
+// Long accepted count with short/word ordinals at selection or repair, short query bound
+// 937/937/939/946, full query bound 967/967/952/952.
+// NOT kept: all recover the ESI zero but shorten the body and leave the target and buffer homes displaced.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

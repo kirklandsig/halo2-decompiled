@@ -1689,6 +1689,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
 // test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
 // mask takes EDI ahead of the query in every form where the copy stays in the found block.
+// Default-false with late success and primary/reflected/ambient/all curve scopes 573/573/573/573.
+// Constant exits with those scopes 566/566/563/563, frame 0x28.
+// NOT kept: the default forms lose the matched caller; constant exits recover the frame but raise the score.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

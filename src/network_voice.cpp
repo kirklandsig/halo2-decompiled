@@ -2056,6 +2056,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
 // NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
 // the player on the stack.
+// Optional field selected by entry size >11 or ==13, optional byte count or prefix size
+// 134/134/171/184. With mask, written count and capacity debit ahead of size 159/159/181/129.
+// NOT kept: the last form reaches 445 bytes but changes the incoming convention and loses the caller.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
