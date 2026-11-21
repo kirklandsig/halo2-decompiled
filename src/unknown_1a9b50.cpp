@@ -413,7 +413,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
-// score 389 (was 407): Frame 0x40 agrees. The optional prop spills into the second argument home.
+// score 389 (was 389; 407 before m3 lane 2 r125): Frame 0x40 agrees. The optional prop spills into the second argument home.
 // Earlier 375 (was 375): The actor loaded after the settings call, with different actor, settings and prop homes.
 // Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
@@ -884,6 +884,14 @@ extern point2f *g_468778;
 // Direct slot argument 395, with absent-prop arm first 396; entry slot reference 389.
 // Checked prop binding 402, with absent-prop arm first 403.
 // NOT kept: the prop spill persists. The closest length is 1558 bytes at 390.
+// M3 lane 3 r291 (H2M_FAST with 0x265d30 and 0x1aab50; control 389 at 1563 B). Reading: ours holds the view in EBX and
+// forms the facing pointer in EDI with a separate `lea`, so the prop loses EBX and lives in arg_1's home; retail keeps
+// the view in EDI, reads the k and j terms off it, turns it into the facing pointer in place (`add edi, 0x2c`) and reads
+// the i term through that, which leaves EBX to the prop. Tried on the -0.4 facing dot: k and j through the view, i
+// through the facing pointer 392 (1568 B); every product written actor-first 389 (same code); actor-first through the
+// facing pointer 410 (1549 B: retail's `xor ebx, ebx` prop and length, but arg_0 ESI, the actor EDI and spilled, the
+// slot EBP, frame 0x44); that with the prop pointer declared at the function's top 410 (same code); the dot written
+// `dot < -0.4f` 389 (same code).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
