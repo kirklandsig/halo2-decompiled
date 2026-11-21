@@ -1696,6 +1696,10 @@ void function_143250(
 // (same code); entries 23 and 25 both accumulated 1095. Reading: the masked rows are scheduling and spill placement
 // spread over the body (retail keeps 0.071428575 in XMM5 for entries 23 and 25), and retail's one extra spill cell
 // sits below the 49-entry matrix (frame 0x300 against 0x2fc).
+// M3 lane 2 r131 (H2M_FAST with 0x143250 MATCH; control 939, aligned 777, masked 154; aimed at the s21/s21_r2 cell): s21_r2
+// written into its three uses 1507 (10747 B); s21_r5_r6_r6 as `r6_r6 * s21_r5` 939, s7_s2_s21 as `s21 * s7_s2` 939 and entry
+// 25's last product with s7_s2 first 939 (each the same code); s21_s35 from its own root with s21 declared after it 1491
+// (10773 B, frame still 0x2fc). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
