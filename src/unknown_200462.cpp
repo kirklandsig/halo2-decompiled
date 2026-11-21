@@ -297,6 +297,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // retail's scratch-and-copy load in 0x12e290), fed on the 12 form the advance product 12, the half height 12, the
 // half width 12, the pulse 12, the lower edge `y + half height` 12, and on this body the advance product 14 (all the
 // same code: a dropped second use of a float value does not move the XMM3/XMM4 pick).
+// M3 lane 1 r146 (H2M_FAST, control 14): both half extents declared with a dead `0.0f` initialiser ahead of the pulse
+// query and assigned after it 17 (the product is then formed in the pulse's register, `mulss xmm0, xmm2`); the pulse so
+// declared 14 (same code); the corners read from a `point2f const` copy of the stepped position 118 (866 bytes); the
+// default rectangle declared at the draw loop's top, ahead of the mask test 35. Re-measured: a named advance used by both
+// x steps 55 (the running x leaves XMM7 and the pulse call sinks below the half extents).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
