@@ -1882,6 +1882,15 @@ PRIVATE __forceinline real const &component_time_step()
 // a store that can only change the pointed-to value, direct reads at both uses (they reload the pointer), a math call
 // ahead of both reads and a by-value copy (kept in a register, or spilled to the stack under pressure, never re-read
 // through its address) do not. In the link-time build no pointer store counts and retail has no call between the reads.
+// M3 lane 8 r214 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
+// to it, at both products 26 (same code); the step as a forceinline helper returning the scale helper's result times the
+// time step 142 (476 B, the global load hoists above the mass test); `target -= position` ahead of the step product 119
+// (473 B); the pin macro as a forceinline function 89 (462 B); the step as a `real &` bound to the scaled value and
+// multiplied in place 26 (same code). Reading: retail never takes the globals pointer's address (its 876 references are
+// 875 loads and one store), so no store can kill its load between the reads; matched 0x25ae40's fold-then-add shape has
+// a call result as the base (an inline pointer parameter `result + 4`), which the load of a global never gives here.
+// Diagnostic (reverted): the globals pointer's address taken in this body (a tail compare of `ratio` with it) still
+// reads `[eax + 4]` at both products (484 B), so an address-taken global alone does not give the `add eax, 4`.
 // M3 lane 3 r287 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
 // to it at both products 26; the step as `real &step = scaled_acceleration; step *= delta_time;` 26; the globals
 // pointer copied to a local and read through a `const &` to that local at both products 26; a second `real const &`

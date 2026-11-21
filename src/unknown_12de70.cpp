@@ -765,6 +765,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // shift 27 (same code); that with the field read at each use and a tail block local read through the geometry block's
 // own section-offset field 51 (EDI/EBP swap); the page shift named first in the arm 27 (same code); the loop's block read
 // through a fresh pool lookup of the cache block 114 (291 B).
+// M3 lane 8 r216 (h2m fast with 0x12e210, which stays matched; control 27, the each-use loop re-measured 27): the cache
+// block's field bound once as `s_geometry_block_info *&` at the top and used for the guard, the loop and the tail 81 (first
+// difference +0x9); that reference bound only in the loop's arm with the field read through it 27 (same code); the loop's
+// release step as a new forceinline helper taking (cache block, block index) and reading the field at each use 27 (same
+// code); the loop as `if (busy) do { ... } while (busy);` 27 (same code); the tail's root clear through a new forceinline
+// helper taking the group (offset read, count and pointer cleared) 51 (+0x9), with the each-use loop 51.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

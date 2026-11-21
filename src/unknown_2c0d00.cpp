@@ -2333,6 +2333,13 @@ long function_1fa7f0(void);
 // [ebp+0xc], where ours keeps the count in BX, the cursor in ESI and the step pointer in EDI; retail's emit keeps the
 // output element in EAX, its point in ESI and the emitted count in EBX; the tail is 0x210a30's inlined body (BLOCKED-BY
 // 0x210a30, as above). Body unchanged.
+// M3 lane 8 r214 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked
+// 350/256): the edge left uninitialised at the loop top and set to 0xffff at the scan hit (retail stores it there,
+// 0x2c219e, as well as at the loop top) 417 (1765 B); that with the side flipped in place ahead of the second tangent
+// call (no other_side local) 389 (1755 B, frame 0x114; the initialiser moved into the hit arm, so steering: not kept);
+// the side negated in the second tangent call's argument and flipped at the attempt loop's end 434 (1715 B, frame 0x10c
+// as retail, first difference +0x24, aligned/masked 299/199: closer in shape, shorter); that with the edge set only at
+// the hit 418 (1743 B, frame 0x114), with the repeated hit store and the top initialiser 426 (1728 B, frame 0x10c).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

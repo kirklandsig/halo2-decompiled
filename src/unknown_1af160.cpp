@@ -270,6 +270,12 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // straight to the difference (no point pointer local) 12 (same code); the result flag declared ahead of the cleared flag
 // and its five clears 12 (same code); the marker pointer chosen right after the 0x1ac610 call, ahead of the search
 // record, 181 (975 bytes).
+// M3 lane 8 r216 (h2m fast with 0x1e1f20, MATCH; control 12): the 0x1f4a20 marker argument read back from the search
+// record's +0x64 field instead of the marker local 210; the opening tests in the other order (unknown227 first) 16; the
+// +0x4ae actor store ahead of the record's field_4 clear 14; the equal arm's field_6 store ahead of field_0 14; the saved
+// +0x418 reference copied after the 0x1e4be0 call 17. Diagnostics (reverted): the bool output, the prop node and the actor
+// renamed to sort first or last (five renames) 12 each, the same code: these homes are spill slots and one address-taken
+// flag, not ordered by name.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

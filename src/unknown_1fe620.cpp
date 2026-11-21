@@ -372,6 +372,13 @@ static __forceinline long real_to_long(real value);
 // (1863 B), with that sign test 428 (1866 B); the second draw through function_259d0 on the state local (draws one and
 // three left on the global) 377; the sign step through a `dword *` to the seed field, as slot_random spells it, 373
 // (same code). BLOCKED-BY 0x210850 as above.
+// M3 lane 8 r214 (h2m fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH; control 373): the two lower bounds
+// as unary negations 373 (same code); the sign flip through the existing vector3f_negate_ab 373; the +0x38 spread named
+// at its block for its test and product 374; both angle tests on `(real)atan2(...)` 373 (same code); the doubled cap as
+// `local_16 + local_16` 373. Re-measured (already listed): the state local read before the 0x1fe410 test 428; the third
+// input bound by a const reference 409. Retail evidence restated: it reads +0x10, +0x14, +0x18, +0x1c, +0xc and +0x38
+// right after the sign step and before draw one's multiply (0x1fe94c), so every bound is read ahead of the first seed
+// store; only a source that reads them first (named bounds, one use each) lets the seed stay in EAX. BLOCKED-BY 0x210850.
 // M3 lane 16 r164 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH; control 373): the side vector through
 // unknown_0259d0.h's normalize_inline 378; the sign step tested on the stored seed field with no seed local 373 (same code);
 // the +0xc limit read after the two angular limits 373 (same code); the prop flag cleared in an else arm instead of at its
