@@ -2411,7 +2411,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // P449: Primary countdown, actor, animation release/index, facing, turn, delay and motion decisions:
 // 479/479/479/479/479/479/483/479. NOT kept: no exact scratch-register or completion-tail repair.
 
-// score 431 (was 431): the body gives the actor EBX and the state EDI as retail but is 20 bytes long (case 2's facing
+// Earlier note: the body gives the actor EBX and the state EDI as retail but is 20 bytes long (case 2's facing
 // copy, case 4's facing reads, case 7/8's flag, the +0x465 byte); the 2396-byte forms exchange the two registers unless
 // case 21's state use after the 0x1c1080 call reads the parameter's stack home (r238 below).
 // M3 lane 16 r114 (fast with the file and 0x110ab0; control 479, aligned 215; all restored): the +0x465 flag as `c ? 1 : 0` or
@@ -2717,6 +2717,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // NOT kept: The active-search-only update ties the calibrated control. The other calibrated forms raise
 // the score. The playback disjunction reaches 427 on the single-address image and 499 on the calibrated
 // image, where it grows to 2432 bytes and changes the retail playback result sequence.
+// The 0x1c frame and entry register assignments agree. The first difference is the default branch span at +0x51. Test whether completion produced within each switch arm makes the default and case 13 share the retail completion block.
+// Arm-local completion defaults 596.
+// Arm-local Boolean defaults 596.
+// Arm-local defaults and direct case-13 default 630.
+// Arm-local Boolean defaults and direct case-13 default 630.
+// Arm-local defaults with exhaustive playback 596.
+// Arm-local defaults with exhaustive timer 596.
+// Arm-local defaults with exhaustive search 596.
+// Arm-local defaults with exhaustive subtype completion 596.
+// NOT kept: Every arm-local form swaps the actor and state registers at entry. Sharing the default with case 13 shortens the code by four bytes but scores 630. The original completion lifetime is restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

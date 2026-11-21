@@ -183,8 +183,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
+// MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // MiniMax E (11-16): no new form, no lower score (622 plain, 614 fast): retail keeps q (the fourth stack
@@ -794,10 +794,22 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
 // second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
 // local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
+// Joined refresh and angular fallback via predicate or length 687/678, with selected-source
+// projection 671/665. Selected-source branches, combined test, and one or two conditional
+// selections 679/687/677/677.
+// NOT kept. The joined stores raise the score and leave the entry allocation unresolved.
 // Sample dot across the zero-tick pointer choice: paired terms 660/660, three
 // products 661/661, successive sum 603/659, and complete sum 659/603, with
 // the rate applied separately or in the initializer. NOT kept: the higher scores
 // shorten past retail, and each form leaves the supplied direction in EBX.
+// M3 lane 12 r167 (h2m fast reads 597 for this body; plain where stated): the activation target written through
+// `point3f *target = &s->target;` (retail stores it through EAX = esi + 0x30) fast 590 (2881 B), plain 602 (2888 B), not
+// kept (1 point); the activation direction through a pointer 597 (2883 B); both 691 (2862 B); `s->limited` first and the
+// clamped length taken from it 721 (2858 B). On the target-pointer body: the target and active rows' operand orders 590
+// each (same code); the active block's direction through a pointer 665 (2862 B), in both blocks 679 (2871 B); the 12/8
+// factor first at the output clamp 590 (same code), the second clamp 720 (2857 B), both 719, all three 689 (caller
+// 0x1eb6f0 22). Fast and plain differ only in the closing block: the reduced image pops EDI, EBP and EBX in the counter
+// block as retail does, the full build pops in each exit and splits the flag's `or` into load, or, store. Body unchanged.
 // The 0x24 frame and clock home agree. EBX still keeps the supplied direction rather than the sampled
 // velocity, and the limit and coefficient schedules differ. Tried live limit and reused limited
 // decision 680, live limit and separate distance stores 698, live limit with guarded step minimum 693,

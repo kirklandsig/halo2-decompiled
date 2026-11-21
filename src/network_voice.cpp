@@ -2039,6 +2039,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
 // 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
 // MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
+// M3 lane 13 r134 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000; control 60, aligned 58; K the kept mask, W
+// written, C `capacity -= 2`, S the size as `include_mask ? 13 : 11`, s as `11 + 2 * include_mask`; this body is
+// sKCW): CSWK re-measured 134 (aligned 27) and KWCS 137 (445 B, `ret 0x10`, 0x56380 13); the entries walked by an
+// explicit pointer advanced in the for step on KWCS, CSWK and sKCW 137, 134 and 60 (the indexed form's code each
+// time); the first cursor byte stored in each include_mask arm on sKCW 176 (472 B), on CSWK 178 (475 B), on KWCS 134
+// (456 B, 0x56380 12): the arms are not merged above the branch, so retail's flag test ahead of the byte copy does not
+// come from that. Reading as before: retail's order is K, W, C, S with the mask left in memory, EBX first the mask's
+// scratch and then the size, the bit in EBP and the zero result untouched in EAX.
 // Length from input capacity 183, separate payload budget 178, or cursor displacement 196;
 // record-end payload placement 145; zero-based removed bits with repeated retained reconstruction
 // 157 or shared narrowed reconstruction 91; byte length accumulated in a local or the result
@@ -4433,6 +4441,26 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // loop top 195 (445 B); the data parameter itself advanced with the count read through a `header` copy 163 (494 B;
 // 0x564c0 lost, 13: the data then arrives in EAX); the relay arm's three failure tests in one condition with the members
 // word read first 167 (same code). Body unchanged.
+// M3 lane 13 r134 (fast with 0x564c0 and 0x54810, both MATCH throughout; control 139): the cursor form re-measured
+// with the stride first 164 (478 B, aligned 81) and with retail's pre-loop order (size, stride, consumed, cursor) 167
+// (aligned 115). On the latter: the member and packet-kind checks as separate ifs with `members == 0`, the member
+// declared at the top of the loop body, `members` declared ahead of the member call, the loop counter at function
+// scope, `!= 0` spellings of the two membership tests, positive nesting of every check with `else return NONE` arms:
+// 167 each (the same code); the real 0x53720 called from both arms with no `inline` (the file is /Ob1, so neither
+// expands) 199 (445 B), on this body 181 (450 B); one failure exit through a result variable and a goto (diagnostic of
+// the exit shape) 159 (489 B, frame 0x14); a grid of 56 pre-loop bodies (the 24 orders of the size, stride, consumed
+// and cursor statements with `size -= 2` or `size -= consumed` and `data + 2` or `data + consumed`) best 141 (aligned
+// 77), none with the channel in EBP. Diagnostics, removed: one extra read of `channel->index` after the plain arm's
+// submit call 67 at 488 B (aligned 13: the channel loads into EBP at entry, the member is spilled at its definition,
+// the route takes the channel's dead argument home and the loop is retail's; left: `add edi, ecx` for retail's `add
+// edi, 2` and the zero-trip exit, where retail has its own epilogue returning ECX); the same read after the relay
+// arm's submit 104 (aligned 33); the clear written with a constant bit (one fewer member use) 159 (462 B, frame 0xc)
+// also puts the channel in EBP; a named member bit for the test and the clear 176 (467 B, the channel is not held).
+// With the plain-arm read kept: `long consumed = 2; size -= consumed;` ahead of the stride and the cursor 62 (retail's
+// immediate `add edi, 2`, but the flag loads into DL and the size goes through ESI), that with the cursor ahead of the
+// stride 77, size, consumed, cursor, stride 77, size, cursor, stride, consumed 88, cursor, size, stride, consumed 88,
+// `&data[2]` for the cursor 67. Reading: the channel (seven uses) and the member (three) are one use apart for the
+// last callee-saved register; no natural statement was found that changes either count without code.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

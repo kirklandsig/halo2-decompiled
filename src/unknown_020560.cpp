@@ -834,8 +834,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 418 (was 418): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
+// score 418 (was 418; 439 earlier): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
+// Earlier header (merged r240): 418 (was 418, 439 earlier):
+// score 418 (was 418): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // Earlier header (418, was 418, 439 earlier):
 // Earlier score 418 (was 418, 439 earlier):
 //
@@ -1304,6 +1306,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 433, named sample count 433, opposite scan state declared before delta 417, loop-top ordinal
 // skip 433, candidate point pointer 433. NOT kept: the best form gains one, keeps the 0x28 frame
 // and lacks retail's second induction address.
+// M3 lane 4 r240 (fast with 0x22750, 0x22c30, 0x24550; control 418): scan 2 with the samples bound as a const reference to
+// the entries field and the distance taken from the offset: helper offset with length_sq3f 628 (2057 B); fields assigned
+// directly i, j, k with dot3f and length_sq3f 650 (2038 B), with the projection and distance written in retail's k, j, i
+// order 650 (same code), fields assigned j, k, i 650 each way; helper offset with the written sums 626; plain samples
+// local with length_sq3f 646. Retail's distance `(k*k + j*j) + i*i` reuses the offset registers; distance_sq3f sums k, i, j.
 // M3 lane 15 r123 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418, [276] aligned rows).
 // Reading: scan 1 of this body is retail's byte for byte. In the all-direct form (549, 2122 B [223]: retail's scan-2 pointer
 // pair and pass counter home) `opposite` owns EDI outside scan 2, scan 1's unroll limit takes EDI (`lea edi, [ebx - 3]`,
@@ -1332,6 +1339,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // delta, captured/indexed candidate forms 615/615/639/615 for either address.
 // All shorten the body and reserve 0x14. The second induction address and offset.i
 // spill remain unresolved.
+// Candidate offset squared directly, accumulated, or as three named squares
+// inside or before the projection test: 646 each with either square-sum order.
+// NOT kept: the second scan shortens to 2039 bytes and still omits the offset
+// spill and second induction address.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
