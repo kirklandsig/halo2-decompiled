@@ -319,6 +319,14 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // (526 bytes); the audible argument as `positioned + 1` 40 (521 bytes: the flag is read with `movzx` and the late
 // object load moves ahead of the push, where retail reads the flag into BL first); the audible argument as an if-set
 // `long audible` 37 (532 bytes).
+// M3 lane 8 r213 (H2M_FAST with the eight callees; kept-form control 11, plain-reads control 116): every form below with no
+// reference and every object read plain: the audible argument as `positioned + 1` 110 (525 bytes); `long audible =
+// positioned ? 2 : 1;` at the positioned arm's top 131 (525 bytes); `long audible = 1; if (positioned) audible = 2;` there
+// 136 (533 bytes); `bool attached` (request and marker tests) before the clamp with `positioned + 1` 106 (521 bytes, retail's
+// length and allocation: left are the bool's `setne al`/`test al, al`, the request's zero bytes stored from AL, and the
+// flag read by `movzx` with the late object load ahead of the push); the flag reset and marker block in a forceinline
+// helper with an early return on NONE 116 (same code); the marker block split into two `object_index != NONE` tests
+// (0xb8d30 under one, 0x1892a0 under the next) 116 (same code); `bool attached` declared after the clamp 96 (523 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

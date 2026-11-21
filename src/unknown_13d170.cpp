@@ -937,6 +937,12 @@ struct s_physical_block_iterator
 // first-block test 102 (first difference +0x338); the bool kept with that single store 92 (+0xcc); the allocation as
 // `if ((result = record_pool_allocate(...)) != NONE)` 40 (same code); the overlap test with its conjuncts swapped (block
 // end first) 108; as `!(offset >= end || offset + pages <= start)` 40 (same code). Body unchanged.
+// M3 lane 8 r213 (H2M_FAST with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): on main, the take test as
+// `better || !have_best` 201 (same code). Lane 1 r124's 40 lead re-applied (40 at 1213 B, first difference +0x356); on it:
+// the best candidate copied into a fresh local at the walk's top and read by the overlap test 184 (1236 B, frame grows);
+// best.offset in a local declared ahead of the walk loop 40; the overlap end named inside the loop as `pages + best.offset`
+// 40; that with best.offset named first and used for both tests 40 (same code each: the sum still lands in best.offset's
+// register and the second test re-reads it, where retail sums into the pages register and compares a `mov edx, edi` copy).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
