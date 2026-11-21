@@ -44,6 +44,9 @@ struct s_e6830_request_block
 // an offset-based pointer, sizeof(dword), a scaled dword pointer, and unused includes (string.h,
 // math.h, stdio.h, stdlib.h, a repo header) or dummy declarations before the function; a word
 // pointer or reference 27; an unsigned type with / and % 5.
+// Matched in a full build with stand-in SDK headers (was 3): the request word is tested as `block->active[type >> 5]`
+// and the byte offset local is declared only in the arm that clears the word. Named after the test, the offset gets a
+// later id than the block pointer, which gives retail's [offset + block + 4] operand order at all three sites.
 // @retail 0xe6830
 bool __stdcall function_e6830(long unit_index)
 {
@@ -53,8 +56,7 @@ bool __stdcall function_e6830(long unit_index)
     for (long type = 0; type < 60; type++)
     {
         dword mask = 1UL << (type & 31);
-        long byte_offset = (type >> 5) * 4;
-        if (*(dword *)(byte_offset + (byte *)block + 4) & mask)
+        if (block->active[type >> 5] & mask)
         {
             t_unit_request_update_proc update = g_4677c8[type]->update;
             if (update)
@@ -62,7 +64,10 @@ bool __stdcall function_e6830(long unit_index)
                 if (update(unit_index, type))
                     result = true;
                 else
+                {
+                    long byte_offset = (type >> 5) * 4;
                     *(dword *)(byte_offset + (byte *)block + 4) &= ~mask;
+                }
             }
         }
     }
