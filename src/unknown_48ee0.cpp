@@ -475,6 +475,11 @@ extern real g_4c9798[36];
 // entry changes at +0x2); the inverse by if/else 174 (same code); the mode test as `!((flags >> 10) & 1)` 299 (1485 B);
 // `long mode = 2;` with the other two values from a ternary under the negated flag test 291 (1484 B); the offset block
 // read ahead of the distance 333 (1488 B).
+// M3 lane 13 r137 (h2m fast; control 174): the height limit as a long with the size clamp as two separate ifs 251
+// (1484 B); the mode byte stored right after the mode chain 339 (1488 B); the float width limit declared ahead of the
+// height limit 253 (1484 B); the border as a conditional at its assignment 320 (1479 B, entry changes at +0x2); the
+// offset as a conditional initialiser 323 (1488 B). Still BLOCKED-BY 0x48e70 (machine 1's file): retail keeps the
+// size and aspect in memory across its two calls.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

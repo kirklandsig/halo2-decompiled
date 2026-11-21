@@ -903,6 +903,32 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
 // accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
 // (3838 B). Body unchanged.
+// M3 lane 6 r222 (H2M_FAST with 0x12e5e0, 0x12e960, 0x12eb00, 0x130f60, 0x131030, 0x1317a0, all matched in every run;
+// control 607 at 3832 B, aligned 487, register-masked 220; body unchanged). Read from retail: the inlined accumulator
+// merge scales the six source fields first and adds the weight and scales the remainder last (0x12f694-0x12f765, three
+// times); the palette byte is loaded twice, `mov cl` for the test and `movsx edx, byte` again at the source-index store
+// (0x12f152, 0x12f561); the scalar helper multiplies its three by-value scalars in place (`mulss xmm5, xmm0`) where ours
+// copies the weight for each (the length gap). Measured by aligned count as well as score: the merge helper's colour
+// block first 705 (3841 B, aligned 367); the slot as a char local with the store re-reading the field, the field at
+// each use, or a char test with a long index declared inside the branch 666 (3827 B, aligned 746-747: the registers turn
+// round); the short local with the store re-reading 703; merge order + one of the three slot forms 697 (3836 B, aligned
+// 353-354). On merge order + the long index inside the branch, the scalar helper's eight statements in twelve orders
+// (R, G, B the colour sums, I, D, H the three scalars, W the weight sum, M the remainder product): RGBIDHMW 607 (3833 B,
+// 785 rows as retail, aligned 319, masked 153: LEAD at equal score, build/r222/lead-0x12efb0-aligned319.patch),
+// RGBIDHWM 699 (aligned 333), RGBWMIDH 698, WRGBIDHM 699 (322), RGBWIDHM 699 (322), MWRGBIDH 696, RHGWBIDM 701,
+// RGBHDIWM 701, IDHRGBWM 699 (330), WMIDHRGB 720, RGBHWIDM 701, RGWBIDHM 699 (322). On that lead, same code each (607,
+// aligned 319): the weight parameter moved to first, second or third place; the scalar products spelled weight first;
+// the clamp into a named local in the scalar helper (608), in the merge helper, in both (608); the helper's parameters
+// renamed five ways. The clamp applied at the three call sites 666-699 (3806-3817 B, 776-779 rows: it is then
+// computed once, where retail clamps in each expansion). Diagnostic: one to seven dead locals in the body 605-608, one
+// to three in the helper 606-607 (aligned 319 each: not a phase effect). Left on the lead: the call result in EAX with
+// -1 in EDX (retail EDX and EAX), the record lookup threaded past retail's `test record` join (the listed lookup
+// helper gives it), the three scalar products through a weight copy, and the scheduling of the helper's stores.
+// M3 lane 15 r128 (H2M_FAST; control 607): retail's failed palette lookups reach one shared record test with the record
+// zeroed (`xor ebx, ebx`), ours threads them to the default arm. The lookup as one nested ternary 607, the record left
+// uninitialised and set NULL inside the else block 607, the scenario test as its own `if` around the range test 607, the
+// not-found case as a guard `goto` ahead of the body 607 (all the same code: still threaded); the slot byte tested in place
+// with the short slot declared inside the arm 750 (3848 B). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

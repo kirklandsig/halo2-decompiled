@@ -984,6 +984,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // in a local 626 (0x1cccd0 59); the request's names through a `s_animation_names const &` to the found record, byte
 // success 348 (same code), bool success 478 (bool's code). The graph keeps a register for the whole inlined request in
 // every form; retail's graph has none there (BLOCKED-BY 0x1ddd00's inline copy in another lane's file, as above).
+// M3 lane 1 r148 (H2M fast with 0x1db120/0x1cccd0/0x1cd070, all MATCH each run; control 348): success declared ahead of
+// the graph 348 (same code); success assigned from the first lookup's test (`success = index != NONE; if (!success)`)
+// 506 (1766 B, first difference +0x2d); the found names read into three locals just before the request 390; the
+// request's urgent flag passed as `success != false` under the test 619 (first difference +0x5); the second lookup's
+// set stored after `success = true` 350. Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00 as above.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
