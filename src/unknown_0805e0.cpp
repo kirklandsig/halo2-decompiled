@@ -863,6 +863,12 @@ void function_1537f0(s_profile_record *record);
 // the top of the body 14; `entry->` links as chained pairs 46, as four statements 46 (NONE hoisted). No `entry` local
 // at all (view, link pointer and tail from the element, the links in retail's pairs) 44. The base still follows the
 // link pointer.
+// M3 lane 7 r203 (h2m fast): the builder's view from the array element, the link pointer's stores as two chained pairs in
+// retail's order and the tail through a `dword *` 14 (base +0x5e; the tail stores 0x64 first); the view from the element with
+// four `entry->` link statements in retail's order and the `dword *` tail 47 (NONE hoisted); the link pointer and the tail
+// through the array element 44; a named view pointer with the link pointer taken as `(short *)(&view->field4c + 3)` 18
+// (+0x5c); that with the tail through a `dword *` at the view's +0x4c field 14 (+0x5e); one `short *` at +0x4c for the links
+// and the tail (diagnostic) 14 (+0x58): through any pointer the base lands on one of the link stores.
 // @retail 0x7f930
 void function_7f930(void)
 {

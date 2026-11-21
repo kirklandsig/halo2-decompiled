@@ -1241,6 +1241,9 @@ __forceinline long vehicle_round(real value)
 // cross too 94 (735 B), the dot named 13. Compile-only (2 flips each, the same products): a typed definition view for the
 // three definition fields, the tick compare reversed, `up` declared first in the arm, `rate` or `side` declared with the
 // vectors, `strength = rate * strength`; a named side correction 4 flips.
+// M3 lane 7 r203 (h2m fast), at 4: a `real const *` to the definition's two rate bounds 13; a const alias of the vehicle
+// pointer for the side cross and its down term 11; `byte const *definition` 4 (same code); the rate computed ahead of the
+// axis choice 165; `strength *= rate` after the side block 72 (757 B).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2355,6 +2358,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // &vehicle->forward) 11, as basis_dot_xzy(&vehicle->forward, &linear_velocity) 11; the final overlay loop bounded with `!=`
 // 9; `i` declared ahead of the overlay channel 9. Reading: retail's reloads after the update block come in the order of
 // the values' next uses (state for the channel test, then graph and the index as the callback's arguments are pushed).
+// M3 lane 7 r203 (h2m fast), at 9: the forward speed as `k + j` then `speed += i` 11 (sum (j + k) + i), with the i term
+// written forward-first 11; with one redundant paren pair around the k product 7 (the sum then (k + j) + i as retail's; left
+// the i term's operand order, the SIB pair and the reloads; not kept: a `+=` split plus a paren pair is steering without a
+// match), two or three pairs there 7/7; on that form any pair around the j product 11, and 0-3 pairs around the i term with
+// either operand order never flip it.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

@@ -1325,6 +1325,10 @@ void function_2118c0(void)
 // every knot row reduced to a pointer), as `dword` 128, as `word` 170 (797 B: the first counter becomes an `add reg, 8`
 // row with the other two as reloaded offsets, unreduced, but each zero-extended); the table through a `vector3f (*)[8]`
 // local for the knot rows 10 (same code); every row, p1 and out included, as `(b << 3) + index` with no row local 150.
+// M3 lane 7 r203 (h2m fast): the knot sums with `(long)` casts of the word indices 10 (same code); the band loop over a
+// `long row` stepped by 8 to 24 with p1/out from `row + k` (no b) 150; a band-row local beside b, set to `b << 3` after `b++`
+// (zero before the loop), for the knot rows 148 (784 B); the knot subscripts index-first with p1 as the row itself 10 (same
+// code); `previous` as `(real)k - 1.0f` 171 (793 B).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
