@@ -593,6 +593,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // local typed const 117; case 4's iterator declared at the top of the case 117 (all five the same code). Retail's case 4
 // keeps the parent in ESI and sets up 0xd0590's arguments iterator first (`lea ecx` then `mov edx, esi`), ours keeps it in
 // ECX and must move it to EDX first: still BLOCKED-BY 0xd0590 (its file is held this round).
+// Shared header data, pool with per-use data fields, typed headers, and typed parent
+// field 117/518/117/117. With the existing entry function 165/512/165/165.
+// NOT kept: retaining the pool changes the saved-register allocation. The existing
+// entry function recovers the first table load but exposes the extra child-test byte.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

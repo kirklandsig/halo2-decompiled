@@ -451,7 +451,7 @@ void function_3dd10(long object_index, bool force);
 // score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
-// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
 // blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
 // Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
@@ -876,6 +876,10 @@ void function_3dd10(long object_index, bool force);
 // Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
 // alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
 // pre-guard zero store and the count/mask homes stay different at retail length.
+// Fixed second bank with guarded/pre-guard ordinal 311/311, with last-bounded selection 289.
+// Pre-guard ordinal and stepped second bank 113. Last-bounded indexed or cursor selection
+// 243/243, with pre-guard ordinal 251/251. NOT kept: the bank forms change the saved
+// object/output allocation, and the last-bounded forms retain the different scan homes.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

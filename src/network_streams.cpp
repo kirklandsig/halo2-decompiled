@@ -1286,6 +1286,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Bind time destination, name size at publication, or both 89/89/89.
 // Resend goes straight to the common return, with ordinary type read at exhaustion 120.
 // NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
+// Pending bit XOR/add on saved flags 35/90, on the selected entry 88/88.
+// With message initialized before the lookup, saved word 63/63 and entry 59/59.
+// NOT kept: the XOR tie retains the full-word store; the others grow the difference from the
+// retail entry/flags allocation or miss the byte OR.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
