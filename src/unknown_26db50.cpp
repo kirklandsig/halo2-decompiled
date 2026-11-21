@@ -1195,6 +1195,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // (1093 B), the pathfinding selection ahead of the direction copy 159 (1096 B), the trace origin pointer formed once ahead
 // of the ring loop 20 (M's code), the sector field read at the trace call 261 (1067 B), the angle ahead of the direction
 // copy 233 (1104 B).
+// M3 lane 7 r206 (h2m fast with 0x1ecf50/0x26d100/0x26dde0, MATCH each time): the direction copied member by member from
+// the global vector 232 (1081 B); this file's declaration of the shared rotate helper marked `__forceinline` 26; the angle
+// written ring term first 26; `rings_remaining` declared ahead of `ring` 26; the trace distance named ahead of the trace
+// call 26 (the 26s the same code).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

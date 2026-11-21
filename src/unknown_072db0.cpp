@@ -1624,6 +1624,8 @@ static __forceinline void query_restore_pending()
         }
 }
 
+bool function_1900a5(long index);
+
 // score 663 (was 703): The aligned 0xc0 frame agrees. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
 // Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
@@ -2079,7 +2081,6 @@ static __forceinline void query_restore_pending()
 // Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
 // With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
 // NOT kept: the one-point gains leave the exit span and width unchanged.
-bool function_1900a5(long index);
 // M3 lane 3 r265 (fast with 0x1900a5; plain over the file, 0x1900a5 and its 18 callers, nothing changed): retail's slot
 // test (`mov ecx, 0; cmovne ecx, eax; test byte ptr [ecx + 8], 3`) is the matched guest test 0x1900a5 inlined, the
 // same code retail inlines into 0x6d080; calling it in place of the file's private copy of its null-tested accessor
@@ -2243,6 +2244,11 @@ bool function_1900a5(long index);
 // Shared logon predicate with identity, properties, or nested getters 756/766/754.
 // NOT kept: the logon decrement returns, but the providers stay out of line and
 // the cursor and slot selection still differ. The identity-only forms reach 2862 bytes.
+// Loop-head quota test 663, exact quota at loop head 663, quota after publication 642.
+// Remaining slots in the loop condition or body 669/669, last slot after publication 642.
+// Limit from the running total 662, count from the first request index 664. NOT kept: the
+// 642 forms reach retail length but move the quota check out of the retail loop head. The
+// logon comparison, validity-based cursor and slot selection remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

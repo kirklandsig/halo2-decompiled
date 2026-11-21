@@ -1015,6 +1015,13 @@ struct s_collision_result_buffer_1697c0
 // Independent fallback components with aggregate output or the shared setter, by entry placement: original
 // 377/377, before fraction 377/377, after pitch-axis construction 380/380, there with fraction 380/380. NOT
 // kept: the 0xa4 frame, longer body and changed matched caller depart from retail.
+// M3 lane 5 r224 (lead, not kept): the shared in-place rotation with each cross term scaled by the sine where it is
+// computed (rows subtract the scaled term) 270 -> 199 (1433 B, plain agreed), but it raises 0x297d30 23 -> 153.
+// Yaw-axis reload after hit processing, before the fraction test, or at trace return
+// 370/317/314. Axis pointer before the draws, after them, or between the turns
+// 282/282/283. Axis reference before candidate initialization or after the pitch turn
+// 282/283. NOT kept: the carried pointer changes the matched caller and the per-attempt
+// bindings lengthen the sampler. The startup zero and trigonometric spills still differ.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2305,6 +2312,13 @@ struct s_actor_looking_structure_view
 // on the clamp product 1/2/3 127/129/62, on the angle 88/135/149; permuter (900 s, 93 tries) none below 6. Also on
 // the lead: the axis j read once into a named real 146 (925 B; 0x296e60 339); the axis copied into a local vector 209
 // (0x296e60 368).
+// M3 lane 5 r224 (h2m fast with 0x296e60, 0x297660, 0x2980d0 and 0x24590; control 23, 0x296e60 270): the shared in-place
+// rotation with each cross term scaled by the sine where it is computed 153 (925 B) with 0x296e60 199 (plain agreed:
+// 153 / 199; retail here reloads the sine late and scales the finished cross term, so a lead for 0x296e60 only); the
+// angle named at the loop-body top ahead of the copy 33; lane 3 r277's merged helper re-measured 6 (0x296e60 282), with
+// sine-scaled crosses 74 (0x296e60 198); the dot3f projection with sine-scaled crosses 139 (270); the staged dot with
+// sine-scaled crosses 153 (199); the score written forward-first 23 (same code); the clamp as a ternary then
+// `score *= fraction;` 141.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

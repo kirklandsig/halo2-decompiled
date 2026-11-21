@@ -1138,6 +1138,26 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // = root->entity; if (!entity) return;` 238 (same code). Matched 0x1c5400 compiles the root test as `cmp dword ptr
 // [eax + 0x18], 1` and immediate clamps, so this body's register load of the type, kept dead walk and unpropagated
 // clamp bounds all point to one shape no natural form here reproduces.
+// M3 lane 11 r144 (h2m fast with the file's seven other functions, 0x1c5400 and 0x1d4880, all MATCH unless said; control
+// 238, aligned 180, masked 126). The 1..16 classifier only, new forms: a pin taking const references and returning by
+// value (bound-first, value-first, upper-less-than spellings, a named result) 238 (same code); returning a const
+// reference 374 (1287 B: the bounds become stack cells and the result an address); a template of that 386; pointer
+// bounds to const locals (0x182800's shape) 238; a by-value one-member aggregate pin 238, with a converting
+// constructor 382, returning long 248; a class-typed index with comparison operators 362-396; reference-returning
+// minimum and maximum helpers over the field's address 365 (the field is then read three times, but the bounds stay in
+// stack cells), returning by value 322; the data member overlaid as dword, long and byte pointer and read by role 238, with
+// the preset pin 321, with a multi-return bool helper for the three tests 318-322 (still one data load: differently
+// typed reads of one address are merged); the bounds as const objects (file-static or extern, by value or by
+// reference, defined here or in src/unknown_1c25a0.cpp) 238 (folded to immediates). Calls to the existing helpers of
+// src/unknown_1c25a0.cpp across files: its exclusion predicate contact_shape_has_material for the whole component
+// test 252 (aligned 183, masked 123: retail's setne/test, still one load and immediates); its pin by value 238 (same
+// code); that pin changed to const references 322 and 0x1c5400 then differs. Diagnostics (reverted): the bounds read
+// from non-const objects (file-static, or globals defined in another file) 324 at 1246 B give retail's compare shape
+// exactly (`mov ecx, <lower>; cmp ecx, value; jg; mov ecx, <upper>; cmp ecx, value; jl; mov ecx, value`, aligned 173,
+// masked 114) with memory loads where retail has `mov ecx, 1` / `mov ecx, 0x10`: retail's bounds were operands the
+// compiler could not fold when it shaped the compare and knew as constants afterwards; a pin as a plain function in
+// another file stays a call (334); 64-512 dead locals 238/238/238/249 (no change of the classifier); an inline asm
+// block 332 (no change of it); global optimization off for the function (the one compiler-setting diagnostic) 1266.
 // M3 lane 6 r219 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the head written as
 // the entity getter's ternary (`entity = root->type == 1 ? root->entity : NULL; if (!entity) return;`) 238; the type and the
 // entity tested in two early returns through an entity local 238; the entity preset NULL and set under `if (root->type ==
@@ -1147,6 +1167,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 237/306/306/306. Scope under the accepted distance test in the same order
 // 237/306/306/306. NOT kept: deferred origin gains one at frame 0x40, and retail
 // reads it before distance rejection. The second-node home still differs.
+// M3 lane 7 r207 (h2m fast with 0x1829b0, 0x1821d0, 0x182800, 0x183670, all MATCH; control 238): diagnostic (never
+// kept) global optimisation off around the body 1266 (1997 B, an EBP frame), so the head's register-held clamp bounds
+// and data reloads are not that; the second node's shape in a local in the kind-24 arm 327 (1249 B); one shape local
+// for the whole body 259 (1253 B); friction and restitution at function scope 238 (same code); the 1..16 helper
+// comparing the clamp with the value it read 320 (1243 B), as `value < 1 || value > 16` 355 (1210 B).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

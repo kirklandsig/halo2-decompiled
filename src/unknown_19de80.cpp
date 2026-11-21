@@ -908,6 +908,16 @@ static inline bool teams_enabled_19e1c0()
 // there); a volatile token parameter with the plain result 469 (1386 B: result ESI, token length EDI, event EBX and the token
 // preload as retail, but the fourth register goes to a hoisted zero and `remaining` still stays on the stack). So retail's
 // `remaining` outranks both the token and the zero constant, which only a reference on the dispatch path gives it here.
+// M3 lane 5 r225 (h2m fast with 0x19e0f0 MATCH; control 390, plain result 691 at 1170 B). Reading: retail's two player arms
+// do not share their copy tails because the token is re-read into the next scratch register before every compare, so each
+// arm starts at another point of the scratch rotation and the arms' rows differ in registers; with the token in a
+// callee-saved register every arm gets the same registers and the tails merge. On the plain result: the name clamps as
+// `result < remaining ? result : remaining` 691, through a named length 692, as `if (remaining <= result)` 691; `remaining`
+// copied to a capacity local at the top and used throughout 691 (same code). On the volatile result: the clamps through
+// a named length 412 (1444 B). Diagnostics on the plain result (restored): an empty inline taking `remaining`, or the
+// destination and `remaining`, called at the top 691; a discarded inline predicate on `remaining` at the top 691;
+// `remaining = remaining;` at the top 691 (same code: a reference that emits nothing does not count as the entry-block
+// reference round 203 found); the empty inline on the volatile result 390. Body unchanged.
 // Complete signed clamp assignments on both branches for player/team/all names/all plus literal fallback
 // 432/433/438/436 with the existing result, 685/684/692/694 with an ordinary result.
 // The ordinary result recovers frame 0x204 and merges the length tails. The entry token preload remains absent.

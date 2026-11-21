@@ -3262,6 +3262,7 @@ struct s_ammo_conversion_entry
 // is left is the register colouring and one test - retail keeps the destination weapon in EBP and the other weapon in
 // EBX, sets the acquisition flag with setg on the clamped count and reaches the conversion entry without a nullable
 // test, while this build holds the destination in EDI, spills the other and tests the entry for null.
+// Earlier measurement 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
@@ -3485,6 +3486,12 @@ struct s_ammo_conversion_entry
 // formed before comparison 214, shared slot with all type tests reread 212, shared slot and typed block 190,
 // also full-width total selection 191. NOT kept: the forms tie or regress and retain the saved-register
 // divergence.
+// Transfer amount and mode guards 190, Transfer amount and nested mode admission 190, Positive
+// acquisition with transfer guards 202, Positive acquisition with nested mode admission 202, Final mode
+// selects complementary acquisition outcome 203, Final mode selects positive acquisition outcome 199,
+// Final mode outcome with three kind reads 218, Positive final mode outcome with three kind reads 215.
+// NOT kept: The separated transfer gates tie. Positive acquisition shortens the body, and the final mode branches and kind reloads raise the score.
+// The 0x20 frame agrees. The destination home, delayed save and conversion-entry join still differ.
 // Bound and key in the search test 202, with the key carried 202;
 // short search ordinal and offered count 202; key shared across both arms 202;
 // single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
@@ -3493,6 +3500,10 @@ struct s_ammo_conversion_entry
 // Cached conversion membership as shifted bool, masked bool, result of a test or shifted byte 214/214/209/214.
 // Byte or word type mask 204/190. Boolean membership with conditional retention or ternary retention 197/188.
 // NOT kept: the two-point gain leaves the source and destination register roles unresolved.
+// Destination magazine bank 207, source bank 190, both runtime banks 207, both runtime
+// arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
+// and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
+// bank shortens the body, and retaining the tag bank does not recover the destination save.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3818,6 +3829,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // for the magazine's rounds (ours spills it to frame +0x24 because EDX is needed for `mov dx, [esi+0x2a]`; retail keeps
 // it in ECX, the magazine in EAX); the rounds named once for the opening tests 599 (same code). The unit index plain,
 // read by const reference in the player helper 646 (2507 B). None reaches the bar; body unchanged.
+// Shot/holder/effect, magazine/effects, result/scale and ammunition/result names 603 each.
+// Paired tag/scale defaults 604, burst published after multiplication 638, signed minimum carried into fallback 625,
+// shared player lookup at both queries 600. NOT kept: three-point best gain and the 0x1c64 frame remains.
 // Shared shot notification 603; admission predicates producing the fired value 577;
 // plain holder plus nested feedback tests 648; named short fallback minimum 603;
 // pre-heat round predicate 603; separate magazine tag base 603; scoped owner rejection 603;
@@ -3827,6 +3841,14 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Post-heat loaded short retained through the holder test, with native compound debit, signed balance, short
 // difference, or word balance. The shared and separate threshold and holder gates all score 603. Frame 0x1c64
 // and separate magazine-tag and round spills remain.
+// Exhaustive burst assignments 577; shared post-wake accumulator 630; selected burst before round
+// multiplication 639; separate round requirements 651; selected burst with short minimum 620;
+// named shot multiplier or debit conversion 603/603; short pre-wake minimum 608.
+// NOT kept: 577 defers the default burst store until after the wake call, which retail places before it.
+// Split admission after balance, heat, the per-shot minimum or the holder test, then
+// with separate balance and heat blocks, balance and minimum blocks, heat and minimum
+// blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
+// the extra frame word and the early magazine tag spill.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4306,10 +4328,23 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // keeps BL with a home at 0x13; masked aligned rows 887 -> 855); also without the complement local 1427; also with the
 // +0x1c clamps as float value selects 1432. The 64 bytes the double clamps add are about what the dword result stores
 // cost over retail's byte ones, so the double clamps, a bool result and the arm-local complement belong together.
+// Desired-state and handle-first transitions 1482/1477, named presence and absence 1412 each,
+// shifted flag and eager flag join 1412/1409, Boolean XOR 1412, conditional transition 1450.
+// NOT kept: three-point best gain. The pool, offset and entry result homes still differ.
 // Opening-only pool 1412; retained header slot 1449; direct owner player result 1438;
 // early blocking state 1433; Boolean activity set from magazine calls 1494 or call-first OR 1464;
 // arm-owned blends 1436, with opening pool 1440. NOT kept: the pool-only form ties;
 // Boolean activity and arm-owned blends shrink the frame to 0x30 and leave the dual spill.
+// First +0x2 reserves 0x34 against retail's 0x38. The pool and header offset take EBX and EDI. Retail uses EDI and ESI, leaving BL available for the dual query and, later, the animation activity. Hold the early work result as a byte through each actual activity phase before widening to the existing long accumulator.
+// Boolean activity through animation 1410.
+// Byte activity through animation 1410.
+// Boolean activity through initial timer 1413.
+// Byte activity through initial timer 1413.
+// Boolean activity through ramp 1428.
+// Byte activity through ramp 1428.
+// Boolean activity through heat 1431.
+// Byte activity through heat 1431.
+// NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4942,12 +4977,21 @@ struct s_weapon_projectile_creation
 // pointers 1121, fixed axis by value 1150, staged and direct shared cross 1186 each, shared i-k-j projection
 // 1131, changing vector passed and returned by value 1185. NOT kept: no gain. The setter reduces the frame to
 // 0x1e94 but shortens the body to 5105 bytes.
+// Inherited velocity aggregate 1168, named perpendicular components and staged correction 1121 each,
+// shared vector addition 1132, named actor correction, staged actor result and both staged results 1121 each,
+// named cone minimum terms 1154. NOT kept: ties and regressions. The 0x1ea4 frame still exceeds 0x1e98.
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.
 // Marker-average scalar sums, indexed with direct seeds or initial point copy and component/point stores
 // 1194/1139/1135/1142. The same four forms with a marker cursor 1171/1141/1130/1204. NOT kept: the 0x1ea4 frame
 // remains and the scores rise.
+// Fixed axis components with complete result or direct output 1154/1190; fixed axis
+// with projected products and direct output 1228. Projected products before direct
+// output or complete result 1215/1138. Named cosine complement with direct output
+// 1215. Shared dot and projected products before complete result or direct output
+// 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
+// and raise the score. The separate clipping point and opening rotation remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

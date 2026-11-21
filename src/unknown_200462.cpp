@@ -285,6 +285,13 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // x0, y3 from y2) 30; both passes' bounds through an `s_float_rect const *` to the record's rectangle (pass 1 reading
 // x1 - x0 through it, pass 2 copying `*bounds` in a block) 193 (853 B), with the copied corners 193; the corners read
 // through a `point2f const &` to the position 14 (same code).
+// M3 lane 14 r137 (H2M_FAST with 0x2008fc 0x200891, control 14): the draw pass's mask test as a positive arm 14; the centring
+// as `/ 2.0f` 14 (both the same code); the corner y values set ahead of the first x step, the x values after it 37; the draw
+// entry pointer formed after the mask test 26; the default bounds declared at the draw loop's top 35. Diagnostics (reverted):
+// a live float probe at six places in the draw iteration never moves the advance product off XMM4 (no temp rotation); one
+// extra live use of the half height after the corners gives the product XMM3 as retail (the half height then takes XMM5),
+// an extra use of the product or of the half width does not, so the open cause is the half height's rank against the
+// product. Re-measured: named advance 55.
 // M3 lane 2 r125 (H2M_FAST with 0x2008fc 0x200891, control 14; the bounds-record pointer re-measured 12): the half height
 // written `0.5f * (span * size)` 14 (same code); on the bounds-record pointer: the four corner x values stored before the
 // four y values 87 (846 B); one to three redundant parenthesis pairs around the half width's span, the half height's span,
@@ -297,6 +304,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // retail's scratch-and-copy load in 0x12e290), fed on the 12 form the advance product 12, the half height 12, the
 // half width 12, the pulse 12, the lower edge `y + half height` 12, and on this body the advance product 14 (all the
 // same code: a dropped second use of a float value does not move the XMM3/XMM4 pick).
+// M3 lane 1 r146 (H2M_FAST, control 14): both half extents declared with a dead `0.0f` initialiser ahead of the pulse
+// query and assigned after it 17 (the product is then formed in the pulse's register, `mulss xmm0, xmm2`); the pulse so
+// declared 14 (same code); the corners read from a `point2f const` copy of the stepped position 118 (866 bytes); the
+// default rectangle declared at the draw loop's top, ahead of the mask test 35. Re-measured: a named advance used by both
+// x steps 55 (the running x leaves XMM7 and the pulse call sinks below the half extents).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

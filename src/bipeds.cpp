@@ -786,10 +786,11 @@ struct s_biped_flags_10a_view
 // MiniMax E (11-20): no new form, no lower score (222): retail computes the state pointer at the top and spills it
 // where this build reads it at its one use, and the 0x111650 call pushes both arguments where ours takes the names in
 // EAX: BLOCKED-BY 0x111650.
-// score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
-// its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
-// arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
-// `shr al, 2; and al, 1`).
+// score 222 (was 224; 241; 280 before round 48): Frame 0x16c agrees. Retail
+// keeps the animation-state pointer at +0x20 and the pool offset at +0x24.
+// The build reads the state at its use and spills the offset at +0x20.
+// The type-0 bit still uses `and al, 4` where retail shifts then masks.
+// Earlier builds passed the animation-request names in EAX.
 // Earlier (score 280 (was 281)): early EBX save, state/change homes and Boolean tail differed. (score 281 (was 305)):
 // flag 2 of +0x10a through the word bitfield view and the definition flag as a field bit.
 // Logic walk (2026-10-31): every callee and its argument order, the names triple, the type-0 names[0] choice
@@ -866,6 +867,11 @@ struct s_biped_flags_10a_view
 // NOT kept: early pointers push EBX before the component guard. The signed
 // offset restores the pool-offset slot but spills the offset alone at +0x20.
 // MiniMax R (11-20): re-checked, no new form and no lower score (222): the 0x111650 call sets its arguments up differently (retail keeps the object index in ecx, sign extends the word at +0x12a and writes the flags to [esp + 0x24], this build writes them to [esp + 0x20] and passes the index in esi) and the code after that call is laid out differently: BLOCKED-BY 0x111650.
+// Shared word pool slot alone, with attachment capture, with component capture,
+// or with both 257 each. Shared long slot, same four forms 222 each. Late update
+// pair in its own Boolean 222, both calls accumulated into changed 235. Both
+// animation-request arguments already use stack slots. The animation-state and
+// pool-offset homes and the tail byte combine still differ.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -3167,6 +3173,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // (67), so the second lookup is not what frees the register; the count through `biped` at both places plus one or two
 // extra unconditional uses of the index (a probe store) 76 / 80: the cached byte keeps EBX and the argument then arrives
 // in EDI, so a higher reference count for the index does not give retail's EBX argument with an uncached byte either.
+// Component index shared by admission and lookup: signed byte count 82, nested
+// count 63, short body getter 75, nested with getter 75, guarded query rejection
+// 90/103 with long/short selector, unsigned byte count 82, byte with getter 88.
+// The guarded exits defer the EBP save to pool lookup and lengthen the function.
 // M3 lane 13 r133 (h2m fast with 0x1d5120, 0x1c3770 and 0xe0d70; control 63, entry EBX and plain `ret` already retail's).
 // Retail's matched 0xe0d70 reads the +0x3aa byte once and reuses it, so this function's re-read at the call is a
 // reload under pressure, not a second read in the source. `inline` on the definition of 0x1d5120 (its one caller)
@@ -4493,6 +4503,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // shortens), plus the sine's forward through a pointer 597 (2691 B; LTCG still folds two of its reads to biped-relative
 // loads), both up and goal through pointers 552 (2696 B). Retail reads the sine's forward through EBX throughout and sums
 // it (up.k * t3 + up.j * t2) + t1 * up.i.
+// Defaulted special-state byte with two result name ranks 661/661, both admitted
+// assignments 628, stationary branch first 599, previous turn key cases 608,
+// key before sine fallback 623, predicate arms 630, key cases with special byte 634.
+// NOT kept: the reduced 602 control differs from full 537. Stationary-first gains
+// three in the reduced image and grows by a byte. Result and rate homes still differ.
 // M3 lane 13 r133 (plain checks; al = aligned differing rows / registers masked, 442/230 on this body). Retail keeps
 // three byte flags in memory (changed +0x11, special +0x12, wall +0x13), this build two (changed +0x12, wall +0x13).
 // The mode tests nested (`if (mode != 3) { changed = true; if (mode != 6) ... }`, retail's store order) 537 (same
@@ -6230,6 +6245,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
 // the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
 // component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
+// Length local 79, direct forward field with success exit 154, length bound in
+// the exit test 79, const forward with success exit 79, both crosses staged
+// with success exit 79, ordinary crosses 203, staged crosses with direct
+// forward 154, trig construction with success exit 79. The first rotation
+// still spills the complement before its dot sum finishes.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
