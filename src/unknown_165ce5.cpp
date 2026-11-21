@@ -2057,6 +2057,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // or immutable clamp targets with the look record 188/188, separate scalar inputs
 // 196/196, unit handle with immutable weapon flag 188, shared raw clamp target 188,
 // and separate clamp-target scopes 188. Scalar spring inputs reserve 0x28 instead of 0x2c.
+// M3 lane 3 r294 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the four spring defaults declared
+// d, c, b, a 192; `no_scope` set by an if/else on `no_zoom` 376 (2197 B); the sound callback chosen by an if/else on the
+// nonzero index 188; the idle counter incremented in its own statement ahead of the test 188; the busy and animating
+// tests spelled `== 0` / `!= false` 188 (same code each). Re-measured by mistake: zoom computed at its declaration ahead
+// of the update call 388 (listed). From the look values to the weapon loop the rows now differ only in the unit and mode
+// slot numbers. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
