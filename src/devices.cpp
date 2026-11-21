@@ -1795,6 +1795,11 @@ bool function_108530(long device_index, long name)
 // published displacement and endpoint readbacks 109. NOT kept: the seven-point forms store
 // the displacement after the reset, and the combined gates break both caller previews. The
 // ramp-down comparison still needs the stack slot.
+// M3 lane 5 r227 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, already `ret 0x14`):
+// both ramp-down clamps as if-statements 116 (same code: the ternaries already compile as conditional stores); all five
+// clamps as if-statements 116 (same code); the ramp-down minimum on `duration - ramp_up_time` written twice (no
+// `remaining`) 131 (528 B, callers 31/13); the deceleration distance reduced from the motion's field instead of
+// `distance` 116 (same code); that with the if-statement clamps 116.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

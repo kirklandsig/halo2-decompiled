@@ -1276,6 +1276,12 @@ void function_1e3b60(long actor_index);
 // calls: more written depth in the callee does not stop the release-site expansion); here the not-active case as an early
 // return storing NONE 75; the `g_46fc80` store ahead of the actor lookup 25 (same code); the clear and the two NONE stores
 // through a fresh actor_get each 69 (276 B). BLOCKED-BY 0x262ba0 (stacked actor).
+// M3 lane 5 r227 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form; 0x2641c0's noinline declaration
+// is in another lane's file again, so all five in 0x262ba0): the walk through 0x26be00/0x26be30 with the iterator's
+// index read at every use and `update` long 427 (1616 B: the index takes EBX, a zero constant EDI and the long flag a
+// stack cell); that with case 1's 0x25c820 call jumping to the release block's call 442; main's body with `update` long
+// and that single call 436 (1616 B); the first form with `sampled_one` long 435 (1624 B); main's body with `sample` and
+// `update` long and the single call 437 (1616 B). Still BLOCKED-BY 0x2641c0's expansion into 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
