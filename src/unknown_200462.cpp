@@ -318,6 +318,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // pulse pointer Q, pulse query P, half width W, half height H) in other orders: E Q P H W 26, Q E P W H 14 (same code),
 // Q P E W H 83 (850 B), E Q W P H 28, Q E W P H 28, E Q W H P 55; the draw pass's record pointer named as the first pass
 // names its own (one-use there) re-measured 12 (only the XMM3/XMM4 pair left; match-only, not kept).
+// M3 lane 11 r150 (h2m fast with 0x2008fc 0x200891, control 14): each pass's loop index declared in its own `for` 38
+// (first difference +0x2d); the vertical offset applied ahead of the horizontal centring 21; the draw pass's pulse
+// pointer formed at the iteration's top, ahead of the bitmap entry, as the first pass does 14; the corner array declared
+// at the iteration's top 14 (both the same code); the draw pass's definition lookup ahead of the mask test 31. All
+// restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

@@ -2419,6 +2419,11 @@ void function_2818e0(void)
 // node_destination_get returning the destination index or NONE, callers testing `!= NONE`, 374 (1699 B, the NONE compares
 // stay); the destination pointer cast after the sum 2 (same code); the walk reading the settings' inheritance itself in
 // place of the by-reference parameter 2 (same code). All restored.
+// M3 lane 11 r150 (h2m fast with 0x27dff0 and the four matched walk users; control 2): node_destination_get's map bit
+// test through the existing node_flags_test 2 (0x289580 78); node_destination_get with the kind test inverted (the
+// mapped arm under `node_kind != 0`, the kind-0 result last) 2; its out parameter as `long &` at all three walks 2; in
+// function_288572 the bit-flags selection ahead of the output selection 2 (0x288570 3, 0x289580 78); root_offset_scale
+// given the walk's inheritance as a first parameter at all eight calls 2 (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
