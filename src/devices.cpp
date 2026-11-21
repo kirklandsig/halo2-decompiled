@@ -2083,6 +2083,10 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the fld) 301 (homes move); the flag test as a while with a closing break (diagnostic) 2 (same code); had_animation
 // and speed declared ahead of the state lookup 2; the flags read into a named word for the test 2 (both the same code);
 // `&& render_model` on the 0xbf5a0 test (diagnostic, a real test) 393 (1650 bytes).
+// M3 lane 1 r147 (fast; control 2): the tick length read at the top of the flag block 350 (1635 bytes); the matrix copy
+// written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
+// the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three
+// the same code: the copies are coalesced before scheduling).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

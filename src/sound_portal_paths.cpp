@@ -625,6 +625,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the walk 342; the environment compare written cluster first 295 (same code); const portal and other-cluster pointers by
 // pointer addition 295 (same code). Still BLOCKED-BY 0x14b240's write summary (ours hoists both table bases out of the
 // walk and spills one, frame 0x42c).
+// M3 lane 1 r147 (fast with 0x18d730, 0x14b240, 0x249d60, 0x18ae50; control 295, register-masked aligned 111): the gain
+// output without its `index != NONE ?` guard 312 (1346 B); the index output stored as `indices[i]` with no pointer step
+// 306 (1352 B); both 318 (1341 B); the side bit as `((dword)encoded >> 15) & 1` on the short entry 296; that with
+// `indices[i]` 307 (1352 B). Still BLOCKED-BY 0x14b240's write summary (its held form moves 0x18ae80, whose file is on
+// this round's avoid list).
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

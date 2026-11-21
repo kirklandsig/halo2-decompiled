@@ -917,6 +917,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // lose their registers); the departure flag declared at function scope ahead of the hull count 262 (764 B); the lowest
 // scan's two coordinates in their own `{}` block 144; the classifier's result named before its test 144; a named point
 // pointer in the lowest scan 144 (the last three the same code).
+// M3 lane 1 r147 (fast with 0x239d50 and 0x239b80; control 144): loop indices widened to long: the lowest scan's 645
+// (1095 B, the scan unrolled), the candidate scan's 251 (0x239d50 34), the compaction's two 288 (739 B, 0x239d50 80), the
+// lowest and candidate scans' 651 (1095 B), all four 619 (1072 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
