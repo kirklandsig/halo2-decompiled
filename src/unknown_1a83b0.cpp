@@ -763,6 +763,14 @@ s_1a8a10 g_4453c0[] =
 // view of the facing for the copy and the negated j 17 (same code), the copy as an aggregate copy through it 118 (548 B);
 // the copy brace-initialised from the actor's i and j 17, with both sums in retail's term orders 17; the point read into
 // scalar x and y locals after the switch 17 (all the 17s j read once).
+// M3 lane 13 r138 (h2m fast with 0x1a8c30, MATCH; control 17): the forward sum computed and stored ([2], [3]) before the
+// left sum is computed and stored ([0], [1]) 30: the address-taken array's stores split the two actor j reads, so the
+// negated j is read again from memory as in retail, but the forward sum is then scheduled first and its store stays ahead
+// of the reload (retail's second j load sits ahead of every store, so its split is not a store); the left sum computed and
+// stored ([1], [0]) before the forward sum ([3], [2]) 21 (j shared again); the copy as a `vector3f` aggregate copy of the
+// whole facing 142 (564 B: the copy goes through the stack by integer moves, and the negated j is then a separate read);
+// the copy read through the union's `n[0]`, `n[1]` 17 (same code); the first switch's cases 2 and 3 under one label 139
+// (540 B). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

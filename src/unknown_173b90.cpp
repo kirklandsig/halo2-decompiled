@@ -2201,6 +2201,12 @@ bool function_17afd0(long effect_index, long value);
 // registers move); the availability as nested ifs 12 (same code); the owner/view clear then `same_view = same_view &&
 // available;` 138 (510 B); `bool same_view = owner != NONE && g == owner;` after the availability, cleared by
 // `if (!available)` 135 (508 B); the owner lookup's arms swapped 12 (same code).
+// M3 lane 13 r138 (h2m fast with 0x174420 and 0x1751d0, MATCH each run; control 12): no default, the owner/view test's
+// else arm storing true then clearing it when unavailable (the true store where retail has it) 148 (518 B); the plain
+// conjunction with the attached flag defaulted false and set from the guarded call 125 (503 B); that attached form on this
+// body 103 (491 B); the plain conjunction with the availability as an if/else of constants 113 (498 B, the prologue's
+// registers move); same_view and available in one declaration 12 (same code). Re-measured: the `else if (!available)`
+// clear 105 (502 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
