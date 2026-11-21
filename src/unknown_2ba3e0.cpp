@@ -1003,6 +1003,11 @@ real g_55e618;
 // capture, and also indexed contact publication 600/595.
 // NOT kept: The closest component walk pairs the projection and tangent at 591 and 1715 bytes.
 // The first mismatch moves into the prologue at +0xc.
+// M3 lane 2 r129 (h2m fast with 0x2ba3e0, 0x2b8da0 and 0x2b8e10, all MATCH; control 102): the displacement scoped in its own
+// block inside the countdown arm 102 (same code); the final rows written `keep * tangent - coefficients[1] * perpendicular`
+// 102 (same code); both coefficient loops through one forceinline helper taking the remaining mask by pointer 103 (the
+// matched sibling 0x2ba100 writes its loop out); `collision.value.unknown24 = NONE;` ahead of the three start rows on this
+// body 100 (-2); the countdown as a long 247 (1538 B). BLOCKED-BY 0x169510 and 0x244980 (the record's capture), as above.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
