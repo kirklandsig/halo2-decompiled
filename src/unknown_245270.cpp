@@ -1019,6 +1019,11 @@ void function_245400(s_source_245400 const *source, long index,
 // out k, i, j 182 (799 B). Reading of ours against retail there: ours has the first normal's member as the loaded
 // operand in four products and loads its k twice; retail loads the second normal's member in four and the first
 // normal's k once for both of its products.
+// Edge after plane decoding, with retained short codes, named plane indices,
+// early secondary material index, or both 207/207/207/207. Retained long-code
+// forms 197/197/197/197. All reach 0x2c and 783 bytes. The long forms keep
+// the source in ESI but extend the codes at the loads. NOT kept. The short
+// forms change matched caller 0x245aa0 and every form scores higher.
 // Primary and secondary material records addressed as pointers or references,
 // with the secondary code before primary selection 163 each, or after it 164.
 // NOT kept: the earlier read gains one at 784 bytes and keeps the 0x24 frame.

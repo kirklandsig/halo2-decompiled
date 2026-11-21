@@ -502,13 +502,13 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
 // MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
 // and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
 // still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
 // spilled between the two rotations and the collision argument schedule) needs the rotation written out at the call site, so the
 // body stands.
 // MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
-// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
 // Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
@@ -1012,6 +1012,9 @@ struct s_collision_result_buffer_1697c0
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
+// Independent fallback components with aggregate output or the shared setter, by entry placement: original
+// 377/377, before fraction 377/377, after pitch-axis construction 380/380, there with fraction 380/380. NOT
+// kept: the 0xa4 frame, longer body and changed matched caller depart from retail.
 // M3 lane 5 r224 (lead, not kept): the shared in-place rotation with each cross term scaled by the sine where it is
 // computed (rows subtract the scaled term) 270 -> 199 (1433 B, plain agreed), but it raises 0x297d30 23 -> 153.
 // Yaw-axis reload after hit processing, before the fraction test, or at trace return
@@ -1019,6 +1022,11 @@ struct s_collision_result_buffer_1697c0
 // 282/282/283. Axis reference before candidate initialization or after the pitch turn
 // 282/283. NOT kept: the carried pointer changes the matched caller and the per-attempt
 // bindings lengthen the sampler. The startup zero and trigonometric spills still differ.
+// M3 lane 2 r131 (H2M_FAST with 0x297660 (MATCH), 0x297d30 (23), 0x2967b0 and 0x24590; control 270, aligned 198, masked
+// 71): the fallback test as `0.f == normalize(...)` 270 (same code); the rotate helper's rows with the sine term ahead of the
+// projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled
+// by the sine 317 (0x297d30 244); best_fraction initialised after the pitch axis 267 (under the bar); lane 5 r224's
+// sine-scaled crosses re-measured 199 (0x297d30 153). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

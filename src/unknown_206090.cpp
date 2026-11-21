@@ -879,6 +879,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // ray record local_19 declared at function scope 1386 (6243 B); the magnitude helper taking its vector by value (the
 // copy as its parameter) 1346 (same code: still one 12-byte copy per site); the contact loop placed under the query
 // call's `count > 0` test 1456 (6257 B).
+// M3 lane 8 r217 (h2m fast with 0x2056e0, MATCH each run; control 1346). Retail pads the two join points after the contact
+// loop's skip calls (0x207420, 0x207640) to 16 bytes as if they were loop heads; ours pads neither. Tried: the disabled
+// contact's skip call written first (`if (field_b3) skip; else { ... }`, no inverted test) 1349 (6238 B); the zero-depth skip
+// call written first 1366 (6238 B); both 1402 (6211 B); the first loop's cross through function_206092 re-measured 1405 (6238 B);
+// both skip calls first with that cross 1451 (6195 B). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

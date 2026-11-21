@@ -574,6 +574,11 @@ static inline void quaternion_transform_vector(
 // with double literals as well 1028 (591 B: the helper is no longer expanded). The quaternion passed by value 456
 // (1446 B); its vector part and w as separate parameters 201 (same code), with m, d, w2 259 (1294 B); the dot kept
 // undoubled with `* 2.f` written in the rows 279 (1364 B), with m first 288 (1345 B).
+// Transform cross scratch through cross3f after doubled scalar, after quadratic, before
+// all coefficients or before doubled scalar 260/198/271/254. Through cross3f_staged
+// 260/202/271/254. With both coefficients before cross and doubling last, frame and
+// length agree at 0x24 and 1317 bytes. The half-angle registers and quadratic schedule
+// still differ. NOT kept. The three-point gain reduces the frame to 0x18.
 // M3 lane 2 r128 (H2M_FAST with 0x143120/0x11d000/0x30bf0, all MATCH; control 201): the transform helper's three scalars
 // re-ordered on today's body, m,w2,d 247 / m,d,w2 248 / d,m,w2 250 / d,w2,m 252 (1336 B) / w2,d,m 203 (1323 B); its dot
 // through the existing basis_dot_xzy (the i,k,j sum) as (v, q) 226 and (q, v) 236; the identity copy as memcpy 201 (same
@@ -1700,12 +1705,19 @@ void function_143250(
 // it 939 (same code: the order is set after the homes); its subtracted product with `s21 * r5` for s21_r5 1147 (10783 B);
 // entry 37's r6_r3_r8 written `r6_r3 * r8` 1571 (10765 B). Retail keeps 143 scalar cells under the workspace, this build
 // 142; 428 of the 935 differing lines differ only in stack offsets.
+// Second-band named products for sums, ordinary differences, zero-minus differences, or all paired coefficients
+// 1226/1415/1226/1226. Running accumulators for the same groups 1229/1095/1226/1229. NOT kept: all retain the
+// 0x2fc frame and raise the score.
 // M3 lane 2 r128 (H2M_FAST with 0x143250, MATCH; control 939, aligned 777, register/offset-masked 154; the convention is
 // already retail's: rotation in EAX, ret 4): third-band entries 23-25 in another statement order (value trees kept),
 // 25 first 1113 (10773 B), 24 first 942, 23 last 1114 (10773 B); entry 23 accumulated in place over four statements 939
 // (same code); entries 23 and 25 both accumulated 1095. Reading: the masked rows are scheduling and spill placement
 // spread over the body (retail keeps 0.071428575 in XMM5 for entries 23 and 25), and retail's one extra spill cell
 // sits below the 49-entry matrix (frame 0x300 against 0x2fc).
+// M3 lane 2 r131 (H2M_FAST with 0x143250 MATCH; control 939, aligned 777, masked 154; aimed at the s21/s21_r2 cell): s21_r2
+// written into its three uses 1507 (10747 B); s21_r5_r6_r6 as `r6_r6 * s21_r5` 939, s7_s2_s21 as `s21 * s7_s2` 939 and entry
+// 25's last product with s7_s2 first 939 (each the same code); s21_s35 from its own root with s21 declared after it 1491
+// (10773 B, frame still 0x2fc). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -2051,7 +2051,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 431 (was 431): r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 431 (was 431): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2727,6 +2727,18 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Arm-local defaults with exhaustive search 596.
 // Arm-local defaults with exhaustive subtype completion 596.
 // NOT kept: Every arm-local form swaps the actor and state registers at entry. Sharing the default with case 13 shortens the code by four bytes but scores 630. The original completion lifetime is restored.
+// M3 lane 2 r130 (h2m fast with 0x110ab0 and 0x258a00, control 431; without them the image gives 478): kept, the
+// post-switch result as an if/else (`local_30 = 1;`, else the tail then `local_30 = 0;`) in place of its two `goto local_31`
+// exits, 431 (same code). Measured: case 13 through the shared exit 479 (2404 B, re-measured); `default: return 1;` in
+// case 13's place with case 13 dropped 613 (the dispatch differs from +0x8); `long local_30` 431 (same code); on the kept
+// form, case 2's early exit as `return 1;` with the label dropped 474 (2400 B: both its epilogues become `mov ax, 1`).
+// Reading: retail's case 20 else arm loads d1 into AL and jumps to the test's `test al, al` (0x2597f2), an `if (d1)`
+// test cross-jumped into the post-switch test, and that test sits right before the return-1 block case 13 and the
+// default share, so case 0's `sete` falls into it and cases 5 and 10 jump to its `sete`.
+// The 0x1c frame agrees. The default dispatch still spans to a late success exit.
+// Selector comparison chains 0/1/2, 0/2/1, 1/0/2, 1/2/0, 2/0/1 and 2/1/0:
+// 596/596/596/595/596/595. Long selector 615, pending flag arm first 596.
+// NOT kept: the chains reverse the retail entry allocation and raise the score.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2958,65 +2970,68 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 
 	}
 	if (local_3)
-		{ local_30 = 1; goto local_31; }
-	if (local_2->field_0 > 0)
-		local_2->field_0--;
-	if ((local_2->field_3 & 4) && local_2->field_8 > 0)
-		local_2->field_8--;
-	if ((local_2->field_3 & 1) && (local_2->field_3 & 2))
-		function_25a130(arg_0, arg_1, (s_cs_facing *)arg_2);
-	if (!*((byte *)local_0 + 7))
+		local_30 = 1;
+	else
 	{
-		if (local_1->unknown8c && !function_1f50e0(arg_0))
+		if (local_2->field_0 > 0)
+			local_2->field_0--;
+		if ((local_2->field_3 & 4) && local_2->field_8 > 0)
+			local_2->field_8--;
+		if ((local_2->field_3 & 1) && (local_2->field_3 & 2))
+			function_25a130(arg_0, arg_1, (s_cs_facing *)arg_2);
+		if (!*((byte *)local_0 + 7))
 		{
-			if (local_1->unknown90 != NONE)
+			if (local_1->unknown8c && !function_1f50e0(arg_0))
 			{
-				point2f local_20 = *(point2f *)&local_0->unknown6d4;
-				normalize2d(&local_20);
-				function_1f57f0(arg_0, local_1->unknown90, (long const *)&local_20);
-			}
-			local_1->unknown8c = false;
-		}
-		if (local_2->field_3 & 1)
-		{
-			local_0->unknown456 = true;
-			local_0->unknown458 = local_2->field_c;
-			*(short *)((byte *)local_0 + 0x454) = local_2->field_8;
-		}
-		if (local_2->field_3 & 4)
-		{
-			bool local_21;
-			if (local_2->field_3 & 8)
-				local_21 = local_2->field_8 > 0;
-			else
-			{
-				local_21 = local_2->field_8 != 0 || local_0->unknown264 || function_110ab0(local_0->unknown018);
-				if (!local_21)
+				if (local_1->unknown90 != NONE)
 				{
-					point2f local_22 = *(point2f *)&local_0->unknown290;
-					if (normalize2d(&local_22) == 0.f)
-						local_22 = *(point2f *)g_468778;
-					*((byte *)local_0 + 0x464) = 1;
-					*((byte *)local_0 + 0x465) = local_2->field_c.i * 0.7f > local_2->field_c.j;
-					*((byte *)local_0 + 0x466) = 1;
-					*(point2f *)((byte *)local_0 + 0x468) = local_22;
-					*(point2f *)((byte *)local_0 + 0x470) = *(point2f *)&local_2->field_c;
-					local_2->field_3 |= 8;
-					if (!(local_2->field_3 & 0x10))
+					point2f local_20 = *(point2f *)&local_0->unknown6d4;
+					normalize2d(&local_20);
+					function_1f57f0(arg_0, local_1->unknown90, (long const *)&local_20);
+				}
+				local_1->unknown8c = false;
+			}
+			if (local_2->field_3 & 1)
+			{
+				local_0->unknown456 = true;
+				local_0->unknown458 = local_2->field_c;
+				*(short *)((byte *)local_0 + 0x454) = local_2->field_8;
+			}
+			if (local_2->field_3 & 4)
+			{
+				bool local_21;
+				if (local_2->field_3 & 8)
+					local_21 = local_2->field_8 > 0;
+				else
+				{
+					local_21 = local_2->field_8 != 0 || local_0->unknown264 || function_110ab0(local_0->unknown018);
+					if (!local_21)
 					{
-						local_2->field_8 = (short)real_to_long(g_510c54->field_2_3 * 0.5f);
+						point2f local_22 = *(point2f *)&local_0->unknown290;
+						if (normalize2d(&local_22) == 0.f)
+							local_22 = *(point2f *)g_468778;
+						*((byte *)local_0 + 0x464) = 1;
+						*((byte *)local_0 + 0x465) = local_2->field_c.i * 0.7f > local_2->field_c.j;
+						*((byte *)local_0 + 0x466) = 1;
+						*(point2f *)((byte *)local_0 + 0x468) = local_22;
+						*(point2f *)((byte *)local_0 + 0x470) = *(point2f *)&local_2->field_c;
+						local_2->field_3 |= 8;
+						if (!(local_2->field_3 & 0x10))
+						{
+							local_2->field_8 = (short)real_to_long(g_510c54->field_2_3 * 0.5f);
+						}
 					}
 				}
-			}
-			if (local_21)
-			{
-				local_0->unknown458 = local_0->unknown290;
-				local_0->unknown456 = true;
-				*(short *)((byte *)local_0 + 0x454) = 0;
+				if (local_21)
+				{
+					local_0->unknown458 = local_0->unknown290;
+					local_0->unknown456 = true;
+					*(short *)((byte *)local_0 + 0x454) = 0;
+				}
 			}
 		}
+		local_30 = 0;
 	}
-	{ local_30 = 0; goto local_31; }
 local_31:
 	return local_30;
 }

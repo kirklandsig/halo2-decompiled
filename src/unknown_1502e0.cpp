@@ -1300,6 +1300,18 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // code); the unit index read through the getter into a local for the test and calls with the lookup through the getter
 // again, no player local 46. Diagnostic: both of 0x14f820's calls kept out of line (an inline-depth pragma pair around
 // them, reverted) 17, so our build's inlining of this function into 0x14f820 does not set the pair.
+// M3 lane 14 r139 (H2M_FAST with 0x151aa0 and 0x152bf0; control 5, the plain-read form 17): on the plain-read form the
+// lookup inside a conditional expression that repeats the unit test (`unit = index != NONE ? lookup : NULL`) 17; the
+// lookup's index read through the address of the player local (`(*player_reference)->unit_index`) 17; an object getter
+// taking its handle as a const reference of another integer type (a converted temporary) 17; the lookup's index through
+// a const member accessor of the player record 17 (all four the same code as the plain read: each folds into the test's
+// read before allocation). On the getter-reload form the first player fetched through a read of the player index
+// parameter's own address 55 (144 B: the parameter then arrives on the stack). Diagnostics, reverted: an extra early
+// use of the slot on the plain-read form 41 (142 B, the unit index keeps ESI and the slot moves to DX), so the slot's
+// use count does not hand it ESI; every read through the getter with no player local re-measured 46 (all four reads
+// merge early, the index in ESI): only a mix of the player local and the getter keeps the lookup's read apart. The
+// sibling 0x151aa0 is one exchange off in the same way (retail player ESI, hand EDI): in both, retail's registers come
+// only when the unit lookup's index read is a value of its own at allocation.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

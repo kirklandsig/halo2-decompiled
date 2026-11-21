@@ -1759,6 +1759,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // block 43; on B both failure exits as direct `return result;` with no label 273 (1018 B, as the `return false` form).
 // Compile-only only (each `mov eax, -1` after the folded compare): the result test as `if (result) {} else`, the mode in
 // a char local, a named spawn bool, `4 != mode`, `1 == state`, the NONE initialisers as -1 literals.
+// M3 lane 16 r169 (h2m fast with 0x14f040, MATCH each time; control 5; B = the outputs in the mode block, re-measured 43 at
+// 1031 B): the result and mode tests merged as `if (!result && g_4e6948->mode != 4)` with the outputs at the top of its block
+// 43; on B the options pointer from a file-local inline getter 43; on B the test through a file-local inline bool (`mode ==
+// 4`) negated 43; on B the mode read as the low byte of a 32-bit load (diagnostic, reverted) 43 (still `mov eax, 0xffffffff`:
+// a full-width temp does not free the constant's form); the outputs declared at function scope and assigned in the mode
+// block 43.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -3604,6 +3610,14 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // under `if (globals->unknown9c == 0)` in place of the early return; the final store under `if (!failed && last_unit !=
 // NONE)`; `if (root != NONE)` ahead of the busy test; `!busy && unit != NONE`; `last_unit != NONE &&` ahead of loop 2's
 // player tests.
+// M3 lane 4 r242 (H2M_FAST with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00 and 0x6b380,
+// all MATCH but 0x14f2e0 (5, as in the full build); control 103; with only 0x14d3a0 and 0x13cb40 listed the same body is
+// 193 at 592 B, so that list is needed for a faithful screen): loop 1 stepped by include/data_iterator.h's existing
+// data_datum_iterator_next_called in place of the file's copy 155 (597 B), loop 2 through it as well 173 (566 B, first
+// difference +0x3e: the prologue then takes ESI as retail, but loop 2's out-of-line step is gone); loop 2's datum index
+// passed as `iterator.datum_index` at both calls 103; both set-ups as `iterator.datum_index = iterator.index = NONE;`
+// 103; loop 1's body nested under `if (unit != NONE)` in place of the `continue` 103 (all three the same code).
+// BLOCKED-BY 0xb8540 stands.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

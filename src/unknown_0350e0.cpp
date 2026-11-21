@@ -506,6 +506,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // NOT kept: All eight forms grow the body and raise the score. The form with a separately scaled forward
 // contribution keeps the 0x90 frame and the first difference at +0x10, while the other seven change the
 // frame. The matched caller at 0x137ed0 stays exact throughout.
+// M3 lane 4 r242 (H2M_FAST with 0x137ed0, MATCH each run; control 334): each cross term in two steps without sharing
+// (`xy = inverse * axis->j; xy *= axis->i;`, xz and yz alike, so complement * k is written twice as retail forms it)
+// 344 (1791 B); that with i, k, j sine products named after the squares 377 (1818 B); the diagonals written square
+// first (`xx + (1.0f - xx) * cosine`) 334 (same code); the rotated rows summed forward first 334 (same code); the axis
+// read through a const reference bound to the pointer parameter 394 (1827 B). Body unchanged.
 // The 0x90 frame and both early x87 angle products agree. At +0x10 retail loads axis i and keeps the squares through sine scaling. The existing builder is tested with sine or cosine rounded to real at use and with both conversions separated by the three sine products.
 // Named sine rounded at builder entry 335.
 // Sine argument rounded at its first coefficient 339.
@@ -2847,6 +2852,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // position translation 280. In-place projected reflection by scale/difference, setter/difference or
 // scale/setter 554/499/539. Camera origin with shared difference and in-place reflection 595. NOT kept: the
 // one-point gain is below the threshold and still one byte over retail.
+// M3 lane 4 r242 (H2M_FAST with 0x2f2d0/0x2e3f0, control 281): the first distance clamp as a ternary initialiser
+// (`near != far ? clamp : 1.0f`) 424, as if/else with `attenuation = 1.0f` in the else arm 424 (both 2286 B); the saved
+// record taken at the count and the count incremented in its own statement 281 (same code: retail stores the count
+// before the tag); the draw point's x product as `reflected.i * displacement` 281, with the position added first 281,
+// all three rows position-first 281 (same code). Reading of the retail-length lead (attenuation beside `animated`,
+// reflected as three statements, 495 at 2285 B): it has retail's per-arm stores at the first clamp; left are one more
+// instruction in the delta/forward block (retail multiplies each loaded axis in place by `forward`, ours copies
+// `forward`), the far-angle product (retail loads `far` and multiplies by `inverse`), the unoccluded product's sides,
+// the opacity arms, the draw point's y product and the vertex-data clamp's store form.
 // The 0x94 frame and decoded output homes agree. First +0x76 is the missing-tag exit displacement. The first changed computation has a different camera-axis schedule. Retail tests the distance endpoints while the last two reflected components are still in flight. Test the distance predicate at four stages, with the far endpoint either retained or read at every use.
 // Distance predicate before delta, direct far reads 540.
 // Distance predicate before delta, shared far endpoint 581.

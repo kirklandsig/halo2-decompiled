@@ -1345,10 +1345,21 @@ void function_2118c0(void)
 // indices in a `long [3]` local filled at that level 170 (761 B), in a `word [3]` local 10 (same code: the array is
 // promoted). Not tried: calling 0x212100 for the interpolation (its cubic divides by the general knot spacing, this one
 // multiplies by constants).
+// M3 lane 15 r127 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): a `vector3f (*)[8]` table local
+// at the top for the knot rows with `long row = b * 8` 150; a `long row` started at zero and set to `b * 8` after `b++` at
+// the band loop's foot 238 (853 B); `long b` in both passes 134 (the band loop keeps an up-counted b and no down counter);
+// the knot rows in the band-of-64 idiom (`&noise[row][w * 8]`) with the shifted row 10 (same code); `short` knot indices
+// with `long row = b * 8` 151.
 // M3 lane 13 r135 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): p1 and out from the shifted
 // row too (`noise[row + k]`, `&noise[row + k][m]`) 175 (745 B, every row reduced); `long row = b << 3` declared ahead
 // of `previous` 10; the knot subscripts written `w + row` 10; `short b` declared ahead of `short m` 10; the knot rows
 // through a `long const &` bound to `(long)b << 3` 10 (all the 10s the same code).
+// M3 lane 11 r148 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): the knot reads written in the
+// component loop (`noise[row + w3]->n[i]`, no knot pointers, shifted row) 124 (790 B); `long row = b * 8` with p1 and
+// out declared ahead of the knot pointers 150. Compile-only (round 118's harness, aligned, base 27): `b * 8` with the
+// knot reads in the component loop 185 and with every row read there 185 (all reduced and hoisted); `short` knot
+// indices 33, `byte` 101; the band loop as a `for` 27 (same code); a `long` or `dword` b with the shifted row 64
+// (still `inc`).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

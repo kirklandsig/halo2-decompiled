@@ -4281,6 +4281,33 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // copy choices move together; whenever the shift is its own value (not coalesced with `input`), small's load coalesces
 // with the alpha selector's register, and retail has neither coalesced. Diagnostic: B without the shifted local in the
 // whole, alpha, fraction, input order 14 (small in CL as retail, alpha computed ahead of input).
+// M3 lane 14 r139 (H2M_FAST, control 9; r205's base B re-measured 5, no shifted local 939, B with no shifted local 941,
+// its whole/alpha/fraction/input order 14 and whole/input/fraction/alpha 976). New forms: `input` reused as the exponent
+// counter (`input = 0;` and the loop on it) 9, on B 5 (same code each: the two values stay separate); the three 16.16
+// conversions through one shared inline function 9, with no shifted local 939 (same code); a second stage-one selector
+// of the same value for the alpha word (`long input_alpha = small ? 5 : 4;`, three positions) 225/225, on B 223 (the
+// two selectors are not merged and every home moves); the stage-one words through a force-inline packing function, two
+// words or all three, on B 941 (the no-shifted-local code); on B with no shifted local the alpha selector as
+// `!small ? 24 : 4` 941 and `small == false ? 24 : 4` 941 (same code); the four selector locals declared bare in the
+// whole/fraction/input/alpha order and assigned in another order (no shifted local, on B): wfia 941, wifa 976 (4840 B),
+// iwfa 965, wiaf 963 (the callee-saved homes follow the order of first assignment, not of declaration); the shifted
+// local for the RGB word with the alpha word shifting `input` again, on B, re-measured 941.
+// Diagnostics, reverted at once: on B a store of `input` to a spare field after the stage-one words makes the selector
+// block and the shift retail's row for row (936 at 4840 B, only the extra store and what it shifts); the same store with
+// no shifted local gives the same retail rows (936); the store placed ahead of the shift 960 (input's home moves); a
+// store of `input` that a later store overwrites is removed before allocation (941, 939 on main's body: no effect).
+// Reading: retail's `input` is still live after the stage-one words when registers are chosen, so the shift copies it to
+// EAX and small's load keeps CL with an AL copy; both remaining differences come from that one fact, with or without
+// the shifted local. Left to find: the later use of `input` that leaves no instruction (a dead store does not count).
+// A second evaluation that might merge only at code generation: with no shifted local on B, one of the two words
+// shifting by `* 0x1000000` 223 / 223 (the two products are never merged: two shifts, and the homes move); the alpha
+// word packed by nested 8-bit shifts 941 (folded to the same shift: the no-shifted-local code).
+// More diagnostics on B with no shifted local (a store to a spare field after the stage-one words, removed at once): of
+// `small` 942 at 4840 B with the selector block retail's (small in CL, copied to AL); of alpha_input 244, of whole 247
+// (4832 B), of fraction 972, of a third `input << 24` 964, of `input == 5` 948: only a later use of `small` or of
+// `input` itself keeps small's load out of AL. One stage-one word shifting `input` as a signed long, either or both,
+// 941 (same code, merged); the alpha word shifting `(byte)input` 35 (two shifts, `movzx eax, bl`: a positional
+// coincidence, the selector block is still the AL form).
 // M3 lane 13 r134 (fast, control 9; aligned = lines differing after alignment, this body 6): on the no-shifted-local
 // form (re-measured 939, aligned 15: retail's shift, the small flag loaded into AL after fraction's move with no copy)
 // the two stage-one words through a forced-inline four-argument packing function 939 (same code); the input selector
