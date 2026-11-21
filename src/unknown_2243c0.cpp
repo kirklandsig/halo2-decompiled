@@ -884,6 +884,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // then late definition mask 93. NOT kept: 103 needs bound one-use
 // element addresses. The late mask loses caller 0x224d90. The EDX mask
 // and EDI table can coexist. The fallback payload still takes EAX.
+// M3 lane 7 r210 (h2m fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless given; main 117): lane 1 r59's
+// reference chain rebuilt on this main 8 at +0x9e (the same eight lines: pass definition EDX where retail reuses EAX after
+// the dead `lea`, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the definition). On the
+// chain, match-only: the pass element's reference scoped in its own block ending after the +4 read 8 (same code); the
+// head, stage and pass references each in their own block 8 (same code); the geometry-info pointer for 0x12de70 named
+// right after the pass tag (to hold ECX across the last two lookups) 8 (same code: it folds), named just after local_9 8,
+// named at the function's top 68 (551 B, 0x224d90 36). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

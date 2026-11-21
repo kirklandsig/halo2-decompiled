@@ -1235,6 +1235,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Carry completed near/far/both offsets through normal orientation 119/119/135.
 // With both named offsets, sign near/far/both before orientation 163/183/191; read both x coefficients before the copies 235,
 // or combine the early reads with both early signs 297. The coefficient preload and zero register still differ.
+// M3 lane 14 r140 (h2m fast with 0x1648d0/0x320b0, both MATCH; control 115, difflib-aligned 73, register-masked 33):
+// retail keeps the source operand order in the clip denominator (delta first for i and k, normal first for j) and in the
+// distance (normal, point, normal first) where ours loads the other operand first for two terms of each. Forms: the
+// classification terms written i, j, k 115 (same code); the classification through a `point3f const *` element pointer
+// 265 (1867 B); the denominator as one expression 247 (1867 B); the distance as one expression 251 (1867 B); the plane
+// pointer typed const 115 (same code). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -922,6 +922,16 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // declared ahead of the maximum 404; the two flags declared at the loop top ahead of the index 405; the old state read
 // after the flags' declaration 404; the 0x25d610 test given the node view 404 (same code). Still BLOCKED-BY 0x2641c0's
 // inline decision (rounds 114, 117 and 143: dropping its noinline loses 0x264210).
+// M3 lane 4 r244 (h2m fast; control 404; body unchanged). Inline-cost reading (one-object link-time build of this file with
+// 0x2641c0/0x264210's definitions and 0x25d690's object, threshold search; the build uses 81): with the noinline declaration
+// dropped, 0x2641c0 expands here from 32, at 0x264210 from 52 and at 0x265680 between 72 and 81, so at 81 all three expand
+// where retail expands only this one; spelling 0x2641c0 as a single exit, nested tests, an aggregate copy or a `result =
+// true` default moves those to 32/52 or 34/54 (its cost follows the optimised body, not the written form); 0x264210's call
+// under one or two folded levels 61/80, a named result 52 (it would need three levels). Trials: `sample`/`update` declared
+// after the 0x263670 call 404; both at function scope 404; the walk as `for (index = first; index != NONE; index = next)`
+// 473 (1580 B); diagnostics, noinline dropped: with the flags after the call 509 (1696 B, still `ret 4`: the expansion alone
+// does not give retail's EAX convention), with the `for` walk 454 (1640 B, `ret 4`). BLOCKED-BY 0x2641c0's expansion and the
+// stacked actor index, as before.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

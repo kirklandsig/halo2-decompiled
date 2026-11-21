@@ -5454,6 +5454,10 @@ struct s_damage_object_creation
 // counter 167; `attached_nodes` declared ahead of the section loop 167 (all the same code); the bound read at each test
 // 179 (listed). Downstream of the section rotation the definition reload is scheduled ahead of the attached-mask store
 // (ECX here, EAX after the store in retail), which carries the g_51e9b8 and node-lookup rotations.
+// Word primary mask shared between section marking and detachment 167, before the record query 167;
+// shared full-width test bit 167, with both word setters 167; shared word test bit 225, with both setters 225;
+// primary or secondary setter with the word mask 167/167. NOT kept: the word test bit shortens the scan
+// and moves the first difference earlier. The EDI count and EDX primary mask persist in the tie forms.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
