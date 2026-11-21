@@ -1754,6 +1754,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 603, general-branch damping 632, direct dispatch test 639, and request as
 // effective default 523. These still miss the damping register and enlarge
 // the retail-length body.
+// M3 lane 11 r142 (fast with 0x1f0450/0x24590, both MATCH; control 234, aligned 194, masked 149): gravity through the
+// file's existing bit-3 helper (`function_1f1462(state->flags)`, with or without `!= 0`) 234/234 (same code); the first arm's
+// cross through cross3f 234 (same code), through cross3f_staged 501 (3057 B); the first arm's output named once as a
+// `vector3f *` for its five uses 589 (3027 B). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

@@ -2186,6 +2186,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // second point copied from the return 617. Early signed successor with the first,
 // second or both returns 603/603/616, between both reconstructions 558.
 // NOT kept: all tie or regress. The early forms change the 0xb964 frame.
+// M3 lane 11 r142 (fast with 0x120790/0x2469b0, both MATCH; control 551, aligned 564, masked 311): in post-call offsets retail
+// homes the second count (sharing the prism index's slot) at 0x88, the first radius 0x8c, the first count 0x90 and the
+// second radius 0x94, ours the radii at 0x8c/0x90 and the counts at 0x94/0x98. Names do not order these slots:
+// `face_count` renamed to sort first, or the edge and face names exchanged, 551/551 (same code). `if (shapes.counts[2] > 0)`
+// around the square and the prism loop 550 (aligned 511: the square moves after the guard as retail, but the guard's
+// compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
+// the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
+// Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
