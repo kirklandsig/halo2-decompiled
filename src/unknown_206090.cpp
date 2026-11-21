@@ -879,6 +879,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // ray record local_19 declared at function scope 1386 (6243 B); the magnitude helper taking its vector by value (the
 // copy as its parameter) 1346 (same code: still one 12-byte copy per site); the contact loop placed under the query
 // call's `count > 0` test 1456 (6257 B).
+// Entry object identifier 1370, typed lookup with entry identifier 1370, scoped component index 1346,
+// scoped component with entry identifier 1370, both identifiers scoped through velocity call 1370,
+// entry identifier with shared zero-vector pointer 1346, typed lookup and scoped component 1346,
+// typed lookup and both identifiers 1370. NOT kept: the 0x5d0 frame, velocity homes and 6243-byte
+// extent persist in all eight forms.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

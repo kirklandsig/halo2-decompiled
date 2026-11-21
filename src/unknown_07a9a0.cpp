@@ -1757,6 +1757,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 872 (2796 B, and the matched 0x705f0 and 0x72330 stop matching); diagnostic, an inline_depth(0) region around the top
 // lookup statement 994 (2640 B: the top call stays out of line but the region turns off the body's other expansions);
 // `result` declared ahead of the getter 871 (same code). BLOCKED on the link-wide inline choice for the top 0x192e60 call.
+// Complete machine-ID capture, with both words before clears, split around clears, second after identity,
+// or first after total clear 871/867/916/899. Dword histogram with the same publication forms
+// 911/933/946/946. NOT kept: the 867 form gains four and shortens to 2748 bytes. Dword cells
+// reserve 0xb0 and regress. The opening variant lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
