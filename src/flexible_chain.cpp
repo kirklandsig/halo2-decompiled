@@ -967,6 +967,10 @@ void __stdcall function_1160c0(real dt)
 // base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
 // the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
 // +0x20.
+// Tick read ahead of segment as short or long 288/289, increment computed first 292/291.
+// The same four forms after selecting the ordinal 144 each.
+// NOT kept: the early read consumes EDX and adds a separate load and store. With a selected ordinal
+// the memory increment returns and the segment still spills at ESP+0x20.
 // M3 lane 3 r290 (H2M_FAST, control 144): the segment count read once into a `long` ahead of the loop for the bound and the
 // selection 304 (first difference +0x2); the selection as `i > last ? last : i` with `long last = count - 1` 151 (1370 B);
 // `segment` declared in the outer block and assigned in the loop 144 (same code); `segments + i`, then reassigned to the

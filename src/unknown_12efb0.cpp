@@ -937,6 +937,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
 // accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
 // (3838 B). Body unchanged.
+// The 0x4820 frame and metadata cursor agree. Provider result, selected record and SIMD zero still use different registers.
+// Captured palette byte with short in the arm 750; short/long fresh lookup 728/619; early byte admission 748.
+// Cached previous index with short or explicit null and long 726/618; original capture with short/long lookup 729/620.
+// NOT kept: The long lookup forms recover the CL byte load, but spill that byte, keep NONE in EDX and raise the score. The four callee controls remain matched.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

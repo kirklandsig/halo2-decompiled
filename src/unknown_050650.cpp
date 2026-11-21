@@ -1022,6 +1022,10 @@ struct s_collision_result_buffer_1697c0
 // 282/282/283. Axis reference before candidate initialization or after the pitch turn
 // 282/283. NOT kept: the carried pointer changes the matched caller and the per-attempt
 // bindings lengthen the sampler. The startup zero and trigonometric spills still differ.
+// Axis height initialized from fraction, fraction from axis height, and chained zeros 271 each.
+// Setter with chained zero 292. Ascending short with tail less-than or terminal inequality 570 each.
+// Direct clear trace with collision-first or fraction-first fallback 339/340.
+// NOT kept: startup zero remains in XMM1 and the tail count changes the matched caller.
 // M3 lane 2 r131 (H2M_FAST with 0x297660 (MATCH), 0x297d30 (23), 0x2967b0 and 0x24590; control 270, aligned 198, masked
 // 71): the fallback test as `0.f == normalize(...)` 270 (same code); the rotate helper's rows with the sine term ahead of the
 // projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled

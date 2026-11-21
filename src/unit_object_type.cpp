@@ -3236,6 +3236,10 @@ void function_c5740(long unit_index, bool start)
 // Explicit object-header lookup for unit, weapon, root, unit/weapon, weapon/root, unit/root,
 // all three or post-gate headers with typed root members: 97 each. NOT kept: no gain; the
 // definition-index and pool-data homes remain.
+// Scoped entry slot selection 123, conditional selection 123, scoped material tag 97,
+// both scopes 123, typed fallback material 97, one typed material for both calls 97,
+// typed material with scoped selection 123, scoped nested sentinel and call gates 123.
+// NOT kept: the 331-byte selection forms change the matched caller, and the other forms tie.
 // Damage-presence test before material lookup 105, masked damage slot before/after material
 // lookup 91/93, selected tag instance 97, typed damage/material/both playback indices
 // 97/97/97, and inline effect dispatcher 97. NOT kept: the six- and four-point gains
@@ -5641,6 +5645,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Forward component copy loop ascending/descending with ordinary crosses, staged first,
 // staged second or both staged: 185 each. NOT kept: the copies lengthen the body and the
 // first cross still preloads up.i.
+// Forward split copy i then jk, ij then k, k then ij, and jk then i 183/99/99/183.
+// With staged first cross 180/99/99/180. Both spans through memcpy, ij first or k first
+// 94/96, also with the staged first cross. Shared aim pointer or reference for both spans 94/94.
+// NOT kept: 94 grows to 772 bytes and retains the early up.i load. The 767-byte forms score 180.
 // Inverse transform into separate storage 300, in place 278, or through its returned
 // pointer 303. Reconstruction through the unit-scale transform with separate or
 // reused storage 233/233, in place 199, and paired transforms with separate or shared
