@@ -1224,6 +1224,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // local stored as `near_distance - d0` 423, as `-d0 + near_distance` 423; the forward vector copied into a local normal with
 // the plane's normal written from its negation 263 (1830 B); the i product named ahead of the k and j terms and added last 251
 // (1867 B); the k and j terms assigned and the i product added by `+=` 168 (first +0x60). Body unchanged.
+// Direct clipped endpoint through point setter, component writes or vector sum 394/377/377.
+// Endpoint chosen before fraction, with setter, component writes or sum 382/366/366.
+// Branch-selected endpoint with point setter or vector sum 371/377.
+// NOT kept: direct output advances the first difference to +0x15 and loses retail length.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

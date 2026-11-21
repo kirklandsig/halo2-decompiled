@@ -1419,7 +1419,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax I (11-19): no new form, no lower score (175): the 0xfc frame and the body length agree, but the constant loads still come early (the 1.0f is materialised at the top of the prologue where retail loads it after the tag lookup) and the definition, material and point homes still differ.
-// score 175 (was 183): The 0xfc frame and length agree. Unity loads early, and the definition, material and point homes differ.
+// score 158 (was 175): The 0xfc frame and length agree. The definition, material and point homes differ.
+// Earlier at 175, unity loaded ahead of the retail schedule.
 // MiniMax A (11-18): no new form, no lower score (175): the 0xfc frame and extent agree, but the constant loads still come early and the definition, material and point homes differ.
 // MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
 // still sits at frame+0x0c where retail has it at frame+0x08, so the argument slots after the prologue pair with the wrong rows;
@@ -1859,8 +1860,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // references 193, animation names record 175, names record with a shared turning key 193, component
 // acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
 // The unit load and definition, animation flags and point homes remain displaced.
-// score 158 in a full build with stand-in SDK headers (was 175): `state` is declared after `animation_flags` and
+// `state` is declared after `animation_flags` and
 // `speed_scale` after `position` (declaration order only).
+// Scoped query gap, with zero or original distance, published on failure 448/448.
+// Gap published before successful length, at the query join or with case scope 453/440/460.
+// Selected final length or gap 448, distance before target position 160, gap beside query points 455.
+// NOT kept: moving the distance initialization leaves the tag spill displaced. Separate gaps
+// lengthen the body and raise the score.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

@@ -1069,6 +1069,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // to -1 559 (the 1.0f is still divided in place and loaded again), and that sign used as the reciprocal's numerator (a
 // diagnostic only) 577 (3631 B: still `divss` in place on the register that held it). In every form the constant is
 // rematerialised, so nothing here makes this build keep 1.0f across the cross product as retail does.
+// Nested positive angular and two distance tests, three groupings 535/535/535.
+// Named angular product in the combined test and the three nested forms 726 each.
+// Named reciprocal-distance result after the angular test 574.
+// NOT kept: the nested tests tie. The named limit grows the frame and restores no tag/count home.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
