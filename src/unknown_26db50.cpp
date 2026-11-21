@@ -1151,6 +1151,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // M3 lane 16 r155 (fast with 0x1ecf50 and 0x26d100, both MATCH each time; control 26): the 0.1 offset products
 // constant-first 26; the 0.5 lift product constant-first 26; the collision marker as a typed short field at +0x24 of
 // the collision view 26; the offset reading the axis as `n[0..2]` 26, both sides as `n[0..2]` 26 (all the same code).
+// M3 lane 12 r164 (fast with 0x1ecf50/0x26d100/0x26dde0, all MATCH; control 26; M = lane 12 r147's block re-measured 20):
+// the 0.1 offset as `point = collision.point;` then a component loop of `+=` 150 (1113 B), on M 146, counted down 151/147;
+// from `real_point3d_set(&point, collision.point...)` then the loop 177/179 (1082 B); one component loop re-measured 45 /
+// 39 on M. Diagnostics (real stores, reverted): an axis j or k product stored to the entry after the 0x14a280 call or
+// ahead of the offset 93-204 (1097-1111 B, rotation still ours). First-mention `(void)` reads: the direction's k or j
+// after the copy 116/162, before the rotation 148/138; the axis's k or j before the rotation 20/20 (same code as M).
+// include/axis_rotation.h's helper on M with the six offset orders: x,y,z 20; x,z,y 6; y,x,z 26; y,z,x 29; z,x,y 9;
+// z,y,x 6 (rotate_direction's own table: only the y/z offset order counts). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

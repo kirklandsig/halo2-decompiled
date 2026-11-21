@@ -201,6 +201,13 @@ bool function_1946f0(s_bitstream *stream)
 // every site 2; the explicit read-modify-write with one `count >= 0 && count > 0` test and the clear from
 // `&data[byte_index + 1]` 2; a block-local byte mask with the count as `size - 1 - byte_index` and the clear from
 // `&data[1] + byte_index` 2 (the 2s the same code: both LEAs data first).
+// M3 lane 12 r164: a compile-only grid (both LEAs reproduced) of 192 combinations: index named, written `saved / 8` at every
+// use, or named for the tests with the expression at the addresses x data from the field, through the dword buffer, or
+// through forceinline (index, data) / (data, index) address helpers x pre-decrement in the subscript or a separate
+// decrement x either counter-store order x clear start `data + i + 1`, `&data[i + 1]` or `&data[i] + 1` x the mask with or
+// without its byte cast: every one keeps both LEAs data-first. Fast: the expression index with the buffer, the separate
+// decrement, swapped counter stores and `&data[i + 1]` 13; the named index with the (index, data) helper 2; the mixed index
+// with the (data, index) helper and the separate decrement 2. All restored.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

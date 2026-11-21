@@ -2174,6 +2174,14 @@ bool function_17afd0(long effect_index, long value);
 // false 56; a false default ahead of the availability with `if (available) same_view = true;` nested in the owner/view
 // arm 119 (502 B, register-masked 6: NONE and the owner leave EBP); the copy form with the availability as one
 // conjunction 48 (494 B).
+// M3 lane 12 r164 (fast with 0x174420/0x1751d0; control 12; P = the plain conjunction, re-measured 138): P with the owner as
+// one ternary 138; the attached flag reading `system->effect_index` again, on P 140, on this body 42 (500 B); a dead true or
+// false default ahead of the availability with P, or with P's if/else of constants, 138 each (removed first); the true
+// default kept with `if (conj) same_view = true;` then the clearing test 133 (509 B); the camera flag's false default ahead
+// of the availability, between it and P, or ahead of the owner lookup 138/138/101 (494 B). Diagnostics (semantics changed,
+// reverted): on P the NONE constant stays in EBX through the view test before 0x155760 and the owner test after it, so the
+// owner cannot share EBP with it; P without the owner test 96 (owner and NONE share EBP, availability BL); without the view
+// test 129; this body without the owner test 102. On this body both later tests are immediates. All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
