@@ -1884,6 +1884,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // preload 137, typed state with material address 158. NOT kept: the 137 form restores
 // the low tag spill and walking load order but stages one-use settings and rate locals.
 // The animation flags, position and material homes still differ.
+// On the retained state and speed declaration order, lexical ranks for tag, flags,
+// material, grab distance, position, facing, tag with distance, and tag with flags
+// and material each score 158. The +0x64 definition spill and other homes stay in place.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4536,6 +4539,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // and walking lookups 677 with flight-arm acquisition or 686 with call-local
 // acquisition. One branch-local reacquisition 630 for either branch.
 // NOT kept: the reduced control is 598 and separate lookups enlarge the body.
+// Animation-key case fallthrough with special or ordinary permission 595/595. Three
+// walking outcomes by if/else, exclusion-first or special-first conditional, default
+// ordinary, key cases or a second dispatch 628/642/643/626/628/708.
+// NOT kept: the 595 forms gain three in the reduced image and grow the frame to 0x80.
+// The full 0x78 frame still needs the changed byte and flight threshold at +0x11 and +0x18.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
