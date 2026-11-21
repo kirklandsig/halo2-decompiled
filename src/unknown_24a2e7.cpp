@@ -472,6 +472,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 84, with the index declared ahead of the loop 84 (same code each); `buffer` declared ahead of the suffix conversion 69
 // (203 B, two `lea edi` copies); `result = buffer;` ahead of the indexed terminator 84; the terminator after the if/else
 // under `if (result == entries[i].field_1e4)` (diagnostic) 73 (209 B). Body unchanged.
+// M3 lane 2 r133 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67): every arm access indexed
+// with no buffer local and the terminator and result indexed 84 (197 B); the buffer local kept for the calls with the
+// terminator and the result indexed 84 (same code); direct returns (`return buffer;`, `return entries[i].field_0c;`,
+// `return L"";` after the loop, terminator indexed) 83 (193 B), the same with every arm access indexed 83; the suffix
+// declared at function scope and cleared by memset in the arm 95 (182 B). Compile-only (no LTCG) gives a different
+// frame and convention here, so it cannot screen this function. Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
