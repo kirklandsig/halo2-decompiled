@@ -4850,6 +4850,10 @@ struct s_128ca0
 // controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
 // shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
 // swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
+// Attenuation in the opening decibel, separate initialized or assigned decibel, unsigned bits
+// from the call or through it, signed-bit view, or existing decibel value member: 48 each.
+// Attenuation as a decoded real 180. NOT kept: the decoded real shortens to 1043 bytes and
+// moves the first difference to the gain setup. The tied forms leave both pin register pairs.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

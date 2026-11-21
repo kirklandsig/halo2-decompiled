@@ -941,6 +941,11 @@ void function_3dd10(long object_index, bool force);
 // or one model-handle read 303. The same two forms with the opening guard 302/303.
 // NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
 // The second-bank base forms shorten the body, and the mask and count homes still differ.
+// Remaining-choice bounds for weight/selection/both 231/170/249. Completed-choice bounds
+// 61/181/161. Direct counts in both 249/161. Visit ordinal before the test, advance at lookup,
+// inclusive end with early visit, or signed cursor offset 224/293/219/250. NOT kept: the
+// 61 form recovers the count and mask homes at retail length, but compares unsigned and
+// adds an ordinal adjustment. The four signed follow-ups grow the frame to 0x58.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
