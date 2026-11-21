@@ -753,6 +753,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Facing products staged across negative x, the negative endpoint or positive x, with real
 // or double products, 316 in all six forms. Full facing test after negative x or after the
 // negative endpoint 332/336. The 0x64 frame agrees and unity still uses XMM1 in the staged forms.
+// M3 lane 15 r128 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH; control 305, `ret 0x1c` in both): the radius test on a
+// second unrounded `sqrt` of the same sum 411 (1756 B, the roots are not merged); the squared sum named as a `double` local
+// 305 (same code); the near rows' y staged in the output element (`field_c.y = y * cos; field_c.y += x * sin;`) 392 (1745 B);
+// separate cosine/sine/turned-y locals for the second near emission 305 (same code); the root summed y-first with
+// `field_24 > distance` 305 (same code). Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

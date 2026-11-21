@@ -1525,6 +1525,10 @@ bool c_projectile_type::v8(long a, long b)
 // 12s are the mask's own code). Diagnostic (reverted): `result += 0x800` 13, still swapped, so the 0x800 pair is keyed by the
 // constant's value and not by the operation. r237's entry address ahead of the NONE test re-measured 24 (187 B): the head pair
 // is retail's there, with the index in ESI and the entry in EDI.
+// M3 lane 15 r128 (H2M_FAST with 0xa5e70, MATCH each time; word read 5, mask 12): the group index as `((dword)index << 16)
+// >> 16` 12 (folds to the mask); as `(dword)(word)index & 0xffff` 5 (same code as the word read: the movzx stays, the mask
+// is dropped); with the mask, the 0x400 compare written object-first 13, both compares written value-first 16, the object
+// pointer typed `byte const *` 12 (same code). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

@@ -895,6 +895,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // right after the palette call, ahead of the flag and the three source stores, 700 (3828 B); the short slot read ahead
 // of the palette call 617 (3828 B); the flag declared after the three source stores 607 (same code); the three source
 // stores in reverse field order 607 (same code); a `long` slot read ahead of the palette call 689 (3823 B).
+// M3 lane 15 r128 (H2M_FAST; control 607): retail's failed palette lookups reach one shared record test with the record
+// zeroed (`xor ebx, ebx`), ours threads them to the default arm. The lookup as one nested ternary 607, the record left
+// uninitialised and set NULL inside the else block 607, the scenario test as its own `if` around the range test 607, the
+// not-found case as a guard `goto` ahead of the body 607 (all the same code: still threaded); the slot byte tested in place
+// with the short slot declared inside the arm 750 (3848 B). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
