@@ -993,6 +993,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // where retail keeps the mode in ESI and reloads the graph per call). So the request's graph role follows the name locals'
 // live ranges, not the shared helper. The name locals read at the top of the failure arm 587 and just ahead of the chain's
 // test 613 (1766 B each, the frame moves). Diagnostic (reverted): the graph kept live past the request 602. Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1db120/0x1cccd0/0x1cd070, all MATCH each run; control 348): success declared ahead of
+// the graph 348 (same code); success assigned from the first lookup's test (`success = index != NONE; if (!success)`)
+// 506 (1766 B, first difference +0x2d); the found names read into three locals just before the request 390; the
+// request's urgent flag passed as `success != false` under the test 619 (first difference +0x5); the second lookup's
+// set stored after `success = true` 350. Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00 as above.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

@@ -615,6 +615,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // bitfield 207 (frame 0xc); the boundary tests as `if (frame >= 0) { if (frame == count) ... } else ...` 136 (689 B); both
 // loop restarts as `!type && (playback_flags & 3) != 0` 229 (639 B); the three timing locals declared at their computations
 // 1 (same code).
+// M3 lane 4 r243 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the in-range case as an explicit
+// last arm holding only the flag-8 store, each boundary arm ending in its own restart break and flag-8 store (no join
+// test) 88 (664 B); that without the per-pass disposal reset 88; that with each boundary arm's store as an `else if` of
+// its break 88; the flag-8 store as an `else if` of the join's restart break 1 (same code); the closing dispatch as `if
+// (dispose && get_screen() == this) ... else if (restart) ...` 221 (644 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

@@ -941,6 +941,19 @@ void function_3dd10(long object_index, bool force);
 // or one model-handle read 303. The same two forms with the opening guard 302/303.
 // NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
 // The second-bank base forms shorten the body, and the mask and count homes still differ.
+// M3 lane 5 r226 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH each time; control 77). Reading: retail's
+// scan is a signed `jl` loop that is not unrolled, with the count in EBP and `last`, the mask, the variant and the weight
+// all loaded, updated and stored in memory each pass (the mask in the colours argument's home, the weight at +0x10);
+// the natural form (both scans as `for (j < choice_count)`, no outer guard, 638 at 1309 B) already has the mask in
+// that argument home, the weight at +0x10 and the variant in memory, but unrolls the scan four wide, which gives
+// `last` EDI, the object EBP and the count EBX. The four accumulators declared in eight other orders 77 each (same
+// code). The whole arm in a file-local helper: plain `inline` 918 (405 B, left out of line), forceinline 77 (same
+// code), with the natural scan 636, with no outer guard 97, both 638. On the natural form, the scan writing through
+// pointer locals to `last`, the mask and the weight (all three, each alone, the first two) 638/647/647/638/638 (the
+// pointers fold, still unrolled); the scan in a helper with those three as out-parameters, `inline` 311 (950 B, a
+// call), forceinline 638 (same code); one index shared by the scan and the selection loop 638, with the outer guard
+// 636; a `short` scan index 262 (1049 B: the only form here that keeps the natural scan rolled, but every use
+// sign-extends). What keeps retail's scan rolled is still not found.
 // M3 lane 12 r170 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all matched; control 77): the selection loop as a `for` on
 // `j < choice_count` 199 (1045 B); one `j` for both loops 77 (same code); `target` declared ahead of `cumulative` 80; the
 // choice guard as `0 < choice_count` 227 (1002 B); the scan bound as `choice_count != j` 227 (1002 B). Reading: retail

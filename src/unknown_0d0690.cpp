@@ -1689,6 +1689,15 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
 // test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
 // mask takes EDI ahead of the query in every form where the copy stays in the found block.
+// M3 lane 8 r217 (h2m fast with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10; controls 529 / 378; letters as in 0xd4080's note). New
+// pair: a file-local in-place colour scale helper (each channel `scale * channel`) for the six scalings of both functions,
+// together with lighting_rotate reading its axis through a `vector3f const *` from g_4687b0, keeps record on the stack and
+// 0x3db00 MATCH (the live axis alone loses it): on main's bodies 606 (2137 B) with 0xd4080 at 316 (its N D0 IP ES SS). On the
+// pair, 104 combinations of this body: best natural rows 510 ((type, query, block), the scan without its guard block, the
+// lightmap copied whole with a bias local, normalize3d), 511, 513 (`count > 0` kept, the normal and the lightmap as aggregate
+// copies, the bias read from the record, normalize3d; check.py --fast agrees); with order moves 491 to 496. All need 0xd4080's
+// moved square (ES): without it 0xd4080 reads 427 to 486 in all 16 subsets of N/D0/IP/SS, so 513 / 316 is a lead only
+// (build/r217/lead-d37f0-d4080-316.patch in the m3-lane8 worktree). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2029,6 +2038,14 @@ real function_30bf0(vector3f *vector);
 // rotation 436, the limited colour as three scalars 434 and the normalize through three temporaries 429; left: the frame is
 // 0x4c against retail's 0x40, the normal copy's components are stored in the order (k, i, j) against retail's (i, k, j), the
 // normalize's j and k products are commuted, and the 0xd37f0 call hands its block and query over in the other order.
+// M3 lane 8 r217 (h2m fast with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10; control 378). Letters: N the first normalize through
+// normalize3d; D0 direction0 as an aggregate copy of the normal negated by lighting_negate; IP direction2 copied, negated and
+// rotated in place; ES `real square` right after the direction1 negate (a moved declaration, so match-only); SS colour2's
+// positive checks as select stores. N D0 IP ES SS 370 (1914 B, frame 0x40); without SS 399; without ES 485; N D0 IP 496;
+// IP ES SS 458; N D0 514; IP alone 460 (1870 B); D0 IP ES SS 507; the set with (type, query, block) 509; with the live axis 426
+// (0x3db00 lost). With 0xd37f0's colour-scale helper and live-axis pair: N D0 IP ES SS 316 (1877 B, aligned 215: left are the
+// entry flag store, the normal copy's square order, the hoisted tag-table load, the call's query/block registers, the rotation's
+// sine interleave and the final scales); without ES all 16 subsets 427 (N D0 IP SS) to 486, the pair alone 477. Body unchanged.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

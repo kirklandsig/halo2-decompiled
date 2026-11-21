@@ -625,6 +625,10 @@
 // whole third add is emitted and the body grows by 75 to 96 bytes. A zero-scaled add is therefore not what retail
 // dropped; the dead use has to be one this compiler removes after the x87 schedule is fixed, as the pointer-copy write
 // of r257 above is.
+// M3 lane 4 r242 (H2M_FAST with 0x4a1e0; control 536 at 2622 B): s0's product with its last two factors parenthesised
+// 536, its sum with the 7.75 cosine first 536, its three factors in reverse order 536, sin x as the second factor 536,
+// the four factors through the float sin/cos overloads with the sum left in real 536 (all the same code: VC reorders
+// the flat product and sum and keeps the x87 schedule). Body unchanged.
 // First +0x2 reserves 0x54 against retail's 0x60 at the same extent. Retail stores both rounded waves before SSE scaling and retains the cross products across the displacement updates. Test the rounding boundary with the original cross order and with the opposite cross between the updates, which previously recovered the frame.
 // Short wave rounded after the mixed wave 577.
 // Short wave rounded at its update 578.
@@ -635,6 +639,11 @@
 // Mixed wave rounded at its update with overlapping crosses 599.
 // Both waves rounded at their updates with overlapping crosses 599.
 // NOT kept: The original cross order grows by five to six bytes and retains the 0x54 frame. With overlapping crosses the frame reaches 0x60 and the first difference moves to +0x6, at 599 and 2632 bytes. The two wave homes and the x87 schedule still differ. The original cross and wave lifetimes are restored.
+// M3 lane 3 r291 (H2M_FAST; control 536 at 2622 B): the two wave values renamed so they keep their order (mixed/short)
+// 536 and so they swap it 536, the first cross renamed so it sorts after them 536 (same code each: names do not move the
+// wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
+// the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
+// so no out-of-line copy of a wave helper exists to show the removed third use.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -1206,6 +1206,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the global vector 232 (1081 B); this file's declaration of the shared rotate helper marked `__forceinline` 26; the angle
 // written ring term first 26; `rings_remaining` declared ahead of `ring` 26; the trace distance named ahead of the trace
 // call 26 (the 26s the same code).
+// M3 lane 13 r138 (h2m fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26): the trace endpoint through the
+// existing vector3f_add_scaled 45; the endpoint as three member statements 45; the trace distance read from the trace
+// result at each use 146 (1085 B); the 0.5 lift through vector3f_add_scaled 177 (1082 B); the pathfinding selection as one
+// ternary initialiser 199 (1090 B). A compile-only build of the file with the shared rotation pasted in sums the dot
+// (k + j) + i, neither ours nor retail's, so only the linked build screens the dot. All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

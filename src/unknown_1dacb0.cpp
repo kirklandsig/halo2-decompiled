@@ -1607,6 +1607,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // predicate as secondary flag 990/1012/990. The same predicates held through the optional outputs and both
 // requests 1011/990. NOT kept: the 0x2c frame still exchanges class/NONE registers and gives the candidate and
 // iterator outputs different homes. All request forms move away from retail length.
+// Separate optional-output destination bindings in their publication conditions, all seven subsets and a
+// const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1686,6 +1688,8 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
 
+// score 812 (was 812): The class and NONE registers are exchanged. The iterator mode output takes the candidate
+// slot, and the second request reloads its mode. (828 before the count fell to 812.)
 // MiniMax I (11-20): no new form, no lower score (812): this round only re-measured the body; the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // MiniMax D (11-19): no new form, no lower score (828): the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // score 812 (was 812): earlier 828 (was 828), r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
@@ -2156,6 +2160,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 812; iterator-controlled exit and candidate test 1005; signed index before optional output stores
 // 812. NOT kept: split result construction moves the first difference into the prologue at the
 // same score, and the other forms tie or regress.
+// M3 lane 6 r222 (H2M_FAST with the twin 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1dd560, 0x2963f0, 0x1236f0, 0x1db120,
+// all but the twin matched each time; control 812, aligned 578, register-masked 71; body unchanged). Diagnostics for
+// the found mode's reads (retail copies it into EBP once for the second request; ours reads its home at each kind,
+// which makes it the heaviest value and gives it found_mode's dead home; every named copy listed above folds back):
+// `(short)iterator_mode` as the second request's argument, a conversion the compiler cannot fold, 803 (2825 B, aligned
+// 354, masked 149; a steering cast with a `movsx` retail lacks, so not kept), the same in both twins 803 each; all
+// three keys cast 812 (aligned 355); the first request's mode cast 1050 (2869 B). With the cast the entry is
+// unchanged: the iterator mode keeps found_mode's home and the outputs stay at +8/+0xc, so the copy alone does not
+// move the frame. `if (NONE != weapon_class)` 812 (same code, alone, in both twins, and with the cast): the class
+// and -1 keep ECX and EDX.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
