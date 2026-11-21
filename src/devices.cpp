@@ -2117,6 +2117,10 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // BirchWoodGod (11-21, fast; control 2): a _ReadWriteBarrier at the top of the flag block 7 (the fld then opens the
 // block, but the fstp moves ahead of `push 0`); after the animation id 12; after the time 9; between the two samples 2
 // (same code); a block-local copy of the render model ahead of a barrier 7. None kept.
+// M3 lane 13 r141 (h2m fast; control 2): had_animation set right after the first sample call 34; the node index
+// declared at the top of the 0xbf5a0 block 2; the render model renamed to sort before the other locals (symbol
+// order) 2; the animation renamed to sort after the time 2; had_animation renamed to sort first 2 (the 2s the same
+// code: local names do not move the fstp).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

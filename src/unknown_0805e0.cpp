@@ -913,6 +913,10 @@ void function_1537f0(s_profile_record *record);
 // the 0x1537f0 call 73 (271 B); that with the `entry->` links as two chained pairs in retail's order 87 (277 B), with the
 // heads as one chain too 87; the `entry->` chained link pairs with the tail chained (`entry->field_64 = entry->flags = 0;`)
 // 49 (NONE hoisted).
+// M3 lane 13 r141 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18): the record renamed to sort
+// first 18; the entry pointer renamed to sort last 18 (both the same code); the loop ended on `index != 350` 19; on
+// round 136's lead (view from the array element, `entry->` link pairs in retail's order; re-measured 46) the four heads
+// as one chain in retail's store order 46, the tail stored field_64 first 46 (NONE hoisted into EBP each time).
 // @retail 0x7f930
 void function_7f930(void)
 {
