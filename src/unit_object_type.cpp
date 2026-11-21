@@ -3247,6 +3247,10 @@ void function_c5740(long unit_index, bool start)
 // Round 454: the definition index still misses EBP and the pool data stays live across the weapon gate.
 // Common object lookup for unit, weapon or root 97/97/97; for unit plus weapon, weapon plus root, unit plus
 // root or all three 97/97/97/97; post-gate common lookups with typed root forward member 97. Body restored.
+// Retained pool and shared post-gate header array, refreshed initial array, post-gate global array,
+// common header type for both acquisitions, pool reference, common post-gate headers only,
+// read-only arrays, and early masked unit index with separate arrays: 97 each.
+// NOT kept: the same header data stays live across the gate and the material stays in BP.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5654,6 +5658,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // reused storage 233/233, in place 199, and paired transforms with separate or shared
 // direction storage 353/353. NOT kept: the transform forms shorten the body and
 // raise the score without recovering the first cross schedule.
+// Forward copy at the first cross input, ordinary/first staged/second staged/both staged
+// 169/169/169/169. Named forward terms before or after the transverse sum: real 169/169,
+// double 197/197. NOT kept: the copy and real terms leave the early up.i read. The double
+// terms enlarge the body and change the caller's reduced score.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9715,7 +9723,8 @@ struct s_unit_melee_collision
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 484 (was 493): The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
+// score 484 (was 493): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
+// Earlier detail: The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
 // type the file's own damage code passes), so its copies are the word moves retail's are; the range read from the
@@ -9864,6 +9873,14 @@ struct s_unit_melee_collision
 // names 531, selected-hit word set after the seat byte 533, collision storage first 531, object case
 // first 531, and branch-produced damage scale 531. NOT kept: the frame reaches 0x17c but the body
 // shortens to 2205 bytes and scores rise.
+// Per-product range with row, column or both while loops 531/531/531. Axial addition in each ray coordinate with
+// for loops, row while, column while or both while 533/533/533/533. Named transverse sums and axial products
+// 533. NOT kept: these reach frame 0x17c but shrink to 2205 bytes and raise the score.
+// Tag table captured at entry or after the unit lookup, shared pool with armed header acquisition,
+// and combined entry tag table and pool: snapshot range 484/484/552/552,
+// range read at each product 529/529/536/536.
+// NOT kept: all repeated-range forms recover the 0x17c frame. The pool forms align through the
+// first argument load (first difference +0xd) but reach 2243 bytes, and every repeated-range score rises.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

@@ -4149,6 +4149,12 @@ extern vector3f *g_4687bc;
 // B: reloaded after the call, not shared); the material set through a file-local forceinline setter 8; the first node in
 // a NONE-initialised local set inside the rigid-body and node-count tests, tested after them 8; the component's index
 // view named for the 0x0b67a0 argument with the material built after the lookup 10 (all 8s the same code).
+// M3 lane 7 r211 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the Havok push block (the effect
+// tag through the 0x188180 call) as a file-local forceinline helper 8; the pool's data in a named pointer ahead of the
+// material, the component indexed after it 8; the masked component index named ahead of the material, data + index after
+// it 8; the rigid-body data pointer read into a local ahead of the 0x0b67a0 call 8 (the load sinks past the call); 0x188180
+// given `c_type_47f957(material_index.m_index)` 8; the effect test held in a named bool 8; the rigid-body test held in a
+// named bool 8 (all the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

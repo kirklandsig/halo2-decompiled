@@ -1360,6 +1360,10 @@ void function_2118c0(void)
 // knot reads in the component loop 185 and with every row read there 185 (all reduced and hoisted); `short` knot
 // indices 33, `byte` 101; the band loop as a `for` 27 (same code); a `long` or `dword` b with the shifted row 64
 // (still `inc`).
+// M3 lane 3 r293 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): one `long index = b * 8 + k` for
+// p1 and out with the knot rows as `index + (w - k)` 150 (every row reduced); the knot indices as `(word)((k + 7) % 8)`,
+// `(k + 1) % 8`, `(k + 2) % 8` 189 (799 B); `long row = b * 8; row &= 0xff;` 169 (787 B); `long row = (b * 8) & 0x18` 166
+// (784 B); `long row = (long)(dword)(b * 8)` 150.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

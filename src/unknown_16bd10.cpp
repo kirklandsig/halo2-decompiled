@@ -1425,6 +1425,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Tried: the squared length declared at its assignment 126; the plane declared after the length and t 126; the length
 // test as `if (length_squared)` 126 (each the same code); the normal copied ahead of the three basis copies re-measured
 // 186. Diagnostics (names only, reverted): the length renamed twice and the plane renamed 126 each (no tie on names).
+// Round 627. Shared yaw negation after product assignment, aggregate, or
+// component stores 397/396/396; in-place assignment or stores 141/131;
+// scoped aggregate 396; distance between products and negation 397, or
+// before in-place assignment 139. NOT kept: the projection preload and
+// length/zero homes still differ, and all forms raise the score.
 // M3 lane 2 r131 (H2M_FAST with 0x16c6f0/0x13cb40/0x142d10/0x23d090/0xa9b40, all MATCH; control 126): three listed leads
 // together (0x142d10 as (out, forward, up) at its definition, declaration and call; the shared quaternion helper's length
 // summed i, j, k, w; case 2's test as `0.0f != length_squared`) 121 (aligned 98, masked 33; under the bar). On 121: 1-7 dead

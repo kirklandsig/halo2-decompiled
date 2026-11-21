@@ -981,6 +981,10 @@ void __stdcall function_1160c0(real dt)
 // difference output before commit 343, saved old position 346, next prediction after
 // commit 175, and coordinate loop for the staged velocity 170. NOT kept: all regress,
 // and the segment carrier and +0x20 spill persist in the closest forms.
+// Round 666. Segment selection still uses EDI/ECX and spills at +0x20.
+// Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
+// as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
+// typed point setter at the target 144, at the blend 144, and at both boundaries 144.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

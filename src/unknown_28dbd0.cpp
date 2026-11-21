@@ -739,6 +739,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // (retail listing): retail loads the 1.0 for `1 - cosine` while the dot's last product still holds XMM7, so all eight
 // XMM registers are busy and the heading's zero k is dropped and rematerialised (a memory 0.0, then `xorps xmm7`); ours
 // loads the 1.0 after the dot's last add, into the freed XMM7, and keeps the zero live.
+// M3 lane 15 r129 (H2M_FAST with 0x28dab0, 0x256bd0, 0x259d0, all MATCH; control 173), function_28dbd2 only: sine, dot3f,
+// cosine, `projection *= 1 - cosine`, cross3f(v, axis) scaled by the sine and subtracted, all three vector3f_scale calls
+// kept 185; that with cross3f(axis, v) added (retail's trig order, rows vector first) 182; the same with the rows axis
+// first 182; cross(v, axis) scaled by the sine and subtracted with the axis scaled in place and the cosine folded into the
+// rows (`axis.i + v.i * cosine - cross.i`) 241 (1223 B); the axis left unscaled with the projection folded into the rows
+// (`axis.i * projection + v.i + cross.i`) 228 (1216 B). The frame stays 0x11c in each.
 // M3 lane 7 r209 (h2m fast with 0x28dab0/0x256bd0, MATCH; control 173), function_28dbd2 only. Reading: retail's
 // second cross is heading x axis (j and k formed after the projection and spilled, i formed inside the i row) and each
 // row is `(axis * projection + heading * cosine) - cross * sine`. Sine, dot, cosine, `projection *= 1 - cosine`,
