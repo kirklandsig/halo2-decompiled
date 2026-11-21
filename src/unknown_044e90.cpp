@@ -637,6 +637,10 @@ struct s_visibility_bound_record
 // four list counts as separate stores 430 (same code); `view_ranges` computed inside the parts arm 451; the parts bit as
 // `(entry->unknown00 >> 12) & 1` 430 (same code). Retail keeps the tag table in ESI from above the tag test to the bottom
 // arm and has no function-level zero; ours loads the table into ECX for the lookup only and keeps a zero in EBX.
+// M3 lane 5 r229 (h2m fast with 0x458d0 and 0x45a80, both MATCH; control 430): the view ranges as a `short *` read by
+// element (`view_ranges[view + 1]`, `view_ranges[7 + view]`) 430; the bound index held in a `dword` 430; the geometry
+// count test as `0 < count` 430; the part loop test as `count > part` 430 (same code each); the part-centre scale test
+// as `1.0f != transform->scale` 436 (1755 B).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

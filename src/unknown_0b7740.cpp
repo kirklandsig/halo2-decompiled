@@ -1826,6 +1826,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // object_header_get(...)->object 20 (same code). Reading: retail's block is 0xb8bd0's own code expanded at this one site
 // (its parameter copy `mov eax, esi`, the index still live after it), which this build gives only with 0xb8bd0's file
 // built without /Ob1, and then at every site: BLOCKED-BY 0xb8bd0 (its file's /Ob1, a build-flag decision).
+// M3 lane 5 r229 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): in the no-model arm, a second index
+// local for the matrix lookup only 20; a second index local for the flag lookup only 20; the parent object named for the
+// flag only, after the matrix lookup 20; the node argument cast to `short` (0xb8bd0's node type) 20 (all the same code);
+// the parent object named for the matrix only, the flag through object_get again 44 (1390 B, data from EDI).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

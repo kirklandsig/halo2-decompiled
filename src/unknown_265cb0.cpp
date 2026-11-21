@@ -1019,6 +1019,14 @@ real function_30bf0(vector3f *vector);
 // selected pair or final fallback 90/90/90/104. Conditional threshold initializers in both orders
 // 101/90, carried primary with one joined pair 90, separate default primary declaration 90.
 // NOT kept: the threshold lifetime variants raise the score. Result, clip and range homes still differ.
+// M3 lane 5 r229 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): compare operand sides, one at a time: the
+// two maxima tests as `facing_secondary < a` / `facing_primary < b` 84; the motion threshold with the constant on the left
+// 84; `36.0f > distance_squared` 84; `distance_squared < secondary * secondary` 84; `distance_squared < primary * primary`
+// 84; `NONE != object->player_index` 84 (all the same code). Reference counts per home (normalised to the body's esp)
+// sort retail's 4-byte homes and aggregates by references per byte (result 8 refs lowest, then the 1.0 group: facing
+// pair, clip amount sharing with the squared distance, scale, motion, range; then counter, plane, cursor, delta, a, b);
+// ours follows the same order except its first slot (clip amount shared with the seat counter, 5 refs) sits below the
+// result, and the squared distance (2 refs) gets its own slot at the top.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
