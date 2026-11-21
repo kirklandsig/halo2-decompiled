@@ -1427,6 +1427,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // (the first definition is dropped, the colouring of the branch form); the destination declared in the branch as
 // `identities[count]` 195; the pointer step ahead of the count step on this body 17 (the scheduler moves `inc ebx`
 // after the step). Re-measured: the destination declared in the branch with the step first 216 (728 B).
+// M3 lane 2 r125 (H2M_FAST with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9, the indexed
+// copy re-measured 195, `[count++]` 40): the indexed copy with the count typed `dword` 195; the indexed copy with a
+// player array pointer (`current->players`) formed before the branch 196; the indexed copy with the loop index typed
+// `dword` 192 (721 B); this body with the loop index typed `dword` 194 (721 B). Diagnostic, reverted: the `[count++]`
+// copy through a file-local inline memcpy wrapper 357 (559 B, the loop is no longer unrolled).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

@@ -1960,6 +1960,16 @@ static inline bool unit_dual_wielding(long unit_index)
 // in the animation block 121 (540 B); the weapon-kind value declared before the animation pointer 2 (same code); that
 // value as one ternary initialiser on the dual-wield test 39. In our build lookups 1-4 always share one order and the
 // put-away lookup takes its own (main D D D D O, the 2 form O O O O D); retail's lookup 4 is the odd one.
+// M3 lane 2 r126 (fast with 0xc9d00, MATCH each time), on lane 9 r143's 2 form rebuilt (2): the put-away lookup through a
+// reference-bound header array 14 (533 B: the lookup takes retail's offset-first order, but 0xc9d00's data load is then
+// no longer shared and the `mov eax, ecx` copy is lost), through a named header local re-bound by a const reference 14;
+// the put-away pointer bound to a const reference 49 (537 B), re-bound by a const reference 2; the animation test
+// through a reference-bound header array 31 (534 B, still offset-first), through a named header local re-bound by a
+// const reference 31, through a const-reference-bound pointer 2, through a named pointer re-bound by a const reference 2;
+// the 0xb7360 call ahead of the lookup-3 pointer 119 (525 B); a reference-bound header array at lookup 1 in place of the
+// getter 21; both helpers `__forceinline` 2; the existing weapon_get_owner_unit_index in place of the holder helper 2
+// (same code; on main's body 17, same code); redundant parens around the animation test, the put-away NONE test, the
+// gate's state read, the 0xc9d00 argument, the holder call or the animation-pointer sum 2 each (same code).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

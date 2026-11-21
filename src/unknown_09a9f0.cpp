@@ -992,6 +992,16 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still
 // differs is that instruction, the inner store of the object index that retail does not repeat, and two bytes
 // of padding after the last return.
+// M3 lane 2 r124 (fast with 0xa5b10/0xbb780/0x108e10/0xa5a00/0xa5b40, all matched each run; this body 8): the plain bool
+// form (no repeated store, no cast) re-measured 77 (160 B). On it, modelled on the matched sibling definitions (0x9ba90,
+// 0xa4880 and 0x9aeb0 clear their slot under a NONE test and then store): the object's entity link cleared under a NONE
+// test before the store 62 (190 B: retail's head, EBP borrowed around the header test and the data reloaded, but the
+// conditional clear stays in the code, the two object lookups not being one address to the compiler); that with the
+// store and attach on the entity's stored index 95 (201 B); an unconditional clear, then the store and attach on the
+// entity's stored index 71 (188 B). On this body: the store and attach through the existing 0xbb780, given the local 42
+// or the entity's stored index 42 (176 B each: the inlined callee's index is shared with the header test's again).
+// Retail's header test with EBP pushed and popped around it occurs in no other function of the image, so no matched
+// function shows the source form.
 // M3 lane 1 r141 (fast with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 8, left: `movzx ecx, ax`, the second
 // store and the data reload where retail has the reload, `mov ecx, eax` and `and ecx, 0xffff`). On this body: the object
 // read indexed `(short)object_index`, `(long)(word)object_index`, `(word)(short)object_index` or through a word local

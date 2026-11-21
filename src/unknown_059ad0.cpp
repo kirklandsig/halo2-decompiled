@@ -4646,6 +4646,17 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // On the 44 form: the kept arms `return true;` or `return result;` in place of the jump 44/44, as two tests each
 // jumping 44, the accept block as `return true;` 44 (all the same code: the true return is folded to `mov al, 1` and
 // not merged into the state-8 epilogue); `if (result) return result;` after the disconnect 122 (1244 B).
+// M3 lane 2 r125 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; round 208's 96 lead rebuilt from its
+// patch, 96). On the 96 lead, after the disconnect: `if (result) goto accepted;` with the label on the acknowledgement's
+// final `result = true;` 107 (1264 B: retail's read, test, `jne` and bare false-edge epilogue appear with no `xor al, al`,
+// but the result byte moves to +9 and the better flag to +0xb); with the kept arms also jumping there 108 (1268 B); LEAD,
+// match-only, 94 (1264 B, build/r125/lead-0x5e7f0-94.patch): that test with the state-8 `result = true` written as `goto
+// accepted` (one result store fewer; the byte homes return to retail's), the same with the channel-7 store also a jump
+// 94, only the channel-7 store a jump 94. Left on it: the kept arms store the result as an immediate and jump to the
+// shared store-and-load block, where retail stores it through AL (`mov al, 1`) and enters the bare epilogue, and the
+// shared `result = true` block sits at the end instead of after the state-8 test. On the 94 lead: the kept arms jumping
+// to `accepted` with no store ahead of them 246 (1276 B), with the store kept ahead 95 (1268 B: the post-disconnect test
+// turns into `je`); the kept arms `return true;` or `return result;` 103/103 (1270 B, a return block of their own).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

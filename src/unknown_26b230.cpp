@@ -1789,6 +1789,12 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// M3 review (11-21, lane 2 r124): a byte MATCH (full check 12319, 0 lost) came from file-local copies of the shared index scan
+// and datum step (data_datum_iterator_next_inlined) with the scan's loop inverted by hand (`if (index >= 0 && index < high)
+// do { ... } while (++index < high);`), plus the score compared inside the team arm and the selection stored before best.
+// Not kept: an existing helper's body written out by hand and a hand-inverted loop are reverted even with a match. The same
+// loop in the shared helper matches 0x2689d0 but loses 0x152660 (3) and 0x294050 (62), so retail's one scan spelling is still
+// unknown; a spelling of the shared helper that keeps all three is the open lead. Body is main's (87).
 // MiniMax G (11-20): no new form, no lower score (87 in the reduced image, 85 in the full one): the score is still taken and compared
 // outside the team arm with an SSE compare where retail compares inside the arm on the x87 stack, the walk's pool is still
 // reloaded from its slot at each step where retail hoists it into EBX, and the selection is still kept in EDI besides its slot.
