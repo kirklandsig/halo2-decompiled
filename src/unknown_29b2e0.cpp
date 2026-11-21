@@ -36,7 +36,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
     return 0.0f;
 }
 
-// score 151 (was 151): frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
+// score 151 (was 151): The 0x2c frame agrees. The projected J and depth stores exchange order at +0x101.
+// Rotation scheduling and first trig homes still differ.
+// Earlier detail: frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
 // difference +0x101). Left: the two rotations' product order and XMM scheduling, the first rotation's sine and cosine homes
 // (+0x3c and +0x10 for retail's +0x10 and +0x3c), the yaw clamp's zero copy below its branch and one store pair's order in
 // the second normalization.
@@ -747,6 +749,8 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // retail's +0x10/+0x3c homes), with the second rotation's named as well 141; not kept: the one-use call-result locals are
 // needed for the gain (lead saved as build/r134/lead-0x29b2e0.patch). Diagnostic: 1..8 dead initialised locals at the top
 // 151/151/214/214/214/214/214/170 (the first rotation's dot stays j, i, k at every count; retail's is i, k, j).
+// Sized copies at second 3D, XY, both, first 3D, both 3D, XY with first 3D, all three and all with
+// the degenerate restore: 256/378/378/256/256/378/378/378. They grow the frame and do not recover the ordered stores.
 // M3 lane 11 r137 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH; control 151, aligned 178): both rotations
 // through a file-local helper taking the angle (sine and cosine named inside it, two callers) with the second axis
 // through the existing cross3f 169 (1706 B, aligned 148: the roots move to +0x10 and the first rotation's dot stays
@@ -761,6 +765,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // vector first) 424 (0x29b990 48). Retail stores the first rotation's sine at +0x10 and its cosine in the dead
 // first-parameter home (+0x3c), ours the reverse (the second rotation agrees); the yaw clamp's zero copy (`movaps xmm5,
 // xmm1`) sits above retail's `ja` and below ours.
+// Second projection as a zero-depth aggregate or through the component setter 389/372, or from the XY
+// workspace 420. Alternate shared normalizer for the second projection or both 289/393. Shared approach
+// operation for yaw, pitch or both 298/280/291. All regress. The exchanged depth and XY stores, yaw zero
+// copy and the first rotation's product order and spill homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

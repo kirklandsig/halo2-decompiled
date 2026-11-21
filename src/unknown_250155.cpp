@@ -3195,6 +3195,20 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // four shorts declared text_a, bitmap_b, bitmap_a, text_b 85 (same code); the default arm in field order 93 (926 B); the
 // shown count cleared before the empty-list call and passed to it 178 (913 B); the local-player index initialised at its
 // declaration 85 (same code). Still BLOCKED-BY 0x53b40 for the players[i] reload (src/network_voice.cpp).
+// M3 lane 11 r141 (fast with 0x24fd74, 0x2507c3, 0x22f042, 0x250155, 0x22ee47 and 0x2514fd, all as before; control 87,
+// aligned differing rows 57, 23 with the frame offsets masked, 14 with registers masked too; body unchanged): the last
+// loop on a counter of its own 87, its four indices declared in the reverse order 87, the second loop's colour array
+// declared at function scope 87 (same code each); the first loop's item list declared at function scope 94 (first
+// difference +0xf), with the colour array too 94. With the offsets masked only two places differ: the voice block
+// (retail keeps the address of players[i] in ESI and reads it again after 0x53b40) and the last loop, where retail
+// gives EBX to bitmap_a, takes the screen from its home into ECX for the first call and into EDI once text_b is pushed,
+// and pushes immediate zeros, while this build keeps the screen in EBX, spills both bitmaps and pushes a zero register.
+// M3 lane 15 r119 (H2M fast with 0x2507c3/0x22f042, both MATCH; control 87): the second loop's four players[i] reads
+// through one element pointer 198 (927 B); the first loop's two reads that way 87 (same code); the four widget lookups
+// each declared in its if condition 87 (same code); the first loop's search through local_player_find re-measured 251
+// (928 B); the slot-index helper plain `inline` 242 (862 B: one site stays a call); the first loop's search counter
+// declared in its for 87 (same code). Diagnostic, restored at once: 0x7f790's volatile parameter read made plain leaves
+// this body at 87 (0x7f790 itself 4), so the last loop's register choice does not follow that read.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

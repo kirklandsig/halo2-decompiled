@@ -443,6 +443,19 @@ const dword g_455978[81] = {
 // local_6`, the break dropped) 403 (2003 B), the same with the count test first 392 (2007 B); the planar ratio computed once
 // ahead of the loop 336 (2099 B); the presence cleared ahead of the translation set 268 (same code); the two transforms
 // declared at function scope 268 (same code). All restored.
+// M3 lane 8 r206 (h2m fast with 0x11bed0 and 0x14a280, both MATCH unless noted; control 268): the loop's branch structure
+// up to the 0x11bed0 call is retail's jump for jump, so the expansion (and, with it, 0x279740's range check staying out of
+// line at the first release) follows 0x11bed0's own size. Diagnostic, reverted: 0x11bed0's else arm through the existing
+// structure_leaf_cluster_get (0x11bff0, whose file restricts inlining) leaves a real call: 0x11bed0 52 (58 B), 0xbf510 88,
+// 0x21a100 86, this 335. Tried here: the direction blend through vector3f_scale and vector3f_add with the radial term in
+// the planar copy's k 282; the sample point through vector3f_add_scaled 268 (same code); `bool local_0 = false;` declared
+// first 370 (its byte moves to +0x1f); the two optional-state locals renamed (bounds_volume, bounds_body_index) 268 (same
+// homes +0x24/+0x48). The planar length's squares come j first from the shared magnitude2d (retail i first); that header
+// serves about twenty files, so it was not changed. Still BLOCKED-BY 0x11bed0's inlinability at this site.
+// Bounds through the existing component reader 268, with one cached endpoint coordinate 341.
+// Clipped bounds before stores 480, each clipped edge per axis 491, and separate lower and upper passes 491.
+// Conditional edge values 481, clipped point pair into setters 478, and setters before conditional stores 486.
+// The optional-state homes and the selective location and release expansions still differ.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

@@ -18,6 +18,7 @@
 #include "normalize3d.h"
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
+// MiniMax A (11-20): no new form, no lower score (536): the frame is 0x64 against retail's 0x60
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
 // retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
 // after the product, which no plain spelling of the wave expression reproduces.
@@ -606,6 +607,7 @@
 // s1 between the cross and s0 536 (same code: VC evaluates s0 first and sinks s1 to its use either way); the two wave
 // scales named ahead of both adds (`real offset0 = s0 * 0.03f; real offset1 = s1 * 0.025f;`) 650 (2594 B); s0 written
 // `0.5f * (...)` 536 (same code).
+// MiniMax H (11-20): no new form, no lower score (536); the frame is still 0x54 against retail's 0x60, and the primary shape slot, the rounded wave storage and the x87 factor lifetimes still differ.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -939,6 +941,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // stays four bytes short at 0xa8 against retail's 0xac; that helper's declaration is fixed in another file, which this
 // lane may not change: BLOCKED-BY 0x131e50.
 // MiniMax S (11-20): no new form, no lower score (351): the frame is 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and 0x131e50 is declared noinline in its own file.
+// MiniMax D (11-20): no new form, no lower score (351): the frame stays 0xa8 against retail's 0xac and the first-edge Y, half-width,
+// cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and
+// 0x131e50 is declared noinline in its own file: BLOCKED-BY 0x131e50.
 // score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:
@@ -1479,6 +1484,16 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // First field as output with the pixel returned by value, pointer/reference 352/352;
 // field readback on the original packer 352. NOT kept: the 301 form saves the color
 // pointer but adds a register copy between stores where retail uses the same packed register.
+// M3 lane 5 r219 (H2M_FAST with 0x42c50/0x42b20/0x43720/0x43740, all MATCH each run; control 351): case 0's six edge
+// stores as first x, y, z then second x, y, z 355; with the x and y pairs chained (`first.x = second.x = ...`) and the z
+// rows after 352; chained the other way round (`second.x = first.x = ...`) 424; the z rows first (first, then second),
+// then the chained x and y pairs 348 (a statement order, 3 below the control: case 0 then loads y, x and the second z into
+// retail's XMM1/XMM0/XMM2, but the half-width and the first edge's copies still rotate, XMM3/XMM6/XMM5 for retail's
+// XMM4/XMM5/XMM6); case 0's points through the existing real_point3d_set 445 (2576 B). Body unchanged.
+// M3 lane 12 r163 (H2M_FAST with 0x42c50/0x42b20/0x43740 MATCH; control 351): case 0's edges written x, y, z (first then
+// second) 355; case 0's second edge before the first 459 (2580 bytes); the u step kept positive with `u -= u_step` in
+// the loop 611 (2592 bytes); the state clamp through PIN 356; the outer vertex as `vertex[1]` at each use (no `outer`
+// pointer) 662 (2552 bytes). Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

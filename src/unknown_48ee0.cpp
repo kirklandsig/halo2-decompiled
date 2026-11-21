@@ -18,6 +18,13 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax E (11-20): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail shifts
+// them in EAX (`mov eax, [0x4c1a80]`, `shr eax, 0xa`, `not al`, `test al, 1`), and the size still stays in a register
+// across the two rounding calls where retail reloads it from the lowest slot, and that reload is what sets the frame's
+// slots: BLOCKED-BY 0x48e70 (its xmm clobber set is set in src/unknown_02b400.cpp, another lane's file, where it is
+// held). Retail's own slots were read off its listing - the size in the lowest slot, the mode above it, the maximum and
+// the extent above those and the aspect next - while ours keeps the mode lowest and the size in the extent's old place,
+// and the declaration order does not move them. The body stands.
 // MiniMax G (11-19): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail uses
 // EAX, and the homes are still permuted (ours keeps the mode in the lowest slot at 0x8 and the offset at 0x14 where
 // retail keeps the mode at 0xc and the offset at 0x10). This round the declaration order was tried with the mode
@@ -60,7 +67,8 @@ extern real g_4c9798[36];
 // MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
 // and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
 // the size, and the mode bit still loads the flags into EDX where retail uses EAX.
-// score 174 (was 174): r275 unchanged. The far plane's near distance goes into a named local so the three
+// score 174 (was 174): Frame 0x28 agrees. The mode flags load into EDX instead of EAX. Mode and size homes and rounding reloads differ.
+// r275 unchanged. The far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // The earlier score was 178.
@@ -452,6 +460,13 @@ extern real g_4c9798[36];
 // if/else instead of in both arms 254 (1443 B); near and far distances named ahead of the scale 189 (1484 B); the four
 // texture-slot clears as one memset 173 (only the mode byte's store moves among the clears; one point, not kept).
 // Still BLOCKED-BY 0x48e70 (machine 1's file).
+// M3 lane 15 r119 (control 174 fast and plain; the reduced image builds the far-plane point block differently for this
+// function, so a gain needs the plain check): the distance test as `0.0f != distance` 175; the border's product kept
+// ahead of the divide by a cast on the product 180 (1491 B, plain: retail's multiply-then-divide, but the far-plane point
+// loads then reorder); the half-angle test, the second mode test and the two clamp tests with the constant on the left
+// 174 each.
+// Mode-bit or full flag-word reads before projection stores 0/1/4/7: 174/174/174/174 in each form.
+// NOT kept: these observations leave the score, length and EDX load unchanged.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

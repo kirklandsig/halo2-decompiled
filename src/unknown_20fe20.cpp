@@ -1331,6 +1331,10 @@ void function_2118c0(void)
 // knot pointers 19. Re-measured: `long` knot indices at the sample loop's head with `long row = b * 8` 194, the `word`
 // ones there 155, the knot rows from `b * 8 + w` with p1/out from the shifted row 144. Our band loop keeps b (`inc esi`)
 // and scales it in each knot lea; retail steps the row itself (`add esi, 8`) with the knot rows unreduced.
+// M3 lane 15 r121 (h2m fast with 0x212100 and 0x211fd0, both MATCH each time; control 10): `word row = (word)(b * 8)` with
+// each knot index truncated `(word)(row + w)` 148 (780 B); `long row = b * 8` with the knot rows from `(byte)row + w` 130
+// (782 B); the wraps cast before the mask (`(word)(k - 1) & 7`) 10 (same code); t as `(real)m / 8.0f + (real)k` 10 (same
+// code); p1 and out as `&noise[k][0] + b * 64` and `&noise[k][m] + b * 64` 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

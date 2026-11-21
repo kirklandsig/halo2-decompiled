@@ -3295,6 +3295,15 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // returning a result flag, `static inline` 27 (83 B: it stays a call in this /O1 file), `__forceinline` 30 (all the
 // 30s the same direct EBX load). Retail's shape (compare in EAX, then the EBX copy) matches 0x11a570's inlined
 // result phi, whose second definition (NONE) is reached on a live path; no single-definition form reproduces it.
+// M3 lane 8 r210 (fast with 0x2c9a58, matched in each): a const entry pointer named for the lookup argument 30; the lookup
+// result cast to a const definition pointer 30; the iterator's pool written `this->data` 30; the selection written
+// `this->select_datum` 30; the guard as `if (map_id == NONE) return;` with the iterator in the following block 30 (all the
+// same direct EBX load).
+// M3 lane 16 r161 (fast with 0x2c9a58, matched in each): the guard on the field with an `unsigned long` id copied from
+// it at the block's top 30, or assigned after the iterator set-up 30; the loop compare through a file-local by-value
+// (entry, id) predicate, `static inline` 32 (78 B: /O1 keeps it a call), `__forceinline` 30; the guard on the field
+// with a `long const` id read from the field inside the loop body 30 (LTCG keeps the one load in EBX across the calls);
+// a receiver copy declared first (used for the pool) with the else-return two-definition id 30 (same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
