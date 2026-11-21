@@ -1053,6 +1053,22 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Physical mode field reference or pointer, through the tag byte pointer or tag entry, each
 // with primary or secondary count initialized first: eight at 779.
 // NOT kept: each materializes the field offset, keeps the old spill homes and shortens to 3630 bytes.
+// M3 lane 12 r165 (fast screen; the reduced image is faithful for this function once 0x50650 is listed, since the full
+// build expands that arccosine wrapper here: `0x17fd20 0x50650 0x17d9a0 0x17d900 0x17dd80 0x120850 0x22bbca` gives the
+// full check's 535 at 3647 B with no caveat, where the bare address gives 834 at 3582 B; control 535, aligned 433/442
+// unmatched instructions ours/retail, register- and offset-masked 185/194; body unchanged). Reading of the normalize:
+// retail loads 1.0f into XMM0 once and keeps it (reciprocal from a copy, then the sign's 1.0f store and both uses in the
+// angle clamp), scales j and k in registers loaded ahead of the divide (`mulss xmm6, xmm1`) and i from a copy of the
+// reciprocal, and keeps the three scaled components in XMM5-7 for the sign's dot; this build divides 1.0f in place,
+// multiplies each copy of the reciprocal by the component in memory and reloads 1.0f for the sign. Forms: the scaling as
+// three `*=` member statements re-measured 559 (3631 B, masked 174/188), written `axis.i = axis.i * inverse` 559 and with
+// the sign's dot axis-first 559 (same code each); the rotation block nested inside the scaling arm with the plain-quad
+// copy written in both failure arms (a diagnostic of whether the scaling arm must dominate the sign block for the 1.0f
+// to be shared) 550 (3647 B, masked 186/196), with member statements 575; the same nesting with the plain quad copied
+// up front and no else arms 596 / 594; `real sign = 1.0f;` declared ahead of the length with the sign test clearing it
+// to -1 559 (the 1.0f is still divided in place and loaded again), and that sign used as the reciprocal's numerator (a
+// diagnostic only) 577 (3631 B: still `divss` in place on the register that held it). In every form the constant is
+// rematerialised, so nothing here makes this build keep 1.0f across the cross product as retail does.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
