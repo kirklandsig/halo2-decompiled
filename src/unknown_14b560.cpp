@@ -1759,6 +1759,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // block 43; on B both failure exits as direct `return result;` with no label 273 (1018 B, as the `return false` form).
 // Compile-only only (each `mov eax, -1` after the folded compare): the result test as `if (result) {} else`, the mode in
 // a char local, a named spawn bool, `4 != mode`, `1 == state`, the NONE initialisers as -1 literals.
+// M3 lane 16 r169 (h2m fast with 0x14f040, MATCH each time; control 5; B = the outputs in the mode block, re-measured 43 at
+// 1031 B): the result and mode tests merged as `if (!result && g_4e6948->mode != 4)` with the outputs at the top of its block
+// 43; on B the options pointer from a file-local inline getter 43; on B the test through a file-local inline bool (`mode ==
+// 4`) negated 43; on B the mode read as the low byte of a 32-bit load (diagnostic, reverted) 43 (still `mov eax, 0xffffffff`:
+// a full-width temp does not free the constant's form); the outputs declared at function scope and assigned in the mode
+// block 43.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
