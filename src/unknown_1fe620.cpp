@@ -12,6 +12,7 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // MiniMax I (11-20): no new form, no lower score (373): the frame is 0x4c against retail's 0x48; retail holds the third settings pointer in ESI and the random state in ECX, this build keeps the random state in ESI and reloads the third input from its stack slot; the +0x7a word is passed in ECX against our EDX.
 // MiniMax B (11-19): no new form, no lower score (373): reading the random state through the global instead of
 // through the named local gives 423 (the same form MiniMax G measured on 11-18), so the body is back as it was. What
@@ -68,7 +69,6 @@ static __forceinline long real_to_long(real value);
 // still keeps the random state pointer in ESI and reloads the third input from its stack slot where retail holds
 // that input in ESI from the entry, and the seed is still stored and reloaded per draw where retail forwards it in
 // EAX and stores it once.
-// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps
 // the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes
 // are still stored before the random state is loaded where retail loads the state pointer first.
@@ -379,6 +379,12 @@ static __forceinline long real_to_long(real value);
 // input bound by a const reference 409. Retail evidence restated: it reads +0x10, +0x14, +0x18, +0x1c, +0xc and +0x38
 // right after the sign step and before draw one's multiply (0x1fe94c), so every bound is read ahead of the first seed
 // store; only a source that reads them first (named bounds, one use each) lets the seed stay in EAX. BLOCKED-BY 0x210850.
+// M3 lane 16 r164 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH; control 373): the side vector through
+// unknown_0259d0.h's normalize_inline 378; the sign step tested on the stored seed field with no seed local 373 (same code);
+// the +0xc limit read after the two angular limits 373 (same code); the prop flag cleared in an else arm instead of at its
+// declaration 398; the sign flip through vector_products.h's vector3f_negate_ab in place 373 (same code). Retail's expanded
+// 0x210850 keeps its point in ESI and its output in EDI and lays the NONE path's copy out at the end, jumping past the
+// random-state reload: BLOCKED-BY 0x210850.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

@@ -471,6 +471,12 @@ long g_55e6c0;
 // <= 4) levels = count < 0 ? 0 : count;` 137 (485 bytes); the kind stored after the +0x8c clear 31 (the kind store is
 // still scheduled first); the kind stored after the levels clamp 43 (the kind store then follows the clamp, and the count
 // still takes EAX). In none does the count take EDX at the top.
+// M3 lane 2 r125 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; round 122's lead re-measured 31 at 484 bytes, the pitch
+// part scheduled ahead of the height part): a redundant `result = true;` at the top of the work arm 29 on this body, 31
+// on the lead (both the same code); the busy tests through their own `const` entry pointer with the work arm's entry
+// formed inside it 143 (484 bytes), on the lead 155 (495 bytes); `result` declared bare and set true in the work arm
+// and the no-data arm 93 (first difference +0x1); the format call's result named and stored through a `dword const &`
+// 90 (480 bytes); a redundant `offset = 0;` ahead of the level loop 110 (480 bytes), on the lead 146 (493 bytes).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

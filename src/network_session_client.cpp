@@ -977,6 +977,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // loops 36; the variant named ahead of the pair in the state block 36, at the function top 36; the member array named
 // before the copy 36; no addresses pointer (the cast at both uses) 36, that with no variant local 39; the member count
 // read from the field at each use 132 (495 B) (none moves the session off ESI).
+// M3 lane 16 r165 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22): the two address tests joined with a
+// non-short-circuit `|` 152 (495 B: both leas come ahead of the test, as negate/sbb flag arithmetic); the variant and
+// the summary above the opening (round 75's 32, re-measured 32) with a plain `for` copy 109 (477 B, the mask read
+// folds); the typed flag-only stored pair with the variant above it and a `for` copy 108 (both callers lost); the pair
+// through a new inline getter that returns the machine address and stores the player address through an out pointer
+// (live and flag test) 46; through one taking both out pointers with both preset NULL inside, the result ignored 46
+// (register-masked 1 in both: only the session ESI against retail's EBX, both callers lost).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1455,6 +1462,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // (the first definition is dropped, the colouring of the branch form); the destination declared in the branch as
 // `identities[count]` 195; the pointer step ahead of the count step on this body 17 (the scheduler moves `inc ebx`
 // after the step). Re-measured: the destination declared in the branch with the step first 216 (728 B).
+// M3 lane 2 r125 (H2M_FAST with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9, the indexed
+// copy re-measured 195, `[count++]` 40): the indexed copy with the count typed `dword` 195; the indexed copy with a
+// player array pointer (`current->players`) formed before the branch 196; the indexed copy with the loop index typed
+// `dword` 192 (721 B); this body with the loop index typed `dword` 194 (721 B). Diagnostic, reverted: the `[count++]`
+// copy through a file-local inline memcpy wrapper 357 (559 B, the loop is no longer unrolled).
 // M3 lane 8 r211 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; re-measured: indexed 195,
 // `[count++]` 40): a second index `slot` for the destination beside the count (`memcpy(identities[slot], ...); count++;
 // slot++;`), declared in the true arm 195 or ahead of the branch 195 (the start address then sits in the preheader as in

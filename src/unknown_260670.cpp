@@ -41,6 +41,11 @@ long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
 // score 440 (was 440): r216 unchanged. The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions (round 196's forms at the end of this note).
+// M3 lane 15 r124 (H2M_FAST with 0x2605d0, 0x2613d0, 0x2600a0, all MATCH each run; control 440): the within-limit test
+// named once for both uses 582 (3081 B; the flags then pack at +0xe/+0xf, in the order opposite to retail's, frame 0x8a4);
+// that with the sort scratch in a block of its own 565 (3081 B, frame 0x8a0 as retail, first difference +0x2a); the two
+// flags tested as one negated `||` 440 (same code); the finite flag read again ahead of its set in the loop 544 (frame
+// 0x8a4); the flags declared ahead of the result 440 (same code). Body unchanged.
 // MiniMax E (11-20): no new form, no lower score (440): re-read against retail, the frame stays 0x8a8 against retail's
 // 0x8a0 because the two flags take a dword each here and share one dword in retail (our bytes at 0xb and 0x13 against
 // retail's adjacent pair at 0x6 and 0x7), so every home above them and the sorted array's start move with the frame;

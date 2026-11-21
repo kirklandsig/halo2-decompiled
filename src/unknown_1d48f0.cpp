@@ -456,6 +456,14 @@ const dword g_455978[81] = {
 // Clipped bounds before stores 480, each clipped edge per axis 491, and separate lower and upper passes 491.
 // Conditional edge values 481, clipped point pair into setters 478, and setters before conditional stores 486.
 // The optional-state homes and the selective location and release expansions still differ.
+// M3 lane 1 r144 (h2m fast, control 268): the hkTransform-to-matrix copy written through a file-local inline
+// vector3d-from-havok helper (the form 0x1d08e0 uses) 268; the planar copy taken from the direction copy instead of the
+// table 268; the zero-length test ahead of the reciprocal 268; the transform copied by aggregate assignment instead of
+// set() 268 (all the same code); 0x11bed0's else arm as a call of 0x11be90 268 (a repeat: 0x11bed0 stays matched and
+// still expands here). `inline` on 0x279740's definition 427 (2177 B: both releases expand, 0x1d01c0 207). Diagnostics,
+// reverted: eight dead real_point3d_set expansions just before the 0x11bed0 call 268 (no caller-wide inline budget
+// moves the expansion); 0x279740's file without /Ob1 427 (0x1d01c0 207), the same as `inline`, so retail's single
+// expanded range check is the helper's code (round 212's reading), not an auto-inlined 0x279740.
 // M3 lane 8 r212 (h2m fast with 0x279740, 0x11bed0 and 0x14a280, all MATCH; control 268, aligned 206, register-masked 130).
 // Retail expands 0x279740's range check in only two game functions: this one's first release and matched 0x1d01c0, whose
 // file writes it through a local rigid-body release helper (component_body_release, the check written out). Diagnostic:

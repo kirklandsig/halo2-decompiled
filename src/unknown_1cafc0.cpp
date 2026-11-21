@@ -970,6 +970,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // every call kill it), and the fourth frame dword. So retail's request reads the graph as a value that lives in memory
 // but is not killed by calls, and its status is a bool; the natural source for a graph that stays in memory without
 // its address escaping is still to find (a one-member aggregate is not it).
+// M3 lane 7 r205 (H2M fast with 0x1cccd0, 0x1cb970 and 0x1ddd00, all MATCH but where noted; control 348 at 1782 B): the
+// first lookup as `success = result->index != NONE; if (!success) { ... }` 506 (1766 B); the second lookup's arm as
+// `success = result->index != NONE; if (success) found->set = ...;` 616 (1766 B); the fallback chain guarded by
+// `!success` in place of the index test 615 (1702 B); each fallback arm storing the found names before `success = true`
+// 579 (1734 B); the request given a fresh graph_get() 633 (and 0x1cccd0 59, 0x1cb970 17). Body unchanged: from +0x1de
+// the graph / graph+0x34 register roles belong to the inlined request helper in src/unknown_1dacb0.cpp (another lane's
+// file this round).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

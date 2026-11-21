@@ -943,6 +943,9 @@ struct s_physical_block_iterator
 // best.offset in a local declared ahead of the walk loop 40; the overlap end named inside the loop as `pages + best.offset`
 // 40; that with best.offset named first and used for both tests 40 (same code each: the sum still lands in best.offset's
 // register and the second test re-reads it, where retail sums into the pages register and compares a `mov edx, edi` copy).
+// Winner copied by members, using ring fields, retained time, retained pages, or both:
+// 355/377/355/366. Initialized winner record with the same four inputs: 344/377/345/366.
+// NOT kept: all change the 0x1054 probe and score higher. The shared policy test still differs.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

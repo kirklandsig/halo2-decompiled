@@ -601,13 +601,13 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two
+// stacked score lines below are merged into this one (m3 lane 11 r102).
 // MiniMax E (11-20): no new form and no lower score (675): retail re-tests the input's type after the obstacle setup,
 // so the collision pass is a separate top-level test, and it keeps the success result in a byte at [esp+0x13]; the
 // forms tried here (the radius as one ternary 708, the result as a bool 754, the collision pass split out 848 with
 // the frame at 0x1f84, a short frame 704, the radius declared before the pathfinding 674, the radius compared against
 // the 0.2f literal 675 and the ternary with the reorder 704) all land at or above the baseline, so the body stands.
-// score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
-// score lines below are merged into this one (m3 lane 11 r102).
 // MiniMax I (11-20): no new form, no lower score (675): the frame and the length (2986 bytes) are retail's and what is left is the entry's colouring - retail takes the path pointer into EBX after the pushes, keeps the success flag in the byte at [esp+0x13] and loads the source radius before the 0.2f constant, where this build takes the pointer into EAX before the pushes and keeps the result in a dword at [esp+0x64], and the homes of the radius, the maximum height and the count sit at different offsets.
 // MiniMax I (11-17, run 103): no new form, no lower score (675): retail still takes the path pointer into EBX after the
 // pushes, keeps the success result in the stack byte at [esp+0x13] and loads the source radius before the 0.2f
@@ -954,6 +954,11 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `bool result` 754 (aligned 610); the pathfinding pointer read from the state at both searches and the trace (no entry
 // local) 769 (2969 B); `*complete` read in `last` (no entry copy) 769 (2963 B); the actor's linked index read once into
 // a named `long linked` for the height and the flags 761 (aligned 606).
+// Accumulated actor bits, leaf-selected mask, optional low bit added, separate
+// option bits combined with base, or conditionally selected option bits 675/735/675/768/775.
+// Accumulated, leaf-selected and separate option bits with Boolean success 754/754/769.
+// The accumulated form keeps the old register homes. Boolean success moves the
+// entry allocation and keeps the stack homes different from retail's.
 // M3 lane 12 r162 (fast with 0x270930 and 0x2c4030 matched; control 675; retail keeps the pathfinding pointer in EBX at
 // entry, flag EDI, object_index ESI, NONE EBX, the result in a stack byte and first_output's zero as a dword store): the
 // pathfinding pointer declared after the radius 674 (one count, not kept); the step counter as long 764 (2949 B);
@@ -968,6 +973,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // the inserted points copied by `while (inserted_count > 0)` from `inserted[--inserted_count]` 727 (2966 B); the state
 // point's radius and object read into named locals ahead of the count test (where retail loads them) 725 (2966 B); the
 // previous-direction pointer set inside the actor test and passed to 0x2c0d60 725 (2976 B).
+// M3 lane 16 r164 (fast with 0x270930/0x2c4030, both MATCH; control 675, aligned 418/362/276): the matching runs of the
+// aligned listing sit at row offsets from -5 to +57 (retail lays several blocks out in another order), so single forms only
+// reshuffle rows. The enabled bit as `(bool)((g_557c40[0] >> 9) & 1)` 702 (retail's shr/test shape); a short index in both
+// centre-transform loops 713 (first difference +0x1); the last-step flag as bool 736 (2959 B); an entry pointer in both
+// centre-transform loops 675 (same code); the node index stored before the point copy in the value28 else arm 694. Retail
+// computes 0x2c0d60's previous-direction pointer in ECX right after pushing its last two arguments (the ninth parameter in
+// declared order); that move needs declaration and call edits in two other lanes' files this round.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

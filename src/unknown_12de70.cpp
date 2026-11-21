@@ -742,6 +742,13 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // swap, re-measured on the each-use loop as listed); the release address named in the arm ahead of a call that re-reads
 // the group from the field 27; the loop read at each use with a tail block local used for every tail access (test,
 // pointer, both clears) 55. The texture twin 0x12d200 spells its loop the same way (field test at each use).
+// M3 lane 3 r288 (fast with 0x12e210, which stays matched; control 27): the each-use loop with a tail block local
+// re-measured 51 (the loop's block still loads straight into ESI, the cache block takes EBP and is pushed at entry), with
+// the cache block renamed 51 (names do not move the EDI/EBP tie); the time step-back through a new inline helper taking
+// the time field by reference (retail forms the field's address and reads through it) 27 (same code); the each-use loop
+// with the release through a new inline helper that tests the linked flag again 44 (269 bytes: the repeated test is
+// not folded); the block written back to its field after the loop's read (diagnostic) 51; the guard's block read into a
+// named local 27 (same code).
 // M3 lane 8 r211: NOT KEPT (M3 review 11-21: a parameter the body never reads and no retail call shows is a steering
 // device, banned at review even with the owner's OK; 0x223e00 is also a contributor's function): MATCH (h2m fast, check.py --fast and
 // the plain check; all 25 functions of this file and src/unknown_223b60.cpp matched, nothing lost) with the release

@@ -347,6 +347,12 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // build has and retail's lacked. BLOCKED-BY 0x29cb10 and 0x210770 as this function sees them (no source form found).
 // Also tried on the 0x1f9760-success arm: `*arg_7 = true` ahead of the 0x660 store and the call 520 (2799 B, the two
 // short arms merge); that arm setting the flag and jumping into the other short arm's block 530 (2788 B).
+// M3 lane 4 r239 (fast with 0x29c860, 0x29cb10 and 0x210770, MATCH each time, and 0x299460 unchanged; control 378): 0x210770's
+// three fallback copies through memcpy (callee body, reverted) 378; the left vector's address taken into a pointer local at
+// its definition and passed to 0x299460 378, with the side test read through that pointer 378; the side test from `left_i`
+// and the 0.9 block's term from the vector 378 (same code each); the left vector stored member by member just before the
+// obstacle list is built 550 (2842 B). None of 0x29cbb0, 0x299460, 0x210770, 0x2108a0, 0x29cb10, 0x29c860, 0x1427f0 or
+// 0x210d10 lies on a direct-call cycle in retail's call graph, so the missing callee knowledge is not a cycle-entry effect.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

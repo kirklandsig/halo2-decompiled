@@ -1341,6 +1341,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // 273/126/122): the cone half extents as `width * 0.5f * scale` 290; the projection helper's scale test written
 // `1.0f != matrix->scale` 479 (2815 B); the helper returning the depth (ignored) 290 (same code); the reference-axis test
 // as `i == 3 || i == 1` 565 (at retail's 2840 B); the sphere radius bound as `real const &` to the shape field 612 (2816 B).
+// M3 lane 16 r164 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199/196/77): the
+// cone arm copying the left axis first 300; round 148's lead (`entry` declared before `bounds`, the cone arm's `entry =
+// entries; memset(entry, ...)`) with the cone bounds stored after the four corner points 288 (aligned 178/176/67, the closest
+// shape yet; a gain of 2); the point count stored before the fourth sphere projection 548 (2808 B); the projection helper's
+// scale test as `!(matrix->scale == 1.0f)` 290 (same code); the projection helper without `inline` 290 (same code).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

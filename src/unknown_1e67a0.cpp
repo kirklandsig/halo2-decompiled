@@ -1344,6 +1344,15 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // and j agree); the new cross and the side dots then differ only in the registers that follow. The same component of
 // the state's forward is the odd one in both places, so the order is a ranking of the operands, not of the helpers'
 // written sides (which earlier rounds swapped without effect).
+// M3 lane 7 r205 (H2M fast with 0x1eb640 and 0x1e5af0, 0x1e5af0 MATCH each time; control 114 at 1389 B): the component
+// pointer computed just before the 64 flag test, after the five flag statements 398 (1415 B); the turn block reading the
+// state's copy of the goal for the alignment dot, both crosses, the moved-away dot and the snap copy 293 (1435 B); the
+// rotation done in place on the state's forward with the turn block reading the old forward from the `forward` parameter
+// (no rotated copy, no final store) 256 (1351 B), the same through include/axis_rotation.h's helper 253 (1354 B); the
+// rotated forward stored right after the rotation, the turn block reading the old forward from the parameter and the snap
+// overwriting it with no early return 268 (1383 B). Re-measured (listed): the 64 flag as `!(word & 2)` 367 (1356 B); the
+// velocity scale read at each use 206 (1395 B). Body unchanged; the rotation products still follow the helper in
+// src/unknown_1eb8a0.cpp (another lane's file this round).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
