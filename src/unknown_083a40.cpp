@@ -966,6 +966,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `continue`, in the else arm before the slot search, after the swap, or at function scope assigned at the loop top all keep our
 // sum; a collection loaded from memory each pass (diagnostic) is added last too; an invariant base (defined before the loop, or a
 // parameter, diagnostic) gets its own induction variable in every key spelling. All restored.
+// M3 lane 7 r206 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): `collection` declared just ahead of
+// the slot search (the first arm's apply given `&watcher->players`) 28; the slot search, swap and occupied step as a
+// file-local forceinline helper taking (collection, i, source, count, updates) 28 (same code); on the swap order
+// (collection, player, update, other) each of those 32 (the swap order's code); `collection` a const pointer set
+// between the two loops 277 (1072 B, the key's own induction variable). Compile-only: the helper's parameter and the
+// late declaration keep (inverse + cursor) + collection + 4.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

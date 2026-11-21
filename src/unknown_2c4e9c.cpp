@@ -3321,6 +3321,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // default with the id set from the field inside the walk's own field test 30; a pool local declared in the block with the
 // iterator's pool stored first 30 (all the same direct EBX load). Re-measured the NONE-default conditional id 13 (`this` to
 // EDI first, then NONE in EAX for the compare and both iterator stores, the id loaded straight into EBX). All restored.
+// M3 lane 7 r206 (h2m fast with 0x2c9a58, matched in each): `inline` on the out-of-line definition 30; a file-local
+// forceinline getter writing the field or NONE through an out-pointer and returning a flag, the walk under
+// `if (getter(&map_id))` 30 (the NONE store dies on the threaded path); `inline` with the if/else two-definition id 36
+// (87 B); `long const &` bound straight to the field 30; the hit breaking the loop and the selection after it on
+// `iterator.datum` with the iterator block-scoped 28 (84 B). A 606 s annealing permuter run (32 tries) reached 26 only
+// with a volatile id and a local holding NONE (both forbidden).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

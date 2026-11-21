@@ -1666,6 +1666,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (direction2 in place, the square after the negate, three normalize orders, select stores): 0xd4080 445 to 496 (445 at
 // its retail 1870 B). Every form under 521 raises 0xd4080 above 378, so none is kept; leads saved as
 // build/r202/lead-0xd37f0-500.patch and build/r202/lead-0xd37f0-entry-565.patch. Body unchanged.
+// M3 lane 16 r166 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21 unless noted; control 529, aligned 521 by this
+// round's counter). Retail ends the found block with its own epilogue (`mov al, 1` among the pops) and has one false
+// tail (`xor al, al` at 0xd4071, the empty-block jump landing just past it with AL cleared at the top). On main's
+// parameter order: two early `return false` (empty block, nothing selected) with `return true` last 579 (aligned 526);
+// the found block ending in `return true` and `return false` after it 566 (aligned 510), without the count wrapper
+// 580 (2162 B, aligned 503), with the entries table named once ahead of the scan 566 (aligned 496); that named table
+// on main's result variable 565 (aligned 514); the scan as a counted-down `do` over a walked entry 581 (2161 B,
+// 0xd4080 380). Body unchanged.
 // primary shared negate 569, secondary shared negate and copy 591, ambient shared negate and copy 552,
 // primary shared negate and secondary shared negate and copy 549, primary shared negate and ambient
 // shared negate and copy 606, secondary shared negate and copy and ambient shared negate and copy 622,
@@ -1673,6 +1681,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // shared negates with separate rotation input 634.
 // NOT kept: All eight forms shorten away from the retail extent and raise the score.
 // The 0x2c frame exceeds 0x28. The selection byte still spills and the block and query arrive in exchanged registers.
+// M3 lane 2 r129 (h2m fast with 0xd4080, 0x117c80, 0x13b390, 0x3db00, 0x3dfe0; control 529, 0xd4080 378, 0x3db00 MATCH;
+// this build already returns `ret 0xc`): the input normal pointer and the normal copy moved ahead of the count test 532
+// (2189 B; the block then arrives in EAX and the query in EDX as retail, 0xd4080 380, 0x3db00 still MATCH, but the copy
+// runs in the entry block); that with `if (parameters) { ... return true; } return false;` 567 (frame 0x28 as retail,
+// 2190 B); the mask written into the loop test (no named mask) 575 (2172 B; the mask still takes EDI); that with the
+// constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
+// test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
+// mask takes EDI ahead of the query in every form where the copy stays in the found block.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

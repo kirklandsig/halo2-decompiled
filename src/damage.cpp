@@ -2725,6 +2725,16 @@ struct s_unit_event
 // 1868 B [113 / 35]; the section switch's four section words 565 at 1912 B [146 / 50]; the seat-name block's type and
 // tag 521 [144 / 42]; the child walk's start 481 at 1888 B [135 / 43]. None kept (positional rises, and retail reads
 // the home at each of those sites).
+// m3 lane 6 r221 (H2M fast with 0xdaaa0/0xdae60/0xdb760, all MATCH; control 420): both attachment notifications as a
+// file-local forceinline helper taking the object index and the mask 420; the mode block as a forceinline helper taking
+// the three indexes 420 (both the same code: the inlined parameter copies fold); per-notification named object pointers
+// 416 (listed), on the named-region-states lead 519 (1852 B; the lead re-measured 523). Reading: the notifications'
+// address operand order differs too (`[edx + ecx + 8]` here, `[ecx + edx + 8]` in retail): retail's offset there is an
+// allocated piece of its ESI web, ours a spill reload.
+// M3 lane 14 r138 (fast with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420, `ret 0x14` in both builds): on the
+// current body the region-state update through two DAMAGE_OBJECT lookups 478 (1852 B); both destroy arms' vitality
+// stores through DAMAGE_OBJECT 593 (1932 B); the child walk's start through DAMAGE_OBJECT 493 (1904 B); the damage-source
+// byte passed as the expression (no local) 464; the at-marker flag passed as the expression 420 (same code).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3541,6 +3551,20 @@ enum
 // for the call 98, the count on the left of the test 115; the named marker name MATCH. Without the wrapper parameter
 // the named marker name alone 193 (not kept); 0x188690 called through a pointer cast to the wrapper-parameter type
 // matches this function but pins 0x188690's convention (0x188690 23, 0xcf040 7, 0x184060 123, 0xd9110 167).
+// m3 lane 6 r221 (H2M fast): the held wrapper form re-applied, still MATCH. With an `operator short() const` added to the
+// wrapper, contributor 0xd9020 needs no text change and the plain stores keep main's text (0xd82e0 MATCH, every matched
+// neighbour as before), but 0xcf040's call line still needs the explicit construction: an implicit conversion of a
+// by-value class-type argument builds a frame temporary (0xcf040 236, also with the constructor taking long), and a
+// user-declared copy constructor changes the passing (0xd82e0 237, 0x184060 115, 0xd9110 162). HELD patch:
+// build/r221/held-d82e0.patch (m3-lane6 worktree). On main's body: the material index bound by `short const &` for the
+// test and both calls 203.
+// M3 lane 14 r138 (fast; control 203): still BLOCKED-BY 0xcf040 (the held wrapper-parameter patch needs its call line,
+// in a contributor's body). Retail's other callers support the aggregate reading: 0x184060 and 0xd9110 load the field
+// fresh (`xor ecx, ecx; mov cx, [..]; push ecx`, which our matched 0x184060 gives with the short parameter), and 0xcf040
+// stores a word into a stack slot and pushes the slot's whole dword, so an unsigned 16-bit parameter would not explain
+// it. Tried in this file only: the two handles named (+0x14 first) 213; one element lookup for both handles 224 (1240 B,
+// one call); the index in a long local cast back to short at the test and both calls 203; `amount * d5bc0(..)` 203; the
+// material test as `!= NULL` 203.
 // @retail 0xd82e0
 void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
 {
@@ -3673,6 +3697,7 @@ enum
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
 // score 371 (was 371; 470 and 661 earlier): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
+// score 371 (was 371): 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
 // (retail's bools sit at esp+0x13..0x17, then object, i, definition, info; ours orders them differently and
 // keeps region_absorbs in memory where retail holds it in bl), registers (retail's object_count is in edi, ours
 // esi) and the position of the 0xd5b60 call. Done: shield/body children flags were swapped (retail: body from
@@ -3699,6 +3724,16 @@ enum
 // declared ahead of the definition 364 (a moved declaration), `kill = true;` ahead of the hit byte's store 363 (statement
 // order; match-only). Retail also computes the first index into EAX with `lea eax, [edi - 1]` where ours decrements the
 // count's register in place. All restored.
+// M3 lane 14 r138 (fast; control 371). Frame read push-normalised (F = locals base): retail packs body, friendly,
+// reported, shield, region_absorbs at F+3..F+7, then object F+8, i F+0xc, definition F+0x10, info F+0x14; ours has i at
+// F+0, a 3-byte hole, the five flags at F+7..F+0xb (body, reported, region_absorbs, friendly, shield), object F+0xc, info
+// F+0x10, definition F+0x14 (damage, count and datum offset agree). Registers: after the team test retail reloads i into
+// EDI and the object into ESI (then the datum pointer in ESI, i kept across 0x1df560's ESI argument); ours swaps them,
+// so i is reloaded once more and info goes to EDI. Tried: `i < object_count - 1` 380 (1888 B); the owner stores through
+// `object` instead of a second lookup 405 (1885 B); info looked up ahead of the object 522 (1913 B); region_absorbs
+// declared at function scope 371 (same code); `objects[i]` at every use with no current_index local 525 (1920 B); i
+// declared at function scope 371 (same code). Diagnostics (behaviour changes, reverted): one or two fewer i references
+// 404/462 with i still at F+0 (the layout is not a near tie on i's count); one extra object reference 501.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5414,6 +5449,11 @@ struct s_damage_object_creation
 // (re-measured 112 at 811 B, `movzx` ahead of the count guard and `test edi, edx`): the test written mask first 112
 // (same code); the local declared under a redundant `if (0 < section_count)` guard 163 (both masks hoist, the count
 // spills to +0x14), with the test reversed 163. Nothing kept.
+// m3 lane 6 r221 (H2M fast, control 167): the section loop as a forceinline helper taking the object, the bound as a
+// by-value count and both masks 167; `section_count` declared at function scope 167; the piece search with its own
+// counter 167; `attached_nodes` declared ahead of the section loop 167 (all the same code); the bound read at each test
+// 179 (listed). Downstream of the section rotation the definition reload is scheduled ahead of the attached-mask store
+// (ECX here, EAX after the store in retail), which carries the g_51e9b8 and node-lookup rotations.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

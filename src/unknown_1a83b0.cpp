@@ -767,6 +767,10 @@ s_1a8a10 g_4453c0[] =
 // copy 17 (same code; screen 10 also before the copy, at the switch's top, and for the quadrant's range). Screen only: the
 // rotated point written through a pointer local 22, through a forceinline quadrant helper 61, the copy through a pointer
 // local 10, the negated j read as `n[1]` or by raw offset 10, the copy from `n[0]`/`n[1]` 10 (all still one j load).
+// M3 lane 7 r206 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17): a planar `vector2f const *`
+// view of the facing for the copy and the negated j 17 (same code), the copy as an aggregate copy through it 118 (548 B);
+// the copy brace-initialised from the actor's i and j 17, with both sums in retail's term orders 17; the point read into
+// scalar x and y locals after the switch 17 (all the 17s j read once).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

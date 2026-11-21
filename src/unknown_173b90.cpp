@@ -2201,6 +2201,10 @@ bool function_17afd0(long effect_index, long value);
 // test's last term `available == false` 12; the owner as a NONE default set under `effect_index != NONE` 12; the availability and
 // same_view declarations swapped (availability first) 12 (all four the same code); `attached` false by default and set by an `if`
 // on the same conjunction 133 (510 B). All restored.
+// M3 lane 7 r206 (h2m fast with 0x174420/0x1751d0, MATCH): the clearing test with `!available` first 41 (the prologue's
+// registers move); the availability as nested ifs 12 (same code); the owner/view clear then `same_view = same_view &&
+// available;` 138 (510 B); `bool same_view = owner != NONE && g == owner;` after the availability, cleared by
+// `if (!available)` 135 (508 B); the owner lookup's arms swapped 12 (same code).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

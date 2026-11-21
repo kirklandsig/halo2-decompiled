@@ -1583,6 +1583,26 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // search block 813 (2827 B, all four registers pushed at entry). In the second request retail keeps `this` in EBX and
 // the found mode in EBP with the +0x34 table temp in found_mode's dead home; ours keeps the table temp in EBX, `this`
 // in EBP (reloaded per kind) and the found mode in that home: the two homes swap as one choice.
+// M3 lane 13 r134 (fast with the twin, 0x1dc790 and 0x1dc8c0, siblings MATCH unless noted; control 812, aligned 578,
+// masked 74): the five-kinds helper assigning the wildcard to its own mode parameter ahead of the fifth request 812
+// (same code); the second request's graph read from `iterator.graph` re-measured 948 (2805 B, aligned 608: the graph
+// is then held in EBP for the whole request, the mode table recomputed into EBX, the mode read from memory); the
+// siblings' flag loop re-measured 755 (aligned 297, masked 57). Diagnostics, removed: the second request keyed by the
+// `mode` parameter 813 (it still reads the mode from its home at each kind); the two requests in reverse order 975
+// (whichever request runs first gets retail's roles, the graph in EBX and its mode loaded once into EBP even when that
+// mode is the address-taken iterator output; the second never does); one extra use of the graph pointer between the
+// requests (a second call to 0x1dd9d0 806, aligned 141; a store of the pointer to a scratch global 807, aligned 115,
+// masked 60; a read of its inheritance count 807, aligned 126): the second request then holds the graph and the found
+// mode in callee-saved registers from its first kind, the candidate and the mode table take found_mode's dead home,
+// both loops' counters take dead parameter homes and the result moves to retail's frame offset. Left on that form: the
+// graph and the mode take EBP and EBX where retail has EBX and EBP (retail keeps the graph in EBX across the first
+// loop's zero-trip edge and reloads it only on the loop's exit path), the first request's zero register, the entry
+// pair, the loop exit and the epilogues. The same store on the siblings' flag loop 771 (2841 B, aligned 528, masked
+// 41: the mode table then takes EBX and the graph EBP). The mode parameter's address escaping to a global 1027 (frame
+// 0x30). Compiler-setting diagnostic (one, not kept): the file's /Ob1 dropped with both requests as real calls to
+// 0x1ddd00 812, the same code (the linker expands all three levels; 0x1dd630, 0x1ddaf0 and 0x1dacb0 then differ), so
+// the helper copies are not the cause. Reading: our second request never loads the graph at its start because nothing
+// there uses it (the first has the 0x1dd9d0 call); no statement was found that does so without code.
 // Selected-ID predicate as urgency for the requested, resolved or both key sets 1011/1011/1011. Missing-ID
 // predicate as secondary flag 990/1012/990. The same predicates held through the optional outputs and both
 // requests 1011/990. NOT kept: the 0x2c frame still exchanges class/NONE registers and gives the candidate and
@@ -1668,7 +1688,8 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 
 // MiniMax I (11-20): no new form, no lower score (812): this round only re-measured the body; the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // MiniMax D (11-19): no new form, no lower score (828): the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
-// score 812 (was 828): The class and NONE registers are exchanged. The iterator mode output takes the candidate
+// score 812 (was 812): earlier 828 (was 828), r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
+// The class and NONE registers are exchanged. The iterator mode output takes the candidate
 // slot, and the second request reloads its mode.
 // Earlier at 828 (was 828): r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
 // MiniMax E (11-19): score 828 (was 828): no new form, no lower score. Read from the listing again: the two listings were
@@ -2113,6 +2134,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // opening weapon_class test 828 (same code). Re-measured, the named urgent flag (lead above) 801 at 2791 B: it moves the first
 // request's kind blocks (retail jumps back to the next kind after each type loop), not a source shape.
 // MiniMax A (11-20): no new form, no lower score (828); the frame and the whole stack layout differ, the post-loop test still loads the result's index as a dword and shifts it where retail reads the word from memory, and the earlier rounds' forms (the candidate grouped into a resolved array, the three outputs declared after the iterator's stores, the iterator's store order) all measure 826 or more.
+// r924 (stand-in image) 812 (was 828): the search runs inside `if (weapon_class != NONE) { ... return result; }`
 // Earlier at 812 (was 828) (r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
 // with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
 // return is 1040.
@@ -2124,6 +2146,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // code as this body). Diagnostics: the request's urgent flag in a named local re-measured 787 (2805 B); the other flag in
 // a named local 913 (2789 B). Reading: retail's entry takes NONE in ECX and the compared argument in EDX (ours the reverse) and
 // makes a second NONE in EAX for the outputs once ECX is reused for the mode. Body unchanged.
+// M3 lane 13 r134 (fast with the twin 0x1db170, 0x1dc790 and 0x1dc8c0; control 812): the five-kinds helper assigning
+// the wildcard to its own mode parameter ahead of the fifth request 812 (same code). The round's other forms and
+// diagnostics were run on the twin 0x1db170 and are listed with their scores in its note (this body stayed 812 in
+// each): what the second request lacks is a use of the graph pointer at its start.
 // Class predicate before result 812; active result after iterator setup with separate inactive
 // default 812; iterator class before admission 961; persistent candidate reset on a miss with a
 // default object or two word stores 1013/1020; candidate-word loop test before the whole result copy

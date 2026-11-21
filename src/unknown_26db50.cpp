@@ -1202,6 +1202,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the entry, the 0x444 table and the activation call 146 (1095 B), on M 149 (1095 B). Reading: retail's other rotation sites
 // spell their dots in fixed orders, but this one's (j + i) + k and 0x1ecf50's (k + j) + i cannot both come from the one
 // shared helper, so the held private-copy match stays the only route found. All restored.
+// M3 lane 7 r206 (h2m fast with 0x1ecf50/0x26d100/0x26dde0, MATCH each time): the direction copied member by member from
+// the global vector 232 (1081 B); this file's declaration of the shared rotate helper marked `__forceinline` 26; the angle
+// written ring term first 26; `rings_remaining` declared ahead of `ring` 26; the trace distance named ahead of the trace
+// call 26 (the 26s the same code).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

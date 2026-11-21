@@ -1500,6 +1500,12 @@ bool c_projectile_type::v8(long a, long b)
 // NONE block 12; the call's mask from `b` with the object looked up after the call 18. Diagnostic (semantics changed,
 // reverted): the call's mask 0x3fe 13, still swapped. Reading: only a two-use group computation anchored ahead of the NONE
 // compare gives retail's head pair with the mask.
+// M3 lane 4 r241 (H2M_FAST; control 5): both real checks through one forceinline bool helper (stored, value) used in each
+// test, with the mask 15, with the word read 8; 0xa5e70 given the base slot's unused third parameter (a state size) with
+// every caller (0xa3a00, 0xa02e0, 0xa0be0, 0x9d450, all still MATCH) passing its own `c`: word read 5, mask 12 (the unread
+// argument adds no use that moves the pair); with the mask, the group index masked through a forceinline absolute-index
+// helper 12, the index read by value and masked in place inside the NONE block 12, the entry started at the group data and
+// stepped by `+= (index & 0xffff) * 12` 12. All reverted.
 // M3 lane 7 r201 (fast with 0xa5e70, 0xa02e0, 0xa0be0, 0xa3a00 and 0x9d450, matched each time; word read 5, mask control
 // 12): 0xa5e70 given a fourth, unused parameter taking the definition by const reference, every v27 passing `this`, and no
 // definition copy here, 55 (the unused argument and its temporary are both removed: no `push ecx`, so the dead store

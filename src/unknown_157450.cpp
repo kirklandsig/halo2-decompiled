@@ -5969,6 +5969,13 @@ void __stdcall function_d6bc0(long object_index);
 // 172; a named `short *` timer for the zero test, delay store and countdown 172, with the countdown's `= 1` too 177 (854
 // B); the timer as a `short &` 177 (854 B); the parameter read once through its address into a second pointer used for
 // every access 172 (same code).
+// M3 lane 5 r224 (h2m fast; base 29; the flag form rebuilt: local test 21, field test 173 at 857 B, where `entries` is
+// promoted to EDI from the loop top and the timer address takes EBX; retail loads `entries` into EAX at the zero test
+// and keeps it across the `jne` for the index test): on the field-test flag form the object by a ternary at the loop top
+// (first block testing the object) 192 (873 B); the flag started from the zero test with the index test joined by `&&`
+// 154 (863 B), with the local test 131 (874 B); a block-scoped entry pointer for the zero test, index test and delay
+// store 213 (861 B); the reset decision as one `||` condition with no reset bool 173 (857 B), on the kept body 29 (same
+// code); a function-scope timer pointer assigned at the zero test for the delay store, countdown and `= 1` reset 178 (853 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
