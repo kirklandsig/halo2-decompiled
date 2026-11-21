@@ -1416,6 +1416,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // with the count read at each use 304 (1261 B), with the short grenade 301, all three 307 (1259 B: the extension
 // moves to the load). Diagnostic on the 160: a probe store of the squad pointer between the lookups puts the squad home
 // in retail's slot (first difference +0xb1), which located the eviction as the cause of the home order.
+// The squad pointer, query outputs and shared actor-result slot still differ at the 0x118 frame.
+// Present-first Boolean arms 199. Missing-first Boolean arms 199.
+// Nullable flag word before the shift 210. Default flag word before the shift 231.
+// Conditional masked bit 199. Short-circuit masked bit 223.
+// False default with masked admission 222. Complete missing-or-clear test 223.
+// NOT kept: The explicit arms and conditional mask tie. The five retail-length forms raise the score.
+// The two flag-word producers move the squad spill to +0x14. The others keep it at +0x1c. Retail uses +0x10.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

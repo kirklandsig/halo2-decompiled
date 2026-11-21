@@ -2702,6 +2702,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI and state EBX); on it: case 1's argument through `local_2` 604, the 0x25a130 argument through
 // `local_2` 604, both 604 (same code each: the two names are one value), the facing publish with the flag store
 // last 604; the lead without case 4's direct facing 593 (2404 B). Body unchanged.
+// The dispatch bounds branch still reaches a later completion block.
+// Compound playback pending test 486. Nested playback pending test 486.
+// Unit guard then playback pending test 486. Complete playback disjunction 499.
+// Inactive target pending test 535. Active search pending test 431.
+// Pending-only search results 535. Pending-only playback and search 531.
+// NOT kept: The active-search-only update ties the calibrated control. The other calibrated forms raise
+// the score. The playback disjunction reaches 427 on the single-address image and 499 on the calibrated
+// image, where it grows to 2432 bytes and changes the retail playback result sequence.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

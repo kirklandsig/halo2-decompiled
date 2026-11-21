@@ -1280,6 +1280,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // alone or with nearest 418 each. Named projection with opposite or both 1236 each.
 // Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
 // one-point gain, extent grows past retail, and the separate frame homes remain.
+// Opposite scan with projection continue inside the ordinal arm, separate ordinal/projection guards,
+// all rejecting guards, grouped rejection in the ordinal arm, or distance continue inside either
+// set of admission arms: 418 each. Split ordinal ranges with positive or rejecting projection 600/600.
+// NOT kept: the single scans retain the missing offset and pass-counter homes, and the two ranges regress.
 // M3 lane 3 r284 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH; [n] = aligned rows, control [205]): after
 // scan 2 retail threads opposite == NONE straight to the first sample's copy (`cmp esi, -1; je 0x2330c`) and tests
 // `second` on the add's flags (`add esi, ecx; mov ebx, esi; je`), where ours materialises the NULL (`xor ebx, ebx` ...
