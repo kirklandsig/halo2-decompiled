@@ -910,6 +910,9 @@ struct s_item_collision_bsp
 // Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
 // Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
 // contact registers still differ at the 1366-byte extent.
+// Normal rows paired with translation products in coordinate order: late scale with expression or
+// accumulator 203/199, early scale 199/201; in distance-sum order, late scale 203/199, early scale 199/201.
+// NOT kept: the scalar products do not give a byte match or recover the retail coefficient homes.
 // Left products from a carried j coefficient, j/k, all three at first use, or all three
 // with overlapping rows: 191 each through plane fields or row scalars. NOT kept: j now
 // loads before k, but its XMM home and the first axis operands still differ. The 0xa0

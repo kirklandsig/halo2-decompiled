@@ -1550,7 +1550,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
+// score 60 (was 60): The membership load displaces the zero result from EAX. Player bit and entry size use
+// opposite saved registers, and capacity failure has a separate zero exit.
+// Earlier at 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
 // Earlier detail: the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
@@ -2032,6 +2034,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
 // 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
 // MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
+// Length from input capacity 183, separate payload budget 178, or cursor displacement 196;
+// record-end payload placement 145; zero-based removed bits with repeated retained reconstruction
+// 157 or shared narrowed reconstruction 91; byte length accumulated in a local or the result
+// 159/159. NOT kept: every form regresses and the record-end and running-length forms
+// change the matched caller.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

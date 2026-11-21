@@ -4755,6 +4755,13 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Selected original or scaled projection coordinates 518, with world scale read once 505.
 // World point setter 521, with world scale read once 524, or with selected projection coordinates 508.
 // NOT kept: the smallest frame is still 0x5c and shortens the body; all eight raise the score.
+// Round 499: indexed velocity for speed/advance, normalization, cap, normalization/cap, speed/normalization,
+// speed/cap, all three limit stages, and normalization/advance.
+// Fast scores in order 520/496/490/495/486/503/521/558.
+// NOT kept: Indexed loads for the speed test and normalization recover both velocity memory reads at a 0x5c frame
+// and tie 486 at 2039 bytes. Indexing all three limit stages shortens the function and raises the score. Neither
+// gives the native addressing or frame.
+// The 0x38 frame still needs independent stored-velocity loads and register-only projection results.
 // Y inversion at the moved, stored or both projections 530/486/530,
 // with both inverted and a shared displacement 513. Screen-y result in the
 // projection helper as field, named row or direct expression 517 each;

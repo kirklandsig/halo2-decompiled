@@ -1001,6 +1001,11 @@ real function_30bf0(vector3f *vector);
 // NOT kept: the two ties keep the first result store and the clip slot. The remaining forms regress.
 // Unscaled-radius or scaled-radius guard to the sole exit 152/152; both guards 193.
 // NOT kept: these forms retain the displaced result store and raise the score.
+// Complete range level expression, primary fallback on a zero result, split close/intermediate
+// arms with that fallback, and explicit primary-or-zero 153/90/90/153; named squared tests
+// with chained, conditional, explicit-tier or fallback result selection 84/153/84/153.
+// NOT kept: Two zero-result fallback forms reach 1308 bytes at 90. The named tests tie or regress.
+// The result and clip slots remain displaced.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

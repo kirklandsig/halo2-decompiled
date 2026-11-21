@@ -2305,6 +2305,12 @@ long function_1fa7f0(void);
 // `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
 // (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
 // `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
+// Round 499: terminal address at path/search scope, one-past address at path/search scope, forward scan with the
+// terminal/one-past address, candidate and terminal pointers, and terminal status from scan end.
+// Fast scores in order 492/486/499/488/480/439/486/543.
+// NOT kept: All eight retain the 0x114 frame and raise the score. The one-past forward bound is closest at 439 and
+// 1744 bytes. All four matched controls stay exact.
+// The extra two frame words and the count, edge and opposite-orientation homes remain unresolved.
 // M3 lane 11 r139 (h2m fast with 0x270930 and 0x2c2a70, both MATCH throughout; aligned unmatched [exact/stack-masked/
 // register-masked], control 400 [275/178/56]): the side flipped in place ahead of the second tangent call re-measured 440
 // (1727 B, frame 0x10c) [223/160/52]; that with `edge = 0xffff` again at the scan hit re-measured 369 (1740 B, first

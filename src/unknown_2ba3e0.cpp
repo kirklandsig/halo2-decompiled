@@ -998,6 +998,11 @@ real g_55e618;
 // NONE;` ahead of the displacement block 134; the tangent rows after the position stores 102 (same code); the tangent rows
 // interleaved with the perpendicular rows 209 (1550 B, frame moves). The record's capture (0x244980's callback field, which
 // reaches the cast through 0x2df720 and 0x301800's virtual callback, and 0x169510's self call) still decides the block.
+// Component walks for velocity capture, perpendicular, tangent or contact position 605/605/605/600;
+// perpendicular and tangent in separate or paired walks 599/591; paired with indexed velocity
+// capture, and also indexed contact publication 600/595.
+// NOT kept: The closest component walk pairs the projection and tangent at 591 and 1715 bytes.
+// The first mismatch moves into the prologue at +0xc.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

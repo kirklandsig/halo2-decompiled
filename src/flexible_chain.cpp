@@ -904,6 +904,9 @@ void __stdcall function_1160c0(real dt)
 // NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
 // The frame agrees and the selected segment still needs EDX and its +0x14 spill.
 // MiniMax A (11-20): no new form, no lower score (144); the first difference is the loop head's alignment padding (the three-byte lea esp, [esp]), so the body is 1371 bytes against retail's 1368 and every later jump target is off by three; retail keeps the selected segment in EDX and spills it at +0x14 where ours holds the segments base in EDI and the segment in ECX and spills at +0x20, and the 113 lead needs a file-local one-caller helper, which is match-only and raises three shared users.
+// Direct node indexing at input, physics and publication 275/276/242; paired boundaries 281/243/243;
+// all accesses via the record or named array base 167/280. NOT kept: these forms do not recover
+// the EDX segment and low spill at retail length.
 // M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
 // EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
 // formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the

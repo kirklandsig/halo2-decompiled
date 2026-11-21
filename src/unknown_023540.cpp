@@ -3542,6 +3542,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // returned corner pair with named scale, bias 569;
 // returned corner pair with named rotation, scale, bias 569.
 // NOT kept: Returning the pair shrinks the frame to 0x40 and the body moves away from retail length. The corner instruction schedule still differs.
+// Round 499: whole corner by value, reference, pointer, two-real row, scalar reads from a local or static square or
+// from named corners, and whole corner with point output.
+// Fast scores in order 685/326/326/326/326/54/326/685.
+// NOT kept: The static square ties at 54 and preserves the opening schedule. The automatic square and named-corner
+// forms change inlining or storage and raise the score. All three matched controls remain exact.
+// The first corner set still schedules its x87 coordinate-3 store ahead of the SSE subtract.
 // M3 lane 11 r139 (compile-only harness of this file, whose corner block is the fast and plain builds' exactly; counts are
 // the block's lines out of place against retail, control 54, aligned 27; h2m fast for the four forms marked fast): the
 // schedule moves with redundant parentheses inside the corner helper, which no earlier round measured. One to three extra
