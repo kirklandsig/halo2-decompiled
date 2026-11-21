@@ -348,6 +348,21 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // equal-weight homes are permuted by a rule that takes in every home's reference count (deleting the waypoint step here flips
 // local_13/local_14 and local_32/local_16), and neither declaration order nor the order addresses are taken moves a home, so
 // the three swapped pairs follow the whole set of homes and their counts, not the tied locals themselves.
+// M3 lane 4 r239 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, MATCH each time; control 252; a one-file frame screen
+// first, build/r239/lt294.sh): the walk's neighbour position (declared at function scope) reused for the scaled centroid 455
+// (3712 B); the nearest point reused for the scaled centroid 455 (3712 B); the centroid scaled into the post-walk vector and
+// differenced in place 455 (3712 B, the listed in-place code); three strengths named with the nearest point reused 270 (3716 B);
+// one variable for the walk's position and the post-walk vector declared just before the walk 607 (3690 B). Screen only: that
+// shared vector declared at twelve places from the function's top to the walk, 844/845 instructions each (its earlier first
+// reference flips the scale helper's product operands, so retail's position is its own variable that only shares the slot);
+// whole-word renames of the record, object, count, nearest and sum locals to sort first or last, nine forms, every home
+// unchanged. Frame-order study (compile-only synthetic functions, 468 layouts, all reproduced by build/r239/model/zmodel.py): a
+// frame over 128 bytes is a stable sort of its homes by references per cell from a base order of last use, and ties are then
+// permuted by a fixed recursion (m = (lo + hi) / 2, the element at m swapped to the front of its equal run, both sides
+// recursed), so a tie follows every other home's count and place and never a name or a declaration. On this frame that model
+// gives every tie group from last-use order except the five 4-reference cells, whose base order here is record, nearest,
+// count, object, sum (record, object, count, nearest, sum with three strengths named); retail's layout needs sum, object,
+// count, nearest, record. What orders register spill homes against address-taken locals in that base list is not found.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

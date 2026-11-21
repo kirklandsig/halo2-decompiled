@@ -904,6 +904,13 @@ void __stdcall function_1160c0(real dt)
 // NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
 // The frame agrees and the selected segment still needs EDX and its +0x14 spill.
 // MiniMax A (11-20): no new form, no lower score (144); the first difference is the loop head's alignment padding (the three-byte lea esp, [esp]), so the body is 1371 bytes against retail's 1368 and every later jump target is off by three; retail keeps the selected segment in EDX and spills it at +0x14 where ours holds the segments base in EDI and the segment in ECX and spills at +0x20, and the 113 lead needs a file-local one-caller helper, which is match-only and raises three shared users.
+// Direct node indexing at input, physics and publication 275/276/242; paired boundaries 281/243/243;
+// all accesses via the record or named array base 167/280. NOT kept: these forms do not recover
+// the EDX segment and low spill at retail length.
+// Coordinate-array loops for interior position, anchor position, anchor direction and
+// both anchor values 161/161/161/643; either anchor with interior or all three
+// 161/161/643; one combined anchor pass 169. NOT kept: all regress and shift
+// attachment output homes. The segment still needs EDX and the +0x14 spill.
 // M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
 // EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
 // formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the
@@ -929,6 +936,14 @@ void __stdcall function_1160c0(real dt)
 // `inverse_dt` declared at the velocity rows 292; the loop counter declared ahead of the loop 144 (same code); the
 // stiffness computed in the non-initial arm after the target 303 (1356 B).
 // MiniMax B (11-20): no new form, no lower score (144): the selected segment still sits in EDI and ECX at +0x20 where retail keeps it in EDX at +0x14; this round's permuter (76 tries in 604.8 s) found nothing below its baseline of 141 on the reduced image.
+// M3 lane 11 r142 (fast with 0x116750/0x116010/0x1160c0, all MATCH; control 144, aligned 159, masked 86, frame-blind 41):
+// retail is this body with ECX and EDX exchanged from the segment on (segment EDX, here ECX with its base in EDI; then the
+// first-node copy, the position copy, the physics index and the offset copy each take the other register), plus the low
+// slots. The physics index read once into a `long` local 144 (same code); `1.f / dt` ahead of the loop 154; the vertical
+// ahead of the loop 299; the segment selected ahead of the node pointer 278; the last-segment test as
+// `definition->segment_count == i` 145; the rotation through the existing rotate_vector_170d70 (k read at each use) 144
+// (same code), and every include/axis_rotation.h variant measured for 0x29b2e0 (k local or not, dot or cross order) 144.
+// Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

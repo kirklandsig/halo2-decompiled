@@ -2162,204 +2162,15 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 	return damage;
 }
 
+/* whether the damaged region exists in the info and kills outright */
+static inline bool damage_region_is_lethal(s_damage_info const *info, long region_index)
+{
+	return region_index >= 0 && region_index < info->region_count && (info->regions[region_index].flags & 0x80);
+}
+
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
-// score 3 (was 3): retail loads the region entry (`mov eax, [edi]`) between the `info` test and its `je` and addresses
-// the region flags as [eax + edx + 4] where ours has [edx + eax + 4]; every form that evaluates the entry ahead of the
-// info test gives both, but then `definition` becomes a register argument, `info` takes EBP and `object` is spilled.
-// M3 lane 8 r170 (fast): the entry read into a local and cleared when `info` is NULL, then tested alone, 228 (retail's
-// hoisted load, but `definition` arrives in EAX, `info` EBP and the amode [ecx + eax + 4]); the entry read through
-// `info ? entry : NULL` 3 (same code); `if (info)` with the index as `entry ? index : NONE` 3 (same code); the region
-// flag through the existing bit-vector test 0xbfe60 218 (called out of line, 876 bytes); the flag test through an
-// inline taking (info, index, mask) 185 (873 bytes, a dword load).
-// M3 lane 6 r180 (fast): the guard inline taking (info, accumulator) with the entry read into a local before the info
-// test 228 (870 bytes); an inline returning the region pointer or NULL, the caller testing the flags and the definition
-// flag 225 (878), the same with early returns 241 (880); round 114's inline guard as `__forceinline` 228 and with
-// `object` declared `s_damage_object *const` 228 (both the same code as the lead).
-// MiniMax G (11-12): no new form, no lower score (3): nothing new this round; retail still hoists `mov eax, [edi]` above the
-// info `je` and addresses the region flags as [eax + edx + 4] where ours uses [edx + eax + 4].
-// MiniMax G (11-12): no new form, no lower score (3): the passed bool and the short team are locals as in 0xd5d20;
-// what is left is retail's hoisted `mov eax, [edi]` above the `je` and the base/index order of the amode.
-// MiniMax H (11-12): no new form, no lower score (3): the region entry is still loaded below the info test where retail loads it above, and the region flags are still addressed as [edx + eax + 4] where retail has [eax + edx + 4]; the entry cached in a local before the guard gives 228 and the scaled-index-first address gives 3.
-// MiniMax A (11-11): no lower score (3); two forms not in the rounds below: the entry test nested inside the info test
-// (3, the load stays behind the branch) and a named region offset read before the regions pointer (3, the flags address
-// stays [edx + eax + 4]); an entry read into an integer local instead of a pointer (228) and a typed entry local (228)
-// give the same allocation as the plain pointer local. The original body is kept.
-// MiniMax G (11-11): no new form, no lower score (3); retail loads the region entry before the branch that tests the info
-// pointer and addresses the region flags as [eax + edx + 4] where this build uses [edx + eax + 4], the same address with the
-// base and index registers the other way round; naming the region entry in a local moves the load into the branch and scores
-// 228, and the other address spellings keep the current form.
-// MiniMax H (11-11): no lower score (3); the region entry is still loaded after the `info` test where retail loads it
-// before, and the region flags are still addressed as [edx + eax + 4]; a nested entry test (3), an entry local read
-// before the test (3), a top-level entry local (3) and an entry local shared with the 0xdb090 call (218) all leave
-// the load behind the branch.
-// MiniMax A (11-11): no lower score (3); retail's region entry is loaded before the branch that tests the info
-// pointer (the `je` at 0xd8d46 belongs to the `test ebx, ebx`) and its flags are addressed as [eax + edx + 4] where
-// ours uses [edx + eax + 4] - the same address with the base and index registers the other way round. The address
-// shapes the earlier rounds tried (the struct field, a byte pointer addition, an integer address) all keep our order,
-// and an entry local read before the branch moves the load up but rebuilds the prologue (228). The original body is kept.
-// MiniMax A (11-11): no lower score (3); a test-only local for the region entry and an integer address for the entry give
-// retail's code exactly (3), while an entry local that the region index reads puts the load above the info branch like
-// retail but swaps the info and object registers and rebuilds the prologue (228). The region flags address stays
-// [edx + eax + 4] for every source form tried: the struct field, a byte pointer addition, an integer address with the
-// regions pointer cast to dword and a dword base all give the same code (3).
-// MiniMax I (11-10): no new form, no lower score (3); a local for the region block loaded before the info test is spilled and changes the whole prologue (228), so the load of the block still stays behind the branch.
-// MiniMax C (11-09): no new form, no lower score (3); an entry local before the info test moves the load above the
-// branch but costs the register allocation (228), the two null tests nested (228) and the && operands swapped (3, the
-// tests then in the wrong order).
-// MiniMax E (11-09): no new form, no lower score (3); retail loads the region entry above the `info` test and addresses the region flags as [eax + edx + 4], ours loads the entry after the test and uses [edx + eax + 4]; an entry local before the test moves the definition into a register argument and spills the object (227), and the scaled-index-first form of the same address grows the function to 880 bytes (34).
-// MiniMax D (11-06, run 49): no new form, no lower score (3); the region pointer is still loaded after the `info` test where retail loads it before, the object pointer and the 1 << type shift still use different registers, and the `lea ebx, [ecx + 8]` still comes before the last call's first push.
-// MiniMax B (11-06, run 42): no new form and no lower score (3); retail loads the region index before the branch
-// that tests the entry pointer, ours loads it after the branch, so the load and the `je` are swapped.
-// Earlier, at score 3 (was 5; earlier 40): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
-// result to a stack byte and pushes the dword, and sign-extends the team into esi/ecx); what is left is scheduling (the
-// `mov eax, [edi]` before the `info` test, which register the object pointer and the 1 << type shift use) and the
-// `lea ebx, [ecx + 8]` before the last call's first push.
-// Tried: the region entry cached in a local before the `info &&` test (226).
-// @coldspear's permuter (#104, 2026-10-30): 40 -> 36 only by reading a short where retail reads a dword (not kept).
-// Round 473: coherent region input across guard/index/damage call, reciprocal lifetime/null order/native
-// name combinations: 230/230/230/230/149/149/230/230. Original field reads with pointer-first guard 166,
-// nested guard 40, eager null comparisons 238, nullable ordinal 40, definition flag first 58, upper range
-// first 44; three-use owner address after/before initial damage 180/185. All restored; pointer-load
-// scheduling, object/shift registers and final owner-address schedule remain.
-// Round 40 (lane 14): the 0xb58c0 notify written as 0xd6790 has it (an object pointer read once for the
-// test and the argument) took 40 -> 5: every register now agrees. Left: retail loads `mov eax, [edi]` above
-// the info `je`, addresses the region flags as [eax + edx + 4] (ours [edx + eax + 4]) and does the `lea ebx`
-// before the effect call's `push eax` (0xd9110 has the same swap). On that graph: the effect call straight
-// to the owner-first 0x176780 40 (same code, on the old graph); region entry local before the guard 226
-// (accumulator in EAX, old graph); region element pointer 5; one combined guard reading the entry at each
-// use 201 (880 bytes); short region index 201; `!= NULL` guard 5; player test joined into the region test 5;
-// a 600 s permuter run, 12 tries, none below 5.
-// Round 339: Entry declaration swap 41; default-owned reciprocal 196; separate lower region gate 5,
-// separate effect gate 5, coordinated info/object/ordinal/scale names 5; declarations/default 215;
-// both gates/names 5; all forms 215. Original body restored; scheduling remains.
-// Round 28 (lane 17, fast): the guard as an inline taking (info, entry) 227 (870 bytes; retail's `mov eax, [edi]` above
-// the je and [eax + ecx + 4], but definition in EAX, info in EBP, the object spilled), a result-style inline 204 (877),
-// an entry local before the guard 227; each with `(void)&definition` 227/204/227. Definition read once through its
-// address, at the call / category / flag 224 each (back on the stack, info still in EBP), on the original guard 5.
-// Object before info 227, 224 with that read; entry declared at the top 227, 224; flags through the field 228, 223.
-// The first 0xdb090 argument through the field: entry local 26 (871, aligned 3), inline 25 (871, aligned 2: only
-// `mov ecx, [edi + 4]` against `mov ecx, ebx`, and the lea), with the address read 25, result-style 206. On the entry
-// form, the object field for the re-lookup 196, count through the field 186, test through the field 202. With info as
-// the argument: `-=` written out 227, inline parameters swapped 227, nested flag test 227, result in a named bool 227.
-// A test-only entry local 5, a has-entry bool 5, nested ifs 5 (the read stays below the je); an info copy 227; entry
-// tested first 166; one symbol for entry and index 227; index read at each use 233 (877); short index 233.
-// The lea: a shared inline effect wrapper in four parameter orders 5 (0xd9110 10); an owner pointer local 5.
-// Round 337: result, normalized-damage and paired vitality workspaces at enclosing scope,
-// seven subsets 5 each; all with the maximum-body workspace 5. Computations stayed at their
-// original sites. Original body restored; region-load and final owner-address schedules remain.
-// Round 69 (lane 1; the one-link harness reads 37 for this body, h): entry local with nested tests, NONE-default index
-// or region pointer 224h (definition to a register argument, info in EBP, object spilled); short entry pointer read at
-// each use 234h (880 bytes); owner-first call on today's graph, effect test split, `region_index + regions`, byte
-// offset flags either order 37h (same code); fast: regions local 5, effect index read at each use 5, owner local 5.
-// Round 74 (m3 lane 1): the `lea ebx` schedule was 0x176780's parameter order (tag, owner, object, scales...), 5 -> 3. Left: `mov
-// eax, [edi]` above the info je and [eax + edx + 4]. The entry local gives both registers wrong only because info then outranks
-// object: without one info read object takes EBP again (db090 arg 44h, flags 221h, regions 189h, guard test 203h). Harness (reads
-// 35 for this body, h): entry local + k dead locals, k 0-12, 225h each; dead locals alone 35h; bool inline in the call 220h,
-// inverse defaulted or as if/else 164h/224h, short index 234h, object first 224h, damage before info 239h, nested flag test 224h,
-// `!(a && b && c)` 224h, second entry for the 0xdb090 argument 223h; region flag inlines 190h/35h/35h/35h, index inline 35h, region
-// flags inline 35h, inline guard and flag-parameter guard 225h; word_flags_set for unknown12 35h, with the entry 225h; entry read in
-// both arms of `if (info)` 216h (load above the je, accumulator in EBP); datum head same guard, 228h with the entry.
-// M404: whole bounded-region admission in positive bool/byte/word/long and
-// complementary bool/byte/word/long forms: 3/3/3/3/3/3/3/3. Frame, extent and
-// region-load/address gaps unchanged; original nullable guard and complete body restored.
-// P422: Native model-region record receiver, const/mutable with combined/nested/
-// entry-first/named-admission guards: 228/228/167/228 twice (870/870).
-// NOT kept: typed entry ownership changes the incoming convention and saved roles.
-// P422: The required typed biped effect-tag field preserves 3/870 in the calibrated preview.
-// M3 lane 16 r114 (fast): retail's form is the region entry read ahead of the guard: a two-use `entry` local (228, 870 bytes) or
-// an inline guard taking (info, entry) (228) gives retail's hoisted `mov eax, [edi]`, and the inline also gives [index + regions + 4];
-// what then differs is one choice: our build keeps `info` in EBP for its whole life and stores the object at entry (loaded into EBX
-// after the definition's last use), retail the mirror image (object EBP, info stored at entry and loaded into EBX at the guard).
-// Diagnostics on the entry local (reverted): one more read of `object` anywhere restores retail's registers with all five `info` uses
-// (the player test through `object` 196 / aligned 5 lines; an extra field test in the last block 47 / aligned 3; one after 0xdb090
-// 145 / aligned 4), as does one `info` use fewer (0xdb090's first argument through the field 24, aligned 3); k probe locals, k = 1..8,
-// 228 each, and k = 1..16 on this body 3 each. Tried on the entry local or the inline guard, none tips it: the subtraction written out
-// 228; the stun block's two field reads through a two-use pointer 228; the notify handle in a two-use local 227 (38 on this body);
-// both 227; the guard taking the definition too 228; taking the object and its index as well (the player test inside) 318 (770 bytes,
-// kept out of line); the guard with early returns 220, with a result flag 204, returning the flag test 220, parameters swapped 228;
-// the count and elements read through a pointer to the pair 228; the shared actor stun-bounds inline (see 0xd9110) forced 228 with
-// the entry local and 3 without. Lead: a natural form that gives `object` one more use (or `info` one fewer) on the inline-guard
-// body should match; build/r114/lead-d8cb0.patch has that body.
-// M3 lane 13 r98 (fast, plain where noted): an inline guard taking (info, accumulator) that reads the entry only after
-// the info test 2 (fast and plain; retail's [eax + edx + 4] with no convention change, only the entry load still below
-// the je; a one-caller helper, not kept; build/r98/lead-d8cb0-guard.patch); on it the entry read into a local before the
-// info test 228 (the flip: definition in EAX, info EBP), early returns 2, a result flag 2, returning the inner condition 2,
-// `__forceinline` 2. The r114 guard called with `accumulator->field_4_2` for info 227 (857 B, the field reloaded; object
-// back in EBP, definition still EAX), plus definition read once through its address 222; the whole region-kill block as
-// a `__forceinline` helper 228. Every form that reads the entry before the info test flips the allocation.
-// Round 168 (m3 lane 7, fast): the region's flags read through an inline accessor returning `&info->regions[index]` 3
-// (same code, the amode stays [edx + eax + 4]); object declared before info 39; the guard's definition flag ahead of the
-// region flag 81; on the entry local before the guard (the hoisted load): object declared first 228, the end notify
-// through two fresh lookups instead of `damaged` 227, the entry read at the top of the damage block 218 (874 bytes).
-// M3 lane 3 r251 (fast): the register flip that the entry local brings (info EBP, the object stored) follows one thing: whether
-// the entry read shares the info test's basic block. Diagnostics on the two-use entry local (reverted): a conditional store between
-// the read and the info test 208 (882 bytes; retail's registers: object EBP, info stored at entry and reloaded into EBX); the same
-// conditional store ahead of the read 240, between the info test and the entry test 240, after the guard 240 (each still flipped);
-// a plain store between the read and the test 218 (flipped); the float conversion as a cast in place of the fld/fistp pair 243
-// (flipped). New forms: the entry read ahead of the inverse ternary (its diamond then lies between the read and the info test) 10
-// (870 bytes: every register is retail's, the load sits ahead of the ternary's jbe instead of in the join); that with a file-local
-// inline guard taking (info, entry) 9 (the flags address is then retail's too; only the load's place is left); the read at the end
-// of both arms of an if/else for the inverse 10 (the compiler hoists it above the jbe: the same code as the read ahead of the
-// ternary); the lethal test held in a bool flag set by the guard and tested after it, on the entry local 228 (same code as the
-// entry local); the region entry named in a local right before the 0xdb090 call 6 (its load moves ahead of the pushes); the inline
-// guard under a one-pass loop (diagnostic) 228 (same code); the inline guard taking info by const reference 228 and called with
-// info read through its own address (diagnostic) 228 (both the same code: a local's indirection is folded before allocation, so it
-// does not keep info in its stack home as retail has it). Lead: retail's source reads the entry in a block that ends before the
-// info test, yet its load is emitted in the join between the info test and its je; a form that keeps a block boundary there until
-// register allocation, with the inline guard, should match.
-// M3 lane 14 r104 (fast): the region flag through the header's inline dword bit test 185 (873 bytes: a dword load, `shr eax, 7`,
-// `test al, 1`); the definition flag through it 188 (874); the area-damage flag through it 3 (same code); that with the entry read
-// into a local after the inverse 228 (the flip); the vitality test as `function_d5d20(object_index, false)` times the fresh body
-// vitality 165 (821 bytes: called out of line, not inlined here).
-// M3 lane 8 r188 (fast): lane 16 r114's inline guard taking (info, entry) with 0xdb090's first argument read through
-// `accumulator->field_4_2` 23 (871 B; aligned, only that argument differs: retail `mov ecx, ebx`, ours `mov ecx, [edi + 4]`;
-// the entry load, the flags address and every register are then retail's; build/r188/lead-d8cb0-v4.patch); the same
-// guard with the later `info->flags` test through the field instead 228; the guard, the region kill and the 0xdb090 call
-// in one forceinline helper taking (info, entry, ...) 229, with 0xdb090 given a fresh `accumulator->unknown00` 228
-// (plain `inline` stays out of line here, 717/721 B); a range-checked region lookup returning the region or NULL, in
-// place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
-// the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
-// `info` being 0xdb090's register argument, not the use count.
-// M3 lane 3 r273 (fast; a one-object link-time screen of this file reproduces every state here in about a second): the flip is
-// a link-time convention change, `definition` kept in EBX through the guard and passed in EAX; a compile-only first pass
-// reloads `definition` in every form, so only a link-time screen shows it. `long region_index;` declared first 3 (same code);
-// an inline guard taking only the accumulator and reading info through `accumulator->field_4_2` 226 (857 B: the field read is
-// not merged with the entry-time load); round 114's guard called with both fields 227; on round 114's guard K = 0..20 dead
-// locals stay flipped (screen). Re-measured: round 98's guard 2, the entry read ahead of the ternary with round 114's guard 9.
-// HELD (needs the owner's OK; r273 build/r273/held-d8cb0.patch): `function_d5d20(object_index, false) * body_vitality` in the
-// vitality test, with 0xd5d20's definition made `inline` so the link expands it here with its constant `false`, in place of
-// that function's body written out; 3 -> 3 with the same bytes, 0xd5d20 and 0xd5d80 still match, 0xd82e0 stays 203 (fast and
-// plain); 0xd5d20 is a contributor's function, so its definition is left as it is. Screen lead (about 620 combinations): with round
-// 114's guard (any parameter order or return form) only the notify written through a named handle (or two fresh lookups)
-// with `object` declared ahead of `info` keeps retail's guard allocation (aligned 35: the guard, its hoisted load and the
-// flags address all retail's; left the prologue's load order, the notify's pointer in ECX and the scratch rotation after it);
-// with the notify through `damaged` (retail's code there) every combination flips.
-// M3 lane 11 r126 (fast with 0xd6660): on the entry local read in the guard's block (228, the flip), the variables renamed
-// (object as damage_object; info and entry renamed as diagnostics) 228 each, so symbol names do not decide the flip; the
-// entry read ahead of the 0xd5d20 call 218 (874 B); between that call and the inverse ternary 10 (re-measured: every
-// register retail's, the load ahead of the jbe); the entry local typed `short const *` with the index as `entry[3]` 228.
-// New: the plain entry local in the guard's block with 0xdb090's first argument as `accumulator->field_4_2` 24 (871 B;
-// the load and every register are then retail's; left the [edx + eax + 4] address and that argument, `mov ecx,
-// [edi + 4]` for retail's `mov ecx, ebx`), so on the plain body too the flip follows `info` being that call's argument.
-// M3 lane 13 r125 (fast with 0xd6660 and the five matched callees): no `info` local, the field read at each of its uses
-// 248 (851 B), the same with the entry read into a local ahead of the guard 248; `info` declared in the damage block just
-// above the guard 158 (860 B: its read then follows the two calls); the index defaulted to NONE and set under `if (entry)`
-// inside `if (info)` 3, and defaulted to NONE, set under `if (info && entry)` with the range test after it 3 (both the same
-// code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
-// storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
-// the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
-// M3 lane 11 r137 (fast with 0xd6660): the guard as a non-short-circuit `(info != NULL) & (entry != NULL)` 236 (873 B: the
-// entry read joins the info test's block and the allocation flips as with the entry local); the region tests setting a
-// `lethal_region` bool inside `if (info && entry)` with the definition flag tested after it 3 (same code); the guard's info
-// test through `accumulator->field_4_2` (the info local kept for the other uses) 203 (881 B); the entry as a condition
-// declaration `if (info) if (void const *entry = ...)` 3 (same code); the entry bound by `void *const &` to the field 3
-// (same code).
-// M3 lane 3 r278 (fast): the entry read ahead of the inverse ternary with `object` declared ahead of `info` 45 (870 B),
-// that with the end notify through a named handle local 69; the entry local in the guard's block with `object` first and
-// the notify through a handle 61; the entry ahead of the ternary with the notify through a handle 45; the inverse as an
-// if/else with the entry local in the guard's block 228; `info` declared `s_damage_info *const` with that local 228.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2374,12 +2185,11 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 		real maximum_body = function_d5d20(object_index, ignore_difficulty);
 		real inverse_maximum_body = maximum_body > 0.0f ? 1.0f / maximum_body : 0.0f;
 
-		if (info && accumulator->unknown00)
-		{
-			long region_index = *(short *)((byte *)accumulator->unknown00 + 6);
+		void *entry = accumulator->unknown00;
 
-			if (region_index >= 0 && region_index < info->region_count && (info->regions[region_index].flags & 0x80) &&
-				(definition->flags & 2))
+		if (info && entry)
+		{
+			if (damage_region_is_lethal(info, *(short *)((byte *)entry + 6)) && (definition->flags & 2))
 			{
 				if (g_4e6948->state != 1 || object->type != 0 || DAMAGE_OBJECT(object_index)->player_index == NONE)
 				{
@@ -2396,7 +2206,7 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 		real body_damage = inverse_maximum_body * damage;
 
 		object->body_vitality -= body_damage;
-		if ((info->flags & 0x80) || TEST_FIELD_BIT(object->damage_flags.unknown14))
+		if ((char)(info->flags & 0x80) != 0 || TEST_FIELD_BIT(object->damage_flags.unknown14))
 		{
 			if (0.0001f > object->body_vitality)
 				object->body_vitality = 0.0001f;

@@ -1746,6 +1746,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // Forms on B: the options pointer named and read through a const reference for the mode test 43 (same code); a
 // redundant `result = false;` at the top of the result block 66 (1031 B, first difference at +0x0). No retail caller
 // of 0xb8540 (65 of them) reads a value after the call.
+// M3 lane 1 r143 (fast; B = the outputs in the mode block, re-measured 43 at 1031 B): casts that change the compare's
+// shape, as the matched 0xd8cb0's flag test needed: `(char)(mode ^ 4) != 0` 244 (1032 B); `(char)(mode - 4) != 0` 244;
+// `(char)(mode != 4)` 43; `!(char)(mode == 4)` 43; `(short)mode != 4` 43; `(char)(mode & 0xff) != 4` 43 (the byte temp
+// stays AL, so the -1 stays a mov).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

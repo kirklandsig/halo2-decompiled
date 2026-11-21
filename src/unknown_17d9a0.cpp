@@ -1035,6 +1035,16 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // mandatory first pass with the step after submission 546/546 or with the
 // face read 533/533. NOT kept: 533 gains two at retail length and leaves
 // the definition and count homes displaced.
+// m3 lane 4 r238 (plain each, with 0x17d9a0, 0x17ee20, 0x17dd80, 0x17d900, 0x17ef10 at their baseline counts; the fast
+// image does not reproduce this function, 834; control 535, aligned / register-masked 442 / 297). The first face loop:
+// retail increments the index between the call's pushes (after the face read, before the type argument), ours after
+// the call. The face read into a named local ahead of the call (`long face = faces[i++];`) gives retail's increment
+// placement exactly: 524 at 3647 B [441 / 296] (match-only, a one-use element copy); with lane 1 r124's rotation lead
+// (grouped cross terms, pairwise stores) 480 [412 / 260]. The loop as a while with its own index 535 (same code), as a
+// for with `i++` in the header and `faces[i]` 548, its index declared outside a `for (; ...)` 535 (same code); as a
+// do-while (the first pass always runs) 533 (frame 0x21e4 for 0x21dc, aligned 401, masked 243: the tag home moves to
+// retail's +0x94 and the secondary count to retail's +0x54, the face count to +0x1c for retail's +0x20); the do-while
+// with the face local 537 (3631 B, aligned 402), that on the rotation lead 483 [411 / 258].
 // Separate face/plane arrays, face record, or encoded plane argument 566 each; retained face array 715,
 // plane array 752, both 749; traversal edge and vertex arrays 655, with both decode arrays 767.
 // NOT kept: the tag spill stays displaced or the aligned frame changes, and all scores rise.
@@ -1043,6 +1053,22 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Physical mode field reference or pointer, through the tag byte pointer or tag entry, each
 // with primary or secondary count initialized first: eight at 779.
 // NOT kept: each materializes the field offset, keeps the old spill homes and shortens to 3630 bytes.
+// M3 lane 12 r165 (fast screen; the reduced image is faithful for this function once 0x50650 is listed, since the full
+// build expands that arccosine wrapper here: `0x17fd20 0x50650 0x17d9a0 0x17d900 0x17dd80 0x120850 0x22bbca` gives the
+// full check's 535 at 3647 B with no caveat, where the bare address gives 834 at 3582 B; control 535, aligned 433/442
+// unmatched instructions ours/retail, register- and offset-masked 185/194; body unchanged). Reading of the normalize:
+// retail loads 1.0f into XMM0 once and keeps it (reciprocal from a copy, then the sign's 1.0f store and both uses in the
+// angle clamp), scales j and k in registers loaded ahead of the divide (`mulss xmm6, xmm1`) and i from a copy of the
+// reciprocal, and keeps the three scaled components in XMM5-7 for the sign's dot; this build divides 1.0f in place,
+// multiplies each copy of the reciprocal by the component in memory and reloads 1.0f for the sign. Forms: the scaling as
+// three `*=` member statements re-measured 559 (3631 B, masked 174/188), written `axis.i = axis.i * inverse` 559 and with
+// the sign's dot axis-first 559 (same code each); the rotation block nested inside the scaling arm with the plain-quad
+// copy written in both failure arms (a diagnostic of whether the scaling arm must dominate the sign block for the 1.0f
+// to be shared) 550 (3647 B, masked 186/196), with member statements 575; the same nesting with the plain quad copied
+// up front and no else arms 596 / 594; `real sign = 1.0f;` declared ahead of the length with the sign test clearing it
+// to -1 559 (the 1.0f is still divided in place and loaded again), and that sign used as the reciprocal's numerator (a
+// diagnostic only) 577 (3631 B: still `divss` in place on the register that held it). In every form the constant is
+// rematerialised, so nothing here makes this build keep 1.0f across the cross product as retail does.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
