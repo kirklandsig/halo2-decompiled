@@ -2430,6 +2430,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Color lookup tag reference, tag value, settings pointer plus tag and settings reference plus tag 137/128/128/128
 // with colors read at publication. With early colors, 189/184/184/184 at 572 bytes and frame 0x48. The first color
 // still misses its retail spill.
+// Round 666. The 0x40 frame and late color reads remain.
+// Immutable tag and flag values 128, confined virtual receiver 128. Capture color A
+// or both before the spawn record 187/184, between tag read and type lookup 189/191,
+// and between type lookup and virtual queries 187/189. Single captures recover 0x44
+// but the system remains in EDI and the body grows to 572 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
