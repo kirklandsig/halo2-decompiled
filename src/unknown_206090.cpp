@@ -850,6 +850,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // all three 1460, kinetic direction normalized in the force output 1433, translated impact point aggregate
 // 1349, both projections through component setters 1524. NOT kept: all regress from the reduced control. The
 // 1374 and 1349 forms reach retail length but retain a frame difference.
+// contact normalization returns success, early failure 1368, impact normalization returns success, early
+// failure 1386, contact normalization and impact normalization returns success, early failure 1368,
+// contact normalization returns success, test result 1350, impact normalization returns success, test
+// result 1390, contact normalization and impact normalization returns success, test result 1405, contact
+// normalization returns success, early success 1350, contact normalization and impact normalization
+// returns success, early success 1405.
+// NOT kept: All eight forms retain the 0x5d0 frame and raise the score. Three reach retail length.
+// The 0x5d0 frame exceeds 0x58c. The component and velocity homes remain displaced.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

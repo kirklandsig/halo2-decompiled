@@ -1229,6 +1229,12 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // with shared scale 248, and staged cross in place on the marker or facing operand
 // 241/271. NOT kept: the shared projection recovers frame 0xb4 and 848 bytes but
 // raises the score and changes its sum grouping.
+// quaternion vector output 133, quaternion with direct components 133, quaternion scalar before scaling
+// 187, quaternion scalar before cross 144, quaternion cross before root 133, quaternion with staged
+// cross 133, staged quaternion with direct components and early scalar 187, quaternion with shared scale
+// 133.
+// NOT kept: The quaternion forms grow the frame to 0xc4 and raise the score.
+// The 0xc0 frame exceeds 0xb4. The cross product has a separate stack home and the alignment products are scheduled differently.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
