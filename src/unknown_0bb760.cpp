@@ -941,6 +941,11 @@ void function_3dd10(long object_index, bool force);
 // or one model-handle read 303. The same two forms with the opening guard 302/303.
 // NOT kept: the early ordinal and current color retain 1034 bytes but score 106.
 // The second-bank base forms shorten the body, and the mask and count homes still differ.
+// Remaining-choice bounds for weight/selection/both 231/170/249. Completed-choice bounds
+// 61/181/161. Direct counts in both 249/161. Visit ordinal before the test, advance at lookup,
+// inclusive end with early visit, or signed cursor offset 224/293/219/250. NOT kept: the
+// 61 form recovers the count and mask homes at retail length, but compares unsigned and
+// adds an ordinal adjustment. The four signed follow-ups grow the frame to 0x58.
 // M3 lane 5 r226 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH each time; control 77). Reading: retail's
 // scan is a signed `jl` loop that is not unrolled, with the count in EBP and `last`, the mask, the variant and the weight
 // all loaded, updated and stored in memory each pass (the mask in the colours argument's home, the weight at +0x10);

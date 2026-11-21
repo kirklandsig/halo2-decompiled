@@ -819,6 +819,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Side point as radial difference by fields/helper, or with shared query target,
 // 656 each. NOT kept: the reduced control scores 654 against 489 full, and the
 // 3499-byte forms change the frame or early stack stores.
+// Returned position for path query, side coordinates, or steering query 752/789/773.
+// Path query with target translation, side coordinates, or steering query 818/767/784.
+// Side coordinates and steering 782, or all fallback geometry 695. NOT kept: the last
+// form shortens to 3479 bytes and grows the frame to 0x8c. The frame-preserving forms
+// move the first difference into the entry stores and raise the score.
 // Scaled side translation with aggregate axis, vector or point output, with direct or shared
 // planar difference 656/656/656/656. Axis through setter at the same uses 654/654/654/654.
 // Reduced control 654; full score 489. NOT kept: the length-exact forms move the first difference
