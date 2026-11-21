@@ -1892,6 +1892,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // type-one arm y first, trace radius local, four fraction spellings, three paren phases; 192 forms): best 124 at
 // 1174 B (type-one arm y first, radius local, one paren pair; first +0x4f) and 125 at 1173 B (radius local, two paren
 // pairs; first +0xd7); every form without the radius local 194 or more. None moves the XMM6/XMM7 pair.
+// Round 627. Scoped transform/trace 198, separate vector or point destination
+// 197/197, both 198, scoped separate inputs 198, scoped vector input 197,
+// shared setters 198, scoped setters 198. NOT kept: the one-point gains
+// still load the radius into XMM4 and use a separate transform destination.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

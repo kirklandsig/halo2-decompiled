@@ -1421,6 +1421,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Tried: the squared length declared at its assignment 126; the plane declared after the length and t 126; the length
 // test as `if (length_squared)` 126 (each the same code); the normal copied ahead of the three basis copies re-measured
 // 186. Diagnostics (names only, reverted): the length renamed twice and the plane renamed 126 each (no tie on names).
+// Round 627. Shared yaw negation after product assignment, aggregate, or
+// component stores 397/396/396; in-place assignment or stores 141/131;
+// scoped aggregate 396; distance between products and negation 397, or
+// before in-place assignment 139. NOT kept: the projection preload and
+// length/zero homes still differ, and all forms raise the score.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
