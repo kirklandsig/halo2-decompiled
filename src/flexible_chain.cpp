@@ -967,6 +967,16 @@ void __stdcall function_1160c0(real dt)
 // base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
 // the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
 // +0x20.
+// M3 lane 3 r290 (H2M_FAST, control 144): the segment count read once into a `long` ahead of the loop for the bound and the
+// selection 304 (first difference +0x2); the selection as `i > last ? last : i` with `long last = count - 1` 151 (1370 B);
+// `segment` declared in the outer block and assigned in the loop 144 (same code); `segments + i`, then reassigned to the
+// last segment when `i == count`, 274 (1368 B, first difference +0x6); a `long index = i` lowered by an `if` for the last
+// node 144 (same code). Retail's loop end reloads the definition into EDX and the count into ECX, ours both into ECX.
+// Displacement before position publication with velocity setter 150, existing point
+// difference 150, or component stores 150. Complete velocity before commit 346, scaled
+// difference output before commit 343, saved old position 346, next prediction after
+// commit 175, and coordinate loop for the staged velocity 170. NOT kept: all regress,
+// and the segment carrier and +0x20 spill persist in the closest forms.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -1795,6 +1795,11 @@ bool function_108530(long device_index, long name)
 // published displacement and endpoint readbacks 109. NOT kept: the seven-point forms store
 // the displacement after the reset, and the combined gates break both caller previews. The
 // ramp-down comparison still needs the stack slot.
+// M3 lane 5 r227 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, already `ret 0x14`):
+// both ramp-down clamps as if-statements 116 (same code: the ternaries already compile as conditional stores); all five
+// clamps as if-statements 116 (same code); the ramp-down minimum on `duration - ramp_up_time` written twice (no
+// `remaining`) 131 (528 B, callers 31/13); the deceleration distance reduced from the motion's field instead of
+// `distance` 116 (same code); that with the if-statement clamps 116.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2095,6 +2100,15 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the fld) 301 (homes move); the flag test as a while with a closing break (diagnostic) 2 (same code); had_animation
 // and speed declared ahead of the state lookup 2; the flags read into a named word for the test 2 (both the same code);
 // `&& render_model` on the 0xbf5a0 test (diagnostic, a real test) 393 (1650 bytes).
+// M3 lane 2 r132 (h2m fast; control 2): had_animation initialised from the flag test and tested for the block (two
+// uses, no store inside) 396 (1635 B); the same declared right after the matrix copy 351 (1630 B: the flag is then
+// read as a dword `shr eax, 3; and al, 1` and the fstp stays after `push 0`); the first call's render model under a
+// real `!= NONE` test (diagnostic) 351 (1638 B); the first call reading the render model from the model tag again 398
+// (1655 B); the node lookup first in the flag block 369 (1652 B). Restored.
+// M3 lane 1 r147 (fast; control 2): the tick length read at the top of the flag block 350 (1635 bytes); the matrix copy
+// written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
+// the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three
+// the same code: the copies are coalesced before scheduling).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

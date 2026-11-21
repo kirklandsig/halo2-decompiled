@@ -753,6 +753,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Facing products staged across negative x, the negative endpoint or positive x, with real
 // or double products, 316 in all six forms. Full facing test after negative x or after the
 // negative endpoint 332/336. The 0x64 frame agrees and unity still uses XMM1 in the staged forms.
+// M3 lane 15 r128 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH; control 305, `ret 0x1c` in both): the radius test on a
+// second unrounded `sqrt` of the same sum 411 (1756 B, the roots are not merged); the squared sum named as a `double` local
+// 305 (same code); the near rows' y staged in the output element (`field_c.y = y * cos; field_c.y += x * sin;`) 392 (1745 B);
+// separate cosine/sine/turned-y locals for the second near emission 305 (same code); the root summed y-first with
+// `field_24 > distance` 305 (same code). Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -915,6 +920,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// score 569 (was 569): BLOCKED-BY 0x2108a0 (the radius is held in XMM5 from the entry because this build's link-time
+// summary of 0x2108a0 says it keeps the XMM registers; retail reloads the radius in each block; the lead below needs
+// `inline` on that callee's definition). M3 lane 7 r208 (H2M_FAST with 0x29a190, MATCH throughout; control 569; all
+// restored): the first pivot offset as one call with `arg_1->field_0 ? arg_6 : -arg_6` 886 (3286 B); the negated
+// radius named in the first pivot offset's false arm 569 (same code); the radius parameter declared `real const` 569
+// (same code); the negated radius named in the second pivot offset's false arm 732 (3349 B), in both false arms 732.
 // MiniMax R (11-20), NOT kept (coordinator review: an unread output buffer and a moved statement are match-only): 561
 // (was 569): the forward trace writes to its own vector, which gives the pivot retail's
 // +0x94 home, and the sector reads moved after both trace calls, which gives the trace results retail's homes. Still
@@ -927,7 +938,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // arms' XMM registers and the three rotations in the loop are still open, and the forms tried on the scale
 // expressions, the direction's components and the named scales all score the same or worse. Body unchanged.
 // MiniMax R (11-16): no new form, no lower score (569): the body is still 39 bytes shorter than retail's, the three trace results still take the homes +0xf4 and +0xd0 against retail's +0xd0 and +0xf4, and the radius still comes from one read where retail re-reads the parameter nine times.
-// score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
+// Earlier 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
 // at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
 // +0xf4/+0xd0 homes stay swapped against retail's +0xd0/+0xf4). Diagnostic, reverted at once: the radius read through a
 // volatile view at all 14 uses (retail reloads it from its argument slot 9 times) 786 at 3349 B, so the XMM5 radius is not
@@ -1567,6 +1578,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // normalised through normalize2d_fast (its result unused there) in place of the file's 0x298df3 copy 569 (same code);
 // the two side lengths through distance3d with the arguments reversed (same a - b deltas) 587, with the normaliser too
 // 587. Body unchanged.
+// M3 lane 6 r224 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 569; all restored): `inline` on this file's
+// declaration of 0x2108a0 569 (a caller-side declaration leaves the summary; XMM5 kept); the radius read once through its own
+// address at its first use 569 (folded); the first 0x210770 output into its own unread vector 562 (the pivot's home; an unread
+// buffer, match-only); on that, both sector reads after both trace calls 561, both trace distances named before the arms 562,
+// the in-loop trace result declared in the loop 562; on this body both distances named 569 (same code); the body after the
+// sector read nested under `if (local_11 != NONE)` with `return true;` last 790 (3348 B). Still BLOCKED-BY 0x2108a0 (its
+// file is on this round's Avoid list).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

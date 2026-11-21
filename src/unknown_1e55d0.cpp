@@ -72,7 +72,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // of the registers retail uses because 0x1ec690 is still a stub in the file this lane may not edit, and the arms and
 // the rate load are unchanged.
 // MiniMax G (11-20): no new form, no lower score (319): the aligned 0x94 frame still agrees and the first argument still arrives in eax as retail has it, but the output and the input take the other two of the registers retail uses because 0x1ec690 is still a stub; the rest of the body is unchanged.
-// score 319 (was 319): the aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
+// score 319 (was 319): r130 (below) reads the objects through object_get (same code). The aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
 // still a stub, takes its input in EDI in retail) and never gives the state a register; it lays the non-compound and
 // capsule arms after the epilogue, calls 0x1c4a80 where ours expands it, loads the rate once and tests the 0x20 flag by
 // shift. Round 191's line at the end of this note has the latest forms.
@@ -416,6 +416,17 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // the shape pointer not read again after the type call 368 (1180 B); the position rows with the base first and the rate
 // on the right in the j and k rows 319; the active flag in shift form 319; `if (shape != NULL)` with the last arm on its
 // own line 319 (the last three the same code). Still BLOCKED-BY 0x1ec690 for the output/input registers.
+// M3 lane 2 r130 (h2m fast with 0xb77d0, 0x2056e0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH; control 319;
+// plain confirmed). Kept: the two object lookups through the existing object_get 319 (same code). Measured, not kept:
+// 0xb77d0's definition marked `inline` in its own /Ob1 file and called here in place of its written-out body 319 (the
+// link then expands it here as retail does, same code), but the full check loses matched 0x2056e0, which expands it
+// too (1390 B against 1265); on that, the position as vector3f_add_scaled(base, &velocity, rate, &position) in place
+// of the three written-out rows 315 (1172 B), which without the inline call is 320; the disabled 0x1ec690 draft
+// switched on (stub removed) 349, with 0xb77d0 49, 0x1c4b00 133, 0x1ed340 45 and 0x2901e0 29 (round 201's losses
+// again); the velocity reference renamed 319 (same code); on the 315 form: the 0x20 input flag in shift form 320, the
+// shape match as one ternary on the compound test 383 (1208 B), the active flag through TEST_FIELD_BIT 315 (same
+// code), the input's flag word in a pointer local 315 (same code), the current shape read from the body at its first
+// use 320. Still BLOCKED-BY 0x1ec690 for the output/input registers.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
@@ -482,7 +493,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_bipe
 		position.x = g_510c54->rate * velocity.i + *(real *)(input + 0xe8);
 		position.y = g_510c54->rate * velocity.j + *(real *)(input + 0xec);
 		position.z = g_510c54->rate * velocity.k + *(real *)(input + 0xf0);
-		byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+		byte *object = (byte *)object_get(object_index);
 		bool active = (*(dword *)(object + 4) & 0x100) != 0;
 		if (active) function_b87b0(object_index);
 		if (*(long *)(object + 0x14) != NONE ||
@@ -490,7 +501,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_bipe
 			32768.0f >= position.y && position.z >= -32768.0f && 32768.0f >= position.z))
 		{
 			*(point3f *)(object + 0x64) = position;
-			object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+			object = (byte *)object_get(object_index);
 			if (*(long *)(object + 0xd4) != NONE) function_b58c0(*(long *)(object + 0xd4), 2);
 		}
 		function_1c4a80(object_index, false, false);

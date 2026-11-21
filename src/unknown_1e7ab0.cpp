@@ -620,6 +620,23 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
 // the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child
 // iterator declared ahead of the seat test 117 (all the same code).
+// M3 lane 3 r292 (H2M_FAST with 0x1e83c0 and 0x1e8d50, both MATCH; control 117): the entry through the existing
+// 0x1e8d50 re-measured 165 (2312 B: the head retail's through the switch; case 4 left: the parent in ECX for retail's
+// ESI, the 0xd0590 argument setup order, and the child test's `test cl, 1` for retail's two-byte `test al, 1`, which
+// moves the jump table four bytes); on it the child's seat index in a named `short` used for its NONE test and the
+// index 165 (same code); that named child seat on this body 117 (same code); case 4's `if (!blocked) result = true;` as
+// `result = !blocked;` 527 (2328 B). Still BLOCKED-BY 0xd0590 (its file is on this round's avoid list, so the held
+// order was not re-measured). Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1e83c0, MATCH each run; control 117): the entry lookup ahead of the player lookup 585
+// (first +0x3); the result declared after both lookups 128 (re-measure of the listed form); the state's byte alias
+// dropped (every byte access through `(byte *)state`) 117 (same code); the state computed after both lookups 318 (first
+// +0x3); the entry's flag tested through its typed field instead of a raw offset 117 (same code); the unit looked up
+// from `player->unit_index` with the local kept for the test 117 (same code). Body unchanged.
+// M3 lane 7 r208 (H2M_FAST with 0x1e83c0, MATCH throughout; control 117, aligned 57, register-masked 4): the entry test as
+// `!(flag && state == 2)` re-measured 117; the entry assigned inside the condition (`(entry = entry_420_get(type)) !=
+// NULL`) 606 (2324 B); the player index and the entry declared const 117; the entry's flag byte at +0x10 read through a
+// typed byte member 117 (same code each); case 4's result set true before the child walk and cleared at the blocking
+// child, no blocked flag, 504 (2332 B). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

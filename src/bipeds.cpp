@@ -1425,7 +1425,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax I (11-19): no new form, no lower score (175): the 0xfc frame and the body length agree, but the constant loads still come early (the 1.0f is materialised at the top of the prologue where retail loads it after the tag lookup) and the definition, material and point homes still differ.
-// score 158 (was 175): The 0xfc frame and extent agree. Tag, flags, position and material homes differ.
+// score 158 (was 175): The 0xfc frame and length agree. The definition, material and point homes differ.
+// Earlier at 175, unity loaded ahead of the retail schedule.
+// The 0xfc frame and extent agree. Tag, flags, position and material homes differ.
 // At 175 the unity load was early and the definition, material and point homes differed.
 // MiniMax A (11-18): no new form, no lower score (175): the 0xfc frame and extent agree, but the constant loads still come early and the definition, material and point homes differ.
 // MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
@@ -1866,11 +1868,22 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // references 193, animation names record 175, names record with a shared turning key 193, component
 // acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
 // The unit load and definition, animation flags and point homes remain displaced.
-// The reduction to 158 came from declaration order: state follows animation_flags and
+// `state` is declared after `animation_flags` and
 // `speed_scale` after `position` (declaration order only).
+// Scoped query gap, with zero or original distance, published on failure 448/448.
+// Gap published before successful length, at the query join or with case scope 453/440/460.
+// Selected final length or gap 448, distance before target position 160, gap beside query points 455.
+// NOT kept: moving the distance initialization leaves the tag spill displaced. Separate gaps
+// lengthen the body and raise the score.
+// The reduction to 158 came from declaration order: state follows animation_flags and
 // Tag declaration before lookup 158; animation flags declaration before lookup 158; both in either order 158/158.
 // Position before lookups or at its output call 158/158; facing at its producer 158; both outputs at their producers 158.
 // The tag, animation flags, material and position homes still differ in the retail-sized frame.
+// Shared typed state 158, stored names 158, separate driven state 158, shared control
+// 158, both accessors 158, common animated-unit view 158, typed state with walking
+// preload 137, typed state with material address 158. NOT kept: the 137 form restores
+// the low tag spill and walking load order but stages one-use settings and rate locals.
+// The animation flags, position and material homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3184,6 +3197,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
 // `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
 // All restored.
+// In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
+// with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
+// conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4519,6 +4535,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Mode-3 guard, mode-3 guard before tag/state acquisition, result at the end of the admitted mode, or result set
 // in completed mode arms, with long special 631/588/584/598 and with boolean special 579/630/624/638. NOT kept:
 // the reduced frame stays 0x7c and the closest forms eliminate the changed byte. Reduced control 602.
+// The changed flag occupies +0x12 in the full image and the flight rate uses +0x14.
+// Tag lookup after state address 598, inside movement gate 605. Separate flight
+// and walking lookups 677 with flight-arm acquisition or 686 with call-local
+// acquisition. One branch-local reacquisition 630 for either branch.
+// NOT kept: the reduced control is 598 and separate lookups enlarge the body.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6249,6 +6270,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
 // the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
 // component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
+// Forward snapshot after up rotation for the side, up or both crosses 126/116/110.
+// After forward normalization for both crosses 147. Staged side cross with the
+// after-rotation or after-normalization snapshot 126/162. Both crosses with the
+// after-rotation snapshot through the setter or memcpy 113/110. The first rotation's
+// cosine-complement spill remains. The setter also shortens the body past retail's length.
 // Length local 79, direct forward field with success exit 154, length bound in
 // the exit test 79, const forward with success exit 79, both crosses staged
 // with success exit 79, ordinary crosses 203, staged crosses with direct
