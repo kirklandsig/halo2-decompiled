@@ -973,6 +973,9 @@ void function_3dd10(long object_index, bool force);
 // reproduces the unrolling): every natural `for`/`while` scan with `<` unrolls (pointer IV, `continue`, indexed
 // fields, `entry->count` bound, reordered updates, a dword index); an escaped variant address (diagnostic call
 // taking `&variant`) still unrolls; only a volatile variant read (diagnostic, not kept) or a short index keeps it rolled.
+// Round 463. Positive choice count via conditional, condition declaration, explicit negative floor, or
+// empty-default assignment 237/237/267/227. With signed first-scan bounds 652/652/672/645. NOT kept:
+// signed first scans unroll and the bank ordinal and choice-count homes remain different.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

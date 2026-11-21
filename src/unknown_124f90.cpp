@@ -4905,6 +4905,9 @@ struct s_128ca0
 // the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
 // every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
 // initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
+// Round 463. Valid-arm byte, char, long or short count with direct sentinel publication 208/208/208/212.
+// With staged pin gain producers, shifted pending test and direct channel read 194/194/201/205. The
+// direct sentinel shifts registers at +0x12a and keeps the count comparisons displaced.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
