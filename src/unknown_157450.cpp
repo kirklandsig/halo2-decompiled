@@ -5964,6 +5964,11 @@ void __stdcall function_d6bc0(long object_index);
 // 172; a named `short *` timer for the zero test, delay store and countdown 172, with the countdown's `= 1` too 177 (854
 // B); the timer as a `short &` 177 (854 B); the parameter read once through its address into a second pointer used for
 // every access 172 (same code).
+// M3 lane 11 r146 (h2m fast with 0x15c150, matched; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at
+// 858 B): on the flag + field-test form, the 0x15aad0 call under one more `if` (diagnostic) 165; the release test's type
+// checks as a switch (2 skips, 1 falls into the release after its keep test) 171 (859 B); the kind modifier as one switch on
+// a selected modifier byte (0x211 for kind 0, 0x208 for kinds 1-7) 153 (861 B), with the reset counter's arms swapped 153;
+// that shared switch on the local-test flag form 94 (872 B). `entries` still takes EDI with the field test.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
