@@ -3243,6 +3243,10 @@ void function_c5740(long unit_index, bool start)
 // Round 454: the definition index still misses EBP and the pool data stays live across the weapon gate.
 // Common object lookup for unit, weapon or root 97/97/97; for unit plus weapon, weapon plus root, unit plus
 // root or all three 97/97/97/97; post-gate common lookups with typed root forward member 97. Body restored.
+// Retained pool and shared post-gate header array, refreshed initial array, post-gate global array,
+// common header type for both acquisitions, pool reference, common post-gate headers only,
+// read-only arrays, and early masked unit index with separate arrays: 97 each.
+// NOT kept: the same header data stays live across the gate and the material stays in BP.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5646,6 +5650,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // reused storage 233/233, in place 199, and paired transforms with separate or shared
 // direction storage 353/353. NOT kept: the transform forms shorten the body and
 // raise the score without recovering the first cross schedule.
+// Forward copy at the first cross input, ordinary/first staged/second staged/both staged
+// 169/169/169/169. Named forward terms before or after the transverse sum: real 169/169,
+// double 197/197. NOT kept: the copy and real terms leave the early up.i read. The double
+// terms enlarge the body and change the caller's reduced score.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9856,6 +9864,11 @@ struct s_unit_melee_collision
 // names 531, selected-hit word set after the seat byte 533, collision storage first 531, object case
 // first 531, and branch-produced damage scale 531. NOT kept: the frame reaches 0x17c but the body
 // shortens to 2205 bytes and scores rise.
+// Tag table captured at entry or after the unit lookup, shared pool with armed header acquisition,
+// and combined entry tag table and pool: snapshot range 484/484/552/552,
+// range read at each product 529/529/536/536.
+// NOT kept: all repeated-range forms recover the 0x17c frame. The pool forms align through the
+// first argument load (first difference +0xd) but reach 2243 bytes, and every repeated-range score rises.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

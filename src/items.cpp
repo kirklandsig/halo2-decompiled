@@ -938,6 +938,10 @@ struct s_item_collision_bsp
 // Overlap both left and forward products in plane or scalar rows: 191 each.
 // NOT kept: the paired overlaps load j before k and still place j in XMM3.
 // Every preview retains the 1366-byte extent against retail's 1361.
+// Transposed rows through the shared dot product with coefficients before/after row setup:
+// separate aggregates 269/269, separate vector setters 269/269, reused row setter 194/194,
+// and a three-axis matrix 273/273. NOT kept: the reused row leaves the normal coefficients
+// in other registers at 1366 bytes. The other forms grow to 1392 bytes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
