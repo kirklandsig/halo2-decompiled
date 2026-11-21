@@ -351,6 +351,26 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // escaping address keeps the object memory-resident, so everything up to the 0x189340 call is retail's (tag EBP,
 // spatialization EDI, the late object in EBX copied to ESI); the same helper `inline` 116 or `__forceinline` 116 (once
 // inlined the address folds and the object takes EBP again).
+// M3 lane 13 r135 (h2m fast with the eight callees; kept-form control 11, plain-reads control 116; every form below
+// with no reference and every object read plain). Lead: the description's bit-0 set/clear written wider than a byte
+// gives retail's whole allocation with plain reads (tag EBP, spatialization EDI, object loaded into ESI and EBX, the
+// started test `cmp ebx, -1` as retail): the existing 0xbfe20 setter on `(dword *)&description.flags` 15 (523 B: only
+// the flag block differs, `mov eax, [esp+0x19]` / `or eax, 1` / `and eax, ~1` / dword store where retail uses AL and a
+// byte store), a file-local dword setter there 15, at bit 8 of the first dword 19 (527 B), a dword bit-field over
+// the first dword (overlaid) set by if/else 19, the existing 0xbfe40 word setter 16 (524 B: setne + byte RMW on memory),
+// a file-local word setter 52 (521 B: two narrowed byte RMWs, no hoisted load). Every byte-wide write keeps 116:
+// if/else as now, a file-local byte setter with or without `(byte)` casts 116/116, `char flags` 116, `long flags` copy
+// stored back 120 (534 B), `(byte)(flags | 1)` 116, a ternary store 116, a `byte *` to the field 116, the byte at
+// `((byte *)&description)[1]` 116, a dword load narrowed into the byte store 116, byte bit-fields (flag0/flag1, set
+// by if/else 116, by `= spatialization != NULL` 120), a byte field overlaid by byte bit-fields 116, an overlaid unused dword 116,
+// dword bit-fields for the whole first dword 140 (546 B). Also: positioned started false and set by an if 141;
+// spatialization assigned in both arms 154 (541 B); the arm as `else if (object_index != NONE || positioned)` 116;
+// the description declared at the slot block's top 116. More: a word load, word temp and word store of the flag
+// 18 (526 B, the load widened to a dword), the same at the first word with bit 8 20 (528 B), but with the zero store
+// also a word `&= 0x00ff` 107; a byte load into a `dword` temp stored back as a byte 120, into a `byte` temp 125; the
+// zero store by a one-byte memset 116; the set/clear through the marker type's `flag0` bit-field 116, through a `char`
+// view 116. So the RMW's memory width (wider than the byte zero store) moves the object/spatialization contest; every
+// same-width form, whatever its type, keeps 116, and retail's byte code with that allocation is still open.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

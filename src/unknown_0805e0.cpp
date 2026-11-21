@@ -896,6 +896,13 @@ void function_1537f0(s_profile_record *record);
 // on main's link pointer 28; a `short` loop index 80 (275 B), a `dword` loop index 80 (275 B: the index is kept and
 // compared, no pointer bound); the builder's view from the array element with `entry` declared after the builder call
 // for the `entry->` link pairs and the tail 46 (hoisted).
+// M3 lane 13 r135 (h2m fast with 0x7f8b0, 0x1537f0 and 0x80490, all MATCH each run; control 18): on round 136's lead
+// (the builder's view from the array element, the `entry->` links as two chained pairs; re-measured 46) the four links
+// as one `entry->` chain in retail's store order 46; the first link stored and the other three copied from that field
+// 46; the links from a `short const` local 46; the heads as two chained pairs in retail's order 46; the record declared
+// ahead of the loop 46 (NONE hoisted into EBP each time). Reading: when NONE takes EBP, the record's first zero word
+// (retail's EBP) loses its register and its uses are served by the second word's EBX (`mov eax, ebx; mov [edx], eax`),
+// so the contest is NONE against that record word; the link-pointer form avoids it only because its base IV changes.
 // @retail 0x7f930
 void function_7f930(void)
 {

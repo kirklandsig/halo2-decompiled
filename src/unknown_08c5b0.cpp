@@ -319,6 +319,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // left, so the index loads after the selection); diagnostic, a forceinline (index, kind) helper doing the selection and
 // the store 4 (same code: kind and index both load ahead of the branch, request EAX, kind CX). Reading: with both loads
 // in the entry block the request (three references) outranks the kind (two); retail's kind ranks first.
+// M3 lane 13 r135 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the reference-bound plain read
+// with the selection written in the handler (`if (kind == 1) setting = available ? payload : 1; else setting = 1;`) 4,
+// with the selector `__forceinline` 4 (both the volatile read's code, no volatile); `changed` declared first with the
+// two-byte memcpy kind read 33 (94 B); the reference-bound read after the index read 5; the selector seeded `setting
+// = 1` with the nested kind and availability tests 15. Diagnostics, plain reads: a switch with `case 1`, `case 0: case
+// 2:` sharing one arm and `default: __assume(0)` 37 (103 B); `__assume(kind == 0 || kind == 2)` in the else arm 32 (95
+// B, folded compare): neither gives the two late-merged compares of the identical-arm chain.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

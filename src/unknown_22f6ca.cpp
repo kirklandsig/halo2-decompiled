@@ -293,6 +293,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // M3 lane 6 r220 (h2m fast with 0x22facd, 0x230427, 0x22f6ca, 0x22fa5b, all MATCH; control 23): the model loop on its own
 // `short` counter stored to value0a without a cast 152 (421 B); the text loop on its own `short` counter 55; both 153 (421
 // B); the shared counter typed `short` 112 (411 B); the model result as a `*const` local 23 (same code).
+// M3 lane 13 r136 (h2m fast with 0x22facd/0x22fa5b, both MATCH; control 23): the parameter copied into a `screen` local at the
+// top 23; the model loop's counter through a `long &` bound to i 23; the text loop's animation type through a `long const &` in
+// its start block 23 (all three the same code); 0x22fa5b's definition parameter typed const does not compile (the model
+// constructor takes a non-const block).
 // M3 lane 15 r125 (h2m fast with 0x22facd, 0x22fa5b, 0x22f9bf, 0x22f6ca, all MATCH; control 23): diagnostic, the counter's
 // zero above the pane lookup plus the model index stored ahead of its start 13 at 414 B (the text reset becomes `and`, but
 // the model reset stays `and` and the model loop still copies the screen, `mov ecx, esi`, with the model in EAX, so the copy
