@@ -1023,6 +1023,10 @@ real g_55e618;
 // 102 (same code); both coefficient loops through one forceinline helper taking the remaining mask by pointer 103 (the
 // matched sibling 0x2ba100 writes its loop out); `collision.value.unknown24 = NONE;` ahead of the three start rows on this
 // body 100 (-2); the countdown as a long 247 (1538 B). BLOCKED-BY 0x169510 and 0x244980 (the record's capture), as above.
+// Back up the sweep origin with the shared point difference or point setter.
+// direct particle position 254/254, position snapshot 102/103.
+// With the shared sweep scale, direct 256/256 and snapshot 129/130.
+// Frame stays 0x124 and the sweep/collision slots remain displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

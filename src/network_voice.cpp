@@ -4461,6 +4461,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // stride 77, size, consumed, cursor, stride 77, size, cursor, stride, consumed 88, cursor, size, stride, consumed 88,
 // `&data[2]` for the cursor 67. Reading: the channel (seven uses) and the member (three) are one use apart for the
 // last callee-saved register; no natural statement was found that changes either count without code.
+// Shared payload boundary with indexed or walking packet. Prefix and stride 172/167,
+// end-minus-payload 168/158, stride-minus-payload 159/160, selected address 139/164.
+// Using the queued payload extent for the prefix gives the same 172/167.
+// The new boundary either grows the frame or leaves channel allocation unresolved.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

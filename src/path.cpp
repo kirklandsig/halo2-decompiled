@@ -1008,6 +1008,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // successor 329, held node depth 432, or arm-local distance producers 401.
 // NOT kept: 282 gains four with the extra frame dword. Several narrow-link
 // forms recover 0xe4, and two reach retail length but regress.
+// Traversal predecessor/count names, edge-vector names first, converted-endpoint names
+// first, and separate scan/history names with long link ordinal 286/286/286/286,
+// short ordinal 359/359/359/359. Names leave frame and allocation unchanged
+// at each width. The short ordinal removes the cursor but shortens to 1375.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

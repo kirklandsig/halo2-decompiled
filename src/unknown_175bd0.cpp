@@ -4138,6 +4138,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // with colour B first 92, with the second 0x1751d0 result named 92. This build already has retail's convention here
 // (system index in EAX, effect index from the stack); left: frame 0x4c against 0x54, system EDI / next index ESI, the
 // cached mode, colour A in EBX with colour B spilled (retail spills colour A and keeps colour B in EDI).
+// Effect lookup by low word, typed byte span, saved pool bases or active scope.
+// Cached mode 90/93/93/116. Live mode 117/108/108/121.
+// Live low-word lookups with named multiply result, system record first, mode-field
+// address or scoped index 127/128/117/117. The low-word lookup can keep the
+// caller with live mode. Naming the multiply result reaches frame 0x54 at 352 bytes.
+// The cached low-word form gains three and shortens to 333 bytes, so it is restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

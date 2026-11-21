@@ -1006,6 +1006,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // NOT kept: the 307 forms require reference bindings and still differ at the gate
 // and settings stack slots. They reach retail length and move the first difference
 // to +0x43. The larger 315 and 317 forms also retain match-only bindings.
+// Scale each random sample in its own storage before native word/long/dword/int
+// conversion. Separate first draw 430/430/430/430, shared draw 431/431/431/431.
+// The cast still selects an x87 runtime conversion; the frame stays 0xb0,
+// but the early register saves and folded gate address differ.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
