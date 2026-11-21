@@ -668,6 +668,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 0xc; return 1;` 94 [0]; a named model local ahead of the object index 21 [2] (the owner then arrives in EAX and the
 // component moves to the stack); the absolute index after the header array 94 [13]; the rigid-body array named ahead of
 // the header array with the element taken after the type read 124 (276 B) [189]. Body unchanged.
+// M3 lane 4 r241 (H2M_FAST, caller 0x1d5bf0 in brackets): round 118's one-read form with case 0 through havok_object_get
+// rebuilt 28 [0] (aligned 22); on it a `long` type 89 [0] (aligned 23: retail's single `movzx eax, byte ptr` load, but one
+// instruction fewer moves the positional score); the type and case 0 both through `headers[object_index & 0xffff]` 133 [213],
+// with a long type 136 [213] (220 B: case 0 then reuses the element address, where retail masks the index again); the
+// rigid body declared first 96 [13] (the index then arrives in EAX, the owner in ECX); no absolute-index local (the type
+// through `headers[object_index & 0xffff]`, case 0 through havok_object_get(component->object_index)) 94 [13], with a long
+// type 96 [13]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
