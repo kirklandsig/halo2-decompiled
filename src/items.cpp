@@ -924,6 +924,10 @@ struct s_item_collision_bsp
 // beside its plane workspaces. Direct stores and the shared point setter at each site all score
 // 190. NOT kept: the placement slot and 1366-byte extent stay the same.
 // MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
+// Accumulated normal by axis 194, add-scaled left/forward/both 194/194/194,
+// indexed rows with direct or local accumulation 192/192, shared contact
+// translation 190, shared normal and translation 193. The coefficient loads
+// and pending spin scale still differ.
 // Vector setter for the rotated normal 193; scalar normal rows published before or after
 // the distance translation 199 each; left product seeds all three normal rows 191;
 // instanced query result pointer 246; instanced plane output with saved equation 291;
