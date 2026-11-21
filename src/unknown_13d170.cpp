@@ -955,6 +955,11 @@ struct s_physical_block_iterator
 // Updated page total 213, updated timestamp 374, both 373, winner timestamp 201,
 // winner plus updated timestamp 374, winner plus both 373, conditional timestamp 376,
 // and updated page total with named weighted products 213. NOT kept: no gain at retail length. The policy join still differs.
+// M3 lane 8 r218 (H2M_FAST with 0x13d320, MATCH each run; control 201): lane 1 r124's 40 lead rebuilt (patch -o) 40 at
+// 1213 B. On it, each byte for byte the lead: the iterator's handle named in a local ahead of the overlap test 40; the
+// block's offset named once for both tests 40; the overlap test inverted with `continue` 40 (retail's handle in ECX and
+// best.offset in EDI are not reached). The lead's comparator helper replaced in place by `if (... || ... && ...) better =
+// true;` 232 (1246 B) or by `better = time != best.time ? time < best.time : pages < best.pages;` 263 (1200 B). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

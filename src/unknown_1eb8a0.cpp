@@ -817,6 +817,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // with both minima and reused limited decision 705, live limit with default-step branch first 691, live
 // limit with both default branches first 691. NOT kept: The separate limit observations and guarded
 // minima raise the score. The reused decision also moves the first difference to +0x5.
+// M3 lane 8 r218 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, which keep fast equal to plain; control 603, 0x1eb6f0 MATCH
+// each run): d and q declared `vector3f const *` in the definition and the declaration 603; the output block reading
+// `s->counter` at each use with no counter local 603; the settle arm's alignment as `dot3f(&nq, d)` 603 (same code each);
+// qr scaled through vector3f_scale after the three dl rows 683 (2871 B); qr formed as `vector3f_scale(q, rate, &qr)` 712
+// (2846 B). Reading: retail's closing block loads `out` into EAX after the counter compare, so the counter is not
+// returned there (the void forms listed above). Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
