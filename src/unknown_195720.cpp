@@ -217,6 +217,17 @@ bool function_1946f0(s_bitstream *stream)
 // edi, edx`); a block pointer started at the field and advanced by the index with `+=` 9; a const data local read before
 // the index with a const pointer formed as `byte_index + data` 9; a block-local byte mask and data local 35 (memory
 // operands, no LEA); the clear's start as `&stream->data[byte_index + 1]` with `count * sizeof(byte)` 2 (same code).
+// M3 lane 7 r204 (h2m fast with 0x1957d0/0x195820, both MATCH each time): the index at each use with a named byte mask,
+// the explicit read-modify-write and the clear through a block-local data local 2; a named index with block-local mask
+// data, a named mask, `&=`, block-local clear data and the count as `size - 1 - index` 35; that with `size > index`, the
+// explicit read-modify-write and the clear from `&data[index + 1]` 36; the index at each use with block-local mask data,
+// a pointer read-modify-write, the complement mask, the clear from the element address and the count as
+// `size - (index + 1)` 35; the index at each use with `size > index`, block-local mask data, the explicit read-modify-write,
+// a named mask and block-local clear data 36. Compile-only grid (the file's flags, exact here): 1296 crossings of the index
+// named or at each use, the bound test's side, the mask block's data (field or block-local), three read-modify-write
+// spellings, three mask spellings, three clear starts, three count spellings and both accounting store orders: neither
+// LEA comes out index-first (best 2). Probes: an index that dies at the read-modify-write is added into (`add index,
+// data`); one live afterwards gives data-first whenever the data is a field load in the block.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

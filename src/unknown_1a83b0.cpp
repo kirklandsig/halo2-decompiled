@@ -736,6 +736,15 @@ s_1a8a10 g_4453c0[] =
 // product appear, but the forward sum is scheduled first and the xmm numbering is j 1, zero 2, i 3 with y copied from
 // xmm0; on it no copy at all 34, the left terms swapped 34, stores [3], [1], [2], [0] 34, the identifier, index, score
 // initialisation order 32.
+// M3 lane 7 r204 (h2m fast with 0x1a8c30, MATCH): a perpendicular held in two scalar locals (`0 - actor j`, `actor i`)
+// with the sums `copy.i * y + perp_i * x` / `copy.j * y + perp_j * x` and stores [2], [3], [0], [1] 38; the 2D-vector
+// perpendicular set from the actor ahead of the copy 34, formed from the copy after it 37; a named negated j for the left
+// sum, stores [2], [3], [0], [1] 20; the named negated j read ahead of the copy, left sum first 17 (same code). Compile-only
+// screen of the float block (the file without /GL, exact here; differing block lines, ours 13): 1152 crossings of which sum
+// comes first, both sums' term orders, the negated j from the actor or the copy, the copy assigned i, j / j, i / j between
+// the sums and all 24 store orders, best 13 (ours); 132 perpendicular forms, best 13; the 2D perpendicular gives retail's
+// instruction order with the registers renumbered (i 1, j 2, zero 3, copy 4, x 5, y 6 against retail's zero 1, i 2, j 3,
+// x 4, y 5, copy 6) 18.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
