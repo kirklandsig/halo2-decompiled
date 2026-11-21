@@ -191,7 +191,7 @@ bool function_01de20(long index)
 dword function_1d6f0(bool linear, bool alternate, dword format, long width, long height);
 long g_55e6c0;
 
-// score 29 (was 29): frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// score 29 (was 29): r131 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
 // keeps the size packing unfolded (lea/shr 6/shl 24/sub, shl 12/sub) where /Og folds it
 // ((w<<20)&mask, (h+0xfffff)<<12), and height/count then take each other's register.
 // Kept: the offset declared after the kind store (data stays in EBP) 107; one result variable
@@ -507,6 +507,11 @@ long g_55e6c0;
 // count field (`long &levels = entry->element_count; levels = ...`) 30, with the round-51 signed packing 30 (484 B); the
 // round-51 packing with the width and height stores ahead of the kind store 31, that with round 122's late levels store and
 // header pointer 33; round 122's lead re-measured 31 (484 B). The top block's height/count swap stays in all of them.
+// M3 lane 15 r131 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp with its constants on the left
+// (`0 > count ? 0 : 4 < count ? 4 : count`) 29 (same code); the entry pointer declared at the function's top, ahead of the
+// data test, 36 (the `imul` hoists above the test); the entry bound as a reference (`entry.` throughout) 29 (same code);
+// the round-51 signed pitch/packed lead with the constant-left clamp 29 (484 B); that lead with the entry pointer at the
+// top 36 (484 B).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
