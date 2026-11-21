@@ -1773,6 +1773,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // of the session reads 870 (2796 B; 0x73530 drops to 8); the opening test split in two 871; the opening exit as
 // `{ result = false; return result; }` 871; the imbalance excess test returning at once (retail's exit at 0x7ea98) 895
 // (2752 B); the type-5 scan's exit as `return false` 871. Still BLOCKED on the link's inline choices.
+// Machine validity via Boolean AND, logical conjunction, conditional preservation, or an
+// independent accumulator 878/858/880/915. With dword cells 915/891/916/954.
+// NOT kept: conjunction moves the matched caller's session argument to the stack. The
+// independent dword accumulator reaches 0xb4 but shortens the body to 2700 bytes.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

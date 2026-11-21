@@ -4905,6 +4905,11 @@ struct s_128ca0
 // the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
 // every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
 // initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
+// The shared decibel addition's by-value operand updated with the compound operation or decoded
+// member before returning 257/257. Direct/named construction from the decoded sum 177/177.
+// Const-reference operand with copied result, direct constructor, returned compound sum, or
+// named decoded sum 177/308/48/308. NOT kept: copying the operand and returning the compound
+// sum ties. The other forms shorten the function and some change the matched gain producer.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
