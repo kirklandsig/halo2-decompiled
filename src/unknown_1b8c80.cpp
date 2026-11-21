@@ -1673,18 +1673,18 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-// MiniMax D (11-20, round 132): no new form, no lower score (123): the body is unchanged. The frame is still 0x10
-// against retail's 0x14 (retail spills the masked flags byte to its own stack byte and keeps the loop entry in EBX, this
-// build keeps the mask in BL and the entry in memory), the actor index still arrives in ECX where retail keeps it in
-// EDX, and the split around the two root calls follows the memory summary of 0xbaf40, whose file this lane may not
-// edit.
-// MiniMax S (11-20): no new form, no lower score (123): retail keeps the iterator entry in EBX and spills the raw mask byte to its own stack byte where ours keeps the normalised mask in BL and the entry in a stack slot, and the frame is 0x10 against retail's 0x14.
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
 // Left: the frame is still 0x10 against retail's 0x14 (retail spills the 0x20 mask byte to frame+0x03 and keeps the
 // loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in memory), so the tail's
 // frame offsets stay four bytes low, and in the head retail takes the actor index in EDX and reads the object table's
 // data ahead of the actor's index arithmetic.
+// MiniMax D (11-20, round 132): no new form, no lower score (123): the body is unchanged. The frame is still 0x10
+// against retail's 0x14 (retail spills the masked flags byte to its own stack byte and keeps the loop entry in EBX, this
+// build keeps the mask in BL and the entry in memory), the actor index still arrives in ECX where retail keeps it in
+// EDX, and the split around the two root calls follows the memory summary of 0xbaf40, whose file this lane may not
+// edit.
+// MiniMax S (11-20): no new form, no lower score (123): retail keeps the iterator entry in EBX and spills the raw mask byte to its own stack byte where ours keeps the normalised mask in BL and the entry in a stack slot, and the frame is 0x10 against retail's 0x14.
 // M3 lane 15 r124 (H2M_FAST with 0x1b8c80, 0x1ba990, 0x1b9e70, all MATCH each run; control 123): the mask built in two
 // steps through a byte reference (`byte &mask = specified; mask = flags; mask &= 0x20;`) 243 (867 B: frame 0x14 and the
 // mask byte at +0x13 as retail, but the whole flags byte then holds BL across the root calls for the bit-6 test and the
@@ -2225,6 +2225,13 @@ void function_1f86a0(long actor_index);
 // point, not kept), object, near, seat, far, flags 122 (same code), object, flags, near, seat, far 124, object, near, far,
 // seat, flags 124; a bool read from the 0x20 bit ahead of the slot's byte test and used in both arms 236 (866 B), with the
 // update last 236; the flags byte in a local there 140, with the update last 139. Body unchanged.
+// M3 lane 11 r145 (H2M fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70/0x1ba5c0, all MATCH each run; control 123): the
+// decline as nested ifs (`if (element->unknown86) { if (!bit40 || !same) { decline; continue; } } else if (specified &&
+// !same) { decline; continue; }` then the accept) 252 (881 B); the slot's bool read and set as `state->unknown0c[0]` 123
+// (same code); the decline's 0x20 test re-read from the flags with the mask local only in `same` 243 (867 B, first
+// difference +0x4); the decline's test through a bool named from the mask after `same` 241 (866 B); every selection field
+// read and written through the slot state view (`state->unknown1c`, `seat_index`, `flags`, `unknown28`, `unknown2c`, the
+// siblings' spelling), the selection kept only for 0x1b9e70's argument, 220 (864 B). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
