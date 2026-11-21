@@ -785,6 +785,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
 // and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
 // position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
+// M3 lane 12 r166 (fast screen; control 489, aligned 156, register-masked 43): the 0x47c arm's dot with its operands
+// swapped 489 (same code); `local_24 *= (local_26 * 0.5f);` 503 (3506 B, masked 47: the half product is then formed apart
+// as retail, but the 0x47c arm stores its own result and the zero register stays XMM4); the byte side flag re-measured
+// 663 (3499 B, slot homes move); the dot and its floor ahead of the speed floor 498 (3500 B); local_25 folded into
+// local_26's initializer 711 (3484 B). Body unchanged.
 // M3 lane 8 r213 (H2M_FAST with 0x1f9e70/0x110ab0/0x29b990; control 489): the side flip through a `long side` (set from
 // the cross test, negated when the side flag is clear, then `local_21 = side != 0`) 627 (3501 B: retail's `test al, al;
 // setne al` conversion appears but in 32-bit form, and the new symbol moves the homes below, first difference +0x60),

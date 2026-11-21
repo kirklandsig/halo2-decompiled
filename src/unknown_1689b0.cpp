@@ -2200,6 +2200,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
 // the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
 // Body unchanged.
+// M3 lane 12 r167 (h2m fast with 0x120790 and 0x2469b0, MATCH in each; control 551): the side vector through the existing
+// cross3f_staged 553; the perpendicular through cross3f_staged 553; relative and edge through vector3d_from_points3d 599
+// (2873 B); the side test as `0.0f > dot3f(...)` 551 and with the side vector as the dot's first operand 551 (same code
+// each). Retail's edge loop computes the successor `i + 1` at its top for the idiv and stores it at once (+0xd0), the first
+// vertex walked by a pointer spilled at +0x98. Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
