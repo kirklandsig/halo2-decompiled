@@ -2435,6 +2435,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // or test-scoped cursor 187/187, scoped spawn with direct multiply query 146.
 // NOT kept: color A takes a register while the cursor spills, the system stays
 // in EDI, and all forms score above 128.
+// Round 666. The 0x40 frame and late color reads remain.
+// Immutable tag and flag values 128, confined virtual receiver 128. Capture color A
+// or both before the spawn record 187/184, between tag read and type lookup 189/191,
+// and between type lookup and virtual queries 187/189. Single captures recover 0x44
+// but the system remains in EDI and the body grows to 572 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
