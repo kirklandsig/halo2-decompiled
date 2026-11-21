@@ -140,8 +140,11 @@ long network_observer_find_channel(s_network_observer *observer, long owner, lon
 // machine copy before it (17), do-while with early return (46). The volatile
 // stays only because it lowers 10 to 1; it does not match.
 // Permuter (25 min on r660, about 1100 variants): nothing below 1.
+// Matched in a full build with stand-in SDK headers (was 1): owner is declared before address and is a plain long
+// (no volatile). The two tie in register priority and the later parameter wins ebx, so the order of the declaration
+// decides it; the three calls in unknown_1967d0.cpp pass (observer, 3, address).
 // @retail 0x75d30
-long network_observer_find_channel_by_machine(s_network_observer *observer, const s_session_machine_address *address, long volatile owner)
+long network_observer_find_channel_by_machine(s_network_observer *observer, long owner, const s_session_machine_address *address)
 {
 	long result = NONE;
 	for (long i = 0; i < MAXIMUM_OBSERVER_CHANNELS; i++)

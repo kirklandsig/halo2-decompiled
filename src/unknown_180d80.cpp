@@ -64,7 +64,7 @@ void *function_439d0(long arg_0);
 bool __stdcall function_d47d0(s_cluster_query const *arg_0, color3f *arg_1);
 color3f *function_131c20(color3f *arg_4, color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3);
 dword __cdecl pack_color3f(color3f const *arg_0);
-long function_17cfa0(long first_index, long definition_index, short cluster_index, short decal_type, bool permanent);
+long function_17cfa0(long definition_index, long first_index, short cluster_index, short decal_type, bool permanent);
 void __stdcall function_180b60(s_cluster_query const *arg_0, real arg_1, long arg_2);
 dword vector3d_pack(vector3f const *arg_0);
 
@@ -407,7 +407,7 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
         long local_5 = function_13d370((s_physical_object *)g_509448, (short)local_4 * 0x40, 1);
         if (local_5 != NONE)
         {
-            long local_6 = function_17cfa0(NONE, local_5, arg_3->cluster_index, *(short *)(local_2 + 4), arg_4);
+            long local_6 = function_17cfa0(local_5, NONE, arg_3->cluster_index, *(short *)(local_2 + 4), arg_4);
             if (local_6 != NONE)
             {
                 byte *local_7 = g_4ea950->data + (local_6 & 0xffff) * 0x40;
