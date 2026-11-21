@@ -1117,6 +1117,12 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // count postincrement in the admitted arm 11, rectangle binding after displacement 11, and camera
 // row before output selection 13. NOT kept: the gains rely on the one-use displacement or pointer
 // and leave the camera table and key in exchanged registers.
+// M3 lane 12 r172 (H2M_FAST, control 105): the camera address or the camera byte offset named ahead of the count store
+// 13/13 (434 B; the key is then loaded before the store and again for the push, where retail loads it once after it);
+// the volume address, then the camera address, then the count store 81 (collection leaves EDI); the key named after the
+// volume address 105; the product as `entry->key * 0x1bc + cameras` 105; the camera table copied into a local, read once
+// through its own address, or bound by const reference at the top of the admitted block 105 each (the copy folds and the
+// table still loads into EDX after the count store).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1813,6 +1819,11 @@ struct s_point_pool_173520
 // arena origin 190, signed byte-offset recount 9, and advance destination index at the depth
 // minimum 18. NOT kept: the 9 and 18 forms require exact equality on the staged shapes.
 // The scaled stride spill and the recount registers still differ.
+// M3 lane 12 r172 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
+// forced-inline trim helper with (pool, count, points), (count, points, pool) or (pool, points, count) parameters 9 each
+// (the helper folds to the same tree); the clipped count itself as the down-counter 9; `inside` at function scope 9; the
+// cursor declared ahead of the index and step 9; the pool view at the block top 9; an ascending vertex index with a
+// per-iteration vertex pointer 990 (1471 B, unrolled).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2133,6 +2144,14 @@ struct s_pool_view_172840
 // array 203. On the reordered short-sentinel form: signed byte-offset recount 17, native arena origin
 // 42, staged key and predecessor 17, earlier predecessor bitmap pointer 22. NOT kept: the 17 and 22
 // forms reach retail length but keep the reordered publication and the exchanged recount registers.
+// M3 lane 12 r172 (H2M_FAST, control 55; round 160's 17 form rebuilt, 17 at 868 B): the rectangle copy written ahead of
+// the link and key stores 34 (868 B; the copy is then emitted first and the link store last); the two NONE stores first
+// 34; the distance store first 49; with the copy first, all 24 orders of the link, key, cluster and portal stores, best
+// 30 (868 B, same reading). The bit vector set through next->unknown2c directly 121 (on the 17 form 109); its pointer
+// declared after the copy 55 (17 form 17, same code); the 64-byte vector copied as an aggregate 17 on the 17 form (same
+// code); the copy through a forced-inline memcpy wrapper that sets up the source first (the form of the copy helper in
+// src/unknown_1932c0.cpp) 55 / 17 (same code: `mov edi, eax` still precedes `add esi, 0x2c`). NOT kept: store orders
+// are match-only.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

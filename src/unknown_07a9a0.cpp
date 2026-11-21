@@ -1769,6 +1769,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // or first after total clear 871/867/916/899. Dword histogram with the same publication forms
 // 911/933/946/946. NOT kept: the 867 form gains four and shortens to 2748 bytes. Dword cells
 // reserve 0xb0 and regress. The opening variant lookup still expands.
+// M3 lane 12 r172 (H2M_FAST with 0x73530 and 0x192e60, both MATCH unless noted; control 871): the output memset ahead
+// of the session reads 870 (2796 B; 0x73530 drops to 8); the opening test split in two 871; the opening exit as
+// `{ result = false; return result; }` 871; the imbalance excess test returning at once (retail's exit at 0x7ea98) 895
+// (2752 B); the type-5 scan's exit as `return false` 871. Still BLOCKED on the link's inline choices.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

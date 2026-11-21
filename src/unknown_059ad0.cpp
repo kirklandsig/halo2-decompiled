@@ -4681,6 +4681,22 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // jumping there 105 (1248 B); that with the acknowledgement block ending in `result = true;` and no accept label 96; the
 // three flags declared ahead of the sender lookup 50 (+0x10); the kept arms and the post-disconnect test as `return
 // result;` 122 (1244 B).
+// M3 lane 14 r141 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; lane 1 r144's 44 lead rebuilt, 44,
+// aligned 21). On the 44 lead: the acknowledgement ending `result = true;` and falling into the final return 56 (+0x26); the
+// kept arms `goto received_done;` 99 (aligned 21); that without the post-disconnect test 105 (1248 B, aligned 11); with the
+// acknowledgement also falling into the final return (no accept block) 96 (1264 B, aligned 17); the post-disconnect `if
+// (result) goto accepted;` with the label on the acknowledgement's final `result = true;` 107 (+0x26, the byte homes rotate);
+// that with the state-8 `result = true` also written `goto accepted;` 94 (1264 B, aligned 11: one block left, retail's
+// kept arms store the result through AL, test `same`/`better` in CL and jump into the state-8 copy's bare epilogue, and its
+// post-disconnect true edge does the same; ours stores an immediate, tests in AL and jumps to the acknowledgement's copy;
+// build/r141/lead-5e7f0-g7-94.patch in m3-lane14). On that 94 form: the kept arms `return result;` 103 (1270 B: a `mov al,
+// 1` return block of their own), `goto accepted;` 95 (1268 B, aligned 9); the accepted label inside the state-8 arm with the
+// acknowledgement jumping back to it 403 (frame 0xe0: the backward jump stops the flag threading). Also on the 94 form:
+// after the disconnect `if (result) return result;` 113 (+0x26: one more reference moves the result byte to +9), that with
+// the kept arms `return result;` 117, with the kept arms `goto accepted;` 113; that test with the channel-7 `result = true`
+// written `goto accepted;` 100 (homes back, but the test folds into the final return); the channel-7 jump alone 94 (same
+// code); the kept arms `return true;` 103 (1270 B), as two tests each `return true;` 131 (1269 B), as `if (same || better)
+// return result = true;` ahead of the plain store 237 (frame 0xe0).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

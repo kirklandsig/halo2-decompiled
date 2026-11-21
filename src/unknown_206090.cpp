@@ -893,6 +893,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // entry identifier with shared zero-vector pointer 1346, typed lookup and scoped component 1346,
 // typed lookup and both identifiers 1370. NOT kept: the 0x5d0 frame, velocity homes and 6243-byte
 // extent persist in all eight forms.
+// M3 lane 12 r172 (H2M_FAST, 0x2056e0 MATCH each run; control 1346, difflib-aligned 1399, register-and-slot-masked
+// 1355): the magnitude helper's terms written i, j, k with the snapshot kept 1346 (6243 B; aligned 1388, masked 1161:
+// every magnitude then evaluates k*k, j*j, i*i in retail's order, where the current text gives i*i, j*j, k*k; a lead,
+// the count does not move); the magnitude read directly with i, j, k terms 1624 (5990 B, masked 1099); the two velocity
+// outputs declared local_5 first 1346 (same code); on the i, j, k form, the contact cross written into the contact's
+// velocity field with the base velocity added there 1419 (6185 B); the scale helper copying its input vector (retail
+// copies the normal before the projection at 0x206d0c) with the magnitude read directly 1543 (6358 B, frame 0x5e8).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

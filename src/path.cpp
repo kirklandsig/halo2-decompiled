@@ -1008,6 +1008,18 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // successor 329, held node depth 432, or arm-local distance producers 401.
 // NOT kept: 282 gains four with the extra frame dword. Several narrow-link
 // forms recover 0xe4, and two reach retail length but regress.
+// M3 lane 8 r219 (h2m fast with 0x270930 and 0x270750, both MATCH; control 286; both builds end in `ret 0x24`). Lane 16's saved
+// two-flag lead applied to today's file is 2 again (the scan latch reloads EBP then EDX; retail EDX then EBP, ascending, as in
+// 0x254490 and 0x2548f0). On the lead: one vector for both distance arms 2; `real distance` after the origin pointer 2; the
+// margin declared at the top 2; `special` declared at the loop head 2; the edge and offset vectors declared together 2; the
+// distance test nested 2; `++j` 2; the usable flag at the loop head 2; the link copy as an aggregate assignment 2 (same code each);
+// the parent pointer ahead of the type chain 351 (1400 B); count declared at the top 348; the latch with `previous = node;` first
+// 4 (the two latch stores swap: retail keeps the source order); previous from the lookup by index 2; the parent read through
+// `previous` 2; the parent through `lookup->nodes[node_index]` 347 (1404 B); the depth test inverted 132; the link copy with
+// `link_count++` in its index 304; special with an explicit else 130; `j + 1 < count` 5 and `count - 1 > j` 4 (the compare
+// operands swap, the pair stays); the data pointer at the loop head 329; count as a ternary with a self-copy arm 288 (pair
+// unchanged); the previous point as an aggregate ternary 388 (1357 B); special as `? true : false` 130. Diagnostic: the scan
+// index renamed with 2 to 128 characters 2 each (no name-length effect). Body unchanged (286).
 // Signed-word link ordinal with guarded admission 357, exhaustive admission
 // 361, or a shared admission and transition target 361.
 // With a visit-owned predecessor 367, one reconstruction depth 421, or an

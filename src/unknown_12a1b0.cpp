@@ -2688,6 +2688,16 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // complete request 418.
 // NOT kept: Sharing either datum value alone ties. Sharing both raises the score to 418. The complete request reserves 0x12c against retail 0x128 while preserving the opening extent.
 // The 0x120 frame, datum-handle spill and pitch-range register homes still differ.
+// M3 lane 3 r293 (h2m fast with round 139's sixteen addresses; control 305). With the file's one ring step (the second
+// step spelling is a held twin), round 139's natural parts alone: the sounds array by memset 335; the request's view at
+// 0xa0 305 (frame 0x12c); the pitch through a bounds pointer and `lower` 304; a count local per pitch-range for-init 368;
+// the active bit at each use 442; the char NONE store 426 (1907 B); memset + 0xa0 335, + lower 410, + counts and the bit
+// 442, + the char store 331 (frame 0x128, first +0x39). The shared step itself respelled (`index = next; if (next ==
+// first) index = NONE;`, all four users): 0x21be20 MATCH, 0x21b870 MATCH, 0x21bd00 2 (its latch reloads count and first
+// in the other order), this body 418, with the natural parts 268 (1907 B), 311 without the char store. 0x21bd00's two
+// reloads on that step, 2 unless noted: the iterator's fields in the five other orders 3/2/3/3/3, `0 < count`,
+// `++count`, `count += 1`, the compare written `first == next` 3, a named next 71, the initialiser in three other orders
+// 2/4/2, and three placements of its own locals: none restores its order.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

@@ -779,6 +779,13 @@ s_1a8a10 g_4453c0[] =
 // whole facing 142 (564 B: the copy goes through the stack by integer moves, and the negated j is then a separate read);
 // the copy read through the union's `n[0]`, `n[1]` 17 (same code); the first switch's cases 2 and 3 under one label 139
 // (540 B). All restored.
+// M3 lane 4 r245 (h2m fast with 0x1a8c30, MATCH): i in a scalar local with j read in place in both sums 31, with 0-2
+// redundant pairs over the five float sites 31/36 only. Reading on it: the negated j is folded from memory as retail's,
+// but forward's j load sits after the first sum, where retail loads j right after i, ahead of the point's y store. The
+// copy's j assigned between the sums 17 (the folded reload is retail's, forward's j load stays late and the first sum adds
+// into the negated product with a copy of i); that with the stores [3], [1], [2], [0] 19; each sum stored and negated right
+// after it 30; the first sum read from the actor ahead of the copy 87; the point's y carried through the switch in a
+// scalar and stored to the point after the copy 24 (the scalar takes the 0x50 slot, j folded). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

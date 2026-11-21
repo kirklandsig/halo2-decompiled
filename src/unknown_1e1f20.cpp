@@ -1080,6 +1080,10 @@ void swarm_leader_detach(long actor_index);
 // `while` with the increment at the end 4; diagnostic, reverted at once: a compiler read/write barrier between the
 // stop read and its test 4 (the barrier does not keep the `lea` after the loads; only a volatile or copied handler
 // read does, and those flip the full image to 297). Body unchanged (59).
+// M3 lane 7 r211 (h2m fast with 0xf0fd0 and 0x1fb360; on the listed 4 form, rebuilt: 4 at 980 B): the type in a `long`
+// local 4; `if (!stop) continue;` then the call 4; the call as `(*stop)(...)` with a typed null arm 4; the handler table
+// bound to a `s_slot_handler *const *` local before the loop 4 (all the same code); the argument's slot through a second
+// actor_get(actor_index) 273. Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

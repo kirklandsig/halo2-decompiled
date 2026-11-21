@@ -4496,6 +4496,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // end-minus-payload 168/158, stride-minus-payload 159/160, selected address 139/164.
 // Using the queued payload extent for the prefix gives the same 172/167.
 // The new boundary either grows the frame or leaves channel allocation unresolved.
+// Round 666. The channel still needs EBP from entry.
+// Next cursor at admission 172, with early byte debit 171, at both validated prefixes 159,
+// with debit and prefix advance 160. One count read for the clamp 139, with admission cursor
+// 173, or with prefix advance 159. Immutable current packet and admission cursor 172.
+// The prefix-advance forms reach 488 bytes with a larger 0x14 frame.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
