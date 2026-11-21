@@ -1361,11 +1361,11 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
 // MiniMax C (11-20): no new form, no lower score (87): retail forms the reciprocal first (xmm2), keeps the fade-out time in xmm1 from the earlier test, divides eagerly before the compare and adds the gain into a register at the end, while this build forms the reciprocal late, sinks the division into the branch and adds the gain from memory; every form written here leaves the reciprocal's register and the division's schedule where they are.
 // MiniMax H (11-19, round 95): no new form, no lower score (87): the permuter over this function's forms made no gain either
 // (best was the baseline), and the fade block still keeps 1.0f/fade_in_time in xmm2 where retail keeps it in xmm3, so the join
 // with the (elapsed - hold) * inverse * fade_out term stays in other registers than retail's.
-// score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
 // MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
@@ -1873,6 +1873,10 @@ long function_2197f0(real gain);
 // (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
 // fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
 // the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
+// Default fraction reused for reciprocal numerator and cap, with guarded, conditional-select,
+// eager quotient or compound reciprocal forms 144/144/144/144. With one retained release
+// duration 149/149/149/149. NOT kept: the body shortens to 681 bytes but each score rises;
+// the elapsed/reciprocal registers and late quotient remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4845,6 +4849,10 @@ struct s_128ca0
 // controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
 // shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
 // swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
+// Both pins with an independent processed level constructed from bits or copied from its decoded value:
+// short adjustment with direct construction 48/48, short or long adjustment assigned to the level 48/48 and
+// 48/48, direct signed tag adjustment assigned to the level 48/48. The pin register pairs and extent agree
+// with the opening build. NOT kept: no gain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
