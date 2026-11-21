@@ -2735,6 +2735,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Reading: retail's case 20 else arm loads d1 into AL and jumps to the test's `test al, al` (0x2597f2), an `if (d1)`
 // test cross-jumped into the post-switch test, and that test sits right before the return-1 block case 13 and the
 // default share, so case 0's `sete` falls into it and cases 5 and 10 jump to its `sete`.
+// The 0x1c frame agrees. The default dispatch still spans to a late success exit.
+// Selector comparison chains 0/1/2, 0/2/1, 1/0/2, 1/2/0, 2/0/1 and 2/1/0:
+// 596/596/596/595/596/595. Long selector 615, pending flag arm first 596.
+// NOT kept: the chains reverse the retail entry allocation and raise the score.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

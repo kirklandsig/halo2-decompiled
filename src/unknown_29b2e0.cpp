@@ -807,6 +807,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // (uj*fk, ui*fk, uj*fi, fj*uk, fi*uk, ui*fj as loaded; retail uj*fk, uk*fj, fi*uk, fk*ui, fi*uj, fj*ui), so this body's
 // product sides follow neither the spelling nor the symbol phase that moves 0xef870's. A lower-bound local started at
 // zero ahead of the yaw scale and reduced after it (diagnostic for retail's zero copy above the branch) 295.
+// Full fallback value selected before validation, on the valid-angle path, after yaw, or before
+// current pitch 379/386/386/391. Fallback address selected at those sites 364/256/291/367.
+// NOT kept: the original J/depth pair remains or the first difference moves earlier.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

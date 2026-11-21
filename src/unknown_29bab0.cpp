@@ -814,6 +814,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // -local_24;` 648 (3501 B); the side point as a planar copy of local_8 with `+=` of each offset 701 (3504 B, the frame
 // moves); the side distance read from field_20 at each use with no local_23 727 (3480 B); the flip as `local_21 = (cross >
 // 0.0f) == local_22;` 658; `bool local_21 = false;` at its declaration 489 (same code). Body unchanged.
+// Low-priority position name 654, target as radial difference by fields/helper
+// 718/718, and shared query-target overwritten by fields/helper 714/714.
+// Side point as radial difference by fields/helper, or with shared query target,
+// 656 each. NOT kept: the reduced control scores 654 against 489 full, and the
+// 3499-byte forms change the frame or early stack stores.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

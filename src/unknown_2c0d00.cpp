@@ -599,6 +599,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
 // Earlier header (925, was 925; merged into the note above in r130): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
 // its zero in EBP), the frame is 0x2cb0 against retail's 0x2cac, the byte homes differ and the join is laid out in
 // source order; the rounds below. MiniMax B (11-18) at 920: no new form, no lower score (920 plain, 926 fast). The permutation
 // MiniMax B (11-18): 920 then (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
@@ -791,6 +792,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 906 form: actor_index in EBP for retail's EBX with the zero in EBX for EBP (ours hoists the object-table global into
 // ESI at the entry, retail loads it in each block), the skip flag in BL where retail keeps it at [esp+0x12] (sete to
 // memory), and the other-actor branch's layout.
+// Entry pool acquisition is still hoisted and the 0x2cb0 frame exceeds 0x2cac.
+// Havok and movement pool accessors at the actor-unit lookup, location lookup,
+// or both 925 each. Complete conditional unit selection with explicit or
+// conditional-expression type arms 942 each at 3741 bytes.
+// NOT kept: the accessor forms tie and the complete selections grow past retail.
 // M3 lane 2 r128 (H2M_FAST with 0x29a190/0x29cbb0/0x2c41b0/0x2c0d00, which did not move; control 925 = plain; [aligned,
 // masked] difflib counts): lane 5 r218's 514 lead rebuilt on today's file 514 [170, 77] at 3740 B (all five forms
 // match-only). On it: the entry dot's k and j products written previous-direction first 514 (same code); the entry dot

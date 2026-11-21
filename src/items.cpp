@@ -933,6 +933,11 @@ struct s_item_collision_bsp
 // instanced query result pointer 246; instanced plane output with saved equation 291;
 // named real or double random fraction 196/232. NOT kept: all scores exceed 190.
 // The transformed normal and the common x87 spin factor still use different homes.
+// The normal coefficient homes and contact point still differ in the 0xa0 frame.
+// Overlap the j, k or both forward products in plane or scalar rows: 194 each.
+// Overlap both left and forward products in plane or scalar rows: 191 each.
+// NOT kept: the paired overlaps load j before k and still place j in XMM3.
+// Every preview retains the 1366-byte extent against retail's 1361.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

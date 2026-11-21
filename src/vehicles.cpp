@@ -852,6 +852,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // into XMM2; each normalize's y row is `y * inverse` with y loaded first in retail, ours multiplies the dying inverse by
 // the stored y; the reversing sum's first product is input.y * blend.x in retail (the negated blend.y waits on the x87
 // stack and takes an fxch), ours multiplies the negated value first.
+// Shared scale-based planar normalizer for forward, heading, blend, forward/heading, forward/blend,
+// heading/blend, or all three, 107 each. All three with shared scale for the initial velocity, 107.
+// NOT kept: the XMM3 square and x87 sum still diverge at +0x69 and unity still loads into XMM2.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3719,6 +3722,10 @@ real g_47ff30 = 2.5f;
 // boost), so retail's allocation phase at the head is one step from ours, but the forward clamp then takes a fresh register.
 // With the state reads cut the rates pointer goes to EDX; with the turn fraction's reads through another address the
 // `lea edx` is direct and the state takes EDX.
+// Boost progress, peak delta, increment, or in-place multiplier 716/716/715/716.
+// Those forms with one lower speed bound for the three clamps 661/663/716/661.
+// Shared lower bound alone 786. NOT kept: the separate changes regress and only the
+// combined forms gain. The 0x100 frame and acceleration and velocity homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6696,7 +6703,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // MiniMax G (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; no form of the body I tried moves them.
 // MiniMax S (11-20): no new form, no lower score (978): the frame is 0xfc where retail has 0xd8, and this build pushes EDI where retail does not (retail indexes with ESI and EDI straight from [esp + 0xe8]).
 // MiniMax I (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; I found no form of the body that moves them.
-// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
+// score 959 (was 978): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):
@@ -7044,6 +7051,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1104 (5144 bytes, 423); the conditional-store loop + matrix + lift 1101 (5142 bytes, aligned 999, registers masked 676,
 // slots masked 390: the closest structure measured); loop + matrix + lift with `bool boosting` 1163 (411). The combination
 // does not bring the rows back in step: the lift expansion is 93 bytes longer in this build than in retail.
+// Forward address at pitch, after flip query, before flip query, or at entry,
+// with direct or shared target scale: 959/959, 992/992, 996/996, 1158/1158. Kept the pitch acquisition with direct target products, plain 959.
+// The flip tick store and ESI address acquisition agree with retail. The 0xfc frame and entry handle order remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -7078,8 +7088,9 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	vehicle->unknown351 = (byte)MIN(vehicle->unknown351 + 1, 0xfe);
 	definition = VEHICLE_DEFINITION_GET(vehicle);
 
-	real pitch = (real)atan2(vehicle->forward.k, sqrt(vehicle->forward.i * vehicle->forward.i +
-		vehicle->forward.j * vehicle->forward.j));
+	vector3f const *forward = &vehicle->forward;
+	real pitch = (real)atan2(forward->k, sqrt(forward->i * forward->i +
+		forward->j * forward->j));
 	real dive = 0.0f > pitch ? 1.0f : -1.0f;
 	real climb = PIN((pitch >= 0.0f ? pitch : 0.0f - pitch), 0.0f, 0.58904862f) * dive * g_4678d8 * 1.6976527f + 1.0f;
 	real boost;
@@ -7101,9 +7112,9 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	velocity.i -= g_51e9c4->vector.i;
 	velocity.j -= g_51e9c4->vector.j;
 	velocity.k -= g_51e9c4->vector.k;
-	target.i = vehicle->forward.i * speed;
-	target.j = vehicle->forward.j * speed;
-	target.k = vehicle->forward.k * speed;
+	target.i = forward->i * speed;
+	target.j = forward->j * speed;
+	target.k = forward->k * speed;
 	boosting = TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4);
 	if (boosting && !flipping && !(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit3)))
 	{
@@ -7227,9 +7238,9 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	force.i = mass_scale * acceleration.i;
 	force.j = acceleration.j * mass_scale;
 	force.k = mass_scale * acceleration.k;
-	current.forward = vehicle->forward;
+	current.forward = *forward;
 	current.up = vehicle->up;
-	vehicle_cross(&vehicle->up, &vehicle->forward, &current.left);
+	vehicle_cross(&vehicle->up, forward, &current.left);
 	if (flipping)
 	{
 		desired = flipped;

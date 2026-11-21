@@ -4353,6 +4353,12 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Boolean activity through heat 1431.
 // Byte activity through heat 1431.
 // NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
+// The pool and header displacement still occupy EBX and EDI. Dual remains spilled.
+// Stable magazine, trigger and barrel count values 1418/1416/1417. The trigger
+// count gives frame 0x38 and first difference +0x8 at 5680 bytes. Live count
+// references individually, beside each walk or acquired together 1412 each.
+// NOT kept: retail reloads the bounds. Stable values raise the score and the
+// live references retain the 0x34 frame.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5004,6 +5010,10 @@ struct s_weapon_projectile_creation
 // Dot before cosine, cross before cosine, dot then cross, or cross then dot:
 // vector result 1121 each, staged scalar result stores 1239 each.
 // NOT kept: the vector forms tie and the scalar forms reserve 0x1e94 and shorten the body to 5115 bytes.
+// Caller-owned rotation output, component stores or setter: one result for both saved inputs 1132/1132,
+// separate results 1214/1210, direct marker input with separate results 1273/1273, or direct marker input
+// with a shared result 1142/1142. NOT kept: one result for the saved inputs recovers 0x1e98 and first +0x75
+// at 5195 bytes, but raises the score. The separate trace point and original rotations remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
