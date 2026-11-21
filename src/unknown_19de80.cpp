@@ -884,6 +884,12 @@ static inline bool teams_enabled_19e1c0()
 // the virtual call, at the fallback copy, at both, or at the first compare 691 each (same code: the reference folds away, so it
 // does not take the token out of the ranking); the four name copies through a file-local inline bounded copy 691 (same code);
 // the "%s" formats through a file-local inline bounded format 594 (1269 B, token still EDI); both helpers 594.
+// M3 lane 2 r124 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result re-measured 691 at
+// 1170 B: token EDI, token length EBX, event EBP, result ESI, `remaining` in memory). Loop shapes of the opponent scan,
+// untried above (a bottom-tested helper loop is what moved the register ranking in 0x2689d0): on the plain result, `long
+// team` with `do { ... } while (++team < 8);` 688 (1172 B), a `short` team with that loop 691 (same code as the plain
+// result), `long team` with `team++` inside the body 688; on this body, a `short` team bottom-tested 390 (same code), `long
+// team` bottom-tested 421 (1424 B). The token keeps EDI in all five, so the scan's shape does not decide the ranking.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

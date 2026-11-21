@@ -1214,6 +1214,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // denominator only, for its row only, or declared after the ratio (denominator x, z, y or y, z, x) best 16. With x named and the
 // denominator x, z, y the x product loads the normal first and the z delta and the denominator swap XMM1/XMM3; with y named
 // the products are retail's but y takes XMM5; with none named the zero constant takes XMM5 and the head is lost.
+// M3 lane 2 r124 (fast with 0x1648d0/0x320b0, both matched each run; control 115): loop shapes on this body: the
+// classification loop bottom-tested under a count test (`if (point_count > 0) do { ...; i++; } while (i < point_count);`)
+// 662 (1563 B: no longer unrolled); the pass loop bottom-tested (`do { ... } while (++pass < 2);`) 133; the per-point
+// loop bottom-tested 115 (same code); the clip loop alone as a plain for loop 129; the projection loop alone as a plain
+// for loop 129.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

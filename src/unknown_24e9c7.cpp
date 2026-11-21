@@ -680,6 +680,15 @@ struct s_24e9c7_points
 // (first difference +0x5); every offset as reals (no aggregates) 133; the across pair as a two-float aggregate 144 (746 B);
 // `back` from the across products 154 (753 B); the forward pair read once into locals 142 (740 B); every negation as
 // `0.0f -` 147 (735 B).
+// M3 lane 2 r124 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). Reading of retail:
+// forward_i is loaded once (XMM4) for the across j product and `result * forward_i`, while forward_j is read from the
+// placement again for the upper y product, after the first corner's x has been stored; so one corner store may sit
+// between the two upper products. Tried, a position the grids above do not have: the first corner's base copy between
+// the upper x and upper y products 138 (740 B); that with the side point set to the across products and scaled in place
+// by the half width 128 (743 B); that with `size * (0.0f - forward_j)` 143 (739 B); the first corner's x copied ahead of
+// the upper x product and its y between the two 139 (756 B); the copy between the two with the half width taken after
+// the upper pair 138 (738 B). In each the across j product is still not stored at its definition, so the result keeps
+// [ebp-8].
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
