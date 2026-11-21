@@ -1548,6 +1548,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // build reads a word directly (`movsx edi, word ptr [ebp + 8]`). Retail's dword load means its count parameter is 32-bit,
 // and the declaration may not change here. Behind that: retail keeps the previous-side flag in memory at [esp + 0xd] where
 // this build keeps it in CL, and retail's zero is XMM2 where this build uses XMM4.
+// M3 lane 12 r171 (H2M fast; control 129): the loop test as `count > i` 130; the crossing deltas declared dx then dy 129;
+// the denominator's terms swapped (`dy * n.j + n.i * dx`) 129; the alias test as `output == points` 130 (first +0x2e); the
+// crossing's mask update ahead of the two output stores 131. Re-measured: the copy moved ahead of `if (inside)` 157 (count in
+// ECX and retail's loop head; retail's copy is at the loop end through CL, so the moved copy is not retail's statement order:
+// at the loop head retail holds `points` in ECX, which is what leaves the previous side without a byte register). Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

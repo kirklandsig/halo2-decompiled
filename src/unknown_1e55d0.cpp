@@ -427,6 +427,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // shape match as one ternary on the compound test 383 (1208 B), the active flag through TEST_FIELD_BIT 315 (same
 // code), the input's flag word in a pointer local 315 (same code), the current shape read from the body at its first
 // use 320. Still BLOCKED-BY 0x1ec690 for the output/input registers.
+// M3 lane 6 r225 (H2M_FAST with 0xb77d0, 0x1c4a80 and 0x1c4b00, all MATCH; control 319, aligned 320, register-masked
+// 235; the masked rows are the out-of-line arms, the expanded 0x1c4a80 and the state held in ESI): diagnostic, 0xb7430's draft enabled with its stub removed and
+// called here for the position move (`function_b7430(object_index, &position, NULL, NULL, NULL, false, true, false,
+// false)`) 355 (1104 B; 0x1c4a80 is then a call as in retail, but 0xb7430 itself 109 and matched 0xb75a0 73 on the
+// reduced image); the state read through the parameter's own address 319 (same code); a second named state pointer for
+// the contact call and the object-index read 319 (same code); diagnostics on the 0x1ec690 stub (its only live caller is
+// this function): parameters as (state, output, input) 318, that `__stdcall` 316 (the EBX/EDI trade stays). Still
+// BLOCKED-BY 0x1ec690 and 0xb7430.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

@@ -874,6 +874,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // difference +0x199, the blend still in XMM2); the reciprocals as two point2f pairs 164 (1944 B); all three as point2f 266;
 // the geometry ahead of the two encodes 385 (2019 B); the pivot as two scalars 295 (1971 B); the second bounds by an
 // initializer 162 (same code).
+// Indexed axes for both spans, primary reciprocals, secondary reciprocals, both
+// reciprocals, two-pass spans and reciprocals, one pass, or those last two with
+// indexed inverse mixing 219/164/162/226/214/329/184/312.
+// NOT kept: the secondary reciprocal loop ties. The 1942-byte spans-only loop still spills blend.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

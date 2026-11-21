@@ -3511,6 +3511,10 @@ struct s_ammo_conversion_entry
 // Conversion candidate as mutable or const reference before the match test 214/214;
 // with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
 // NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
+// Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
+// Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
+// NOT kept: the joined conversion paths tie or shorten the body, and holding the pickup amount adds a frame word. The caller and both callee controls retain their scores.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3869,6 +3873,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // gate, signed or unsigned cost: word 603 each, dword 561 each.
 // NOT kept: dword shortens to 2525 bytes, replaces retail's xor and word load
 // with movzx and leaves the count at +0x50 and the frame at 0x1c64.
+// Required rounds scoped to ammunition 603. Magazine selector by field
+// reference 568. Loaded balance by field reference, both field references,
+// or both scoped to ammunition 647/647/647. Late tag defaults 630, late scale
+// defaults 674, both after scoped ammunition 665. Selector reference after
+// the sentinel test 603. NOT kept: the 568 form shares the first selector load
+// with sign extension where retail reads twice. The later binding restores
+// those reads and ties. Required rounds and the original field reads restored.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4380,6 +4391,11 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // selected source or early positive edge: 1559/1399/1411/1404, also after the
 // blocked exit with the same scores. NOT kept: the 1399 form shortens to 5680
 // bytes and retains frame 0x34. The 1559 form recovers 0x38 but grows to 5824.
+// Player presence from an owner-path assignment 1429, short-circuit
+// tests 1422, absence 1422, explicit owner arms 1422, or typed owner lookup
+// for presence/absence 1422/1422. Shared trigger test from the signed player
+// index 1419 or from a selected index 1442. NOT kept: all regress and
+// hold a 0x30 frame against retail's 0x38. The signed player index is restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

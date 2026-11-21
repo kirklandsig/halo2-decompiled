@@ -839,6 +839,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the factor's flag byte for the duration, but a function-wide XMM zero is hoisted to the entry); the second clamp's
 // factor ahead of t2 in main's if form 716. Diagnostic, reverted: d dropped from the 0.866 test 743 (b takes EBX, not q).
 // Retail compares both normalise results with the memory zero constant; ours keeps a zero in XMM6 for the active PIN.
+// Shared setters for the start copy, impulse, activation target, all target updates,
+// both direction differences, reference sample, ramp position, and activation displacement
+// with scaling and impulse 699/708/678/693/675/603/661/713.
+// NOT kept: the sample setter ties and leaves the supplied direction in EBX.
+// The impulse setter reaches retail length with earlier prologue differences.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

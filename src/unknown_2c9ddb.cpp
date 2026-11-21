@@ -478,6 +478,11 @@ extern long g_55c154;
 // form (wrong value, reverted): the selected arm's type taken from `variant` 62, `this` EBX, the selected arm exact,
 // and the default arm still caches &g_54e4a0 in EAX for the copy and the build-default push where retail pushes
 // immediates.
+// M3 lane 7 r211 (h2m fast with 0x13fac0, 0x212bc0, 0x238c69, 0x1489b5, all MATCH; control 61): kept, the selected arm's
+// flag clear as `g_54e4a0.flags &= ~1` (byte-identical to the byte-array member access it replaces). Two load arms on
+// main's 0x238c69 order with the default arm's count named once 179 (580 B: a plain EBP frame, the zero in EBX, `this` in
+// ESI and spilled); with the selected arm first 178; that with the new flag clear 178; one named count for the copy and
+// both requests 179.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -546,7 +551,7 @@ void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item
 				}
 				else
 				{
-					g_54e49c_storage.variant_bytes[0] &= 0xfe;
+					g_54e4a0.flags &= ~1;
 					function_238c69(7, saved_game_file_type_from_variant(&g_54e4a0),
 						g_54e4a0.name, 0x20, (*controller)->controller_index);
 				}

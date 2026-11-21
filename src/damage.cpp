@@ -2442,7 +2442,8 @@ struct s_unit_event
 // permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
 // address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
 // where retail reads it after.
-// score 420 (was 513): Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
+// score 420 (was 513): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
+// Earlier detail: Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
 // Earlier header detail: 513 at m3 lane 12 r125 and r128, 517 before m3 lane 12 r125's drop-block helper, 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
@@ -2735,6 +2736,10 @@ struct s_unit_event
 // current body the region-state update through two DAMAGE_OBJECT lookups 478 (1852 B); both destroy arms' vitality
 // stores through DAMAGE_OBJECT 593 (1932 B); the child walk's start through DAMAGE_OBJECT 493 (1904 B); the damage-source
 // byte passed as the expression (no local) 464; the at-marker flag passed as the expression 420 (same code).
+// Shared short or long datum slot 549/571, existing weapon-in-slot helper 420, type mask once per drop 420,
+// helper with short or long slot 531/495, short slot with type mask 549, helper with type mask 420, and retained
+// pool with long slot and helper 526. NOT kept: the short slot restores the entry register assignment but
+// changes the index load and grows to 1880 bytes. The other forms tie or raise the score.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3696,6 +3701,8 @@ enum
 
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
+// score 371 (was 371): Frame 0xf4 agrees. The flag homes and ESI/EDI allocation differ at the same 1893-byte extent.
+// Earlier detail: 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
 // score 371 (was 371; 470 and 661 earlier): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
 // score 371 (was 371): 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
 // (retail's bools sit at esp+0x13..0x17, then object, i, definition, info; ours orders them differently and
@@ -3734,6 +3741,10 @@ enum
 // declared at function scope 371 (same code); `objects[i]` at every use with no current_index local 525 (1920 B); i
 // declared at function scope 371 (same code). Diagnostics (behaviour changes, reverted): one or two fewer i references
 // 404/462 with i still at F+0 (the layout is not a near tie on i's count); one extra object reference 501.
+// Typed object model field 371 (kept). Region absorption from the tests 391, explicit range arms 394, passing
+// predicate 392, short region selector 455, renamed parent slot and pass object 371, child/absorption names 371,
+// conditional model index 371, and model index inside the info arm 371. NOT kept: all other forms tie or raise
+// the score and leave the first flag home.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -3776,7 +3787,7 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 		long current_index = objects[i];
 		s_damage_object *object = DAMAGE_OBJECT(current_index);
 		s_damage_info *info = (s_damage_info *)function_d5b60(current_index);
-		byte *object_definition = g_4e3b44[object->tag_index & 0xffff].bytes;
+		s_object_definition *object_definition = (s_object_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 		s_damage_region_accumulator accumulator;
 
 		memset(&accumulator, 0, sizeof(accumulator));
@@ -3793,9 +3804,9 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 			data->unknown7e = NONE;
 		}
 
-		if (info && *(long *)(object_definition + 0x38) != NONE)
+		if (info && object_definition->model_tag_index != NONE)
 		{
-			byte *model = g_4e3b44[*(long *)(object_definition + 0x38) & 0xffff].bytes;
+			byte *model = g_4e3b44[object_definition->model_tag_index & 0xffff].bytes;
 			bool region_absorbs = false;
 
 			accumulator.field_4_2 = info;
