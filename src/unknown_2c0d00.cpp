@@ -847,6 +847,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `actor_index != NONE` 947 (3772 B); the reference test as `if (actor)` 921 (retail compares the index with NONE there:
 // `cmp ebx, ebp` with EBP = -1, so not retail's form); the actor and self-unit pointers declared ahead of the four
 // priorities 925 (same code). Body unchanged.
+// Three-level direction result, strict-first, broad-first, conditional and reversed levels
+// 909/903/909/898. NOT kept: retail stores two separate bytes and the best form shortens to 3712.
+// Both dot tests after location/query 934/931; direction scope after settings 928,
+// optional prior-direction pointer 940. The frame and actor/unit homes still differ.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

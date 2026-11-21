@@ -7072,6 +7072,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Round 454: frame 0xfc versus 0xd8 still separates the facing and current matrix homes. Common lateral-row
 // reference or pointer 1076/1076; shared dot in drift, strafe or both 1037/978/1037; strafe-only row reference
 // 1039; shared lateral-brake scale-add 978; common row pointer with both dots 1076. Body restored.
+// Complete forward-basis initializer 1160; cross from the copied up/forward rows 1071.
+// Direct transposed basis by aggregate, row setters, column stores or the spent facing buffer
+// 1173 each, after desired basis 1209, with separate relative product 1214. NOT kept:
+// direct assembly reaches frame 0xdc but shortens the 5094-byte body. The handle and four-byte frame gap remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

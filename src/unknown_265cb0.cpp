@@ -1027,6 +1027,9 @@ real function_30bf0(vector3f *vector);
 // pair, clip amount sharing with the squared distance, scale, motion, range; then counter, plane, cursor, delta, a, b);
 // ours follows the same order except its first slot (clip amount shared with the seat counter, 5 refs) sits below the
 // result, and the squared distance (2 refs) gets its own slot at the top.
+// Optional endpoint via condition declaration, named selection, complete branches or clear
+// 152/152/152/152, range after the initial delta 155/155/155/155. NOT kept:
+// the result stays at +0xc and the clip fraction still shares with the seat count.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

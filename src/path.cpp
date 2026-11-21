@@ -1037,6 +1037,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // guard block folds before allocation); the truncation test written in both distance arms 488 (1489 B, the tails are not
 // cross-jumped and the state leaves EBX); the truncation storing `complete` before `count` 4 (the two stores swap, the pair
 // stays); the previous point chosen by an if/else statement in place of the ternary 2 (same code). Body unchanged.
+// score 286 (was 286): Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
+// short capped fill bound with the same guards 396/396/396. Separate seed node 390,
+// shared edge-table receiver 391. NOT kept: frame 0xe4 returns but the state is stacked
+// and the matched caller changes. The opening extra cursor and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
