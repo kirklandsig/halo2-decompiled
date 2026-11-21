@@ -1151,6 +1151,31 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // M3 lane 16 r155 (fast with 0x1ecf50 and 0x26d100, both MATCH each time; control 26): the 0.1 offset products
 // constant-first 26; the 0.5 lift product constant-first 26; the collision marker as a typed short field at +0x24 of
 // the collision view 26; the offset reading the axis as `n[0..2]` 26, both sides as `n[0..2]` 26 (all the same code).
+// M3 lane 4 r236 (fast with 0x1ecf50/0x26d100, both MATCH each run; control 26; M = the collision record, its marker
+// store and the entry pointer between the trace endpoint and the 0.5 lift loop, re-measured 20): the lift loop's counter
+// as a short 176 (1094 B), on M 169; on M the endpoint as three statements 39 (orders x, z, y / y, x, z / y, z, x / z, x, y
+// / z, y, x 168/149/152/167/152). New: on M the 0.5 lift written as three `+=` statements x, y, z gives retail's dot
+// ((j + i) + k) and the whole success block from the trace's test to the 0x14a280 call exactly as retail, but 179 (1082 B):
+// the dot's last component (axis k) becomes a memory operand in all four of its rotation products where retail loads it
+// into a register each time; lift orders y, x, z and y, z, x 179, x, z, y 71 (the dot's last term and the memory operand
+// both move to j), z, x, y and z, y, x 187; the lift as plain `point.x = point.x + ...`, constant-first products, or
+// through real_point3d_set 179 each; the collision record and entry pointer placed at eight positions (top of the success
+// block, ahead of the lift, after it, in either order) with four lift orders 76-187; on the x, y, z lift the 0.1 offset as
+// a component loop or through vector3f_add_scaled 179, the rotation through include/axis_rotation.h's helper 179. Not a
+// numbering phase: one to seven dead longs at the function top, one to five in the success block, and one to eight locals
+// in a scratch forceinline helper ahead of the rotation all 179. Diagnostics (restored at once): a later read of the
+// collision point's y or z, the axis's j or k, or the direction's j or k after the 0x14a280 call does not move the dot;
+// the held private rotation copy (planar dot plus k term) with M still matches, on main's block 6, and with the
+// statement lift 69 (the statement lift alone brings the memory operands). Reading: retail's lift is a loop-like form
+// and its dot is not reassociated; the shared helper's one-expression dot is reassociated here.
+// Same round, on M with the lift loop: the 0x26d100 result held in a local and stored to the entry after the 0.1 offset
+// 177 (1082 B: retail's dot, the k memory operands again), after the 0x14a280 call 173, between the offset's x and y 26
+// (dot ours), between y and z 46; with the offset through real_point3d_set, vector3f_add_scaled or a component loop the
+// late store gives 179 each (the same dot and memory operands), the early store 20/39/39. With the late store the
+// offset orders x, z, y / z, x, y / z, y, x move the dot back to ours (78 each, still memory operands); with the
+// statement lift all six offset orders 179. One to seven pointer aliases of the point used in the offset 20 each (no
+// numbering effect). So the late result store and the statement lift flip the same pair of choices (dot order and
+// memory operands) together; no form found gives retail's dot with register loads and the x, y, z offset.
 // M3 lane 8 r207 (fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26, lane 12 r147's M re-measured 20): the 0.1
 // offset reading a `vector3f const` copy of the axis taken after the 0x26d100 call 163 (1115 B), on M 158 (1113 B); reading a
 // `point3f const` copy of the collision point 143 (1113 B), on M 138; on M `real const` sine and cosine 20, the 0.5 lift as

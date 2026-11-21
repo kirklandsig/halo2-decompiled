@@ -276,6 +276,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // a two-real aggregate and read back into the two locals 14; the first step through a `real &` bound to the running x
 // 14; the first pass's scaled sprite width named where it is computed 14; the first pass's width scale declared ahead
 // of the sprite index 14 (all five the same code).
+// M3 lane 6 r215 (fast with 0x2008fc 0x200891, control 14): the draw pass's sprite height read through a new trivial inline
+// (entry, offset) accessor 14, the width so 14, both 14; both half extents through a new inline (low, high, size) helper 14;
+// the pulse pointer written out at each of its three uses (no local) 14 (all five the same code: the advance product keeps
+// XMM4 and the half-height's new home XMM3). Re-measured: named upper and lower y after the step 32.
 // M3 lane 8 r209 (fast with 0x2008fc 0x200891, control 14): the corners by chained assignment (x0 = x3, y0 = y1, x1 = x2,
 // y2 = y3) 89 (846 B); the repeated corner values copied from the corner written first (y1 from y0, x2 from x1, x3 from
 // x0, y3 from y2) 30; both passes' bounds through an `s_float_rect const *` to the record's rectangle (pass 1 reading

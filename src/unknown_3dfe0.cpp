@@ -218,6 +218,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // `bool const &` for its test 21 and for the 0xd1850 argument 21; the hidden test's object through a `byte *const &` 21, on
 // update-first 216 (same code each); update assigned in both arms re-measured 222 (aligned: only the false store's place in
 // the not-force arm and the missing force-arm reload differ); that with the object looked up again in the force arm 226 (813 B).
+// M3 lane 3 r285 (h2m fast with 0x3d2c0 and 0xd1850, both MATCH; control 21, update-first re-measured 216): a redundant
+// `update = false;` just ahead of `if (force)` 24 (the false store then follows the object's reload), the same on the
+// update-first form 24; on update-first, `bool const force` 216 and the rest of the body nested under `if (elapsed)` 216
+// (both the update-first code), the sample decision ahead of the force block 221.
 // M3 lane 8 r206 (h2m fast with 0x3db00 and 0xd1850, both MATCH; control 21, aligned 12): the elapsed clamp between the
 // force flag and `bool update = false;` 24 (aligned 12: the false store moves below the clamp); `bool update = false;` and
 // the clamp ahead of force 239 (816 B); force computed ahead of the object lookup 241 (830 B); `bool update = false;`

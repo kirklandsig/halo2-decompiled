@@ -75,6 +75,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax D (11-20): no new form kept, no lower score (76): the row pointer formed after the increment with the limits as
+// longs gives 83 here (it swaps the EBP and EDI homes of the player pointer and the kind, so the first difference moves to
+// +0x16), the limits as longs alone 78, the enable byte read at each use 103, the old maximum as a short 76 (its counter
+// read then sign-extends where retail zeroes the register), and the row pointer spelled out at every use 85; what still
+// differs is the enable byte, which retail reloads into AL and CL after the statistics write while this build keeps it
+// in a bool local, the old maximum's home (ECX there, EAX here), the 15-bit counter read (retail's `xor eax, eax; mov ax`
+// comes from the inlined getter in the held file) and the consecutive count's register.
 // MiniMax I (11-20): no new form, no lower score (76): reading the enable byte at each use point instead of through the bool local gives 103 (the reload then lands where retail has it), the old maximum as a nested ternary 108, and the increment before the row pointer 107 with the direct enable read and 85 alone (it swaps the EBP and EDI roles); what still differs is the old maximum's home (ECX there, EAX here), the 15-bit value read (a zeroed 16-bit move there, movzx here) and the row pointer's register order.
 // MiniMax S (11-20): score 72 (was 76): the increment is now the address expression `++*(short *)((byte *)statistics +
 // index * 0x1c + 0x16)` and the row pointer is formed after it, which gives retail's `inc word ptr [eax + edx + 0x16];
@@ -343,6 +350,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // inline-getter form the setter's enable test read through a const address cast 86 (426 B: the reload appears right
 // after the increment, in BL, and the team block reuses it), the team test too 86 (same code); match-only forms.
 // MiniMax S (11-20), NOT kept: 72 (was 76), a 4-point gain, under the 8-point bar for a function above 30.
+// Raw enable held as unsigned byte, signed byte, word or long 103/103/98/101.
+// Either byte with a direct setter read 103/103; raw team byte added to the
+// player byte, with a held or direct setter read, 103/103.
+// NOT kept: all regress. The raw byte avoids Boolean materialization but the
+// enable still remains live across the increment and the maximum stays in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -418,6 +430,15 @@ struct s_object_damage_view
 // MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
 // MiniMax I (11-20): no new form, no lower score (353): the permuter ran over the function for 690 s and kept its baseline (350 differing instructions on the reduced image); the three small homes stay rotated (killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c there, victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c here) and the history cursor stays biased +4.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// M3 lane 6 r214 (fast with 0x197160 and 0xd9640, both MATCH throughout): on 0x197160's code parameter typed byte (the
+// listed lead, re-measured 354), each listed form: consideration flag 345, friendly flag 354, found-flag dedupe 366 (1528 B),
+// retail's arm order 363 (1532 B), team byte argument 354, `self` in the call 350 (1544 B), assist stores re-read 377, related
+// player re-read 355, amount local 454 (1578 B); both flags 345; both flags with the dedupe and the arm order 374 (1512 B), with
+// the related re-read as well 374 (1512 B; masked aligned count 32, the lowest so far), that plus the team byte 357 (1528 B),
+// plus the assist re-reads 383 (1528 B), plus both 365 (1544 B), plus a `&history[selected]` record pointer 416 (1547 B), plus
+// the amount local 417 (1547 B). Left on the 374 form: the +4 selection cursor, the selected block's record pointer, retail's
+// killer reloads at the two fallback merges, the team byte's paired movsx, the assist loop's +0xc cursor with its store
+// re-reads, and the object table load after the 0xbaf80 call. Body unchanged.
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
 // after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
 // flags in retail's shape (consideration true by default and cleared by the same-team test; friendly false by default
@@ -877,6 +898,19 @@ struct s_object_damage_view
 // Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
 // fallback 358/358/416/416, with conditional code selection 358/358/416/416.
 // NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
+// Fixed-range tail tests for selection, assists, both, selection with long ordinal, assists with
+// short ordinal, selection end ordinal, assists end ordinal and both end ordinals.
+// Scores 509/353/509/509/353/509/353/509.
+// NOT kept: Assist-only tails tie. Selection tails allocate 0x54, move the object argument to EAX
+// and break the matched caller.
+// Shared victim/credit/both full-width player slots across pool and counter uses
+// 439/357/434, word slots 418/360/438, both unsigned full-width 434, credit slot
+// assigned with the selected handle 477.
+// NOT kept: all raise the score. The 357 form retains frame 0x50 but grows to 1553 bytes.
+// Separate declaration and initialization for victim team, credit or event code
+// 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
+// all three or all with the credited team 353/353. The three homes and the
+// amount-biased history cursor stay in place.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

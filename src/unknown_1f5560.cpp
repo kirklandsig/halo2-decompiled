@@ -724,6 +724,7 @@ struct s_1f9762
 // spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
 // MiniMax B (11-20): no new form, no lower score (1): the entry test is still the only difference (`dec edx` where retail has `inc eax`); this round's spellings of it - `index + 1 >= count` 4, `count <= index + 1` 4, `index + 1 > count - 1` 131, the same with one side widened 4, the count or the index through a one-use local 6 each and the same with a long local 6 - all leave the increment in EDX, and the permuter (34 tries) found nothing below the baseline.
 // MiniMax I (11-20): no new form, no lower score (1): the entry test is still the only difference - this build decrements the count where retail increments the index; the path-pointer spelling that matches retail's entry test flips the second dot product's i term (score 2).
+// MiniMax A (11-20): matches (0): the entry test compares the current index plus one against the path count through named locals, and the second dot product takes the origin point through a named local; retail's `inc eax`/`cmp eax, edx`/`setge al` and both dot products' operand orders now agree.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -876,7 +877,10 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 	bool reached = false;
 	s_actor_view *actor = actor_get(actor_index);
 	s_object_definition const *definition = (s_object_definition const *)g_4e3b44[moving_object_get(object_index)->tag_index & 0xffff].bytes;
-	bool last = actor->unknown53a >= actor->unknown539 - 1;
+	s_1f9762 *path = (s_1f9762 *)((byte *)actor + 0x50c);
+	char count = actor->unknown539;
+	char index = actor->unknown53a;
+	bool last = index + 1 >= count;
 	bool direction_valid = false;
 	vector3f direction;
 	vector3f approach;
@@ -888,7 +892,6 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 	}
 	else if (!last)
 	{
-		s_1f9762 *path = (s_1f9762 *)((byte *)actor + 0x50c);
 		s_type_c3b527 *next = &path->field_30[path->field_2e + 1].point;
 		function_210be0(&path->field_30[path->field_2e].point, next, &direction);
 		if (function_30bf0(&direction) > 0.0001f)
@@ -919,7 +922,8 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 		projection_direction = &direction;
 	if (projection_direction)
 	{
-		real remaining = dot3f(projection_direction, (vector3f *)&actor->unknown53c[actor->unknown53a].point.point) - dot3f((vector3f const *)point, projection_direction);
+		vector3f const *origin = (vector3f const *)point;
+		real remaining = dot3f(projection_direction, (vector3f *)&actor->unknown53c[actor->unknown53a].point.point) - dot3f(origin, projection_direction);
 		if (remaining < definition->cull_radius * 1.2f)
 			reached = true;
 	}
@@ -1841,10 +1845,32 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
 // dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
 // stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
+// M3 lane 1 r142 (fast with 0x29a190/0x29cbb0, 0x29a190 matched throughout; control 226 at 1176 B; al = aligned differing
+// lines / the same with registers masked, 212/60 on this body). The fraction started at 1.0 and overwritten under `if
+// (!(forward > radius * 1.3f))` 234 at 1173 B (al 213/114); as if/else arms 226 (same code); a named 1.0 used by the
+// fraction's constant arm and by `fraction * 1.5f - one` 198 at 1173 B (al 213/80; a local holding a constant, not kept).
+// Round 115's leads re-measured on this body: the type-zero left arm y first 239 at 1168 B (al 205/52); the trace radius
+// in a named local 207 at 1179 B (al 193/73); both 215 at 1173 B (al 188/67). The named 1.0 with the left arm 242 (1163
+// B), with the radius local 264 (1192 B), with both 205 at 1184 B (al 188/48); the started-at-1.0 fraction with both 221
+// (1179 B). Phase grid (two or three redundant parenthesis pairs in the lateral sum, round 117's lever, diagnostic) over
+// those ten bodies: best positional 192 at 1176 B (left arm y first, two pairs), best masked 47 (left arm and radius
+// local, either phase), the named 1.0 with both and three pairs 215 at 1173 B; none has retail's XMM numbers. Reading: by
+// register number retail's first six SSE values are direction x (XMM2), inverse length then direction y (XMM3), facing y
+// (XMM4), radius (XMM5), side x (XMM6), facing x (XMM7); ours are inverse length (2), facing y (3), radius (4), direction
+// x (5), facing x (6), side x (7): the same order except that direction x is handed out fourth where retail hands it
+// out first, and side x and facing x trade. Retail also loads 1.0 into the dead radius register in both arms of the
+// fraction (one register value from `fraction = 1.0` to the second normalize's reciprocal); ours loads it after the join.
 // M3 lane 8 r208 (h2m fast with 0x210690, 0x210770, 0x26ccb0 and 0x29a190, all MATCH; control 226 at 1176 B): the side
 // offset as one planar_scale call with a ternary scale 241 (1164 B); the type-zero centre copied from the target and the
 // two scaled terms added in place 317 (1210 B); the side vector set member by member 226 (same code); the type-one centre
 // copied from the target and its scaled difference added in place 275 (1200 B); both arms' centres so 340 (1226 B).
+// Round 611. radial switch 0 first 254, radial switch 1 first 254, paired facing components 267, complementary side
+// predicate 198, in-place radial scale 206, shared opposite radius 242, destination and shared subtraction 231, in-
+// place side scale 294. NOT kept: the complementary predicate reverses the stored side and loses the shared radial
+// tail. In-place radial scaling shortens below retail. The radius register still differs.
+// MiniMax R (11-20): score 226 (was 226): no new form; the first difference is still the radius in xmm4 where retail
+// loads it into xmm5 at +0x4f, and the cosine block keeps its own allocation of the direction, the desired vector and
+// the zero, so the whole body stays 223 instructions away from retail's.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
