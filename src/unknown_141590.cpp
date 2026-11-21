@@ -564,6 +564,16 @@ static inline void quaternion_transform_vector(
 // the quaternion and vector by const reference 247 (1310 B). Reading: retail's m uses the 2.0 kept from the sine product and
 // its w2 a fresh 2.0 load after the copy, shared with the forward dot; entry registers for 1.0/2.0/cosine half/sine are
 // xmm7/6/5/4 in retail, xmm7/5/4/6 here.
+// M3 lane 5 r226 (h2m fast with 0x143120, 0x11d000 and 0x30bf0, all MATCH; control 201). Reading: every float
+// instruction that does not read the copied matrix floats above the identity copy's `rep movsd`, so retail's helper
+// starts with m (its three m instructions are ours when m is first); retail's w2 stays below the dot only because it
+// multiplies by a 2.0 loaded again there (shared with the dot's doubling), where every form here reuses the register
+// that served the sine product. Helper literal types x statement orders (w2,m,d / m,d,w2 / m,w2,d / d,w2,m): w2 and
+// d with a double 2.0 275/282/275/276 (1310/1303/1310/1309 B: the doubling goes through the x87 stack); with an
+// integer 2 written first 201/248/247/252 (same code as the float literal in each order: 1324/1305/1317/1336 B); m
+// with double literals as well 1028 (591 B: the helper is no longer expanded). The quaternion passed by value 456
+// (1446 B); its vector part and w as separate parameters 201 (same code), with m, d, w2 259 (1294 B); the dot kept
+// undoubled with `* 2.f` written in the rows 279 (1364 B), with m first 288 (1345 B).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
