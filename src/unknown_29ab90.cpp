@@ -616,6 +616,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // first and third through it 286; local_1, local_2 and local_9 renamed object, settings, magnitude 286 (names do not move
 // these homes); local_4 read straight from the actor field with local_3 declared after it 286; local_15 as the planar idiom
 // `*(vector2f const *)local_3` 286 (all the same code). Still BLOCKED-BY 0x2b400.
+// M3 lane 16 r173 (plain checks; control 286, aligned 234, register-masked 191): one redundant pair around the turn dot's
+// first product, `(local_13.i * local_15.i) + ...`, 286 (both dot products' operand orders flip, and one history-blend
+// product with them; aligned 238); `local_22.j = local_22.k = local_30 * 0.0f;` 308 (retail's 1863 B, aligned 240); one
+// pair around the first blend row's first product 286 (aligned 233, masked 186); the speed floor as `local_18 =
+// local_18 > local_17 ? local_18 : local_17;` 286 (same code); the dot and blend pairs together 286 (aligned 234, masked
+// 188). Site 1 still BLOCKED-BY 0x2b400 (its noinline declaration sits in machine 1's file). Body unchanged.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
