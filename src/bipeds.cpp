@@ -1891,6 +1891,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // On the retained state and speed declaration order, lexical ranks for tag, flags,
 // material, grab distance, position, facing, tag with distance, and tag with flags
 // and material each score 158. The +0x64 definition spill and other homes stay in place.
+// M3 lane 5 r231 (fast, control 158): frame map ours -> retail: material +0x04 -> +0x8c, definition +0x60 -> +0x04,
+// animation flags +0x64 -> +0x60, facing +0x68 -> +0x70, position +0x80 -> +0x64. Retail's definition home has four
+// references (it keeps the +0x134 globals pointer in ESI across the 0xdfa60 call and reloads the definition after it),
+// ours three, tied with material's three. Case 1's float argument as a named `real recovery` ahead of its call 158; the
+// walking speed written call first 158; its product's factors swapped 158 (all the same code); diagnostic, 1/2/3/4 dead
+// longs at the top 158/158/176/176. All restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4552,6 +4558,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // ordinary, key cases or a second dispatch 628/642/643/626/628/708.
 // NOT kept: the 595 forms gain three in the reduced image and grow the frame to 0x80.
 // The full 0x78 frame still needs the changed byte and flight threshold at +0x11 and +0x18.
+// M3 lane 5 r231 (plain, control 537): the wall turn's `along` as dot3f(&biped->up, &turned) 536 (2725 B, one step);
+// `(1.0f - turn_cosine) * dot3f(...)` 537; the wall cosine as dot3f(&facing, &biped->forward) 537; `left = 0.0f < sine`
+// 537 (same code each); the planar turn naming the new j first 632 (2742 B). All restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6292,6 +6301,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // with success exit 79, ordinary crosses 203, staged crosses with direct
 // forward 154, trig construction with success exit 79. The first rotation
 // still spills the complement before its dot sum finishes.
+// M3 lane 5 r231 (fast with 0x1ecf50/0x30bf0; the rotation helper's file was open this round): rotate_direction's text,
+// screened against its five users (this 79, 0x1ecf50 matched, 0xd0080 58, 0x1e5bb0 114, 0x26d570 26): cross_j's second
+// product axis first, cross_k's first product axis first, both, the dot as dot3f(axis, vector), `(1.0f - cosine) * dot`
+// 79 each, every user unchanged (same code); the dot not named 144 (0x1ecf50 91, 0xd0080 36, 0x1e5bb0 94 at 1382 B,
+// 0x26d570 77); the cross locals declared k, j, i 89 (0x1ecf50 51); the cosine complement named 79 (0x1ecf50 14). The
+// helper's named-local count moves every user, its written operand orders none. Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
