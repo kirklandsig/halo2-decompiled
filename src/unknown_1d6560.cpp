@@ -101,6 +101,20 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 
 /* the collision layer of one of the object's rigid bodies, by object type */
 // score 96 (was 96): The object type is read in both kind routes and the build starts with the owner chain. Retail reads the header data and type once at entry and keeps the body in ESI.
+// MiniMax D (11-20, round 132): no new form, no lower score (96): the body is unchanged. The permuter refuses this
+// function in the reduced image (the reduced image scores 96 differing instructions, the full image 87), so the
+// full-image search was run instead and it reached its time limit with no better form; the one-read type still needs
+// the object index and the absolute index each used once, and every spelling of the type read that keeps the matched
+// caller 0x1d5bf0 reads the type in both kind routes.
+// MiniMax D (11-20): no new form, no lower score (96): the one-read form rebuilt (object index, absolute index, rigid
+// body, header array, byte type; case 0 through the header array at the component's index) 28 at 256 bytes with the
+// caller still matched, but it needs the object index and the absolute index each used once, so it stays unkept; the
+// header array first 83 with the caller at 2, the header array third 88 with the caller matched (the same two one-use
+// locals), a long type 89, the type local alone 94 and the rigid body first 96 all flip the caller's register pair
+// (13 or 213), and the forms with every local used twice (one masked index for both reads 133, the header array
+// shared by both type reads 129, the object index through the header array 136) lose the caller too. Retail reads the
+// header's type once before the kind test with the header data in EDX and the object index in ECX; this build reads it
+// in both kind routes.
 // MiniMax E (11-20): no new form, no lower score (96): the one-read forms that use every local twice (the headers
 // local with case 0 through it, the object-index local with case 0 through havok_object_get) score 101 to 137 and flip
 // the incoming register pair, so the type stays read in both kind routes; the control already has retail's own
@@ -630,6 +644,17 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // component 25 [13]; the same with case 0 through havok_object_get(component->object_index) 25 [13] (same code); with
 // case 0 through havok_object_get(object_index) 72 [2] (the component arrives in EDX); the first and third with a long
 // type 86 [13] / 92 [160 at 711 B]. Header-first still moves the incoming component/index pair. Body unchanged.
+// M3 lane 4 r237 (fast, caller 0x1d5bf0 in brackets, 0 = MATCH; control 96 [0]): `kind` typed char (the definition and the
+// caller's declaration together; the caller reads it from a char table) 97 [193], typed short 100 (272 B) [0]; `level` typed
+// short 101 (272 B) [164]; on the one-read form (object index, absolute index, rigid body, header array, byte type; 28 [0])
+// kind char 31 [193], kind short 47 (260 B) [0], kind char with a long type 119 (268 B) [194]. Body unchanged.
+// M3 lane 5 r219 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 60's one-read form with case 0 through the
+// existing word-bitfield view's bit2 rebuilt 24 at 256 B [0]. On it: the rigid-body index bound by `long &` 97 (260 B) [172]
+// and the component bound by `s_havok_component *const &` 98 (260 B) [160] (each parameter is then address-taken and moves
+// to the stack); the model bound by `s_physics_model *const &` 24 [0] and the rigid body re-bound by a const reference
+// for the flag tests 24 [0] (both the same code); the rigid body as the array pointer with `+= rigid_body_index` after the
+// type read 111 (268 B) [9], right after its definition 24 [0], and as `rigid_body_index + rigid_bodies` 24 [0] (same code).
+// None splits the index from the rigid body (retail copies the index ECX to ESI and gives the object index ECX). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

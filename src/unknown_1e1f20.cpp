@@ -128,7 +128,7 @@ void __stdcall function_1e1250(long actor_index)
 	}
 }
 
-void __stdcall function_1e1a00(long actor_index, long value);
+void __stdcall function_1e1a00(long actor_index, bool value);
 long function_1e4990(long character_index);
 
 // @retail 0x1e0d50
@@ -592,9 +592,10 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax G (11-20): no new form, no lower score (236): the raw value turned into a bool before the 0x203ed0 call rises to 289, the prop walk through prop_node_get rises to 280 and to 274 with the cached-actor iterator compare, and calling the real 0x26ed40 instead of expanding it rises to 348 (910 bytes); the offset-first head form compiles to the same bytes as the kept body and was dropped; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp), and the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX.
 // MiniMax B (11-20): no new form, no lower score (236): the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX, and the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp); the known 216 form holds the definition bit in a byte flag set by one test and read by the next, which is kept only with a byte match; this round's permuter (2 tries, 339.9 s) reaches 205 differing instructions against its baseline of 219 only through a constant-only local and a bool flag set by one test, both banned.
 // MiniMax G (11-20): no new form, no lower score (236): the head still loads the actor pool global into eax where retail keeps it in ecx and holds the scaled actor index in ebx where retail keeps it in eax, and the tail still keeps the pool in edi where retail keeps it in ebp; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it.
-// score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
+// score 59 (was 236): m3 lane 11 r141 kept the memory walk as a plain loop testing through the cached actor with the release steps as retail expands them, the prop walk through 0x26be00/0x26be30 with the node re-read after the callback, the iterator compared against the cached actor and `value` as a bool (see the end of this note). Left: the slot loop forms the slot address ahead of the handler loads where retail forms it after the test, the definition bit is tested in place where retail stores it in a byte first, and the compare's operand order. Earlier 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
 // (fast with 0xf0fd0, 0x1fb360 and the eleven matched callers/neighbours, all MATCH): the prop walk through 0x26be00/
 // 0x26be30 with the view index read through a prop_node_get pointer after the callback 285 (948 bytes); the
 // actor-iterator test as `actor != other` against the cached actor 308 (942 bytes); the participant slot read at each of
@@ -1001,6 +1002,11 @@ void swarm_leader_detach(long actor_index);
 // against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
 // region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
 // re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// M3 lane 12 r160 (fast with 0x26ed40's nine callers and the matched functions of its file; control 236): the memory
+// walk calling 0x26ed40 under the type test through the cached actor 364 as a short for loop or a long do loop (a call);
+// with `inline` on 0x26ed40 301/319 (1006 bytes), 0x1bead0 and 0x26ef70 then expanding it too and losing their match;
+// its file without the inline-depth flag (diagnostic, flags unchanged) the same three expansions; `value != 0` 236 and
+// `memory + memory_index` 236 (same code). Retail keeps the call at all eight other sites. Still BLOCKED-BY 0x26ed40.
 // Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
 // fresh entry from byte distance, element distance, short index or advanced byte
 // displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
@@ -1014,8 +1020,34 @@ void swarm_leader_detach(long actor_index);
 // Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
 // fresh entry from byte distance, element distance, short index or advanced byte
 // displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
+// M3 lane 6 r217 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236, aligned
+// 82, masked 41): the invitation test through the entry actor with the body through the re-derived entry 319 (1006 B), that
+// as a `for (short ...)` walk 339 (1022 B); the first prop index read through the cached actor 309 (942 B); the invitation
+// index as short in the do-while 236 (same code); the invitation walk as a plain `for (long ...)` 526 (1182 B). Still
+// BLOCKED-BY 0x26ed40.
+// M3 lane 11 r141 (fast with 0xf0fd0, 0x1fb360, the ten callers, 0x26be00, 0x26be30, 0x203ed0, 0x1e22d0, 0x26ed40, 0x1e2150,
+// 0x258600 and 0x1e4990, all as before in every run; control 236, aligned differing rows 82, 43 with registers masked):
+// kept, 236 -> 59 at 974 B (aligned 9), plain check 59. No copy of a helper function is needed for round 115's lead: the
+// memory walk written in place as `for (short ...)` testing `actor->memory[i].type` through the cached actor, with the
+// release steps as retail expands them (the owner looked up again, the entry's short read at each of its two uses, the
+// final store through `owner->memory[i]`), together with the prop walk through 0x26be00/0x26be30 (the node re-read
+// through prop_node_get after the 0x1e2150 callback) and the iterator compared against the cached actor, is 196 (aligned
+// 9, first difference +0x40); each alone or in pairs raises the count (walk 301, prop walk 285, compare 308, walk and
+// prop walk 303, prop walk and compare 299). On 196: `value` as bool at the definition and its eight declarations
+// (retail pushes the parameter's dword to 0x203ed0 unconverted and tests its low byte) 58 with `actor != other`, 59 with
+// `other != actor` (kept: the operand order main had); with the definition bit as a false-then-set bool 4 at retail's
+// 980 B (the flag form, match-only: only the slot loop's `lea` then sits ahead of the handler loads) and on 196 alone
+// 218. Spellings of the walk on the 58 form: the final store through the entry pointer (`memory->type = NONE`) 294, also
+// without the owner local 294; the entry's short in a named local 107; a long counter 486 (1166 B); the real
+// joint_decline called in place of the steps 397 at 862 B (retail expands it here and calls it from its six other
+// callers, all matched). Slot loop on the 4 form: the slot address in a pointer local between the stop read and its
+// test 4 (on 196: 198, the select then masks the other way round), ahead of the stop read 4 (same code); the type in a
+// short local or bound to a `short const &` 4 (same code); the stop bound to a const reference 4 (same code); the
+// argument through a new inline accessor returning the slot or NULL 4 (same code); the handler pointer with its stop
+// tested and called 297 (996 B, frame 0x24: the listed whole-allocation flip), with the accessor 297. Still open for the
+// match: the handler loads staying in ECX with the `lea` after the test, and the stored definition bit.
 // @retail 0x1e1a00
-void __stdcall function_1e1a00(long actor_index, long value)
+void __stdcall function_1e1a00(long actor_index, bool value)
 {
 	s_actor_view *actor = actor_get(actor_index);
 	for (short slot_index = 0; slot_index <= actor->current; ++slot_index)
@@ -1026,36 +1058,33 @@ void __stdcall function_1e1a00(long actor_index, long value)
 	}
 	actor->current = NONE;
 	function_258600(actor_index);
-	long memory_index = 0;
-	do
+	for (short memory_index = 0; memory_index < 4; memory_index++)
 	{
-		s_slot_memory_entry *memory = &actor_get(actor_index)->memory[memory_index];
-		if (memory->type != NONE)
+		if (actor->memory[memory_index].type != NONE)
 		{
+			s_actor_view *owner = actor_get(actor_index);
+			s_slot_memory_entry *memory = &owner->memory[memory_index];
 			byte *entry = g_502424->data + (memory->unknown4 & 0xffff) * 0xbc;
-			long slot = *(short *)((byte *)memory + 2);
-			*(long *)(entry + slot * 12 + 4) = NONE;
-			*(short *)(entry + slot * 12 + 8) = 1;
-			memory->type = NONE;
+			*(long *)(entry + *(short *)((byte *)memory + 2) * 12 + 4) = NONE;
+			*(short *)(entry + *(short *)((byte *)memory + 2) * 12 + 8) = 1;
+			owner->memory[memory_index].type = NONE;
 		}
-	} while (++memory_index < 4);
+	}
 	if (actor->unknown00a[0])
 		function_203fb0(actor_index);
 	else
-		function_203ed0(actor_index, (byte)value != 0);
+		function_203ed0(actor_index, value);
 	if (actor->unknown07c != NONE)
 		function_2694d0(actor->unknown07c, actor_index);
-	long prop_index = actor_get(actor_index)->first_prop_index;
-	while (prop_index != NONE)
+	s_iterator prop_walk;
+	function_26be00(actor_index, &prop_walk);
+	while (function_26be30(&prop_walk))
 	{
-		long current = prop_index;
-		byte *prop_entry = g_502418->data + (current & 0xffff) * 0x3c;
-		prop_index = *(long *)(prop_entry + 0x2c);
-		function_1e2150(actor_index, current);
-		long view_index = *(long *)(prop_entry + 0x14);
-		if (view_index != NONE)
-			record_pool_release(g_502414, view_index);
-		record_pool_release(g_502418, current);
+		function_1e2150(actor_index, prop_walk.index);
+		s_prop_node_view *node = prop_node_get(prop_walk.index);
+		if (node->view_index != NONE)
+			record_pool_release(g_502414, node->view_index);
+		record_pool_release(g_502418, prop_walk.index);
 	}
 	actor->first_prop_index = NONE;
 	s_record_pool_iterator prop_iterator;
@@ -1072,7 +1101,7 @@ void __stdcall function_1e1a00(long actor_index, long value)
 	s_actor_view *other;
 	while ((other = (s_actor_view *)function_1e46c0(&iterator)) != NULL)
 	{
-		if (other != actor_get(actor_index))
+		if (other != actor)
 			function_1e1740(iterator.actor_index, actor_index);
 	}
 	function_2628f0(actor_index, g_470fa0);
@@ -1098,7 +1127,7 @@ void __stdcall function_1e1a00(long actor_index, long value)
 	{
 		byte *counts = (byte *)g_5047f4;
 		--*(short *)(counts + 6);
-		if ((byte)value)
+		if (value)
 		{
 			++*(short *)(counts + 8);
 			*(long *)(counts + 0xc) = g_510c54->game_time;

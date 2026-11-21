@@ -508,7 +508,8 @@ struct s_collision_result_buffer_1697c0
 // spilled between the two rotations and the collision argument schedule) needs the rotation written out at the call site, so the
 // body stands.
 // MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
-// score 270 (was 270): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
+// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
+// Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
 // Earlier at 299: 1433 bytes, first +0x19. Frame map before the ray scale change (F = esp
@@ -994,6 +995,10 @@ struct s_collision_result_buffer_1697c0
 // clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
 // NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
 // also shrink the 0xa8 frame.
+// Round 498: zero-first comparison, named axis length, scoped axis length, separate initial best-vector assignment, scaler result in the trace call, named obstruction, sampling names, immutable hit fraction.
+// Fast scores in order 270/270/270/270/270/270/270/270.
+// NOT kept: All eight trials tie at 270 and 1431 bytes. Every control keeps its opening score.
+// The frame stays 0xa8 on the opening body. The zero register, pitch-axis j preload and shared random/trig transfer word still differ.
 // M3 lane 12 r158 (h2m fast with 0x297660 (stays matched) and 0x297d30 (stays 23 unless noted); control 270): the
 // header's shared normalize3d in place of the file-local normalizer at the three uses 282 (1437 B); the file-local normalizer
 // in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
@@ -1004,6 +1009,9 @@ struct s_collision_result_buffer_1697c0
 // both the scaled and unchanged direction writes 554.
 // NOT kept: the separate forms grow the frame to 0xb0 and the best-output forms change its
 // matched caller. The complete output form outlines the math and reserves 0xac.
+// Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
+// 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
+// NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2424,6 +2432,8 @@ struct s_actor_looking_turn_request
 // score 442 (was 442): Frame 0xcc versus retail 0xc8. The inlined combat test and actor-slot and animation-state homes differ.
 // MiniMax A (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the first difference is at the entry, where retail loads the actor table into ECX, keeps the actor index in ESI and the scaled index in EAX (stored to a home at +0x30) and holds the animation state in DI, while this build loads the table into EDX, reloads it into EAX, keeps the actor index in EDI and the animation state in DX; that is the allocator's choice for the values live across the 0x297600 and 0x2973f0 calls, and 0x1fdd90 is still expanded here where retail calls it out of line.
 // Earlier score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
+// MiniMax A (11-20): no new form, no lower score (442): the frame is 0xd0 against retail's 0xc8
+// score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
 // of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
 // MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
 // 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines

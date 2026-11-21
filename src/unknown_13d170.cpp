@@ -179,6 +179,7 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax D (11-20): no new form, no lower score (201): re-measured the second age clamped as MAX(physical->time - best.time, 0), 209, worse, and read retail's default arm instruction by instruction: retail clamps both ages, keeps the age in ECX and the best age in EDX, loads the best pages into EAX and makes the best's product last; ours folds the second clamp away, keeps the age in EAX and folds the best pages into the multiply. The remaining structural difference is the block placement: retail's case 1 and case 0 blocks sit between the default arm and the merge, ours are jump-threaded past the loop.
 // MiniMax S (11-16): no new form, no lower score (201): the default arm still clamps both ages as retail does, but the age lands in EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead of loading it into EAX; clamping the second age as well measures 209 in this build, worse, and the case 0 and case 1 blocks still sit after the loop instead of in place between the default arm and the merge, so the merge's block placement is what differs.
 // MiniMax G (11-18): no new form, no lower score (201): the age still lands in EAX with the mask in ECX against retail's
 // ECX and ECX, the best-pages product still folds the stack slot instead of loading it into EAX, and the case 0 and case 1
@@ -908,6 +909,9 @@ struct s_physical_block_iterator
 // test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
 // a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
 // registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
+// Explicit two- and three-outcome candidate decisions: timestamp expression 212/212,
+// inequality selects the test 273/273, equality refinement 212/212 and ordered accept/reject 210/210.
+// NOT kept: all raise the score and change the extent. The retail policy join still differs.
 // M3 lane 15 r116 (fast with 0x13d320 and 0x13d830, both MATCH; control 201): lane 1 r124's 40 lead re-applied on today's file,
 // 40 (1213 B, aligned 22: the overlap walk, where retail loads best.offset into EDI, sums `pages + offset` into EBX and
 // compares a `mov edx, edi` copy, with the handle built in ECX and moved to EBX for the delete call; and the head flag's
@@ -915,6 +919,24 @@ struct s_physical_block_iterator
 // the left of the second test, with both tests start-first, with the block's size first in the end sum, and pages-first with
 // size-first 40 each (same code); the head flag as `bool const`, `NONE == best.previous`, `!(best.previous != NONE)` and
 // through a named `long previous` 40 each (same code). Main's body unchanged.
+// M3 lane 7 r201 (fast with 0x13d320, 0x13d830, 0x13d8b0 and 0x13d950, all MATCH; control 201). Lane 1 r124's 40 lead
+// rebuilt 40 (1213 B, first difference +0x356) and lane 9 r109's 93 lead 93 (+0x338). Read on them: retail's insertion has
+// one `cmp esi, ebx; jne` on the predecessor with the NONE register set just ahead of it (`or ebx, -1` after the
+// allocation's immediate test) and the second stage threaded into each arm; the 93 lead starts that register ahead of the
+// allocation test (and swaps EBX/EDI from the walk on), the 40 lead starts it at the flag's compare as retail but keeps
+// `sete dl; test dl, dl`. On the 93 lead: one `entry->previous = NONE` ahead of the first-block test 102 (re-measure; no
+// NONE register at all, both tests on immediates and the head arm using the predecessor's register as NONE); the
+// insertion moved out of the candidate block, after it, under its own `result != NONE` 93 (same code); the second stage
+// keyed on `entry->previous == NONE` 93 (same code); the second stage through a `long *` to the link to rewrite (the
+// list head or the predecessor's successor) chosen by a conditional 112 (1191 B). On the 40 lead: the head flag as a
+// `byte` 40 (same code); the second stage through that link pointer chosen by the flag 105 (1196 B). So the NONE
+// register appears only with two NONE stores in the head arm's sub-arms, and where it starts follows the first stage's
+// compare: a flag compare starts it there, a direct branch compare joins it to the allocation test. Body unchanged.
+// M3 lane 16 r162 (fast with 0x13d320, MATCH each run; control 201): lane 1 r124's 40 lead re-applied (patch -o), 40 at
+// 1213 B. On it: both stages tested directly on best.previous with one `entry->previous = NONE;` ahead of the head arm's
+// first-block test 102 (first difference +0x338); the bool kept with that single store 92 (+0xcc); the allocation as
+// `if ((result = record_pool_allocate(...)) != NONE)` 40 (same code); the overlap test with its conjuncts swapped (block
+// end first) 108; as `!(offset >= end || offset + pages <= start)` 40 (same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
