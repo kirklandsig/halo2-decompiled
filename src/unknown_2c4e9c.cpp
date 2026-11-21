@@ -3315,12 +3315,22 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // loop body 30; the hit as `if (... != map_id) continue;` then the selection and break 33 (76 B); the iterator's stores
 // written pool, datum_index, index 29 (two NONE stores swap). Re-measured: the iterator by aggregate initialiser 15
 // (84 B, the head unchanged; the extra bytes only realign the listing).
+// M3 lane 12 r168 (h2m fast with 0x2c9a58, matched in each): the guard through a named `bool const` (`map_id != NONE`) 30;
+// the iterator declared at function scope between the id and the guard 30; the map entry alone named in the loop body 30;
+// a valid flag set with the id inside a test on the field and tested for the walk (diagnostic, match-only) 30; a NONE
+// default with the id set from the field inside the walk's own field test 30; a pool local declared in the block with the
+// iterator's pool stored first 30 (all the same direct EBX load). Re-measured the NONE-default conditional id 13 (`this` to
+// EDI first, then NONE in EAX for the compare and both iterator stores, the id loaded straight into EBX). All restored.
 // M3 lane 7 r206 (h2m fast with 0x2c9a58, matched in each): `inline` on the out-of-line definition 30; a file-local
 // forceinline getter writing the field or NONE through an out-pointer and returning a flag, the walk under
 // `if (getter(&map_id))` 30 (the NONE store dies on the threaded path); `inline` with the if/else two-definition id 36
 // (87 B); `long const &` bound straight to the field 30; the hit breaking the loop and the selection after it on
 // `iterator.datum` with the iterator block-scoped 28 (84 B). A 606 s annealing permuter run (32 tries) reached 26 only
 // with a volatile id and a local holding NONE (both forbidden).
+// M3 lane 13 r138 (h2m fast with 0x2c9a58, matched in each): the walk ended by a found flag in the loop condition in place
+// of the break 40 (90 B); the selection as a file-local free function taking the list pointer, v1 passing `this`, 30 (the
+// list still arrives in EAX); the definition placed after v1's, in retail's address order, 30; the id read into its local
+// and the guard reading the field again 30; the guard through a named bool 30 (all the 30s the same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

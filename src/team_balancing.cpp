@@ -1062,6 +1062,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // the scan and copy in a forced-inline helper returning the next party 34 (same code); the clamp in a named local 34
 // (same code); the copy loop reading through the stepped party-list pointer 82 (172 B); the fill through a slot pointer
 // from the copy's end (`*slot++ = next_party`) 35. Still BLOCKED-BY 0x7e210.
+// M3 lane 12 r169 (h2m fast with 0x91e30 MATCH and 0x7e210 871; control 34): the maximum as a ternary assignment 34; the
+// copy loop as a `while` 34; the entry plus one named once with the ternary maximum 34; the clamped excess named before
+// the comparison 34 (same code each); the fill counted down from `player_count + extra_count - 1` 72 (193 B); the copy
+// bound as `i != player_count` 35. A /Gd first pass keeps the player count in EBX for all of these and for the `(short)`
+// fill too, so it does not model the real build's flip. Still BLOCKED-BY 0x7e210 (its file is another lane's this round).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

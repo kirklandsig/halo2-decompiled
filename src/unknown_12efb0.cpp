@@ -916,6 +916,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // to three in the helper 606-607 (aligned 319 each: not a phase effect). Left on the lead: the call result in EAX with
 // -1 in EDX (retail EDX and EAX), the record lookup threaded past retail's `test record` join (the listed lookup
 // helper gives it), the three scalar products through a weight copy, and the scheduling of the helper's stores.
+// M3 lane 15 r128 (H2M_FAST; control 607): retail's failed palette lookups reach one shared record test with the record
+// zeroed (`xor ebx, ebx`), ours threads them to the default arm. The lookup as one nested ternary 607, the record left
+// uninitialised and set NULL inside the else block 607, the scenario test as its own `if` around the range test 607, the
+// not-found case as a guard `goto` ahead of the body 607 (all the same code: still threaded); the slot byte tested in place
+// with the short slot declared inside the arm 750 (3848 B). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

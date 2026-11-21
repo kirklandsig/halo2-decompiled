@@ -1607,6 +1607,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // predicate as secondary flag 990/1012/990. The same predicates held through the optional outputs and both
 // requests 1011/990. NOT kept: the 0x2c frame still exchanges class/NONE registers and gives the candidate and
 // iterator outputs different homes. All request forms move away from retail length.
+// Separate optional-output destination bindings in their publication conditions, all seven subsets and a
+// const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

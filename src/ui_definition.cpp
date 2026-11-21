@@ -89,9 +89,10 @@ void function_2373be(long index, void *base, long value);
 
 /* builds a game engine type's default variant: the engine's own defaults,
    then the settings the game variant settings tag lists for it, then
-   clamped into range */
+   clamped into range; both retail callers (0x149f88, 0x2ca284) compute the engine
+   type before they push the variant, so the variant is the first parameter */
 // @retail 0x1489b5
-void ui_game_variant_build_default(long engine_type, s_game_variant *variant)
+void ui_game_variant_build_default(s_game_variant *variant, long engine_type)
 {
 	function_19d220(variant, function_216b00(engine_type));
 	long settings_tag_index = ui_mode_definition_get()->game_variant_settings.tag_index;

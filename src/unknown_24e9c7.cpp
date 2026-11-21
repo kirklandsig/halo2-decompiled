@@ -724,6 +724,13 @@ struct s_24e9c7_points
 // between the products with unary minus 149 (745 B). Reading: retail's listing needs forward_i held across the two
 // conversions and the side y left in memory from its first product on; with the local, ours holds forward_i but still
 // gives side y a register and converts in the freed one.
+// M3 lane 15 r128 (H2M_FAST with 0x24e59f/0x22a664, both MATCH; control 125): the side point set to the across products
+// with `size * (0.0f - forward_j)` and scaled in place, forward_i read once into a local for side y and up x, 141 (741 B:
+// forward i stays in a register but side y does not spill); back as two scalars 133 (frame 0x44: back y's spill cell sorts
+// above result, at [ebp-8], result at [ebp-0xc]); side as two scalars set to the across products and scaled in place 125
+// (same code); side and back as scalars 133 (frame 0x44); side scalars with `(0.0f - forward_j)` 138 (739 B); side and back
+// scalars with it 146 (739 B); back and up as scalars 133 (frame 0x44). Our back point spills its y and sorts below the
+// 4-byte cells ([ebp-0x18]); retail's pair above result keeps x untouched and y with five references. Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

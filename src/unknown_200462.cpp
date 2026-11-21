@@ -309,6 +309,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // declared 14 (same code); the corners read from a `point2f const` copy of the stepped position 118 (866 bytes); the
 // default rectangle declared at the draw loop's top, ahead of the mask test 35. Re-measured: a named advance used by both
 // x steps 55 (the running x leaves XMM7 and the pulse call sinks below the half extents).
+// M3 lane 3 r290 (H2M_FAST, control 14): the height span named (`(y1 - y0) * height`) and halved at each corner use
+// (`span * 0.5f`) 19: the advance product takes XMM3 and the half-height value XMM4 as retail, but the halving is then
+// scheduled after the product, so the shared 0.5 takes XMM7 and the running x XMM4; with the bounds-record pointer as well
+// 17; the span named ahead of the half width 22; `0.5f * span` at each use 19; the width span named too (half width
+// `width_span * 0.5f`) 19. So the pair follows which value is created first, the product or the half height.
 // @retail 0x200462
 void function_200462(long arg_0)
 {
