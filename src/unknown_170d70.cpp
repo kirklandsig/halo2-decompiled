@@ -1427,6 +1427,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // no named squares 364 (1449 B); the axis components read once into locals 377 (1427 B); the second axis
 // through cross3f_staged 339 (1456 B). KEPT: the second axis through the shared cross3f in place of the
 // file's private copy of it (same code, 337 reduced; the copy removed).
+// Paired sine/cosine fields or aggregate 364/364, staged scalar assignments 337,
+// trig values rounded together 355. A scoped half-angle leaves each score unchanged.
+// NOT kept: reduced control 337, full 334. The pair shrinks the frame and delayed rounding
+// changes the matched initializer. Unity and two square homes still differ.
 // Angle pair by aggregate or fields 378/378, with shared tangent 361 or produced vertical field 390.
 // Horizontal or vertical conversion at the matrix call 368/395, double half-angle 345,
 // and doubled projection by addition 337. NOT kept: the addition ties the reduced control.
