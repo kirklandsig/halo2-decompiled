@@ -889,10 +889,25 @@ static inline bool teams_enabled_19e1c0()
 // the virtual call, at the fallback copy, at both, or at the first compare 691 each (same code: the reference folds away, so it
 // does not take the token out of the ranking); the four name copies through a file-local inline bounded copy 691 (same code);
 // the "%s" formats through a file-local inline bounded format 594 (1269 B, token still EDI); both helpers 594.
+// M3 lane 2 r124 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result re-measured 691 at
+// 1170 B: token EDI, token length EBX, event EBP, result ESI, `remaining` in memory). Loop shapes of the opponent scan,
+// untried above (a bottom-tested helper loop is what moved the register ranking in 0x2689d0): on the plain result, `long
+// team` with `do { ... } while (++team < 8);` 688 (1172 B), a `short` team with that loop 691 (same code as the plain
+// result), `long team` with `team++` inside the body 688; on this body, a `short` team bottom-tested 390 (same code), `long
+// team` bottom-tested 421 (1424 B). The token keeps EDI in all five, so the scan's shape does not decide the ranking.
 // Fallback copy bound computed at entry, defaulting to token length or capacity in
 // branches or ternaries: ordinary result 669/480/669/669, existing qualified result
 // 563 each. NOT kept: the early bound adds a stack slot, growing the frame to 0x20c.
 // The token is still loaded after the prologue and the 0x204 frame remains unresolved.
+// M3 lane 4 r239 (fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH unless said; control 390, plain result 691 at 1170 B): `token`
+// and `destination` as one by-value two-pointer aggregate parameter (the caller builds it, same stack layout) plain 691,
+// volatile 390 (same code each: the aggregate is scalarised); the three stack parameters as one by-value aggregate plain 691
+// (same code, 0x19e0f0 then differs); the twelve compares through an inline predicate taking `&token` plain 691 (folded).
+// Diagnostics (reverted): every failure tail made unique so that no two arms can share code, plain 717 (1669 B: the token
+// still takes EDI and `remaining` stays on the stack with about 27 unshared uses, so shared tails are not what keeps it
+// there); a volatile token parameter with the plain result 469 (1386 B: result ESI, token length EDI, event EBX and the token
+// preload as retail, but the fourth register goes to a hoisted zero and `remaining` still stays on the stack). So retail's
+// `remaining` outranks both the token and the zero constant, which only a reference on the dispatch path gives it here.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

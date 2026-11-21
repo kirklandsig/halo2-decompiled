@@ -1773,6 +1773,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // zeroings swap); the no-model parent index read into its own local ahead of the render-index test 378 (entry reorders).
 // Diagnostic, restored at once: the no-model block written in both paths (an early `return` after it when the model
 // index is NONE, and the else of the render-index test) 403 (1420 B: the two copies are not merged).
+// M3 lane 8 r212 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): lane 3's both-arms form re-measured 18
+// (1394 B: pool held in ECX, index in EAX). Diagnostics: 1-5 unused locals at the arm top and 1/2/3/5/8 at function top 20
+// each (not a symbol-count tie); a conditional local store before the parent test 66, after the lookups 61 (pool still
+// reloaded); the parent test's arm, or the whole no-model arm, inside `do { } while (0)` 20/20 (the arm's estimated
+// frequency is not the lever). Tried: the flag through object_header_get first, then the matrix 25; parent as a
+// conditional on the index test with the flag default and `if` 62 (1411 B); non-const parent 20; index and node through
+// the typed object view 20; `dword` index 20; all six declaration orders of parent, flag and index times three spellings
+// of the flag test (`(bool)((x >> 10) & 1)`, `(x & 0x400) != 0`, `((x >> 10) & 1) != 0`) 20 or 22; one pool local for the
+// current and no-model lookups 292 (1402 B: the pool takes EDI and the render branch re-reads data too). The flag default
+// kept with the parent set in an else (listed 32) re-measured: DL live, index in EAX, pool still held in ECX; so the pool is
+// dropped only when EAX, ECX and EDX are all wanted, where retail moves the index to ESI instead.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

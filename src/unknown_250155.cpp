@@ -3209,6 +3209,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (928 B); the slot-index helper plain `inline` 242 (862 B: one site stays a call); the first loop's search counter
 // declared in its for 87 (same code). Diagnostic, restored at once: 0x7f790's volatile parameter read made plain leaves
 // this body at 87 (0x7f790 itself 4), so the last loop's register choice does not follow that read.
+// M3 lane 7 r205 (H2M fast; control 87): the shown count as `valid != NONE ? count : 0` at its declaration (the else arm's
+// clear dropped) 310 (921 B); the slot helper as an if / else-if / else chain 133 (936 B); its outputs as `short &`
+// references 87 (same code); the first loop's team name initialised to 0 with no default case 234 (916 B); the local
+// team entry bound once as a const reference for its valid and team reads 241 (916 B). Body unchanged; the players[i]
+// reload is still BLOCKED-BY 0x53b40 (src/network_voice.cpp, another lane's file this round).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

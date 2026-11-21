@@ -887,6 +887,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // displacement before table, or typed table before ordinal 606/606/606/606.
 // With the signed-byte slot 699/699/699/699. NOT kept: the short forms gain
 // one point and retain the cluster-base, provider and palette registers.
+// M3 lane 8 r212 (h2m fast, control 607): the found flag declared ahead of the out index and the provider call 609; the
+// three source defaults stored ahead of the provider call 713 (3836 B); the slot test reading the byte field directly with
+// the short local kept for the arm 728 (3847 B); the provider result bound to a `long const &` 607 (same code); the
+// three source defaults stored weight, index, kind 607 (same code). Body unchanged.
 // M3 lane 16 r165 (fast with 0x12e5e0, 0x12eb00, 0x130f60, 0x131030, 0x1317a0; control 607): a `char` palette slot read
 // right after the palette call, ahead of the flag and the three source stores, 700 (3828 B); the short slot read ahead
 // of the palette call 617 (3828 B); the flag declared after the three source stores 607 (same code); the three source

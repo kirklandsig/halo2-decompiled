@@ -432,6 +432,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // bases read as pointer-array elements of the tables (`((word **)tables)[3]`, `((byte **)tables)[5]`) 5 (+0x1a7); the
 // direct store with the packed word read inside the chain index (no packed assignment) 5 (+0x1a7). All the same code as
 // their bases: the store's type does not hold `second` behind it.
+// M3 lane 3 r288 (h2m fast; control 5 at +0x19e; the direct entry store with the word read back re-measured 5 at +0x1a7,
+// its one difference `second` loading into ESI right after the entry lea where retail loads it after the pass base): the
+// tail's shader record as a plain pointer local (no reference) 60 on main's body (+0x19e) and 60 on the direct store
+// (+0x1a7: the restore block unchanged, the tail worse); on the direct store the five shader-record calls in a new
+// forceinline helper taking the state 5 (+0x1a7), in their own block 5 (+0x1a7) (both the direct form's code); the
+// restore block's word read from a recomputed entry address instead of the stored field 294 (981 bytes).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

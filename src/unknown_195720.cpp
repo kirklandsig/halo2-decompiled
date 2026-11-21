@@ -201,6 +201,13 @@ bool function_1946f0(s_bitstream *stream)
 // every site 2; the explicit read-modify-write with one `count >= 0 && count > 0` test and the clear from
 // `&data[byte_index + 1]` 2; a block-local byte mask with the count as `size - 1 - byte_index` and the clear from
 // `&data[1] + byte_index` 2 (the 2s the same code: both LEAs data first).
+// M3 lane 12 r164: a compile-only grid (both LEAs reproduced) of 192 combinations: index named, written `saved / 8` at every
+// use, or named for the tests with the expression at the addresses x data from the field, through the dword buffer, or
+// through forceinline (index, data) / (data, index) address helpers x pre-decrement in the subscript or a separate
+// decrement x either counter-store order x clear start `data + i + 1`, `&data[i + 1]` or `&data[i] + 1` x the mask with or
+// without its byte cast: every one keeps both LEAs data-first. Fast: the expression index with the buffer, the separate
+// decrement, swapped counter stores and `&data[i + 1]` 13; the named index with the (index, data) helper 2; the mixed index
+// with the (data, index) helper and the separate decrement 2. All restored.
 // M3 lane 8 r210 (fast with 0x1957d0/0x195820, both MATCH each time): `long const saved` 2; a const stream parameter 2;
 // memset's count cast to `size_t` 2 (all the same code); the index computed between the two accounting stores 54; the
 // bound test as `byte_index + 1 <= size_in_bytes` 53 (143 B). Compile-only diagnostics: an unused field read at the
@@ -217,6 +224,17 @@ bool function_1946f0(s_bitstream *stream)
 // edi, edx`); a block pointer started at the field and advanced by the index with `+=` 9; a const data local read before
 // the index with a const pointer formed as `byte_index + data` 9; a block-local byte mask and data local 35 (memory
 // operands, no LEA); the clear's start as `&stream->data[byte_index + 1]` with `count * sizeof(byte)` 2 (same code).
+// M3 lane 7 r204 (h2m fast with 0x1957d0/0x195820, both MATCH each time): the index at each use with a named byte mask,
+// the explicit read-modify-write and the clear through a block-local data local 2; a named index with block-local mask
+// data, a named mask, `&=`, block-local clear data and the count as `size - 1 - index` 35; that with `size > index`, the
+// explicit read-modify-write and the clear from `&data[index + 1]` 36; the index at each use with block-local mask data,
+// a pointer read-modify-write, the complement mask, the clear from the element address and the count as
+// `size - (index + 1)` 35; the index at each use with `size > index`, block-local mask data, the explicit read-modify-write,
+// a named mask and block-local clear data 36. Compile-only grid (the file's flags, exact here): 1296 crossings of the index
+// named or at each use, the bound test's side, the mask block's data (field or block-local), three read-modify-write
+// spellings, three mask spellings, three clear starts, three count spellings and both accounting store orders: neither
+// LEA comes out index-first (best 2). Probes: an index that dies at the read-modify-write is added into (`add index,
+// data`); one live afterwards gives data-first whenever the data is a field load in the block.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

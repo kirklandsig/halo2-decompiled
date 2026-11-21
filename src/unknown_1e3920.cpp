@@ -1263,6 +1263,12 @@ void function_1e3b60(long actor_index);
 // code); case 1's 0x25c820 call jumping to the release block's call (one call site) with a short `old_state` 452 (1600 B,
 // frame 0xa0); that with `update && sample` 431 at retail's 1616 B. The actor index stays a stack argument in each.
 // Still BLOCKED-BY 0x262ba0.
+// M3 lane 5 r223 (fast with 0x262ba0, 0x263210; 25 here in every form; 0x262ba0 control 404 at 1624 B; 0x2641c0's
+// noinline declaration is again in another lane's file): in 0x262ba0, retail's case code order 0/4/2/1/3 with the release
+// block as the switch's last labelled arm (no tracking_complete goto) 412 (1628 B); that with case 1's 0x25c820 call
+// going to the release block's call 436 at 1616 B (frame 0xa0 as retail, actor index still stacked); that with a short
+// old state 440 (1620 B); the walk through 0x26be00/0x26be30 with the first form 447 (1620 B), with the second 442
+// (1616 B; walk alone 443). Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

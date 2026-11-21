@@ -2777,6 +2777,7 @@ dword __cdecl function_131fc0(real alpha);
 // first vertex.
 // NOT kept (coordinator screen, MiniMax H 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // NOT kept (coordinator screen, MiniMax A 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
+// NOT kept (coordinator screen, MiniMax B 11-21): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3133,6 +3134,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // source after the first position lookup 358 or second 343. NOT kept: the latter
 // moves a single-use field read across a call and grows the body by one byte.
 // Second source bound inside the optional sample 354.
+// Capacity as the success value 376; signed request size 354; rounded allocator with success from the handle 436;
+// existing bucket count field 354, with the signed node read before the empty-bucket test 354;
+// separate level count and requested level 354; exclusive level bound 372; coefficient address after acceptance 393.
+// NOT kept: both matrix copies still expand and none reaches the starting score at a shorter length.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3538,6 +3543,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // returned corner pair with named scale, bias 569;
 // returned corner pair with named rotation, scale, bias 569.
 // NOT kept: Returning the pair shrinks the frame to 0x40 and the body moves away from retail length. The corner instruction schedule still differs.
+// Round 499: whole corner by value, reference, pointer, two-real row, scalar reads from a local or static square or
+// from named corners, and whole corner with point output.
+// Fast scores in order 685/326/326/326/326/54/326/685.
+// NOT kept: The static square ties at 54 and preserves the opening schedule. The automatic square and named-corner
+// forms change inlining or storage and raise the score. All three matched controls remain exact.
+// The first corner set still schedules its x87 coordinate-3 store ahead of the SSE subtract.
 // M3 lane 11 r139 (compile-only harness of this file, whose corner block is the fast and plain builds' exactly; counts are
 // the block's lines out of place against retail, control 54, aligned 27; h2m fast for the four forms marked fast): the
 // schedule moves with redundant parentheses inside the corner helper, which no earlier round measured. One to three extra

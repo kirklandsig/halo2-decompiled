@@ -1674,6 +1674,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 580 (2162 B, aligned 503), with the entries table named once ahead of the scan 566 (aligned 496); that named table
 // on main's result variable 565 (aligned 514); the scan as a counted-down `do` over a walked entry 581 (2161 B,
 // 0xd4080 380). Body unchanged.
+// primary shared negate 569, secondary shared negate and copy 591, ambient shared negate and copy 552,
+// primary shared negate and secondary shared negate and copy 549, primary shared negate and ambient
+// shared negate and copy 606, secondary shared negate and copy and ambient shared negate and copy 622,
+// primary shared negate and secondary shared negate and copy and ambient shared negate and copy 613, all
+// shared negates with separate rotation input 634.
+// NOT kept: All eight forms shorten away from the retail extent and raise the score.
+// The 0x2c frame exceeds 0x28. The selection byte still spills and the block and query arrive in exchanged registers.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2008,6 +2015,12 @@ real function_30bf0(vector3f *vector);
 // Review (m3, 11-20): not kept: the flag started false and set under the test, and the squared length's terms in another
 // order, are both match-only forms (a flag set by a test; operand order chosen by score). Code back to main's; a lead
 // for a match only.
+// MiniMax C (11-20): no new form, no lower score (378): the mobile flag as a false-first if/else measures 362 but is a test-set
+// flag, kept only with a byte match (review 11-17), so the body is as it was; the squared length summed as (k, i, j) measures
+// 356 (six points, under the keep bar), the early square 457, the colour2 positive checks as select stores with the in-place
+// rotation 436, the limited colour as three scalars 434 and the normalize through three temporaries 429; left: the frame is
+// 0x4c against retail's 0x40, the normal copy's components are stored in the order (k, i, j) against retail's (i, k, j), the
+// normalize's j and k products are commuted, and the 0xd37f0 call hands its block and query over in the other order.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2742,6 +2755,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // lightmap, base, normal 553; `result` declared ahead of the triangle 542 (same code); the dynamic normal declared ahead
 // of the dynamic colour 542 (same code); the second arm's normal declared ahead of its base colour 542 (same code).
 // MiniMax B (11-20): no new form, no lower score (596): the frame is 0x90 as retail's, but our first branch's locals sit twelve bytes higher in the frame than retail's (the mesh at +0x2c against +0x20, the result at +0x30 against +0x24), and the body is two bytes longer than retail's; the 542 in the note above belongs to a body a merge replaced.
+// MiniMax C (11-20): no new form, no lower score (596): the frame is 0x90 as in retail, but the two entry locals sit
+// at [esp+0x30]/[esp+0x2c] against retail's [esp+0x24]/[esp+0x20] and the three zero stores below go to
+// [esp+0x40]/[0x44]/[0x50] against retail's [esp+0x48]/[0x4c]/[0x64]; the homes follow the lifetimes, not the scopes.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

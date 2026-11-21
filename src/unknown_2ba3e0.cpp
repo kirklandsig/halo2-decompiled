@@ -1008,6 +1008,16 @@ real g_55e618;
 // with the setter nested at its call 39 (same code as the nested setter), with j, k, i 42. Reading: with the value
 // passed directly its load is retail's EDX (the scratch rotation is in step) but late; any earlier copy is a named
 // value that takes EAX. Retail's early EDX load is an argument's own load made before the position stores. Body unchanged.
+// M3 lane 8 r213 (H2M_FAST with 0x2ba3e0/0x2b8da0, both MATCH; control 102): the velocity copy as one aggregate
+// assignment 223 (1556 B); impact.index set ahead of the position stores 102 (same code); `collision.value.unknown24 =
+// NONE;` ahead of the displacement block 134; the tangent rows after the position stores 102 (same code); the tangent rows
+// interleaved with the perpendicular rows 209 (1550 B, frame moves). The record's capture (0x244980's callback field, which
+// reaches the cast through 0x2df720 and 0x301800's virtual callback, and 0x169510's self call) still decides the block.
+// Component walks for velocity capture, perpendicular, tangent or contact position 605/605/605/600;
+// perpendicular and tangent in separate or paired walks 599/591; paired with indexed velocity
+// capture, and also indexed contact publication 600/595.
+// NOT kept: The closest component walk pairs the projection and tangent at 591 and 1715 bytes.
+// The first mismatch moves into the prologue at +0xc.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

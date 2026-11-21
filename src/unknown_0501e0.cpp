@@ -704,6 +704,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
 // offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
 // component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
+// Input-coordinate cursors for first, second or both displacements 221/221/226;
+// with destination cursors in those passes 222/221/222. A fused source-cursor
+// loop with indexed or cursor destinations 218/221.
+// NOT kept: the fused indexed form gains three and retains the 0x20 frame.
 // M3 lane 14 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the view helper taking the vectors by
 // reference 221 (same code); the scaled vector assigned in an if/else (`scaled = *in` when the scale is 1) 310 (1187 B);
 // the scaled vector initialised by aggregate copy 317 (1187 B); the weights as unary minus 221 (same code); the else
@@ -719,6 +723,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // 250, coefficient first 250 (aligned 174 each); the lead with the second offset loop first re-measured 249 (aligned
 // 174), with both locals 249 (aligned 172). No named local makes retail's choice (scale loaded into the origin z's
 // XMM6 after the last origin use, right.i carried in XMM7 across both views). Body unchanged.
+// M3 lane 11 r143 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the two input points through
+// named `first`/`second` pointers for every use 220 (1114 B); the view helper as ordinary `inline` 221 (same code); one
+// shared loop counter for both offset loops 220 (1113 B); both offsets in one loop 218 (the paired form above,
+// re-measured); the second view written to a new vector (the first in place) 284 (1104 B).
+// First displacement initializer, in-place/separate view 220/219; second 218/217;
+// both first-endpoint first 218/217; both second-endpoint first 220/218.
+// NOT kept: gains of at most four, with frame 0x20 and different second-offset homes.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
