@@ -528,6 +528,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // sequential tail copies (79), so the barrier is the address taken at our call, not the callee's use of it; 0 for the
 // forward only at our call (70) lets the forward loads rise above the up stores but not the up loads, and the forward
 // dot's i product stays object-first, so that product's order is not the escape.
+// M3 lane 7 r203 (h2m fast with the ten callees above; control 25): 0x1faf80 as (object_index, facing, settings, control,
+// threshold, turn) re-measured 12 (0x1faf80 2, 0xe01d0 569), facing as the first parameter 12 (the same). In 0x1faf80 on that
+// order: five spellings of the facing i leaf (`n[0]` either side, `(*facing).i`, a real cast, `facing[0].i`) 2 each; its entry
+// test through length_sq3f for the three squared lengths and dot3f(&object->forward, facing) 2 with the whole test retail's
+// (first difference +0x105 -> +0x1d8: only the left cross's `up->k * object->forward.i` then loads the forward first);
+// dot3f(facing, &object->forward) 4; dot3f(v, v) for the lengths 231 (856 B). A compile-only screen of 0x1faf80 on that test
+// (exact for the product orders; about 2,600 forms: the left cross's product orders and leaf spellings, cross3f and
+// cross3f_staged forms, 0-3 redundant paren pairs on the `vertical` product, the three pointer declarations in six orders, an
+// `up` member in the object view, the value dot through dot3f, 0-7 unused locals) never got under one product: the cross's
+// i-term first product and j-term second product (both read up.k) trade places; a forward pointer declared ahead of the test
+// flips eight. Still BLOCKED-BY 0x1faf80.
 // M3 lane 15 r121 (h2m fast with 0x118700, 0x11f0d0 and 0x1faf80; control 25): 0x1faf80's facing as its FIRST parameter
 // (definition, both declarations and both calls) 12 here, 0x1faf80 2 and 0xe01d0 537 -> 569, exactly as with facing second
 // (its i product still loads facing first): still BLOCKED-BY 0x1faf80. On this body: the two field pointers declared ahead

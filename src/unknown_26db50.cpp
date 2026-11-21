@@ -1180,6 +1180,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // offset reading a `vector3f const` copy of the axis taken after the 0x26d100 call 163 (1115 B), on M 158 (1113 B); reading a
 // `point3f const` copy of the collision point 143 (1113 B), on M 138; on M `real const` sine and cosine 20, the 0.5 lift as
 // `point.n[c] = point.n[c] + ...` 20, a `real const` trace distance 20 (the 20s the same code as M).
+// M3 lane 7 r204 (h2m fast with 0x1ecf50 and 0x26d100, MATCH unless noted; M = lane 12 r147's block, re-measured 20): the
+// axis copied by value into a spoke-loop local for the rotation only 275 (1136 B); the shared rotate_direction's dot staged
+// as dot_product2d of the planar parts then `+= k * k` 6 here and 0xd0080 58 -> 38, but 0x1ecf50 112 (lost), 0xe3910 99,
+// 0x1e5bb0 134 (as lane 8 r179); on M: sine and cosine as `(real)sin(angle)`, `(real)cos(angle)` call arguments 213
+// (1093 B), the pathfinding selection ahead of the direction copy 159 (1096 B), the trace origin pointer formed once ahead
+// of the ring loop 20 (M's code), the sector field read at the trace call 261 (1067 B), the angle ahead of the direction
+// copy 233 (1104 B).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
