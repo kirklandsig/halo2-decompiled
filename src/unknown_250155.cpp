@@ -3221,6 +3221,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // 2 and overridden in the if 116 (927 B); the `case 0: case 2:` arm ahead of `case 1:` 87 (same code); the default arm
 // first in the switch 87 (same code). Still BLOCKED-BY 0x53b40 (src/network_voice.cpp, another lane's file this round)
 // for the players[i] reload. Body unchanged.
+// M3 lane 13 r137 (h2m fast with 0x24fd74, 0x2507c3, 0x22f042, all MATCH; control 87): the second loop's colour array at
+// function scope 87 (same code); its unused local-player result dropped (the search call kept as a statement) 87
+// (same code); the last loop's row widget hidden first 106 (932 B); the no-team flag compared on the team byte 89; the
+// voice state preset to 2 with the query arm overwriting it 116 (927 B). The players[i] reload after 0x53b40 and the
+// slot homes remain.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

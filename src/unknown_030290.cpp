@@ -226,7 +226,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
-// score 195 (was 195): one note (the stacked score lines merged, r184, again r116 and r143); r155, r116, r286, r143 unchanged.
+// score 195 (was 195): one note (the stacked score lines merged, r184, r116 and again r289); r155, r116, r286 unchanged; r289 found the cause (symbol-count state) and a HELD lead that matches, see the end of this note.
+// one note (the stacked score lines merged, r184, again r116 and r143); r155, r116, r286, r143 unchanged.
 // MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
 // defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
 // still take the opposite component order.
@@ -236,6 +237,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // the dead scale slot and spills the second transform's scaled x and z; the written operand order of the three displaced sums is
 // ignored by the compiler, and a helper taking the three components as scalars (with the reversed point as three locals, as
 // retail's third transform reads) shrinks the frame to 0x24 but reorders the sums and the scale block (214), so the pointer form stands.
+// Earlier first line (merged into the one above, r289): 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // Earlier first line: one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
@@ -738,6 +740,42 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // reorder stays held (both still contributor code). Body unchanged.
 // Array views of transform input, output, camera basis and translation, separately and together 195 each.
 // Input and output as bounded array references with camera array access 195. The X/Z spills and inverse homes persist.
+// M3 lane 3 r289 (fast, single-address image; control 195; the lead below confirmed MATCH in a plain check with the rest of
+// this file still matching and the callers 0x4f7e0/0x4ff50 unchanged at 325/43). Cause: the x/z register roles of the second
+// and third inlined transforms, the frame and the tail follow the function's symbol count modulo 32, not the body's shape.
+// With n unused initialised locals anywhere among the function's own locals the unchanged body is 195 at n = 0..15 and
+// 21..31, 202 (971 B) at 16..19 and 131 at n = 20 with retail's 955 bytes and frame 0x2c (52 and 84 the same); with the
+// held (d, a, camera) parameter order 193/200/125; the direct-inverse form two later: 190 (960 B) at 18..21, 138 (941 B) at
+// 22, held order 132 at +0x127. Such locals inside the helper shift the three inline copies one, two and three times, so
+// the copies are numbered in call order and a copy's roles flip when a 32-entry boundary falls inside it. Retail has the
+// second copy flipped and the third not, which needs the reverse transform's copy numbered ahead of the forward one's.
+// Diagnostic, reverted at once (gotos placing the reverse call first in the text): 90 (966 B) at 17..19, with the direct
+// inverses 6 at 955 B at 19..21. The same numbering without gotos: the forward transform through one nested inline
+// wrapper (the inliner numbers one call level at a time) with the direct inverses and the held order, 6 at 955 B at n = 19
+// and 20 (left: the two view points' homes, ours tb below ta); without the held order 12 (the six displaced-sum rows).
+// View points declared tb, ta, as two declarations, renamed three ways or moved across a boundary: 6/12 each (same
+// code); as one two-element point3f array: MATCH at n = 22 and 23 with the held order, 6 at 22..24 without it; with the
+// reverse point also written into `b` (no second point) MATCH at n = 28..30. Recipe: held (d, a, camera) order + direct
+// inverses + the forward transform through one nested inline wrapper + the view points as a two-element array + the
+// reverse point in `b` + 28..30 more symbols (or two to four fewer). No natural source of those symbols found; shifts
+// measured (matching n): helper returning its output 22..24 (none); origin as a ternary local 21..23 (and it turns the
+// sums' sides: 4 and 6 left); scale as a ternary local 237 at best (other code); a point2f delta 26..28 on the 28..30
+// form; an inverse array 27..29 on it; the forward sums through an inline helper 26..28 while the reverse point is its
+// own local, still ..30 once it is `b`; the reverse sums through a helper, alone or with the forward ones, or both
+// through one scaled helper: no matching state at any n; a pair wrapper transforming origin and displaced point 27 only
+// (21 with a separate reverse point); wrappers on the first and second transforms 28 only; the forward transform two
+// levels deep 17 at 25..30, with the reverse one level deep MATCH at 25..27; the first one level and the forward two
+// levels deep 17 at 25..28. Other states seen: the helper's parameters in the five other orders on the 175 and 150
+// leads 175/150 (same code); 1..7 unused locals at the top of the 150 lead 150 each, inside its helper 150/150/150/174/
+// 178/178/178; the helper's coordinates in the five other orders x 32 states with the held order: best 155 (y, x, z at
+// 20) and 174 (z, x, y at 20); the displaced sums inside the forward wrapper 237..265; sum statement orders xzy/yxz/
+// yzx/zxy/zyx 217/218/213/216/213 again. The displaced sums' operand sides are not text: for parameters they are fixed
+// by the parameters' positions (ours a-first/a-first/d-first for z/x/y, retail and the held order d/d/a), local aliases
+// move them (origin as a ternary local turns x, an origin copy y, a displacement pointer or reference z; the ternary
+// origin with a displacement pointer used in the y and z sums only gives retail's three sides on the unchanged body),
+// and with aliases the x side then moves with the symbol count, period 8. HELD (needs the owners' OK for the call
+// lines in 0x4f7e0 and 0x4ff50, both contributor code): build/r289/held-0x30830.patch is the matching form with 28
+// placeholder locals standing in for the unknown symbols. Body unchanged (195).
 // M3 lane 1 r143 (fast; control 195): the point helper's coordinates declared y, x, z 230 (982 B), as three declarations
 // 230, z, x, y 225 (974 B), x, z, y 227 (982 B) (the y, x, z order was measured before only on the held reorder); the
 // helper returning the point by value 308 (875 B); the point passed by const reference 195 (same code).

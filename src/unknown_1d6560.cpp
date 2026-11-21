@@ -687,6 +687,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // with the kind-7 route as `if (type == 1) return 0xc; return 1;` 101 [0]; the type read through a const pointer to the
 // header's type byte 123 (272 B) [194]; on main's body the same two parameter types 96 [0] each (same code). Body
 // unchanged.
+// The repeated type lookup still preserves the caller; the header base and rigid body use different entry registers.
+// Single type and grouped body-flag cases, flag-first/type-specific/direct returns/layer pair
+// with header-first 96/103/96/95, owner-first 97/101/97/94.
+// NOT kept: all eight move the caller argument registers.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

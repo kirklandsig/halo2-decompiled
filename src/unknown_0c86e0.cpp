@@ -447,6 +447,14 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // const reference bound to a second fetch after the player queries 110 (same code each: the fetches still merge); the
 // `== NONE` weapon ternary with the zoom flag declared after the weapon flag 126 (350 B), with the reset reference 126.
 // Still BLOCKED-BY 0xbadc0 (its file and 0x14de90's were both avoided this round).
+// M3 lane 3 r289 (fast, single address; control 110): 0..35 unused initialised locals at the top 110 each (no symbol-count
+// state). Diagnostics (reverted): the player-index helper as a file-local inline copy 110 (same code: a same-file copy
+// merges the fetches too); that copy calling 0xbadc0 through a pointer local, plain or const, 136 (400 B, an indirect call)
+// and through a file-scope const pointer 138 (402 B); through `(&function)(...)` 107 at 365 B with 0xbadc0 itself built
+// differently (its address escapes). So no call-site form here loses the callee's no-write summary; the two calls come
+// from the inlined 0x14de90 (src/unknown_14b560.cpp) and 0xbadc0 (src/unknown_0bad50.cpp), both other lanes' files this
+// round. Untested lead: whether the order the two files are compiled in decides if the summary exists when this
+// function is compiled. Body unchanged; BLOCKED-BY 0xbadc0 through 0x14de90.
 // M3 lane 16 r164 (fast with 0x103b10, MATCH each run; control 110): retail keeps index*12 in ESI from the entry fetch and
 // reloads the pool global, its data pointer and the unit after the two 0xbadc0 calls, and retail's 0xbadc0 stores nothing.
 // The zoom-out sound helper as an early return 113 (356 B); the sound index as one conditional initialiser 110 (same code);
