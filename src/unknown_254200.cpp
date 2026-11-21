@@ -322,6 +322,11 @@ void function_254200(void)
 // values the body has without adding code (round 150's reading on 0x2548f0): the y offsets through a second real copied
 // from the doubled size 4; the depth and w as two named reals (`w = depth`) 4; x and y read into two reals from the point
 // copy 4; the doubled size as a product with a named `2.f` 4; w written as the depth times `1.f` 4 (all the same code).
+// M3 lane 8 r219 (fast, control 4; 0x254200 matched, 0x2548f0 2): the system headers included first 4; the view getter
+// helper as one ternary return 4; the colour helper defined just above this function 4 (all the same code); the draw-ready
+// flag read into a bool ahead of the texture block 238; the bitmap lookup index as a word cast 279 (1100 B). Reading: in this
+// function, 0x2548f0 and 0x270d90 ours emits each reload group in descending register order (here x, then xmm1, xmm0), retail
+// in ascending order after any plain load (x, then xmm0, xmm1). All restored.
 // M3 lane 11 r147 (single-address fast, control 4): a dead forceinline helper holding 1-8 named locals called at the top,
 // ahead of the size, ahead of Begin, ahead of the first or the second vertex 4 each (40 runs); one to three redundant
 // paren pairs around the size product, the y sums, every sum, the first x or y sum or a colour product 4 each (17 runs);
@@ -754,6 +759,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // zero coordinates through one named real 2; its w written as the depth times `1.f` 2 (all the same code); the colour
 // call's alpha through a named `1.f` real 462 (2161 B, first +0xe); the second texture call's second lower coordinate
 // written `-(arg_1 * 0.5f - 0.5f)` 369 (2303 B).
+// M3 lane 8 r219 (fast, control 2; 0x254200 matched, 0x254490 4): the first quad's second texture-coordinate call in C form 375
+// (2192 B), its first texture-coordinate call in C form 369 (2209 B), its Begin in C form 446 (2196 B); file-level forms measured
+// with 0x254490's trials: the system headers first 2, the view getter as a ternary 2, the colour helper moved 2, the lookup index
+// as a word cast 527. Retail reloads xmm0 (the lower coordinate) before xmm1 (the depth); ours always descending. All restored.
 // M3 lane 11 r147 (fast, control 2): 0-40 unused initialised locals at the top 2, except at n = 4 mod 8 18 (the last
 // quad's y + size fold returns: a period-8 state for the fold, none for the reload pair); a dead forceinline helper with
 // 1-4 named locals ahead of the colour fetch, of the first quad's 0x1cf50 call or of the second texture call 2 each (12

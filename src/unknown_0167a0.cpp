@@ -456,6 +456,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // restore block's word, chain value and pass in fresh block locals 5 (+0x1a7), the same on the reference form 5 (+0x19e);
 // the entry written in two steps (base, then `+= first * 10`) through the reference 5 (+0x19e), through the field 5
 // (+0x1a7). Each is its base form's code.
+// M3 lane 16 r171 (h2m fast; control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// chain index written `second + (packed & 0x1ff)` 5 (+0x1a7); `second` read there through a volatile read of its own address
+// 286 (975 B, the whole convention moves; reverted at once); the entry list base named (`byte *entries = ...`) ahead of the
+// entry store 5 (+0x1a7); the packed word read from the entry store's own value (`packed = *(word *)(field = ...)`) 5
+// (+0x1a7); on the reference form, the entry reference bound at the top of the restore block 5 (+0x19e). Each is its base
+// form's code.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

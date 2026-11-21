@@ -1036,6 +1036,12 @@ void function_245400(s_source_245400 const *source, long index,
 // as `(code >> 15) & 1` on the signed long codes 226 (760 B); the first index read after the second material's code
 // (retail loads +0xa first) 165; both 226 (760 B); the transformed point declared at function scope 163, the cross
 // result at the block top 163 (same code each).
+// Secondary endpoint scoped to edge 163, plane decode scoped after the edge 165,
+// or both 165. Material-only surface scope or vertex indices captured on
+// admission 163/163. Widened code declarations before admission 165,
+// immutable widened codes in facing 165, or immutable codes with normals
+// resolved at the cross 212. NOT kept: 0x24 frame and separate material homes
+// still differ. Delayed plane-table forms also change the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -494,6 +494,10 @@ const dword g_455978[81] = {
 // tested (0x125920's shape) 311 (0x11bed0 still expanded); re-measured: the rest under `if (!local_12.found)` 268 (same
 // code), the call under the always-true `if (!local_0)` 360. Diagnostic, reverted: `/Ob1` on 0x11bed0's file 373 (a call
 // here, 0x21a100 156), but matched 0x11bed0 19 and 0x14a280 14. Still BLOCKED-BY 0x11bed0's expansion here.
+// M3 lane 7 r211 (h2m fast with 0x11bed0, 0x14a280, 0x279740, all MATCH; control 268): the direction loop ending through
+// its condition (`local_13 < local_6 && !local_0`, no break) 392 (2007 B), with `!local_0` first 403 (2003 B); the bounds'
+// upper corner as `local_4 + arg_3->x` (all three) 268 (same code); the found flag declared at the top with the two
+// optional-state locals 370; the direction count as `arg_8 ? 27 : 18` 412 (2073 B). Still BLOCKED-BY 0x11bed0's expansion.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

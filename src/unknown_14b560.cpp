@@ -1482,293 +1482,6 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
-// score 5 (was 5): the NONE outputs are materialised with `or eax, 0xffffffff` as retail has,
-// the 0x198 field is cleared with a memset and the flag clear follows the zero store as in retail.
-// What still differs: retail tests the mode before the outputs are materialised, ours materialises
-// them first (the body reached 5 from 46 in MiniMax C's 11-11 round, below).
-// MiniMax E (11-11): no new form, no lower score (46): the timer-memset form reaches 43, under the
-// bar to keep, and the two NONE outputs are still written with a five-byte move where retail's
-// materialisation is three bytes long.
-// MiniMax H (11-11): the only real difference is the -1 constant's form (`or eax,0xffffffff` in retail,
-// `mov eax,0xffffffff` in ours), which MSVC only shortens where the flags are dead, and the two bytes this
-// costs shift every later address; the permuter (87 variants in 913 s) found no variant below the baseline in
-// either the reduced or the full image; no lower score.
-// Earlier at 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
-// uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
-// zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
-// outputs declared and assigned separately and the timers cleared with a memset the score is 43,
-// but the constant stays a mov in every form tried (a struct of the two outputs, one and two
-// declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
-// keep threshold and the original body is restored.
-// MiniMax C (11-11): the two output locals are declared in the enclosing block (their stack homes
-// are unchanged) and the mode test is a nested if, so the sentinel is materialised with
-// `or eax, 0xffffffff` as in retail, and the 0x198 field is cleared with a memset, which puts the
-// flag clear after the zero store. What still differs: the order of the mode test and the output
-// materialisation (four instructions) and nothing else. Moving the two declarations into the mode
-// block puts the materialisation where retail has it, but the build then emits the five-byte
-// `mov eax, 0xffffffff` (43 at 1031 bytes), and the same happens with unsigned outputs, `~0`, a
-// copy from the first output, a goto restructure and a spelled-out constant; this round also tried
-// the two tests merged into one condition, the outputs declared at function scope (275), the outputs
-// declared without an initialiser and assigned inside the mode block, the sentinel as a long literal
-// and as 0xffffffff, and the outputs typed int with the address cast at the call - every one of them
-// gives the same five-byte `mov eax, 0xffffffff` (43); a permuter run over
-// the function was stopped by the harness's time limit before it reported a candidate.
-// MiniMax R (11-10): no new form, no lower score (46); the sentinel is still materialised with the five-byte
-// `mov eax, 0xffffffff`, the two outputs take the opposite stack slots and their stores the opposite order; the
-// outputs declared in the other order give 48, a named sentinel local and the second output copied from the first 46.
-// MiniMax S (11-09): no new form, no lower score (46); the NONE outputs are still materialised with
-// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the zero/flag store schedule
-// still differs.
-// MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
-// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
-// scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts
-// these two sites as the only differences from retail (the two bytes of the constant form are the whole
-// length difference), and one-file models show that both are this context's scheduler choice: in
-// isolation the sentinel comes out as `or eax, 0xffffffff` and the byte clear comes first whatever order
-// the statements are written in. Fixing one site alone is a three-point gain, under the keep threshold.
-// MiniMax C (11-04): no new form, no lower score; 0xffffffff literals, int outputs, a chained second output and reordered or chained tail clears all stay at 46 (the outputs declared outside the branch give 268).
-// Earlier: NONE materialization and the zero/flag store schedule differ; success BL agrees.
-// Round 39: joint/dependent output initialization 75/75; chained word/flag clears 75/75;
-// result before/after the final reset 60/75; after field_198/before the user tests 46/46;
-// early result with chained NONE 48; with chained words/flags or flags first 46/46/46;
-// shared field zero 46; word clears from field_198 58. Kept before the user tests; plain 46.
-// Shared direction helper for reuse/create/both 251/201/276; creation/colors/both entry scopes
-// 152/114/152; native/byte success 174/177; sentinel clears 114;
-// representation inline/out-of-line declarations 114/114.
-// Earlier: BLOCKED-BY 0x152bf0, whose retail body takes the loadout in eax and the unit in
-// esi (ours ecx/eax): without that call the unit takes retail's esi (diagnostic). `result = true`
-// before the user-index calls gives retail's bl result but 147 (one-line shift); at the tail start
-// 147; globals and reuse flag declared before the guard 114; chained NONE outputs 116; unit index
-// initialised NONE 114.
-// Round 199: actual reusable-unit query pointer through admission/fallback; conditional/guarded
-// acquisition, direct global observations and early final success:
-// 170/163/203/232/198/191/206/235. All restored; the pointer lifetime changes the frame and does
-// not fix the protected spawned-unit convention.
-// Round 22 (lane 10): only two real differences are left. The 0x198 field is the player's two
-// short timers (src/unknown_152000.cpp's view); clearing them with memset gives retail's tail
-// order exactly (43; not kept, a 3-point gain). The other is the NONE outputs' constant: ours
-// `mov eax, 0xffffffff`, retail `or eax, -1` (2 bytes, so every later address is flagged). One-file
-// LTCG screens: our build compares the mode byte through AL, and a partial AL write makes the
-// constant a mov (a dword compare or no mode test gives `or`). With the memset: globals read at the
-// top 290, chained outputs 45, outputs swapped 45, result declared first 43, kept-unit result before
-// its call 43. Screened, all `mov`: one-declaration/separate/chained outputs, nested result test,
-// mode-first or negated tests, long/char mode locals, byte-typed mode, a mode predicate, unit
-// initialised NONE, reused flag first, location declared first, long location, swapped bit arms.
-// Round 47: with the timers' memset the only real difference left is that `mov eax, -1` (masked
-// diff one line, 43). Ours loads the mode byte into AL at the join before folding it into
-// `cmp byte [edx+0xc], 4`, so the next -1 is a mov; any word/dword compare, or no mode test,
-// gives `or`. Real trials: outputs declared and set at the top 275; set just before the test
-// 268; declared at the top, set in the block 46; timers' memset 43; nested result and mode tests
-// 46. Diagnostics: 0xb8540 (a stub) replaced by a matched call 244 / removed 259, both still mov.
-// Compile-only screens, all mov: byte cast, nested, negated, De Morgan, named bool, long cast,
-// swapped operands, mode local, `result == false`, unit/result declaration order, unit NONE,
-// options pointer local, kept index cleared after its test, hidden-bit local, result set before
-// 0x14cad0; bitfield/unsigned/char mode fields in a small model.
-// Round 34 (m3 lane 2, fast with 0x14cdd0 and its callees in the image): timers cleared by memset 43; with
-// the two NONE outputs in one declaration 43; outputs declared the other way round 45; `if (result) goto
-// done;` before a separate mode test 192 (1041 bytes); `!(mode == 4)` 43. Compile-only: the mode read as a
-// masked word or dword, or as an unsigned byte against `(byte)4`, still narrows to the byte compare and mov.
-// 0xb8540 is still an empty stub here (its retail body makes calls).
-// Round 254: Provider-owned representation defaults: caller tag/third/both initializer elision
-// 241/241/251; with complete timer clear 241/241/251; both elisions with native result byte,
-// without/with timer clear 241/241. Original sentinel initializers, bool result, clears and body
-// restored; NONE materialization and timer/flag scheduling remain.
-// Round 59 (m3 lane 10; fast, then compile-only, which also gives the mov): two real causes only, the mov and the
-// tail store order; everything else in the 46 is the 2-byte address shift. The kept-unit flag as long / NONE-based /
-// dword / a second bool 46 each (the flag's test is not the partial write); no flag, a goto past the block 182 (1035
-// bytes, still mov); `long result` 108 (1030); mode test first 270. Diagnostics: two mode tests show `mov al, [edx+0xc]`
-// 255; a dword compare 4 at retail's length (`or`, only the compare and the tail differ); word 44. Compile-only, all
-// `cmp byte` + mov: masked dword/word, byte cast, byte index, `!(==)`, short and long casts, char constant, dword shift,
-// `(== 4) == false`, ternary, inline predicates, empty if with else-if or else, options local, mode local, named bool,
-// outputs declared outside or swapped or chained, const local, pointer or reference to the field, unsigned against 4u.
-// A test on the same pointer ahead of the mode test (another field, or the state) keeps the pointer live: `cmp [eax+0xc], 4`
-// then `or eax, -1` compile-only, but retail's pointer is EDX with no such test, so the byte temp avoids AL for another reason.
-// Round 93: separate output library fills 46; fills/existing positive/negated mode predicates/NONE|result outputs,
-// each with the timer memset, 43/43/43/43; unified output fill with the timer memset 71; XOR/subtraction mode
-// predicates with the timer memset 244/244 (subtraction reaches `or` but adds full-width work). NOT kept: the
-// 3-point timer-only gain and the grouped output workspace. Original body restored.
-// Round 46 (m3 lane 2, fast; control 46): reused flag declared before the outputs 59; `!(result || mode == 4)` 46;
-// result declared after unit_index 46; one options pointer local for the state/mode/state tests 228 (1046 bytes);
-// the two word clears before the flag clears 46 (the flag `and` still leads). The constant stays `mov eax, -1`.
-// Round 53: forward goto and label ahead of the NONE outputs 46 (mov stays, so a block label is not the cause);
-// the spawn block as do/while(false) 382 (1146 bytes, mov stays); `unit_index = NONE` after 0xb8540 46; that with the
-// unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
-// {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
-// byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
-// Y571: Separate native word library clears, alias-safe up copy and color transfer, seven
-// subsets 46/94/149/94/149/169/169; complete graph with field_198 library clear 169.
-// Original copies, clears and full body restored; NONE materialization and final zero/flag order remain.
-// F369: Complete kept-unit failure ownership at all edges/state phase/admitted unit/full state
-// admission: 69/46/46/46; each with complete timer clear 66/43/43/43. NOT kept: no
-// byte match; the three-point clear is below the bar. Original body and observations restored.
-// B413: Kept-unit existence/admission result predicates, then the native two-short timer
-// model in all combinations, and the complete timer memset: 278/258/280/91/287/267/287/280.
-// Exact-only result-then-test forms and the timer model restored; NONE and tail scheduling remain.
-// P316: Final-success byte/signed-byte/short/unsigned-short domains on the retained
-// success graph: 108 each; with complete timer clear 105 each, frame 0x11c versus 0x118.
-// NOT kept: all regress and enlarge the frame. Original Boolean full body restored;
-// NONE materialization and timer/flag scheduling remain.
-// N355: Actual reuse admission result producers, original/complete timer clear:
-// 86/231/231/227/83/232/232/228. NOT kept: no exact match from the tested structural forms.
-// Complete original executable source restored; NONE materialization and timer/flag scheduling remain.
-// F375: Loaded byte/signed-byte/short/long, then fallback-needed bool/byte/short/long:
-// 46/46/105/103/110/110/108/109. NOT kept: no match; original body restored.
-// NONE materialization and native timer/flag scheduling still differ.
-// N364: All three user-notification indices held through their own guards/calls,
-// short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
-// NOT kept: no equality; original observations, timer stores and complete body restored.
-// NONE materialization and tail zero/flag scheduling remain.
-// P349: Complete representation/spawn/player/global same-size lexical home orders:
-// 46/46/46/46/46/46/46/46. NOT kept: no byte equality; original executable source restored.
-// AC548: Separate retained/spawned handles, mutable/immutable and entry/phase declaration, then complete timer clear
-// 46/46/46/46/43/43/43/43. NOT kept: no qualifying supported gain or byte match.
-// Native NONE producer and timer/flag schedule remain. Original complete body restored.
-// Round 78 (m3 lane 1, fast; control 46): on the timer memset (the 0x198 field typed as two short timers, 43):
-// `tag_index == NONE` tested first 47; `return result` at the two failure exits in place of the gotos 273 (1018
-// bytes); one `facing` for both arms 54; const location index 43; one scenario pointer for the spawn block 216
-// (1036 bytes); full builds of earlier compile-only screens: swapped bit arms 122 (1035), result before 0x14cad0
-// 43. Permuter on the memset form (600 s): 905 s opening build, 14 tries, nothing below its own baseline.
-// Round 70 (m3 lane 13, fast): with the timers' memset (43 this round), the kept-unit NONE test merged into the state
-// test 48; the kept unit in its own block-scope local 43 (46 without the memset); that with the spawned unit declared in
-// the spawn block 43; that with the reuse flag declared beside the result 81. Diagnostics: in one-file models the -1
-// after a folded byte compare is `or` only when the byte temp avoids AL, and any call on a path into the mode test's
-// block gives AL and `mov`; a dword or word compare, or a second test on the same pointer, gives `or`; /G5 and /G7
-// change nothing. The real 0xb8540 body in place of its stub still gives `mov` (1029 bytes, 219); 0xb8540's call
-// replaced by 0xb8b70 puts the reloaded options pointer in EAX and gives `or eax, -1` (234), by 0xb7290 EDX and `mov` (244).
-// Round 65 (m3 lane 15, fast; control 46): the tail clears in five other source orders: the two words ahead of the
-// flags 46; the words first, then the 0x198 field and the flags 48; the two flags exchanged 46; the flags ahead of
-// the 0x198 field 46; flag 10 after the words 46. Our build emits the flags' `and` ahead of the zero register in
-// every order (retail: zero, the 0x198 store, then the `and`), so the order of the plain stores is not the cause.
-// Round 71 (m3 lane 15, fast on the effect-timers base: the 0x198 field as `short effect_timers[2]` cleared by memset,
-// re-measured 43 with only the `mov eax, -1` left): the bit-2 test's arms the other way round 122 (1035 bytes); one
-// options pointer local for the state-1 and mode tests 278 (1033; it gives `or eax, -1`, because the pointer is kept on
-// the stack and reloaded into EAX for the compare, where retail loads it fresh into EDX); `if (unit != NONE && bit2)
-// 0xb8540 else if (unit != NONE) {...}` 43 (same code); `result == false` 43 (same code; its first fast measurement,
-// earlier only compile-only); an options pointer for the mode
-// test and the later state-2 test 284 (1061). Diagnostics (reverted): an opaque store, or a direct write of g_4e8c20, in
-// the 0xb8540 stub leaves this at 46. Compile-only (/GL-) gives `mov` for every form that keeps the byte compare, even
-// with the state-1 block compiled out, so it cannot screen this. Hypothesis: the choice follows the byte temp's
-// register (matched 0xc5eb0 has `mov` after the same folded compare though its last EAX write is a full `shr eax`).
-// Round 116 (m3 lane 12, fast; control 5): re-measured the outputs declared in the mode block 43 (1031 bytes; `mov eax,
-// 0xffffffff` after the folded `cmp byte [edx+0xc], 4`); an inline helper that sets both outputs to NONE and then calls
-// player_get_representation, called in the mode block, 43 (same code as that form). A scan of every game function in
-// retail for a folded byte cmp/test, a jump, then a -1 finds seven sites (this one, 0x84f30 and 0x850c0 `mov`, 0x1070d0
-// `or`, 0x165f16 `or ecx`, 0x226a60 `or`, 0x2413c0 `mov ecx`); the two matched `or` sites (0x1070d0, 0x226a60) follow
-// loop or arithmetic code with no call into the test, so no matched function shows this one's idiom. 0xb8540 (the call on that path) stays a stub: enabling its draft loses 23 matched
-// functions (src/unknown_0b8540.cpp). No untried natural form found that changes this code.
-// M3 lane 11 r97 (fast; control 5 with the outputs ahead of the mode test, 43 at 1031 bytes with them inside the mode
-// block): a scan of every game function in retail finds 2875 `or reg, -1` against 100 `mov reg, 0xffffffff`; the mov
-// form appears only where an 8- or 16-bit value was last written to that register (a byte or word load, `setcc`, or the
-// temp of a byte compare folded into `cmp byte [mem], imm`). Of the 18 `or` sites that follow a byte compare, every one
-// but this has the register visibly in use across the compare or compares against a register, so retail has EAX
-// occupied at this mode test by something that leaves no instruction. On the inside-the-block form: the mode through a
-// bit-field view (long, dword, char or byte, 8 bits wide) 43 each; through a forceinline getter returning long, with no
-// argument or a pointer argument 43/43; compared as an enum value 43; `mode - 4` 244 (1032 bytes); the mode tested ahead
-// of the result in one condition 270 (1049 bytes), as the outer `if` 270. All `mov`. Output addresses evaluated ahead
-// of the test: a forceinline helper taking both output pointers that holds the mode test, the NONE stores and the
-// 0x14f040 call 43; a pointer local to the third-person output taken ahead of the test and used for its store and the
-// call 43 (both fold to the inside-the-block code, `mov`).
-// M3 lane 8 r167 (fast; control 5, the outputs moved into the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
-// that form the kept unit in its own state-block local with the spawned unit declared in the mode block 43; the reuse flag
-// declared ahead of the outputs at the top of the mode block 56; `long unit_index` declared ahead of the result 43; the
-// reuse flag declared beside the result at the function top 81; on the current body the kept unit in its own state-block
-// local 5 (same code). The two failure exits as `return false` 273 (1018 bytes, the round 78 form again).
-// Round 122 (m3 lane 16, fast; control: the outputs declared in the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
-// that control the mode test held in a named bool 43, a game-options pointer local for the mode test only 43, `(byte)` on
-// the mode 43, `(long)mode != 4L` 43 (each the same code), the outputs declared third_person first 45. A 1800 s fast
-// annealing permuter run on the current body (seed 122): 77 tries, none below 5. Body unchanged.
-// M3 lane 12 r131 (fast; control: the outputs declared in the mode block 43 at 1031 bytes): on that control the kept-unit NONE
-// test as an empty `if (unit_index == NONE) {} else` 43; `bool result` declared after `unit_index` 43; the outputs declared bare at
-// the top of the mode block, set and passed in a nested block 43; a const player pointer 43 (each the same code: the folded byte
-// compare keeps AL as its temp, so the -1 stays `mov eax, 0xffffffff`).
-// M3 lane 15 r94 (fast with 0xa9440 and 0x14d3a0, both MATCH; control 5): the outputs in the mode block with the mode read
-// through a forceinline accessor returning the options pointer 43; the mode as a reference-bound `char const &` local, in the
-// mode block 43 and ahead of it 5; the outputs declared in the mode block and set in a block of their own 43; re-measured:
-// the second output initialised from the first 5 (each the same code as its base). Code-changing, all worse: the kept-unit
-// block as a forceinline helper returning success 248 (1034 B), with the outputs in the mode block 250 (1036 B); the
-// second and third user-index tests merged into one 41 (1020 B); the reuse arm reading the unit through the `globals` local
-// throughout 225 (1019 B); the profile clamp as `profile_index >= starting_profile_count` 24 (1030 B).
-// M3 lane 3 r261 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00 and 0x14cad0, all MATCH; control 5): the five lines
-// left are retail's own instructions in another order: ours has `or eax, -1` and the two output stores ahead of the
-// `cmp byte [edx+0xc], 4; je`, retail after it. With the outputs in the mode block (43, 1031 B, `mov eax, 0xffffffff`):
-// the mode test through two nested inline predicates (one returning the negation of the other) 43; an inline helper
-// holding the mode test, the NONE stores and the 0x14f040 call and returning whether it ran 43; the outputs set through
-// an inline pointer setter 43; the 4 passed as a parameter of an inline compare 43; an inline predicate with two
-// returns 43; `switch (mode) { case 4: break; default: ... }` 43; the outputs set through reference-bound locals 43.
-// Compile-only screens of the same test (it reproduces both forms): one output declared ahead of the test and one in
-// the block keeps -1 in EAX across the test, the mode byte then goes through CL unfolded (`mov cl, [edx+0xc]; or eax,
-// -1; cmp cl, 4`) with one store ahead of the `je`; the pointer stays EDX and the byte AL whatever scratch work is
-// added ahead of the test (one or two read-modify-write statements before it or at the end of the kept-unit arm), so
-// the byte's register is not a rotation step; removing the 0xb8540 call, the 0xb9d20 test, the kept-unit `result =
-// true`, the result test, the kept index's clear or the tail's `result = true` each keeps `mov`; 500 combinations of
-// where the two outputs, the unit index and the reuse flag are declared and first set (function top, result block,
-// mode block; with or without a NONE initialiser) give `or` only with a store ahead of the test; the outputs declared
-// between the kept-unit block and the result test stop the result test's threading (287 lines for 282).
-// M3 lane 6 r197 (fast with 0xa9440 and 0x14f040, both matched; compile-only screens agree): with the outputs moved into
-// the mode block (each at 1031 bytes, `mov eax, 0xffffffff` after the folded byte compare): declared third_person first
-// 45; declared bare and set by `third_person = tag_index = NONE;` 43; the second output initialised from the first 43;
-// the test as `4 != g_4e6948->mode` 43; the result and mode tests merged into one `!result && mode != 4` condition 43.
-// Compile-only (same code each): `tag_index = third_person = NONE;` 43-form; `mode != (char)4` 43-form. Retail's
-// 0xb8540 returns nothing (its EAX is clobbered), so no value of its own can hold EAX across the test.
-// M3 lane 16 r143 (fast with 0xa9440, 0x14d3a0 and 0x14f040; control 5): the mode test held in a bool read ahead of the
-// output declarations 5 (same code: the stores are still scheduled ahead of the compare); the test as `== 4` with an
-// empty arm and the body in the else 5 (same code); the mode read into a char local in the result block with the
-// outputs in the mode block 43 (1031 B); the outputs in one declaration in the mode block 43; the outputs declared with
-// their NONE initialisers at the function top beside the unit index 275 (the -1 is set up at entry).
-// M3 lane 4 r223 (fast; control 5, the outputs moved into the mode block re-measured 43 at 1031 bytes, `mov eax,
-// 0xffffffff`; compile-only screens agree with each): on that form the location index declared bare at the top of the
-// mode block 43, or in the result block ahead of the mode test 43; the globals pointer declared bare at the top of the
-// mode block 43; the reuse flag declared bare there 43; the two outputs as a two-long array bound by references 52.
-// Compile-only only (mov each): a spawn bool computed at the top 301 lines; the mode read as long or short locals.
-// In every form the folded mode compare first loads the byte into AL (a second compare unfolds it: `mov al, [edx+12]`).
-// M3 lane 15 r110 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00 and 0x14cad0, all MATCH; control 5; B = the outputs in
-// the mode block, re-measured 43 at 1031 B, `mov eax, 0xffffffff`): a redundant `result = false;` after the 0xb8540 call
-// 249 (1034 B: the result test is no longer threaded), on B 251 (1036 B); on B the mode compared as `(mode & 0xff) != 4`
-// 43 (same code); on B the outputs declared bare and filled by `memset(&x, NONE, sizeof(x))` 45 (still `mov`, the two
-// stores swap); one output declared with its NONE ahead of the mode test and the other in the mode block, measured
-// (third person ahead) 243, (tag ahead) 242, both 1031 B.
-// M3 lane 6 r206 (fast with 0xa9440 and 0x14f040, both matched; control 5; compile-only screens agree): with the outputs
-// in the mode block, as one two-long aggregate initialised `{ NONE, NONE }` and reached through two references 52 (1031 B,
-// `mov eax, 0xffffffff`); the mode test as `if (mode == 4) goto done;` (the function's existing exit) with the outputs in a
-// block after it 43 (1031 B); that block plus the reuse flag declared at the top of the result block 62. On the current
-// body: the outputs typed dword (passed as long pointers) 5 (same code); the reuse flag moved to the top of the result
-// block, ahead of the outputs, 25.
-// M3 lane 3 r276 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00, 0x14cad0; control 5): on the current body the outputs in
-// one declaration 5; declared bare and set by `tag_index = third_person = NONE;` ahead of the mode test 5 (both the same
-// code); the outputs declared with their NONE after the kept-unit block, ahead of the result test, 268 (1047 B: the result
-// test is no longer threaded). Compile-only scan with the outputs in the mode block (it reproduces that form's `mov eax,
-// 0xffffffff`): 0 to 12 dead initialised locals at the function top, and 1 to 8 inside the mode block ahead of the
-// outputs, all `mov` (the -1's form is not a symbol-count tie).
-// M3 lane 11 r137 (fast with 0x14f040 and 0x14ef00; control 5, the outputs in the mode block re-measured 43 at 1031 B,
-// `mov eax, 0xffffffff`): on that form the test as `== 4` with an empty arm and the outputs in the else 43, the mode read
-// into a long local in the result block 43, the test as `!(mode == 4)` 43, the result test as `if (result) {} else` 43
-// (each the same code), `result` typed long 105 (1030 B).
-// M3 lane 5 r217 (fast; control 5; B = the outputs in the mode block, re-measured 43 at 1031 B, its one differing
-// instruction `mov eax, 0xffffffff` for retail's `or`). Diagnostics on B, reverted at once: the 0xb8540 stub writing
-// EAX in full before it returns 43 (still `mov`); the delete call through a probe stub returning long 44, returning
-// bool 44 (both `mov`: neither what the callee leaves in EAX nor a result held there frees the byte temp from AL).
-// Forms on B: the options pointer named and read through a const reference for the mode test 43 (same code); a
-// redundant `result = false;` at the top of the result block 66 (1031 B, first difference at +0x0). No retail caller
-// of 0xb8540 (65 of them) reads a value after the call.
-// M3 lane 1 r143 (fast; B = the outputs in the mode block, re-measured 43 at 1031 B): casts that change the compare's
-// shape, as the matched 0xd8cb0's flag test needed: `(char)(mode ^ 4) != 0` 244 (1032 B); `(char)(mode - 4) != 0` 244;
-// `(char)(mode != 4)` 43; `!(char)(mode == 4)` 43; `(short)mode != 4` 43; `(char)(mode & 0xff) != 4` 43 (the byte temp
-// stays AL, so the -1 stays a mov).
-// M3 lane 14 r138 (fast; control 5; B = the outputs in the mode block, 43 at 1031 B). A compile-only build of B reproduces
-// its `mov eax, -1`, and an extra read of the mode exposes the folded compare's temp as AL (`mov al, [edx+12]`), so for
-// retail's `or` that temp must sit outside EAX while the options pointer stays EDX; in a synthetic test the pointer in EAX
-// does give `or eax, -1` after the folded compare. Tried: one options pointer local for both the state and the mode test,
-// on B 278 (1033 B), on the current body 258 (1034 B) (the pointer then lives in EBX across the 0xb8540 call); on B the
-// third-person output passed through a named out pointer 43; on B the kept index read into its own local in the state
-// block 43; on B both failure exits as direct `return result;` with no label 273 (1018 B, as the `return false` form).
-// Compile-only only (each `mov eax, -1` after the folded compare): the result test as `if (result) {} else`, the mode in
-// a char local, a named spawn bool, `4 != mode`, `1 == state`, the NONE initialisers as -1 literals.
-// M3 lane 16 r169 (h2m fast with 0x14f040, MATCH each time; control 5; B = the outputs in the mode block, re-measured 43 at
-// 1031 B): the result and mode tests merged as `if (!result && g_4e6948->mode != 4)` with the outputs at the top of its block
-// 43; on B the options pointer from a file-local inline getter 43; on B the test through a file-local inline bool (`mode ==
-// 4`) negated 43; on B the mode read as the low byte of a 32-bit load (diagnostic, reverted) 43 (still `mov eax, 0xffffffff`:
-// a full-width temp does not free the constant's form); the outputs declared at function scope and assigned in the mode
-// block 43.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -1807,128 +1520,131 @@ bool __stdcall function_14f2e0(long player_index)
 
 	if (!result)
 	{
-		long tag_index = NONE;
-		long third_person = NONE;
-
-		if (g_4e6948->mode != 4)
+		if (g_4e6948->mode == 4)
 		{
+			result = true;
+		}
+		else
+		{
+			long tag_index = NONE;
+			long third_person = NONE;
+
 			player_get_representation(player_index, &tag_index, &third_person);
 			short location_index = (short)function_14ef00(player_index, tag_index, true, false);
-			if (location_index == NONE || tag_index == NONE)
+			if (location_index != NONE && tag_index != NONE)
 			{
-				goto done;
-			}
+				s_players_globals *globals = players_globals_14f2e0();
+				bool reused = false;
 
-			s_players_globals *globals = players_globals_14f2e0();
-			bool reused = false;
-
-			if (globals->unknownac != NONE && function_badc0(globals->unknownac, 3))
-			{
-				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-				s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
-				point3f position;
-				real facing;
-				vector3f forward;
-
-				marker_record_get_position_and_angle(location, &position, &facing);
-				forward.i = (real)cos(facing);
-				forward.j = (real)sin(facing);
-				forward.k = 0.0f;
-				function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
-				globals = players_globals_14f2e0();
-				function_b9c60(globals->unknownac, false);
-				function_b7290(globals->unknownac);
-				unit_index = players_globals_14f2e0()->unknownac;
-				players_globals_14f2e0()->unknownac = NONE;
-				reused = true;
-			}
-			else
-			{
-				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-				s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
-				s_object_creation_14f2e0 creation;
-				real facing;
-				color3f colors[4];
-
-				function_b7930(&creation, tag_index, NONE, NULL);
-				creation.field_0c = third_person;
-				marker_record_get_position_and_angle(location, &creation.position, &facing);
-				creation.forward.i = (real)cos(facing);
-				creation.forward.j = (real)sin(facing);
-				creation.forward.k = 0.0f;
-				creation.up = *g_4687b0;
-				creation.player_index = player_index;
-				creation.team_index = player->team_index;
-				creation.field_a8 = *(dword *)((byte *)player + 0x89);
-				if (function_15f330(&player->appearance, player->team_index, colors))
+				if (globals->unknownac != NONE && function_badc0(globals->unknownac, 3))
 				{
-					creation.change_color_mask |= 0xf;
-					memcpy(creation.colors, colors, sizeof(colors));
+					s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+					s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
+					point3f position;
+					real facing;
+					vector3f forward;
+
+					marker_record_get_position_and_angle(location, &position, &facing);
+					forward.i = (real)cos(facing);
+					forward.j = (real)sin(facing);
+					forward.k = 0.0f;
+					function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
+					globals = players_globals_14f2e0();
+					function_b9c60(globals->unknownac, false);
+					function_b7290(globals->unknownac);
+					unit_index = players_globals_14f2e0()->unknownac;
+					players_globals_14f2e0()->unknownac = NONE;
+					reused = true;
 				}
-				unit_index = function_b7b40(&creation);
-			}
-
-			if (unit_index == NONE)
-			{
-				goto done;
-			}
-			function_14cad0(player_index, unit_index);
-			function_a7870(unit_index);
-			function_a7a30(unit_index, 0x400);
-			if (g_4e6948->state == 2)
-			{
-				function_15e970(unit_index);
-			}
-			else if (!reused)
-			{
-				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-				bool initial = !TEST_FIELD_BIT(player->flag3);
-				long profile_index = initial ? 1 : 0;
-				bool loaded = false;
-
-				if (profile_index > scenario->starting_profile_count - 1)
+				else
 				{
-					profile_index = scenario->starting_profile_count - 1;
-				}
-				if (!initial && (scenario->flags12 & 0x20))
-				{
-					s_tail_traits *loadout = function_1529a0(player_index);
-					if (loadout)
+					s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+					s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
+					s_object_creation_14f2e0 creation;
+					real facing;
+					color3f colors[4];
+
+					function_b7930(&creation, tag_index, NONE, NULL);
+					creation.field_0c = third_person;
+					marker_record_get_position_and_angle(location, &creation.position, &facing);
+					creation.forward.i = (real)cos(facing);
+					creation.forward.j = (real)sin(facing);
+					creation.forward.k = 0.0f;
+					creation.up = *g_4687b0;
+					creation.player_index = player_index;
+					creation.team_index = player->team_index;
+					creation.field_a8 = *(dword *)((byte *)player + 0x89);
+					if (function_15f330(&player->appearance, player->team_index, colors))
 					{
-						loaded = function_152bf0((byte const *)loadout, unit_index);
+						creation.change_color_mask |= 0xf;
+						memcpy(creation.colors, colors, sizeof(colors));
 					}
+					unit_index = function_b7b40(&creation);
 				}
-				if (!loaded && profile_index >= 0 && profile_index < scenario->starting_profile_count)
+
+				if (unit_index != NONE)
 				{
-					function_cce00(unit_index, (short)profile_index, true, initial);
+					function_14cad0(player_index, unit_index);
+					function_a7870(unit_index);
+					function_a7a30(unit_index, 0x400);
+					if (g_4e6948->state == 2)
+					{
+						function_15e970(unit_index);
+					}
+					else if (!reused)
+					{
+						s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+						bool initial = !TEST_FIELD_BIT(player->flag3);
+						long profile_index = initial ? 1 : 0;
+						bool loaded = false;
+
+						if (profile_index > scenario->starting_profile_count - 1)
+						{
+							profile_index = scenario->starting_profile_count - 1;
+						}
+						if (!initial && (scenario->flags12 & 0x20))
+						{
+							s_tail_traits *loadout = function_1529a0(player_index);
+							if (loadout)
+							{
+								loaded = function_152bf0((byte const *)loadout, unit_index);
+							}
+						}
+						if (!loaded && profile_index >= 0 && profile_index < scenario->starting_profile_count)
+						{
+							function_cce00(unit_index, (short)profile_index, true, initial);
+						}
+					}
+					result = true;
 				}
 			}
 		}
 	}
 
-	memset(&player->field_198, 0, sizeof(player->field_198));
-	player->flag9 = false;
-	player->flag10 = false;
-	player->field_17c = 0;
-	player->field_17e = 0;
-	result = true;
-	if (player->user_index != NONE)
+	if (result)
 	{
-		motion_sensor_reset(player->user_index);
+		memset(&player->field_198, 0, sizeof(player->field_198));
+		player->flag9 = false;
+		player->flag10 = false;
+		player->field_17c = 0;
+		player->field_17e = 0;
+		if (player->user_index != NONE)
+		{
+			motion_sensor_reset(player->user_index);
+		}
+		player->field_194 = g_510c54->field_2_3;
+		if (player->user_index != NONE)
+		{
+			function_153b80(player->user_index);
+		}
+		if (player->user_index != NONE)
+		{
+			function_16f4b0(&g_4e9bd4[player->user_index]);
+		}
+		function_152340();
+		player->flag3 = false;
 	}
-	player->field_194 = g_510c54->field_2_3;
-	if (player->user_index != NONE)
-	{
-		function_153b80(player->user_index);
-	}
-	if (player->user_index != NONE)
-	{
-		function_16f4b0(&g_4e9bd4[player->user_index]);
-	}
-	function_152340();
-	player->flag3 = false;
 
-done:
 	return result;
 }
 
