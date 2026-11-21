@@ -2334,6 +2334,12 @@ void function_269250(long clump_index, long actor_index);
 // 146/146, team-local 128/128. The team-local datum form promotes the pool
 // to EDI and leaves the selected handle in memory at the wrong offset.
 // Candidate-local prior best for both default and threshold 87.
+// M3 lane 14 r136 (h2m fast with 0x268840, 0x268bb0, 0x269580, 0x269250, 0x2694d0, 0x269040, 0x1e46c0, 0x26ae30,
+// 0x268c90 and 0x268510, all MATCH each run; control 87): on this body the improving arm storing the selection before the
+// best 87 (same code); `best` declared ahead of the selection 87 (same code). The in-arm compare re-measured 126 (480 B);
+// on it the selection declared after `best` with the arm storing the selection first (retail's arm stores the selection,
+// then jumps to the best store it shares with the initialiser) 126; `real const score` 126; `register long selected`
+// 126 (all the same code: the selection keeps EDI across the post-walk calls, where retail reloads it from +0x14).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -534,6 +534,18 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // of the dispatch block 25 (same code: pointers formed before the escape do not free the tail's loads), declared at the top
 // beside the definition 107; the tail copies through the existing vector3f_assign 66 (1047 B, the copies go through xmm);
 // the zero-limit test written `0.0f == max_angle && 0.0f == acceleration` 27.
+// M3 lane 14 r136 (h2m fast with 0x118700, 0x11f0d0, 0x1faf80, 0x11d180, 0x11ce20, 0xbba20, 0x109290, 0x118e80 and
+// 0xe01d0; control 25): the dispatch call through a forceinline wrapper taking the three addresses as point/vector
+// pointers and converting them to `long` inside 25 (same code: the integer conversion is not the tail's barrier); the
+// dispatch given 0 for forward and up re-measured 79 (the tail's loads then run ahead of the stores as retail's, so the
+// escape into that call is the barrier). 0x1faf80 declared (object_index, facing, settings, control, threshold, turn),
+// with both calls, re-measured 12 here and 0x1faf80 2; on that order in 0x1faf80: the cross product's left.j term through
+// the forward pointer 4 (that term flips, the test's i product stays facing-first); the settings parameter typed as the
+// header's flying-physics aggregate with its fields by name and no cast local 4 (same flip), with left.j through the
+// forward pointer too 4. Diagnostics there (not kept): the later facing.i product dropped 106, both facing copies in the
+// else arm read from the object's forward 192: the test's i product stays facing-first whatever facing's other uses
+// are. Retail's 0xe01d0 call (0xe0264-0xe0286) also computes the facing address after the control and settings
+// addresses, so both callers put facing ahead of control. Still BLOCKED-BY 0x1faf80.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

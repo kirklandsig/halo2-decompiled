@@ -1335,6 +1335,12 @@ void function_2118c0(void)
 // each knot index truncated `(word)(row + w)` 148 (780 B); `long row = b * 8` with the knot rows from `(byte)row + w` 130
 // (782 B); the wraps cast before the mask (`(word)(k - 1) & 7`) 10 (same code); t as `(real)m / 8.0f + (real)k` 10 (same
 // code); p1 and out as `&noise[k][0] + b * 64` and `&noise[k][m] + b * 64` 10 (same code).
+// M3 lane 14 r136 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): `short row = (short)(b << 3)`
+// 163 (782 B); one `vector3f (*)[8]` band pointer taken at `noise[b << 3]` for all five rows (knots, p1 and out) 248
+// (847 B); the knot indices typed `long` holding the word value at the sample loop's head 170 (761 B); the three knot
+// indices in a `long [3]` local filled at that level 170 (761 B), in a `word [3]` local 10 (same code: the array is
+// promoted). Not tried: calling 0x212100 for the interpolation (its cubic divides by the general knot spacing, this one
+// multiplies by constants).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
