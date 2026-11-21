@@ -953,6 +953,14 @@ void __stdcall function_1160c0(real dt)
 // through vector3d_from_points3d and three `*= inverse_dt` 196 (1400 B). Retail's cell shared by the segment, the scale and
 // the sine sits at +0x14 below the axis (+0x18..+0x20), ours at +0x20 above it (axis +0x14..+0x1c); retail's rotation
 // keeps all three axis components in XMM5/XMM4/XMM6 where ours reloads axis.i and axis.j. Body unchanged.
+// The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX
+// and +0x14. Tried rest offset at constraint join 176, rest offset after vertical setup 176, rest
+// offset after cross product 186, rest offset produced by both constraint exits 290, rest offset
+// produced before reach by each constraint arm 322, segment base advanced with offset at constraint
+// join 272, segment base advanced with offset after cross product 267, selected arm advances segment
+// base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
+// the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
+// +0x20.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

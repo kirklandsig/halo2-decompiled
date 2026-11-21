@@ -922,6 +922,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // and the scan bound copied into EDX as retail, but still rotated, points in EBP); with `indices[hull_count++] = current`
 // 248 and with a bool flag 248 (same code); a long compare 260 (764 B); main's loop with `++hull_count` 270 (810 B), with
 // `indices[hull_count] = current` 272 (807 B, 0x239d50 80). Body unchanged.
+// The frame stays at 0x18 rather than 0x14. The departure flag and produced count still need the dead
+// argument byte and EBX. Tried candidate decision from three ranking branches 144, three ranking
+// branches with one start-index read 144, candidate rejection gates with one start-index read 144,
+// distance and ranking rejection gates 144, three ranking branches with Boolean departure 264, three
+// ranking branches and one start read with Boolean departure 264, candidate rejection gates with
+// Boolean departure 264, distance and ranking rejection gates with Boolean departure 264. NOT kept: The
+// four ranking forms tie with the original departure width. A Boolean departure shortens the body and
+// changes the caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

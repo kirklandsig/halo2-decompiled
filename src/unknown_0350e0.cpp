@@ -2816,6 +2816,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // at the top of the 275 form 499-501 (the homes move), in the end block, ahead of the camera angle or ahead of delta 496
 // every n (inert: the camera sums' operand sides and the forward block do not follow the symbol count here).
 // MiniMax H (11-20): no new form, no lower score (417); the delta and reflection XMM allocation and the unity store schedule still differ.
+// Distance bounds pointer 281, Distance bounds reference 281, Angle bounds pointer 281, Angle bounds
+// reference 281, Distance and angle bounds pointers 281, Distance and angle bounds references 281,
+// Distance bounds with branch result initialization 424, Both bounds with distance result handed to
+// angle phase 497.
+// NOT kept: The typed bounds tie at the opening extent. Both branch-produced fade forms raise the score, and the staged form lengthens the body.
+// The camera delta and reflection registers still differ, and the attenuation default still stores after the tint.
 // M3 lane 5 r223 (H2M_FAST, control 281, aligned 142/65 exact/register-masked; the one extra byte is the loop's
 // draw point x product, ours `movss xmm1, reflected.i; mulss xmm1, xmm0` where retail multiplies by memory):
 // redundant paren pairs (1 to 3) around the forward's first product or one delta term 487 each (one instruction

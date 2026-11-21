@@ -2208,6 +2208,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // (2873 B); the side test as `0.0f > dot3f(...)` 551 and with the side vector as the dot's first operand 551 (same code
 // each). Retail's edge loop computes the successor `i + 1` at its top for the idiv and stores it at once (+0xd0), the first
 // vertex walked by a pointer spilled at +0x98. Body unchanged.
+// The 0xb964 frame and query setup agree. Count and clearance homes, pre-branch radius square and late
+// signed remainder still differ. Tried interval projection dot with aggregate displacement 553,
+// interval projection dot with shared point difference 559, projected-separation x/z/y dot 551,
+// direction-length x/z/y dot 568, half-span x/z/y dot 552, both square roots through x/z/y dot 568,
+// projected separation and both roots through x/z/y dot 570, interval projection dot with retail
+// signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
+// score.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

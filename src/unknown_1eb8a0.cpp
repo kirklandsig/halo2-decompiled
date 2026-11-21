@@ -810,6 +810,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // factor first at the output clamp 590 (same code), the second clamp 720 (2857 B), both 719, all three 689 (caller
 // 0x1eb6f0 22). Fast and plain differ only in the closing block: the reduced image pops EDI, EBP and EBX in the counter
 // block as retail does, the full build pops in each exit and splits the flag's `or` into load, or, store. Body unchanged.
+// The 0x24 frame and clock home agree. EBX still keeps the supplied direction rather than the sampled
+// velocity, and the limit and coefficient schedules differ. Tried live limit and reused limited
+// decision 680, live limit and separate distance stores 698, live limit with guarded step minimum 693,
+// live limit with guarded distance minimum 721, live limit with both guarded minima 721, live limit
+// with both minima and reused limited decision 705, live limit with default-step branch first 691, live
+// limit with both default branches first 691. NOT kept: The separate limit observations and guarded
+// minima raise the score. The reused decision also moves the first difference to +0x5.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

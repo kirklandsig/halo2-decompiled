@@ -401,6 +401,14 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // short coefficient width 129/145, target first 145/129. Short and long copy
 // widths agree. NOT kept: all grow to 1413 bytes. The 129 forms recover the
 // traversal through +0x2b7, but the basis correction remains farther from retail.
+// The 0x5c frame agrees. The deadline cursor and signed group ordinal still exchange stack homes and
+// the basis correction differs. Tried existing unit predicate for both basis axes 64, existing unit
+// predicate with explicit deadline 125, explicit deadline and direct time-step read 255, explicit
+// deadline and subtraction on elapsed time 218, unit predicates with direct time-step read 255, unit
+// predicates with elapsed subtraction assignment 218, unit predicates with shared alignment dot 125,
+// unit predicates with shared side cross 125. NOT kept: The explicit cursor recovers the traversal
+// through +0x2b8 with the original time-step expression, but grows to 1413 bytes. The direct read or
+// subtraction assignment loses the retail time-step scheduling.
 // @retail 0x170630
 void function_170630(long player_index)
 {
