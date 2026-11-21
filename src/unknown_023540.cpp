@@ -3138,6 +3138,17 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // existing bucket count field 354, with the signed node read before the empty-bucket test 354;
 // separate level count and requested level 354; exclusive level bound 372; coefficient address after acceptance 393.
 // NOT kept: both matrix copies still expand and none reaches the starting score at a shorter length.
+// M3 lane 8 r215 (h2m fast with 0x235a0/0x23600/0x22850/0x23ca0/0x23540; control 354 at 1595 B; this build already ends
+// in `ret 0x1c`): the allocation exit as `if (next > 0x27000) { result = false; goto done; }` 358; the allocation under
+// `if (bytes)` 354 (same code); round 133's allocator form re-measured 423 (1654 B), with the exits as `return result;`
+// and `return false;` 482; the exits as returns on this body 418 (1590 B; the result byte drops out, so every home moves).
+// 0x235a0 spelled through the typed members 354, with three named row pointers 354, with an unused local 354, with a named
+// 1.0 354 (0x235a0 MATCH each; same code here). Calibration diagnostics, restored at once: one to six extra dead stores in
+// 0x235a0 364 (1484 B: the second site becomes a call, as with round 133's guard; 0x235a0 96 B, 41), a null test in it 604
+// (both sites calls); `__assume(available_samples > 1)` before the second copy 300 (1553 B, frame 0x204, both copies still
+// expanded), `__assume` on the sample count or the bucket count 354. Reading: 0x235a0's inline cost follows its final code
+// (a dead local, a named constant or row pointers change nothing), and one extra store tips the second site, so retail's
+// extra weight is on the call-site side (one more split on the path); no natural split found yet.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

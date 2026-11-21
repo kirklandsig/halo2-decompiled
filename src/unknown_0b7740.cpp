@@ -1784,6 +1784,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // current and no-model lookups 292 (1402 B: the pool takes EDI and the render branch re-reads data too). The flag default
 // kept with the parent set in an else (listed 32) re-measured: DL live, index in EAX, pool still held in ECX; so the pool is
 // dropped only when EAX, ECX and EDX are all wanted, where retail moves the index to ESI instead.
+// M3 lane 8 r215 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): this file builds with the default
+// /O2 (auto-inlining on); only 0xb8bd0's file is /Ob1. Diagnostics, restored at once: `stored` escaping through a
+// file-static pointer 403 (the pool is then held, but in EDI, and the data field is re-read on both paths, the render
+// branch's too, where retail re-reads it only in the no-model arm); a store to an escaped scratch local at the top of
+// the no-model arm only 410 (the pool is still reloaded: a kill inside the arm does not hold it); the one compiler-setting
+// diagnostic, 0xb8bd0's file without /Ob1 and the no-model arm calling 0xb8bd0 as the render arm does, 394 (1373 B: then
+// expanded at both sites; 0xbcc20 213, 0x11b710 116, 0x18c3b0 157). Forms: both no-model lookups spelled through
+// effects.h's DATUM 20 (same code); one `const &` to the parent's header entry for both reads 41 (1392 B); both through
+// object_header_get(...)->object 20 (same code). Reading: retail's block is 0xb8bd0's own code expanded at this one site
+// (its parameter copy `mov eax, esi`, the index still live after it), which this build gives only with 0xb8bd0's file
+// built without /Ob1, and then at every site: BLOCKED-BY 0xb8bd0 (its file's /Ob1, a build-flag decision).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
