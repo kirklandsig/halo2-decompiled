@@ -1374,6 +1374,13 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // scan 2 with the distance as length_sq3f(&offset) 646 (2039 B), with the distance helper kept 418 (same code); scan 2
 // inside a redundant `if (0 < count)` 585 (2100 B); on the entries-read scan 2 (549 re-measured) that guard 557; scan 2's
 // skip test through a const reference to `nearest` 549 there and 418 here (same code each). Body unchanged.
+// M3 lane 2 r133 (h2m fast with 0x24550, 0x22750, 0x22c30, all MATCH; control 418): the distance from a second
+// difference vector (`vector3d_from_points3d(&samples[i].position, position, &difference)` then length_sq3f) 416
+// (2094 B: the distance now sums (k + j) + i as retail, but the dot keeps delta.j/k spilled and its i product
+// offset-first, and the offset.i store and second pointer are still missing); that with dot3f(&offset, &delta)
+// 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
+// dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
+// fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

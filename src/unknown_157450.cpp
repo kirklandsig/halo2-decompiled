@@ -942,6 +942,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // forceinline by-value predicate (old playing, playing, old mask, present) 101 (393 B), with the carrier 102. Diagnostic:
 // the carrier alone 20 (the loop exact, only the post-loop block left; a one-use local, match-only), with the mask pointer
 // declared above the old playing mask 20 (same code). Body unchanged.
+// M3 lane 5 r229 (h2m fast; control 23): retail's post-loop block treats the word mask as a register variable spilled only
+// around the loop (one `mov ecx, [slot]` at the loop exit serves the compare's `movzx eax, cx` and the change block's `or
+// ecx, [present]`); every form here folds the compare's reload into `movzx reg, word [slot]` (on the word-mask base the
+// change block does reload it whole into a register). Forms: `present_teams |= 1u << team` 23; `1u <<` in both updates 23;
+// the old mask `word const` 23 (same code each); on the word-mask base (77) `1u <<` in the present update 77, in both 77.
+// Re-measured: word mask with a plain present 63 (384 B); the dword mask with a plain present and the one-expression
+// store `(word)(old_team_mask | present_teams)` 128 (375 B).
 // @retail 0x158140
 void function_158140(void)
 {

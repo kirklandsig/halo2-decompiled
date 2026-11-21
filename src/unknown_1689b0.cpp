@@ -2220,6 +2220,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // projected separation and both roots through x/z/y dot 570, interval projection dot with retail
 // signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
 // score.
+// Count and clearance homes and the pre-branch square still differ. Conditional update
+// destinations for sum, clearance, count, sum/clearance, sum/count, clearance/count and all
+// three 656/597/588/649/678/593/653; branch-selected update pointers 655.
+// NOT kept: every form shortens the body away from retail and raises the score.
 // M3 lane 8 r218 (H2M_FAST with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, the four matched ones MATCH
 // each run): the vertex clamp as `count = 8; if (point_count <= 8) count = point_count;` 572 (2878 B); both averages as
 // three divisions by the count with no inverse local 578 (2891 B: the tail is then retail's instruction for instruction,

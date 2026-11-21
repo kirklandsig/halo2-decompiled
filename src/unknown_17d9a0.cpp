@@ -504,7 +504,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
 // counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
 // the table global in ECX the other way round, so every later home is one slot off.
-// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// score 535 (was 535; m3 lane 8 r220 unchanged, its line just above the marker): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
 // M3 lane 6 r223 (plain each; the reduced image builds this function differently, 834; control 535): the first loop as
 // a do-while with its index declared at function scope 533 (frame 0x21e4: the tag then spills at retail's +0x94 and the
 // secondary count sits at retail's +0x54, but the face list moves to +0x1f0 and the count to +0x1c), with the index in
@@ -1091,6 +1091,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // product taken plane normal first with the sign test flipped 562 (3631 B); the matrix scale stored ahead of the four
 // rotations 662; the two distance limits as `0.05f * radius` 535 and the angle limit as `0.017453292f * maximum_angle`
 // 535 (same code each). Restored.
+// M3 lane 8 r220 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca, which reproduces the full
+// check's 535; 0x17d9a0 and 0x17d900 MATCH each time): the matrix position through the existing vector3f_add from the
+// rotated offset and the start 543; the sign as an if/else 535 (same code); the edge's reverse flag as a long 646 (3631
+// B); the edge's minimum and maximum as two conditionals 613; the angle written `sign * angle` 535 (same code). Body
+// unchanged.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

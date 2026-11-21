@@ -967,6 +967,10 @@ void __stdcall function_1160c0(real dt)
 // base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
 // the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
 // +0x20.
+// Tick read ahead of segment as short or long 288/289, increment computed first 292/291.
+// The same four forms after selecting the ordinal 144 each.
+// NOT kept: the early read consumes EDX and adds a separate load and store. With a selected ordinal
+// the memory increment returns and the segment still spills at ESP+0x20.
 // M3 lane 3 r290 (H2M_FAST, control 144): the segment count read once into a `long` ahead of the loop for the bound and the
 // selection 304 (first difference +0x2); the selection as `i > last ? last : i` with `long last = count - 1` 151 (1370 B);
 // `segment` declared in the outer block and assigned in the loop 144 (same code); `segments + i`, then reassigned to the
@@ -980,6 +984,10 @@ void __stdcall function_1160c0(real dt)
 // Joint velocity/position coordinate pass alone, with prediction, with previous point,
 // and with both 363/375/370/393; with the reused coordinate 337/350/349/363.
 // NOT kept: the joint pass changes the frame and shortens the function.
+// Round 666. Segment selection still uses EDI/ECX and spills at +0x20.
+// Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
+// as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
+// typed point setter at the target 144, at the blend 144, and at both boundaries 144.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

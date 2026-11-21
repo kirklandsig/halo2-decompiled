@@ -965,6 +965,12 @@ struct s_physical_block_iterator
 // Ordinal before candidate updates 250, retirement and policy rejection continue 324.
 // NOT kept: the tied forms leave case zero threaded. The other forms disturb the matching prefix.
 // Retirement with an explicit end-of-ring check 254. NOT kept: the matching limit setup changes.
+// M3 lane 1 r150 (h2m fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH each run; control 201): `better` typed
+// `long` 210 (1223 B), `byte` 201 (same code). Lane 1 r124's 40 lead rebuilt (patch -o, 40 at 1213 B). On it, in the
+// deletion walk: the overlap end built through a `long &` bound to a fresh local (`sum = pages; sum += best.offset;`) 55
+// (the offset load then follows the handle as retail, but the sum still lands in best.offset's register); that with
+// best.offset in a local read through a `long const &` for both tests 55; the const-reference start alone 40; the end
+// as `long end = pages; end += best.offset;` 40 (same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

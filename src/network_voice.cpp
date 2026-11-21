@@ -4500,6 +4500,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Whole packet end versus input size 161/155. Last complete packet offset 175/169.
 // Available payload bytes from header-excluded size 160/167.
 // NOT kept: the derived budget drops the retail size update and the last-offset forms change the caller.
+// Round 666. The channel still needs EBP from entry.
+// Next cursor at admission 172, with early byte debit 171, at both validated prefixes 159,
+// with debit and prefix advance 160. One count read for the clamp 139, with admission cursor
+// 173, or with prefix advance 159. Immutable current packet and admission cursor 172.
+// The prefix-advance forms reach 488 bytes with a larger 0x14 frame.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

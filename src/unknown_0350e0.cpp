@@ -2877,6 +2877,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // kill the common load); the x row written `position.x + displacement * reflected.i` 281 (same code); the x row
 // `reflected.i * displacement` 281 (same code); the y and z rows `displacement * reflected.j/k` 281 (same code); the
 // displacement declared after the point 281 (same code).
+// M3 lane 3 r293 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0, control 281): `delta` as an aggregate initialiser `{ x - cam.x,
+// y - cam.y, z - cam.z }` 280 (with it the forward dot's written order no longer matters: the plain i, j, k order 280 too);
+// that with `reflected` as an aggregate initialiser (no vector3f_assign) 416 at retail's 2285 B; the forward axis through
+// a `vector3f const *` to g_4b9dac in the dot and the reflection 281 (same code), with the delta initialiser 280; the delta
+// initialiser with `real attenuation = 1.0f;` beside `animated` 504 (2290 B), with the reflected initialiser too 496 (2285 B).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
