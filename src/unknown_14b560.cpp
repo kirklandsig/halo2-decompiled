@@ -1746,6 +1746,15 @@ static inline s_players_globals *players_globals_14f2e0()
 // shape, as the matched 0xd8cb0's flag test needed: `(char)(mode ^ 4) != 0` 244 (1032 B); `(char)(mode - 4) != 0` 244;
 // `(char)(mode != 4)` 43; `!(char)(mode == 4)` 43; `(short)mode != 4` 43; `(char)(mode & 0xff) != 4` 43 (the byte temp
 // stays AL, so the -1 stays a mov).
+// M3 lane 14 r138 (fast; control 5; B = the outputs in the mode block, 43 at 1031 B). A compile-only build of B reproduces
+// its `mov eax, -1`, and an extra read of the mode exposes the folded compare's temp as AL (`mov al, [edx+12]`), so for
+// retail's `or` that temp must sit outside EAX while the options pointer stays EDX; in a synthetic test the pointer in EAX
+// does give `or eax, -1` after the folded compare. Tried: one options pointer local for both the state and the mode test,
+// on B 278 (1033 B), on the current body 258 (1034 B) (the pointer then lives in EBX across the 0xb8540 call); on B the
+// third-person output passed through a named out pointer 43; on B the kept index read into its own local in the state
+// block 43; on B both failure exits as direct `return result;` with no label 273 (1018 B, as the `return false` form).
+// Compile-only only (each `mov eax, -1` after the folded compare): the result test as `if (result) {} else`, the mode in
+// a char local, a named spawn bool, `4 != mode`, `1 == state`, the NONE initialisers as -1 literals.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
