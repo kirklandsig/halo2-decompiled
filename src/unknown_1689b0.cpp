@@ -2215,6 +2215,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // projected separation and both roots through x/z/y dot 570, interval projection dot with retail
 // signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
 // score.
+// M3 lane 12 r169 (h2m fast with 0x120790 and 0x2469b0, both MATCH; control 551): the face count, radius and sum renamed
+// 551 (identical code: names do not break these homes' ties); `relative` computed j, k, i 567 (2882 B); the second point
+// reconstructed before the first 569 (2869 B, retail's clamp select but the second point stored first); the nearest reset
+// moved to just after the plane distance 548 (the FLT_MAX load and store at retail's place); with `inside = true` moved
+// up as well 545 (statement moves, a lead only); on 545 the edge loop zero-based 599 (2885 B), on main's body 602 (its
+// `vertex = 0` start becomes a loop-invariant zero in EBX where retail makes the index's zero fresh). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
