@@ -2375,6 +2375,11 @@ struct s_unit_motion
 // (ret 0xc) where retail takes them in xmm5/xmm4 with the time in xmm3, and the accumulator spelling that recovers
 // retail's 227 bytes (28) makes LTCG inline this body into 0xc7840 and lose the matched 0x1e5af0 and 0x1faf80:
 // BLOCKED-BY 0xc7840's call sites.
+// Conditional phase-limit selection for all seven phase subsets 86 each.
+// Separate elapsed values 86. With a velocity accumulator 70 at 218 bytes.
+// NOT kept: the accumulator takes XMM4 and returns with ret 4. It inlines
+// into 0xc7840 and loses 0x1e5af0 and 0x1faf80 in the preview. The current
+// velocity arrives on the stack and the two output paths remain split.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -8772,7 +8777,8 @@ real function_50650(real cosine);
 // MiniMax C (11-17): no new form, no lower score (563, was 563): the frame is still 0x8c against retail's 0x80, and the input and vector homes and the prediction/call scheduling still differ.
 // MiniMax E (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the input and vector homes and the prediction/call scheduling still differ; a 300 s permuter run over the body (13 tries on the reduced image, with the twelve other functions of the queue as context) found no variant below its own baseline, and the two 0xc7750 calls still push position and velocity where retail passes them in XMM5/XMM4: BLOCKED-BY 0xc7750.
 // MiniMax A (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, the two 0xc7750 calls still push the position and the velocity where retail passes them in XMM5/XMM4 with the time in XMM3, and the input and vector homes and the prediction's call scheduling still differ: BLOCKED-BY 0xc7750.
-// score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
+// score 491 (was 560): frame 0x8c versus retail 0x80. Frame-space vector homes, speed initialization
+// and the 0xc7750 stack inputs differ. Earlier at 563, the vector homes and prediction/call scheduling differed.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
@@ -8926,6 +8932,11 @@ real function_50650(real cosine);
 // XMM3; giving 0xc7750 retail's own convention (28 at 227 bytes) makes LTCG inline it into this function and the
 // score goes to 995, so the two functions cannot both improve: BLOCKED-BY 0xc7750's convention.
 // MiniMax I (11-20): 491 (was 560): the velocity copy is gone - the speed comes from the pointer's own components and the axis is sampled from it inside the branch - which drops a frame slot and 30 bytes (2453 against retail's 2483); what is left is the frame at 0x8c against retail's 0x80 and the two 0xc7750 calls, which still pass position, velocity and time on the stack where retail keeps them in XMM5, XMM4 and XMM3: BLOCKED-BY 0xc7750's convention.
+// Separate speed, angle, or both outputs 498/491/498.
+// With prediction-entry defaults 635/634/634. Defaults after magnitude 542.
+// Paired outputs 591, idle-arm defaults 544, late reciprocal with
+// original/separate speed outputs 498/505. NOT kept: all forms tie or
+// regress. The frame and speed slots still differ.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
