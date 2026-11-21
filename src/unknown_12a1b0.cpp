@@ -3330,6 +3330,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Earlier at 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
 // Earlier score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // MiniMax G (11-20): no new form, no lower score (597): the entry still differs - retail tests the state before the definition index and reads the flags byte inside the definition guard, masking it with 1 kept in ebx, while this build reads the flags byte into bl at the top and computes the alternate flag before the guard; a constant-one local is folded away and swapping the two top statements changes nothing.
+// Earlier: retail length recovered; saved-register order, record homes, energy-loop
 // Earlier at 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
@@ -3782,6 +3783,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // definition test, 731/731/725/731. The latter recover the entry to +0x1c
 // but the acquisition outcome then uses different stores and the scores rise.
 // Stopped state set from the resume bit 737, same with alternate decoded inside the definition guard 663.
+// Active/pending/both phase snapshots 597/597/597. Late alternate-phase mask
+// with direct, active, pending, both, or both and predecessor-first table input
+// 650/650/650/650/650. The entry request-byte register and track homes still differ.
 // Fallback from both inputs, with or without guarded alternate 762/773. Shared definition test, with or without
 // guarded alternate 780/769. Stopped-state assignment under the definition gate, with or without guarded
 // alternate 631/622. Direct missing/unavailable exits, with alternate between or after the gates 804/792. NOT
