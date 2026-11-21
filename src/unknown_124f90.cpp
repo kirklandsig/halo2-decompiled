@@ -4815,6 +4815,18 @@ struct s_128ca0
 // char, signed char or byte 120 each, written into the count's low byte through a cast of its address 144, masked
 // into the low byte 127. The controller's synch bits declared in a 32-bit unit (with a long count 134, a byte count
 // 140, a char count 214) grow this body and lose matched 0x127390 (32).
+// M3 lane 7 r206 (h2m fast with 0x1293f0/0x1251e0/0x12a420/0x125e60/0x12a810, matched throughout; control 48; L = the LEAD
+// 17 above, re-measured 17; Lc = L with `char count = NONE`, re-measured 204): on L, a char count declared inside the
+// effect-index block with its NONE in an else arm 204, declared there with the default 204; the count as `(char)0xff`,
+// `signed char`, `'\xff'` or `~0` 204 each, `(byte)NONE` or `byte` 255 17 each, `int` NONE or `unsigned long` 0xffffffff
+// 118 each (only `xor edx, edx` ahead of the extraction left in the count block); the playback byte stored NONE then
+// overwritten under the controller test 200 (1055 B). On Lc: the first controller block as a file-local forceinline
+// helper 204; a file-local pointer-or-NULL controller getter for the first block 59 (1056 B), for both blocks 65; the
+// count step as `synch_count = count - 1` 207; the two packet stores ahead of the pitch lookups 67 (1057 B), the pitch
+// bound read ahead of the permutation 45 (1058 B), the permutation sum swapped 204, the effect-index store first 208, the
+// bound read right after the range 81. A char count with each subset of L's three parts 203-209 (all shift at +0x12a).
+// A 604 s annealing permuter run on Lc (39 tries) reached 165 only with swapped call arguments. The compile-only build
+// gives `or dl, -1` for a char count too and shares nothing, so it cannot screen the swap.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

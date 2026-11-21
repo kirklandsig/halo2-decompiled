@@ -37,7 +37,7 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
     return 0.0f;
 }
 
-// score 130 (was 151): The 0x2c frame agrees. The projected J and depth stores exchange order at +0x101.
+// score 130 (was 130): The 0x2c frame agrees. The projected J and depth stores exchange order at +0x101.
 // Rotation scheduling still differs (retail reads the dot i, k, j and finishes cross_i last, after cross_j and cross_k).
 // Earlier first line (151): rotation scheduling and first trig homes still differ.
 // Earlier detail: frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
@@ -789,6 +789,13 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // 153/153 (names do not order those homes); cross3f with no `local_17`, on the old call form 171, with named sine/cosine
 // 141. On the kept form: only the first rotation through the helper 130 (same code); the XY vector before the second copy
 // 128 (two points, not kept); named sine/cosine 164; the axis through cross3f with no `local_17` 222 (1715 B); both 173.
+// M3 lane 7 r207 (h2m fast with 0x170d70 and 0x29b990, both MATCH; control 130): both rotations through a private copy
+// of matched 0x194a10's written-out rotation (its rows and cross order are retail's here) 130 (same code: the text is
+// canonicalised); the turned facing as its own function-scope vector 227 (frame grows); declared in the arm with the
+// angle stores and the output copy written in each arm 253; the first planar normalization through the file's planar
+// normalizer (no direct depth clear) 312, both normalizations through it 264 (1706 B); the second copy written
+// member-wise j, i, k 410. A compile-only screen of the rotation region (helper pasted in; control 93 rows off retail,
+// the real build 86) ranked all six member-wise copy orders at 120-123 and the normalizer forms at 106-113.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
