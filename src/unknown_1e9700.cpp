@@ -355,6 +355,17 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // player byte, with a held or direct setter read, 103/103.
 // NOT kept: all regress. The raw byte avoids Boolean materialization but the
 // enable still remains live across the increment and the maximum stays in EAX.
+// M3 lane 1 r149 (H2M fast; control 76): the enable byte read at each use with no bool local 103 (the second read is
+// still CSE'd into DL after the counter store: no reload without aliasing); the old maximum as a short local 76 (same
+// code); the player clamp as 0x1968b0's own shape (long limits, a counter pointer, nested conditional in the store) 96
+// (aligned 54 -> 25: retail's clamp and bitfield store); that with the enable read at each use 70 (427 B, aligned 26; a
+// gain of 6, under the bar: left the getter's `mov eax, -1` / `xor eax, eax; mov ax` shape, the increment's `inc word
+// [eax+edx+0x16]; lea edi` order and the two enable reloads); on 70 the increment before the row 79, on 96 the increment
+// first 100, on 96 the index test nested after the limits 81; the old maximum read under `enabled && index != NONE` 101;
+// on 70 `inline` on 0x196960's definition with both maxima as `if (g_510ca0) x = function_196960(...)` 102 (423 B).
+// On 70, the old maximum's read as the getter's own shape (`long value = NONE; if (index != NONE) value = ...;` then
+// the copy) 100 (425 B), the team maximum so 94 (425 B), both 102 (423 B; aligned 22: the shape is retail's, the
+// missing enable reloads shift the rest).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -929,6 +940,25 @@ struct s_object_damage_view
 // pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
 // searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
 // the reported slot declared after `selected` 358.
+// M3 lane 6 r222 (H2M_FAST with 0x1e9ce0, 0x1ea770, 0x1ea880, 0xd9640, 0x197160, all matched each time; control 353,
+// aligned 179; body unchanged). Rebuilt for their aligned listings, not their scores: the listed two flags + found-flag
+// dedupe + retail's arm order + team byte argument + assist and related re-reads 366 (1544 B, frame 0x4c: the shared
+// 0x2f0 base at +0x34 is gone); that with the selected-record pointer and the amount local 423 (1563 B, frame 0x50,
+// retail's 0x2f0 cursor, but -1 in EDX, the pool in EDI, the cursor in EBX, the counter in BP and `selected` in memory
+// where retail has EDI, ESI, EBP, BX and EDI); the record pointer alone 454 (1583 B, frame 0x54, -1 in ESI, pool EDI).
+// New spellings of the selection amount read once, each 454 at 1578 B with that same rotation: `if (!(time > recent))
+// continue;` ahead of an amount local, the amount local at function scope, the amount read ahead of the two-part test
+// (1583 B, frame 0x54), the amount local with `best` stored ahead of `selected`; on main `best` stored ahead of
+// `selected` 355. Reading: with the amount read once the pool leaves ESI (the register 0x16bae0 takes it in) for EDI
+// and is copied back at each call, which is what costs `selected` its register; main keeps retail's ESI/EDI/EBP/BX
+// roles only with the amount read twice (cursor +4).
+// M3 lane 7 r209 (h2m fast with 0x197160 and 0xd9640, MATCH; control 353). Reading: retail's killer lives in its home
+// at +0x14 (reloaded into EDX/EDI at the joins), the friendly flag is a stack byte in reported_player's dead slot (stored
+// false, then 1) and self a byte in object_index's dead slot. Tried: the killer fallback with the `killer != NONE` arm
+// first (retail's block order; an arm swap, diagnostic) 363 (1532 B); the assist stores reading the record's player index
+// 392 (1564 B: the cursor still +4); the selected entry's player index named for the datum test and the killer 403 (1596
+// B); the friendly test passed in the 0x1ea770 call (no local) 350 (1544 B: friendly then stays in AL where retail
+// keeps a stack byte; three points, not kept); self and friendly both in the call 359 (1535 B).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

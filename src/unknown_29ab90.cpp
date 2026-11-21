@@ -39,7 +39,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
-// score 286 (was 286): r275 and r164 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// score 286 (was 286): r130, r275 and r164 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
 // 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
 // view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
@@ -606,6 +606,11 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // correction stored in the output vector through a renaming reference 285 (1863 B, aligned 189), with the output vector
 // initialised first 289; the correction written into local_5 directly 286, with the planar idiom 309. Site 1 is still
 // BLOCKED-BY 0x2b400.
+// M3 lane 2 r130 (plain checks: the reduced image builds 0x29b2e0 at 1309 B and this function at 343, so it misleads):
+// local_2 and local_9 renamed into each other's names 286 and actor/object/properties/speed names 286 (same code
+// each: these slots do not follow names); the sum through the existing vector3f_add 316 (retail's 1863 B); the forward
+// correction as vector3f_scale of a `{ 1, 0, 0 }` constant 326 (1843 B); the saved direction's planar copy taken from
+// local_4 before the 0x29b2e0 call with local_27 dropped 378 (1816 B). Site 1 still BLOCKED-BY 0x2b400 (machine 1's file).
 // M3 lane 16 r170 (plain checks: h2m fast now builds this body at 343, 1871 B, with any callee set, 0x29b2e0 there at 1309 B
 // against 1707 B in the full build; control 286): the third planar step through the existing planar_normalize 286; the
 // first and third through it 286; local_1, local_2 and local_9 renamed object, settings, magnitude 286 (names do not move

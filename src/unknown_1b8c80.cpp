@@ -970,6 +970,11 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x26c field, a result-style inline predicate, the barrier inside an inline lookup helper, the state defined or assigned
 // again after the barrier. Diagnostics: a NULL test of the state after the lookup loads the slot before the compare but
 // moves the data base to ESI; a slot read in the join block loads it after the compare.
+// M3 lane 15 r127 (h2m fast; control 6): the state picked by the busy test (`state = actor->unknown26c == NONE ? slot :
+// NULL`, then `if (state)`) 57 (215 B, a branchless select); the slot parameter typed `long` (table entry cast) 6; the
+// third parameter typed `long` 6; `__assume(state != NULL)` with a redundant `state &&` in the busy test 6 (the guard goes
+// before allocation); the flags test through the slot's own data member (`slot->unknownc[0x22 - 0xc] & 4`) 6 (all the
+// 6s the same code).
 // M3 lane 1 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; a compile-only build of the file is exact
 // here): the slot's 0x1c seat-selection view (0x1ba5c0's) used for both the flags test and the point copy, formed at the
 // top with the barrier 29 (the pool pointer takes EDX, the data base folds into the add, ESI pushed at entry); formed
@@ -2245,6 +2250,14 @@ void function_1f86a0(long actor_index);
 // difference +0x4); the decline's test through a bool named from the mask after `same` 241 (866 B); every selection field
 // read and written through the slot state view (`state->unknown1c`, `seat_index`, `flags`, `unknown28`, `unknown2c`, the
 // siblings' spelling), the selection kept only for 0x1b9e70's argument, 220 (864 B). Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1b8c80/0x1ba990/0x1b9e70, all MATCH each run; control 123): diagnostic re-run of the
+// no-mask-local form (244, 868 B): the flags load is shared across both root calls (so the root call is treated as
+// writing nothing), the 0x20 result is spilled to [esp+0x13] as retail, and only the shared flags byte in BL for the 0x40
+// test keeps the entry out of EBX. New forms: joint index declared first with the sibling 0x1b47b0's `for` iterator loop
+// 123 (same code); the selection pointer declared after the parent test 234 (862 B); no state local (slot cast at the
+// element-index and timer stores) 123 (same code); no mask local with both 0x20 tests through `state->flags` 243 (865 B);
+// the decline decided by a positive `accept` bool (`u ? (flags & 0x40) && same : specified != 0x20 || same`) 123 (same
+// code). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

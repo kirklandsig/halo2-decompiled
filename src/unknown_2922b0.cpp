@@ -824,6 +824,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // declared before response evaluation 645/535; copied in-place response 566;
 // first output reused in place by second 551; separate first input 542.
 // All leave the first success byte at ESP+0x13.
+// M3 lane 2 r131 (H2M_FAST with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364, masked 160): the file-local
+// cross replaced by the shared cross3f_staged at its four calls 654 (2872 B; aligned 345, masked 130); one exit (positive
+// range test, the active block, `return local_0;` last) 633 (2868 B); the angle output as `local_4 / local_6` 649 (2874 B;
+// aligned 289); the shared cross with that division 639 (2886 B; aligned 276, masked 110); that plus the positive test with
+// the range named first in the active block, `return local_0;` closing it and `return true;` last (lane 2 r113's lead
+// without the function-scope array) 610 (2886 B; aligned 267, masked 102: field_48 is read once for the test and the range
+// as in retail, but the zero takes XMM1 and the range XMM0, retail the reverse, and the crosses run XMM7/6/5 where
+// retail's run XMM6/5/4). Body unchanged.
 // M3 lane 16 r168 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): the output clears as one chained
 // assignment 612 (2869 B); the four ray lengths set by one chained assignment (`local_14[0] = ... = local_14[3] =
 // field_14 + range;`) 516 (2864 B, under the bar, not kept); on that: the ray clamp's product written constant first 516

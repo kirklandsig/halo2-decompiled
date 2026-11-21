@@ -243,6 +243,11 @@ bool function_1946f0(s_bitstream *stream)
 // `&data[index] + 1` with `count * sizeof(byte)`, the bound test `size > index` and the mask through `*(data + index)` 4;
 // `saved / 8` written at the bound test and the masked byte with a block-local data local and the index named after the mask
 // block 35; the same without the data local 2 (same code).
+// M3 lane 4 r243 (h2m fast with 0x1957d0/0x195820, both MATCH): `saved / 8` written at every use with the clear from
+// `&stream->data[saved / 8 + 1]` and the count as `size_in_bytes - (saved / 8 + 1)` 2; that with the two accounting stores
+// swapped 13; a named index with the masked byte as `*(stream->data + byte_index)` and the clear from `stream->data +
+// (byte_index + 1)` 2, that with `if (!discard) return;` ahead of the block 2, that with the index named at the
+// function's top beside `saved` 26. Both LEAs stay data first in every 2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

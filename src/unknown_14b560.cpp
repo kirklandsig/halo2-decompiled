@@ -1036,6 +1036,10 @@ bool function_e4050(long object_index);
 // A redundant NONE initialiser for the root 43 (with the callees in the image); the root's object named for the bit-18
 // test 44; the player datum as a const pointer 44; the walk's parent in its own block 44; the parent declared ahead of
 // the root 44 (all the same code).
+// M3 lane 4 r244 (h2m fast, control 44 there, 43 full; body unchanged): BLOCKED-BY 0xbaf80 still (pinned out of line in an
+// avoid file). Use-count forms for the EDI/EBX swap, each the same code (44): 0xe4050 passed the player's field; the unit
+// object looked up from the field; the walk's root started from the field; the continue test on the field with the unit
+// read after it. A single exit (`result = true; break;` at the four exits) 144 (450 B).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2903,6 +2907,13 @@ static __forceinline long player_round_ticks(real value)
 // candidate at each call as well 683 (2730 B); the 0x10 block reading the unit through a fresh lookup 677 (2736 B); the
 // parent and seat read through fresh lookups 696 (2732 B); both 688 (2740 B, retail's length). BLOCKED-BY 0xe68c0
 // (expanded at the last site in retail) as before.
+// M3 lane 4 r244 (h2m fast; control 703; body unchanged). Inline-cost reading (one-object link-time build of this file with
+// the objects of 0x151b80, 0xccd20 and 0xe68c0, threshold search; the build uses 81): 0xe68c0 is never expanded, even at 400,
+// because its file is built /Ob1 (a contributor file), so retail's expansion of it at the last site (its second request home,
+// frame 0x74) cannot happen in this build: BLOCKED-BY 0xe68c0's file flags. The first 0x151b80 site expands from 56 (the
+// second from 100) and 0xccd20 from 64; there the 0x80 test nested or repeated changes neither at 81. Trials: the 0x80 site
+// as `if (actions & 0x80) { bool dropped = ... || ...; if (dropped) ... }` 703; the 0xccd20 site nested under
+// `if (buttons & 0x10)` 703; both 703 (34 calls still); the last request through the existing 0xe68c0 725 (2698 B, a call).
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3610,6 +3621,20 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // under `if (globals->unknown9c == 0)` in place of the early return; the final store under `if (!failed && last_unit !=
 // NONE)`; `if (root != NONE)` ahead of the busy test; `!busy && unit != NONE`; `last_unit != NONE &&` ahead of loop 2's
 // player tests.
+// M3 lane 4 r242 (H2M_FAST with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00 and 0x6b380,
+// all MATCH but 0x14f2e0 (5, as in the full build); control 103; with only 0x14d3a0 and 0x13cb40 listed the same body is
+// 193 at 592 B, so that list is needed for a faithful screen): loop 1 stepped by include/data_iterator.h's existing
+// data_datum_iterator_next_called in place of the file's copy 155 (597 B), loop 2 through it as well 173 (566 B, first
+// difference +0x3e: the prologue then takes ESI as retail, but loop 2's out-of-line step is gone); loop 2's datum index
+// passed as `iterator.datum_index` at both calls 103; both set-ups as `iterator.datum_index = iterator.index = NONE;`
+// 103; loop 1's body nested under `if (unit != NONE)` in place of the `continue` 103 (all three the same code).
+// BLOCKED-BY 0xb8540 stands.
+// M3 lane 4 r244 (h2m fast with r242's list: 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00,
+// 0x6b380; control 103; body unchanged): the root walk from a NONE root as `while (current != NONE) { root = current; ... }`
+// 103 (same code); the position copied member by member through a point pointer 117 (625 B); `busy = badc0(..) && e4050(..)`
+// 105; the busy test with its arms swapped 120; the vehicle arm as `if (vehicle && vehicle[0x34c] > 0) busy = true;` 117.
+// Reading: ours loads the globals pointer into EDI at loop 1's head each pass and uses it for the busy store; retail reloads
+// it at the store itself. BLOCKED-BY 0xb8540 (its draft still loses 23 functions when enabled, see its file).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
