@@ -1888,6 +1888,12 @@ PRIVATE __forceinline real const &component_time_step()
 // time-step binding inside the stop-distance block for the second product 26; the scale helper's result initialised
 // to the acceleration at its declaration (the else arm kept) 26 (all the same code: `[eax + 4]` at both reads, the
 // scale in XMM1).
+// M3 lane 12 r167 (h2m fast; control 26): `target -= position` ahead of the time-step binding 119 (473 B); the stop distance
+// computed ahead of the force test 26 (same code); the step's magnitude taken at the return 157 (485 B); no reference, the
+// getter called at each product 26 (same code); the stop distance reading `g_510c54->rate` directly 26 (same code). Retail's
+// only other `[reg + 4]` read then `add reg, 4` on this global is matched 0xc6810, where four direct reads (the first in each
+// of two arms, float stores through an object pointer between them) make the rate's address a common subexpression; here
+// only argument-home stores sit between the two reads, and the link-time build keeps the globals pointer. Body unchanged.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

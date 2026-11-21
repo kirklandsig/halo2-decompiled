@@ -482,6 +482,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// score 23 (was 23): the word mask's one reload ahead of the first jne, and present's update in EBX remain.
 // MiniMax H (11-20): no new form, no lower score (23): the old team mask still reloads narrowly for the compare and
 // once more for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares
 // that register with the OR for the store; a dword mask with a dword OR and a word store (33), the same with the
@@ -525,7 +526,6 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax E (11-15): no new form, no lower score (32): the word mask read through the pointer still gives retail's head and loop (77) but not its tail, the mask read off the field rematerialises it (129), and a one-use team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) is retail's loop and reaches 29 - not kept, it is a one-use local and 3 points is under the bar (MiniMax D's 11-14 form, dropped by the coordinator); what is left is the old mask's word load and word spill (retail's `mov cx` and a word store against our zero-extended ECX and a dword store), its one reload into ECX ahead of the first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax B (11-19): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, its reload ahead of the first jne is still split between the compare and the change block, the playing teams are still in EAX where retail keeps them in EDX, and the present update still lands in ESI where retail keeps it in EBX; a word mask with a separate dword copy folds back to the same code, and the word mask alone (77), the plain present (102), the field paths (129), the guard orders (78, 91) and the store orders all score 63 or more.
-// score 23 (was 23): the word mask's one reload ahead of the first jne, and present's update in EBX remain.
 // 32 before MiniMax G's dword update local.
 // Retail shares one old-mask reload and holds the playing bitmap in EDX. The present update uses a different register.
 // the word mask's one reload ahead of the first jne, and present's update in EBX remain.
@@ -929,6 +929,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Present bitmap read/compound OR/store, explicit OR, bit-first OR, or a bit shared with the playing update:
 // 23/23/23/114. With a full-width publication OR: 24/24/24/115.
 // NOT kept: the completed present update and shared old-mask reload differ, and the shared bit changes the loop.
+// M3 lane 12 r167 (h2m fast; control 23): `1 << team` in both updates 37 (383 B), with the one-use team-bit carrier 37;
+// a plain present with the carrier 63 (384 B); a plain present with `1 << team` in both 72 (377 B); the change test as a
+// forceinline by-value predicate (old playing, playing, old mask, present) 101 (393 B), with the carrier 102. Diagnostic:
+// the carrier alone 20 (the loop exact, only the post-loop block left; a one-use local, match-only), with the mask pointer
+// declared above the old playing mask 20 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
