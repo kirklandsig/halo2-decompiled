@@ -4267,6 +4267,29 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // copy choices move together; whenever the shift is its own value (not coalesced with `input`), small's load coalesces
 // with the alpha selector's register, and retail has neither coalesced. Diagnostic: B without the shifted local in the
 // whole, alpha, fraction, input order 14 (small in CL as retail, alpha computed ahead of input).
+// M3 lane 13 r134 (fast, control 9; aligned = lines differing after alignment, this body 6): on the no-shifted-local
+// form (re-measured 939, aligned 15: retail's shift, the small flag loaded into AL after fraction's move with no copy)
+// the two stage-one words through a forced-inline four-argument packing function 939 (same code); the input selector
+// ahead of fraction 976 (4840 B), ahead of whole 965 (4832 B); a second `small ? 5 : 4` selector variable for the
+// stage-one alpha word 225, the selector written inside that word 225 (the same code as that); both selectors as
+// defaults set under one `if (small)` 948, under two ifs 962, the alpha selector alone if-assigned 949, the input
+// selector alone 934 (branches each); the definition written through a local pointer to it 939 (same code); the
+// exponent search with a float power local 939, as a `for` 1048 (4924 B), as the guarded do/while 939, as `while
+// (true)` with a break 939; the exponent search reusing the input selector's variable 939, and on this body 9 (same
+// code each: the two values are split again). With the shifted local: one shifted local per stage-one word 939; the
+// RGB word named and the alpha word as that local `| 0x8000` 923; the alpha word as the stored RGB word `| 0x8000`
+// 948, the chained store then `|= 0x8000` 948. Diagnostics (an added store each, restored): this body plus one later
+// store of `input` 936, or the no-local form plus a store of `input` after the stage-one words 936 or ahead of them
+// 939, give retail's selector block and shift exactly (aligned 6: the store, one pad and the two reload pairs); so
+// does the no-local form with one, two or three loads of a stack parameter stored in the stage block (945, 959, 952),
+// one in the selector block 961, one at the stage block's end 939, or a later read of `small` there 942. A store of
+// alpha_input or whole ahead of the stage-one words 246, 247, of alpha_input, fraction, whole or fixed after them 958,
+// 950, 973, 946, of a constant (three values) 973, 270, 972, a store of `input` ahead of the clear 939 (removed by the
+// compiler), or the parameter load placed after the exponent loop 974, at the head of mode one 958 or two 962, at the
+// function's top 1198 or end 945, 946: the flag stays in AL. Reading: on the no-local form only the flag's register is
+// left (plus the reload pairs lane 8 r205's base fixes), and retail's block needs one more integer load, or a second
+// use of the input selector, between the fixed-point conversion and the exponent loop's entry test; no statement that
+// folds away was found.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

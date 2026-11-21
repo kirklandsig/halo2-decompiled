@@ -250,6 +250,10 @@ union s_6ec80
 // loop's bit named in the loop body (`dword bit = 1 << local_15; local_14 |= bit;`) 234 (the entry allocation moves); the
 // players walked through a `s_session_player const *` stepped each pass 9; a `word` mask 15 (974 B); the data and mask tests
 // as two separate ifs 156 (978 B); with the mask scoped in the guard, the bit named in the loop body 109 (re-measured).
+// M3 lane 13 r136 (h2m fast with 0x6ec10/0x5b120; base 5), all with the mask zeroed in the guard: an implied `local_2 &&` in
+// the loop's active test 225 (folded before allocation); the machine copy declared at its assignment 225; `value_18` declared
+// at its read 225; both block pointers declared at their NULL stores 225 (as lane 16 r135). Entry listing: NONE's EDI web is
+// a register operand at the 0x4d0c, 0x49c8 and second_id compares, where retail compares 0x49c8 with an immediate.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
