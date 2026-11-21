@@ -9670,7 +9670,8 @@ struct s_unit_melee_collision
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 484 (was 493): The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
+// score 484 (was 493): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
+// Earlier detail: The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
 // type the file's own damage code passes), so its copies are the word moves retail's are; the range read from the
@@ -9819,6 +9820,9 @@ struct s_unit_melee_collision
 // names 531, selected-hit word set after the seat byte 533, collision storage first 531, object case
 // first 531, and branch-produced damage scale 531. NOT kept: the frame reaches 0x17c but the body
 // shortens to 2205 bytes and scores rise.
+// Per-product range with row, column or both while loops 531/531/531. Axial addition in each ray coordinate with
+// for loops, row while, column while or both while 533/533/533/533. Named transverse sums and axial products
+// 533. NOT kept: these reach frame 0x17c but shrink to 2205 bytes and raise the score.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
