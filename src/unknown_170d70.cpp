@@ -414,6 +414,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // scoped rotation-first equality 357, reversed time-test spelling 94, flag-first snap test 100.
 // NOT kept: the first and seventh forms recover both traversal slots through +0x34a at 1396 bytes, but
 // regress. The rotation tests grow the body to 1431 bytes and lose the opening schedule.
+// With the named deadline: signed ordinal declared before cursor 94; early cursor advance 215;
+// existing i-k-j basis dot 70, with successful early exit 70; both squared-length deviations
+// computed before tests 131; alternate normalization of both axes 92; deadline array extent 95;
+// staged side cross 94. NOT kept: the 94 and 92 forms recover the traversal through +0x34a
+// at 1396 bytes. The dot forms shorten to 1389 bytes. The correction and normalization still differ.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1123,6 +1128,12 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // volume address 105; the product as `entry->key * 0x1bc + cameras` 105; the camera table copied into a local, read once
 // through its own address, or bound by const reference at the top of the admitted block 105 each (the copy folds and the
 // table still loads into EDX after the count store).
+// Native int camera displacement 11; camera row advanced from a shared key 105;
+// entry address before capacity with separate displacement 127; reserved volume reference
+// 11; positive capacity arm 11; pool array address with early displacement 13; const key
+// field reference 11; native plane array width 11. NOT kept: the lower scores retain the
+// one-use displacement and miss the early camera-table load and key/offset register schedule.
+// Entry address before capacity also changes the caller.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -2152,6 +2163,11 @@ struct s_pool_view_172840
 // code); the copy through a forced-inline memcpy wrapper that sets up the source first (the form of the copy helper in
 // src/unknown_1932c0.cpp) 55 / 17 (same code: `mov edi, eax` still precedes `add esi, 0x2c`). NOT kept: store orders
 // are match-only.
+// Read-only dequeued entry 55; allocated entry reference 55; narrow opposite endpoint update 55;
+// const narrow endpoint with late widening 55; named clip result 55; native clip views for both
+// inputs and output count/points 256; reservation counter postincrement after capacities 55;
+// default bounds by native fields 56. NOT kept: the native clip views move the frame. The native
+// bounds fields remove one byte and still load the link and key into exchanged scratch registers.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
