@@ -981,6 +981,10 @@ void function_245400(s_source_245400 const *source, long index,
 // or after side tests, 165/205/205/218 each. After sides with second material bound first 218;
 // separate side/ordinal decodes 199, long codes from records 198, both 167.
 // NOT kept: the final two-decode form reaches the 0x2c frame and 783 bytes but scores 167.
+// M3 lane 4 r240 (fast with 0x245aa0, 0x245400, 0x244de0, 0x245270; control 164; lane 3 r271's lead rebuilt 53 at 789 B).
+// On the lead: cross3f with the normals swapped and both facing tests negated 63; the facing dot as dot3f(&local_6,
+// &local_12) 61; the cross local declared beside the edge 53 (same code); cross3f_staged swapped with negated tests 63;
+// the swapped cross with the edge-first dot3f 69. The first normal's k is still loaded twice where retail loads it once.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

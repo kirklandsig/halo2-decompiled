@@ -842,6 +842,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // re-measured 158 (1938 B, first difference +0x199, the packed colour's home moves from +0x2c to +0x24); the second
 // set's extents and reciprocals declared first 162, the blend's weight named once for the aspect block's four products
 // 162, the pivot rows' complement named once in the sequence arm 162 (same code each). Body unchanged.
+// M3 lane 4 r240 (fast with 0x2243c0, 0x23ed30; control 162): the first aspect pair set in both arms of its test 223
+// (1953 B); the second test's blended terms in one statement each 162 (same code); the sequence blend as a ternary keeping
+// the old value 162 (same code); the blend declared after the packed colour 497 (1953 B); the blend set in both arms of the
+// 0x20 test 248 (1953 B). Retail computes ax, ay, by, 1/ax, 1/ay, bx, 1/bx, 1/by in that order with the blend in XMM5.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

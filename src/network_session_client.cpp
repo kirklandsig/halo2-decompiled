@@ -1427,6 +1427,16 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // (the first definition is dropped, the colouring of the branch form); the destination declared in the branch as
 // `identities[count]` 195; the pointer step ahead of the count step on this body 17 (the scheduler moves `inc ebx`
 // after the step). Re-measured: the destination declared in the branch with the step first 216 (728 B).
+// M3 lane 4 r240 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9), all on the indexed copy
+// (195) with a byte pointer to a state offset named at the top: +0x70 with the call's three pushed addresses derived
+// from it 14 (first difference +0x245, retail's code through the NONE fill; the base is materialised at the call where
+// retail forms each address from the reloaded state); the key id bound by a const reference 49; the typed part pointer
+// for all five operands 195. Sweep of the base (+0x6c, +0x70, +0x78, +0x88) by the operands read through it, 64 forms:
+// +0x6c 195 each, +0x70 14 to 199, +0x78 best 11, +0x88 best 3 (the identity pushed as the base, the +0x6c mode read as
+// `*(long *)(base - 0x1c)`: left that load's base, `[eax - 0x1c]` against `[edi + 0x6c]`, and the state reload one store
+// later; steering spelling, match-only); the +0x88 base used only for the push 51 (retail's instructions, not its
+// schedule). On the 3: the base's second use in the tail store, the else arm's count, its source, both, all three 230 /
+// 51 / 228 / 194 / 196; declared after the close call or the clear 3 / 3, after the if/else 196, before the call 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
