@@ -226,7 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 8 (was 49): The entry and header check agree. The object lookup still uses movzx and an extra index store.
+// score 8 (was 8): The entry and header check agree. The object lookup still uses movzx and an extra index store.
 // MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
 // makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
 // one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
@@ -1023,6 +1023,15 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // field 42, given `(word)object_index` 45 (179 B); with no second store and the flagged arm clearing the local and
 // storing it 77 (160 B), given the entity's field 77 (the expanded lookup is merged with the header test's each time).
 // A 1200 s permuter run (121 tries) found nothing below 8. Body unchanged.
+// M3 lane 7 r208 (H2M_FAST with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 8).
+// On retail's shape (77): the flag test through an inline predicate taking the index by const reference 77; the object
+// read through an inline getter taking the index by const reference 77 (both the shape's code). A new retest: the
+// flagged arm storing NONE inside the NONE test and the valid block under `if (entity->object_index == object_index)`
+// 56 (176 B: the data pointer is reloaded as retail, but the scaled index is shared, `shl ecx, 2`, and the retest
+// `cmp [edi + 8], eax` stays in the code), with the comparison's operands exchanged 56. On this body: the object read
+// indexed `(dword)object_index` re-measured 42 (shared index). Reading: the scaled index is shared whenever the object
+// read is dominated by the header test, even across a join; retail's recomputed index needs a path to the object read
+// that skips the header test until after CSE. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

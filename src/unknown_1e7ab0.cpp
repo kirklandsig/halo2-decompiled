@@ -611,6 +611,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
 // the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child
 // iterator declared ahead of the seat test 117 (all the same code).
+// M3 lane 7 r208 (H2M_FAST with 0x1e83c0, MATCH throughout; control 117, aligned 57, register-masked 4): the entry test as
+// `!(flag && state == 2)` re-measured 117; the entry assigned inside the condition (`(entry = entry_420_get(type)) !=
+// NULL`) 606 (2324 B); the player index and the entry declared const 117; the entry's flag byte at +0x10 read through a
+// typed byte member 117 (same code each); case 4's result set true before the child walk and cleared at the blocking
+// child, no blocked flag, 504 (2332 B). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
