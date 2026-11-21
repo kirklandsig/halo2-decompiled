@@ -3821,6 +3821,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
 // the magazine debit where retail stores it after admission and the magazine update.
 // The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
+// Exhaustive burst assignments 577; shared post-wake accumulator 630; selected burst before round
+// multiplication 639; separate round requirements 651; selected burst with short minimum 620;
+// named shot multiplier or debit conversion 603/603; short pre-wake minimum 608.
+// NOT kept: 577 defers the default burst store until after the wake call, which retail places before it.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

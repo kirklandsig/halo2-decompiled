@@ -2192,6 +2192,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // second point copied from the return 617. Early signed successor with the first,
 // second or both returns 603/603/616, between both reconstructions 558.
 // NOT kept: all tie or regress. The early forms change the 0xb964 frame.
+// Face, edge or both as vector accumulators with scalar updates 618/620/613.
+// Shared vector updates for face, edge or both 623/625/624; both with aggregate initializers
+// or shared output scaling 643/624. NOT kept, higher scores and two controls changed with both vectors.
 // M3 lane 11 r142 (fast with 0x120790/0x2469b0, both MATCH; control 551, aligned 564, masked 311): in post-call offsets retail
 // homes the second count (sharing the prism index's slot) at 0x88, the first radius 0x8c, the first count 0x90 and the
 // second radius 0x94, ours the radii at 0x8c/0x90 and the counts at 0x94/0x98. Names do not order these slots:

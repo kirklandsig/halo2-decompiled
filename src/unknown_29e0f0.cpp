@@ -89,6 +89,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // entry and record pointers, the repeated false store at the no-selection exit) is match-only. Patch:
 // held-29e0f0-match-lane5-r225 (coordinator). A match without the twins needs another way to get those orders.
 // Earlier at 321 (was 321): the callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
+// The 0x64 frame and selected defaults agree. First +0x2c stores best distance at
+// ESP+0x3c instead of +0x38. The callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
 // group index, EBX for the group table and the record; retail the reverse), and the pass scan's record index is
 // strength-reduced into a callee-saved register where retail recomputes it from the record base at the latch.
 // Earlier 367 (was 329 with MiniMax C's hand-inverted loop, reverted at review; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
@@ -96,7 +98,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // callee-saved registers the other way round (retail keeps the group pointer in EBX and the g_4e0350 table in EBP, ours the
 // reverse), and the three -1 homes and the best-distance float sit at 0x24/0x0c/0x2c and 0x40 against retail's
 // 0x44/0x28/0x24 and 0x38.
-// score 321 (was 367; 382 before MiniMax G's memset and bit-vector group form): retail's root group table and pool table take EBX and EBP the other way round, the best distance and the selected indexes have different stack homes, and the found flag and local_29 sit in other slots (retail: the dead argument slot and a dword at +0x4c). The group loop shares the bitmap mask and address where retail recomputes them.
+// Earlier 321 (was 367; 382 before MiniMax G's memset and bit-vector group form): retail's root group table and pool table take EBX and EBP the other way round, the best distance and the selected indexes have different stack homes, and the found flag and local_29 sit in other slots (retail: the dead argument slot and a dword at +0x4c). The group loop shares the bitmap mask and address where retail recomputes them.
 // M3 lane 4 r230 (fast with 0x29e730/0x29de20, both MATCH; control 367, difflib-aligned 323, register/offset-masked 135).
 // Retail's output loop indexes the output by the count each pass (`imul eax, eax, 0x1c`), walks a separate cursor (SI)
 // and keeps the group's record in EDI. The output written to `&arg_4->field_30[local_37]` with a `short` cursor copied
@@ -803,6 +805,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Reading: retail recomputes the record index from local_20 at the latch (`mov eax, [esp+0x20]; add eax, ebp`), so
 // EBX stays free for the group index across the pass loop and the group index's home can share the dead argument slot
 // with the found flag; once something stops the strength reduction, local_29 `long` should give retail's frame 0x64.
+// Three-stage distance accumulation 422; paired subtotal 321; pass or group score scope 321/321;
+// nested validator 321; separate or combined early score rejection 321/321; in-place pair subtotal 321.
+// The 0x64 frame and selected defaults agree. Best distance still uses +0x3c instead of +0x38.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

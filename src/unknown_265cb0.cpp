@@ -1006,6 +1006,9 @@ real function_30bf0(vector3f *vector);
 // with chained, conditional, explicit-tier or fallback result selection 84/153/84/153.
 // NOT kept: Two zero-result fallback forms reach 1308 bytes at 90. The named tests tie or regress.
 // The result and clip slots remain displaced.
+// Direct default-level returns at mode, settings, unscaled radius or scaled radius failure 315/320/254/238.
+// Paired entry guards, paired radius guards, mode with unscaled radius, and all four guards 325/222/360/317.
+// NOT kept. The exits raise the score and leave the result/clip allocation unresolved.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
