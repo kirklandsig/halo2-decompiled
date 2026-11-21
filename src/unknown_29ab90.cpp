@@ -582,8 +582,8 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // main's declaration-plus-if form (ours colours local_19 XMM6 and local_24 XMM5, where retail gives local_24 XMM1), so
 // the 275 only drops the early load and re-aligns later rows. The forward-gain clamp as `local_16 < local_30` 286; the
 // sign test as `0.0f > local_25` 286; local_18 declared ahead of local_19 286.
-// Typed actor reset and target, direction and request flag, and turn status, alone and combined,
-// scored 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
+// Typed actor reset and target, direction and request flag, and turn status, alone and combined, all
+// at 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
 // The object/settings spills still differ with the 0x64 frame in place.
 // M3 lane 2 r127 (fast; control 286 at 1865 B, aligned / register-masked / offset-masked 234 / 191 / 73): LEAD for site 1:
 // the matched 0xedff0's file-local planar normalize in src/unknown_0a76b0.cpp (one length local, scaling path falling
@@ -611,6 +611,11 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // each: these slots do not follow names); the sum through the existing vector3f_add 316 (retail's 1863 B); the forward
 // correction as vector3f_scale of a `{ 1, 0, 0 }` constant 326 (1843 B); the saved direction's planar copy taken from
 // local_4 before the 0x29b2e0 call with local_27 dropped 378 (1816 B). Site 1 still BLOCKED-BY 0x2b400 (machine 1's file).
+// M3 lane 16 r170 (plain checks: h2m fast now builds this body at 343, 1871 B, with any callee set, 0x29b2e0 there at 1309 B
+// against 1707 B in the full build; control 286): the third planar step through the existing planar_normalize 286; the
+// first and third through it 286; local_1, local_2 and local_9 renamed object, settings, magnitude 286 (names do not move
+// these homes); local_4 read straight from the actor field with local_3 declared after it 286; local_15 as the planar idiom
+// `*(vector2f const *)local_3` 286 (all the same code). Still BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

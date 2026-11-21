@@ -988,6 +988,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // centre-transform loops 675 (same code); the node index stored before the point copy in the value28 else arm 694. Retail
 // computes 0x2c0d60's previous-direction pointer in ECX right after pushing its last two arguments (the ninth parameter in
 // declared order); that move needs declaration and call edits in two other lanes' files this round.
+// M3 lane 7 r210 (h2m fast with 0x270930 and 0x2c4030, both MATCH each run; control 675): the radius test written
+// `radius < state->source.radius` 675 (same code); the source radius read once into a const local for the test and the
+// assignment 754; flags left undefined at its declaration and zeroed in a `!actor` arm 759; the step's input pointer
+// formed ahead of the output-count test 685; the object-index clear moved ahead of the actor block 761. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

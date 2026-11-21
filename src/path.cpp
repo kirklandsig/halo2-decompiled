@@ -1026,6 +1026,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // entry node receiver 361. Traversal-lifetime count with long/short link
 // ordinal 341/373. NOT kept: the forms regress even when the frame is 0xe4.
 // The entry depth load still folds and the predecessor/flag homes differ.
+// Traversal predecessor/count names, edge-vector names first, converted-endpoint names
+// first, and separate scan/history names with long link ordinal 286/286/286/286,
+// short ordinal 359/359/359/359. Names leave frame and allocation unchanged
+// at each width. The short ordinal removes the cursor but shortens to 1375.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -1034,6 +1034,10 @@ real g_55e618;
 // tangent 201 (1557 B); no copy, the tangent from the particle 200 (1543 B); a velocity pointer for the helper and the tangent
 // 194 (1541 B); no copy, the tangent through the existing vector3d_from_points3d 198 (1543 B). Retail reads v.i twice from the
 // particle and v.j, v.k through a pointer to the velocity. Body unchanged.
+// Back up the sweep origin with the shared point difference or point setter.
+// direct particle position 254/254, position snapshot 102/103.
+// With the shared sweep scale, direct 256/256 and snapshot 129/130.
+// Frame stays 0x124 and the sweep/collision slots remain displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -492,6 +492,11 @@ void function_2232a0(void)
 // declared inside the loop (no outer declaration, no found-arm clear) 110 (first +0xa8); the view count computed right
 // after the player count, ahead of the counter and layout 47 (same code); the view count declared const 47 (same code).
 // Body unchanged.
+// M3 lane 6 r224 (H2M_FAST with 0x223240/0x2232a0, MATCH unless said; control 47; all restored): `inline` on 0x223080's
+// definition 47 (the expanded terminal copy unchanged); the terminal record as byte arithmetic on the array with the view
+// count times the record size 47 (same code); in 0x223080 the record through a reference to `*arg_3` 47 (same code); its
+// three header stores moved to the end of each arm 98 (0x223080 137 at 446 B, 0x2232a0 19); the view count declared after
+// the loop 40 (re-measure), with the `inline` on 0x223080 40 (no further fold). Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
