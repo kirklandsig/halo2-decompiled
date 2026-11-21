@@ -3779,6 +3779,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // guarded alternate 780/769. Stopped-state assignment under the definition gate, with or without guarded
 // alternate 631/622. Direct missing/unavailable exits, with alternate between or after the gates 804/792. NOT
 // kept: every form raises the score and the original saved-register sequence is still missing.
+// MiniMax C (11-20): no new form, no lower score (597): retail masks the flags byte with 1 after the pushes and keeps
+// the alternate byte at [esp+0x13] after the definition_index test, this build hoists the flag into BL before the
+// test; the form that reads `alternate` inside the definition guard measures 615 and is not kept, and the track loop
+// still exchanges the index and the NONE with retail's roles.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

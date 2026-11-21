@@ -5142,6 +5142,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // the helper's factor 2 placed as retail computes it (`w * w * 2`, `(...) * 2`, `w * 2`) 484 (same code); the transform
 // view declared at the top of the listener block 519; the state pointer as the old ternary 521; one state pointer at
 // the block top for both arms 566.
+// MiniMax C (11-20): no new form, no lower score (484): the frame is 0xec against retail's 0xe8, the channel pointer is
+// `lea ebp,[edx+0xb8]` against retail's [edx+0xa8] (a header offset this lane may not change), the unit index sits at
+// [esp+0x6c] against retail's [esp+0x34] and the -1 constant is held in ebx against retail's esi.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

@@ -1725,6 +1725,9 @@ void function_150820(dword *bits, bool local_only)
 // at every use on the 73 lead 73, at the guard only 73; the player bound as `s_tail_player *const &player =
 // tail_player_get(player_index)` on the 73 lead 73, on main 43; the kept reference only at the two late reloads on main 43
 // (all the same code as their bases: the reference folds).
+// NOT kept (M3 review 11-21, MiniMax C 11-20): the unit index read again through the player getter at the object lookup
+// and the 0xcd7b0 argument scores 18 (retail's player ESI, hand EDI, unit index EDX) but is a reread device, kept only
+// with a byte match; left on it: the player address folded into one LEA, a second unit-index read, the policy byte in DL.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

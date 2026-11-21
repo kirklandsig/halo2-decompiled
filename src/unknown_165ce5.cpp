@@ -2024,6 +2024,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (2193 B); the reference taken ahead of the yaw only 219 (2193 B); the look entry bound as a const reference instead of
 // the look pointer 188 (same code); the first weapon's object named before its definition lookup 188 (same code). Still
 // BLOCKED by the stand-in (round 98) for the ESI/EDI saves; unit/mode slots swapped and frame 0x30/0x2c unchanged.
+// NOT kept (M3 review 11-21, MiniMax C 11-20): the round-105 lead (score 40) applied again; as lane 15's r105 note says,
+// it rests on the swapped callback ternary, the one-use channel-byte local, the active preset and the implied
+// else-if, all match-only, so it is kept only with a byte match. The body is main's again.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
