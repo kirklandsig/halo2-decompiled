@@ -219,7 +219,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 15 (was 25; 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
+// score 15 (was 15; 25 and 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
 // copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below) and the forward agreement's i product (ours
 // loads the object's forward.i first, retail the local's). At 25 the order of the final up/forward loads and stores also
 // differed (retail runs the three up loads first and interleaves the rest, ours paired each load with its store); the
@@ -578,6 +578,24 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // forward agreement's i product stays object-first), so the dispatch's escape is the tail's barrier and the i product
 // is separate; 0x1faf80 as (object_index, facing, settings, control, threshold, turn) re-measured 12 here, 0x1faf80 2
 // (only its test's `object->forward.i * facing->i` loads facing first). Still BLOCKED-BY 0x1faf80.
+// M3 lane 15 r129 (H2M_FAST with 0x1faf80, 0xe01d0, 0x118700, 0x11f0d0, 0x109290, 0x11d180, 0x11ce20, 0xbba20 and
+// 0x118e80; control 15). Lead, not kept (build/r129/lead-1197b0-1faf80-reorder.patch of this round): 0x1faf80 declared
+// (object_index, facing, settings, control, threshold, turn) at its definition, both declarations and both calls (both
+// retail callers form the facing address after the settings and control addresses) gives 2 here (only the forward
+// agreement's i product left: ours loads the object's forward.i, retail the local's), but 0x1faf80 2 (its test's i
+// product loads facing first) and 0xe01d0 537 -> 569. On that order, here: the two field pointers declared forward first
+// 2 (the up agreement's i product flips instead); only the forward pointer, up through `&object->up` 2 (up flips); no
+// field pointers 27 (1032 B); both pointers ahead of the dispatch block 4, the up or the forward pointer alone there 4 / 4;
+// the stores swapped 14; the test through `&object->...` with the stores through the pointers 6; the stores through
+// `object->...` 2; the forward test through `&object->forward` 2; `vector3f new_forward, up;` 2; either or both
+// agreements' dot3f arguments swapped 2; diagnostics: `up = target_up` as a memcpy 2, a self-copy of new_forward.i ahead
+// of the test 2. So exactly one agreement keeps retail's i product: the one whose field pointer is declared first (up
+// with no pointers). In 0x1faf80 on that order (sweeps of 101 forms): the three magnitude tests through length_sq3f with
+// the facing test through `dot3f(&object->forward, facing)` puts its test right, and the two cross products sharing up.k
+// then trade (one spelling of up.k: left.j's `up.k * forward.i` flips; two spellings: left.i's `forward.j * up.k` flips;
+// 2 either way); the forward.i and forward.j spellings, the value dot through dot3f, the then-arm copy's spelling, the
+// cross components in k-i-j or i-k-j order (14-31), cross3f(forward, up) (12, 8 with the value dot), the test's written
+// orders, a parenthesised pair, `threshold <`, a facing alias and a threshold copy do not give both.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

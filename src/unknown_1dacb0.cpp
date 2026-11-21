@@ -1609,6 +1609,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator outputs different homes. All request forms move away from retail length.
 // Separate optional-output destination bindings in their publication conditions, all seven subsets and a
 // const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
+// M3 lane 6 r225 (H2M_FAST with the twin 0x1dbc80, 0x1dc790 and 0x1dc8c0, siblings MATCH unless noted; control 812,
+// aligned 578, masked 74): the three output stores moved after the found block 1037 (2846 B, diagnostic); the per-pass
+// candidate declared at the top of the do-while body 980 (2837 B); no candidate, the result reset with `result =
+// c_type_709360();` and set under `if (named)` 1008 (2837 B); a redundant `if (0 < graph->inheritance_count)` guard around
+// the request helper's inheritance loop 823 (2805 B, both twins; 0x1dc8c0 2); the entry pointer declared at its iterate
+// call in the loop body 812 (same code). Reading: ours gives found_mode's dead home to iterator_mode and keeps the candidate
+// at F+0xc, retail gives that home to the candidate and keeps iterator_mode at F+0; retail also carries the loop's result
+// in ECX past the output stores (its NULL exit reloads it, hence its `jne exit; jmp top` loop tail).
 // M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
 // same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
 // aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
@@ -1616,6 +1624,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
 // first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
 // 1011 (2837 B). Body unchanged.
+// Separate optional-output destination bindings in their publication conditions, all seven subsets and a
+// const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2167,6 +2177,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 812; iterator-controlled exit and candidate test 1005; signed index before optional output stores
 // 812. NOT kept: split result construction moves the first difference into the prologue at the
 // same score, and the other forms tie or regress.
+// M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
+// same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
+// aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh
+// `or eax, -1` after loading the iterator's mode, ours reuses the compare's NONE); that with the output defaults chained
+// after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
+// first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
+// 1011 (2837 B). Body unchanged.
 // M3 lane 6 r222 (H2M_FAST with the twin 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1dd560, 0x2963f0, 0x1236f0, 0x1db120,
 // all but the twin matched each time; control 812, aligned 578, register-masked 71; body unchanged). Diagnostics for
 // the found mode's reads (retail copies it into EBP once for the second request; ours reads its home at each kind,
@@ -2177,6 +2194,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // unchanged: the iterator mode keeps found_mode's home and the outputs stay at +8/+0xc, so the copy alone does not
 // move the frame. `if (NONE != weapon_class)` 812 (same code, alone, in both twins, and with the cast): the class
 // and -1 keep ECX and EDX.
+// M3 lane 6 r225 (H2M_FAST with 0x1dc790 and 0x1dc8c0, both MATCH; control 812): the candidate initialised with
+// `= c_type_709360()` 812 (same code); a redundant `else { animation_id = c_type_709360(); }` arm 1013 (2837 B); the
+// outputs set by one chained `= NONE` 812 (same code); the found id copied into a const local for 0x1dd9d0 812 (same
+// code); the first request's keys read from the iterator's input fields 943 (2839 B). The twin's forms are in its note.
 // M3 lane 7 r210 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH each run; control 812, the
 // same forms applied to both twins with the same counts): `NONE != weapon_class` 812 (same code); the iterator set by one
 // aggregate initializer at its declaration 810 (two points, not kept: retail stores the three output defaults from a fresh

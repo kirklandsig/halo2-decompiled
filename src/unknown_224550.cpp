@@ -862,6 +862,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 185, secondary then pivots then primary 185, primary/x/secondary/y 169, and
 // x/both bounds/y 170. Both pivot inputs captured as points 377 in each order.
 // NOT kept: direct reads still spill blend at the join. Captures grow to 1995 bytes.
+// Blend still spills through the bitmap join. Frame-selected spans on primary, secondary
+// or both 341/390/379. Frame-selected spans and reciprocals on primary, secondary or
+// both 357/426/379. Primary both with secondary spans 408, reverse 417.
+// NOT kept: all raise the score. Moving both reciprocal pairs reaches 1936 bytes
+// but changes the frame.
 // M3 lane 8 r218 (H2M_FAST with 0x2243c0, MATCH throughout; control 162): every reciprocal product written as a
 // division (ay/ax, by/bx*blend, remaining_blend/ax, blend/bx ...) 390 (1839 B, frame 0x50: eight real divss, no shared
 // reciprocal across the arms); the flip between the extents and the reciprocals 340 (1975 B); each reciprocal right after
@@ -869,6 +874,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // difference +0x199, the blend still in XMM2); the reciprocals as two point2f pairs 164 (1944 B); all three as point2f 266;
 // the geometry ahead of the two encodes 385 (2019 B); the pivot as two scalars 295 (1971 B); the second bounds by an
 // initializer 162 (same code).
+// Indexed axes for both spans, primary reciprocals, secondary reciprocals, both
+// reciprocals, two-pass spans and reciprocals, one pass, or those last two with
+// indexed inverse mixing 219/164/162/226/214/329/184/312.
+// NOT kept: the secondary reciprocal loop ties. The 1942-byte spans-only loop still spills blend.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
