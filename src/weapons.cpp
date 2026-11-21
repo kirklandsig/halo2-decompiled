@@ -4314,6 +4314,12 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Boolean activity through heat 1431.
 // Byte activity through heat 1431.
 // NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
+// The pool and header displacement still occupy EBX and EDI. Dual remains spilled.
+// Stable magazine, trigger and barrel count values 1418/1416/1417. The trigger
+// count gives frame 0x38 and first difference +0x8 at 5680 bytes. Live count
+// references individually, beside each walk or acquired together 1412 each.
+// NOT kept: retail reloads the bounds. Stable values raise the score and the
+// live references retain the 0x34 frame.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

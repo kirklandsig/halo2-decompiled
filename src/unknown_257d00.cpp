@@ -2720,6 +2720,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Arm-local defaults with exhaustive search 596.
 // Arm-local defaults with exhaustive subtype completion 596.
 // NOT kept: Every arm-local form swaps the actor and state registers at entry. Sharing the default with case 13 shortens the code by four bytes but scores 630. The original completion lifetime is restored.
+// The 0x1c frame agrees. The default dispatch still spans to a late success exit.
+// Selector comparison chains 0/1/2, 0/2/1, 1/0/2, 1/2/0, 2/0/1 and 2/1/0:
+// 596/596/596/595/596/595. Long selector 615, pending flag arm first 596.
+// NOT kept: the chains reverse the retail entry allocation and raise the score.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

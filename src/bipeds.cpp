@@ -4502,6 +4502,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 0x1012c0 argument after the 0xe5d50 call 605 at 2725 B (al 459/219: the grab block is then retail's but for
 // registers); `changed` renamed `result` 537 (same code); the wall bit read at each of its three tests 536; the
 // special key compared at its one use 598 (2700 B). All restored.
+// The changed flag occupies +0x12 in the full image and the flight rate uses +0x14.
+// Tag lookup after state address 598, inside movement gate 605. Separate flight
+// and walking lookups 677 with flight-arm acquisition or 686 with call-local
+// acquisition. One branch-local reacquisition 630 for either branch.
+// NOT kept: the reduced control is 598 and separate lookups enlarge the body.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
