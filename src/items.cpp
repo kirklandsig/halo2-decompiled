@@ -1922,6 +1922,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax A (11-20): no new form, no lower score (140): the release flag is still cleared with a load, an and and a
+// store where retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf,
+// and the release impulse is still one shared copy where retail keeps two that differ in where the flag clear sits;
+// splitting the impulse so that the flag-5 path clears the flag before the velocity is computed and the flag-6 path
+// clears it after measures 223, and clearing through the flag bits themselves measures 257, so the body stands.
 // MiniMax B (11-18, round 2): no new form, no lower score (140): the permuter over this body (17 tries, 301 s) found
 // nothing below the 140, and the one new form - the spin flag's local lifted to the function's scope so that it
 // takes a frame slot of its own - compiles to the same code (140 at 892 bytes, the first difference still at
