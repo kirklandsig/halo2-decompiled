@@ -831,6 +831,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // choice with short counts 1013 or provider count and long choices 1044.
 // NOT kept: the forms replace the retail duplicate loop, shorten the body
 // and leave the entry zero and target/query homes different.
+// M3 lane 14 r138 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846). Reading: retail's entry zero
+// in ESI is the choice count's own register (`cmp esi, 2` in the query loop, `inc esi; mov [esp + 0x34], esi` before
+// each choice is addressed), with the query count read as a dword; ours keeps both counts as shorts in memory and gives
+// the zero to EBP (the query index). Tried: both counts long re-measured 965 (3264 B); the long choice count with the
+// out count read directly (no query-count local) 965 (3264 B, same code); the choices alone as a counted list (count,
+// then the two choices; the count incremented first and the choice addressed through it) 975 (3268 B, first difference
+// +0x2); the query loop ending on `choice_count < 2` 846 (same code); the target count incremented after the target's
+// stores 923 (3305 B).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
