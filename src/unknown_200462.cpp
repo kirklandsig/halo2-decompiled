@@ -280,6 +280,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // (entry, offset) accessor 14, the width so 14, both 14; both half extents through a new inline (low, high, size) helper 14;
 // the pulse pointer written out at each of its three uses (no local) 14 (all five the same code: the advance product keeps
 // XMM4 and the half-height's new home XMM3). Re-measured: named upper and lower y after the step 32.
+// M3 lane 8 r209 (fast with 0x2008fc 0x200891, control 14): the corners by chained assignment (x0 = x3, y0 = y1, x1 = x2,
+// y2 = y3) 89 (846 B); the repeated corner values copied from the corner written first (y1 from y0, x2 from x1, x3 from
+// x0, y3 from y2) 30; both passes' bounds through an `s_float_rect const *` to the record's rectangle (pass 1 reading
+// x1 - x0 through it, pass 2 copying `*bounds` in a block) 193 (853 B), with the copied corners 193; the corners read
+// through a `point2f const &` to the position 14 (same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

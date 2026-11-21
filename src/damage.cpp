@@ -1324,7 +1324,7 @@ void function_daa50(byte const *owner, byte const *target, word mask, word *bits
    +0x30/+0x38) each accumulator decays to zero over its decay time
    (+0x34/+0x3c); the timer stops at NONE once both are zero */
 // @retail 0xd8b50
-bool function_d8b50(real *recent_a, real *recent_b, char *timer, byte const *field_4_2, bool reset)
+bool function_d8b50(bool reset, real *recent_a, real *recent_b, char *timer, byte const *field_4_2)
 {
 	bool result = false;
 
@@ -2899,6 +2899,22 @@ struct s_unit_event
 // (same code as the body); the shifted bit cast to a word 420 (same code); no region local (one expression for
 // the permutation pointer) 558 (1852 B, aligned 210); the object declared after the permutation pointer 462 (1868
 // B, aligned 240, first difference +0x4).
+// m3 lane 4 r235 (fast; aligned by difflib / registers and frame offsets masked in brackets, control 420 [195 / 33]):
+// the region index as a four-byte wrapper aggregate passed by value, replacing the read through its address, 420, the
+// same code here (an aggregate parameter stays on the stack exactly as the address-taken long does), while the three
+// matched callers lose their matches to the conversion temporaries (0xdaaa0 135, 0xdae60 113, 0xdb760 32): restored.
+// What retail's middle shows: the datum offset (index * 12, home +0x14) holds ESI from the second attachment lookup on
+// and the pool pointer EDI from the first weapon block on, each use re-reading the pool's data (`mov r, [edi + 0x44]`
+// before every `[r + esi + 3]` / `[r + esi + 8]`), while the object pointer stays in its home and is loaded into EDX,
+// EAX or EBP per region; the shift's 1 then starts in ECX and is exchanged with the count through the region
+// argument's dead home, which the damage-source byte reuses later. Here the object pointer takes ESI and each weapon
+// block forms the header address in EDI. The two webs are near a tie (about 18 offset uses against 17 object uses), so
+// single uses flip it: on the named-region-states lead (re-measured 523 at 1852 B [109 / 34]) the four flag-byte
+// stores re-looked up through the pool 505 at 1884 B [87 / 32], the same without the lead 505 [87 / 33] (the offset
+// takes ESI, but retail reads the object's home there, 16 bytes over); the first vitality store re-looked up 461 at
+// 1868 B [113 / 35]; the section switch's four section words 565 at 1912 B [146 / 50]; the seat-name block's type and
+// tag 521 [144 / 42]; the child walk's start 481 at 1888 B [135 / 43]. None kept (positional rises, and retail reads
+// the home at each of those sites).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3696,6 +3712,25 @@ enum
 // Friendly output second 203, material field pointer/reference 203/203, named armor groups 213.
 // Conditional adjustment 203, separate adjusted amount 213, shared point difference 209, named model index 330.
 // NOT kept: the material index remains in DI through both lookups, and naming the model index shifts the object spill.
+// m3 lane 4 r235: HELD (needs the owner's OK), build/r235/held-d82e0.patch: MATCH, fast and plain, and nothing else moves
+// among the 234 functions of the five edited files (0xcf040, 0x184060, 0x188690 and 0xd9020 still match, 0xd9110 8,
+// 0xfaa60 1160). Cause: retail hands 0x188690 its material index as a two-byte aggregate by value. Each call copies the
+// field afresh (`xor r, r; mov r16, [esi + 0x7c]; push r`, never shared with the inlined test's load), 0x188690 keeps it
+// on the stack and reads the whole slot, and 0xcf040 pushes its local's dword. The patch gives 0x188690's parameter and
+// the fields passed to it (this record's +0x7c, the info's shield material, one field in each of the other two callers'
+// files) the index wrapper type of 0x188690's own file, moved to include/impacts.h, and names the marker name here
+// (`long marker_name = *(long *)entry;` ahead of the 0xb8d30 call, a one-use local that the match keeps). Held because
+// 0xcf040's call line, inside a contributor's body, has to construct the wrapper explicitly: left to the implicit
+// conversion it loses its match (236, a frame temporary). Tried on the way (fast): `inline` on 0x188690's definition 376
+// (expanded at every site, 0xd9110 191); the wrapper parameter with the short wrapped at each call 198 (frame
+// temporaries, 0xd9110 171); 0x188690 kept out of line and opaque 203 (same code, diagnostic); the field passed as a
+// wrapper-typed lvalue 115 at 1272 bytes (the material block is retail's, scratch registers left). On that 115 form: the
+// 0xd9b60 parameters as (data, friendly, definition, object_index) 115; one, two or three redundant paren pairs 115
+// each; the region lookup as an inline accessor 115 (short parameter) or 306 (long); no region_index local 115; the
+// region as a ternary 250; in the share loop a short local for the test 115, for the test and the call 98, a long local
+// for the call 98, the count on the left of the test 115; the named marker name MATCH. Without the wrapper parameter
+// the named marker name alone 193 (not kept); 0x188690 called through a pointer cast to the wrapper-parameter type
+// matches this function but pins 0x188690's convention (0x188690 23, 0xcf040 7, 0x184060 123, 0xd9110 167).
 // @retail 0xd82e0
 void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
 {
@@ -4668,14 +4703,12 @@ bool function_d5de0(long object_index)
 						owner.player_index = current->owner_player_index;
 						owner.team = current->owner_team;
 
-						long permutation_index = pending & 7;
-
-						if (function_d9f70(i, permutation_index, info, object_index))
+						if (function_d9f70(i, pending & 7, info, object_index))
 						{
 							s_damage_region_accumulator accumulator;
 
 							memset(&accumulator, 0, sizeof(accumulator));
-							function_da110(permutation_index, info, object_index, &owner, i, &accumulator);
+							function_da110(pending & 7, info, object_index, &owner, i, &accumulator);
 							if (accumulator.unknown2c || accumulator.unknown2e)
 								function_dbc80(object_index, accumulator.unknown2c, accumulator.unknown2e);
 							if (accumulator.flags & 4)
@@ -4766,7 +4799,11 @@ bool function_d5de0(long object_index)
 					real recharge = g_510c54->rate * rate;
 
 					if ((1 << object->type) & 3)
-						recharge = function_1e9720(3, object->team) * recharge;
+					{
+						word team = object->team;
+
+						recharge = function_1e9720(3, team) * recharge;
+					}
 					if (TEST_FIELD_BIT(object->damage_flags.shield_depleted))
 					{
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_depleted_bit, false);
@@ -4782,15 +4819,17 @@ bool function_d5de0(long object_index)
 					}
 					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, true);
 					object->shield_vitality += recharge;
-					if (!(object->shield_vitality > maximum_shield))
-					{
-						changed = true;
-					}
-					else
+					bool overcharged = object->shield_vitality > maximum_shield;
+
+					if (overcharged)
 					{
 						object->shield_vitality = maximum_shield;
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_damaged_bit, false);
+					}
+					else
+					{
+						changed = true;
 					}
 				}
 				else
@@ -4822,8 +4861,8 @@ bool function_d5de0(long object_index)
 			}
 			else
 			{
-				maximum_body = *(real *)((byte *)info + 0x38);
 				rate = *(real *)((byte *)info + 0xd4);
+				maximum_body = *(real *)((byte *)info + 0x38);
 			}
 			if (maximum_body > object->body_vitality && rate > 0.0f)
 			{
@@ -4834,7 +4873,11 @@ bool function_d5de0(long object_index)
 					real recharge = g_510c54->rate * rate;
 
 					if ((1 << object->type) & 3)
-						recharge = function_1e9720(3, object->team) * recharge;
+					{
+						word team = object->team;
+
+						recharge = function_1e9720(3, team) * recharge;
+					}
 					word_flags_set(&object->damage_flags_word, _damage_object_flag_body_recharging_bit, true);
 					object->body_vitality += recharge;
 					if (object->body_vitality > maximum_body)
@@ -4847,7 +4890,7 @@ bool function_d5de0(long object_index)
 						changed = true;
 					}
 				}
-				else if (!function_138880())
+				else if (stun_ticks != 0 && !function_138880())
 				{
 					object->body_stun_ticks = stun_ticks - 1;
 					changed = true;
@@ -4859,13 +4902,13 @@ bool function_d5de0(long object_index)
 		if (object->maximum_body_vitality > 0.0f && !TEST_FIELD_BIT(object->damage_flags.body_depleted))
 		{
 			long state_count = object->region_states_size / sizeof(s_object_region_state);
-			s_object_region_state *state = (s_object_region_state *)((byte *)object + object->region_states_offset);
+			s_object_region_state *states = (s_object_region_state *)((byte *)object + object->region_states_offset);
 
-			for (long i = 0; i < state_count; i++, state++)
+			for (long i = 0; i < state_count; i++)
 			{
-				if (state->unknown02 > 0)
+				if (states[i].unknown02 > 0)
 				{
-					if (state->damage_level_ticks == 0 && info->region_count > i)
+					if (states[i].damage_level_ticks == 0 && info->region_count > i)
 					{
 						s_damage_info_region *region = &info->regions[i];
 
@@ -4879,13 +4922,13 @@ bool function_d5de0(long object_index)
 								fld decay
 								fistp amount
 							}
-							if ((long)state->unknown02 > amount)
+							if ((long)states[i].unknown02 > amount)
 							{
-								state->unknown02 -= (byte)amount;
+								states[i].unknown02 -= (byte)amount;
 							}
 							else
 							{
-								state->unknown02 = 0;
+								states[i].unknown02 = 0;
 								continue;
 							}
 							changed = true;
@@ -4893,7 +4936,7 @@ bool function_d5de0(long object_index)
 					}
 					else
 					{
-						state->damage_level_ticks--;
+						states[i].damage_level_ticks--;
 						changed = true;
 					}
 				}
@@ -4902,8 +4945,9 @@ bool function_d5de0(long object_index)
 
 		/* retail passes the character's vitality properties ([esp+0x14] at
 		   0xd6598, NULL for a unit no actor drives), not the damage info */
-		changed |= function_d8b50(&object->unknownf8, &object->unknown100, (char *)&object->unknown109, bounds,
-			TEST_FIELD_BIT(object->damage_flags.body_depleted));
+		bool body_depleted = TEST_FIELD_BIT(object->damage_flags.body_depleted);
+
+		changed |= function_d8b50(body_depleted, &object->unknownf8, &object->unknown100, (char *)&object->unknown109, bounds);
 		if (TEST_FIELD_BIT(object->damage_flags.unknown11))
 		{
 			if ((char)object->unknown108 > 0)
@@ -4915,8 +4959,9 @@ bool function_d5de0(long object_index)
 		}
 		else
 		{
-			changed |= function_d8b50(&object->unknownf4, &object->unknownfc, (char *)&object->unknown108, bounds,
-				TEST_FIELD_BIT(object->damage_flags.shield_depleted));
+			bool shield_depleted = TEST_FIELD_BIT(object->damage_flags.shield_depleted);
+
+			changed |= function_d8b50(shield_depleted, &object->unknownf4, &object->unknownfc, (char *)&object->unknown108, bounds);
 		}
 	}
 	return changed;
@@ -5539,6 +5584,14 @@ struct s_damage_object_creation
 // Word setter for both section stores or each store alone 167 each. Damage record, object tag,
 // connected mask, detach bitmap and metadata pointer names that change sort order 167 each.
 // NOT kept: the bound still takes EDI and the primary mask takes EDX.
+// m3 lane 4 r235 (fast, control 167 at 795 B): both section masks as two-byte wrapper aggregates passed by value (the cause
+// found for 0xd82e0's material index; every caller on the same type) 167, same code: the member reads hoist exactly as the
+// casts do. A dword first-mask local declared inside the section loop's body 167, both masks so 167 (folded back: retail's
+// `test edx, edi` operand order says its mask is a hoisted expression, not a variable, yet it holds EDI while the count
+// stays in EAX); the two stores through the existing word_flags_set 167 (same code). On the one-use first-mask local
+// (re-measured 112 at 811 B, `movzx` ahead of the count guard and `test edi, edx`): the test written mask first 112
+// (same code); the local declared under a redundant `if (0 < section_count)` guard 163 (both masks hoist, the count
+// spills to +0x14), with the test reversed 163. Nothing kept.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

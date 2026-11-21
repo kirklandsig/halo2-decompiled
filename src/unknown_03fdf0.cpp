@@ -155,6 +155,11 @@ bool function_c17f0(long light_index, s_light_shape_ab *shape, bool respect_engi
 void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale);
 
+/* Retail keeps `first` in a frame slot of its own (shared later with the material) and gives the entry pointer the
+   dead mode parameter's home: below the loop guard the entry pointer starts ahead of the index. So the entries are
+   walked through a pointer stepped beside the counter, and the guard that repeats the loop's first test keeps the
+   pointer's start below that test (a steering form, kept for the byte match; `&entries[n]` in a plain `for` leaves
+   `first` in the mode parameter's home, two rows off). */
 // score 2 (was 2): only first's spill slot differs (retail +0x14, ours the mode parameter's home, shared with the entry cursor).
 // Earlier: count, mode and first-index homes conflict across the inline copy. Retail
 // multiplies the index into edx and clears the globals before the loop, ours
@@ -638,6 +643,16 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // to sort first or last 2/2; the entry loop as `while (n < count) { ...; ++n; }` 2 (all the same code); as a guarded
 // `do ... while (++n < count)` 159 (492 B). Diagnostic: 0, 1, 2, 3, 4, 6, 8, 10 dead initialised longs at the top 2 each
 // (round 119 measured odd 9..39), so first's slot is no symbol-count tie at any parity.
+// M3 lane 9 r146 (fast with 0x404b0; control 2): the shape read ahead of the weight 19; the material index read ahead of
+// the shape 22; the weight read after the material lookup 23; no first local, the index from `g_4c0b78.previous + n` 142
+// (496 B: the previous count is re-read every pass); first and index typed dword 2 (same code). A multi-file LTCG screen
+// (this file's generated unit linked with the four callees' files as the full build compiled them) reproduces the real
+// slots exactly (material alone at the frame's second cell, first and the entry cursor in the mode home; the explicit
+// cursor moves first as in the real build). In it 191 random combinations of ten same-code spellings (first by chain
+// or current-then-first, dword/long selection, pre/post increment, n or material declared ahead, `&entries[n]` or
+// `entries + n`, `first + n` or `n + first`, the index ahead of, after or inside the entry test) all keep first in the
+// mode home, and so do the guard as `>= 1`, the loop test reversed, `current = first + count` and the selection ahead of
+// the copy (each other code). Only a later read of first (diagnostic) moves it. All restored.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
@@ -655,33 +670,37 @@ void function_402b0(long cache_index, long mode)
         g_4c0b78.current += g_4c62f8.records.blocks[cache_index + 1].count;
         dword selection = !mode ? ~0UL : mode == 2 ? 0x10 : 0x20;
 
-        for (long n = 0; n < g_4c62f8.records.blocks[cache_index + 1].count; ++n)
+        long n = 0;
+        if (n < g_4c62f8.records.blocks[cache_index + 1].count)
         {
-            s_44940_entry const *entry = &g_4c62f8.records.blocks[cache_index + 1].entries[n];
-            long index = first + n;
-            if (entry->unknown00 & selection & 0x1fffff &&
-                entry->unknown00 & 1 && entry->unknown10[0xa] > 0 && (entry->flags & 0x1f0) == 0x1f0)
+            for (s_44940_entry const *entry = g_4c62f8.records.blocks[cache_index + 1].entries;
+                n < g_4c62f8.records.blocks[cache_index + 1].count; ++n, ++entry)
             {
-                byte weight = g_4c0b78.weights[index];
-                long shape = entry->flags & 0xf;
-                byte material_index = g_4c0b78.material_indices[(short)index];
-                long material = NONE;
-                if (material_index != 0xff)
-                    material = g_4c0b78.materials[material_index];
-                byte *geometry = (byte *)function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), false);
-                if (geometry)
+                long index = first + n;
+                if (entry->unknown00 & selection & 0x1fffff &&
+                    entry->unknown00 & 1 && entry->unknown10[0xa] > 0 && (entry->flags & 0x1f0) == 0x1f0)
                 {
-                    for (long part = 0; part < *(long *)geometry; ++part)
+                    byte weight = g_4c0b78.weights[index];
+                    long shape = entry->flags & 0xf;
+                    byte material_index = g_4c0b78.material_indices[(short)index];
+                    long material = NONE;
+                    if (material_index != 0xff)
+                        material = g_4c0b78.materials[material_index];
+                    byte *geometry = (byte *)function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), false);
+                    if (geometry)
                     {
-                        s_render_part_context context;
-                        if (function_45ce0((short)index, (byte *)&context, (short)part, (short)shape) &&
-                            function_460d0(*(dword const **)(entry->unknown10 + 4), (short)index, part))
+                        for (long part = 0; part < *(long *)geometry; ++part)
                         {
-                            long chosen = context.material;
-                            if (material != NONE)
-                                chosen = material;
-                            if (chosen != NONE)
-                                function_41040((short)index, part, 1, weight, &context, chosen, true, ~0UL, 0);
+                            s_render_part_context context;
+                            if (function_45ce0((short)index, (byte *)&context, (short)part, (short)shape) &&
+                                function_460d0(*(dword const **)(entry->unknown10 + 4), (short)index, part))
+                            {
+                                long chosen = context.material;
+                                if (material != NONE)
+                                    chosen = material;
+                                if (chosen != NONE)
+                                    function_41040((short)index, part, 1, weight, &context, chosen, true, ~0UL, 0);
+                            }
                         }
                     }
                 }

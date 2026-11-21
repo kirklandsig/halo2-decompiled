@@ -367,6 +367,11 @@ static __forceinline long real_to_long(real value);
 // pointers does); the side-vector rows j, i, k 215 at 1861 B [157, 128, 31], i, k, j 268 [132, 121, 25]; on the body,
 // the k zero product named for its two rows 373 [320, 255, 112]. Retail keeps the side vector's i, j, k in XMM1, XMM2,
 // XMM3 from the cross product to the output rows. BLOCKED-BY 0x210850 (expanded only at this call).
+// M3 lane 9 r147 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH each run; control 373): on the body
+// alone, the sign test as `(local_11 & 0x80000000) > 0` 375 (1863 B); the side-vector rows j, i, k (diagnostic) 425
+// (1863 B), with that sign test 428 (1866 B); the second draw through function_259d0 on the state local (draws one and
+// three left on the global) 377; the sign step through a `dword *` to the seed field, as slot_random spells it, 373
+// (same code). BLOCKED-BY 0x210850 as above.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

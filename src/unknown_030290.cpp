@@ -226,10 +226,16 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116, r286 unchanged.
 // MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
 // defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
 // still take the opposite component order.
 // MiniMax S (11-20): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, so every local home sits four bytes higher; retail's caller 0x4f7e0 sets the arguments up as three pushed values, then ECX = camera, EDX = a, ESI = the displacement vector and EBX = the output point.
+// MiniMax D (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, retail keeps both inverse
+// defaults at [esp+4] and [esp+8] with the displaced point at +0xc/+0x10/+0x14 where this build keeps the inverses at +0xc and in
+// the dead scale slot and spills the second transform's scaled x and z; the written operand order of the three displaced sums is
+// ignored by the compiler, and a helper taking the three components as scalars (with the reversed point as three locals, as
+// retail's third transform reads) shrinks the frame to 0x24 but reorders the sums and the scale block (214), so the pointer form stands.
 // score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
@@ -719,11 +725,19 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // parameter-address and direct-inverse lead (re-measured 175 at 955 B): the displacement by const reference 200; a
 // `vector3f const *` copy of d for the sums 200 (the z sum then loads d first as retail, the first transform's x/z swap);
 // a `point3f const *` copy of a 175; the sums in statement order y, x, z 175.
+// M3 lane 3 r286 (single-address fast, control 195): both inverse tests as `fabs(z) >= k_real_epsilon` 225 (989 B);
+// the orthographic arm first under `if (!perspective)` 215 (980 B); the nonzero arm returning `dx != 0.f || dy != 0.f`
+// 195 (same code); the scale default moved into the negate block 222 (972 B); the factors as ternaries over the
+// defaults 301 (890 B: the defaults fold). Reading: ours homes inv_b in the dead scale argument slot and stores the
+// computed inverse there, retail keeps both defaults at frame +0/+4 and spills transform components into the scale and
+// perspective slots. All restored.
 // M3 lane 6 r214 (fast with 0x30bf0/0x30710, both MATCH; control 195, aligned 95, masked 38): the orthographic factors as
 // `fa = fb = 1.f;`, the transformed points declared ahead of the displaced point, `fa`/`fb` declared with the inverse
 // defaults, the displaced point as an aggregate initialiser, the transformed points declared `tb, ta` (retail's ta.z
 // slot sits below tb.z, ours above) and as two declarations: 195 each, identical code. The 0x4f7e0/0x4ff50 call-line
 // reorder stays held (both still contributor code). Body unchanged.
+// Array views of transform input, output, camera basis and translation, separately and together 195 each.
+// Input and output as bounded array references with camera array access 195. The X/Z spills and inverse homes persist.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

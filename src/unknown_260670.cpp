@@ -310,6 +310,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // the loop counters and the normalize spill +4, finite_distance +0xb; the flags pack into one cell (frame 0x8a0 with the
 // scoped scratch) when within_limit loses one reference or finite_distance gains one (probes, 575 and 796: the lockstep
 // count follows the length, not the frame).
+// M3 lane 12 r163 (H2M_FAST with 0x2605d0/0x2613d0 MATCH; control 440): the range read once into `range` for the limit
+// test as well (main mixes the local and a field re-read) 810 (3113 B); the two flags' declarations exchanged 440 (same
+// code); `within_limit` alone declared just before the scoring loop 758 (3065 B), `finite_distance` alone there 615
+// (3081 B); the sort scratch declared at the top ahead of the result 440 (same code). Body unchanged.
+// MiniMax R (11-20): score 440 (was 440): no new form; the frame stays 0x8a8 against retail's 0x8a0, the two flags still
+// take their own dwords eight bytes apart where retail packs them adjacently at 0x6/0x7, the result still takes the slot
+// above the actor where retail puts it at 0x8, and the source and settings still sit four bytes above retail's, so every
+// parameter offset moves with the frame.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

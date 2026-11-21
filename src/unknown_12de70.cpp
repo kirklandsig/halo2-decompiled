@@ -736,6 +736,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // 27; the tail's pointer formed from a second named block read inside its arm 27; `&& local_1` after the arm's linked
 // test 27 (all four the same code: the null test after the dereference folds before allocation and is not a second
 // use); a group local read before the tail's test and used for its pointer 51 (EDI/EBP swap).
+// M3 lane 8 r209 (fast with 0x12e210, which stays matched; control 27): the release call's group re-read from the field
+// with the test through the block local 27 (same code); the test reading the field and the block local declared inside
+// the linked arm for the argument 27; that first form with a tail block local for the test and pointer 51 (EDI/EBP
+// swap, re-measured on the each-use loop as listed); the release address named in the arm ahead of a call that re-reads
+// the group from the field 27; the loop read at each use with a tail block local used for every tail access (test,
+// pointer, both clears) 55. The texture twin 0x12d200 spells its loop the same way (field test at each use).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

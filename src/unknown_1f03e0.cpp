@@ -685,6 +685,15 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // (case 2's arms unmerge), with 1-7 top locals as well 156-202 (none keeps the arms merged). On the six-name lead
 // (7), case 3 written with a named scale 7, written out per row 7, `0.0f - normal->k` 7, a named selected index 7,
 // the normal through a selected contact pointer 7: S5 and S6 unmoved. Body unchanged.
+// M3 lane 1 r140 (fast with 0x1f2250/0x1f19c0/0x1f2e60/0x1201a0, all unchanged; control 31): a and b read again through their own
+// pointers in the averaging arm 278 (1005 B), on the match-only lead (case 3 selected-first with a case-3 up pointer, re-measured 9:
+// S2, S4 and S6 left) 311 (1023 B). 0x1201a0's own rows in all eight operand spellings, as `*=`, and its exits as if/else returns:
+// 0x1201a0 still MATCH and the lead 9 each, so the inlined j product (S6) does not follow the helper's spelling; its fallback arm
+// first 0x1201a0 21, single exit 0x1201a0 25, no inverse local: lead 38 (973 B). Diagnostics on the lead: six unused initialised
+// locals at the top with dot_a as basis_dot_xzy(a, desired) 5 (S6 alone left; desired first 7, both dots a-first 5, dot_average
+// first 7, the dots inside the compare 22); the counts 0-5, 7 and 8 with that dot 9/13/13/13/26/9/39/9. On that 5 form: 1-8 unused
+// locals inside 0x1201a0 5 each (0x1201a0 MATCH), a result-pointer local for the tail 5, and probe stores of out's i, j or k before
+// or after the tail or a use of the tail's result never give retail's copy-first j product (64-65, 34-35, 294). Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -993,6 +1002,20 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // rotation block and the outer crosses 235; `limited` ahead of `axis` with the shared cross 235 (all the same code).
 // Diagnostic, unused initialised locals at the top, K = 0-3 and 8-16: 235/236/285 (1229 B)/232 (1240 B), then
 // 235/236/285/232/235/235/235/235/235: the pattern repeats every eight, so no symbol count reaches below 232.
+// M3 lane 1 r140 (fast, 0x1e5af0 and 0x30bf0 matched in each; control 235, aligned 209 lines, 62 with registers and offsets masked).
+// Reading: retail multiplies every cross with the first argument's component as the destination (axis and forward cross: the
+// pointer's component loaded, times up's register; fallback cross: up's register copied, times the old up from memory); ours agrees
+// where the first argument is the pointer and commutes the fallback cross (old up loaded, times up's register). In the second
+// forward cross retail overwrites up's k and j registers for the two products with the first cross's i and copies the cross's j and
+// k for the others, so it needs XMM0-4 as temporaries and up sits in XMM5-7; ours copies the cross's i instead, needs four
+// temporaries and a late XMM7, and up sits in XMM4-6: the first difference follows from that cross. Tried: unused initialised locals
+// 1-3 (diagnostic) 236/285/232 with masked aligned counts 65/74/67 (no phase is nearer); the three dots through dot3f in every
+// combination of argument orders, 26 forms: acceptance alone 235 (same code), rotation alone 236 (1239 B), state alone 247 (1249 B,
+// 0x1e5af0 still matched), the rest 239-252; the four final crosses through cross3f, cross3f_staged or 0x1f087b (second crosses
+// only, fallback crosses only, all four), the fallback cross reading `&state->up`, no old-forward pointer: 235 each (same code).
+// Diagnostics: the fallback without its second cross 226 (1229 B), its second cross on the old up 258, its first cross into
+// `forward` and the second back 265: the fallback cross loads the old up first in all three; up handed to the four final crosses
+// through a pointer local or a reference local 235 (same code).
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -1089,6 +1112,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax D (11-20, round 132): no new form, no lower score (234): the body is unchanged. The first cross still
+// multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the
+// same code for all sixty-four operand spellings and is used by nine matched functions in this file, so that product
+// order can only be reached by writing the cross out in place, which the earlier rounds measured at 529; the damping
+// bit's first extraction still uses ECX where retail uses EDX, and the general arm's k row still ends in XMM2 where
+// retail's ends in XMM0.
 // MiniMax B (11-19): no new form, no lower score (234): the permuter over this body tried three rewrites in 363 s and left
 // the baseline at 234. The shared out.k store does reproduce retail's tail - with the disabled arm's last row left in a
 // register and the three arms ending in one shared store of out.k, the disabled arm jumps to retail's store and the
@@ -1098,6 +1127,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
 // where retail's ends in XMM0.
 // MiniMax B (11-20): no new form, no lower score (234): the first cross multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the same code for all sixty-four operand spellings and is used by nine matched functions here, so that difference needs this one cross written out in place; the damping bit's first extraction also still uses ECX where retail uses EDX.
+// MiniMax G (11-20): no new form, no lower score (234): the permuter reaches 230 only in a variant that casts the facing pointer to volatile, which is barred, and the four flag declarations in the order that puts the damping bit in EDX give 230 as well, under the keep bar; the first arm's cross still reverses only retail's two `a->j * b->X` products, which the shared helper cannot change without moving the functions that already match.
 // score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
@@ -1719,6 +1749,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // both step products written rate first 234 (same code); the 469 form (general output through vector3f_add, direct rows as
 // statements; re-measured 469, aligned 154, masked 65, its k row still `addss xmm2, [eax + 8]`) with that flags local 611;
 // the first arm's up vector through a pointer local used by the cross and the last add-scaled 429 (3052 B). Body unchanged.
+// Separate requested and effective gravity 604, step-first condition 590,
+// positive admission arm 584, direct completion 597, disabled branch entry
+// 603, general-branch damping 632, direct dispatch test 639, and request as
+// effective default 523. These still miss the damping register and enlarge
+// the retail-length body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -2179,6 +2214,24 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // `component` 412; the four output stores ahead of `component` and `relative` 473 (2073 B); both negations through
 // vector3f_scale(normal, -1.0f, &desired) 412 (425 on the 418 body); the preferred surface index named for the guard
 // and the loop compare 419; the normalize result named and tested 413 (same code).
+// M3 lane 1 r140 (fast with 0x1f19c0, 0x1f2a80, 0x1f2e60, all unchanged unless noted; control 413). Reading of retail's iteration
+// loop: the list load sits in the inner loop's preheader (after the zero-trip test) with EDI left at the base, the candidate cursor
+// and its +0x30 twin are stack induction variables, the fallback reloads the list (it is only partly available there) and the
+// selected contact is `lea edi, [edi + selected * 0x48]` on that register, so the contact's list read comes ahead of the surface and
+// index stores; direction.i/j live in XMM6/XMM7 across the inner loop's calls (the count-1 and count-2 arms assign them with no
+// store, k stays in its home), desired.i/j are reloaded into XMM4/XMM5 after the inner loop, the fallback's -1 is loaded there
+// (XMM3, which is also `minimum`, with an XMM1 copy for the j and k rows), and the entry zero is one value kept in XMM6 up to the
+// normalize test and set again after the 0x1f2a80 call for the final loop's `0 - dot`. Ours keeps the normalized desired.i/j in
+// XMM6/XMM7 across the whole loop, direction in memory, -1 in XMM5 from the first loop on and re-forms the zero at each use.
+// Re-measured: plain count + switch + bit helper 423; that with the inner candidate read from the list each iteration 507 (0x1f19c0
+// 103); with the contact formed ahead of the two stores, count between the NONE stores and case 2's normals through the list 398,
+// plus a stepping bool for call and test 388, for the test only 395 (all three match-only: the contact's move). On the 395 form:
+// the fallback's minimum and selected set ahead of the negation 395, its negation through vector3f_scale(normal, -1.0f, &desired)
+// 395, through vector3f_scale(normal, minimum, &desired) after `minimum = -1.0f` 395, rows times `minimum` 395 (all four the same
+// code: the constant propagates), the first loop's negation through vector3f_scale 396, both 396, the fallback writing direction
+// first and copying it to desired 417; the count-2 arm by fields with the dot named and grouped (j + i) + k as retail sums it 318
+// (2112 B, retail's 547 instructions; direction still read from memory in the inner loop), the same with dot3f 395, through
+// vector3f_scale with the grouped dot 491, with direction initialised by fields too 471. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

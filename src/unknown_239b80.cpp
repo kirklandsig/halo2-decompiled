@@ -888,6 +888,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Completed lowest-point scan extent as pass/candidate/compaction bound, seven subsets:
 // 144/251/154/225/155/256/256. Signed-word pass with the completed extent at both traversal bounds 244.
 // NOT kept: the two-bound form recovers frame 0x14 but raises the score and changes the caller.
+// Separate signed-word loop bounds on pass, candidate, lowest/candidate,
+// pass/candidate, lowest/pass or all three 144 each. A signed-word pass
+// with its own bound, alone or with a signed-word candidate bound 250/250.
+// NOT kept: the copies fold, and the short pass keeps the extra frame word.
+// The result and departure homes remain.
+// Independent append increment with long or short pass 270/249, pass advanced from published length 144/263,
+// pass advanced from incremented length 242/237, short pass and short length incremented independently 249,
+// short feedback with fixed compaction prefix 249. NOT kept: the forms reaching frame 0x14 shorten the
+// function to 760–762 bytes and regress. The long published-length form ties at frame 0x18.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1045,6 +1054,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-20): no new form, no lower score (129): retail reads the count argument as a dword home (mov ecx, [ebp+8]; movsx edi, cx) and keeps it in ECX to the loop guard, where this build reads a word home and keeps the previous side in CL instead of a byte home; the count's width comes from the caller's declaration in src/unknown_17d9a0.cpp, and an int copy of the count measures 320.
 // MiniMax G (11-19): no new form, no lower score (129): retail reads the count's home as a dword and narrows it
 // afterwards (`mov ecx, dword [ebp+8]` then `movsx edi, cx`), so retail's count parameter is a four-byte type while this
 // declaration's `short count` is read as a word home and sign-extended at once; that prototype is also declared in
@@ -1486,6 +1496,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // renamed to sort last, and both renamed: 157 each (same code: the byte slots do not follow names); the current side
 // renamed on main 129 (same code); the crossing result named ahead of the copy (`bool crossed = inside !=
 // previous_inside; previous_inside = inside; if (crossed)`) 226 (894 B). Body unchanged.
+// MiniMax E (11-20): score 129 (was 129): no new form and no lower score; the first difference is the count's load width -
+// retail reads the count slot as a dword (`mov ecx, dword ptr [ebp + 8]`) and takes its low word (`movsx edi, cx`), this
+// build reads a word directly (`movsx edi, word ptr [ebp + 8]`). Retail's dword load means its count parameter is 32-bit,
+// and the declaration may not change here. Behind that: retail keeps the previous-side flag in memory at [esp + 0xd] where
+// this build keeps it in CL, and retail's zero is XMM2 where this build uses XMM4.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -1027,6 +1027,11 @@ bool function_e4050(long object_index);
 // 0x3d7f0, 0xc0c80, 0xc3ad0, 0x133790, 0x159690, 0x1ac610, 0x1ced00); `inline` on 0xe4050's loses 0xdd8e0 and 0xe3700
 // and leaves it unchanged: the link-time summaries of those callees are already retail's, so BLOCKED-BY 0xbaf80
 // concerns only its expansion here.
+// m3 lane 4 r235 (fast, control 43; aligned by difflib 25, 6 with registers masked): BLOCKED-BY 0xbaf80 still (its pin
+// is in src/unknown_0bad50.cpp, off limits this round too). The root walk in retail's shape with the walk index carried
+// in a one-member aggregate 109 (same code as the scalar walk, re-measured 109: the aggregate is folded and the first
+// step is still peeled); that shape as a `for` loop from the unit 109 (same code); the root started at the unit with
+// the walk from the unit 109 (same code); the walk started from the player record's field re-measured 171 (405 B).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2624,6 +2629,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax E (11-20): no new form, no lower score (703): retail holds two separate request homes (the 0x1b request at esp+0x44 and the 0x16 request at esp+0x64) where this build shares one, so retail's frame is 0x74 against our 0x4c; giving the 0x16 request its own local reproduces retail's request setup but leaves the frame 8 bytes short and scores 806.
 // MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
 // MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
 // score 703 (was 701): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
@@ -3270,6 +3276,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax E (11-20): no new form, no lower score (103): the whole gap is the players-globals pointer, which our build keeps in EDI across both loops where retail keeps it in ESI and reloads it late; that choice follows from what the loop's callees write to g_4e8c20, and those callees live in other files.
 // MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
 // MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the

@@ -556,6 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
@@ -876,6 +877,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
 // all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
 // follow where the shorts are declared).
+// M3 lane 12 r160 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, all MATCH; control 114): use-count forms to move
+// the spill homes: the fade time read once into a local used twice 293 (1892 bytes); the elapsed fade time named 114
+// (same code); the status player taken from `player` 535 (1861 bytes); the timer flag read through the global 114 (same
+// code); the tutorial colour as three arms each calling the unpack 215 (1890 bytes).
 // M3 lane 7 r197 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
 // 102). On the bool timer (191, 1888 B): the four flags renamed so that their names sort in each of four orders 191 each
 // (same code: the byte homes do not follow names); the three message flags declared without initialisers after the
@@ -890,6 +895,19 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // condition 316 (1892 B); the split-screen test as `count >= 2` 116, with the bool timer 193 (flags still -0xe/-0xd/-2);
 // the status block reusing `player` for its second lookup 535 (1861 B). Diagnostic: an extra read of origin.x 491, the
 // scripted byte stays at -2 (the packing does not follow origin's reference count). Body unchanged.
+// M3 lane 11 r141 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
+// differing rows 102, 18 with the frame offsets masked, 12 with registers masked too; body unchanged). LEAD for the
+// tutorial colour, the first spelling that gives retail's block (flag test, the a4 load, the bit test jumping back to
+// it, the a8 load): the selection nested with the inner test negated, `flag ? a4 : (!(bit) ? a4 : a8)`, 108 (masked 15
+// and 9; six points, under the keep bar by itself). Same code as the body: the inner arm's a4 read through the global
+// 114, the whole selection inverted (`!flag ? (bit ? a8 : a4) : a4`) 114. Other instructions: the flag folded into a
+// bool selection first, `(flag ? true : !(bit)) ? a4 : a8` 406 (1898 B), `(flag ? false : (bit) != 0) ? a8 : a4` 403
+// (1896 B). On the 108 form: `left` as a `short const` initialised where it is computed 108 (same code); the bool timer
+// 185 (1888 B, masked 13 and 6); the bool timer with left and the first top as the two elements of a `short
+// position[2]` (round 99's locals-grouping lead) 103 at retail's 1889 B (masked 12 and 5: what is left with the offsets
+// masked is the argument order at the three 0x24ce9d and four 0x1fa30 calls); that lead without the nested selection
+// 109 (re-measure). The frame homes are still the open part: retail allocates split flag, origin, then the scripted,
+// tutorial and timer bytes, where this build puts the scripted byte between the split flag and the origin.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
