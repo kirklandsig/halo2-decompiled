@@ -187,6 +187,11 @@ __forceinline bool function_184448(long arg_0)
 // score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
 // the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
 // EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
+// M3 lane 15 r124 (H2M_FAST with the callers 0x9cca0/0x184060, both MATCH each run; control 965): the start face
+// parameter read through its address for the group read 965 (same code); the surface list declared ahead of the record
+// pointer 965 (same code); the record pointer read through a const reference at its two tests and calls 984 (4573 B);
+// the cached axis locals typed `long` 982 (4605 B); the surface list read through a const reference at every use 965
+// (4573 B, other code, the head unchanged). Body unchanged.
 // MiniMax A (11-20): no new form, no lower score (965); the frame is still 0x11d4 against retail's 0x11cc, so the worklist array and every later slot sit at another offset, and retail carries the start surface in edi where this build carries it in esi; the 0x48e70 call sets the rest (BLOCKED-BY, its definition is in another machine's file).
 // Earlier score line: 965 (was 965): the frame is 0x11d4 against retail's 0x11cc (the two cached axis shorts), the head's registers and the
 // record and surface pointers' homes differ (retail keeps both in memory); earlier rounds below, this round's at the end.

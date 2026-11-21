@@ -839,6 +839,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+/* The result copy is repeated inside the scan arm: with one copy the compiler keeps it in ECX for the two
+   early exits, where retail reads the type again at every exit (0x96678, 0x966ad, 0x966b8). */
 // score 35 (was 35): The message and flag word use EAX and CX. Retail uses ECX and AX and sets the bit in memory.
 // MiniMax C (11-20): no new form, no lower score (35): the only shape that gives retail's message register, flags register and byte OR is the second result variable recorded in the notes above (10 at retail's 225 bytes), left aside because it repeats the same assignment in both arms of the send test; what is still left is the order of the last two exit blocks (ours lays the send-and-empty-window exit ahead of the loop's zero-trip exit, retail after it).
 // Earlier detail: The message and saved flags use EAX and CX. Retail uses ECX and AX and updates the low byte
@@ -1289,11 +1291,6 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the polarity and else forms give retail registers but fold the window NONE init (43, 45).
 // Single-exit jump from found, sent-or-empty, sent only or empty only, with saved word, 35 each.
 // The same exits with the in-place OR give 89/91/89/89. The in-place store changes entry allocation.
-// Resend result set before publication with return selection 129, or assigned ordinary type when none 120.
-// Separate query/empty-window and active-scan outcomes 36; ordinary type snapshot 20, with sole exit 23.
-// Bind time destination, name size at publication, or both 89/89/89.
-// Resend goes straight to the common return, with ordinary type read at exhaustion 120.
-// NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
 // Pending bit XOR/add on saved flags 35/90, on the selected entry 88/88.
 // With message initialized before the lookup, saved word 63/63 and entry 59/59.
 // NOT kept: the XOR tie retains the full-word store; the others grow the difference from the
@@ -1319,28 +1316,27 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
 	long type = 0;
-	if (!get_next_send(&type, sequence, size, time) && sequence_window_count(&m_message_window))
+	bool sent = get_next_send(&type, sequence, size, time);
+	long result = type;
+	if (!sent && sequence_window_count(&m_message_window))
 	{
+		result = type;
 		for (long next = m_next_sequence + 1; next < m_message_window.newest; next++)
 		{
-			s_reliable_message *message;
-			long index = sequence_window_index(&m_message_window, next);
-			message = 0;
-			if (index != NONE)
-				message = &m_messages[index];
+			s_reliable_message *message = reliable_stream_get_message(this, next);
 			word flags = message->flags;
 			if ((flags & 1) && !(flags & 2))
 			{
+				result = 4;
 				*sequence = next;
 				*size = message->size;
 				*time = message->unknown08;
-				message->flags = flags | 2;
-				type = 4;
+				message->flags |= 2;
 				break;
 			}
 		}
 	}
-	return type;
+	return result;
 }
 
 bool __stdcall function_096ce0(c_network_reliable_stream *stream, bool force, long *type, long *sequence);

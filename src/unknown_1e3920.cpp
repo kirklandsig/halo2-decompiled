@@ -1380,6 +1380,42 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // +0x98, tag index at +4 of the 40-byte entry) by hand, with the index widened to long. Calling that helper as it is
 // (short index) with (1) and (4) scores 344, and (1) with (4) on the old lookups scores 361. The 160 rests on the
 // widened hand-written lookup, a parameter type picked by score. A lead for a match only.
+// m3 lane 4 r238 (fast; brackets = aligned / register-masked counts; control 199 [73 / 25]). LEAD 29 [2 / 2] at 1272 B,
+// not kept (every part is match-only): r235's hand-written lookups and short grenade (160 again), plus the squad bit
+// started false and set under `if (squad)`, plus the query locals declared enabled, probability, forced, with either
+// index fallback (`if (index == NONE) index = squad ? squad's : (short)NONE;` 29; the plain `&& squad` 30, its
+// fall-back jump not threaded to the skip target). The flag shape and the query order only work together and only on
+// the 160: the flag shape alone on it 200 and the order alone 160 (r235); the inner-ternary fallback alone 287, with
+// the order 285, with the flag shape 31. With both, the first lookup's scratch evicts the grenade (EAX, home +0x34) instead of the squad, so the squad's spill slot
+// is free after the loop and the flag and the actor share it (retail's +0x10), and the query bytes, the probability and
+// the three tag homes land in retail's slots. One instruction is left: the first palette NONE test is `cmp cx, ax`
+// (AX = the register that holds the three initialisers' -1) where retail has `cmp cx, -1`, so the body ends one byte
+// early. Patch: build/r238/lead-1e0850-29.patch (m3-lane4).
+// On the 29, the first test's spelling: `== -1`, `NONE ==`, `!(... != NONE)`, `== (short)NONE` 29 each (same code);
+// `~index == 0` 184, `index + 1 == 0` 171, `(short)(index + 1) == 0` 186, `index < 0` 277; against the grenade, a short
+// local or constant holding NONE, or `(short)secondary` 29 (diagnostics); evaluated into a bool ahead of the
+// initialisers 29. The test reading the placement field itself (if / else / ternary, primary only) 30 / 30 / 30, both
+// indices 269; a nested ternary for the whole selection, primary only 183, secondary only 163, both 296 (1285 B),
+// else chain 296, squad tested first 229. The three initialisers: grenade first 32, chained 31 and 29, on three lines
+// 29, the tags as dword 29, a word grenade 135, a long grenade 186 (1257 B); after the first index read 29, after the
+// selection 331, each before its use 338, after both selections 338, ahead of the unit test 33 (stores before the
+// `je`), only the grenade there 191, ahead of the creation call 215. The lookup through an out-parameter inline helper
+// 29 (same code), the same helper not forced inline 259 (1222 B, stays a call); the widened index zero-extended 31, the
+// lookup without its own NONE test 107 (diagnostics). One permuter run (fast, annealed, 20 tries in 600 s) none below 29.
+// Diagnostics on the compare's register: both tags started at 0 give `cmp esi, -1` and `cmp cx, -1` (no shared
+// register); no grenade gives both immediates (the tags take registers, 1214 B); the grenade started at 0 keeps the
+// register form. So the shared register appears once the two tag homes are stored from the constant, and the first
+// signed 16-bit NONE test after it takes its low half (only the first: with that test unsigned 163, the next one takes
+// it). Retail stores the three homes and tests the unit against the register but not this test; here that mix shows
+// only when one callee-saved register holds NONE for the whole function (the nested-ternary form above).
+// Also on main's body this round: the frame-home locals renamed (squad, probability, flag; six names) 199 each; the
+// lookup as a call to src/unknown_2902b0.cpp's palette helper (copied here for the trial) with a long index and the
+// range test under the caller's NONE test 292, with the short grenade 303 (1277 B), every test inside 312 (1261 B) or
+// under the caller's test 319 (1281 B), a short index with every test inside 243, range test only 306 (the helper's
+// NONE result adds an `or eax, -1` arm; retail stores only on success); the two palette indices as long locals 338,
+// with the count read at each use 304 (1261 B), with the short grenade 301, all three 307 (1259 B: the extension
+// moves to the load). Diagnostic on the 160: a probe store of the squad pointer between the lookups puts the squad home
+// in retail's slot (first difference +0xb1), which located the eviction as the cause of the home order.
 // The squad pointer, query outputs and shared actor-result slot still differ at the 0x118 frame.
 // Present-first Boolean arms 199. Missing-first Boolean arms 199.
 // Nullable flag word before the shift 210. Default flag word before the shift 231.
@@ -1755,6 +1791,12 @@ void function_1e3b60(long actor_index);
 // code); case 1's 0x25c820 call jumping to the release block's call (one call site) with a short `old_state` 452 (1600 B,
 // frame 0xa0); that with `update && sample` 431 at retail's 1616 B. The actor index stays a stack argument in each.
 // Still BLOCKED-BY 0x262ba0.
+// M3 lane 5 r223 (fast with 0x262ba0, 0x263210; 25 here in every form; 0x262ba0 control 404 at 1624 B; 0x2641c0's
+// noinline declaration is again in another lane's file): in 0x262ba0, retail's case code order 0/4/2/1/3 with the release
+// block as the switch's last labelled arm (no tracking_complete goto) 412 (1628 B); that with case 1's 0x25c820 call
+// going to the release block's call 436 at 1616 B (frame 0xa0 as retail, actor index still stacked); that with a short
+// old state 440 (1620 B); the walk through 0x26be00/0x26be30 with the first form 447 (1620 B), with the second 442
+// (1616 B; walk alone 443). Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

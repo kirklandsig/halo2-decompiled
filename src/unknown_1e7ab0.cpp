@@ -607,6 +607,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // the first 166, with both 166; on the 0x1e8d50 entry, the child's seat read through a no-code inline accessor at the NONE
 // test, at the flags index or both, and the child's unit through one, 165 each (the child test keeps `test cl, 1`).
 // Still BLOCKED-BY 0xd0590.
+// M3 lane 5 r222 (H2M_FAST with 0x1e83c0, MATCH; control 117, aligned 57, register-masked 4): case 4's parent (retail
+// ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
+// the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child
+// iterator declared ahead of the seat test 117 (all the same code).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
