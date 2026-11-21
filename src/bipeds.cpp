@@ -1879,6 +1879,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Tag declaration before lookup 158; animation flags declaration before lookup 158; both in either order 158/158.
 // Position before lookups or at its output call 158/158; facing at its producer 158; both outputs at their producers 158.
 // The tag, animation flags, material and position homes still differ in the retail-sized frame.
+// Round 627. Separate refresh state, typed state fields with shared/separate
+// refresh, stored names with shared/separate refresh, scoped material/speed
+// alone or with independent/typed state: eight at 158. NOT kept: the tag,
+// animation flags, position and material homes still differ.
 // Shared typed state 158, stored names 158, separate driven state 158, shared control
 // 158, both accessors 158, common animated-unit view 158, typed state with walking
 // preload 137, typed state with material address 158. NOT kept: the 137 form restores

@@ -2430,6 +2430,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Color lookup tag reference, tag value, settings pointer plus tag and settings reference plus tag 137/128/128/128
 // with colors read at publication. With early colors, 189/184/184/184 at 572 bytes and frame 0x48. The first color
 // still misses its retail spill.
+// Round 627. Early color A with cursor, spawn or matrix renamed 187/187/187;
+// spawn declaration at initialization 187, aggregate 187, aggregate with named
+// or test-scoped cursor 187/187, scoped spawn with direct multiply query 146.
+// NOT kept: color A takes a register while the cursor spills, the system stays
+// in EDI, and all forms score above 128.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

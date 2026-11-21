@@ -745,6 +745,12 @@ struct s_24e9c7_points
 // retail, but negated after the product and kept in XMM2/XMM6, the result still at [ebp-8]); all four copies after the
 // result 143 (746 B); the 141 form with `side.x = (real)half_width * side.x` 141; the copy after up 126 (743 B); the 126 form
 // with `size * (0.0f - forward_j)` 147 (739 B). Body unchanged.
+// Shared planar scaling from a separate across vector, immutable across or
+// in-place side 154/154/154. Two shared in-place scales 144. First corner's
+// upper displacement before the shared side scale 175. Scoped perpendicular
+// and across inputs 141, side published at the size conversions 142, or signed
+// raster width retained to scaling 154. NOT kept: all grow the body and leave
+// the result above its retail home or enlarge the frame.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
