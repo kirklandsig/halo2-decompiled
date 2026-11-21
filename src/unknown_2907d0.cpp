@@ -258,6 +258,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // node index arrives in CX and the lookup reorders); field2e stored ahead of field1c after the angle call 20; the bounds
 // test as `arg_1 >= node_count || arg_1 < 0` 132 (474 B); the else arm's copies from `point3f const &` / `vector3f const &`
 // bound to the transform's position and forward 81.
+// M3 lane 16 r163 (fast with 0x200e60, MATCH each time; control 19): the constructor as a placement new 51 (474 B: a NULL
+// test of the record); the bounds test as `if (in range) { node work } else return false;` 19 (same code); the object test
+// with its arms swapped (`== NONE` first) 137 (451 B); a redundant store of the forward at the head of the else arm 19 (same
+// code); `__stdcall` on the definition 19 (same code), and with no address local 33 (the transform still arrives in ECX:
+// the declared convention does not change the first pass).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

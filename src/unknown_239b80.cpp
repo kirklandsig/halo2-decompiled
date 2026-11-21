@@ -905,6 +905,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // byte in the indices home and hull count at +0x10 as retail; left: the rotated pass loop, points/current/count in
 // EBX/ESI/EDI, the closure's fxch); on it a positive two-axis equality helper for the closure 153, a short hull count 251,
 // the short compare 251, the heading after the scan 222, return exits 248.
+// M3 lane 16 r165 (fast with 0x239d50 and 0x239b80, both MATCH throughout; control 144): one long hull counter in a
+// two-part loop condition `while ((short)hull_count < count && next != NONE)` (no flag; next started at current, the
+// two closure exits under `if (next != NONE)`, the compaction skipped after a NONE exit) 251 (793 B: points and indices
+// lose their registers); the departure flag declared at function scope ahead of the hull count 262 (764 B); the lowest
+// scan's two coordinates in their own `{}` block 144; the classifier's result named before its test 144; a named point
+// pointer in the lowest scan 144 (the last three the same code).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

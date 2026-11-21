@@ -4228,6 +4228,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local with the alpha selector before input 19 (small in AL copied to CL, alpha in ECX; retail small in CL, alpha in
 // EAX) and with the alpha selector before whole 19 (small in CL as retail, but alpha computed in EDX before the whole
 // split, where retail computes it in EAX after fraction's move to EBP).
+// M3 lane 16 r163 (fast, control 9): the two stage-one input words through the file's combiner-inputs macro 939 (the
+// no-local code); the shifted word bound to a `dword const &` 9 (same code); on r205's B form (re-measured 5): the shifted
+// local at the RGB word only, the alpha word written out, 941 (the shift then lands after the clear as retail, but small
+// loads into AL: whenever the shifted word is not the input's own register, small takes AL); with no shifted local, one
+// `bool const` copy of small for both selectors 941, the input selector as `input = 4; if (small) input = 5;` 936 (a
+// branch); re-measured with no shifted local: whole/alpha/fraction/input 14 (small in CL, but alpha computed in EBX
+// before the fraction), whole/fraction/alpha/input 15 (small in AL, copied to CL for the neg).
 // M3 lane 6 r215 (fast, on lane 8 r205's base B re-measured 5: the span copy after the clamp plus `offset` declared after
 // `maximum`; only the shifted input word left, coalesced with `input` in EBX and hoisted above the clear): the shifted
 // local `dword const` 5; `input` typed `dword` with a `long` shifted local 5 (both the same code); the alpha input word

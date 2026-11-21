@@ -916,6 +916,10 @@ struct s_object_damage_view
 // record (diagnostic) 369; 0x197160's code parameter typed byte 354 (the code is then loaded once and pushed twice as in
 // retail; 0x197160 still matches); `best` read through `selected` 353 (same code); the amount local with the byte code
 // parameter 454.
+// M3 lane 16 r165 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640, 0x197160; control 353): a typed record
+// pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
+// searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
+// the reported slot declared after `selected` 358.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

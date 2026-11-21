@@ -977,6 +977,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // loops 36; the variant named ahead of the pair in the state block 36, at the function top 36; the member array named
 // before the copy 36; no addresses pointer (the cast at both uses) 36, that with no variant local 39; the member count
 // read from the field at each use 132 (495 B) (none moves the session off ESI).
+// M3 lane 16 r165 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22): the two address tests joined with a
+// non-short-circuit `|` 152 (495 B: both leas come ahead of the test, as negate/sbb flag arithmetic); the variant and
+// the summary above the opening (round 75's 32, re-measured 32) with a plain `for` copy 109 (477 B, the mask read
+// folds); the typed flag-only stored pair with the variant above it and a `for` copy 108 (both callers lost); the pair
+// through a new inline getter that returns the machine address and stores the player address through an out pointer
+// (live and flag test) 46; through one taking both out pointers with both preset NULL inside, the result ignored 46
+// (register-masked 1 in both: only the session ESI against retail's EBX, both callers lost).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

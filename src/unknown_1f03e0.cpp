@@ -1758,6 +1758,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // file's existing bit-3 helper (`function_1f1462(state->flags)`, with or without `!= 0`) 234/234 (same code); the first arm's
 // cross through cross3f 234 (same code), through cross3f_staged 501 (3057 B); the first arm's output named once as a
 // `vector3f *` for its five uses 589 (3027 B). Body unchanged.
+// M3 lane 16 r165 (fast with 0x1f0450, 0x1f1460, 0x1f03e0; control 234), the four flag declarations reordered on the
+// current body: flying, direct, damping, gravity 230 (first difference +0x31: the flag block and damping's EDX are then
+// retail's, left the gravity store after the input lea; a gain of 4); flying, direct, gravity, damping 233; flying,
+// gravity, direct, damping 235; direct, damping, gravity, flying 246; flying, direct, damping, gravity with the input
+// pointer declared after the flags 246 (the entry block exact to +0x3d, the speed load then scheduled after the cross's
+// first products).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
