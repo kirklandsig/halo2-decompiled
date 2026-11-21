@@ -1740,6 +1740,12 @@ void function_150820(dword *bits, bool local_only)
 // NOT kept (M3 review 11-21, MiniMax C 11-20): the unit index read again through the player getter at the object lookup
 // and the 0xcd7b0 argument scores 18 (retail's player ESI, hand EDI, unit index EDX) but is a reread device, kept only
 // with a byte match; left on it: the player address folded into one LEA, a second unit-index read, the policy byte in DL.
+// M3 lane 8 r215 (h2m fast with 0x151b80 (5 throughout)/0xa8f80; control 43, register-masked aligned 6): diagnostics,
+// restored at once: one extra unconditional use of the player (its pointer stored to a file-static after the hand) 74
+// (216 B, masked 7: the player then takes ESI and the hand EDI, retail's roles, with the store's own rows left); the same
+// extra use of the hand instead 74 (masked 7, no exchange). So the exchange is a one-reference ranking tie that the
+// player loses by one, as 0x178c80's colour B does. Forms: the unit as a pointer to const 43 (same code); the arms' unit
+// index read once into a local ahead of the mode test 49; a second player pointer for the two arms 43 (the copy folds).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

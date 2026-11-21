@@ -1032,6 +1032,10 @@ bool function_e4050(long object_index);
 // in a one-member aggregate 109 (same code as the scalar walk, re-measured 109: the aggregate is folded and the first
 // step is still peeled); that shape as a `for` loop from the unit 109 (same code); the root started at the unit with
 // the walk from the unit 109 (same code); the walk started from the player record's field re-measured 171 (405 B).
+// m3 lane 6 r221 (H2M fast, control 44 alone, plain 43): BLOCKED-BY 0xbaf80 still (pinned in an avoid file this round).
+// A redundant NONE initialiser for the root 43 (with the callees in the image); the root's object named for the bit-18
+// test 44; the player datum as a const pointer 44; the walk's parent in its own block 44; the parent declared ahead of
+// the root 44 (all the same code).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {

@@ -3138,6 +3138,17 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // existing bucket count field 354, with the signed node read before the empty-bucket test 354;
 // separate level count and requested level 354; exclusive level bound 372; coefficient address after acceptance 393.
 // NOT kept: both matrix copies still expand and none reaches the starting score at a shorter length.
+// M3 lane 8 r215 (h2m fast with 0x235a0/0x23600/0x22850/0x23ca0/0x23540; control 354 at 1595 B; this build already ends
+// in `ret 0x1c`): the allocation exit as `if (next > 0x27000) { result = false; goto done; }` 358; the allocation under
+// `if (bytes)` 354 (same code); round 133's allocator form re-measured 423 (1654 B), with the exits as `return result;`
+// and `return false;` 482; the exits as returns on this body 418 (1590 B; the result byte drops out, so every home moves).
+// 0x235a0 spelled through the typed members 354, with three named row pointers 354, with an unused local 354, with a named
+// 1.0 354 (0x235a0 MATCH each; same code here). Calibration diagnostics, restored at once: one to six extra dead stores in
+// 0x235a0 364 (1484 B: the second site becomes a call, as with round 133's guard; 0x235a0 96 B, 41), a null test in it 604
+// (both sites calls); `__assume(available_samples > 1)` before the second copy 300 (1553 B, frame 0x204, both copies still
+// expanded), `__assume` on the sample count or the bucket count 354. Reading: 0x235a0's inline cost follows its final code
+// (a dead local, a named constant or row pointers change nothing), and one extra store tips the second site, so retail's
+// extra weight is on the call-site side (one more split on the path); no natural split found yet.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -4283,6 +4294,29 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // `input` itself keeps small's load out of AL. One stage-one word shifting `input` as a signed long, either or both,
 // 941 (same code, merged); the alpha word shifting `(byte)input` 35 (two shifts, `movzx eax, bl`: a positional
 // coincidence, the selector block is still the AL form).
+// M3 lane 13 r134 (fast, control 9; aligned = lines differing after alignment, this body 6): on the no-shifted-local
+// form (re-measured 939, aligned 15: retail's shift, the small flag loaded into AL after fraction's move with no copy)
+// the two stage-one words through a forced-inline four-argument packing function 939 (same code); the input selector
+// ahead of fraction 976 (4840 B), ahead of whole 965 (4832 B); a second `small ? 5 : 4` selector variable for the
+// stage-one alpha word 225, the selector written inside that word 225 (the same code as that); both selectors as
+// defaults set under one `if (small)` 948, under two ifs 962, the alpha selector alone if-assigned 949, the input
+// selector alone 934 (branches each); the definition written through a local pointer to it 939 (same code); the
+// exponent search with a float power local 939, as a `for` 1048 (4924 B), as the guarded do/while 939, as `while
+// (true)` with a break 939; the exponent search reusing the input selector's variable 939, and on this body 9 (same
+// code each: the two values are split again). With the shifted local: one shifted local per stage-one word 939; the
+// RGB word named and the alpha word as that local `| 0x8000` 923; the alpha word as the stored RGB word `| 0x8000`
+// 948, the chained store then `|= 0x8000` 948. Diagnostics (an added store each, restored): this body plus one later
+// store of `input` 936, or the no-local form plus a store of `input` after the stage-one words 936 or ahead of them
+// 939, give retail's selector block and shift exactly (aligned 6: the store, one pad and the two reload pairs); so
+// does the no-local form with one, two or three loads of a stack parameter stored in the stage block (945, 959, 952),
+// one in the selector block 961, one at the stage block's end 939, or a later read of `small` there 942. A store of
+// alpha_input or whole ahead of the stage-one words 246, 247, of alpha_input, fraction, whole or fixed after them 958,
+// 950, 973, 946, of a constant (three values) 973, 270, 972, a store of `input` ahead of the clear 939 (removed by the
+// compiler), or the parameter load placed after the exponent loop 974, at the head of mode one 958 or two 962, at the
+// function's top 1198 or end 945, 946: the flag stays in AL. Reading: on the no-local form only the flag's register is
+// left (plus the reload pairs lane 8 r205's base fixes), and retail's block needs one more integer load, or a second
+// use of the input selector, between the fixed-point conversion and the exponent loop's entry test; no statement that
+// folds away was found.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

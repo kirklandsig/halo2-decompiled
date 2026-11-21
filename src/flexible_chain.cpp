@@ -235,8 +235,8 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
 // Earlier score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
@@ -936,6 +936,9 @@ void __stdcall function_1160c0(real dt)
 // `inverse_dt` declared at the velocity rows 292; the loop counter declared ahead of the loop 144 (same code); the
 // stiffness computed in the non-initial arm after the target 303 (1356 B).
 // MiniMax B (11-20): no new form, no lower score (144): the selected segment still sits in EDI and ECX at +0x20 where retail keeps it in EDX at +0x14; this round's permuter (76 tries in 604.8 s) found nothing below its baseline of 141 on the reduced image.
+// Last-ordinal clamp, branch clamp or bound reference 151/151/151. Indexed fields through
+// a carried array and clamped index 280/280. Array-end selection, pointer step-back or
+// end-selected reference 301/296/301. NOT kept. Bounds and pointer tests regress.
 // M3 lane 11 r142 (fast with 0x116750/0x116010/0x1160c0, all MATCH; control 144, aligned 159, masked 86, frame-blind 41):
 // retail is this body with ECX and EDX exchanged from the segment on (segment EDX, here ECX with its base in EDI; then the
 // first-node copy, the position copy, the physics index and the offset copy each take the other register), plus the low
@@ -944,6 +947,20 @@ void __stdcall function_1160c0(real dt)
 // `definition->segment_count == i` 145; the rotation through the existing rotate_vector_170d70 (k read at each use) 144
 // (same code), and every include/axis_rotation.h variant measured for 0x29b2e0 (k local or not, dot or cross order) 144.
 // Body unchanged.
+// M3 lane 12 r167 (h2m fast with 0x116750 and 0x1160c0, MATCH in each; control 144): the axis through the existing
+// normalize_inline 172 (1368 B, first difference +0xc1: its x87/SSE interleave differs); through cross3f_staged 144 and the
+// vertical through vector3f_assign 144 (same code each); `predicted` through vector3f_add 204 (1368 B); the node velocity
+// through vector3d_from_points3d and three `*= inverse_dt` 196 (1400 B). Retail's cell shared by the segment, the scale and
+// the sine sits at +0x14 below the axis (+0x18..+0x20), ours at +0x20 above it (axis +0x14..+0x1c); retail's rotation
+// keeps all three axis components in XMM5/XMM4/XMM6 where ours reloads axis.i and axis.j. Body unchanged.
+// The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX
+// and +0x14. Tried rest offset at constraint join 176, rest offset after vertical setup 176, rest
+// offset after cross product 186, rest offset produced by both constraint exits 290, rest offset
+// produced before reach by each constraint arm 322, segment base advanced with offset at constraint
+// join 272, segment base advanced with offset after cross product 267, selected arm advances segment
+// base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
+// the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
+// +0x20.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

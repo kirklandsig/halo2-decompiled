@@ -557,6 +557,16 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // else arm read from the object's forward 192: the test's i product stays facing-first whatever facing's other uses
 // are. Retail's 0xe01d0 call (0xe0264-0xe0286) also computes the facing address after the control and settings
 // addresses, so both callers put facing ahead of control. Still BLOCKED-BY 0x1faf80.
+// M3 lane 13 r135 (h2m fast with 0x118700, 0x11f0d0, 0x1faf80, 0x109290, 0x11d180, 0x11ce20, 0xbba20 and 0x118e80;
+// control 25): the agreement test as `!(up >= 0.9999f && forward >= 0.9999f)` 29 (both compares reversed); the tests on
+// `&object->up` / `&object->forward` with the two field pointers declared inside the store block 45 (1032 B);
+// turn_velocity declared after up and new_forward 25 (same code); the position copy and dispatch at the tail's scope
+// after the field pointers (no block) 74 (1042 B); the dispatch's forward and up passed through two `vector3f const *`
+// locals 27 (the up agreement's i product flips, as with unused locals). Diagnostics: 0 for the dispatch's forward and up
+// 79 (the tail's six loads then run ahead of the stores, but in eax, ecx, edx order where retail starts with ecx; the
+// forward agreement's i product stays object-first), so the dispatch's escape is the tail's barrier and the i product
+// is separate; 0x1faf80 as (object_index, facing, settings, control, threshold, turn) re-measured 12 here, 0x1faf80 2
+// (only its test's `object->forward.i * facing->i` loads facing first). Still BLOCKED-BY 0x1faf80.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

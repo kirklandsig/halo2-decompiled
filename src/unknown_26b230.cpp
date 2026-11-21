@@ -2340,6 +2340,10 @@ void function_269250(long clump_index, long actor_index);
 // 146/146, team-local 128/128. The team-local datum form promotes the pool
 // to EDI and leaves the selected handle in memory at the wrong offset.
 // Candidate-local prior best for both default and threshold 87.
+// Bitmap predicate and shared datum setter: guarded index scan 160/174, skip unset bits
+// 166/180, bounded bitmap scan 160/174, occupied cursor search 166/180 (current/exhaustion first).
+// NOT kept: 0x40 frame spills the actor and changes four matched walk users. The pool,
+// selection and x87 score still need their retail homes.
 // M3 lane 14 r136 (h2m fast with 0x268840, 0x268bb0, 0x269580, 0x269250, 0x2694d0, 0x269040, 0x1e46c0, 0x26ae30,
 // 0x268c90 and 0x268510, all MATCH each run; control 87): on this body the improving arm storing the selection before the
 // best 87 (same code); `best` declared ahead of the selection 87 (same code). The in-arm compare re-measured 126 (480 B);

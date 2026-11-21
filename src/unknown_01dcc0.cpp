@@ -485,6 +485,13 @@ long g_55e6c0;
 // formed inside it 143 (484 bytes), on the lead 155 (495 bytes); `result` declared bare and set true in the work arm
 // and the no-data arm 93 (first difference +0x1); the format call's result named and stored through a `dword const &`
 // 90 (480 bytes); a redundant `offset = 0;` ahead of the level loop 110 (480 bytes), on the lead 146 (493 bytes).
+// M3 lane 1 r146 (H2M_FAST, control 29): the count clamped into a `levels` local at function entry, ahead of the data
+// test, and stored at the clamp's place 154 (487 bytes, first difference +0x1); one to four redundant parenthesis pairs in
+// the clamp ternary 29 each (same code: integer registers ignore them); the per-level byte count declared bare beside the
+// offset and assigned in the loop 29; the loop's level width and height named before the format call 29 (both the same
+// code). Diagnostic, restored: the height stored twice (again after the +0x8c clear) 31: the first store is eliminated as
+// dead and the height/count swap stays, so an eliminated read does not raise the height's rank. On round 122's lead
+// (re-measured 31 at 484 bytes) the header address is now formed after the flag store (main's body forms it before).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

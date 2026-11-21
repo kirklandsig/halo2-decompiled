@@ -463,6 +463,11 @@ extern long g_55c154;
 // and the index store and copy in each arm 128 (581 B: no threading, and the arms' identical leading stores are hoisted
 // back above the test); the sibling's `&&` head on the one-load body 61 (same code); `if (selected == NONE ? load(saved) :
 // load(selected))` with the request mode chosen per arm and one shared 0x238c69 call 130 (549 B).
+// M3 lane 5 r224 (h2m fast with 0x13fac0/0x212bc0/0x238c69/0x2ba9f4, all matched; control 61): lane 7 r189's form (3) rebuilt
+// 183 (575 B: `this` ESI spilled round each copy, the entry EDI, EBX a hoisted zero in the first half, then saved, then
+// the variant address per arm). On it: the failure call at each failure point (early returns) 183 (same code, tail-merged);
+// the count and destination named once at the second half's top for both requests 183; the game type read once into a
+// local for the three calls 189; the selected arm first 183; the file type named in each arm before its request 183.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
