@@ -1677,6 +1677,9 @@ void function_143250(
 // it 939 (same code: the order is set after the homes); its subtracted product with `s21 * r5` for s21_r5 1147 (10783 B);
 // entry 37's r6_r3_r8 written `r6_r3 * r8` 1571 (10765 B). Retail keeps 143 scalar cells under the workspace, this build
 // 142; 428 of the 935 differing lines differ only in stack offsets.
+// Second-band named products for sums, ordinary differences, zero-minus differences, or all paired coefficients
+// 1226/1415/1226/1226. Running accumulators for the same groups 1229/1095/1226/1229. NOT kept: all retain the
+// 0x2fc frame and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

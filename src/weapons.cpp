@@ -3490,6 +3490,9 @@ struct s_ammo_conversion_entry
 // single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
 // transfer cap inside the successful search 199. NOT kept: the ordinal searches shorten the body
 // to 718 bytes, and the forms at retail length still miss the destination and key registers.
+// Cached conversion membership as shifted bool, masked bool, result of a test or shifted byte 214/214/209/214.
+// Byte or word type mask 204/190. Boolean membership with conditional retention or ternary retention 197/188.
+// NOT kept: the two-point gain leaves the source and destination register roles unresolved.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3821,6 +3824,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
 // the magazine debit where retail stores it after admission and the magazine update.
 // The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
+// Post-heat loaded short retained through the holder test, with native compound debit, signed balance, short
+// difference, or word balance. The shared and separate threshold and holder gates all score 603. Frame 0x1c64
+// and separate magazine-tag and round spills remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4939,6 +4945,9 @@ struct s_weapon_projectile_creation
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.
+// Marker-average scalar sums, indexed with direct seeds or initial point copy and component/point stores
+// 1194/1139/1135/1142. The same four forms with a marker cursor 1171/1141/1130/1204. NOT kept: the 0x1ea4 frame
+// remains and the scores rise.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

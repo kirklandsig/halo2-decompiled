@@ -1012,6 +1012,9 @@ struct s_collision_result_buffer_1697c0
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
+// Independent fallback components with aggregate output or the shared setter, by entry placement: original
+// 377/377, before fraction 377/377, after pitch-axis construction 380/380, there with fraction 380/380. NOT
+// kept: the 0xa4 frame, longer body and changed matched caller depart from retail.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
