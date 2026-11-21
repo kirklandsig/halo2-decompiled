@@ -598,7 +598,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
-// MiniMax B (11-18): score 920 (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
+// score 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// its zero in EBP), the frame is 0x2cb0 against retail's 0x2cac, the byte homes differ and the join is laid out in
+// source order; the rounds below. MiniMax B (11-18) at 920: no new form, no lower score (920 plain, 926 fast). The permutation
 // search over the body (300 s, one job, the full image because the reduced image misleads here) made two tries and
 // never beat its baseline of 910 differing instructions; read from the listing again: retail takes the actor's unit
 // field with the pool's data base and the scaled index kept apart ([edx + esi + 0x18] against our folded address),
@@ -768,6 +770,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // frame 0x2cac but regress, still using EBX for the entry zero.
 // Memberwise query location copy after the unit lookup 901, Whole query location through memcpy 925.
 // NOT kept: the memberwise copy uses two word transfers where retail uses one dword.
+// M3 lane 3 r287 (plain each; control 925, difflib-aligned 519 / register-masked 243): the definition's no-obstacle view as
+// a word bitfield (the flags field's declared width) 924 (aligned 519, same layout); with it: both radius tests written
+// distance-first (`!(distance_squared <= r * r)`) 924 (masked 331); one to three redundant paren pairs around the entry
+// dot's first product 927 / 927 / 924; the two one-use `velocity` pointer locals dropped (the field cast passed to dot3f)
+// 938 at 3692 B, aligned 393, masked 242: frame 0x2cac and retail's homes for the four shorts, self_unit and the actor
+// (aligned 519 -> 393, a positional rise, so not kept); on that, the vehicle's actor tested through its pointer
+// (`vehicle_actor && ...`) 937 (aligned 396). Retail reloads actor_index into EBX, self_unit into EBP and unit_index
+// into EDI at the loop's back edge and reuses EBP as NONE inside the type-0 arm.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

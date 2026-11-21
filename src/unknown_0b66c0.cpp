@@ -592,6 +592,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // const *text = string;` named after the clamp with `text + start` at the copy 27 [6] (same code); that local named
 // before the compare 40 [35]; the source as `(char const *)(start + (long)string)` at the copy 28 [6]; `start = (long)string
 // + start;` after the clamp 40 [match] (start ECX for life, the string folded into the add).
+// M3 lane 3 r288 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): on main's body the
+// compare as `length - count >= start` 35 [35]; the sign tests as an early `return false` ahead of the result 41 (107
+// bytes) [match]; a `char *const` destination 21 [match]; a `long const` start 21 [match]; the length through a new
+// one-caller bounded helper taking the maximum (0x1ff) as a parameter 21 [match] (the last three the same code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

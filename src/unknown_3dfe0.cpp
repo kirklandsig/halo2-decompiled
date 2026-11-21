@@ -234,6 +234,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // const reference to its field 218, the update time so 218, both 218, the sample time copied and bound by a const
 // reference 218, force bound by a const reference for its test and the 0xd1850 argument 218 (same code each: none moves
 // the timestamps' ESI/EDI tie).
+// M3 lane 3 r288 (h2m fast with 0x3d2c0 and 0xd1850, both MATCH; control 21; update-first re-measured 218): force started
+// false and set in an `if (!initialized || !valid)` with update first 237, with update right after the zero-elapsed return
+// 235; the valid flag read once into a named local for the force test and the stationary test 168, that with update first
+// 230, with update right after the zero-elapsed return 230. In the kept form the object's reload into EBX sits ahead of the
+// force branch (both paths); retail reloads only in the force arm and keeps EBX from the lookup on the other path.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

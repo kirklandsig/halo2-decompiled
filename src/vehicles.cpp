@@ -5310,6 +5310,15 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // bound written as the sum of the two counts with a named short second count 45 (the guard block exactly retail's, the
 // sum in EAX), long second count 43, operands swapped 45, with the colour order 46. A permuter run on the 5 lead (21
 // tries) found nothing lower.
+// M3 lane 3 r288 (h2m fast; control 22): re-measured the running count 126, the 5 lead 5, the colours before the source
+// alone 17, the long second count in the loop bound with the colours first 44 (its only set-up difference is the second
+// count's sign extension in EAX, `movsx eax, ax; add edi, eax`, where retail extends into ECX; every later scratch register
+// is then one rotation step off). New: the running count with the collision miss as `continue` 126; the long second count
+// summed into a named count, either operand order, 47/47; a long copy of the first count (`primary_total`, also the second
+// fill's offset) with the loop bound `primary_total + secondary_count`: short second count 46 (guard and padding jumps
+// retail's, but `movsx eax, ax; add eax, edi`: the sum takes the extension's EAX), long second count 44. The running count
+// (the code base's `count += fill(..., markers + count, ...)` idiom) is the only form that extends into ECX and sums into
+// EDI, and it alone merges the loop's preheader into the guard (the zero shared in EAX, no padding jumps).
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

@@ -4474,6 +4474,12 @@ extern vector3f *g_4687bc;
 // node_count`; an `int` index; `NONE != index`. Diagnostics (screen): the index kept live past the element goes to EBX
 // with the data still loaded first; without the node-count test the offset takes ECX, data still first. Both stores and
 // loads sit as late or early as their registers allow, so both sites are register choices, not schedules.
+// M3 lane 3 r287 (fast, control 8): the rigid-body data pointer through a `s_havok_component_rigid_body *const &`
+// bound after the index test and indexed with `[]` 8, bound before the 0x0b67a0 call 8; the default material copied
+// into a short local read through a `short const &` for the constructor 8; the element as a const reference to
+// `component->rigid_bodies[index]` with `.node_count` / `.nodes[0]` 8 (all the same code at both sites); the component
+// through a `s_havok_component *const &` bound to the cast pool data (0xb9b90's data-first form) 47 (1099 B: the pool's
+// data then loads into ECX ahead of the material, retail's lookup is index-first).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
