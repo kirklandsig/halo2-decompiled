@@ -1878,6 +1878,10 @@ long function_10f5f0(long object_index);
 // Velocity sample, center delta and effect requests names, alone and in every combination,
 // plus the collision bounds name with all three: eight at 561. Frame 0x1990 persists,
 // and the six-real bounds and three-real velocity still use separate homes. Body restored.
+// In-place radial scale with component stores, setter, in-place add or damped
+// sample 570/570/570/603. Separate radial delta with those publications
+// 570/561/570/603. NOT kept: the setter with a separate delta ties at retail
+// length, and all leave the 0x1990 frame.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4997,6 +5001,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Existing vehicle cross for facing/axis/both 129/118/131, for final left alone or with
 // facing/axis/both 116/127/116/127, all with forward negation helper 137.
 // NOT kept: the two 116 forms gain two. The projection still first differs at +0x99.
+// Indexed projection removal, default axis and rotation rows in seven subsets
+// 116/118/116/118/116/116/118. All with projection scope 118.
+// NOT kept: the 116 forms recover the projection prefix through +0x107 but
+// gain only two. The cross operand allocation and the sine/cosine homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6232,6 +6240,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Brake with ground/wheels 757/757, action with ground/wheels 762/762.
 // NOT kept: brake-only recovers 2974 bytes with a three-point gain. The zero still
 // takes XMM4 and the separate definition in EBP is missing.
+// Entry tag record for kind, angular ceiling and engine limit, seven subsets
+// 930/930/938/938/930/930/938. Entry tag ordinal for all three 864.
+// NOT kept: the record forms coalesce retail's separate lookups and
+// shorten to 2795–2798 bytes. The ordinal form reaches 2870 but changes
+// the entry scheduling. The zero and result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
