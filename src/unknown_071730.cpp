@@ -486,6 +486,11 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // getter called through `arg_0->owner->session_b` 419; the mode-14 exit as `return true;` 455 (1578 B); the result
 // declared after the owner and session locals 379; the data local started NULL and then assigned 376 (same code). The
 // getter stays expanded in every form. Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 16 r170 (h2m fast with 0x5b080, 0x706f0, 0x72140, 0x71ff0, 0x71e00, all MATCH; control 376): the first elapsed
+// time's start field named ahead of the clock 376 (same code: the read sinks past the clock); both start fields named 413
+// (the second then loads ahead of its clock as in retail, as the 0x75890-inline forms do); the player count read once into a
+// named `dword` for the compare and the store 376 (same code); local_2 declared inside the type test 437 (first +0x16); the
+// owner-state test split into an outer state test and an inner timeout test 376 (same code). Still BLOCKED-BY 0x5b080.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

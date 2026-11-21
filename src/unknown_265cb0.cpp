@@ -2296,6 +2296,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the decrement 158 (same code). Reading: the velocity dot after the velocity normalize folds the direction in both
 // builds; only after the relative normalize does retail load it into XMM1-XMM3, which earlier diagnostics reproduced
 // only with the direction escaped and that call opaque, so the lead is 0x30bf0's whole-program summary (BLOCKED-BY 0x30bf0).
+// score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
 // base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
 // takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.

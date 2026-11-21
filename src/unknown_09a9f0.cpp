@@ -1036,6 +1036,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the second store moved after the object field store 69; the object read through a const-reference-bound header
 // pointer taken before the second store 64; the flag test through a const-reference-bound header pointer 40 (178 B,
 // first difference back at +0x3a); the bool declared after the creation call 34. Body unchanged.
+// M3 lane 6 r224 (H2M_FAST; control 8): the second store replaced by `__assume(entity->object_index == object_index)` with
+// the plain object read 77 (160 B, retail's-shape code); the `(dword)` cast on the header test's index only, second store
+// kept, plain object read 42 (lookups shared); `result` declared ahead of `value` 8 (same code); no store before the NONE
+// test, the index stored at the top of the non-NONE arm and in the NONE else arm 68 (179 B: the two arm stores are not
+// merged into one store ahead of the test, and the header address is formed whole and reused for the object read); the
+// entity's index field bound by a reference and used as the index everywhere 82 (157 B). Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

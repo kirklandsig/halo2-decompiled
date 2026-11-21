@@ -993,6 +993,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 183; 0x2c0d60 933 there against 925 in the full build). On main's body: the segment direction through the file's
 // avoidance_normalize2d 712 (+0x1: the frame changes); the node walk's index as short 694; `ignored` as short 706 (2976 B);
 // the copy-out loop's index as long 706 (2963 B); the inserted count as long 728 (2960 B). Body unchanged.
+// M3 lane 7 r210 (h2m fast with 0x270930 and 0x2c4030, both MATCH each run; control 675): the radius test written
+// `radius < state->source.radius` 675 (same code); the source radius read once into a const local for the test and the
+// assignment 754; flags left undefined at its declaration and zeroed in a `!actor` arm 759; the step's input pointer
+// formed ahead of the output-count test 685; the object-index clear moved ahead of the actor block 761. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

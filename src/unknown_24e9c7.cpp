@@ -738,6 +738,13 @@ struct s_24e9c7_points
 // (same code); side and back as scalars 133 (frame 0x44); side scalars with `(0.0f - forward_j)` 138 (739 B); side and back
 // scalars with it 146 (739 B); back and up as scalars 133 (frame 0x44). Our back point spills its y and sorts below the
 // 4-byte cells ([ebp-0x18]); retail's pair above result keeps x untouched and y with five references. Body unchanged.
+// M3 lane 14 r140 (h2m fast with 0x24e59f/0x22a664, both MATCH; control 125): the side point set to the across products at
+// the across position (before the scale read) and scaled in place by the half width, with the points declared ahead of
+// the first corner's base copy (a store into the escaping corner array between the products and their use): that copy
+// right after the result 141 (746 B); after the half width 126 (743 B: the across products are then computed early as in
+// retail, but negated after the product and kept in XMM2/XMM6, the result still at [ebp-8]); all four copies after the
+// result 143 (746 B); the 141 form with `side.x = (real)half_width * side.x` 141; the copy after up 126 (743 B); the 126 form
+// with `size * (0.0f - forward_j)` 147 (739 B). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
