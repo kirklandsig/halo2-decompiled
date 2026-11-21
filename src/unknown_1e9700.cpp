@@ -355,6 +355,17 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // player byte, with a held or direct setter read, 103/103.
 // NOT kept: all regress. The raw byte avoids Boolean materialization but the
 // enable still remains live across the increment and the maximum stays in EAX.
+// M3 lane 1 r149 (H2M fast; control 76): the enable byte read at each use with no bool local 103 (the second read is
+// still CSE'd into DL after the counter store: no reload without aliasing); the old maximum as a short local 76 (same
+// code); the player clamp as 0x1968b0's own shape (long limits, a counter pointer, nested conditional in the store) 96
+// (aligned 54 -> 25: retail's clamp and bitfield store); that with the enable read at each use 70 (427 B, aligned 26; a
+// gain of 6, under the bar: left the getter's `mov eax, -1` / `xor eax, eax; mov ax` shape, the increment's `inc word
+// [eax+edx+0x16]; lea edi` order and the two enable reloads); on 70 the increment before the row 79, on 96 the increment
+// first 100, on 96 the index test nested after the limits 81; the old maximum read under `enabled && index != NONE` 101;
+// on 70 `inline` on 0x196960's definition with both maxima as `if (g_510ca0) x = function_196960(...)` 102 (423 B).
+// On 70, the old maximum's read as the getter's own shape (`long value = NONE; if (index != NONE) value = ...;` then
+// the copy) 100 (425 B), the team maximum so 94 (425 B), both 102 (423 B; aligned 22: the shape is retail's, the
+// missing enable reloads shift the rest).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

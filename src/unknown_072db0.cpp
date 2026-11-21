@@ -1626,7 +1626,7 @@ static __forceinline void query_restore_pending()
 
 bool function_1900a5(long index);
 
-// score 643 (was 663): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// score 643 (was 643): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
 // Earlier at 663 (was 703): the same differences at 2878 bytes.
 // Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
@@ -2269,6 +2269,17 @@ bool function_1900a5(long index);
 // the clock read); that step at both gates 626; on the 621 form the opening test through the existing
 // online_logon_connected() with its header 750, as this file's switch on the logon status 750, the free space named 645
 // (2846 B); `inline` on 0x75890's definition with the gate calling it 664 (2846 B, and matched 0x72700 94: reverted).
+// M3 lane 16 r170 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643): a user
+// record pointer for the users loop's flag, identity, properties, slot index and the later identity copy 726, without the
+// later copy 643 (same code); the existing online_logon_connected() (online_tasks.h) for the logon test 743 (retail's `dec
+// eax`, but the users loop loses its alignment pad); the last request time in `long last_read` ahead of the request test
+// 645; the last write time in `long last_write` ahead of the write test 637 (retail's `mov esi, eax` ahead of the clock; a
+// gain of 6, under the bar), both locals 639. On the 637 form: the completion identity as a member-address ternary 661
+// (2846 B), as an if/else of member addresses 661 (2846 B); the request builder's free space named 662 (2846 B); the write
+// poll as a nested range test with `state == 2 && succeeded` inside 660 (2846 B); the write time assigned inside the test
+// 637 (diagnostic). Reading: the positional count is set by the request loop's instruction count (ours is 10 short ahead of
+// its 0x1934f0 call: retail's request flag in DL and the two counts stored before the clock) and by the polls' range
+// chains, neither keepable without a match.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

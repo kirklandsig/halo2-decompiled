@@ -878,6 +878,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // retail, but the stage index moves to EBP and the +0x20 read to EDX); the material lookup through the tag-data and
 // record-tag accessors 8 (same code); both accessor forms 8 (same code); the material definition bound as `void const
 // *const &` 92 (552 B); both bindings 86 (545 B). Body unchanged.
+// Fallback payload member and fallback plus shader payload members, mask/word
+// 152/117 and 152/117. Native slot lvalues 152/117.
+// Bound element addresses 124/123. Grouped cache defaults 103,
+// then late definition mask 93. NOT kept: 103 needs bound one-use
+// element addresses. The late mask loses caller 0x224d90. The EDX mask
+// and EDI table can coexist. The fallback payload still takes EAX.
 // M3 lane 7 r210 (h2m fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless given; main 117): lane 1 r59's
 // reference chain rebuilt on this main 8 at +0x9e (the same eight lines: pass definition EDX where retail reuses EAX after
 // the dead `lea`, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the definition). On the
