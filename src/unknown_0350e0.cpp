@@ -495,6 +495,14 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // shared t * k) with this function's cosine/sine parameters: that file's store order 382 (1735 B, frame changes), retail's
 // pair order (forward.j ahead of left.i, forward.k ahead of up.i, left.k ahead of up.j) 368 (1747 B), no shared t * k 382,
 // squares as scalars 377 (1741 B), squares as scalars in retail's pair order 355 (1759 B).
+// The first-axis register assignment and the early square spills still differ.
+// Scale then two in-place scaled adds 371. Separate up and left scales then forward scaled add 468.
+// Left scaled add then separate forward scale and sum 454. Three independent scales before the two sums 632.
+// Distinct up-plus-left vector 478. Up product setter then two scaled adds 371.
+// Three scales with a separate two-axis subtotal 648. Two-axis product setter then forward scaled add 418.
+// NOT kept: All eight forms grow the body and raise the score. The form with a separately scaled forward
+// contribution keeps the 0x90 frame and the first difference at +0x10, while the other seven change the
+// frame. The matched caller at 0x137ed0 stays exact throughout.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4739,6 +4747,15 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // the named row with shared displacement 530.
 // NOT kept: the stored-only form ties; the others add frame storage and length.
 // The independent velocity reads and register projection results remain.
+// The excess frame and the separate stored-velocity and projection homes remain.
+// In-place random pointer 485. In-place random reference 485.
+// Random value and output pointer 486. Random value and output reference 486.
+// Double adjustment with a pointer 525. Double adjustment with a reference 525.
+// Accumulated value with a pointer 485. Accumulated value with a reference 485.
+// NOT kept: The four direct-update forms reach retail length and gain one point while growing the frame to
+// 0x64. Passing the previous value separately keeps 0x60 and ties. Naming the double-precision adjustment
+// shrinks the frame to 0x5c and raises the score to 525 at 1995 bytes. The reduced controls for 0x36b50
+// and 0x39e50 stay at 251 and 334.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5809,6 +5826,14 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // reflected corner offsets 441/444, and shared corner translation pass 792/798
 // (scalar alpha/four-channel color). NOT kept: the 224 form recovers frame 0xe0 and
 // 1819 bytes but gains seven. The positive-radius, negative-radius and zero homes differ.
+// The positive radius, negative radius and scaled depth still need their retail spill offsets.
+// Aggregate offset before basis 240. Early zero depth 231.
+// Early point setter 385. Early origin initializer 231.
+// Early aggregate and four channels 233. Early zero depth and four channels 225.
+// Early setter and four channels 379. Early origin and four channels 225.
+// NOT kept: All four color forms recover 0xe0. The early depth and origin-initialized color forms gain six
+// points and grow to 1826 bytes. Their first differing spill still keeps the radius at +0xc. The scalar
+// versions of those two forms tie the baseline. Both collision and basis controls stay matched.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

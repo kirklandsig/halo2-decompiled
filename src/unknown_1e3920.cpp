@@ -1380,6 +1380,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // +0x98, tag index at +4 of the 40-byte entry) by hand, with the index widened to long. Calling that helper as it is
 // (short index) with (1) and (4) scores 344, and (1) with (4) on the old lookups scores 361. The 160 rests on the
 // widened hand-written lookup, a parameter type picked by score. A lead for a match only.
+// The squad pointer, query outputs and shared actor-result slot still differ at the 0x118 frame.
+// Present-first Boolean arms 199. Missing-first Boolean arms 199.
+// Nullable flag word before the shift 210. Default flag word before the shift 231.
+// Conditional masked bit 199. Short-circuit masked bit 223.
+// False default with masked admission 222. Complete missing-or-clear test 223.
+// NOT kept: The explicit arms and conditional mask tie. The five retail-length forms raise the score.
+// The two flag-word producers move the squad spill to +0x14. The others keep it at +0x1c. Retail uses +0x10.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
