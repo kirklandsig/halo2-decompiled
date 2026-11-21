@@ -700,6 +700,18 @@ struct s_24e9c7_points
 // the first origin, or after its upper sums: 138/123/124/163 for either order.
 // NOT kept: 123 and 124 gain only two and one at 743 bytes. The returned height
 // still uses EBP-8 and the early across-axis product has no retail spill.
+// M3 lane 4 r239 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125), all on lane 7 r179's form (the side point
+// set to the perpendicular ahead of the size, scaled in place by the size and later by the half width; re-measured 125 at 745
+// B): forward i read once into a local for the perpendicular and the up product 138 (741 B); the size read ahead of the scale
+// and the perpendicular 140 (742 B); the size scaling as `*=` 125 (same code); the result conversion after the half width with
+// the first corner's base copy between them re-measured 141, with the copy after the conversion 139 (742 B), with that
+// corner's up sums written offset first 141 (same code). A 148-form grid of statement orders on that form (height, half width
+// as one statement or as width then `width / 2`, result conversion, first corner's base copy, up, side scaling; every order
+// that defines each value before its use with the height first or second): best 122 at 742 B (height, result, half width, then
+// the copy and up in either order, then the side scaling; three points, a statement order), 125-148 otherwise. Reading: retail
+// keeps the side point's y in its frame home from the across-j product on while its x stays in a register, and keeps forward i
+// in XMM4 from that product to `result * forward_i`, so it converts in XMM1; every form here keeps side y in XMM1 and reloads
+// forward i.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

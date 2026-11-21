@@ -1035,6 +1035,16 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // mandatory first pass with the step after submission 546/546 or with the
 // face read 533/533. NOT kept: 533 gains two at retail length and leaves
 // the definition and count homes displaced.
+// m3 lane 4 r238 (plain each, with 0x17d9a0, 0x17ee20, 0x17dd80, 0x17d900, 0x17ef10 at their baseline counts; the fast
+// image does not reproduce this function, 834; control 535, aligned / register-masked 442 / 297). The first face loop:
+// retail increments the index between the call's pushes (after the face read, before the type argument), ours after
+// the call. The face read into a named local ahead of the call (`long face = faces[i++];`) gives retail's increment
+// placement exactly: 524 at 3647 B [441 / 296] (match-only, a one-use element copy); with lane 1 r124's rotation lead
+// (grouped cross terms, pairwise stores) 480 [412 / 260]. The loop as a while with its own index 535 (same code), as a
+// for with `i++` in the header and `faces[i]` 548, its index declared outside a `for (; ...)` 535 (same code); as a
+// do-while (the first pass always runs) 533 (frame 0x21e4 for 0x21dc, aligned 401, masked 243: the tag home moves to
+// retail's +0x94 and the secondary count to retail's +0x54, the face count to +0x1c for retail's +0x20); the do-while
+// with the face local 537 (3631 B, aligned 402), that on the rotation lead 483 [411 / 258].
 // Separate face/plane arrays, face record, or encoded plane argument 566 each; retained face array 715,
 // plane array 752, both 749; traversal edge and vertex arrays 655, with both decode arrays 767.
 // NOT kept: the tag spill stays displaced or the aligned frame changes, and all scores rise.
