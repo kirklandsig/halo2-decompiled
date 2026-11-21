@@ -753,6 +753,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // j, i, k); that helper with the cross written out 204; with the cosine taken first 177; with cross3f_staged 169 (same
 // code); with cross3f reading the up vector straight from the object (no `local_17` pointer) 156 (1706 B, aligned 144).
 // Re-measured: round 134's lead (named first-rotation sine and cosine with cross3f) 141 at 1707 B, aligned 123.
+// Paired coordinate stores, projection or normalized copy first, 389/389; chained shared reads 420/398.
+// Depth-only fallback 321, with paired stores 392/392 or chained reads 419.
+// NOT kept: the reordered copies diverge before the original store pair. The depth-only fallback
+// changes the three-coordinate retail restoration and raises the score.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

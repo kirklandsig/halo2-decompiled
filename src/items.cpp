@@ -909,6 +909,9 @@ struct s_item_collision_bsp
 // Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
 // Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
 // contact registers still differ at the 1366-byte extent.
+// Normal rows paired with translation products in coordinate order: late scale with expression or
+// accumulator 203/199, early scale 199/201; in distance-sum order, late scale 203/199, early scale 199/201.
+// NOT kept: the scalar products do not give a byte match or recover the retail coefficient homes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
