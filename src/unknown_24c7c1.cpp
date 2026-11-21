@@ -932,6 +932,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // sharing with the row height -0x18, colour -0x28, flash sharing with the row fade -0x2c, text bounds -0x34, player -0x38,
 // view -0x3c, font -0x40, row counter -0x44, count -0x48, left -0x4c, top -0x50 (the rest as retail). So the open part is
 // which loop scalar shares with flash and with the total height. Body unchanged.
+// M3 lane 1 r149 (H2M fast; control 114): the timer as a bool 191 (1888 B: its byte lands at -0xe, the tutorial byte at
+// -0xd and the scripted byte at -2, retail -0xf/-0xe/-0xd: the three keep retail's relative order but the scripted byte
+// is placed ahead of origin, in the split flag's padding); that with the three flags declared scripted, tutorial, timer
+// and assigned after 191 (same code); origin declared first of the locals 114 (same code); the three flags computed
+// after `height` 463 (1883 B); the late scripted test as `!player->value_440 && scripted_message` 117; the count as
+// `split_screen ? 3 : 4` 479 (1886 B, re-measured on main's body).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

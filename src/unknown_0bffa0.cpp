@@ -1346,6 +1346,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // entries; memset(entry, ...)`) with the cone bounds stored after the four corner points 288 (aligned 178/176/67, the closest
 // shape yet; a gain of 2); the point count stored before the fourth sphere projection 548 (2808 B); the projection helper's
 // scale test as `!(matrix->scale == 1.0f)` 290 (same code); the projection helper without `inline` 290 (same code).
+// M3 lane 1 r149 (H2M fast; control 290): in light_projection_point_ab the three scalars declared first in each of the six
+// orders and assigned i, j, k afterwards: with the scales i, j, k 290 each, with the scales k, j, i 281 each (2840 B,
+// lane 8 r168's form): the declaration order is inert, only the reads and the scale statements number the row leaves;
+// the point as a whole vector copy scaled per component (scales ijk/kji/jik/kij) 623/583/577/576 (2891-2904 B: the copy
+// goes through the frame); a vector local filled per field 484 (scales ijk) / 489 (kji) (2809 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
