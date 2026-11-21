@@ -132,7 +132,8 @@ union s_185be7
     vector2f field_8;
 };
 
-// score 60 (was 60): r143 unchanged (full check 60); r216 unchanged then, plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
+// score 60 (was 62): r289's full check gives 60 (earlier rounds: plain 62, fast 60, the fast image building it differently); r216 unchanged. Left (see r131's lead below):
+// r143 unchanged (full check 60); r216 unchanged then, plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
 // the record copy's schedule, the second hold-time add's operand order, the quotient/1.0 XMM3/XMM4 tie, the else arm's load
 // order, the parent lookup's ECX/EDX tie, the word mask's zero-extension register and the 0.64 square order.
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
@@ -782,11 +783,48 @@ union s_185be7
 // initialised locals just before the second hold-time add leave its operand order (argument first); the pool reference
 // gives retail's `movzx edx, ax` there in the lab, and with a const-reference parent pointer retail's
 // `mov edx, [edx + eax*4 + 8]`, but that moves the parent index into EBX (other code).
+// M3 lane 3 r289 (fast with 0x24590/0x185b30/0x186ab0/0x187b30, all MATCH; control 60, and 60 in this round's full check):
+// 0..35 unused initialised locals at the top: 60, but 62 at 2..6, 10, 11, 14 and 24 (only the post-pow 1.0/zero pair moves;
+// no lower state); the second hold time through a reference to the record 62; the frame step in a named local for both
+// hold-time adds 60 (same code), bound by const reference for both 58 (the second add then loads the field first as
+// retail; match-only, 2 points); the second hold time read into a named value and stored 60; added through a pointer to
+// its field 58 (the same row, match-only). Body unchanged.
 // M3 lane 1 r143 (fast; control 60, aligned exact/stack/register-masked 57/49/5): the match-only lead rebuilt (record copy
 // first, else arm local_17 first, quotient after local_19, the pool through `s_havok_component *const &`) 42 [28/20/5];
 // on it the 0.64 test through the existing dot_product2d with the field_40/44 pair viewed as a vector2f 42 (same code),
 // the second hold-time add ahead of its scale 48. On the body: the record copy as memcpy 60 and the 0.64 test through
 // dot_product2d 60 (both the same code). Body unchanged.
+// M3 lane 11 r147 (fast, single address, control 60): the two look-sensitivity reads through the sibling files' gamepad
+// preferences record (a pointer to the player's record, read twice) 545 (first +0xcd); that record indexed at each use 60
+// (same code); the turn pair defaulted to the unscaled values at its declaration, the else arm dropped, 654 (3784 B); the
+// quotient `real const` 60 (same code); the scaled turn products written angle first 60 (same code). Body unchanged.
+// M3 lane 4 r244 (h2m fast with 0x24590, 0x185b30, 0x186ab0, 0x187b30, all MATCH; control 60 = plain 60; body unchanged). New:
+// the two hold-time arms through one new helper written once and called per axis (turn pointer, hold-time pointer, stick,
+// threshold, the {ramp time, maximum scale} pair, dt): plain `static inline` 806 (3713 B, left out of line), returning the
+// turn 915 (3640 B), that as `__forceinline` 826 (3812 B); the pointer form as `__forceinline` 58 (the second hold-time add
+// then loads the field first, as retail: the parameter copy of dt decides that operand order). On it: the parent object
+// pointer bound `byte *const &` to the lookup, with record copy first and the else arm's local_17 first, 28 at 3777 B (the
+// parent lookup's EDX, both vector copies and the word mask's zero-extension then retail's; also 28 in the permuter's full
+// build); with the pool reference too 30, with the quotient after local_19 40 (one-block-late schedule). Left at 28: the
+// quotient/1.0 XMM3/XMM4 tie (26 rows; retail's 1.0 keeps the XMM4 of every earlier 1.0 load) and the 0.64 square order.
+// On the 28 lead: the quotient local renamed 28, declared at the outer scope 28, local_19/local_20 declared ahead of it 28,
+// written into arg_3 itself 28, the PIN split around it (`local_19 = PIN(..); quotient; local_19 = 1 - local_19 * k`) 39
+// (XMM right, scheduled late), the clamps ahead of local_19/20 613, both sums' terms swapped 28, both products' operands
+// swapped 28, `-(x * k) + 1.0f` 30, the quotient at both uses 550, the aim block as a forceinline helper with out pointers
+// 622, the two PIN(x, 0, 1) * k terms through a forceinline helper 227; the permuter 81 tries, best 28. The 0.64 squares
+// follow which look-stick field the source mentions first: the two fabs statements swapped 36 (squares fixed, the fabs
+// order flips), the look pair named once each (`look_i`, `look_j`, two uses each) 28 (squares fixed, the post-pow 1.0/zero
+// pair flips instead, a symbol-count tie), the pair typed as a vector2f member 28 (same code), copied into a vector2f
+// local 849 (memory). Lead saved as build/r244/lead-0x185be0.patch (match-only forms: helper, statement orders, the
+// const reference).
+// Second pass on the 28 lead: the angle products clamped where they are formed 39; PIN with its bounds passed to a
+// forceinline helper for local_19/local_20 227; local_19 started at 1.0 ahead of the quotient and reduced after it 28
+// (same code: the XMM3/XMM4 tie does not follow the textual order of the 1.0 constant).
+// M3 lane 13 r140 (H2M_FAST, single address; control 60): on the body, the two angle products clamped where they are formed
+// (`real local_21 = PIN(local_15.i * local_18, ...)`) 69; the two blends' sums written the stick term first (`local_19 *
+// turn + angle * local_20`) 60 (same code); local_17 declared ahead of local_16 60 (same code); the two angle products
+// computed ahead of local_19/local_20 487; local_20 ahead of local_19 re-measured 611; local_19/local_20 written `k * PIN(...)`
+// 60 (same code). The quotient/1.0 XMM3/XMM4 swap and the else arm's load order stand. Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

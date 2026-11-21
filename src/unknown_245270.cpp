@@ -281,7 +281,7 @@ void function_245400(s_source_245400 const *source, long index,
 		material->field_04, material->field_05, point, material->field_06);
 }
 // MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
-// score 164 (was 164): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
+// score 163 (was 163): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
 // and independently decoded side homes differ.
 // Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
@@ -1000,9 +1000,44 @@ void function_245400(s_source_245400 const *source, long index,
 // or facing-scope plane table 208/208, and paired widening with normal selections
 // or a primary material pointer 169/169. NOT kept: the 167 and 169 forms reach
 // frame 0x2c and 783 bytes but regress. The late plane table also loses the matched caller.
+// M3 lane 5 r226 (h2m fast screen with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH each time; control 164 at 785 B).
+// Kept (fast and plain 163 at retail's 783 B, neighbours matched): the edge rotated by the existing
+// matrix_transform_vector(arg_2, &local_6, &local_6) in place of that helper's rows written out by hand with a staged
+// j row (the hand rows no longer score better on today's body). On it: the dot through dot3f in either operand order
+// 235 (757 B); the scale after the rotation 204. Leads, not kept (lane 3 r271's statement order is match-only):
+// that order with vector3f_scale and matrix_transform_vector 129 at 783 B (dead longs at the top K = 1..7
+// 131/131/131/127/127/127/129), with the dot through dot3f 156 (767 B; K = 1..7 158/158/158/154/154/154/156); that
+// order with the scaled rotation in a file-local inline helper shaped like function_245400_transform (three copies,
+// `i = matrix->scale * i` in the scale arm, then the rows) 110 at 783 B (K = 1..7 112/112/112/108/108/108/110; rows
+// written up, left, forward or forward, left, up the same code): its copies, `jnp` and scale arm are retail's
+// instruction for instruction, left are the rows' term order (retail i and k (forward + left) + up, j (up + forward)
+// + left), the cross and the dot's last add. Dead longs inside that helper or ahead of the cross, 1 to 7 each, 110
+// every time (only the function-top count moves anything). That helper on today's statement order 163 (783 B).
+// On lane 5 r213's 50 lead (re-measured 50 at 789 B; lane 3 r271's 53): the k row's expression as a dead local ahead
+// of cross3f 50 (same code), assigned to the cross's k afterwards 162 (792 B); both normals copied into locals 255
+// (823 B); named normal pointers declared second-first 205 (783 B); cross3f_staged 50 (same code); the cross written
+// out k, i, j 182 (799 B). Reading of ours against retail there: ours has the first normal's member as the loaded
+// operand in four products and loads its k twice; retail loads the second normal's member in four and the first
+// normal's k once for both of its products.
+// Edge after plane decoding, with retained short codes, named plane indices,
+// early secondary material index, or both 207/207/207/207. Retained long-code
+// forms 197/197/197/197. All reach 0x2c and 783 bytes. The long forms keep
+// the source in ESI but extend the codes at the loads. NOT kept. The short
+// forms change matched caller 0x245aa0 and every form scores higher.
 // Primary and secondary material records addressed as pointers or references,
 // with the secondary code before primary selection 163 each, or after it 164.
 // NOT kept: the earlier read gains one at 784 bytes and keeps the 0x24 frame.
+// M3 lane 5 r228 (h2m fast with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH each time; control 163 at 783 B): the
+// second plane pointer declared ahead of the first 162 (the cross's six products reorder, frame unchanged); the plane
+// indices named (`first_index`, `second_index`, each used for its pointer and the compare) 163 (same code), with the
+// sides as `((dword)code >> 15) & 1` 197; cross3f with the normals swapped and the dot negated 204; the facing test as one
+// ternary on the side relation 209 (786 B), with the swapped plane pointers 209.
+// Secondary endpoint scoped to edge 163, plane decode scoped after the edge 165,
+// or both 165. Material-only surface scope or vertex indices captured on
+// admission 163/163. Widened code declarations before admission 165,
+// immutable widened codes in facing 165, or immutable codes with normals
+// resolved at the cross 212. NOT kept: 0x24 frame and separate material homes
+// still differ. Delayed plane-table forms also change the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -1039,14 +1074,7 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 		{
 			if (arg_2->scale != 1.f)
 				vector3f_scale(&local_6, arg_2->scale, &local_6);
-			/* retail sums the j row as (up + forward) + left, which matrix_transform_vector (forward + left) + up does not */
-			real edge_i = local_6.i;
-			real edge_j = local_6.j;
-			real edge_k = local_6.k;
-			local_6.i = arg_2->forward.i * edge_i + arg_2->left.i * edge_j + arg_2->up.i * edge_k;
-			local_6.j = arg_2->up.j * edge_k + arg_2->forward.j * edge_i;
-			local_6.j += arg_2->left.j * edge_j;
-			local_6.k = arg_2->forward.k * edge_i + arg_2->left.k * edge_j + arg_2->up.k * edge_k;
+			matrix_transform_vector(arg_2, &local_6, &local_6);
 			local_4 = function_245400_transform(arg_2, local_4, &local_14);
 		}
 		function_244de0(local_4, &local_6, arg_3, arg_4, arg_5, arg_6, local_1,

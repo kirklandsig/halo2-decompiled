@@ -430,6 +430,17 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // re-measured: with them retail's region from the has-host call to the thresholds is longer than ours, see above);
 // `this` used directly with no `arg_0` alias 356 (same code); the has-host arm as `arg_3 = arg_4 = true;` 355 (one
 // point, not kept); the channel's first flag read from its field at every use, no local, 429 (1388 B).
+// M3 lane 14 r141 (H2M_FAST with 0x75910/0x76520/0x765c0/0x77940, all MATCH each run; control 356, aligned 245): the
+// channel pointer declared ahead of the connection 356 (same code); local_18 and local_13 declared with the two early NONE
+// locals 405 (1355 B); local_15 read ahead of local_14 368 (1378 B); local_5 declared with the two early NONE locals 398
+// (1376 B); the counter snapshot as an aggregate copy of the counter read through a 64-bit view at its two uses 431
+// (1341 B). Body unchanged.
+// M3 lane 7 r210 (h2m fast with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356 at 1374 B): the
+// zero-rate exit as `return local_2;` in place of its goto 392 at retail's 1369 B (aligned with registers and offsets
+// masked 153 against the control's 148); the connection pointer declared ahead of the channel search (nothing there can
+// change it) 409 (1370 B); `bool local_2 = false;` declared ahead of the search 399 (1372 B); the pacing test as
+// `!(local_17 > 0.0f && 1.0f / local_22 > local_17)` 356 (same count); local_5's NONE declared beside local_18 403
+// (1376 B). Re-measured: the snapshot and reset through the 64-bit view 429 (1330 B). Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

@@ -1133,7 +1133,7 @@ void function_1e2a90(long actor_index);
 bool function_1e35f0(long actor_index);
 void function_1e3b60(long actor_index);
 
-// score 25 (was 25; 26 before round 183): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
+// score 25 (was 25; 26 before round 183; m3 lane 8 r220 at the end): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
 // 0x1f9e70, became a PIN_126660 clamp), so its call now passes the actor in EAX as retail. Left: retail passes the actor index
 // to function_262ba0 in EAX, ours pushes it, because 0x262ba0's body keeps it as a stack argument.
 // Earlier at 26: retail passes the actor index to function_262ba0 and to
@@ -1276,6 +1276,22 @@ void function_1e3b60(long actor_index);
 // calls: more written depth in the callee does not stop the release-site expansion); here the not-active case as an early
 // return storing NONE 75; the `g_46fc80` store ahead of the actor lookup 25 (same code); the clear and the two NONE stores
 // through a fresh actor_get each 69 (276 B). BLOCKED-BY 0x262ba0 (stacked actor).
+// M3 lane 5 r227 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form; 0x2641c0's noinline declaration
+// is in another lane's file again, so all five in 0x262ba0): the walk through 0x26be00/0x26be30 with the iterator's
+// index read at every use and `update` long 427 (1616 B: the index takes EBX, a zero constant EDI and the long flag a
+// stack cell); that with case 1's 0x25c820 call jumping to the release block's call 442; main's body with `update` long
+// and that single call 436 (1616 B); the first form with `sampled_one` long 435 (1624 B); main's body with `sample` and
+// `update` long and the single call 437 (1616 B). Still BLOCKED-BY 0x2641c0's expansion into 0x262ba0.
+// M3 lane 8 r220 (h2m fast with 0x262ba0, 0x264210, 0x2641c0, 0x263210 and 0x2641c0's five other callers; 25 here in
+// every form; both 0x262ba0's file and 0x2641c0's declaration file were free): 0x2641c0's noinline declaration dropped
+// re-measured 0x262ba0 509 (1696 B), 0x264210 114 (139 B); with that, 0x264210 defined ahead of 0x2641c0 in its file
+// (diagnostic: the inline decision does not follow source order) 509 / 114; in 0x262ba0 on that inline base, the sampler
+// as `if (!sampler(...)) sample = false; else if (update && ...) 0x264b50(...)` (retail stores the flag only on the
+// failed path) 504 (1700 B); that with the walk through 0x26be00/0x26be30 and `iterator.index` at each use 523 (1692 B,
+// frame 0xa0 and the {index, next} cells at 0x14/0x18 as retail); that with case 1's 0x25c820 call jumping to the release
+// block's call 495 (1672 B, one 0x25c820 call); that with `update` long 499 (1676 B). In each the update flag keeps EBX
+// (a byte, then the long) and the actor index arrives in EDI from the stack and is re-read from its home after the
+// inlined copy's `rep movsd` takes EDI. All restored. Still BLOCKED-BY 0x262ba0 (update flag in EBX).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2012,6 +2028,15 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // no callee's write summary is what keeps it out of EDI; 0x259a0 given a link-time summary (an inline kept out of
 // line in an ordinary file) 306 [137 / 49], the pool still loaded three times. No object built without link-time code
 // generation refers to the pool, seed or tag globals. Nothing kept.
+// M3 lane 3 r292 (H2M_FAST with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240 and 0x1e5280, all MATCH; control 251):
+// block 1's two slot queries through the unit already looked up (`unit->current_weapon`, `unit + 0x213`) 361 (1171 B);
+// block 2's grenade query reading the type through its own lookup ahead of the `unit` local 251 (same code, CSE'd);
+// `short ticks = (short)function_1469f0(delay);` 251 (same code); the options lookup declared ahead of the actor 300
+// (first difference +0x0); the two weapon indices as the array's initializer 251 (same code). Body unchanged.
+// M3 lane 13 r137 (h2m fast; control 251): a `long` loop index with the weapon read once per pass into `long weapon`
+// 278 (1191 B, frame 0x10); the rounds sum written lower bound first 251 (same code); the tick store as a signed
+// char like its read 251 (same code); the halved fraction as a conditional argument to 0x101a10 260 (1223 B); the rounds
+// pair cleared by `rounds[1] = 0;` in place of the memset 253. Still BLOCKED-BY 0x259a0 (its file's no-LTCG flag).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

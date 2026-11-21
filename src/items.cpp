@@ -590,7 +590,8 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
-// score 190 (was 198): Frame 0xa0 and both plane calls agree. The transformed normal, contact point and pending x87 spin scale still use different homes.
+// score 190 (was 198): Frame 0xa0, both plane calls and instance addressing agree. The rotated normal and contact-point registers still differ.
+// Earlier detail: Frame 0xa0 and both plane calls agree. The transformed normal, contact point and pending x87 spin scale still use different homes.
 // MiniMax C (11-19): no new form, no lower score (190): retail keeps the spin scale in the x87 stack across the branch
 // merge where this build gives it a stack home, and the plane distance written as one expression scores 203 against the
 // four accumulating statements; the body stands.
@@ -933,6 +934,18 @@ struct s_item_collision_bsp
 // instanced query result pointer 246; instanced plane output with saved equation 291;
 // named real or double random fraction 196/232. NOT kept: all scores exceed 190.
 // The transformed normal and the common x87 spin factor still use different homes.
+// Complete axis contributions staged before the normal rows. Left, up, forward, up/left, left/forward,
+// up/forward, and all three 194/194/191/195/195/195/246. All three summed with the shared vector addition 253.
+// NOT kept: partial staging raises the score and full staging also extends the body to 1382 bytes.
+// The normal coefficient homes and contact point still differ in the 0xa0 frame.
+// Overlap the j, k or both forward products in plane or scalar rows: 194 each.
+// Overlap both left and forward products in plane or scalar rows: 191 each.
+// NOT kept: the paired overlaps load j before k and still place j in XMM3.
+// Every preview retains the 1366-byte extent against retail's 1361.
+// Transposed rows through the shared dot product with coefficients before/after row setup:
+// separate aggregates 269/269, separate vector setters 269/269, reused row setter 194/194,
+// and a three-axis matrix 273/273. NOT kept: the reused row leaves the normal coefficients
+// in other registers at 1366 bytes. The other forms grow to 1392 bytes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1261,6 +1274,13 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
 // Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
 // NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
+// Raw shared or staged cross with scaled scalar, const-vector, setter or component-loop
+// results: 206/206/204/191 for either cross. NOT kept: all retain frame 0xc0 and
+// grow the body. The loop reaches 877 bytes with the axis home still present.
+// Returned unscaled cross with scaled scalar coefficients 245, scaled j/i/k 244, separate alignment dot 237,
+// same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
+// named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame
+// excess and grows the body to 909–919 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

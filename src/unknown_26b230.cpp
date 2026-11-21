@@ -2357,6 +2357,18 @@ void function_269250(long clump_index, long actor_index);
 // data_find_index in the shared iterator step for every caller also matches this function but drops 0x268c90 to 2; the
 // scan and the datum step composed here measure 165 (452 B), and the same composition inside the clump walk 160. Open
 // lead: a source-level reason this walk scans differently from the other walks in the file. Body is main's (87).
+// M3 lane 14 r139 (H2M_FAST with 0x268840, 0x268bb0, 0x269580, 0x269250, 0x2694d0, 0x269040, 0x1e46c0, 0x26ae30, 0x268c90
+// and 0x268510, all MATCH each run; control 87, aligned 54 exact / 45 register-masked rows): the in-arm compare
+// re-measured 126 (480 B, aligned 56 / 42) and the walk's datum index as the selection on it 128 (105 / 57). On the
+// in-arm form: the group's team read into a `short` local ahead of the test 126; the selection typed `dword` 126; the
+// no-improvement case as `if (!(score > best)) continue;` with the selection stored ahead of the best 126 (all three
+// the same code); the actor's team read once ahead of the walk 168 (497 B, a fifth saved value). Diagnostics, removed:
+// with the improving arm storing the clump index to a global in place of the selection (no selection left) the walk's
+// pool is hoisted into EBX with its home written once, as retail has it, but the walk's index then takes EBP (198,
+// 423 B); the score read from the group in place of the call 154; the best store replaced by a counter 150 (461 B, the
+// pool still read from its home at each use). Reading as before: one value is spilled round the bit scan and kept in
+// a callee-saved register outside it; retail gives that to the pool (EBX) and leaves the selection in memory, this
+// build gives it to the selection (EDI) whenever the selection is stored inside the walk.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

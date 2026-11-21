@@ -294,6 +294,17 @@ static inline void *function_xc5914d(long thread_index, short size)
 // `__assume(arguments != NULL)` after the allocation 95 (same code); the type mismatch as an early `return result;` inside the
 // count test 83 (284 B, first difference +0x22: the pointer gets the spill slot but stays in EAX with no separate result, and
 // the second epilogue reloads it).
+// M3 lane 16 r169 (h2m fast with 0x2099f0, which stays matched; volatile-free forms): the expression pool read once into a
+// local for the init block and the type test, the arm re-reading the global, `result = NULL` first in the arm 93 (268 B);
+// the count test and the type test as two nested ifs with the argument index read once into a `short index` for the type
+// lookup and the element and stored back as `index + 1` 95 (290 B); the argument-index slot as a plain pointer with the
+// expression-index slot kept a reference 95 (266 B), that with `result = NULL` first in the arm 83 (277 B); the expression-
+// index slot as a plain pointer with the argument-index slot kept a reference 95 (266 B).
+// M3 lane 16 r171 (h2m fast; volatile-free forms, control 12, volatile-free 95 at 266 B): the arm's element read through
+// the pointer's own address, `(*(long *const *)&arguments)[argument_index]` 95, and as `(long *)*(dword const *)&arguments
+// + argument_index` 95; the allocation stored through a type-punned `*(void **)&arguments` 95 (all promoted to one register
+// with the result, no spill); the parameter types copied into a local at the top 95 (same code); `long *result =
+// arguments = allocation` with a plain pointer 95. VC promotes every non-volatile address form tried here.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

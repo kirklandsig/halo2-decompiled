@@ -1300,6 +1300,18 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // code); the unit index read through the getter into a local for the test and calls with the lookup through the getter
 // again, no player local 46. Diagnostic: both of 0x14f820's calls kept out of line (an inline-depth pragma pair around
 // them, reverted) 17, so our build's inlining of this function into 0x14f820 does not set the pair.
+// M3 lane 14 r139 (H2M_FAST with 0x151aa0 and 0x152bf0; control 5, the plain-read form 17): on the plain-read form the
+// lookup inside a conditional expression that repeats the unit test (`unit = index != NONE ? lookup : NULL`) 17; the
+// lookup's index read through the address of the player local (`(*player_reference)->unit_index`) 17; an object getter
+// taking its handle as a const reference of another integer type (a converted temporary) 17; the lookup's index through
+// a const member accessor of the player record 17 (all four the same code as the plain read: each folds into the test's
+// read before allocation). On the getter-reload form the first player fetched through a read of the player index
+// parameter's own address 55 (144 B: the parameter then arrives on the stack). Diagnostics, reverted: an extra early
+// use of the slot on the plain-read form 41 (142 B, the unit index keeps ESI and the slot moves to DX), so the slot's
+// use count does not hand it ESI; every read through the getter with no player local re-measured 46 (all four reads
+// merge early, the index in ESI): only a mix of the player local and the getter keeps the lookup's read apart. The
+// sibling 0x151aa0 is one exchange off in the same way (retail player ESI, hand EDI): in both, retail's registers come
+// only when the unit lookup's index read is a value of its own at allocation.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1734,6 +1746,16 @@ void function_150820(dword *bits, bool local_only)
 // extra use of the hand instead 74 (masked 7, no exchange). So the exchange is a one-reference ranking tie that the
 // player loses by one, as 0x178c80's colour B does. Forms: the unit as a pointer to const 43 (same code); the arms' unit
 // index read once into a local ahead of the mode test 49; a second player pointer for the two arms 43 (the copy folds).
+// M3 lane 5 r228 (h2m fast with 0x151b80 (5 throughout); control 43): a redundant `result = false;` at the head of the
+// unit block 69 (202 B), at the head of the slot block 68; a trivial forceinline (player) accessor for the unit index at
+// the NONE test, the object lookup, the 0xcd7b0 argument or the 0xa8f80 argument 43 each (same code: no scratch rotation),
+// at the 0xcd4e0 argument 60 (212 B); the hand typed `dword` 43; the player as a pointer to const 43; the hand or the unit
+// pointer declared bare ahead of the player and assigned in the block 43/43 (all same code); the mode test's arms swapped
+// (`!= 4` first) 72 (219 B).
+// The four-byte frame and extent agree. Player EDI and hand ESI remain exchanged against retail.
+// Primary-selected mode with compound/nested query 88/88; slot/mode selection and late hand 77/77.
+// Secondary bool through both reads and late hand 88/88; late hand with byte slot 83/83.
+// NOT kept: The 210-byte late-hand form puts the player in ESI but passes primary in a register and grows the frame to eight bytes. All forms raise the score.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

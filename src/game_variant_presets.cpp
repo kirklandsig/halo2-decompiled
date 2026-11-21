@@ -10,7 +10,7 @@
 #include "game_variant_presets.h"
 
 long function_216ab0(long index);
-void ui_game_variant_build_default(long type, s_game_variant *variant);
+void ui_game_variant_build_default(s_game_variant *variant, long type);
 void function_1a0180(long tag_index, long string_handle, word *buffer);
 void function_2373be(long index, void *base, long value);
 bool function_19d650(s_game_variant *variant);
@@ -29,9 +29,7 @@ void __stdcall game_variant_settings_add_presets(void *settings_tag)
         if (preset->engine_index >= 0 && preset->engine_index < 7)
         {
             s_game_variant variant;
-            long engine_type = function_216ab0(preset->engine_index);
-            long const *engine_type_reference = &engine_type;
-            ui_game_variant_build_default(*engine_type_reference, &variant);
+            ui_game_variant_build_default(&variant, function_216ab0(preset->engine_index));
             word name[0x100];
             name[0] = 0;
             function_1a0180(settings->preset_string_list_index, preset->name_string, name);

@@ -1223,6 +1223,19 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // for the bit-29/+0x34b reads 170 (same code each); `sample` declared at the top (diagnostic) 284 (837 B). Diagnostic:
 // 1 to 8 dead initialised longs at the top of the 170 lead 170 each, of the 166 form 166 each (the entry roles are not
 // a symbol-count tie on the leads either). Body unchanged.
+// M3 lane 11 r146 (h2m fast with 0xbfe20/0xbfc90/0x137800, all matched throughout; control 240): lane 4 r225's lead rebuilt
+// 170 (826 B: object_index EDX, the parameter ESI, result its EDI copy). On it: an unread trailing parameter (definition,
+// declaration and the one call in 0x137800 together) 170, the same parameter first 170 (same code each: parameter
+// numbering does not break the ESI/EDX choice); final_matrices assigned as the first statement of the outer block (after the
+// two early tests) 196 (837 B: object_index then takes ESI, the +0xb3 byte BL with EBX pushed before it, result in EDI, as
+// retail, but the parameter value sits in EAX and is stored right after the tests); that assignment after the model index
+// read 169 (the 170 roles come back once the parameter value crosses the object/definition block), first in the model
+// block 169; on the 196 form the header through slot_handler.h's object_header_get 196 (same code), `result` declared
+// ahead of the header 194 (837 B: the table, parameter, object_index, header loads are then in retail's order with the
+// header in EAX; left: the table/object in EDX where retail has ECX and the parameter in ECX where retail has EDX, and
+// final_matrices stored after the tests where retail stores it after the orientations pointer). Retail reads as a
+// parameter value held in EDX from entry to that late store with object_index in ESI; every form here that keeps the
+// value that long gives it ESI instead.
 // M3 lane 13 r134 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): lane 4
 // r225's lead rebuilt 170 (826 B, aligned 100, masked 43); on it the awake test dropped (diagnostic) 337 (783 B), the
 // awake test written out through the header with `object` from header->object 316 (801 B: the three object reads share
@@ -1234,6 +1247,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // for the +0xb3 byte as retail and the parameter a scratch register from entry (ECX, with the pool data in EDX, where
 // retail has EDX and ECX; `definition` still keeps a register). Reading: the entry roles follow the parameter's weight
 // in the final_matrices block; no natural statement was found that reads it twice more there.
+// M3 lane 14 r140 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0xbfc90, all MATCH; control 240): lane 4 r225's lead rebuilt
+// 170 (826 B). On it: the two early tests and the model test as early returns (three exits, as retail's three tail
+// epilogues) returning the parameter or `result` 290/290 (829 B, same code); the object's flags word read into a local
+// ahead of the mask copy (retail loads it before the copy) 170 (same code); `result` read once through the matrices
+// parameter's address 170 (same code); the header index read once through object_index's address 170 (same code: both
+// indirections fold before allocation and the parameter roles at entry stay ESI/EDX swapped). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1427,6 +1446,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // score 20 (was 20; 87 before b10C, 97 earlier): ours is 5 bytes longer (1399 against 1394). Left: only the
 // no-model branch's parent lookup (ours takes the index in ECX and reloads the pool, retail has the index in ESI
 // copied to EAX and the pool still in ECX from the current-object lookup).
+// M3 lane 6 r223 (h2m fast with 0xb8bd0/0xbdc40/0xbfa40, all MATCH; control 20 at 1399 B): `inline` added to this
+// file's own declaration of 0xb8bd0 with the no-model arm calling it 47 (1385 B, the same code as the plain call: a
+// caller-side inline declaration does not make the /Ob1 definition expandable); the render and no-model arms swapped
+// under `render_index == NONE` 297 (1388 B); in the no-model arm the flag read first, then the matrix through the 0xb8bd0
+// call 19 (1395 B: the index takes ESI across the call and the flag reads the data pointer still in EDI, where retail
+// re-reads data from the pool in ECX), that with the defaults in an else arm 23 (1395 B); the else-arm defaults with both
+// lookups indexed by `(word)parent_index` 24 (1392 B). Re-measured: the else-arm defaults with the flag first 18.
 // Earlier head (at 87, was 87; 97 before): retail was 2 bytes longer. Left then: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
 // in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
@@ -1806,6 +1832,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // object_header_get(...)->object 20 (same code). Reading: retail's block is 0xb8bd0's own code expanded at this one site
 // (its parameter copy `mov eax, esi`, the index still live after it), which this build gives only with 0xb8bd0's file
 // built without /Ob1, and then at every site: BLOCKED-BY 0xb8bd0 (its file's /Ob1, a build-flag decision).
+// M3 lane 5 r229 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): in the no-model arm, a second index
+// local for the matrix lookup only 20; a second index local for the flag lookup only 20; the parent object named for the
+// flag only, after the matrix lookup 20; the node argument cast to `short` (0xb8bd0's node type) 20 (all the same code);
+// the parent object named for the matrix only, the flag through object_get again 44 (1390 B, data from EDI).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

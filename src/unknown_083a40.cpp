@@ -957,12 +957,36 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `&updates[*count]` then `++*count;` 32 (1056 B). Compile-only key screen (the file without /GL; the grouping
 // reproduced): `collection` at the loop top, through a reference, as a const pointer, the key through `&players[0] + i`
 // or a byte sum: all (inverse + cursor) + collection + 4.
+// M3 lane 12 r168 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): `bool conflict;` declared, then
+// cleared 28 (same code); the machine index kept in a long with `&machines[index]` at both uses 175 (1073 B), that on the swap
+// order (collection, player, update, other) 174; the rest of the else arm nested under `if (source->unknown14 != NONE)` in place
+// of its `continue` 28 (same code); plain check: the occupied record's removal as a function of the collection's own file
+// (type, index, key copy, apply), called with the update, 28 (inlined at link time to the same code). Compile-only key screen
+// (reproduces ours: the base is a front-end temporary added after the inverse + cursor pair): `collection` above the
+// `continue`, in the else arm before the slot search, after the swap, or at function scope assigned at the loop top all keep our
+// sum; a collection loaded from memory each pass (diagnostic) is added last too; an invariant base (defined before the loop, or a
+// parameter, diagnostic) gets its own induction variable in every key spelling. All restored.
 // M3 lane 7 r206 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): `collection` declared just ahead of
 // the slot search (the first arm's apply given `&watcher->players`) 28; the slot search, swap and occupied step as a
 // file-local forceinline helper taking (collection, i, source, count, updates) 28 (same code); on the swap order
 // (collection, player, update, other) each of those 32 (the swap order's code); `collection` a const pointer set
 // between the two loops 277 (1072 B, the key's own induction variable). Compile-only: the helper's parameter and the
 // late declaration keep (inverse + cursor) + collection + 4.
+// M3 lane 13 r138 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; compile-only key screen, which
+// reproduces ours: the cursor and the inverse start are SR temporaries summed first, `collection` a hoisted temporary
+// added last; `collection` before the loop gets its own induction variable): the occupied block re-pointing the loop-top
+// `player` at `&collection->players[i]` for the key 41; the second loop's counter typed `dword` 28 (same code); the
+// machine pointer formed after the `unknown14 == NONE` continue 182 (1071 B); the swap order (collection, player, update,
+// other) re-measured 32 (on main's order the last record's loads are retail's; on the swap order ours loads the
+// second-declared source read first, the controller, where retail loads `updates`, unknown14, then the controller it
+// spills); on the swap order the two source reads declared controller first 43 (still the second-declared read first).
+// Screen only (all ours): the key as `(collection->players + i)->key`, as `(byte *)collection + (4 + i * size)`, as
+// `((byte *)collection + 4) + i * size`, from `&players[0].key[0]` plus a scaled index. All restored.
+// M3 lane 4 r245 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): re-measured the swap callee as
+// (collection, player, update, other) 32; the conflict scan reading through `collection` (`collection->players[j]`,
+// `collection->player_mask`) 263 (the second loop's preheader and cursors are rebuilt), on the swap order 264; the
+// occupied record's apply given `&watcher->players` 28, the last record's 28 (retail rebuilds it from the parameter there
+// too; both the same code), both on the swap order 32. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

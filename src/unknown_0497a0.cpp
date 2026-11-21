@@ -625,6 +625,10 @@
 // whole third add is emitted and the body grows by 75 to 96 bytes. A zero-scaled add is therefore not what retail
 // dropped; the dead use has to be one this compiler removes after the x87 schedule is fixed, as the pointer-copy write
 // of r257 above is.
+// M3 lane 4 r242 (H2M_FAST with 0x4a1e0; control 536 at 2622 B): s0's product with its last two factors parenthesised
+// 536, its sum with the 7.75 cosine first 536, its three factors in reverse order 536, sin x as the second factor 536,
+// the four factors through the float sin/cos overloads with the sum left in real 536 (all the same code: VC reorders
+// the flat product and sum and keeps the x87 schedule). Body unchanged.
 // First +0x2 reserves 0x54 against retail's 0x60 at the same extent. Retail stores both rounded waves before SSE scaling and retains the cross products across the displacement updates. Test the rounding boundary with the original cross order and with the opposite cross between the updates, which previously recovered the frame.
 // Short wave rounded after the mixed wave 577.
 // Short wave rounded at its update 578.
@@ -635,6 +639,11 @@
 // Mixed wave rounded at its update with overlapping crosses 599.
 // Both waves rounded at their updates with overlapping crosses 599.
 // NOT kept: The original cross order grows by five to six bytes and retains the 0x54 frame. With overlapping crosses the frame reaches 0x60 and the first difference moves to +0x6, at 599 and 2632 bytes. The two wave homes and the x87 schedule still differ. The original cross and wave lifetimes are restored.
+// M3 lane 3 r291 (H2M_FAST; control 536 at 2622 B): the two wave values renamed so they keep their order (mixed/short)
+// 536 and so they swap it 536, the first cross renamed so it sorts after them 536 (same code each: names do not move the
+// wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
+// the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
+// so no out-of-line copy of a wave helper exists to show the removed third use.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -934,7 +943,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 285 (was 351): earlier 233 and 250; frame 0xa0 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
 // definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
 // slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
@@ -971,7 +980,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // MiniMax D (11-20): no new form, no lower score (351): the frame stays 0xa8 against retail's 0xac and the first-edge Y, half-width,
 // cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and
 // 0x131e50 is declared noinline in its own file: BLOCKED-BY 0x131e50.
-// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// (second copy of the score line, merged into the first above: score 351 (was 351), frame 0xa8.)
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:
 // retail's case-4 head, with the position pointer formed inside each arm); with the colour stored `outer->color =
@@ -1526,6 +1535,14 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // hoisted after the loop guard, where retail forms it ahead of the guard, so retail's V end is computed before the loop); the
 // U step negated as `0.0f - u_step` 351; case 4's neighbour pointer declared at the top of its block with the lookup left in
 // place 351; case 1/2's first.x before second.x 351 (masked 74: VC copies the product, as round 151 found).
+// M3 lane 12 r171 (H2M fast, then plain with 0x42c50/0x42b20/0x43720/0x43740, all MATCH; control 351, aligned 145, masked
+// 113): kept: case 1/2's two side offsets named and each used by both edges (`offset_y`, `offset_x`) 285 at retail's 2596
+// bytes (frame 0xa0; aligned 160, masked 119: the gain is the length, which realigns the tail; the same form measured
+// 476-495 and 490 on the 250 and 224 trees). Not kept: the u step and the V end as the two members of one vector2f local 355
+// (frame 0xa8, the members keep 4-byte homes); both through one new inline scaling helper (single definitions) 351 (same
+// homes); on the kept form, case 4's three offsets named the same way 437 (2592 B), the offsets declared x then y 285 (same
+// score), the half width computed after the u/v stores 292, case 1/2's z pair as `first.z = second.z = ...` 415 (2592 B),
+// case 1/2's x row ahead of the y row 284 (statement order, not kept).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1652,8 +1669,10 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     side.j = neighbor->position.x - point->position.x;
                 }
                 normalize2d_fast(&side);
-                second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
-                second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
+                real offset_y = side.j * half_width;
+                real offset_x = side.i * half_width;
+                second.y = point->position.y - offset_y; first.y = point->position.y + offset_y;
+                second.x = point->position.x - offset_x; first.x = point->position.x + offset_x;
                 second.z = point->position.z; first.z = point->position.z;
                 if (input->normal) normal = *g_4687b0;
             }

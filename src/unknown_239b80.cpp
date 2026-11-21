@@ -917,6 +917,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // lose their registers); the departure flag declared at function scope ahead of the hull count 262 (764 B); the lowest
 // scan's two coordinates in their own `{}` block 144; the classifier's result named before its test 144; a named point
 // pointer in the lowest scan 144 (the last three the same code).
+// M3 lane 1 r147 (fast with 0x239d50 and 0x239b80; control 144): loop indices widened to long: the lowest scan's 645
+// (1095 B, the scan unrolled), the candidate scan's 251 (0x239d50 34), the compaction's two 288 (739 B, 0x239d50 80), the
+// lowest and candidate scans' 651 (1095 B), all four 619 (1072 B).
 // M3 lane 12 r167 (h2m fast with 0x239d50 and 0x239b80, MATCH in each unless noted; control 144): the pass loop as
 // `while ((short)hull_count < count)` with `indices[hull_count] = current; hull_count++;` at its top 248 (759 B: frame 0x14
 // and the scan bound copied into EDX as retail, but still rotated, points in EBP); with `indices[hull_count++] = current`
@@ -930,6 +933,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Boolean departure 264, distance and ranking rejection gates with Boolean departure 264. NOT kept: The
 // four ranking forms tie with the original departure width. A Boolean departure shortens the body and
 // changes the caller.
+// M3 lane 2 r131 (H2M_FAST with 0x239d50 and 0x239b80, MATCH unless noted; control 144): the completion-flag body (lane 1
+// r103 / lane 13 r96, compaction under `if (!done)`) re-measured 116 (784 B, masked 39); with the compaction unconditional 173
+// (762 B); on 116, count read through a const volatile view of the parameter in the hull loop test 224 (794 B), there and in
+// the candidate loop 229 (0x239d50 34), in all three loops 235 (0x239d50 34), in the candidate loop alone 242 (0x239d50 34).
+// On 116 the homes left are points (retail ESI, ours EBX after the classifier call), current (retail EDI) and count (never
+// a register in retail). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1539,6 +1548,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // build reads a word directly (`movsx edi, word ptr [ebp + 8]`). Retail's dword load means its count parameter is 32-bit,
 // and the declaration may not change here. Behind that: retail keeps the previous-side flag in memory at [esp + 0xd] where
 // this build keeps it in CL, and retail's zero is XMM2 where this build uses XMM4.
+// M3 lane 12 r171 (H2M fast; control 129): the loop test as `count > i` 130; the crossing deltas declared dx then dy 129;
+// the denominator's terms swapped (`dy * n.j + n.i * dx`) 129; the alias test as `output == points` 130 (first +0x2e); the
+// crossing's mask update ahead of the two output stores 131. Re-measured: the copy moved ahead of `if (inside)` 157 (count in
+// ECX and retail's loop head; retail's copy is at the loop end through CL, so the moved copy is not retail's statement order:
+// at the loop head retail holds `points` in ECX, which is what leaves the previous side without a byte register). Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

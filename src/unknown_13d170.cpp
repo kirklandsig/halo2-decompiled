@@ -955,11 +955,22 @@ struct s_physical_block_iterator
 // Updated page total 213, updated timestamp 374, both 373, winner timestamp 201,
 // winner plus updated timestamp 374, winner plus both 373, conditional timestamp 376,
 // and updated page total with named weighted products 213. NOT kept: no gain at retail length. The policy join still differs.
+// M3 lane 8 r218 (H2M_FAST with 0x13d320, MATCH each run; control 201): lane 1 r124's 40 lead rebuilt (patch -o) 40 at
+// 1213 B. On it, each byte for byte the lead: the iterator's handle named in a local ahead of the overlap test 40; the
+// block's offset named once for both tests 40; the overlap test inverted with `continue` 40 (retail's handle in ECX and
+// best.offset in EDI are not reached). The lead's comparator helper replaced in place by `if (... || ... && ...) better =
+// true;` 232 (1246 B) or by `better = time != best.time ? time < best.time : pages < best.pages;` 263 (1200 B). Body unchanged.
 // Retirement before winner copy 243, ordinal before eligibility 355, read-only ranked record 201.
 // Page total before timestamp 367, tie break 284.
 // Ordinal before candidate updates 250, retirement and policy rejection continue 324.
 // NOT kept: the tied forms leave case zero threaded. The other forms disturb the matching prefix.
 // Retirement with an explicit end-of-ring check 254. NOT kept: the matching limit setup changes.
+// M3 lane 1 r150 (h2m fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH each run; control 201): `better` typed
+// `long` 210 (1223 B), `byte` 201 (same code). Lane 1 r124's 40 lead rebuilt (patch -o, 40 at 1213 B). On it, in the
+// deletion walk: the overlap end built through a `long &` bound to a fresh local (`sum = pages; sum += best.offset;`) 55
+// (the offset load then follows the handle as retail, but the sum still lands in best.offset's register); that with
+// best.offset in a local read through a `long const &` for both tests 55; the const-reference start alone 40; the end
+// as `long end = pages; end += best.offset;` 40 (same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -259,6 +259,24 @@ union s_6ec80
 // scoped: a `for` loop with `if (!active) continue;` 348 (1059 B, unrolled), the 0x49c8 NONE default at the top beside the id
 // defaults 245, the live/flag test for the two block pointers as nested ifs 225, that plus the 0x49c8 read in the file's
 // `if (live) value = field;` idiom 195 (first difference +0x101, as round 96's hand read).
+// M3 lane 4 r243 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5): 0x6ec10 moved ahead of this function in the file
+// (retail's address order, with a prototype above it): with the mask zeroed in the guard 225, with the mask as now 5 (same
+// code), so source order is not the lever. On round 96's hand-written 0x49c8 read with the mask zeroed in the guard
+// (re-measured 195): the guard tested players first 195; both NULL stores, both assignments and the guard players first
+// 192 (first difference +0x10a); the counter zeroed ahead of the mask 194.
+// M3 lane 1 r150 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5), all with the mask zeroed in the guard unless
+// noted: the two block pointers each behind its own live/flag test (NULL, test, set; machines first) 220 (989 B), the
+// same unscoped 220; with two separate tests after both NULLs 216 (997 B: every register and home is then retail's, the
+// only differences being the repeated second test and a loop-alignment pad); players first 235; each as an if/else 263;
+// the second set under `if (local_2)` 215 (981 B); both as ternaries on the live test 263; a `has_blocks` bool tested
+// twice (NULL before each) 258, both NULLs first 236, one test of it 236, ternaries on it 231; the two memcpy sources
+// read from the session's fields 281, unscoped 279. So retail's registers follow when the pointer setup spans more
+// blocks (NONE's re-formed web then ranks below the machines pointer), but no single-test spelling gives that. Also
+// with the mask in the guard: the machines pointer's NULL ahead of the 0x4d08 getter 222 (aligned 15: every register
+// retail's but the entry zero, EBX for ESI, and that store's place), players' NULL there 231, both 119, the machines
+// pointer or both initialised at their declarations 263/269; the 0x49c8 block split into a getter `if` and a second
+// `if (arg_1 && ...)`, `if (arg_1) { if ... }` or `if (... && arg_1)` test 225 each (threaded back into one); an
+// out-parameter getter for the two blocks in the getters' file (0x5b0d0's shape, inlined by the link) 225.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

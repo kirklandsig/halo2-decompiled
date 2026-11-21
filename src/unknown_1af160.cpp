@@ -276,6 +276,14 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // +0x418 reference copied after the 0x1e4be0 call 17. Diagnostics (reverted): the bool output, the prop node and the actor
 // renamed to sort first or last (five renames) 12 each, the same code: these homes are spill slots and one address-taken
 // flag, not ordered by name.
+// M3 lane 5 r227 (h2m fast with 0x1e1f20, MATCH; control 12; 0x260670's file is another lane's again): the equal arm as an
+// early return (the scratch release and `return local_5` in that arm, the rest unindented) 196 (974 B, every small home
+// moves); declared at function scope instead of in the not-equal arm, each alone: the 0x1f4a20 bool output 12, the
+// 0x262b40 result 12, the 0x1e5280 record pointer with its flag 12, the 0x1f4a20 result flag 12 (all the same code).
+// M3 lane 5 r229 (h2m fast with 0x1e1f20, MATCH; control 12): the 0x25d690 result held as a `point3f *` to its position
+// for both uses 107; the 0x1e4be0 result typed `byte *` 12; the search flag as `local_4 != NULL && (*local_4 & 1) != 0` 12;
+// the scratch buffer pointer declared at the function's top and assigned at its call 12; the marker pointer declared at
+// the top and assigned where chosen 12 (same code each). A `dword` long output does not compile (`long *` outputs).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

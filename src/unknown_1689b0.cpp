@@ -2203,6 +2203,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
 // the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
 // Body unchanged.
+// The first count and clearance stores and the prism ordinal still miss their retail homes.
+// Squaring after plane distance, projection or the vertex bound 548/548/548, after the edge walk 543.
+// Minimum first 570, count first 576, minimum and count first 570, count and minimum first 570.
+// NOT kept: 548 gains only three points. The 543 form reproduces the already-rejected late
+// one-use square, and the accumulator orders grow and raise the score.
 // M3 lane 12 r167 (h2m fast with 0x120790 and 0x2469b0, MATCH in each; control 551): the side vector through the existing
 // cross3f_staged 553; the perpendicular through cross3f_staged 553; relative and edge through vector3d_from_points3d 599
 // (2873 B); the side test as `0.0f > dot3f(...)` 551 and with the side vector as the dot's first operand 551 (same code
@@ -2215,6 +2220,26 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // projected separation and both roots through x/z/y dot 570, interval projection dot with retail
 // signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
 // score.
+// Count and clearance homes and the pre-branch square still differ. Conditional update
+// destinations for sum, clearance, count, sum/clearance, sum/count, clearance/count and all
+// three 656/597/588/649/678/593/653; branch-selected update pointers 655.
+// NOT kept: every form shortens the body away from retail and raises the score.
+// M3 lane 8 r218 (H2M_FAST with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, the four matched ones MATCH
+// each run): the vertex clamp as `count = 8; if (point_count <= 8) count = point_count;` 572 (2878 B); both averages as
+// three divisions by the count with no inverse local 578 (2891 B: the tail is then retail's instruction for instruction,
+// one reciprocal, each sum loaded and multiplied by it in x, y, z order, but the plane distance's rows flip operand sides
+// and the cross-product region churns); that with the distance's y row plane first 578; that with the zero-based edge
+// loop 620 (2902 B); with `radius * radius` at its use as well 612 (2898 B). Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x120790 and 0x2469b0, both MATCH; control 551): the face count, radius and sum renamed
+// 551 (identical code: names do not break these homes' ties); `relative` computed j, k, i 567 (2882 B); the second point
+// reconstructed before the first 569 (2869 B, retail's clamp select but the second point stored first); the nearest reset
+// moved to just after the plane distance 548 (the FLT_MAX load and store at retail's place); with `inside = true` moved
+// up as well 545 (statement moves, a lead only); on 545 the edge loop zero-based 599 (2885 B), on main's body 602 (its
+// `vertex = 0` start becomes a loop-invariant zero in EBX where retail makes the index's zero fresh). Body unchanged.
+// Shared point setter for the projection, candidate, midpoint, all miss endpoints,
+// projection and candidate, miss endpoints and midpoint, or all points 558/553/551/571/558/570/588.
+// Shared vector setter for clamped and midpoint separations 552. NOT kept: the midpoint ties.
+// The count and clearance spills and radius-square schedule still differ.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
