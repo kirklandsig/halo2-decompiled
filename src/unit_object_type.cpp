@@ -3101,7 +3101,8 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
-// score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
+// score 97 (was 97): Frameless extent agrees. Retail keeps the definition index in EBP and reloads the pool data after the weapon gate. The build still retains unit and material indices in registers and keeps the pool data across the call.
+// the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax B (11-19): no new form tried this round, no lower score (97): the body is still retail's 350 bytes with the
 // same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and
 // re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into
@@ -3110,6 +3111,7 @@ void function_c5740(long unit_index, bool start)
 // MiniMax I (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180 helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
 // MiniMax E (11-20): no new form, no lower score (97): the prologue's register roles still differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x188180.
+// Earlier measurement 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax C (11-15): no new form, no lower score (97): the body is retail's length and the first difference is still
 // the prologue - retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit
 // index and the material from the stack at each use, while this build keeps the unit index in EBX and the material in
@@ -3135,6 +3137,7 @@ void function_c5740(long unit_index, bool start)
 // parameter types fixed in another lane's file, so the call setup cannot be matched from here.
 // MiniMax H (11-13): no new form, no lower score (97); retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP.
 // MiniMax I (11-15): no new form, no lower score (97): retail still keeps the definition index in ebp and the object globals pointer in edi and re-reads the unit index and the material from the stack at each use, where this build keeps the unit index in ebx and the material in bp; the effect helper's seventh parameter and its register convention live in another file. The pool's data pointer is the other half: retail reloads it out of the pool global after the 0x1012c0 call, which is what a build that treats the callee as opaque does, while this build keeps the pointer in esi across the call because the callee's body is visible to it and the re-read folds away; that callee lives in another file, which this lane may not edit.
+// Earlier measurement 94 (was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
 // Earlier (score 94, was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
 // Pool snapshot 92 (two-point gain rejected); headers 94; shared tag lifetime 94; pool/tag 92;
 // direct unit observations 94; conditional material result 94; weapon getter 121; pool/getter 135;
@@ -3199,6 +3202,11 @@ void function_c5740(long unit_index, bool start)
 // file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
 // MiniMax R (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file.
 // MiniMax S (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
+// Typed object effect field 97, Direct typed object effect field 97, Typed weapon effect tag-link
+// binding 97, Typed effect with material object at entry 97, Typed effect with material object after
+// slot read 97, Typed effect with material object in effect path 97, Typed effect with final fallback
+// guards 97, Typed effect with weapon and final fallback guards 97.
+// Kept the typed object effect field at the opening score. The other forms do not improve the pool or parameter homes.
 // M3 lane 14 r136 (h2m fast with 0xcf040, 0xcf3d0, 0x188180, 0x1012c0, 0xbaf80 and 0x189060; 0xcf040 MATCH, 0xcf3d0 484 each
 // run; control 97; 0x188180's convention now agrees: point EAX, forward ECX, eight pushes): definition_index copied to a
 // local at the top 97 (same code); unit_index read volatile at its three call uses 104 (unit from the stack as retail);
@@ -3216,6 +3224,10 @@ void function_c5740(long unit_index, bool start)
 // record pointer 27. A 600 s permuter run on the 27 form (full image 26): 24 tries, none below 26. Left at 27: the weapon
 // definition load's destination (ECX for retail's EAX), the 0x188180 argument setup (ours loads the material first into
 // EDX, retail unit_index first into ECX), the first 0x189060 call's unit register and the fallback's table register.
+// Weapon view for the gated slot or at both slot uses 97/97. Shared slot accessor, fallback-first
+// branch, nested validation, named object definition, fallback guard and separate fallback tags
+// 123 each with the shared accessor. NOT kept: the accessor gives a 331-byte body and changes the
+// matched caller. The definition index and pool data keep their opening homes.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3229,7 +3241,7 @@ void __stdcall function_ceee0(long unit_index, long definition_index, short mate
 
 		if (weapon_index != NONE && function_1012c0(weapon_index))
 		{
-			long tag_index = *(long *)(UNIT_DEFINITION_GET(UNIT_GET(weapon_index)) + 0x58);
+			long tag_index = ((s_object_definition const *)UNIT_DEFINITION_GET(UNIT_GET(weapon_index)))->footstep_effects.tag_index;
 
 			if (tag_index != NONE)
 			{
@@ -9178,6 +9190,9 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Explicit selection with both 395, both with one table 183, typed handle before the player read 64,
 // and masked typed handle before all owner reads 121. NOT kept: the 64 form advances the first difference to
 // +0xd8 at retail length but delays the object-index load and raises the score.
+// Owner declared before grenade lookup, early center or damage buffer, and both early 62 each.
+// Split owner copy 62, flag before the trailing owner words 60, library copy 62, and player field plus remaining copy 62.
+// NOT kept: the two-point gain keeps the initial owner load difference.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {

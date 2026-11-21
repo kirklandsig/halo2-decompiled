@@ -1353,6 +1353,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // overwriting it with no early return 268 (1383 B). Re-measured (listed): the 64 flag as `!(word & 2)` 367 (1356 B); the
 // velocity scale read at each use 206 (1395 B). Body unchanged; the rotation products still follow the helper in
 // src/unknown_1eb8a0.cpp (another lane's file this round).
+// M3 lane 7 r207 (h2m fast with 0x1eb640, MATCH; control 114): re-measured on this tree the moved-away flag preset
+// false and set in its test 94 (1387 B), the two cross calls swapped 124 (1382 B), lane 1 r83's combination 75 (1387
+// B) and the turned copy from the forward parameter 194; new: the flag form with the crosses swapped 111 (1382 B); lane
+// 1 r83's combination with the crosses swapped 78 (1382 B: left are the movement vector's home, which retail shares
+// with the turned copy, and the rotation helper's product sides); the rotation axis from the up parameter 277 (1396
+// B). The first difference is still inside the rotation helper (src/unknown_1eb8a0.cpp, locked this round).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

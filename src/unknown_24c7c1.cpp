@@ -921,6 +921,17 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // the active test 326 (1880 B); the HUD state read through the global at each use 92 (same code); the count as
 // `split_screen ? 3 : 4` 479 (1886 B); one colour pair declared at the block top for all three draws 109 (1889 B). Not
 // kept (steering forms without a match); the 92 form is saved as build/r205/lead-24cf66-92.patch.
+// M3 lane 11 r145 (H2M fast with 0x24ce9d/0x24c80b/0x24cedf/0x1fa30/0x15f120, all MATCH each run; control 114): the
+// tutorial colour as `flag ? a4 : (bit ? a8 : a4)` 114 (same code as the body); as `(bit) && !flag ? a8 : a4` 116; as
+// `!flag && (bit) ? a8 : a4` 114 (same code); the timer fraction clamp as `fraction < 1.0f ? fraction : 1.0f` 116; the
+// fade test as `fade_ticks > ticks` 116. Reading of lane 7 r205's 92 lead (re-applied, 92, no difference left but homes):
+// retail, from EBP down: split -1, origin/bounds -0xc, scripted -0xd, tutorial -0xe, timer -0xf, line height -0x14, flash
+// sharing with the row counter -0x18, total height sharing with the row fade -0x1c, text bounds -0x24, colour -0x34, top
+// -0x38, left -0x3c, player -0x40, view -0x44, count -0x48, row height -0x4c, font -0x50, colour pair -0x60, player offset
+// -0x64; the lead: split -1, scripted -2, origin/bounds -0xc, tutorial -0xd, timer -0xe, line height -0x14, total height
+// sharing with the row height -0x18, colour -0x28, flash sharing with the row fade -0x2c, text bounds -0x34, player -0x38,
+// view -0x3c, font -0x40, row counter -0x44, count -0x48, left -0x4c, top -0x50 (the rest as retail). So the open part is
+// which loop scalar shares with flash and with the total height. Body unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

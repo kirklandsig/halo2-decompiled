@@ -565,6 +565,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax G (11-20): no new form, no lower score (34): retail's parameter order begins with the party list (it arrives in
 // ECX) and the two counts after it, while ours begins with the player count and the party list second, and a declaration
 // may not change; the player count therefore still arrives in EDX where retail puts it in EAX, which is the caller's
@@ -577,7 +578,6 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
 // MiniMax E (11-20): no new form, no lower score (34): the body still differs from retail only in the scratch registers - the player count is tested in edx here and in eax in retail, and the clamp's mask is built in edx here and in ecx in retail (the clamped value itself is in eax in both) - and the notes below record that retail's caller 0x7e210 hands the count over in eax, so the arrival register is not this body's to choose; swapping the two operands of the total's sum compiles to the same bytes.
 // MiniMax A (11-20): no new form, no lower score 34: the player count arrives in EDX where retail keeps it in EAX, and the exchange runs through the copy loop and the fill.
-// score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // M3 lane 15 r124 (H2M_FAST with 0x91e30 MATCH, 0x7e210 871; control 34): the maximum update as a conditional
 // expression 34 (same code); the balance call's count written as the sum of the two counts 34 (same code); the clamp
 // compare with its operands swapped 35; the copy first and the maximum as a `>` conditional expression 82 (170 bytes).
@@ -1053,6 +1053,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // early `return false` after the count call with the clamp returned directly 63 (203 bytes); open_slots from
 // `player_count + extra_count` with total named after it 71; imbalance declared at the top 66; the equivalent test
 // `party_indices[i] >= next_party` 81 (169 bytes). The player count still arrives in EDX in each.
+// M3 lane 11 r145 (H2M fast with 0x91e30 MATCH and 0x7e210 871 each run; control 34): an inline setter shared by the
+// copy and the fill (`parties[i] = party`) 34; an inline getter for `party_indices[i]` at its three reads 34 (same code
+// each: the inline parameter is a plain variable, so the fill value still loads first); a by-value inline fill helper
+// (party, first, last) as a pointer `while` 63 (199 bytes); the capacity named before the open slots 34; the call's
+// count from a local copy of the total 34 (same code). The player count still arrives in EDX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

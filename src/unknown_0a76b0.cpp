@@ -4391,6 +4391,11 @@ extern vector3f *g_4687bc;
 // and a callee without a register argument moves the pool's data to ECX. So the scratch choice follows the order values
 // are loaded in and 0xb67a0's ECX argument, not the spelling of these statements: the lead is a statement whose value
 // retail loads between the tag test and the material (or one fewer ahead of it) without adding an instruction.
+// M3 lane 2 r127 (fast, control 8): the node count named and read through the array's data before the element pointer
+// (the form of the matched 0x1d44f0, which has retail's `lea edx, [eax + eax*2]; mov eax, [esi + 0x70]` here) 12; the
+// first node as `node_count > 0 ? nodes[0] : NONE` in one local 8; 0x1eb020 given the material object's own address
+// cast to `short *` 8; the root's component index bound to a `long const &` for the test and the lookup 8 (all the same
+// code); the element pointer formed ahead of the index test 27.
 // MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
