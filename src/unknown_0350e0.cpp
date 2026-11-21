@@ -3646,6 +3646,12 @@ real magnitude3d(vector3f const *v);
 // both 170 (the header's float overloads already route there); the parallel test on a recomputed dot3f 198 (1039 B: the
 // products move to the x87) and the arccosine of a recomputed dot3f 198 (the same). Reading: retail keeps the dot in a
 // float home and loads it twice (fabs, then acos), where ours converts once and keeps the double across the a/b tests.
+// M3 lane 2 r132 (h2m fast with 0x24590 and 0x30bf0, both matched; control 170). Reading: retail reloads the float
+// angle from its home for `fsin` and again for `fcos` (ours loads it once and duplicates it, `fld st(0)`), as it reloads
+// the float dot for the arccosine. Forms: the cosine computed before the sine in two statements 170 (same code); the two
+// length tests ahead of the parallel test 182; the parallel test on `(real)fabs(dot)` 170; the angle as
+// `step * acos(dot)` 170; the fallback clamp through the existing PIN macro 188 (1025 B). Diagnostic (flags, reverted at
+// once): the file built with /Op 558 (1296 B), so the reloads are not float-consistency code. Restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4537,10 +4543,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax G (11-20): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this build's locals and register plan differ from the start.
 // MiniMax I (11-20): no new form, no lower score (486): the first difference is the frame, 0x60 here against retail's 0x38; retail keeps one 12-byte home for the previous camera position and one per element.
 // MiniMax A (11-20): no new form, no lower score (486): the frame is 0x60 against retail's 0x38
-// score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
 // the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this
@@ -4883,6 +4889,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 0x64. Passing the previous value separately keeps 0x60 and ties. Naming the double-precision adjustment
 // shrinks the frame to 0x5c and raises the score to 525 at 1995 bytes. The reduced controls for 0x36b50
 // and 0x39e50 stay at 251 and 334.
+// M3 lane 2 r132 (h2m fast with 0x36b50; control 486 at 2036 B): the three flag bits as plain bool conversions (no
+// `!= 0`) 486 (same code); scale_size declared ahead of cycle 486 (same code); the range computed ahead of the camera
+// copy 487; the range start read once into a local used for the range and each distance 494 (2028 B); the view pointer
+// declared const 486 (same code). Restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
