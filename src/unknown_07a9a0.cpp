@@ -1757,6 +1757,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 872 (2796 B, and the matched 0x705f0 and 0x72330 stop matching); diagnostic, an inline_depth(0) region around the top
 // lookup statement 994 (2640 B: the top call stays out of line but the region turns off the body's other expansions);
 // `result` declared ahead of the getter 871 (same code). BLOCKED on the link-wide inline choice for the top 0x192e60 call.
+// M3 lane 13 r139 (fast with 0x63220, 0x73530 and 0x192e60, all MATCH; control 871): the type-5 scan returning false at
+// the first match 887 (2768 B); the histogram cleared by memset instead of its initialiser 892 (2764 B); `available`
+// computed before the player loop 878; the adjusted value started from `rating` 885 (2768 B); the averages' zero test on
+// the element 855 (2796 B, a behaviour change: retail tests the array's address, not kept).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

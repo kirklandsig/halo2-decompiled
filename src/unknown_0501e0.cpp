@@ -736,6 +736,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // operands canonicalise, ours still adds into the first point's product); the helper reading the camera's scale itself
 // (no scale parameter) on this body 218 (1115 B, -3); the origin copied once into a const local for both offset loops 262
 // (1136 B, retail's length, but the copy goes through the frame as dwords; frame still 0x20).
+// M3 lane 13 r139 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): both offsets through the existing
+// vector3d_from_points3d (origin as a point) 219 (1114 B), second point first 219 (1113 B); the view helper's default as an
+// aggregate copy scaled in place 289 (1162 B); the offset vectors declared second-first 221 (same code); separate view
+// outputs copied back 314 (1181 B).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

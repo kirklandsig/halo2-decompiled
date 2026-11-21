@@ -1461,6 +1461,18 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // complement, or with a complement accumulator 339/356/386/386. With a shared
 // signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
 // construction and leaves the unity register and square spill different.
+// M3 lane 13 r139 (main re-measured 334 plain): the axis rotation rewritten in the shape of the code base's other axis
+// rotation (sine and cosine first, then the squares, a sine-axis vector, each off-diagonal pair after its diagonal, the
+// (1-c)*k product shared) 302 fast; with retail's (1-c)*i*j grouping 299 fast but 367 plain (1487 B, frame 0x4c, the EDI
+// save scheduled before the first rotation); with the complement declared before the first diagonal 298 fast, 376 plain
+// (1493 B); with the matrix stored as forward/left/up (retail keeps tij - s*k at +0xc) 291 fast. In the fast image unity
+// then takes XMM5 and the first rotation's squares stay in XMM0/XMM2/XMM7 as retail; the second rotation and the deviation
+// tail differ. Dead initialised locals on the 291 form 282/277/346/352/274/274/291 for 1..7 (diagnostic; uninitialised ones
+// and their position change nothing). Fast, on the 291 form: `limit` folded 367, with the vertical-angle local 356, the
+// vertical-angle local alone 355, `limit` and `half` 321, both angle intermediates 291; helper locals tk 317, tij 380,
+// one_minus_c 309; sine products j, k, i 341; squares as a vector 339; sine-axis vector before the squares 337. On main's
+// body: the deviation as a component vector squared from its fields 361 fast (1438 B; retail's interleaved store, fld,
+// fmul tail but in i, j, k order), the float sum of the named differences 339 fast.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1649,7 +1661,7 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 37 (was 45): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ.
+// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ.
 // Earlier at 37 (was 45). the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
 // The reservation publishes the pointer before the pool count and state test. The stride spill,
 // cap reload, corner loads, and recount registers still differ.
@@ -1761,6 +1773,10 @@ struct s_point_pool_173520
 // complete recount as long or pointer difference 9/9; count-first end index 9; vertex binding and
 // native recount 183. NOT kept: the 9-point forms still spill the stride after loading the cursor,
 // exchange the recount registers and require an exact match for the reservation and bindings.
+// M3 lane 13 r139 (fast; control 37): the second-reference, staged-reservation and cap-reference lead rebuilt 9 (865 B);
+// on it the cull test through a named view pointer 9, the recount's points in a named pointer 9, the recount count-first
+// with a long cast 9, the recount through a const pointer to the result 9 (all the same code); dead initialised locals 1..7
+// 9 each (diagnostic: the stride store order and the recount registers do not follow the phase).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2271,7 +2287,7 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 155 (was 284): The 0xb8 frame and incoming axes agree. The plane-lookup branch span, zero placement and center SSE schedule still differ.
+// score 155 (was 155): The 0xb8 frame and incoming axes agree. The plane-lookup branch span, zero placement and center SSE schedule still differ.
 // Earlier (270, was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
 // retail. The center trace stays matched.
 // The 0xb8 frame and entry convention agree. First +0x3c is the branch span
@@ -2395,6 +2411,14 @@ struct s_camera_reference_171830
 // Shared scale and in-place or separate negation 158/158; rear-vector setter 155;
 // center-point setter 155; shared negation with center setter 158; paired setters 155;
 // zero-initialized rear vector 155; scaled-vector setter with shared negation 158.
+// M3 lane 13 r139 (fast with 0x170fd0, MATCH each run; control 155, plain 155): dead initialised locals 1..7 at the top
+// 155/155/155/256/177/155/155 (diagnostic: only the sample loop's sites move); the side vector through cross3f(up, forward),
+// cross_product_170c00(up, forward) or cross3f_staged 155 each (same code); every cross or depth product written the other
+// way round 155 (same code); the plane test through the existing plane_distance_to_point 281 (1235 B, plain 281): its three
+// products then load as retail (k*z, j*y, x loaded and multiplied by plane i) but the first sample loop gains a jump and
+// padding; that with separate success stores 283, with retail's arm order (flagged arm first, `else narrow = true`) 281;
+// dead locals 1..7 on the helper form at the top, before the depth or before the side vector 280 to 285 (the centre and
+// cross sites never move); the side vector right after the 0x171d00 call 254, before the up copy 262.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
