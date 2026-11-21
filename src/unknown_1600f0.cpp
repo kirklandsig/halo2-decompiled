@@ -1210,6 +1210,10 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// Earlier reduced check scored 678.
+// Earlier comparison 678 in the r718 fast check.
+// MiniMax C (11-20): no new form, no lower score (679): the frame is still 0x798 against retail's 0x79c, the viewer stays in edi and the coordinate homes and the panel's timing reads still sit in this build's slots; the forms that reach retail's frame size score lower on other axes, so the body stands as found.
 // score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
 // P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
 // M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
@@ -1628,6 +1632,16 @@ PRIVATE inline long score_string_list_1608e0()
 // M3 lane 14 r133 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): the scores pointer as one ternary initialiser 719
 // (2888 B); `panel->time` as one ternary on flag1128 708 (2888 B); the screen height as a short 693 (2888 B); the width
 // as a long 679 (same code); both score flags cleared first and set under the test with no else arm 694.
+// Viewport width, height, both spans, horizontal origin, vertical origin, both origins, horizontal
+// span with origin, and both spans with both origins as accumulators.
+// Scores 679/693/693/679/679/679/679/693.
+// NOT kept: Width and origin updates tie. Word height extends the body and leaves the frame and
+// coordinate homes unresolved.
+// Height from the row total minus caption rows 708, full row total with inset 708,
+// full rows with conditional inset 709, body rows with full caption extent 708.
+// Shared signed team count with body/full rows 707/707. Explicit signed player/team
+// counts with body extent or conditional inset 707/708.
+// NOT kept: all retain 0x798 and raise the score.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

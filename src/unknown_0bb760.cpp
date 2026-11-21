@@ -448,10 +448,14 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// score 77 (was 77; 97 before that): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
-// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// Earlier header 77 (merged in r284): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// score 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
+// Earlier detail: The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// Earlier score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// The index's zero store sinks after the outer guard's jle. In the first scan the count is spilled
 // and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
 // blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
 // Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
@@ -876,6 +880,25 @@ void function_3dd10(long object_index, bool force);
 // Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
 // alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
 // pre-guard zero store and the count/mask homes stay different at retail length.
+// M3 lane 3 r284 (h2m fast screen with 0x1318d0, 0x131a00, 0x3dd10, all MATCH; "rolled" = r280's `if (0 < choice_count)`
+// around `for (long j = 0; choice_count > j; ++j)` with both remainders through `fmod(seed, 1.0f)`, 186 [33] at 1034 B:
+// the count spilled to +0x10, the mask in EBP, the weight in the dead colours home): the selection loop bounded by
+// `entry->count` rolled 186, main 77 (same code each); the selection loop testing its own copy of the mask rolled 186
+// [42], main 86 [37]; the variant written through an inline helper's `long *` rolled 186 (same code); `last = j;
+// eligible |= 1 << j;` through an inline helper taking both addresses rolled 186 (same code). Inline pointer helpers do
+// not take `last` or the variant out of the count/mask register fight.
+// Initialize the bank ordinal before object lookup, tag lookup, output resolution or bank count, 245 each.
+// All four with a separate stored-color quotient also score 245. The pre-guard store uses the retail
+// stack home relative to entry, and the earlier saved-register setup changes.
+// Signed weight scan with live count 189, shared choice array 189, or both 189. Unsigned choice bits
+// 189, ordinal-based bank guard 197, shared choice array and pre-guard bank ordinal 197, choice read
+// at each use 77, shifted eligibility test at selection 194. The ordinal store and count and mask
+// homes remain unresolved.
+// Shared supplied/eligibility mask 77, with pre-guard bank ordinal 97, signed weight scan
+// 189, explicit nonzero and positive tests 77, or advancing weight cursor 162. Selection bounded
+// by last eligible or one past last 243/246. Renamed count and mask 77. Shared eligibility bit
+// operations with unequal or signed weight bound 298/298. NOT kept: the helpers expand the
+// frame and scan. The pre-guard ordinal and scan count and mask homes still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

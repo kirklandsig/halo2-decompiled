@@ -1129,9 +1129,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
-// score 5 (was 17): the lookup reads the unit index again through the player getter, which gives every register of
+// score 5 (was 5): the lookup reads the unit index again through the player getter, which gives every register of
 // retail's; left is the first player address, `mov edx, [edx + 0x44] ... add edx, eax` where retail has
-// `add eax, [edx + 0x44]; mov edx, eax` (the getter's sum is a shared temp). Earlier first line: 17 (was 17).
+// `add eax, [edx + 0x44]; mov edx, eax` (the getter's sum is a shared temp). Earlier first lines: 5 (was 17); 17 (was 17).
 // MiniMax C (11-06): no new form, no lower score; the unit index still lands in ESI where retail keeps it in EDI and the object table pointer lands in EDI where retail keeps ESI.
 // MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
 // edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
@@ -1276,6 +1276,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // result local 44 (140 B); `NONE != player->unit_index` 5; `NONE != slot && NONE != unit->weapons[slot]` 5 (same code).
 // Matched 0x151c10 and 0x151940 open the same way and fold the data load into the add; here the getter reload gives the
 // data two uses at code generation, so it is loaded into EDX first.
+// M3 lane 2 r123 (fast; control 5): the player bound as `s_tail_player *const &` to the getter's result 17 (plain reads)
+// and 5 (with the getter reload, same code); the player as an `s_tail_player &` 17, with the getter reload 5 (same code);
+// the first player address in the byte-offset spelling with the typed getter reload 5, the reverse 5, the reload as a
+// byte-offset `long` read of +0x2c 5 (all the same code). Diagnostics, reverted at once: a compiler barrier intrinsic
+// between the test and the lookup on the plain-read form 44 (139 B: retail's `add eax, [edx + 0x44]; mov edx, eax`
+// opening returns, so retail keeps the player live for a second read, but here the two reads are never merged and the
+// unit index takes ESI); a call of the existing empty 0x175f40 at the same place 17 (expanded to nothing before the
+// early merge, same code as the plain read).
 // M3 lane 14 r133 (fast with 0x151aa0, 43 each time; control 5): the first player as the array element
 // `&((s_tail_player *)data)[index & 0xffff]` with the lookup's read through the getter 5 (same code); the slot and weapon
 // test through an inline helper taking the unit index as `long const &` 17; on the 17 form `short hand = primary ? 0 : 1`
@@ -1688,6 +1696,18 @@ void function_150820(dword *bits, bool local_only)
 // and at the 0xcd7b0 argument scores 18 (was 43) and gives the player ESI and the hand EDI, but it rereads a value the
 // player local already holds (kept only with a byte match), so the code is main's. What is left is the player address folded
 // into one LEA instead of retail's add and move, the unit index read a second time, and the policy byte in DL.
+// M3 lane 11 r140 (H2M_FAST with 0x151b80, 5 throughout; control 43): one fewer use of the hand, to let the player outrank
+// it for ESI: `!primary` in place of the hand only at the 0xcd4e0 argument 89 (200 B); only at the held-slot index 43
+// (same code: CSE'd with the hand); at the 0xcd4e0 and 0xa8f80 arguments 82 (207 B); at the 0xcd4e0 argument and the
+// modes index 89 (200 B); at the held-slot and modes indexes 43 (same code).
+// Sequential query and availability result 105, conditional query declaration 43, direct policy output
+// selection 88, complementary policy arms 77, command-mode assignment in the test 80, conditional command
+// result 95, captured eligibility index with sequential results or conditional declaration 105/43. NOT kept:
+// the declaration forms tie at 210 bytes; the other forms regress or change extent.
+// MiniMax R (11-20): score 43 (was 43): no new form; the player still takes edi and the hand esi where retail takes the
+// player esi and the hand edi, and the unit index still takes ecx where retail takes edx, so the whole body stays one
+// register rotation off; the only form that gives retail's registers (18) rereads the unit index through the player
+// getter and stays match-only.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

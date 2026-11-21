@@ -132,8 +132,11 @@ union s_185be7
     vector2f field_8;
 };
 
+// score 62 (was 62): r216 unchanged; plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
+// the record copy's schedule, the second hold-time add's operand order, the quotient/1.0 XMM3/XMM4 tie, the else arm's load
+// order, the parent lookup's ECX/EDX tie, the word mask's zero-extension register and the 0.64 square order.
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
-// score 838 (was 838): Frame 0xe0 and the head agree; with 0x24590 expanded inline (main since 11-20) the record copy, the
+// Earlier first line: score 838 (was 838): Frame 0xe0 and the head agree; with 0x24590 expanded inline (main since 11-20) the record copy, the
 // stick-scale branch layout and the field_93 latch shift the body, and register ties remain (see r134 below).
 // retail's 3777 bytes. Left: the input-record copy is scheduled after the two angle stores here
 // (retail before them), 1.0 and zero remade in the other order after pow, the second hold-time add loads the argument
@@ -770,6 +773,15 @@ union s_185be7
 // (statement order only, match-only): copy first + else-arm order + quotient after local_19 46 plain (44 fast);
 // left there the 1.0/zero remake after pow, the second hold-time add, the quotient's early schedule, the parent
 // lookup's rotation (through the flag loop's mask) and the 0.64 squares.
+// M3 lane 6 r216 (fast, 0x24590/0x185b30/0x186ab0/0x187b30 MATCH throughout; control 60 fast, 62 plain): the havok pool bound
+// by `s_havok_component *const &` alone 58 (match-only, 2 points); with the parent object in a named pointer 58; with the
+// parent through object_get 58; the turn pair as one vector2f with an aggregate copy in the else arm 636 (3796 B: it goes to
+// memory); KEPT, same code: the rigid-body matrix row read as `local_21.forward` in place of the offset written out (60).
+// Re-measured lead (match-only orders): record copy first + else arm local_17 first + quotient after local_19 44 fast, with
+// the pool reference 42 fast. A two-second LTCG lab (this file's unit with its callers' and callees' objects): 1..7 dead
+// initialised locals just before the second hold-time add leave its operand order (argument first); the pool reference
+// gives retail's `movzx edx, ax` there in the lab, and with a const-reference parent pointer retail's
+// `mov edx, [edx + eax*4 + 8]`, but that moves the parent index into EBX (other code).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -909,7 +921,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                             {
                                 transform4x3f local_21;
                                 local_20->rigid_body_matrix_get(local_24, &local_21);
-                                local_15 = *(vector3f *)((byte *)&local_21 + 4);
+                                local_15 = local_21.forward;
                                 if (local_18 == local_1->field_40)
                                 {
                                     function_11df30(&local_5.field_8, &local_15);

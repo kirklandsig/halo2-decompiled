@@ -1027,6 +1027,7 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax D (11-20, run 131): no new form, no lower score (382): the else arm spelled as `return false;` folds the result byte away and shrinks the frame to 0x54 (508), so the shared exit with the result byte in its stack slot stays; the false exit still lands after the main exit instead of at 0x1aac35, and the helper retail keeps out of line (0x25d740, in another file) is expanded here: BLOCKED-BY 0x25d740.
 // MiniMax G (11-20): no new form, no lower score (382): the false exit still lands after the main exit instead of at 0x1aac35, and 0x25d740 stays expanded here where retail keeps it out of line.
 // MiniMax G (11-18): no new form, no lower score (382): our false exit already has retail's own epilogue (xor al, al;
 // pop ebp; add esp, 0x58; ret 8), but it is emitted after the true exit instead of at 0x1aac35; giving the else
@@ -1428,6 +1429,15 @@ static __forceinline long real_to_long(real value);
 // inside the timeout arm that uses it 447 (1912 B); the near-stop timeout compare as `0.5f < ...`, the speed magnitude
 // test as `0.0f < local_12`, the alignment test as `dot < local_26`, the planar length test as `0.0f < normalize2d(...)`
 // 382 each (same code). All restored.
+// M3 lane 12 r162 (fast; control 382; the call count shows whether 0x25d740 stays a call, retail 21): the getter through the
+// existing inline prop_node_view on this body 382 (same code), on the computed entry result 508 (20 calls); the computed
+// result with the eight getter copies in its own file turned into real 0x25d740 calls (those eight still match) 508 (20
+// calls); the result preset false with `local_2 = true` at the end of the body 431 (1904 B, frame 0x54, the false exit at
+// the entry); this body with `local_2 = true` at the end of the body 508 (frame 0x54, the false exit last); the computed
+// result as `f13 || f14 || f2d ? false : true` 508 (20 calls). Diagnostics on the computed result (reverted): four calls
+// on a dead path ahead of the site (caller growth) 508, still expanded; two dead extra tests around the getter call 485
+// (21 calls, it stays a call). So our link's expansion follows the site's branch depth, not the caller's size: retail's
+// threaded false exit with the getter out of line needs a site about two branch levels colder than the computed form gives.
 // M3 lane 14 r132 (H2M_FAST with 0x25d740, MATCH each run; control 382): the computed entry result with the facing read
 // off the view at every use 560 (1961 B), written `!(f13 || f14 || f2d)` 508 (1921 B), that with no facing pointer 560.
 // Diagnostics with 0x25d740 kept out of line (reverted): computed result 394 (1904 B, retail's frame and false-exit place);

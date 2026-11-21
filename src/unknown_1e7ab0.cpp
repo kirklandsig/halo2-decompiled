@@ -165,6 +165,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
+// into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
+// 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
+// with early returns, as a guard returning NULL then `table->entries + index`, and as one ternary 117 each (same code);
+// case 4's child test as `continue` on the seat/unit tests then the flag test 117 (same code); the child loop as `while
+// (!blocked && function_d05c0(&iterator))` setting the flag without `break` 509 (2288 bytes).
+// MiniMax D (11-20, run 131): no new form, no lower score (117): the gap is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the result into ECX, retail loads the table into ECX and the result into EAX), and case 4's parent still sits in ECX where retail holds it in ESI; the rotation is settled by 0xd0590's parameter order in src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
 // MiniMax B (11-19): no new form, no lower score (117): the first difference is still the inlined entry getter's
 // register rotation at +0x31 (ours loads the table global into EAX and the result into ECX, retail loads the table
 // into ECX and the result into EAX), and the getter spellings earlier rounds measured all give the same code. The
@@ -196,12 +203,6 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // result into ECX, retail loads the table into ECX and the result into EAX); the getter rewritten with an early
 // return measures the same 117, and the rotation is settled by 0xd0590's parameter order in
 // src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
-// score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
-// into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
-// 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
-// with early returns, as a guard returning NULL then `table->entries + index`, and as one ternary 117 each (same code);
-// case 4's child test as `continue` on the seat/unit tests then the flag test 117 (same code); the child loop as `while
-// (!blocked && function_d05c0(&iterator))` setting the flag without `break` 509 (2288 bytes).
 // MiniMax E (11-16): no new form tried this round, no lower score (118): the gap is still the register rotation that starts at
 // the inlined lookup, where retail keeps the table in ECX and the null result in EAX while this build keeps them the other way
 // round; that rotation follows 0xd0590's parameter order (retail takes the iterator in ECX and the object index in EDX, while
@@ -593,6 +594,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // local typed const 117; case 4's iterator declared at the top of the case 117 (all five the same code). Retail's case 4
 // keeps the parent in ESI and sets up 0xd0590's arguments iterator first (`lea ecx` then `mov edx, esi`), ours keeps it in
 // ECX and must move it to EDX first: still BLOCKED-BY 0xd0590 (its file is held this round).
+// M3 lane 4 r236 (fast with 0x1e83c0/0xd0590/0xd05c0, all MATCH; control 117): case 4's `if (!blocked) result = true;` as
+// `result = !blocked;` 527 (2328 B); the child seat's flags through `(&seats[index])->flags` 117 (same code); the result
+// flag declared after the entry lookup 128; the entry test as `!(flag && state == 2)` 117 (same code); the entry tested
+// ahead of the player index 366 (2324 B). BLOCKED-BY 0xd0590 stands (contributor; its file is on this round's avoid list).
 // M3 lane 14 r132 (H2M_FAST with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all MATCH; control 117): the child test as `unit_index
 // != iterator.unit_index` 118, `NONE != iterator.seat_index` 117, both 118; the entry through 0x1e8d50 165 (2312 B), with
 // the first 166, with both 166; on the 0x1e8d50 entry, the child's seat read through a no-code inline accessor at the NONE
