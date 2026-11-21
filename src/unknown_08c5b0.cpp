@@ -306,6 +306,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // change test 28 (88 B); the availability read into a bool first with `kind == 1 && available ? payload : 1` 43 (108 B);
 // old_setting declared first and assigned after the lookup 4 (same code); the selection in the handler as `if (kind == 1)
 // setting = available ? payload : 1; else setting = 1;` 4 (same code); a single-exit `bool result = true;` 4 (same code).
+// M3 lane 14 r136 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with the existing kind read: the
+// selector taking `short const &` 4; the selector as `switch (kind)` with `case 1:` (the availability test) and a default
+// giving 1, 30; a second request pointer local for the kind read 4; the setting seeded 1 with a redundant `setting = 1;`
+// at the top of the kind arm and the availability test after it 15; diagnostic: the selector given the kind twice through
+// an extra unread parameter 4 (plain read 32): one more reference that LTCG drops does not reach the pair.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

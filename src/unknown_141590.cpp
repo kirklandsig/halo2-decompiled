@@ -549,6 +549,12 @@ static inline void quaternion_transform_vector(
 // in retail, but w2 does too, where retail forms w2 and the doubled dot after the copy from a fresh 2.0); the cross
 // product into a separate axis vector scaled into the rotation 201 (same code); the helper as `__forceinline` 201 (same
 // code); the repair path's two crosses through cross3f 226; the cosine clamp as one ternary 301 (1318 B).
+// M3 lane 14 r135 (fast, control 201): the construction scale passed as `sine_half / sine` with no scale local 201 (same
+// code); the transform helper in place with one vector pointer 205 (1323 B); the helper's m ahead of w2 247 (1317 B: m and w2
+// then both go above the identity copy, retail only m); the sine product written at both uses 245 (1305 B); the helper taking
+// the quaternion and vector by const reference 247 (1310 B). Reading: retail's m uses the 2.0 kept from the sine product and
+// its w2 a fresh 2.0 load after the copy, shared with the forward dot; entry registers for 1.0/2.0/cosine half/sine are
+// xmm7/6/5/4 in retail, xmm7/5/4/6 here.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1649,6 +1655,11 @@ void function_143250(
 // component, both or both symmetric families 939/939/939/939.
 // Band-specific mixed names, root-35 axis names, both root axis families,
 // and all those role names 939/939/939/939. The scalar spill frame stays 0x2fc.
+// M3 lane 14 r135 (fast, control 939; `ret 4` in both builds): entry 23's first product with `r6_r3 * r8` for r6_r3_r8 1601
+// (10732 B); entry 23 as `-(subtracted product) + first product` 1221 (10762 B); entry 23's first product named just above
+// it 939 (same code: the order is set after the homes); its subtracted product with `s21 * r5` for s21_r5 1147 (10783 B);
+// entry 37's r6_r3_r8 written `r6_r3 * r8` 1571 (10765 B). Retail keeps 143 scalar cells under the workspace, this build
+// 142; 428 of the 935 differing lines differ only in stack offsets.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

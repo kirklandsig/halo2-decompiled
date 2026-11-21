@@ -911,6 +911,11 @@ struct s_object_damage_view
 // 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
 // all three or all with the credited team 353/353. The three homes and the
 // amount-biased history cursor stay in place.
+// M3 lane 14 r135 (fast, control 353): the selection amount read once into a local inside the time test 454 (1578 B; the
+// walk moves to retail's +0x2f0 base, but selected drops to memory); killer, victim team and code as fields of one local
+// record (diagnostic) 369; 0x197160's code parameter typed byte 354 (the code is then loaded once and pushed twice as in
+// retail; 0x197160 still matches); `best` read through `selected` 353 (same code); the amount local with the byte code
+// parameter 454.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
