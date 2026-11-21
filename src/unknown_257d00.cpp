@@ -2735,6 +2735,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Reading: retail's case 20 else arm loads d1 into AL and jumps to the test's `test al, al` (0x2597f2), an `if (d1)`
 // test cross-jumped into the post-switch test, and that test sits right before the return-1 block case 13 and the
 // default share, so case 0's `sete` falls into it and cases 5 and 10 jump to its `sete`.
+// M3 lane 2 r132 (h2m fast with 0x110ab0 and 0x258a00; control 431 at 2416 B, masked aligned 77/78 unmatched): case 9
+// as a conditional clear (`if (arg_1 == unknown018 && playing) local_3 = false;`) 486 (2416 B; retail computes `!call`
+// with neg/sbb/inc, so this is not its form); that with case 20's else arm as `else if (b0 != NONE && !d1) local_3 =
+// false;` 531 (2440 B); both with case 13 dropped 467 (2424 B); case 20's else arm clear with case 13 dropped 505 (2424 B,
+// aligned 65/63: the post-switch test then sits after case 0 with the shared `mov eax, 1` block after it and case 5's
+// reloads and jump into case 0's `sete` exactly retail's; left: case 7/8's normalised flag, case 5's zero arm, case 6's
+// globals, cases 2 and 4, case 20's main arm `je; jmp` for retail's `jne tail` + epilogue copy, and its else arm
+// `test al, al; jne` for retail's `mov al, d1; jmp` into the test); case 9's clear with case 13 dropped 475 (2400 B, test
+// after case 20). Diagnostic: case 13 dropped alone 479 (2404 B, test after case 20). Reading: the post-switch test
+// follows case 20 whenever case 20's else arm stores the flag (it falls through into the test); retail's arm never
+// stores it (AL is tested in place), so its test went to the first predecessor, case 0. Restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
