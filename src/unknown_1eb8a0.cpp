@@ -817,6 +817,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // with both minima and reused limited decision 705, live limit with default-step branch first 691, live
 // limit with both default branches first 691. NOT kept: The separate limit observations and guarded
 // minima raise the score. The reused decision also moves the first difference to +0x5.
+// EBX still keeps the supplied direction instead of the sampled velocity. Working sample
+// by conditional copy 673/676, branch-wide copy 663/659, component copy 680/667,
+// and shared setter 680/667, each after/before the rate product. NOT kept: all
+// raise the score and retain the incoming register exchange.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

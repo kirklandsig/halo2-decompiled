@@ -1873,6 +1873,11 @@ long function_2197f0(real gain);
 // (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
 // fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
 // the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
+// The composite attack still differs in elapsed and reciprocal registers and in the
+// first gain load. Capture hold, attack, release, hold/attack, hold/release,
+// attack/release or all durations at their comparisons 162/95/92/159/165/99/157.
+// All three with the hold arm first 154 at retail length. NOT kept: every form
+// raises the score.
 // @retail 0x127010
 long function_127010(short class_index)
 {

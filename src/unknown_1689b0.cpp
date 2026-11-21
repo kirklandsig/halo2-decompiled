@@ -2215,6 +2215,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // projected separation and both roots through x/z/y dot 570, interval projection dot with retail
 // signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
 // score.
+// Count and clearance homes and the pre-branch square still differ. Conditional update
+// destinations for sum, clearance, count, sum/clearance, sum/count, clearance/count and all
+// three 656/597/588/649/678/593/653; branch-selected update pointers 655.
+// NOT kept: every form shortens the body away from retail and raises the score.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
