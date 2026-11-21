@@ -1752,6 +1752,9 @@ void function_150820(dword *bits, bool local_only)
 // at the 0xcd4e0 argument 60 (212 B); the hand typed `dword` 43; the player as a pointer to const 43; the hand or the unit
 // pointer declared bare ahead of the player and assigned in the block 43/43 (all same code); the mode test's arms swapped
 // (`!= 4` first) 72 (219 B).
+// Slot and mode selections from the long hand ordinal, separately or together 83/78/99.
+// Primary-entry-first equivalents 83/78/99, signed slot assigned in both arms 87, query-scoped mode selection 78.
+// NOT kept: All forms grow past 210 bytes and retain the saved player/hand exchange.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

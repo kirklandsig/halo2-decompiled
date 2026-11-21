@@ -2740,6 +2740,10 @@ struct s_unit_event
 // helper with short or long slot 531/495, short slot with type mask 549, helper with type mask 420, and retained
 // pool with long slot and helper 526. NOT kept: the short slot restores the entry register assignment but
 // changes the index load and grows to 1880 bytes. The other forms tie or raise the score.
+// Conditional receiver test on the first drop, second drop, or both 536/537/519. Receiver selected before
+// its test on the first, second, or both 519/527/577. Named unit classification 602, supported-type guard 581.
+// NOT kept: The joined receivers can restore the entry register assignment through +0x5a, but change the
+// drop control flow and move the length away from 1868 bytes.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3701,13 +3705,11 @@ enum
 
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
-// score 371 (was 371): Frame 0xf4 agrees. The flag homes and ESI/EDI allocation differ at the same 1893-byte extent.
-// Earlier detail: 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
-// score 371 (was 371; 470 and 661 earlier): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
-// score 371 (was 371): 1893 bytes against retail's 1880 (earlier 470, was 661, at 1907 bytes); what is left is the frame layout
-// (retail's bools sit at esp+0x13..0x17, then object, i, definition, info; ours orders them differently and
-// keeps region_absorbs in memory where retail holds it in bl), registers (retail's object_count is in edi, ours
-// esi) and the position of the 0xd5b60 call. Done: shield/body children flags were swapped (retail: body from
+// score 371 (was 371): The 0xf4 frame agrees. The 1893-byte body exceeds retail's 1880 bytes, and the flag homes
+// and ESI/EDI assignments differ. Earlier scores were 470 and 661, with 470 at 1907 bytes.
+// Retail's bools sit at esp+0x13..0x17, then object, i, definition, info. This build orders them differently and
+// keeps region_absorbs in memory where retail holds it in bl. Retail holds object_count in EDI and this build holds it in ESI.
+// The position of the 0xd5b60 call also differed earlier. Done: shield/body children flags were swapped (retail: body from
 // info bit 4, shield from bit 6); the loop's walk of 0xd5b60 is damage_object_model_info (retail inlines it
 // there but calls it at the first use). Retail calls 0xd5b60 after the parent walk, but there the link-time
 // inliner inlines it (1986 bytes, 661); called before the walk it stays a call (544, 470 with the original
@@ -3745,6 +3747,9 @@ enum
 // predicate 392, short region selector 455, renamed parent slot and pass object 371, child/absorption names 371,
 // conditional model index 371, and model index inside the info arm 371. NOT kept: all other forms tie or raise
 // the score and leave the first flag home.
+// Completed count at the join 400, count after link 371, shared original-target test 547, report status first 498,
+// reverse while 371, shared masked slot 534, shared owner team 371, and child permissions from the info result 482.
+// NOT kept: The count-after-link, reverse while and shared team forms tie and the rest regress. The flag homes remain.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

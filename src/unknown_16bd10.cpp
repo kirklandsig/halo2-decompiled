@@ -1433,6 +1433,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // B). Reading on 121: the animation arm's zero copy (`movaps xmm0, xmm1`, 3 bytes) moves the field-of-view tail, so 14 jumps
 // to it differ only in their target; the copy follows from the zero's register (XMM1 here, XMM0 in retail), which the
 // plane length sets. Body unchanged.
+// Copied-normal address after or before the copy 148/148, write through the normal address 126.
+// Shared live direction on those forms 393/394/378. Dot-local normal address with original or shared
+// live direction 148/393. NOT kept: The forms with a shared live direction can recover the j preload,
+// but keep zero in XMM1 and change the copied normal's registers and product schedule.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
