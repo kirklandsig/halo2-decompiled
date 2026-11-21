@@ -1472,6 +1472,13 @@ static __forceinline long real_to_long(real value);
 // prop state and the actor swap ESI/EDI); the pointer formed after the predicted offset 432; main's body with no facing
 // pointer 517; an AI object pointer for the velocity reads 435 / 416 (lane 1 r90's numbers). Still BLOCKED-BY 0x25d740's
 // expansion at this site.
+// M3 lane 12 r171 (H2M fast; control 382, aligned 155, register-masked 105): the reject path as `local_2 = false;` and a
+// goto to the function's single return, the body unnested, 382 (same code: the false block's cloned return still lands
+// at the end, 21 calls); the facing vector bound as `vector3f const &` to the view's field 382, the object velocity bound
+// as `vector3f const &` 382 (same code each); the near arm's flag set ahead of the facing copy 382 (aligned 159); the
+// facing pointer formed straight from the 0x25d740 call with no view local 381 (aligned 151, masked 108: the first dot
+// then loads the state's field first, retail's operand order; a gain of 1, not kept); that with the velocity read
+// through an AI object pointer at each use 486 (1924 B, masked 98). Body unchanged.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
