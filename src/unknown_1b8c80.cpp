@@ -956,6 +956,15 @@ extern "C" void _ReadWriteBarrier(void);
 // and the 0x26c value to EDX, as the volatile forms. Reading: retail needs both the load in the entry block and a block
 // boundary between the actor's add and the 0x26c compare; a real statement there or a loop preheader gives both, a
 // pinned copy alone does not. No loop spelling found that is removed after the hoist.
+// M3 lane 6 r220 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the compiler's write-only barrier in place of the
+// read/write barrier 6 (same code: the slot load still sinks, so the barrier is not what holds it below the branch); the busy
+// test through a file-local inline `actor->unknown26c == NONE` predicate, no barrier, 44 (208 B), with the barrier inside the
+// predicate 6 (same code); the state taken after the actor lookup by a 4-byte memcpy of the parameter, no barrier, 44; the
+// state as a pointer-to-integer round trip after the lookup, no barrier, 44. Compile-only (exact here, each the barrier or
+// no-barrier code): a label ahead of the busy test, the busy test inside `do ... while (0)`, an inline getter returning the
+// 0x26c field, a result-style inline predicate, the barrier inside an inline lookup helper, the state defined or assigned
+// again after the barrier. Diagnostics: a NULL test of the state after the lookup loads the slot before the compare but
+// moves the data base to ESI; a slot read in the join block loads it after the compare.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
