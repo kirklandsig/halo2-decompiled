@@ -1692,6 +1692,9 @@ PRIVATE inline long score_string_list_1608e0()
 // conversion as retail, but computed ahead of the lower test where retail converts after it); the clamp written as
 // `else if (scroll < 0) scroll = 0; else { limit; if (scroll > limit) scroll = limit; }` 710 (2856 B); the named limit
 // with the screen height ahead of the width 693 (2879 B); that with the fade count not volatile 709 (2856 B).
+// Existing player accessor for the viewer, row or both 721/685/719; viewer, row or both by reference
+// 721/685/719; typed score member with viewer or both 721/719. NOT kept: the accessor preserves a
+// sentinel branch after 16-bit masking and leaves the frame at 0x798.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

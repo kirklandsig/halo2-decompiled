@@ -3251,6 +3251,11 @@ void function_c5740(long unit_index, bool start)
 // common header type for both acquisitions, pool reference, common post-gate headers only,
 // read-only arrays, and early masked unit index with separate arrays: 97 each.
 // NOT kept: the same header data stays live across the gate and the material stays in BP.
+// Combined direct-slot gate or its failed arm first 97/97; conditional slot and separate fallback
+// tags 123; returned weapon or final definition call 97/97; borrowed fallback or weapon tag fields
+// 100/90; immutable tag values and returned final call 97. NOT kept: 90 gains seven at 350 bytes and
+// leaves the different prologue, pool-data lifetime and a spare field-address instruction. The
+// 331-byte form changes 0xcf040.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5662,6 +5667,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // 169/169/169/169. Named forward terms before or after the transverse sum: real 169/169,
 // double 197/197. NOT kept: the copy and real terms leave the early up.i read. The double
 // terms enlarge the body and change the caller's reduced score.
+// Full forward memmove with staged second cross, ordinary crosses, a bound aim source or a zero
+// predicate 175 each. Direct zero predicate and named magnitude with equality or zero predicate
+// 169/169/169; zero-first equality 179. NOT kept: memmove adds a call and raises the caller's reduced
+// score. The zero-first test reaches 767 bytes but increases the score.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9881,6 +9890,10 @@ struct s_unit_melee_collision
 // range read at each product 529/529/536/536.
 // NOT kept: all repeated-range forms recover the 0x17c frame. The pool forms align through the
 // first argument load (first difference +0xd) but reach 2243 bytes, and every repeated-range score rises.
+// Point setter, normal setter or both with the range snapshot 494/494/506; the same forms with per-
+// product range 519/521/509; normal-first or byte copies with per-product range 531/531. NOT kept:
+// both setters with per-product range recover 0x17c and 2229 bytes but score 509, with the pool load
+// and fan registers still displaced.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
