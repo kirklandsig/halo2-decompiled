@@ -3501,6 +3501,9 @@ struct s_ammo_conversion_entry
 // arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
 // and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
 // bank shortens the body, and retaining the tag bank does not recover the destination save.
+// Conversion candidate as mutable or const reference before the match test 214/214;
+// with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
+// NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3843,6 +3846,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // with separate balance and heat blocks, balance and minimum blocks, heat and minimum
 // blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
 // the extra frame word and the early magazine tag spill.
+// Reduced control 636. Captured tag array indexed throughout 752; tag element reference 636;
+// runtime barrel indexed throughout 598; runtime and tag indexed 732; runtime indexed with tag reference 598;
+// runtime element reference 636, with indexed tag 752, with tag reference 636.
+// NOT kept: full check of the indexed runtime form scores 645 and shortens to 2518 bytes.
+// The 0x1c60 stack probe returns, but the barrel offset is formed after the wake call and still takes EBX.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4339,6 +4347,11 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Boolean activity through heat 1431.
 // Byte activity through heat 1431.
 // NOT kept: The animation-only forms gain two at retail length, below the keep threshold. The wider spans raise the score. All retain the 0x34 frame, the pool and offset registers and the early dual spill. The original activity accumulator is restored.
+// Persistent weapon/tag names, player/weapon names, weapon/scale names, and tag/player/weapon/scale names,
+// target/heat names, trigger outputs/heat names, barrel stop outputs/activity names, and all phase names: 1412 each.
+// Flag-first selected barrel value 1423, tag field reference 1578, reference with shifted control bit 1577,
+// and separate selected-barrel assignments 1426. NOT kept: the names leave the 0x34 frame and early dual spill.
+// The flag-first forms grow the body and allocate 0x34 with a value or 0x3c with a reference.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
