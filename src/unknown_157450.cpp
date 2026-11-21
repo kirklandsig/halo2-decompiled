@@ -483,6 +483,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 23 (was 23): the word mask's one reload ahead of the first jne, and present's update in EBX remain.
+// M3 lane 6 r223 (h2m fast; control 23): retail's change block ORs the reloaded word register with present read from
+// memory (`or ecx, [esp+0x10]`) and compares present loaded into ESI, the pattern of a plain spilled local, while the
+// playing update is a memory OR (`or [esp+0x14], edx`). Forms: the mask stored as one expression with present first
+// (`present_teams | old_team_mask`) 77 (alignment `jmp` before the team loop); the team local as `char` 29 (byte compare);
+// a plain present with the one-expression store and the engine read as `g_55e4d0[globals->engine_index]` 122 (375 B);
+// a plain present, the one-expression store and the mask read and stored through `globals->team_mask` 139 (368 B), with
+// the engine read through globals as well 143 (363 B). Diagnostic, restored at once: the volatile moved from present to
+// playing 62 (frame 0xc, globals re-read after the loop; a volatile update is load/or/store, not retail's memory OR).
 // MiniMax H (11-20): no new form, no lower score (23): the old team mask still reloads narrowly for the compare and
 // once more for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares
 // that register with the OR for the store; a dword mask with a dword OR and a word store (33), the same with the
