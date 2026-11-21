@@ -887,6 +887,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // displacement before table, or typed table before ordinal 606/606/606/606.
 // With the signed-byte slot 699/699/699/699. NOT kept: the short forms gain
 // one point and retain the cluster-base, provider and palette registers.
+// M3 lane 8 r212 (h2m fast, control 607): the found flag declared ahead of the out index and the provider call 609; the
+// three source defaults stored ahead of the provider call 713 (3836 B); the slot test reading the byte field directly with
+// the short local kept for the arm 728 (3847 B); the provider result bound to a `long const &` 607 (same code); the
+// three source defaults stored weight, index, kind 607 (same code). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

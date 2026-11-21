@@ -270,6 +270,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // ahead of the fill loop 322 [318]; the found arm's index store after the gain/portal/cluster/count stores 289 [296]; the fill
 // loop's order store after the distance reset 290 [296]; the seed bit set ahead of the seed stores 375 [368]. Still BLOCKED-BY
 // 0x14b240's write summary (0x18ae80's file held this round).
+// M3 lane 8 r212 (h2m fast with 0x18dc90 and 0x14b240, 0x14b240 MATCH; control 287): the fill loop's order store after
+// the valid test 290; the path list pointer const 287 (same code); the other cluster's sound index named once in the walk
+// 322; the sound compare written cluster first 287 (same code); the found arm's index store and step as two statements 287
+// (same code). Still BLOCKED-BY 0x14b240's write summary.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -368,7 +372,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 295 (was 305): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
+// score 295 (was 295; 305 before r204): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
 // BSP table bases stay live through the walk. (Earlier header: 305, was 315.)
 // The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
 // Earlier comparisons were 315 and 354. Advancing the required index at the row latch brought the
@@ -610,6 +614,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // optional outputs 318, or all with shared fill/output ordinal 318. NOT kept: the 291 form
 // gains four. The 286 form restores the 0x428 frame but grows to 1372/1363 bytes, advances
 // outputs at their stores and leaves the BSP base loads and starting-cluster register unresolved.
+// M3 lane 8 r212 (h2m fast with 0x18d730 and 0x14b240, 0x14b240 MATCH; control 295): the fill loop's order store after
+// the valid test 296; the path list pointer const 295 (same code); the other cluster's environment index named once in
+// the walk 342; the environment compare written cluster first 295 (same code); const portal and other-cluster pointers by
+// pointer addition 295 (same code). Still BLOCKED-BY 0x14b240's write summary (ours hoists both table bases out of the
+// walk and spills one, frame 0x42c).
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

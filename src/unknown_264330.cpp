@@ -895,6 +895,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // behind the extra slot feeds our expanded 0x25c820 at the release site, not the tail); with a `short` old_state 431;
 // with `update && sample` 431; the walk through 0x26be00/0x26be30 (0x263210's idiom) re-measured 443, with the node
 // tail lookup 452 (1600 B), with the iterator's index read at each use as well 452. Body unchanged.
+// M3 lane 8 r212 (h2m fast with 0x1e34e0, 25 throughout; control 404): case 2's view in its own local 404, the completion
+// block's view in its own local 404, the case-1 tracking pointer declared in its arm 404 (same code each: the shared
+// `view` local has no register of its own); `bool update = false; bool sample = update;` 402 (1620 B, the declaration
+// order effect listed above, not kept); case 3's limit as one conditional on the weapon test 404 (same code). Ours gives
+// EBX to `sample` (the only callee-saved byte register, live across the 0x2640c0/0x2641c0 calls), so the actor index has
+// no register and stays a stack argument. Still BLOCKED-BY 0x2641c0's expansion (its noinline declaration is in another
+// lane's file).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
