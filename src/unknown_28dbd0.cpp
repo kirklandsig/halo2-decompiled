@@ -727,6 +727,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // added, cosine/projection/sine 218 (1218 B, frame 0x118 as retail, first +0xa9); on that, vector x axis subtracted with
 // cosine/projection/sine 207 (1209 B, frame 0x118, first +0xa9), sine/cosine/projection added 240 (1195 B) or
 // subtracted 238 (1198 B), sine/dot/cosine added or subtracted 236/236.
+// M3 lane 8 r215 (h2m fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the helper's four opening statements
+// (cosine C, sine S, the projection D = dot * (1 - cosine), the cross X) in six orders, the rest unchanged: C X D S 210
+// (1198 B, first +0xa9), C D S X 183, S C X D 238 (1198 B), C S D X 226, S C D X 182, C X S D 239 (1198 B). Reading
+// (retail listing): retail loads the 1.0 for `1 - cosine` while the dot's last product still holds XMM7, so all eight
+// XMM registers are busy and the heading's zero k is dropped and rematerialised (a memory 0.0, then `xorps xmm7`); ours
+// loads the 1.0 after the dot's last add, into the freed XMM7, and keeps the zero live.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

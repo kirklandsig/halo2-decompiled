@@ -745,6 +745,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // diff: the loop head's subtraction order and root store, the near rows' `y * cos` operand sides and cosine/sine slots
 // (+0x18/+0x14 for retail's +0x28/+0x1c), the second normalization's store order, the tangent dot's term order, the
 // second side's arm order, the wrapped angle's compare and slot, and the emitter reading the angle element at each use.
+// M3 lane 4 r241 (H2M_FAST with 0x298c30/0x29a190; control 305, aligned 175): retail's emission counter is a 16-bit BP
+// (`movsx eax, bp`, the word store from BP), the outer counter BX and arg_3 EDI loaded after `push edi`. `short local_6` 469
+// (1686 B, `ret 0x18`, arg_3 in EBX; 0x29a190 684); with a dead read of arg_3 through its address (the arg_0 idiom) after the
+// arg_0 read 410 (1706 B, `ret 0x1c`, `movsx eax, bp` as retail, but arg_3 EBX and the outer counter DI; 0x29a190 127), ahead
+// of the arg_0 read 410, the address read used in the side test 410. Body unchanged.
 // Facing products staged across negative x, the negative endpoint or positive x, with real
 // or double products, 316 in all six forms. Full facing test after negative x or after the
 // negative endpoint 332/336. The 0x64 frame agrees and unity still uses XMM1 in the staged forms.

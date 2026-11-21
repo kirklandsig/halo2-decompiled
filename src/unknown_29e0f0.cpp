@@ -10,7 +10,7 @@
 
 struct s_29de20 { short field_0; short field_2; short field_4; };
 struct s_29de21 { s_29de20 field_0[30]; short field_b4; };
-short function_29de20(short arg_1, s_29de21 *arg_0, point3f const *arg_2, long arg_3);
+short function_29de20(short arg_1, point3f const *arg_2, s_29de21 *arg_0, long arg_3);
 
 struct s_29e0f0 { long field_0; point3f *field_4; };
 struct s_29e0f1 { byte field_0[0x40]; long field_40; s_29e0f0 *field_44; };
@@ -79,7 +79,17 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 321 (was 321): The 0x64 frame and selected defaults agree. First +0x2c stores best distance at
+// score 290 (was 321): 0x29de20 takes (index, point, table, arg): retail sets the table (ECX, 0x29e568) before the
+// point (ESI, 0x29e56a), last to first in the declared order, and 0x29de20 and its other caller 0x29de90 still match
+// (kept at review, plain check 290 at 1570 bytes). HELD (lane 5 r225, not kept): a full match of this function needs
+// two more copies of the file-local distance helper above (0x29e3b1), one with a vector local per call site and
+// the sum written in the order retail squares the components there (k, i, j for the marker leg; j, k, i for the two
+// route legs); three per-site copies of one helper are the score-picked twin form review reverts. The rest of that
+// form (the 4-byte start copy, the found flag ahead of it, the record index recomputed after each step, the output
+// entry and record pointers, the repeated false store at the no-selection exit) is match-only. Patch:
+// held-29e0f0-match-lane5-r225 (coordinator). A match without the twins needs another way to get those orders.
+// Earlier at 321 (was 321): the callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
+// The 0x64 frame and selected defaults agree. First +0x2c stores best distance at
 // ESP+0x3c instead of +0x38. The callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
 // group index, EBX for the group table and the record; retail the reverse), and the pass scan's record index is
 // strength-reduced into a callee-saved register where retail recomputes it from the record base at the latch.
@@ -89,6 +99,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // reverse), and the three -1 homes and the best-distance float sit at 0x24/0x0c/0x2c and 0x40 against retail's
 // 0x44/0x28/0x24 and 0x38.
 // Earlier 321 (was 367; 382 before MiniMax G's memset and bit-vector group form): retail's root group table and pool table take EBX and EBP the other way round, the best distance and the selected indexes have different stack homes, and the found flag and local_29 sit in other slots (retail: the dead argument slot and a dword at +0x4c). The group loop shares the bitmap mask and address where retail recomputes them.
+// Earlier 367 (was 367; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// score 321 (was 367; 382 before MiniMax G's memset and bit-vector group form): retail's root group table and pool table take EBX and EBP the other way round, the best distance and the selected indexes have different stack homes, and the found flag and local_29 sit in other slots (retail: the dead argument slot and a dword at +0x4c). The group loop shares the bitmap mask and address where retail recomputes them.
 // M3 lane 4 r230 (fast with 0x29e730/0x29de20, both MATCH; control 367, difflib-aligned 323, register/offset-masked 135).
 // Retail's output loop indexes the output by the count each pass (`imul eax, eax, 0x1c`), walks a separate cursor (SI)
 // and keeps the group's record in EDI. The output written to `&arg_4->field_30[local_37]` with a `short` cursor copied
@@ -782,6 +794,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // local_20 `long` 321 (same code), with local_29 `long` 414, the record index `long` 465 (1547 bytes), with local_29
 // `long` 321 (1548 bytes), the step local_26 `long` 460 (1550 bytes), with local_29 `long` 319 (1551 bytes, under the
 // bar). Diagnostic only: `else local_4 = false` on 321 460 (1579 bytes).
+// Bounded for, index before bitmap, both, immutable early index, separate record guards,
+// early index with separate guards, immutable record base/index, and named range predicate all 321.
+// The best-distance slot and reduced record-index induction still differ.
 // M3 lane 3 r287 (H2M_FAST, control 321, aligned 218 / masked 96): the point bitmap's set, test or both through the
 // existing bit_vector_set / bit_vector_test 321 each; the root pointer as a ternary 321; the table range test joined to
 // the root tests with `&&` 321; the point scan as `for (...; local_23 < count; ++local_23) { if (group != local_15)
@@ -875,7 +890,7 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                                 {
                                     point3f *local_34 = &local_22->field_4[local_28];
                                     real local_35 = function_29e3b1(local_34, arg_0) + function_29e3b1(local_30, local_34) + local_31;
-                                    if (best_distance > local_35 && function_29de20(local_33, arg_3, arg_0, arg_1) == 1)
+                                    if (best_distance > local_35 && function_29de20(local_33, arg_0, arg_3, arg_1) == 1)
                                     {
                                         best_distance = local_35;
                                         local_0 = local_15;

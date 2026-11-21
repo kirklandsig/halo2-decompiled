@@ -856,6 +856,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // all three 1460, kinetic direction normalized in the force output 1433, translated impact point aggregate
 // 1349, both projections through component setters 1524. NOT kept: all regress from the reduced control. The
 // 1374 and 1349 forms reach retail length but retain a frame difference.
+// M3 lane 16 r166 (fast with 0x2056e0, MATCH each run; control 1346, difflib-aligned 1399, register-and-slot-masked 920).
+// Retail's contact pass loads the counter once from its home, forms the contact with `mov eax, edx; imul eax, eax, 0xd8;
+// lea edi, [eax + ebp + 0xb10]` ahead of the disabled test, then multiplies the same register by 0x4c and by 0x3c: a
+// copy and an in-place multiply each time, the shape an index conversion leaves. A contact pointer at the top of the
+// pass 1445 (6179 B, re-measure; still stepped); that with `(dword)` on the index in the three products 1445 (same code:
+// the conversion folds); `(dword)` on every indexed access without the pointer 1347 (6238 B, retail's length; masked
+// 911); a dword counter under a signed test 1347 (the same code as that), with the contact pointer 1445; diagnostic,
+// the index masked `& 0xffff` in the three products with the contact pointer 1434 (6320 B, aligned 1242, masked 788:
+// the three per-pass multiplies appear and nothing is stepped, at the cost of three `and`s). Body unchanged.
 // contact normalization returns success, early failure 1368, impact normalization returns success, early
 // failure 1386, contact normalization and impact normalization returns success, early failure 1368,
 // contact normalization returns success, test result 1350, impact normalization returns success, test
@@ -864,6 +873,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // returns success, early success 1405.
 // NOT kept: All eight forms retain the 0x5d0 frame and raise the score. Three reach retail length.
 // The 0x5d0 frame exceeds 0x58c. The component and velocity homes remain displaced.
+// M3 lane 2 r129 (h2m fast, 0x2056e0 MATCH each run; control 1346 at 6243 B, first loop's element pointer at +0xe4 against
+// retail's +0xe0): the first loop's offset and velocity rows bound as references instead of pointers 1346 (same code);
+// local_2 declared ahead of local_1 1346 (same code: retail stores local_2's home first, ours local_1's, unchanged); the
+// ray record local_19 declared at function scope 1386 (6243 B); the magnitude helper taking its vector by value (the
+// copy as its parameter) 1346 (same code: still one 12-byte copy per site); the contact loop placed under the query
+// call's `count > 0` test 1456 (6257 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

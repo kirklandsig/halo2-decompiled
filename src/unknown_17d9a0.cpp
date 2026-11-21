@@ -1073,6 +1073,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Named angular product in the combined test and the three nested forms 726 each.
 // Named reciprocal-distance result after the angular test 574.
 // NOT kept: the nested tests tie. The named limit grows the frame and restores no tag/count home.
+// Primary count reused after secondary admission, before its first test, or as the initial bound 533/532/532.
+// With a mandatory first collection loop 551/551/551; with the primary count declared before the secondary count 533/532.
+// The two- and three-point gains leave the definition at ESP+0xb4 and the addressed counts displaced.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

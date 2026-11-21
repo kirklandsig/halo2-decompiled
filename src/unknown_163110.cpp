@@ -1228,6 +1228,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Endpoint chosen before fraction, with setter, component writes or sum 382/366/366.
 // Branch-selected endpoint with point setter or vector sum 371/377.
 // NOT kept: direct output advances the first difference to +0x15 and loses retail length.
+// Carry completed near/far/both offsets through normal orientation 119/119/135.
+// With both named offsets, sign near/far/both before orientation 163/183/191; read both x coefficients before the copies 235,
+// or combine the early reads with both early signs 297. The coefficient preload and zero register still differ.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

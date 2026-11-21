@@ -3000,6 +3000,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // across separate scans 158, shared table with bounded scans 179, block-scoped bounded cursors 364.
 // NOT kept: the shared table ties and the other forms regress at retail length. Contact-head address
 // encoding and the player iterator's table register still differ.
+// Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
+// each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
+// The contact-head address remains the first difference and the shared reset shortens the body.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
