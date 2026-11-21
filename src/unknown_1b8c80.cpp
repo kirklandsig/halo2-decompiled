@@ -970,6 +970,11 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x26c field, a result-style inline predicate, the barrier inside an inline lookup helper, the state defined or assigned
 // again after the barrier. Diagnostics: a NULL test of the state after the lookup loads the slot before the compare but
 // moves the data base to ESI; a slot read in the join block loads it after the compare.
+// M3 lane 15 r127 (h2m fast; control 6): the state picked by the busy test (`state = actor->unknown26c == NONE ? slot :
+// NULL`, then `if (state)`) 57 (215 B, a branchless select); the slot parameter typed `long` (table entry cast) 6; the
+// third parameter typed `long` 6; `__assume(state != NULL)` with a redundant `state &&` in the busy test 6 (the guard goes
+// before allocation); the flags test through the slot's own data member (`slot->unknownc[0x22 - 0xc] & 4`) 6 (all the
+// 6s the same code).
 // M3 lane 1 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; a compile-only build of the file is exact
 // here): the slot's 0x1c seat-selection view (0x1ba5c0's) used for both the flags test and the point copy, formed at the
 // top with the barrier 29 (the pool pointer takes EDX, the data base folds into the add, ESI pushed at entry); formed
