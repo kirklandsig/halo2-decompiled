@@ -607,6 +607,15 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // the first 166, with both 166; on the 0x1e8d50 entry, the child's seat read through a no-code inline accessor at the NONE
 // test, at the flags index or both, and the child's unit through one, 165 each (the child test keeps `test cl, 1`).
 // Still BLOCKED-BY 0xd0590.
+// M3 lane 2 r127 (fast with 0x1e83c0 and 0x1e8d50, both MATCH; control 117): the getter filling its result in an if/else
+// with the caller's `result = false` moved after the lookup (the brief's getter-plus-late-result shape) 128 (first +0x0);
+// the if/else getter alone 117 (same code); on the 0x1e8d50 entry the child's seat through an element pointer 165 (the
+// child test keeps `test cl, 1`); on the 0x1e8d50 entry case 4's parent read ahead of the 0x13cb40 call 166 (2312 B:
+// the parent is then in ESI as retail, and case 4 differs only in the definition pointer, which retail loads over the
+// dying index in EAX where ours takes EDX, the seat-flag temporaries after it, 0xd0590's argument setup order and the
+// child test); the parent read ahead of the call alone 118 (re-measured; was 115). The definition pointer, the child
+// test and the getter's table are the same allocator choice as 0xec4f0's: retail loads into the register that has just
+// died, ours into a fresh one.
 // M3 lane 5 r222 (H2M_FAST with 0x1e83c0, MATCH; control 117, aligned 57, register-masked 4): case 4's parent (retail
 // ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
 // the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child

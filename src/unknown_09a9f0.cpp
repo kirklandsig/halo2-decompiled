@@ -1032,6 +1032,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // indexed `(dword)object_index` re-measured 42 (shared index). Reading: the scaled index is shared whenever the object
 // read is dominated by the header test, even across a join; retail's recomputed index needs a path to the object read
 // that skips the header test until after CSE. Body unchanged.
+// M3 lane 12 r166 (fast screen; control 8), all on this body: `result = false;` again at the top of the flagged arm 63;
+// the second store moved after the object field store 69; the object read through a const-reference-bound header
+// pointer taken before the second store 64; the flag test through a const-reference-bound header pointer 40 (178 B,
+// first difference back at +0x3a); the bool declared after the creation call 34. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1505,6 +1509,12 @@ bool c_projectile_type::v8(long a, long b)
 // NONE block 12; the call's mask from `b` with the object looked up after the call 18. Diagnostic (semantics changed,
 // reverted): the call's mask 0x3fe 13, still swapped. Reading: only a two-use group computation anchored ahead of the NONE
 // compare gives retail's head pair with the mask.
+// M3 lane 4 r241 (H2M_FAST; control 5): both real checks through one forceinline bool helper (stored, value) used in each
+// test, with the mask 15, with the word read 8; 0xa5e70 given the base slot's unused third parameter (a state size) with
+// every caller (0xa3a00, 0xa02e0, 0xa0be0, 0x9d450, all still MATCH) passing its own `c`: word read 5, mask 12 (the unread
+// argument adds no use that moves the pair); with the mask, the group index masked through a forceinline absolute-index
+// helper 12, the index read by value and masked in place inside the NONE block 12, the entry started at the group data and
+// stepped by `+= (index & 0xffff) * 12` 12. All reverted.
 // M3 lane 7 r201 (fast with 0xa5e70, 0xa02e0, 0xa0be0, 0xa3a00 and 0x9d450, matched each time; word read 5, mask control
 // 12): 0xa5e70 given a fourth, unused parameter taking the definition by const reference, every v27 passing `this`, and no
 // definition copy here, 55 (the unused argument and its temporary are both removed: no `push ecx`, so the dead store

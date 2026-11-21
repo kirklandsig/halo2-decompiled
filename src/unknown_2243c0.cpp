@@ -217,6 +217,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// score 117 (was 117): the fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
+// and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax D (11-20, round 132): no new form, no lower score (117): the body is unchanged. Masking the fallback tag index
 // in place gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX and hoists its load above the frame
 // (152), while the word cast keeps the table in EDI and gives `movzx eax, dx` (117); the stage and pass homes (ESI and EBP
@@ -231,8 +233,6 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // but gives `movzx eax, dx` (117), and masking the index inside the subscript reproduces retail's `and` only
 // with that same table move. The stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused
 // element loads still differ. No form found this round.
-// score 117 (was 117): the fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
-// and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax C (11-15): no new form kept, no lower score (117, was 117): the fallback path still masks the tag index with
 // a word load (`movzx eax, dx`) where retail masks the 32-bit value in place (`and edx, 0xffff`); masking the index
 // inside the subscript reproduces retail's `and` but moves the tag table from EDI into ECX and hoists its load above
@@ -852,6 +852,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // as one chained assignment; the pass definition bound as `byte const *const &` with local_10 formed from it; the pass
 // tag bound as `long const &` to the element's field; the pass tag masked at its definition; one to seven unused
 // initialised locals at the top (flat: the last two lookups' registers are not a symbol-count phase). Body unchanged.
+// M3 lane 12 r166 (fast with 0x2243c0 and 0x224d90; control 117; the score line moved to the top of this note). On main's
+// body: the kind, definition, format, element and shader-chain pointers each named and read through a const-reference
+// binding (the shape of the record helpers private to another file) 120 (first +0x50: the fallback's in-place `and edx,
+// 0xffff` then appears with the table kept in EDI, but arg_3/arg_4 take EBP/EDX for retail's ESI/EBP and the pass load is
+// unfused). On round 59's chain rebuilt here 8 (with vertex_input_index for the search and the +0xd8 read just before
+// 0x173ba0; 47 with it read before the search): the shader definition and its 0x20 block named and bound 76 (546 B,
+// 0x224d90 lost: arg_0 leaves EAX); only the shader definition named and bound 36, only the block 36 (first +0x50: the
+// head's argument homes rotate, the shader/material registers do not reach retail's); the material index reference bound
+// ahead of the material lookup 113 (551 B, 0x224d90 lost). Match-only chain; body unchanged.
 // M3 lane 2 r126 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; main's body unchanged at 117): lane 16 r152's
 // saved reference chain rebuilt on this file 8 at +0x9e (left: the pass definition EDX where retail EAX, the material tag
 // ECX where retail EDX, the material definition EDX where retail EDI, the zero after the material lookup). On the chain:

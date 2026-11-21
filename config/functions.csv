@@ -5134,7 +5134,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00170bb0,80,game,speed,a16 pad,,,00170c00,src/unknown_170d70.cpp,matched
 00170c00,355,game,unknown,a16,,,001424f0,src/unknown_170d70.cpp,matched
 00170d70,599,game,speed,a16 pad,,,,src/unknown_170d70.cpp,matched
-00170fd0,2142,game,speed,a16 pad,,,0003f500 000a74c0 0011bed0 00171830 00171d90,src/unknown_170d70.cpp,todo
+00170fd0,2142,game,speed,a16 pad,,,0003f500 000a74c0 0011bed0 00171830 00171d90,src/unknown_170d70.cpp,matched
 00171830,1219,game,speed,a16 pad,,,0011bed0 001697c0 00171d00,src/unknown_170d70.cpp,todo
 00171d00,130,game,speed,a16 pad,,,001697c0,src/unknown_170d70.cpp,matched
 00171d90,1464,game,speed,a16 pad,,,,src/unknown_170d70.cpp,todo
@@ -6951,7 +6951,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 001e02f0,421,game,speed,a16 pad,,,001dfb90 001e0d50 001e1150 001e1a00 001e3b60 00203d70 00203f60 0028e090 0028e160,src/unknown_1e1f20.cpp,matched
 001e04a0,525,game,speed,a16 pad,,,000b7930 000b7b40 000b8540 000cccd0 000ccff0 000cd0c0 000d5c90 001e4990 001e4a10 001e53e0,src/unknown_1e3920.cpp,matched
 001e06b0,401,game,speed,a16 pad,,,001e46c0,src/unknown_1e1f20.cpp,matched
-001e0850,1272,game,speed,a16 pad,,,00030bf0 000a7b30 000b7930 000b7b40 000b8540 000b9c60 000b9dd0 000b9fc0 000cbd50 000e6900 0011dfb0 001e0160 001e02f0 001e04a0 001e06b0 001e4990 001e4a50 001f34b0 002036c0 00203900 00210850 0028dab0 0028e200,src/unknown_1e3920.cpp,todo
+001e0850,1272,game,speed,a16 pad,,,00030bf0 000a7b30 000b7930 000b7b40 000b8540 000b9c60 000b9dd0 000b9fc0 000cbd50 000e6900 0011dfb0 001e0160 001e02f0 001e04a0 001e06b0 001e4990 001e4a50 001f34b0 002036c0 00203900 00210850 0028dab0 0028e200,src/unknown_1e3920.cpp,matched
 001e0d50,112,game,speed,a16 pad,,,000cbf60 001e1250 001e1a00,src/unknown_1e1f20.cpp,matched
 001e0dc0,539,game,unknown,a16,,,000caf00 000d5c90 000e6900 00114b60 001df5d0 001e0160 001e11b0 001e4a10,src/unknown_1e0dc0.cpp,matched
 001e0fe0,365,game,speed,a16 pad,,,000e58e0 00109e00 001e0850 001e11b0 00200e60 002901e0,src/unknown_1e3920.cpp,matched

@@ -1069,6 +1069,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // to -1 559 (the 1.0f is still divided in place and loaded again), and that sign used as the reciprocal's numerator (a
 // diagnostic only) 577 (3631 B: still `divss` in place on the register that held it). In every form the constant is
 // rematerialised, so nothing here makes this build keep 1.0f across the cross product as retail does.
+// Primary count reused after secondary admission, before its first test, or as the initial bound 533/532/532.
+// With a mandatory first collection loop 551/551/551; with the primary count declared before the secondary count 533/532.
+// The two- and three-point gains leave the definition at ESP+0xb4 and the addressed counts displaced.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
