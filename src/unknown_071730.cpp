@@ -469,6 +469,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // both expand); the type test as an early `return` 457 (1594 B); the second live-state test written positively with the
 // main work in its arm and the mode-14 exit in the else 376 (same code); the two later live tests through the session's
 // own live-test member (`function_058d20()`) 376 (same code). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 15 r126 (h2m fast with 0x5b080, 0x72140, 0x71ff0 and 0x71e00, all MATCH; control 376): the property value
+// declared and zeroed ahead of the player-count block (retail stores its seven zero dwords there) 376 (same code); the
+// data getter as `local_2 ? local_2->get_data_4a00() : NULL` (a folded null test: the getter is then called as in
+// retail) 452 (1565 B: frame 0x3e0, the result byte in BL, the owner in ESI and the second session in EBP where retail
+// keeps the result at [esp + 0xf], the state in EBP and the owner in EBX), with the early zeroing as well 447; the data
+// getter read ahead of the surface lookup 435 (1573 B); the function's outer bare block removed 376 (same code).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

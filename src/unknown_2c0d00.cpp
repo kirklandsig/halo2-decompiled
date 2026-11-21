@@ -791,6 +791,16 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 906 form: actor_index in EBP for retail's EBX with the zero in EBX for EBP (ours hoists the object-table global into
 // ESI at the entry, retail loads it in each block), the skip flag in BL where retail keeps it at [esp+0x12] (sete to
 // memory), and the other-actor branch's layout.
+// M3 lane 2 r128 (H2M_FAST with 0x29a190/0x29cbb0/0x2c41b0/0x2c0d00, which did not move; control 925 = plain; [aligned,
+// masked] difflib counts): lane 5 r218's 514 lead rebuilt on today's file 514 [170, 77] at 3740 B (all five forms
+// match-only). On it: the entry dot's k and j products written previous-direction first 514 (same code); the entry dot
+// through the existing dot3f 503 [170, 74] at retail's 3731 B (only the sphere loop's XMM numbers and the padding move);
+// on that the object's squared distance through length_sq3f 503 (same code); `bool enabled = true;` with the per-object
+// defaults plus the sphere test written `!(squared <= r * r)` 498 [168, 64]; on that a long type local for the four arm
+// tests 495 [150, 52] at 3745 B (retail's `movsx eax`/`push eax`). Left on 495: the object-table and component-table
+// globals loaded ahead of the index where retail scales the index first (loop head, type 11, sphere node), the object
+// distance radius computed first (retail after the three differences), the marker-loop and sphere-loop dot term orders,
+// the location copy's scratch registers and the loop-entry `jmp` over padding. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -11,6 +11,7 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
+// score 430 (was 430): r275 and lane 11 r145 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
 // MiniMax E (11-20): no new form, no lower score (430): the frame 0x74a4 agrees with retail's, but the head still differs - retail forms the entry address with a lea into EBX from the scaled index and keeps the tag table in ESI from there to the bottom arm, while this build reads the tag through a displacement from the scaled index and hoists the table into ECX at the top, with the entry spilled at [esp+0x48] against retail's [esp+0x30]; making the header's geometry lookup take the caller's entry pointer leaves 0x458d0 and 0x45a80 matched but gives 449 here, so the lookup stays index-based.
 // MiniMax E (11-16): no new form tried this round, no lower score (443): the frame still agrees with retail's, and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from a sign-extended index before the
@@ -22,7 +23,6 @@ struct s_visibility_bound_record
 // them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
-// score 430 (was 430): r275 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
 // M3 lane 15 r124 (H2M_FAST with 0x458d0 and 0x45a80, both MATCH each run; control 430): the entry index read through
 // its address for the entry and the lookup (the spelling of 0x458d0/0x45a80) 430 (same code); a redundant `if (0 < view
 // count)` guard around the view loop 499 (1792 B); a redundant `if (0 < part count)` guard around the part loop 454 (1765
@@ -626,6 +626,12 @@ struct s_visibility_bound_record
 // either argument order 446 / 446 (1767 B: built on the stack and copied with movaps), through the existing four-real
 // vector's set member 430 (as vector3f_assign), i stored and then j and k through a two-real setter 427 (pointer
 // anchored on i). Body unchanged.
+// M3 lane 11 r145 (H2M fast with 0x458d0 and 0x45a80, both MATCH each run; control 430): the geometry pointer bound to a
+// `byte *const &` and read through it 451; the entry pointer bound to an `s_44940_entry *const &` 430 (same code); a redundant
+// `if (0 < frustum count)` guard around the frustum loop 467 (1776 B); the plane stores through `query.planes[j]` 441 (1760 B,
+// first difference +0x7). The part centre through the existing transform4x3f_apply_point (0x142570) 633 (1539 B, a call);
+// with `inline` on 0x142570's definition as well (diagnostic) it is inlined here, 432 at 1744 B, but 0x1396c7 (48) and
+// 0x24e59f (42) then stop matching (retail calls it there), so 0x142570 stays out of line. Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

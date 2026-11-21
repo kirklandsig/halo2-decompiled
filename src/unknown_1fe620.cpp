@@ -385,6 +385,13 @@ static __forceinline long real_to_long(real value);
 // declaration 398; the sign flip through vector_products.h's vector3f_negate_ab in place 373 (same code). Retail's expanded
 // 0x210850 keeps its point in ESI and its output in EDI and lays the NONE path's copy out at the end, jumping past the
 // random-state reload: BLOCKED-BY 0x210850.
+// M3 lane 16 r167 (H2M fast with 0x2104b0/0x210850, both matched; control 373; body unchanged): the head timer stored as
+// `(short)real_to_long(value)` with no result local 373 (same code); the inner timer stores written the same way 373
+// (same code, frame still 0x4c); the inner blocks assigning the head's timer value and result locals instead of their
+// own 402 (frame 0x50); the angular limit (+0x3c) read from its field at each of its four uses 447 (1846 B); the
+// magnitude stored by a chained assignment into its field and local 373 (same code). Retail reads +0x10, +0x14/+0x18
+// (onto the x87 stack), +0x1c, +0xc and +0x38 right after the sign step, which is what lets it forward the seed
+// through the three draws; BLOCKED-BY 0x210850 as above.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

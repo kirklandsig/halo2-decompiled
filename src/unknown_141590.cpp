@@ -564,6 +564,13 @@ static inline void quaternion_transform_vector(
 // the quaternion and vector by const reference 247 (1310 B). Reading: retail's m uses the 2.0 kept from the sine product and
 // its w2 a fresh 2.0 load after the copy, shared with the forward dot; entry registers for 1.0/2.0/cosine half/sine are
 // xmm7/6/5/4 in retail, xmm7/5/4/6 here.
+// M3 lane 2 r128 (H2M_FAST with 0x143120/0x11d000/0x30bf0, all MATCH; control 201): the transform helper's three scalars
+// re-ordered on today's body, m,w2,d 247 / m,d,w2 248 / d,m,w2 250 / d,w2,m 252 (1336 B) / w2,d,m 203 (1323 B); its dot
+// through the existing basis_dot_xzy (the i,k,j sum) as (v, q) 226 and (q, v) 236; the identity copy as memcpy 201 (same
+// code); rotation.w stored ahead of the scale 201 (same code). Reading: retail holds the first 2.0 (XMM6) only for the sine
+// product and m and reloads 2.0 after the identity copy for w2 and the doubled dots, and spills m twice (+0x18 from an
+// XMM6 copy, +0x20 from XMM4), which is the fifth cell; ours holds one 2.0 for every use and reuses +0x18. The repair path's
+// two crosses also load the other operand first in five products (three in the first, two in the second).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1683,6 +1690,12 @@ void function_143250(
 // it 939 (same code: the order is set after the homes); its subtracted product with `s21 * r5` for s21_r5 1147 (10783 B);
 // entry 37's r6_r3_r8 written `r6_r3 * r8` 1571 (10765 B). Retail keeps 143 scalar cells under the workspace, this build
 // 142; 428 of the 935 differing lines differ only in stack offsets.
+// M3 lane 2 r128 (H2M_FAST with 0x143250, MATCH; control 939, aligned 777, register/offset-masked 154; the convention is
+// already retail's: rotation in EAX, ret 4): third-band entries 23-25 in another statement order (value trees kept),
+// 25 first 1113 (10773 B), 24 first 942, 23 last 1114 (10773 B); entry 23 accumulated in place over four statements 939
+// (same code); entries 23 and 25 both accumulated 1095. Reading: the masked rows are scheduling and spill placement
+// spread over the body (retail keeps 0.071428575 in XMM5 for entries 23 and 25), and retail's one extra spill cell
+// sits below the 49-entry matrix (frame 0x300 against 0x2fc).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

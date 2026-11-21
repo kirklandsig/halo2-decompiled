@@ -715,6 +715,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // workspace with scale at the producer or at the sums 276/276 and 252/252.
 // Completing the rotation in the same field scores 282/282 and 263/263.
 // NOT kept: the velocity-field forms lengthen and keep different frame and trig homes.
+// Rotation result through the cross workspace with aggregate or component publication 292/218.
+// Heading, axis or separate subtotal into that workspace 286/286/286. Sine applied on write
+// from heading or axis 282/282, projected-axis scaled add followed by the cross sum 304.
+// NOT kept. The lowest form retains the extra frame word and increases the score.
 // M3 lane 6 r219 (H2M_FAST with 0x28dab0, MATCH throughout; control 173): the projection as `dot; projection *= 1 - cosine`
 // in the kept order 173 (same code); the helper's two vector parameters swapped at definition and call 173 (same code); the
 // sine taken in the caller right after the tilt draw (retail's `fld st(0); fsin` place) with the cosine taken after the

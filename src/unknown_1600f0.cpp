@@ -1215,7 +1215,7 @@ PRIVATE inline long score_string_list_1608e0()
 // Earlier reduced check scored 678.
 // Earlier comparison 678 in the r718 fast check.
 // MiniMax C (11-20): no new form, no lower score (679): the frame is still 0x798 against retail's 0x79c, the viewer stays in edi and the coordinate homes and the panel's timing reads still sit in this build's slots; the forms that reach retail's frame size score lower on other axes, so the body stands as found.
-// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// Earlier score line, merged (679, was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
 // P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
 // M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
 // expression (no width local) 679 (same code: left is still read once); `panel->time` as one `flag1128 || score_to_win != 1`
@@ -1656,6 +1656,22 @@ PRIVATE inline long score_string_list_1608e0()
 // player's user index read once into a `short` local 733 (2840 B); the scroll offset bound once as `real &` 740 (2840 B); the
 // player as `data + index * sizeof` (the event-player getter's shape) 679 (same code). Measured, not changed: the height
 // without its `volatile` 723 (2856 B), the fade count without it 707 (2856 B). Body unchanged.
+// M3 lane 7 r207 (h2m fast with 0x161420, MATCH; control 679): the width computed ahead of the panel's time/score
+// stores 707 (2888 B; it gives retail's second read of the window's left edge, the byte stores through the panel being
+// possible aliases, but retail's width loads follow those stores); the screen height ahead of x 698; both 701; the
+// width as long 679 (same code); the scroll element named once by reference (four uses) 740 (2840 B).
+// M3 lane 11 r144 (h2m fast with 0x161420, 0x1600f0, 0x1603f0; control 679, aligned 593, masked 374): the window's left
+// edge read as a word in x 679; x as `width / 2 - g_4b9dd2` then `+= left - 0x86` 679; the width through a file-local
+// inline taking the rectangle by pointer or by value 679 / 679 (all the same code: the left edge stays in CX for both
+// reads); the screen height computed between the width and x, or ahead of the width, 698 / 698 (2888 B, aligned 550,
+// masked 355: the height takes ESI and the top edge ECX as retail, the user index is read in each scroll arm with no
+// hoist, but the left edge then sits in BP and the panel leaves EBP); on main's body without the height's `volatile`
+// (723, 2856 B): the screen height declared ahead of the row total, with x declared there too, or at the function's
+// top 723 / 723 / 723 (same code: declaration order does not rank the height against the screen height), the screen
+// height between the width and x or ahead of the width 718 / 718 (aligned 553). Reading: retail folds both reads of
+// the left edge as memory operands because all seven registers are held there (panel EBP, viewer EBX, x EDI, screen
+// height ESI, top edge ECX), and keeps the height in memory from its definition although ESI and EDI are still free at
+// that point, so the height ranks under the screen height and x in retail and over them here.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

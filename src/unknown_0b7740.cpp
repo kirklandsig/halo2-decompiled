@@ -1223,6 +1223,17 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // for the bit-29/+0x34b reads 170 (same code each); `sample` declared at the top (diagnostic) 284 (837 B). Diagnostic:
 // 1 to 8 dead initialised longs at the top of the 170 lead 170 each, of the 166 form 166 each (the entry roles are not
 // a symbol-count tie on the leads either). Body unchanged.
+// M3 lane 13 r134 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): lane 4
+// r225's lead rebuilt 170 (826 B, aligned 100, masked 43); on it the awake test dropped (diagnostic) 337 (783 B), the
+// awake test written out through the header with `object` from header->object 316 (801 B: the three object reads share
+// one load). Diagnostics on the lead's entry roles (stores to a scratch global, removed): one extra use of the
+// matrices parameter at the top 276, of object_index at the top 279, two of the parameter at the top 273, two inside
+// the sample arm 274, `definition` forced into memory 269 (frame 0x50): none moves the entry roles. Two extra uses of
+// the parameter in the block that stores final_matrices (after the model test, ahead of the mask copy) 249 (856 B,
+// aligned 83, masked 27), three 267 (aligned 82), one 271: with two or three, object_index takes ESI with EBX pushed
+// for the +0xb3 byte as retail and the parameter a scratch register from entry (ECX, with the pool data in EDX, where
+// retail has EDX and ECX; `definition` still keeps a register). Reading: the entry roles follow the parameter's weight
+// in the final_matrices block; no natural statement was found that reads it twice more there.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
