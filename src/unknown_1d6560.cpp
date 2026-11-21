@@ -655,6 +655,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // for the flag tests 24 [0] (both the same code); the rigid body as the array pointer with `+= rigid_body_index` after the
 // type read 111 (268 B) [9], right after its definition 24 [0], and as `rigid_body_index + rigid_bodies` 24 [0] (same code).
 // None splits the index from the rigid body (retail copies the index ECX to ESI and gives the object index ECX). Body unchanged.
+// M3 lane 12 r166 (fast screen, caller 0x1d5bf0 in brackets; control 96 [0]; round 60's one-read form rebuilt 24 [0], long type
+// re-measured 89 [0]: movzx as retail but still after the kind test). On the 24 form: the object pool global in a local read
+// at both lookups 88 [0] (252 B: the model's array base folds into the add); object and absolute index typed dword 24 [0];
+// direct returns in every case of the main switch 24 [0]; the order object index, rigid body, absolute index, headers, type
+// 94 [13]; the type read straight from the pool with the headers local after it for case 0 24 [0] (same code). Colouring
+// unchanged in all (headers ESI, object index EDX, rigid body ECX in place). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -452,7 +452,7 @@ void function_3dd10(long object_index, bool force);
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
 // Earlier header 77 (merged in r284): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
-// score 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
+// Earlier score line 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
 // Earlier detail: The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // The index's zero store sinks after the outer guard's jle. In the first scan the count is spilled
@@ -899,6 +899,11 @@ void function_3dd10(long object_index, bool force);
 // by last eligible or one past last 243/246. Renamed count and mask 77. Shared eligibility bit
 // operations with unequal or signed weight bound 298/298. NOT kept: the helpers expand the
 // frame and scan. The pre-guard ordinal and scan count and mask homes still differ.
+// M3 lane 12 r166 (fast screen; control 77; the two stacked score lines merged into the first): the first scan as
+// `for (j = 0; j < choice_count; ++j)` with the ineligible choice skipped by `continue` 636 (1309 B, unrolled again); the
+// mask, weight and last updates in reverse order 77; the mask typed long 77; without the outer guard and the output
+// pointer formed ahead of the definition 102; the first scan as a `for` on `!=` with j scoped to it 77 (same code).
+// Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
