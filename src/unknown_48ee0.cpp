@@ -470,6 +470,11 @@ extern real g_4c9798[36];
 // 174 each.
 // Mode-bit or full flag-word reads before projection stores 0/1/4/7: 174/174/174/174 in each form.
 // NOT kept: these observations leave the score, length and EDX load unchanged.
+// M3 lane 5 r224 (h2m fast with 0x48e70 and 0x1cf50, both matched; control 174; still BLOCKED-BY 0x48e70 for the homes and
+// reloads): aimed at the flags register (EDX for retail's EAX): the mode chain ahead of the first plane's stores 326 (1479 B,
+// entry changes at +0x2); the inverse by if/else 174 (same code); the mode test as `!((flags >> 10) & 1)` 299 (1485 B);
+// `long mode = 2;` with the other two values from a ternary under the negated flag test 291 (1484 B); the offset block
+// read ahead of the distance 333 (1488 B).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

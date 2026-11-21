@@ -1254,6 +1254,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 133.
 // NOT kept: The quaternion forms grow the frame to 0xc4 and raise the score.
 // The 0xc0 frame exceeds 0xb4. The cross product has a separate stack home and the alignment products are scheduled differently.
+// Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
+// Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
+// NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1759,9 +1762,17 @@ struct s_item_flags_view_10b850
 // collision declaration with early sentinel 823. NOT kept: gains below eight.
 // The 0x154 frame and entry flag stores still differ.
 // MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
+// Typed item gravity bit, unscaled carrier add, both 824/824/824. Typed
+// collision prefix through position write, alone or with either or both
+// forms, 817/817/817/817. NOT kept: seven points at 4099 bytes, frame 0x154.
+// Hit-scoped prefix with both 904. Entry flag stores and the motion frame differ.
 // Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
 // or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
 // and the reused entry Boolean bytes still differ.
+// Endpoint declared before the carrier 824, early or late point setter 904/904,
+// copied-origin component or indexed integration 886/905, early ray setter 824,
+// paired point and displacement setters 824, and component writes through the query origin 824.
+// NOT kept: the tied forms retain the 0x154 frame. The point setter alone shortens the body and the copied-origin forms grow it.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

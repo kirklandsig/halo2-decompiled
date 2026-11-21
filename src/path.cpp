@@ -984,6 +984,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 287/396 or selected point and separate edge test 360/362. Pointer-only predecessor in the same
 // forms 365/408 and 414/443. NOT kept: ordinal-only recovers the frame in three forms but raises
 // the score. Pointer-only forms also raise the caller score.
+// M3 lane 4 r240 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0; control 286; the two-flag lead rebuilt 2):
+// on the 2, the truncation as a nested test 2, the surface test nested in the type-2 test 2 (same code each), the edge
+// record ahead of the point copy 136, an `else if (true)` conversion arm 2 (folded). Retail's only cross-jumped copy tails
+// in the loops are the two conversion copies the lead already nests, so the extra vanishing block is not another copy.
 // M3 lane 15 r123 (h2m fast screen with 0x270930 and 0x270750, MATCH each time, and 0x210a30, 0x2104b0, 0x26f3f0 MATCH on the
 // first runs; both builds end in `ret 0x24`). Lane 16's saved two-flag lead applied to today's file is 2 again (build/r123/
 // lead-270d90-score2.patch here): only the two reloads ahead of the scan latch, ours steps ([esp + 0x104]) then j

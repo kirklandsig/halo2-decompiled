@@ -981,6 +981,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Entry declarations with original assignments: allocation handle, record, both, reused sample,
 // handle/sample, record/sample, all three, or those plus settings, each 334.
 // NOT kept: the folded gate address, AL and the two stack slots are unchanged.
+// M3 lane 4 r240 (fast with 0x247fd0, 0x248cc0; control 334): the gate through a file-local inline taking the flags word
+// by const reference, the record by const reference or the record pointer by const reference, bool result: 417 each
+// (1665 B; still folded, but the flag lands at retail's +0x1b once main's byte temporary is gone); the byte by const
+// reference with main's steps 334 (same code); the record pointer bound by const reference at the gate 355 (with one
+// expression 355), plus the first draw into `last_sample` 317 (lane 1 r135's lead), with the bit-4 test as
+// TEST_FIELD_BIT(flag4) or through a definition local 317 (same code). Retail keeps the definition in EDI from the scale
+// rows to the bit-4 test (four home references against six here), which is what orders its home above the flag's.
 // M3 lane 15 r123 (h2m fast screen with 0x247fd0 and 0x248cc0, both MATCH each time; control 334, 245 aligned rows). Reading
 // of retail: after the 0x1751d0 call it loads the allocated index (ECX) ahead of the old list head (EAX), copies the
 // system's age through XMM0, and computes the three scale products and the age sum before any of their four stores (x

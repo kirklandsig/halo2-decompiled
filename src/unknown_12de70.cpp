@@ -760,6 +760,17 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // 0x223e00 keeps its bytes (group ESI, base EAX). The unread parameter declared first instead of last matches as well;
 // with main's block local for the test and both arguments 27 (same code as main: a local's two uses do not split).
 // Patch: build/r211/held-12e290.patch (definition, header declaration and this call). Code left as on main.
+// M3 lane 1 r145 (h2m fast with 0x12e210, which stays matched; control 27): the guard as an early return for an empty
+// cache block 103 (279 B, the release duplicated); the arm's physical object named once for its block table and page
+// shift 27 (same code); that with the field read at each use and a tail block local read through the geometry block's
+// own section-offset field 51 (EDI/EBP swap); the page shift named first in the arm 27 (same code); the loop's block read
+// through a fresh pool lookup of the cache block 114 (291 B).
+// M3 lane 8 r216 (h2m fast with 0x12e210, which stays matched; control 27, the each-use loop re-measured 27): the cache
+// block's field bound once as `s_geometry_block_info *&` at the top and used for the guard, the loop and the tail 81 (first
+// difference +0x9); that reference bound only in the loop's arm with the field read through it 27 (same code); the loop's
+// release step as a new forceinline helper taking (cache block, block index) and reading the field at each use 27 (same
+// code); the loop as `if (busy) do { ... } while (busy);` 27 (same code); the tail's root clear through a new forceinline
+// helper taking the group (offset read, count and pointer cleared) 51 (+0x9), with the each-use loop 51.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
