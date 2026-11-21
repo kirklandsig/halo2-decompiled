@@ -388,6 +388,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // through the helper, left as three reals, up as `forward + 1`, both vector pointers declared at the function top, the
 // dot through dot3f): best 84 (1399 B, six dead locals with the named or helper forms); the first normalize stays one
 // instruction long in every explicit-pointer state (the scale ranks below all three forward fields).
+// Named indexed scheduled time 142, or from a local deadline-array base 161.
+// Shared product difference for the side, corrected up, or both 64 each, or
+// 142 each with the named scheduled time. NOT kept: the product forms tie
+// and the named read lengthens the body without recovering the spill order.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1396,6 +1400,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // no named squares 364 (1449 B); the axis components read once into locals 377 (1427 B); the second axis
 // through cross3f_staged 339 (1456 B). KEPT: the second axis through the shared cross3f in place of the
 // file's private copy of it (same code, 337 reduced; the copy removed).
+// Shared diagonal calculation direct, with a named complement, with a named scaled
+// complement, or with a complement accumulator 339/356/386/386. With a shared
+// signed-pair store 380/402/367/367. NOT kept: every form shortens the matrix
+// construction and leaves the unity register and square spill different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

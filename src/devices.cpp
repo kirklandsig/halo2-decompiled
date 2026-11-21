@@ -1774,6 +1774,10 @@ bool function_108530(long device_index, long name)
 // and xmm2 where retail takes xmm5, xmm7 and xmm1, the ramp-down still stays in a register where retail reloads it from the
 // stack, and the initial velocity still reaches the clamp on the stack where retail passes it in xmm6 (the callee's own
 // link-time convention, which no form here moves).
+// Shared phase-travel quotient with a direct expression, named square difference,
+// named squares, or named difference and doubled rate 116 each, with the original
+// sampled distance or a reduction of the published deceleration distance. NOT kept:
+// all tie at 523 bytes. Ramp-down stays cached and duration still uses XMM3.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
