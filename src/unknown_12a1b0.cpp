@@ -1480,6 +1480,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // declared ahead of the iterator 24. Reading: both retail fade functions push the index's register before the
 // element's, as ours does, so the index is allocated first in both builds and retail gives it EDI; 0x126df0's
 // fade-in half (another lane's file this round) is still the untried lever.
+// M3 lane 2 r132 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; `ret 8` and 210 B in both builds, the 24
+// still only the index ESI / element EDI swap; 0x126df0's file was free this round, so these are its fade-in half): the
+// end time named at the top of the half 63 (212 B; 0x126df0 58); the gain arms swapped under the negated fading test 28
+// (0x126df0 5; registers unchanged); one milliseconds local shared by both halves 63 (0x126df0 52, 186 B); the flags word
+// through a pointer for the setter 24 (same code); the curve stored ahead of the gain test 38 (0x126df0 9). Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

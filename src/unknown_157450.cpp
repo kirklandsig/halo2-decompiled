@@ -5989,6 +5989,12 @@ void __stdcall function_d6bc0(long object_index);
 // 154 (863 B), with the local test 131 (874 B); a block-scoped entry pointer for the zero test, index test and delay
 // store 213 (861 B); the reset decision as one `||` condition with no reset bool 173 (857 B), on the kept body 29 (same
 // code); a function-scope timer pointer assigned at the zero test for the delay store, countdown and `= 1` reset 178 (853 B).
+// M3 lane 14 r140 (h2m fast; control 29, the 7 form rebuilt at 7): on the 7 form with the field index test (172, `entries`
+// in EDI from the loop top, the timer in EBX): the reset counter bound by a `short &` 183 (851 B); the countdown block's
+// index read once into a block local for its test, 0x158ff0 and 0xd6bc0 175 (855 B); the field test read through
+// a const pointer to the parameter's address 172 (same code: the indirection folds before allocation); 0x15aad0 given
+// `&entries[0]` 172 (same code). On the 7 form: case 0 written ahead of case 1, 7 (same code, CL stays). Reading: the
+// timer only wins EDI while the loop-top index is live through the schedule test; no form here moved `entries` below it.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

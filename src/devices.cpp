@@ -2100,6 +2100,11 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the fld) 301 (homes move); the flag test as a while with a closing break (diagnostic) 2 (same code); had_animation
 // and speed declared ahead of the state lookup 2; the flags read into a named word for the test 2 (both the same code);
 // `&& render_model` on the 0xbf5a0 test (diagnostic, a real test) 393 (1650 bytes).
+// M3 lane 2 r132 (h2m fast; control 2): had_animation initialised from the flag test and tested for the block (two
+// uses, no store inside) 396 (1635 B); the same declared right after the matrix copy 351 (1630 B: the flag is then
+// read as a dword `shr eax, 3; and al, 1` and the fstp stays after `push 0`); the first call's render model under a
+// real `!= NONE` test (diagnostic) 351 (1638 B); the first call reading the render model from the model tag again 398
+// (1655 B); the node lookup first in the flag block 369 (1652 B). Restored.
 // M3 lane 1 r147 (fast; control 2): the tick length read at the top of the flag block 350 (1635 bytes); the matrix copy
 // written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
 // the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three

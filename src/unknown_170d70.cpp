@@ -409,6 +409,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // unit predicates with shared side cross 125. NOT kept: The explicit cursor recovers the traversal
 // through +0x2b8 with the original time-step expression, but grows to 1413 bytes. The direct read or
 // subtraction assignment loses the retail time-step scheduling.
+// The deadline and signed ordinal still occupy exchanged slots. Named deadline with traversal scope 94,
+// inclusive last group 96, exclusive sentinel 95, final-group distinction 352, rotation-first equality 357,
+// scoped rotation-first equality 357, reversed time-test spelling 94, flag-first snap test 100.
+// NOT kept: the first and seventh forms recover both traversal slots through +0x34a at 1396 bytes, but
+// regress. The rotation tests grow the body to 1431 bytes and lose the opening schedule.
 // @retail 0x170630
 void function_170630(long player_index)
 {
