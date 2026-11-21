@@ -975,6 +975,11 @@ real function_30bf0(vector3f *vector);
 // clipped point through the existing vector3f_add_scaled 90 (aligned 69); distance_squared `real const` 84 (same code);
 // the plane distance through dot3f 138 (1308 B, aligned 73); the delta through vector3d_from_points3d 142 (1308 B, aligned 79).
 // MiniMax A (11-20): no new form, no lower score (84); the clip amount and the squared distance still take separate cells where retail packs them into one, so delta and the probe outputs sit four bytes low and the motion cell sits four high; the earlier rounds' reused-variable and dead-local forms measure 81 or more.
+// Point setter return 148, with outer clip fraction/plane/both 148/148/148,
+// separate intersection and lower tests 148, capped fraction 213, positive
+// intersection before cap 276, outer workspaces and capped fraction 213.
+// NOT kept: the native-length forms leave the displaced result and clip homes
+// and raise the score.
 // M3 lane 6 r216 (fast with 0x263740/0x25c9d0, all MATCH; control 84): the defaults in an else arm of the second facing
 // test (copies first) 101; `result = 2;` then `if (distance_squared < 36.0f) result = 3;` 136 (1292 B); the posture scale
 // through a new forced-inline helper 84 (same code); the 3/2/1 level through a new forced-inline helper 234 (1268 B); the
@@ -996,6 +1001,11 @@ real function_30bf0(vector3f *vector);
 // NOT kept: the two ties keep the first result store and the clip slot. The remaining forms regress.
 // Unscaled-radius or scaled-radius guard to the sole exit 152/152; both guards 193.
 // NOT kept: these forms retain the displaced result store and raise the score.
+// Complete range level expression, primary fallback on a zero result, split close/intermediate
+// arms with that fallback, and explicit primary-or-zero 153/90/90/153; named squared tests
+// with chained, conditional, explicit-tier or fallback result selection 84/153/84/153.
+// NOT kept: Two zero-result fallback forms reach 1308 bytes at 90. The named tests tie or regress.
+// The result and clip slots remain displaced.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2275,6 +2285,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the players iterator loads its table into ECX (retail EAX) and the direction is not held in XMM1..XMM3 across the two dots.
 // Earlier first lines: 158 (was 168); 168 (was 168): r200 unchanged.
 // MiniMax A (11-20): no new form, no lower score (168): the 0x80 frame agrees and the first difference is still the contact head's reversed base and index in the address encoding (ours `[eax + ecx + 0x58]`, retail `[ecx + eax + 0x58]`), which comes from the inlined 0x26be00's `object->value58` read of the clump table - that helper lives in src/unknown_26bda0.cpp, so the roles cannot be changed from this file; the rest of the gap is the players iterator's table pointer, which retail loads into EAX and stores at once (a five-byte load against this build's six-byte one into ECX, which moves the loop pad and every row after it), and the per-case scratch rotations; the two NONE stores in the other order measure 170 and the two player searches merged into one 829, so the two separate searches and the store order are retail's.
+// Earlier at 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // Earlier first line (merged into the note above): 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // Earlier stacked line, merged here: 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // Earlier measurement 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
@@ -2938,6 +2949,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 164; the decay through a short local with one unconditional store 159; the players iterator's two NONE fields stored
 // ahead of its table pointer 160. Diagnostic: 1 to 7 unused long locals at the top
 // 168 each (the +0x5c base/index order does not follow the symbol count).
+// Early player iterator index/datum/both before the vehicle lookup 398/398/410,
+// before actor admission 423/423/421, with shared actor displacement and both
+// defaults before the vehicle lookup or actor admission 409/420. NOT kept: the
+// shared displacement fixes the head address encoding, but the other forms
+// leave the pool register and player search differences and raise the score.
 // M3 lane 2 r123 (fast with 0x25d810/0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 158, difflib-aligned 96,
 // register-masked 50; check.py --fast agrees on the lead). LEAD (match-only: an if/else order picked by score): the
 // positive arm's skip test hoisted ahead of its dispatch with the reset arm first (`if (31c != NONE && 31c != slot)

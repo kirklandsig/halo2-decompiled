@@ -346,7 +346,7 @@ void function_1348e0(s_bit_vector_pool *data)
 
 /* a bit field from seven flags */
 // @retail 0x132b10
-dword function_132b10(bool b, bool d, bool c, bool f, bool g, bool e, bool a)
+dword function_132b10(bool d, bool c, bool f, bool g, bool e, bool a, bool b)
 {
 	return (b ? 0x4000 : 0) | (c ? 0x2000 : 0) | (d ? 0x1000 : 0) | (e ? 0x800 : 0) | (f ? 0x400 : 0) | (g ? 0x200 : 0) | (a ? 0x8000 : 0);
 }
@@ -610,6 +610,10 @@ struct s_visibility_object_header
 	s_visibility_object *object;
 };
 
+// MATCH (m3 lane 8 r211): the flag packer 0x132b10 declares its 0x4000 flag last. Retail evidence: its call here loads the
+// register arguments AL, CL, DL in that order (0x133155, 0x13315a, 0x13315f), last to first of (..., e, a, b), and a call's
+// arguments are evaluated right to left, so in_front is read ahead of behind and takes flag_b's dead argument slot
+// (lea edx, [esp + 0x38] at 0x133136) while behind keeps the frame byte.
 // score 4 (was 4): only the two bool locals' stack slots differ (behind/in_front at
 // esp+0x17 and esp+0x38). Permuter: 280 tries in 600 s, best 2 — but that form
 // swaps the two pointer arguments at the matched 0x132fd0 and leaves `index`
@@ -763,7 +767,7 @@ void function_133050(s_bit_vector_pool *data, long object_index, short section, 
 			bool in_front;
 			bool behind;
 			function_132fd0(data, center, &behind, &in_front, radius);
-			dword flags = function_132b10(in_front, first, second, flag_a, flag_b, contained, behind);
+			dword flags = function_132b10(first, second, flag_a, flag_b, contained, behind, in_front);
 			long entry = NONE;
 			if (!(flags & 0x800) && TEST_FIELD_BIT(object->flag31))
 				entry = function_134300(data, section);
@@ -1002,6 +1006,11 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
 // visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
 // shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
+// score 11 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), and the
+// entry local is declared with its NONE before the function_132e60 call, which gives retail's registers in the instance
+// loop (the centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call (retail stores it
+// after the visible test, 0x1346c0), and the else arm's entry read is `movsx edx, word ptr [eax + esi]` where retail
+// has `[esi + eax]` (0x134859).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -1024,10 +1033,9 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 			real_point3d_set(&corner, bounds->bounds[0][1], bounds->bounds[1][1], bounds->bounds[2][1]);
 			vector3f extent;
 			vector3d_from_points3d(&center, &corner, &extent);
-			real radius = sqrt(length_sq3f(&extent));
 			bool behind;
 			bool in_front;
-			function_132fd0(data, &center, &behind, &in_front, radius);
+			function_132fd0(data, &center, &behind, &in_front, sqrt(length_sq3f(&extent)));
 			if (data->filter && (data->flags2a60 & 1))
 			{
 				c_entry_list *list = *(c_entry_list **)((byte *)data->filter + 0xc);
@@ -1069,9 +1077,9 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 				if (*(word *)(definition + 0x24) > 0)
 				{
 					bool contained, first, second;
+					long entry = NONE;
 					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || ((char)data->flags2a60 >> 7) != 0)
 					{
-						long entry = NONE;
 						bool behind;
 						bool in_front;
 						function_132fd0(data, &instance->center, &behind, &in_front, instance->radius);

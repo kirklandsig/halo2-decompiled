@@ -1393,6 +1393,10 @@ bool __stdcall function_2399da(long controller_index)
 // takes the identity EAX and the rank ECX, and that swap is the whole difference: the 64-bit id test and the member's rank
 // store then follow, and the copy into eax before the removal call still costs the two bytes that move every later jump.
 // The identity declared inside the block as a const pointer scores 90 as well (same code).
+// M3 lane 16 r164 (fast with 0xac050/0xac360/0x2399da, all MATCH; control 90): the permission test held in a named bool 90
+// (same code); the over-rank test as `!(rank > own_rank)` 90 (same code); the rank stored into the member first and the
+// rank-3 test made on the stored field 89 (identity still ECX); the copy block's refusal arm ahead of the copy arm 114
+// (433 B); the two member records declared the other way round 90 (same code). Identity ECX/rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

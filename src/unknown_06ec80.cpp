@@ -225,6 +225,13 @@ union s_6ec80
 // return NONE;` 229, as an if/else on its result 194 (entry registers retail's, block pointers EBX/EDI swapped from
 // +0x101), each of the three also unmatching the getter (27 B against 26); the bit or-ed as a full assignment 225; one
 // readiness test after the guard repeating the pointer tests (match-only) 226.
+// M3 lane 5 r221 (h2m fast with 0x6ec10/0x5b120; base 5): diagnostics with the mask zeroed in the guard (225), a conditional probe
+// store `if (value_18 == 77) local_1 = false;` after the stored-data test 180 (985 B), before the second_id test 228, before the
+// block-pointer NULLs 261, inside the guard before the populated test 234 (no extra block restores the entry registers). Forms:
+// with the mask in the guard, the 0x49c8 NONE default as the `else` of the `arg_1` test 228 (981 B; entry registers retail's up to
+// +0xc3), that with the mask zeroed before the guard 228 (982 B); the loop through a player-record pointer stepped at the body's
+// end with the mask in the guard 228, with the mask before the guard 9; the else-arm default plus that pointer, mask in the guard
+// 226 (981 B).
 // M3 lane 9 r146 (fast with 0x6ec10/0x5b120, both MATCH; base 5): the mask zeroed in the guard with the 0x49c8 NONE default
 // moved after the 0x18 read (retail's store position) 225; that move alone 7; the mask zeroed in the guard with the NONE
 // default ahead of the 0x4dac block (an earlier 18 lead) re-measured 33; mask and counter both declared among the top
@@ -239,6 +246,10 @@ union s_6ec80
 // the guard 5 (same code); with the mask zeroed in the guard, the loop's first bit named before the guard 225, the
 // player count named before the guard with the do loop 225, with a `for` loop 348 (1059 B): named constants fold
 // before allocation, so nothing stays live across the two pointer tests.
+// M3 lane 6 r220 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5), with the mask zeroed before the guard as now: the
+// loop's bit named in the loop body (`dword bit = 1 << local_15; local_14 |= bit;`) 234 (the entry allocation moves); the
+// players walked through a `s_session_player const *` stepped each pass 9; a `word` mask 15 (974 B); the data and mask tests
+// as two separate ifs 156 (978 B); with the mask scoped in the guard, the bit named in the loop body 109 (re-measured).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

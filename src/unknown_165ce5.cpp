@@ -2015,6 +2015,18 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // MiniMax R (11-20): score 188 (was 188): no new form; the frame stays 0x30 against retail's 0x2c (the look pair still
 // needs an aggregate slot of its own), the unit and mode still take each other's slot against retail, and esi and edi are
 // still saved ahead of the unit test where retail saves them after it, so the body stays BLOCKED by the stand-in.
+// M3 lane 2 r126 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): values re-bound by a const
+// reference at their later uses: the mode at both overlay calls 188, the zoom speed at its test and clamp 188, the
+// weapon-active flag at the set-active call 188, the user-flags copy at its test and store 188 (same code each); the mode
+// lookup after the four spring defaults 204. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 6 r219 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the mode lookup after the four
+// spring defaults 204; the game-time reference taken ahead of the first smoothing call and used for every rate read 224
+// (2193 B); the reference taken ahead of the yaw only 219 (2193 B); the look entry bound as a const reference instead of
+// the look pointer 188 (same code); the first weapon's object named before its definition lookup 188 (same code). Still
+// BLOCKED by the stand-in (round 98) for the ESI/EDI saves; unit/mode slots swapped and frame 0x30/0x2c unchanged.
+// NOT kept (M3 review 11-21, MiniMax C 11-20): the round-105 lead (score 40) applied again; as lane 15's r105 note says,
+// it rests on the swapped callback ternary, the one-use channel-byte local, the active preset and the implied
+// else-if, all match-only, so it is kept only with a byte match. The body is main's again.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
