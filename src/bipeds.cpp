@@ -3170,6 +3170,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
 // `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
 // All restored.
+// In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
+// with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
+// conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -6226,6 +6229,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
 // the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
 // component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
+// Forward snapshot after up rotation for the side, up or both crosses 126/116/110.
+// After forward normalization for both crosses 147. Staged side cross with the
+// after-rotation or after-normalization snapshot 126/162. Both crosses with the
+// after-rotation snapshot through the setter or memcpy 113/110. The first rotation's
+// cosine-complement spill remains. The setter also shortens the body past retail's length.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

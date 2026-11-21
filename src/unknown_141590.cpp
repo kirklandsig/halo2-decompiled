@@ -564,6 +564,11 @@ static inline void quaternion_transform_vector(
 // the quaternion and vector by const reference 247 (1310 B). Reading: retail's m uses the 2.0 kept from the sine product and
 // its w2 a fresh 2.0 load after the copy, shared with the forward dot; entry registers for 1.0/2.0/cosine half/sine are
 // xmm7/6/5/4 in retail, xmm7/5/4/6 here.
+// Transform cross scratch through cross3f after doubled scalar, after quadratic, before
+// all coefficients or before doubled scalar 260/198/271/254. Through cross3f_staged
+// 260/202/271/254. With both coefficients before cross and doubling last, frame and
+// length agree at 0x24 and 1317 bytes. The half-angle registers and quadratic schedule
+// still differ. NOT kept. The three-point gain reduces the frame to 0x18.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

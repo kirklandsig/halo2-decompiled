@@ -996,6 +996,11 @@ void function_245400(s_source_245400 const *source, long index,
 // or facing-scope plane table 208/208, and paired widening with normal selections
 // or a primary material pointer 169/169. NOT kept: the 167 and 169 forms reach
 // frame 0x2c and 783 bytes but regress. The late plane table also loses the matched caller.
+// Edge after plane decoding, with retained short codes, named plane indices,
+// early secondary material index, or both 207/207/207/207. Retained long-code
+// forms 197/197/197/197. All reach 0x2c and 783 bytes. The long forms keep
+// the source in ESI but extend the codes at the loads. NOT kept. The short
+// forms change matched caller 0x245aa0 and every form scores higher.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

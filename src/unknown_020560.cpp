@@ -1328,6 +1328,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // live candidate position with bound anchor 665. NOT kept: the last form reaches
 // frame 0x2c but grows to 2218 bytes and regresses. The second induction and its
 // offset.i spill remain unresolved at the opening extent.
+// Exclude nearest by sample or position address, winner bound before/after anchor
+// delta, captured/indexed candidate forms 615/615/639/615 for either address.
+// All shorten the body and reserve 0x14. The second induction address and offset.i
+// spill remain unresolved.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
