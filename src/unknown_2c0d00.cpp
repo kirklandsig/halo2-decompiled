@@ -598,6 +598,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
+// score 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// its zero in EBP), the frame is 0x2cb0 against retail's 0x2cac, the byte homes differ and the join is laid out in
+// source order; the rounds below. MiniMax B (11-18) at 920: no new form, no lower score (920 plain, 926 fast). The permutation
 // MiniMax B (11-18): 920 then (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
 // search over the body (300 s, one job, the full image because the reduced image misleads here) made two tries and
 // never beat its baseline of 910 differing instructions; read from the listing again: retail takes the actor's unit
@@ -768,6 +771,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // frame 0x2cac but regress, still using EBX for the entry zero.
 // Memberwise query location copy after the unit lookup 901, Whole query location through memcpy 925.
 // NOT kept: the memberwise copy uses two word transfers where retail uses one dword.
+// M3 lane 3 r287 (plain each; control 925, difflib-aligned 519 / register-masked 243): the definition's no-obstacle view as
+// a word bitfield (the flags field's declared width) 924 (aligned 519, same layout); with it: both radius tests written
+// distance-first (`!(distance_squared <= r * r)`) 924 (masked 331); one to three redundant paren pairs around the entry
+// dot's first product 927 / 927 / 924; the two one-use `velocity` pointer locals dropped (the field cast passed to dot3f)
+// 938 at 3692 B, aligned 393, masked 242: frame 0x2cac and retail's homes for the four shorts, self_unit and the actor
+// (aligned 519 -> 393, a positional rise, so not kept); on that, the vehicle's actor tested through its pointer
+// (`vehicle_actor && ...`) 937 (aligned 396). Retail reloads actor_index into EBX, self_unit into EBP and unit_index
+// into EDI at the loop's back edge and reuses EBP as NONE inside the type-0 arm.
 // M3 lane 11 r143 (plain checks; this function builds differently in the reduced image; control 925, difflib-aligned
 // 519, register/offset-masked 286). Retail evidence: on the no-actor path retail stores straight = 1 again (0x2c0e9a,
 // `mov byte [esp+0x13], 1`, falling into the join at 0x2c0e9f) although the prologue already stored it, so its source
@@ -2294,6 +2305,12 @@ long function_1fa7f0(void);
 // `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
 // (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
 // `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
+// Round 499: terminal address at path/search scope, one-past address at path/search scope, forward scan with the
+// terminal/one-past address, candidate and terminal pointers, and terminal status from scan end.
+// Fast scores in order 492/486/499/488/480/439/486/543.
+// NOT kept: All eight retain the 0x114 frame and raise the score. The one-past forward bound is closest at 439 and
+// 1744 bytes. All four matched controls stay exact.
+// The extra two frame words and the count, edge and opposite-orientation homes remain unresolved.
 // M3 lane 11 r139 (h2m fast with 0x270930 and 0x2c2a70, both MATCH throughout; aligned unmatched [exact/stack-masked/
 // register-masked], control 400 [275/178/56]): the side flipped in place ahead of the second tangent call re-measured 440
 // (1727 B, frame 0x10c) [223/160/52]; that with `edge = 0xffff` again at the scan hit re-measured 369 (1740 B, first

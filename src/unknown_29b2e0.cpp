@@ -759,6 +759,14 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // j, i, k); that helper with the cross written out 204; with the cosine taken first 177; with cross3f_staged 169 (same
 // code); with cross3f reading the up vector straight from the object (no `local_17` pointer) 156 (1706 B, aligned 144).
 // Re-measured: round 134's lead (named first-rotation sine and cosine with cross3f) 141 at 1707 B, aligned 123.
+// Paired coordinate stores, projection or normalized copy first, 389/389; chained shared reads 420/398.
+// Depth-only fallback 321, with paired stores 392/392 or chained reads 419.
+// NOT kept: the reordered copies diverge before the original store pair. The depth-only fallback
+// changes the three-coordinate retail restoration and raises the score.
+// Coordinate-array copies of the second 3D input, XY, or both 400/346/386;
+// first 3D alone, with second 3D, with XY, or with both 429/403/418/1095;
+// all with array-based fallback restore 1115. NOT kept: all regress and disturb the
+// matching entry or first normalization. The XY and depth store order still differs.
 // M3 lane 3 r284 (h2m fast screen with 0x29b990, 0x11ce20, 0x11cc90; [n] = aligned rows, control [116]): the XY vector
 // declared ahead of the second copy 149 [115] (plain fast check agrees; first difference +0x179: its y store now precedes
 // the copy's k store as retail's; a declaration move worth 2, not kept); the four clamps' lower bounds as `0.0f - limit`

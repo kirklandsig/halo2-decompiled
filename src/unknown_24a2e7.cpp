@@ -429,6 +429,24 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // typed `int` 67 (same code); the tag field named once (`char const *tag = entries[i].field_4c;`, tested and passed) 95
 // (180 B), with the indexed terminator 90 (184 B); a mismatch `continue` with the found body at loop level 67 (same code);
 // the found test as `index == entries[i].index` 67 (masked 21). Body unchanged.
+// M3 lane 16 r165 (fast with 0x24a64d, 0x24a763, 0x24a52b, 0x24a7bf, 0x24a09b, all MATCH; control 67; "aligned" = rows left
+// after aligning the listings with addresses masked). Re-measured round 101's form: plain locals, a per-iteration entry
+// pointer (`entry = &entries[i]` at the loop top) used by the compare and the arm, with the terminator and the plain name
+// indexed in an if/else: 75 (196 B, aligned 8): the terminator (`imul ebx` after the calls, the base reloaded from [ebp-8]), the plain name, the
+// index in EBX and the base spill are then all retail's; left is the arm, where ours keeps the pointer as the loop cursor
+// in ESI and retail recomputes `&entries[i]` from the index at the found block. The same with the search loop first and
+// `if (i < count)` after it 69 (201 B, aligned 5; retail has no count test after the loop), with the arm indexed too 59
+// (201 B, the arm's address shared with the terminator again). Lane 10 r119's two-member aggregate lead re-measured 39;
+// on it: the terminator through `i * sizeof` byte arithmetic 39 (same code: the product is still shared); the plain name
+// assigned before the append test 47 (190 B, aligned 7: the product is hoisted ahead of the append test); the plain name
+// in both else arms 78 (aligned 7, hoisted the same way); the found index copied into a second local 39; a pointer cursor
+// advanced with the index 83 (aligned 9: terminator and plain name exact, the arm uses the cursor); the per-iteration
+// pointer 75; the found pointer preset NULL and tested after the loop 60; the arm's pointer named in the found block 72
+// (aligned 6: one product hoisted and shared by all three uses where retail forms it three times).
+// Separate copy or whole format scopes with an entry pointer/reference and indexed
+// clear 83/83/83/83. Nested suffix with a comparison cursor, advancing on inequality
+// or after the match arm, ordinal or cursor first, 84/84/84/84. The frame remains 0x24.
+// The scaled entry remains live across the appends.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

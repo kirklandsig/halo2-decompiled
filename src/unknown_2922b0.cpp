@@ -766,6 +766,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Paired cursors, ordinal from point or hit with countdown 659/517.
 // Paired cursors, ordinal from hit with do-end or for-end test 639/639.
 // NOT kept: The best form is four points lower at 2865 bytes and leaves the success byte at +0x13.
+// M3 lane 15 r122 (fast; control 521, LCS-aligned 270/274 unmatched, register-masked 161/165): the range test as
+// `if (field_48 > 0.0f) { ... } else return true;` 647 (2866 B, aligned 259/264, masked 150/155: the inactive exit then
+// sits last as in retail); on it the range local read before the test and tested 637 (2862 B, aligned 259/264: one
+// field_48 load shared by the test and the local as retail's XMM1, but its home is +0x14 against retail's +0x30, stored
+// before the branch); the arg_3 clear through vector3f_assign 521 (same code), on the swapped form 637 (same code); the
+// hit flags declared ahead of the minimum 521 (same code).
 // M3 lane 2 r121 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned/masked 274/165). Slot map from the
 // listings (main-body offsets, retail / ours): point cursor 0x14 / 0x18, success byte 0x1b / 0x17, ray index 0x1c / 0x24,
 // minimum 0x20 / 0x20, hit flags 0x24 / 0x28, cross vector 0x28 / 0x2c, hit cursor 0x34 / 0x38, range 0x38 / 0x1c; from
@@ -787,6 +793,27 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the four crosses 660 (2848 B); the ray loop as a plain counted for loop 708 (2820 B); the angle limit as a default
 // then an if 641; the root clamp's product written root first 521 (same code). Lane 2 r113's 331 lead re-measured 331 at
 // 2896 B on today's file (opening exact to +0x91, first difference the second cross's operand order). Body unchanged.
+// M3 lane 12 r165 (fast screen with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521 at 2865 B, 270/274 unmatched
+// instructions ours/retail in an LCS-aligned diff; "lead" = lane 2 r113's 331 form rebuilt on today's file, 331 at 2896 B,
+// 131/129; body unchanged, nothing kept). The rotation helper with its cross product in a local vector through the shared
+// cross3f 547 (2886 B, 355/354), through cross3f_staged 547, through this file's own cross 547 (same code each), the
+// cross taken ahead of the projection 552 / 553; the helper reading the vector's three components into named locals
+// first 553 (2860 B, 268/274), copying the whole vector first 593 (2919 B); the same seven on the lead
+// 432/432/432/464/463/590/657 (the cross temporary costs the in-place rows there). The early return with no `else` and
+// the body at function level re-measured 648 (220/223), with the four crosses staged and the second output as a division
+// 631 (2887 B, 140/139, first difference +0x8f), with the range named ahead of the test 636 (2886 B, retail's length,
+// 143/139): from the test on only the exit differs at the head (ours stores the range and lays the `mov al, 1` exit in
+// line, five rows early; retail jumps to it at the end and stores the range in the active arm after the pushes). The
+// lead with the point array declared at the top of the active block, ahead of or behind the range local, 610 each
+// (2886 B, 193/190: the slot map is retail's, but the zero goes to XMM1 with the range in XMM0 and the half-width is not
+// read again per point; only the function-scope array gives both). 1 to 8 initialised unused locals on the lead
+// (diagnostic) 331/604/611/403/338/334/331/330 as lane 2 found; counted per block, the second cross's 14 unmatched rows
+// stay at every count (not a symbol-count effect), the two rotations' rows move (26 to 102 and 54 to 79) but never
+// clear. On the function-level form: the early exit as `return local_0;` 636 (same code as `return true;`); the range
+// local declared after the early return, ahead of the output clears, 631 (2887 B, 139/138: the range's store is then in
+// the active path as retail's, but the field is loaded a second time behind the in-line exit), with `return local_0;`
+// 631 (same code). An early return is always laid out in line here, so retail's exit at the end means its `return
+// true` stands after the active block, and the per-point reads then need the array declared outside that block.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

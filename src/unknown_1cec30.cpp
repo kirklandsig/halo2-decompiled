@@ -1882,6 +1882,12 @@ PRIVATE __forceinline real const &component_time_step()
 // a store that can only change the pointed-to value, direct reads at both uses (they reload the pointer), a math call
 // ahead of both reads and a by-value copy (kept in a register, or spilled to the stack under pressure, never re-read
 // through its address) do not. In the link-time build no pointer store counts and retail has no call between the reads.
+// M3 lane 3 r287 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
+// to it at both products 26; the step as `real &step = scaled_acceleration; step *= delta_time;` 26; the globals
+// pointer copied to a local and read through a `const &` to that local at both products 26; a second `real const &`
+// time-step binding inside the stop-distance block for the second product 26; the scale helper's result initialised
+// to the acceleration at its declaration (the else arm kept) 26 (all the same code: `[eax + 4]` at both reads, the
+// scale in XMM1).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

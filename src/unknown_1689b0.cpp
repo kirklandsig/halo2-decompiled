@@ -2170,6 +2170,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
 // order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
 // one point, moved declarations: not kept).
+// Face/edge/both average returns 575/589/628, admitted-radius/rejected-radius/both
+// fallback returns 569/585/635, face/edge count as the result test 620/563.
+// NOT kept: all raise the score and leave the count and clearance homes displaced.
+// In-place averages by named component for face/edge/both 604/602/642, through the
+// coordinate arrays 620/618/660. Indexed accumulation with native/indexed in-place averages
+// 669/692. NOT kept: all grow the body and leave the count and clearance homes displaced.
 // M3 lane 14 r133 (fast with 0x120790/0xc2d00/0x17a380/0x2469b0, all MATCH, 0x16a440 23; control 551): the per-prism
 // separation as `inside ? 0.0f : nearest` after the closest-point test 552; the nearest distance declared at its per-prism
 // initialisation 551 (same code); the radius minimum tests as `available < radius` 551 (same code); `++face_count` ahead

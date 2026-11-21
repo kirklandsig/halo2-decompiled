@@ -1158,6 +1158,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // compiler could not fold when it shaped the compare and knew as constants afterwards; a pin as a plain function in
 // another file stays a call (334); 64-512 dead locals 238/238/238/249 (no change of the classifier); an inline asm
 // block 332 (no change of it); global optimization off for the function (the one compiler-setting diagnostic) 1266.
+// M3 lane 6 r219 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the head written as
+// the entity getter's ternary (`entity = root->type == 1 ? root->entity : NULL; if (!entity) return;`) 238; the type and the
+// entity tested in two early returns through an entity local 238; the entity preset NULL and set under `if (root->type ==
+// 1)` 238; the dead second walk's result assigned back to `root` 238 (all the same code: the type is still compared in
+// memory); `switch (root->type)` with `case 1: break; default: return;` 301 (register load, `dec ecx`). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

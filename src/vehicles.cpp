@@ -1255,6 +1255,9 @@ __forceinline long vehicle_round(real value)
 // cross too 94 (735 B), the dot named 13. Compile-only (2 flips each, the same products): a typed definition view for the
 // three definition fields, the tick compare reversed, `up` declared first in the arm, `rate` or `side` declared with the
 // vectors, `strength = rate * strength`; a named side correction 4 flips.
+// M3 lane 7 r203 (h2m fast), at 4: a `real const *` to the definition's two rate bounds 13; a const alias of the vehicle
+// pointer for the side cross and its down term 11; `byte const *definition` 4 (same code); the rate computed ahead of the
+// axis choice 165; `strength *= rate` after the side block 72 (757 B).
 // M3 lane 15 r121 (h2m fast), at 4: no result local (the failure arm returns false, the success path true) 10 (753 B);
 // the flag clear as the bitfield store `((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit6 = false;` (0xf0fd0's
 // spelling) 7: the side cross's forward.j * up.i becomes retail's, but the first cross's up.j * forward.i flips and the bit
@@ -2399,6 +2402,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // &vehicle->forward) 11, as basis_dot_xzy(&vehicle->forward, &linear_velocity) 11; the final overlay loop bounded with `!=`
 // 9; `i` declared ahead of the overlay channel 9. Reading: retail's reloads after the update block come in the order of
 // the values' next uses (state for the channel test, then graph and the index as the callback's arguments are pushed).
+// M3 lane 7 r203 (h2m fast), at 9: the forward speed as `k + j` then `speed += i` 11 (sum (j + k) + i), with the i term
+// written forward-first 11; with one redundant paren pair around the k product 7 (the sum then (k + j) + i as retail's; left
+// the i term's operand order, the SIB pair and the reloads; not kept: a `+=` split plus a paren pair is steering without a
+// match), two or three pairs there 7/7; on that form any pair around the j product 11, and 0-3 pairs around the i term with
+// either operand order never flip it.
 // M3 lane 15 r121 (h2m fast), at 9: arm 3's speed fraction named 13; arm 2's speed fraction named 13; the graph and
 // animation-state tests as two nested ifs 9 (same code); the second lookup written as the header-table subscript 9 (same
 // code); the two small loops' counter `short` 384 (movsx per use).
@@ -5344,6 +5352,15 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // bound written as the sum of the two counts with a named short second count 45 (the guard block exactly retail's, the
 // sum in EAX), long second count 43, operands swapped 45, with the colour order 46. A permuter run on the 5 lead (21
 // tries) found nothing lower.
+// M3 lane 3 r288 (h2m fast; control 22): re-measured the running count 126, the 5 lead 5, the colours before the source
+// alone 17, the long second count in the loop bound with the colours first 44 (its only set-up difference is the second
+// count's sign extension in EAX, `movsx eax, ax; add edi, eax`, where retail extends into ECX; every later scratch register
+// is then one rotation step off). New: the running count with the collision miss as `continue` 126; the long second count
+// summed into a named count, either operand order, 47/47; a long copy of the first count (`primary_total`, also the second
+// fill's offset) with the loop bound `primary_total + secondary_count`: short second count 46 (guard and padding jumps
+// retail's, but `movsx eax, ax; add eax, edi`: the sum takes the extension's EAX), long second count 44. The running count
+// (the code base's `count += fill(..., markers + count, ...)` idiom) is the only form that extends into ECX and sums into
+// EDI, and it alone merges the loop's preheader into the guard (the zero shared in EAX, no padding jumps).
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
