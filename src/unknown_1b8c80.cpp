@@ -970,6 +970,14 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x26c field, a result-style inline predicate, the barrier inside an inline lookup helper, the state defined or assigned
 // again after the barrier. Diagnostics: a NULL test of the state after the lookup loads the slot before the compare but
 // moves the data base to ESI; a slot read in the join block loads it after the compare.
+// M3 lane 1 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; a compile-only build of the file is exact
+// here): the slot's 0x1c seat-selection view (0x1ba5c0's) used for both the flags test and the point copy, formed at the
+// top with the barrier 29 (the pool pointer takes EDX, the data base folds into the add, ESI pushed at entry); formed
+// after the actor lookup and the barrier 31 (207 B: the slot loads after the data base as retail, the data base takes
+// ESI); formed between the lookup and the barrier 31 (same code); formed at the head of the NONE block 6 (same code); a
+// one-use point or flags pointer formed after the lookup, before or after the barrier, 6 each (same code: it sinks).
+// Reading: a two-use pointer at a non-zero offset anchors the slot load in the entry block, but its offset temporary
+// holds a scratch register at allocation, so the data base goes to ESI.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

@@ -715,6 +715,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // workspace with scale at the producer or at the sums 276/276 and 252/252.
 // Completing the rotation in the same field scores 282/282 and 263/263.
 // NOT kept: the velocity-field forms lengthen and keep different frame and trig homes.
+// Rotation result through the cross workspace with aggregate or component publication 292/218.
+// Heading, axis or separate subtotal into that workspace 286/286/286. Sine applied on write
+// from heading or axis 282/282, projected-axis scaled add followed by the cross sum 304.
+// NOT kept. The lowest form retains the extra frame word and increases the score.
 // M3 lane 6 r219 (H2M_FAST with 0x28dab0, MATCH throughout; control 173): the projection as `dot; projection *= 1 - cosine`
 // in the kept order 173 (same code); the helper's two vector parameters swapped at definition and call 173 (same code); the
 // sine taken in the caller right after the tilt draw (retail's `fld st(0); fsin` place) with the cosine taken after the
@@ -729,6 +733,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // projection 210 (1198 B), the cross scaled by the sine ahead of the axis scale 227 (1209 B); the flag-2 arm's forward
 // store after the outer cross 190 (1209 B); both 0.1 position updates through the existing vector3f_add_scaled 180 (1209 B,
 // lane 2 r111's 180 re-measured on the kept helper).
+// M3 lane 8 r215 (h2m fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the helper's four opening statements
+// (cosine C, sine S, the projection D = dot * (1 - cosine), the cross X) in six orders, the rest unchanged: C X D S 210
+// (1198 B, first +0xa9), C D S X 183, S C X D 238 (1198 B), C S D X 226, S C D X 182, C X S D 239 (1198 B). Reading
+// (retail listing): retail loads the 1.0 for `1 - cosine` while the dot's last product still holds XMM7, so all eight
+// XMM registers are busy and the heading's zero k is dropped and rematerialised (a memory 0.0, then `xorps xmm7`); ours
+// loads the 1.0 after the dot's last add, into the freed XMM7, and keeps the zero live.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

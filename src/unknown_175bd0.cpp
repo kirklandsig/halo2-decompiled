@@ -2404,6 +2404,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the location setup with the first spawn stores, and the colour call each through an inline taking the system, alone
 // and together. Next: a natural extra unconditional reference to colour B, or one fewer for the system that keeps its
 // three early uses; retail's 0x177040 shows the same preference of colour B over colour A.
+// Partial spawn initialization with early colours A/B or B/A. After the location
+// setter, scale only 212/212, both scalars 209/209. Before the setter, scale only
+// 216/216, both scalars 211/211. NOT kept: the forms retain overwritten zero
+// stores, grow to 588 bytes and reserve 0x48. The colour-A spill and ESI system
+// lifetime still differ.
 // M3 lane 13 r133 (h2m fast with 0x177040, and with each changed callee's own address so its file rebuilds; control
 // 128): `inline` on the definition of a callee, so callers keep no link-time summary of it: 0x178bc0, effect_location_next,
 // 0x248c60, 0x175a80, 0x1751d0 or 0x175270 128 each (same code); set_location 188 (572 B: the scale can no longer stay
@@ -2417,6 +2422,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // reference folds); the first form with the definition's location index named 131 (head exact), plus the existing
 // location_point_in_zone_inline for both zone tests 151. The three pre-loop callees that could take a code-free extra
 // colour B use (set_location, 0x1751d0, 0x175a80) live in another lane's file this round.
+// M3 lane 8 r215 (h2m fast with 0x178eb0/0x179020, both matched throughout; control 128): the type lookup and colour
+// call as a plain static helper in this file taking the effect and the system (not marked inline, so that a late
+// link-time expansion could keep a parameter copy, as 0xb8bd0's expansion does in 0xbd090) 233 (488 B: it stays a call),
+// with the colours read first inside it 233; colour B read into a local before the cluster test 188 (572 B); both
+// colours read there 195 (572 B); colour B read after the spawn stores, ahead of the type lookup 187 (572 B).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4118,6 +4128,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // body 105 [0], with both queries in the call 107 [0]: system ESI and next index EDI as retail, but the definition then
 // takes EBX and the type object EDI, so it is not the lever here. Left as before: the convention (retail: system index
 // in EAX, effect index on the stack with the tint and node-flag bytes in its dead home, EBX saved at entry).
+// First query reading the definition and continuation using the saved mode,
+// for/while with direct or named multiplication 119/129 each. Reversing the
+// mode observations scores 112/114 each. NOT kept: named multiplication
+// recovers frame 0x54 and preserves the caller, but the body grows. The
+// definition spill and system/successor registers still differ.
 // M3 lane 13 r133 (h2m fast with 0x176f60, and with 0x178c80, 0x248c60, 0x175a80 and 0x1751d0 for the cross-file
 // forms): `inline` on the definition of 0x178bc0, effect_location_next, 0x248c60, 0x175a80 or 0x1751d0 (each alone;
 // its callers then keep no link-time summary of it) 93 each on this body and 108 each on the per-call mode form
@@ -4134,6 +4149,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // system lookup 116 (342 B: EBX then pushed first as retail but given the system pool's data, where retail gives it the
 // effect pool's); the node flag written into the 0x248c60 call 97 (341 B); the tint named ahead of the colour call 126
 // (352 B); both colours read ahead of the cursor store 91.
+// M3 lane 8 r215 (h2m fast with 0x176f60, still matched throughout; control 93): colour B declared ahead of colour A 93
+// (same code); the cached mode as a long 92 (337 B, retail's length; one point, not kept), as a short 93; the long mode
+// with colour B first 92, with the second 0x1751d0 result named 92. This build already has retail's convention here
+// (system index in EAX, effect index from the stack); left: frame 0x4c against 0x54, system EDI / next index ESI, the
+// cached mode, colour A in EBX with colour B spilled (retail spills colour A and keeps colour B in EDI).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

@@ -946,6 +946,15 @@ struct s_physical_block_iterator
 // Winner copied by members, using ring fields, retained time, retained pages, or both:
 // 355/377/355/366. Initialized winner record with the same four inputs: 344/377/345/366.
 // NOT kept: all change the 0x1054 probe and score higher. The shared policy test still differs.
+// M3 lane 2 r128 (H2M_FAST with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): lane 1 r124's 40 lead
+// re-applied (patch -p0), 40 at 1213 B (aligned 18, masked 13). On it: the overlap end named ahead of the walk
+// (`long end = best.offset + pages;`, used by the first test) 381 (1218 B); the head flag preset false and set true
+// inside a direct `best.previous == NONE` test 93 (+0x338: the NONE register then joins the allocation test); best.offset
+// bound to a `long const &` ahead of the walk and used by both tests 40 (same code); a plain local for it with the sum
+// written pages first 40 (same code); the walk's block through a local pointer 40 (same code). Body unchanged.
+// Updated page total 213, updated timestamp 374, both 373, winner timestamp 201,
+// winner plus updated timestamp 374, winner plus both 373, conditional timestamp 376,
+// and updated page total with named weighted products 213. NOT kept: no gain at retail length. The policy join still differs.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -1236,6 +1236,17 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // final_matrices stored after the tests where retail stores it after the orientations pointer). Retail reads as a
 // parameter value held in EDX from entry to that late store with object_index in ESI; every form here that keeps the
 // value that long gives it ESI instead.
+// M3 lane 13 r134 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): lane 4
+// r225's lead rebuilt 170 (826 B, aligned 100, masked 43); on it the awake test dropped (diagnostic) 337 (783 B), the
+// awake test written out through the header with `object` from header->object 316 (801 B: the three object reads share
+// one load). Diagnostics on the lead's entry roles (stores to a scratch global, removed): one extra use of the
+// matrices parameter at the top 276, of object_index at the top 279, two of the parameter at the top 273, two inside
+// the sample arm 274, `definition` forced into memory 269 (frame 0x50): none moves the entry roles. Two extra uses of
+// the parameter in the block that stores final_matrices (after the model test, ahead of the mask copy) 249 (856 B,
+// aligned 83, masked 27), three 267 (aligned 82), one 271: with two or three, object_index takes ESI with EBX pushed
+// for the +0xb3 byte as retail and the parameter a scratch register from entry (ECX, with the pool data in EDX, where
+// retail has EDX and ECX; `definition` still keeps a register). Reading: the entry roles follow the parameter's weight
+// in the final_matrices block; no natural statement was found that reads it twice more there.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1797,6 +1808,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // current and no-model lookups 292 (1402 B: the pool takes EDI and the render branch re-reads data too). The flag default
 // kept with the parent set in an else (listed 32) re-measured: DL live, index in EAX, pool still held in ECX; so the pool is
 // dropped only when EAX, ECX and EDX are all wanted, where retail moves the index to ESI instead.
+// M3 lane 8 r215 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): this file builds with the default
+// /O2 (auto-inlining on); only 0xb8bd0's file is /Ob1. Diagnostics, restored at once: `stored` escaping through a
+// file-static pointer 403 (the pool is then held, but in EDI, and the data field is re-read on both paths, the render
+// branch's too, where retail re-reads it only in the no-model arm); a store to an escaped scratch local at the top of
+// the no-model arm only 410 (the pool is still reloaded: a kill inside the arm does not hold it); the one compiler-setting
+// diagnostic, 0xb8bd0's file without /Ob1 and the no-model arm calling 0xb8bd0 as the render arm does, 394 (1373 B: then
+// expanded at both sites; 0xbcc20 213, 0x11b710 116, 0x18c3b0 157). Forms: both no-model lookups spelled through
+// effects.h's DATUM 20 (same code); one `const &` to the parent's header entry for both reads 41 (1392 B); both through
+// object_header_get(...)->object 20 (same code). Reading: retail's block is 0xb8bd0's own code expanded at this one site
+// (its parameter copy `mov eax, esi`, the index still live after it), which this build gives only with 0xb8bd0's file
+// built without /Ob1, and then at every site: BLOCKED-BY 0xb8bd0 (its file's /Ob1, a build-flag decision).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -5361,6 +5361,12 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // retail's, but `movsx eax, ax; add eax, edi`: the sum takes the extension's EAX), long second count 44. The running count
 // (the code base's `count += fill(..., markers + count, ...)` idiom) is the only form that extends into ECX and sums into
 // EDI, and it alone merges the loop's preheader into the guard (the zero shared in EAX, no padding jumps).
+// M3 lane 7 r207 (h2m fast; control 22): the definition test as an early return 22 (same code), on the running count 126;
+// the truncated sum's operands swapped 22 (same code); `short i = 0;` ahead of `long count = primary_count;` on the
+// running count 10 (the index's zero store still precedes the second fill; a declaration move, match-only); a chained
+// first count (`long count = primary_count = fill(...)`, then `+=`) 126; diagnostic `(void)&i;` on the running count
+// 126 (same code). Reading: with the index set before the second fill its zero is never live in EAX at the guard; an
+// index zero defined after the fill takes EAX ahead of the compare and merges the preheader into the guard.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
