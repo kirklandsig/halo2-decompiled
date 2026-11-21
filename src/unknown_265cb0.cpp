@@ -1027,6 +1027,13 @@ real function_30bf0(vector3f *vector);
 // pair, clip amount sharing with the squared distance, scale, motion, range; then counter, plane, cursor, delta, a, b);
 // ours follows the same order except its first slot (clip amount shared with the seat counter, 5 refs) sits below the
 // result, and the squared distance (2 refs) gets its own slot at the top.
+// M3 lane 12 r173 (h2m fast with 0x263740 and 0x26d370, both MATCH; control 84). Where the two bytes come from: our
+// first range load goes to XMM2 and stays there on the early path, so the no-endpoint and unknown007 jumps land six bytes
+// past the join's range reload while the clip path's jumps land on it; retail loads into XMM0 and every path reloads.
+// Forms: the facing copies moved into the facing arm (no second `if (facing)`) 101; the seat maxima as ternaries 84 (same
+// code); the seat array declared at the top of the settings block 84 (same code); the plane distance through dot3f 138
+// (1308 B: the second seat cross product reschedules, the range load does not move); the plane sum with its first two
+// terms parenthesised 150 (1312 B), each product parenthesised 154 (1312 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
