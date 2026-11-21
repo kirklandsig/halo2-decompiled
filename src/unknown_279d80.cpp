@@ -2146,6 +2146,11 @@ void function_27dd10(void)
 // flags read 348; `__assume(local_3 <= arg_7)` after the group end 348; `__assume(arg_5 < arg_7)` ahead of the bit test 348
 // (0x288570 362); the flags local declared `register long` 2 (same code). Every run-time assume in the walk unfolds the
 // node tests, whatever it states. All restored.
+// M3 lane 13 r133 (fast with 0x281b60 and the five matched walk users; control 2): in function_288572 the inner for's
+// test as `local_3 > arg_5` 10 (every walk user 6-124), the outer for's test as `arg_7 > arg_5` 8 (only the three
+// loop-end compares flip, the pair stays; every user 6); node_destination_get's map entry held in a `short` 382 (1753 B);
+// the channel-counter step written in both arms of the destination test 248 (0x289580 78); the destination index
+// initialised to the node index 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
