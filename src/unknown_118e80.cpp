@@ -528,6 +528,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // sequential tail copies (79), so the barrier is the address taken at our call, not the callee's use of it; 0 for the
 // forward only at our call (70) lets the forward loads rise above the up stores but not the up loads, and the forward
 // dot's i product stays object-first, so that product's order is not the escape.
+// M3 lane 7 r203 (h2m fast with the ten callees above; control 25): 0x1faf80 as (object_index, facing, settings, control,
+// threshold, turn) re-measured 12 (0x1faf80 2, 0xe01d0 569), facing as the first parameter 12 (the same). In 0x1faf80 on that
+// order: five spellings of the facing i leaf (`n[0]` either side, `(*facing).i`, a real cast, `facing[0].i`) 2 each; its entry
+// test through length_sq3f for the three squared lengths and dot3f(&object->forward, facing) 2 with the whole test retail's
+// (first difference +0x105 -> +0x1d8: only the left cross's `up->k * object->forward.i` then loads the forward first);
+// dot3f(facing, &object->forward) 4; dot3f(v, v) for the lengths 231 (856 B). A compile-only screen of 0x1faf80 on that test
+// (exact for the product orders; about 2,600 forms: the left cross's product orders and leaf spellings, cross3f and
+// cross3f_staged forms, 0-3 redundant paren pairs on the `vertical` product, the three pointer declarations in six orders, an
+// `up` member in the object view, the value dot through dot3f, 0-7 unused locals) never got under one product: the cross's
+// i-term first product and j-term second product (both read up.k) trade places; a forward pointer declared ahead of the test
+// flips eight. Still BLOCKED-BY 0x1faf80.
 // M3 lane 15 r121 (h2m fast with 0x118700, 0x11f0d0 and 0x1faf80; control 25): 0x1faf80's facing as its FIRST parameter
 // (definition, both declarations and both calls) 12 here, 0x1faf80 2 and 0xe01d0 537 -> 569, exactly as with facing second
 // (its i product still loads facing first): still BLOCKED-BY 0x1faf80. On this body: the two field pointers declared ahead
@@ -1600,6 +1611,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // files are other lanes' this round.
 // MiniMax H (11-20), NOT kept at review (statement order is match-only; code is main's): moving the move output's byte member store after the +0x88 copy scores 11 (was 14), so the byte store sinks past the force push as retail does; the tail still differs where retail keeps the copy's destination in EAX and spills the 0x119bc0 result to a stack byte that it pushes as a dword, which needs 0x1c4b00's bool formal in src/unknown_1c25a0.cpp and in its other declarations.
 // MiniMax B (11-20): no new form, no lower score (14): 0x1c4b00's bool formal is declared in another file, so the call's argument setup stays as it is; what is left is the one-row shift from the zero extension of the force argument and the 0x119bc0 result's own named bool.
+// MiniMax C (11-20): no new form, no lower score (14): retail computes the object-table destination in EAX and spills
+// and reloads the 0x119bc0 result at [esp+0x14]; this build keeps it in EDX, stores the flag at [esp+0x48] and pushes
+// the zero-extended flag. BLOCKED-BY 0x1c4b00: its last parameter is a long while the call hands it the bool force,
+// and that declaration lives in src/unknown_1c25a0.cpp, which this lane may not edit.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

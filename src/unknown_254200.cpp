@@ -306,6 +306,12 @@ void function_254200(void)
 // (1113 B); the doubled size computed at the top of the readiness block 33 (the pair stays ours); at the top of the
 // function 283 (1103 B); the size parameter doubled in place with no size local 19; the bitmap choice as `if (arg_4)
 // local_0 = local_1;` reusing the first view local 41. All restored.
+// M3 lane 1 r144 (single-address fast, control 4): the depth through a `real const &` to a named value 8 (the colour
+// block's three spills and reloads come back red, green, blue where the control has blue, green, red; the pair stays ours);
+// that with the two dimension locals dropped (fields read at the stores) 12; that with the point copy declared ahead of
+// the size 17 (the colour reloads then xmm2, xmm1, xmm0 from 0x24, 0x18, 0x20: neither slot nor register order); the size
+// parameter doubled in place with the point copy after the 0x1cf50/0x1c710 calls 30; the point copy at the top of the
+// readiness block, ahead of the bitmap choice 96 (1093 B). All restored; the x, y + size, constant group stays ours.
 // M3 lane 14 r135 (fast, control 4): the bitmap lookup helper as two nested ifs 4 (same code); each corner through a
 // forceinline (u, v, x, y) helper issuing the texture-coordinate and position calls 4 (same code); the drawing block in a
 // forceinline helper taking the point, scale, size and colour 230 (1095 B); the colour helper taking the colour by value
@@ -724,6 +730,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // code); defaulted to 42 and overridden in an `if` 94 (2258 B); the closing `else if (g_51ec9a)` as a plain `else` 22
 // (retail re-reads the flag); the alpha product scale first 2 (same code); the offset quad reading arg_0's fields
 // directly instead of the two coordinate pointers 18. All restored.
+// M3 lane 1 r144 (single-address fast, control 2): the first quad's depth constants through a `real const &` to a named
+// value 2, every quad's 2 (both the same pair: the reference that reverses 0x254490's colour reloads does not reach this
+// pair); the lower texture coordinate written `-(arg_1 * 0.5f) + 0.5f` 2; the upper written constant first 2; the first
+// quad's reference with the upper constant first 2 (all the same code). All restored.
 // M3 lane 14 r135 (fast, control 2): the bitmap lookup helper as nested ifs 2 (same code); the two 0x14bc0 calls without
 // the (short) cast 2 (same code); a 600 s permuter run (60 tries), best 2; the last quad's corners through a forceinline
 // (u, v, x, y) helper 162 (2176 B, first +0x83); the texture-stage values by enumerator name 2 (same code).

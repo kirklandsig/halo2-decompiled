@@ -2153,6 +2153,11 @@ void function_27dd10(void)
 // the inner group loop as a while with the index step at its end 2; the node lookup as a single-exit result 2 (both the
 // same code everywhere); the destination-mask test as `mask ? node_flags_test(...) : true` 2 (0x281b60 39, 0x288570 120);
 // function_288573's output pointer as `s_animation_output *const &` 365 (1742 bytes; 0x281b60 354, 0x285750 386). All restored.
+// M3 lane 13 r133 (fast with 0x281b60 and the five matched walk users; control 2): in function_288572 the inner for's
+// test as `local_3 > arg_5` 10 (every walk user 6-124), the outer for's test as `arg_7 > arg_5` 8 (only the three
+// loop-end compares flip, the pair stays; every user 6); node_destination_get's map entry held in a `short` 382 (1753 B);
+// the channel-counter step written in both arms of the destination test 248 (0x289580 78); the destination index
+// initialised to the node index 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2389,6 +2394,12 @@ void function_2818e0(void)
 // scale moved into the interpolation test's else arm 2 (same code); blend 2's translation through the existing vector3f_add
 // 4; a separate applied-destination local beside the kind-0 cursor 2 (0x289580 2); the kind-2 clamp as an unconditional
 // ternary self-assignment 2 (same code). All restored.
+// M3 lane 2 r126 (fast with 0x27dff0 and the four matched walk users; control 2): redundant parens around the blend-2
+// translation arm's first sum in function_288573, one pair 7 (the pair stays; that arm's addss operand orders move),
+// two pairs 2 (0x289580 78), three pairs 39 (0x289580 78): the arm's float keys move, and parens in an arm a user never
+// runs still move that user, so node keys are counted before dead arms go; around the blend-2 scale product one, two or
+// three pairs 2 (0x289580 78 with two or three); around the walk's group-end sum, around both its sums, around
+// node_flags_test's word index 2 each (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

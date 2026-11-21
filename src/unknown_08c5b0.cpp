@@ -294,6 +294,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // 4; the selector `__forceinline` with the existing read 4; the existing read through the parameter's own address
 // (`request_reference`) 4 (same code); a plain read of both fields through one read of the parameter's address 32
 // (95 B, folded compare).
+// M3 lane 7 r203 (h2m fast with 0x8c5b0, MATCH each time), plain reads: an inline test `kind == 1 && available` taking the
+// kind, the setting as a ternary on it 32 (95 B); both fields read through a `const &` to the request 32; seeded `setting =
+// 1` with `request->kind == 1 && available` in place 30 (94 B); `bool received = kind == 1 && available;` then a ternary 32;
+// re-measured: the two-byte memcpy kind read 4 (the volatile read's code).
 // M3 lane 3 r281 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4): the selector's arms as one test (`kind != 1
 // || !available` gives 1) 11; no old-setting local, the change test reading the stored setting, 5; the selector defined
 // after the handler (forward-declared) 4 (same code); re-measured the reference-bound plain read 4 (same code). A 600 s

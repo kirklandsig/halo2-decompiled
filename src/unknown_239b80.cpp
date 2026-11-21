@@ -888,6 +888,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Completed lowest-point scan extent as pass/candidate/compaction bound, seven subsets:
 // 144/251/154/225/155/256/256. Signed-word pass with the completed extent at both traversal bounds 244.
 // NOT kept: the two-bound form recovers frame 0x14 but raises the score and changes the caller.
+// Round 499: sole produced length with equality bound, top and bottom in signed word, full width and unsigned word,
+// then signed word with Boolean departure.
+// Fast scores in order 251/260/253/249/273/246/228/224.
+// NOT kept: Seven forms recover the 0x14 frame. The best scores 224 at retail length and changes the matched caller
+// 0x239d50. Every form raises the target score.
+// The wider pass bound still occupies the extra frame word, and retail’s count and departure homes differ.
 // Separate signed-word loop bounds on pass, candidate, lowest/candidate,
 // pass/candidate, lowest/pass or all three 144 each. A signed-word pass
 // with its own bound, alone or with a signed-word candidate bound 250/250.
@@ -905,6 +911,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // byte in the indices home and hull count at +0x10 as retail; left: the rotated pass loop, points/current/count in
 // EBX/ESI/EDI, the closure's fxch); on it a positive two-axis equality helper for the closure 153, a short hull count 251,
 // the short compare 251, the heading after the scan 222, return exits 248.
+// M3 lane 16 r165 (fast with 0x239d50 and 0x239b80, both MATCH throughout; control 144): one long hull counter in a
+// two-part loop condition `while ((short)hull_count < count && next != NONE)` (no flag; next started at current, the
+// two closure exits under `if (next != NONE)`, the compaction skipped after a NONE exit) 251 (793 B: points and indices
+// lose their registers); the departure flag declared at function scope ahead of the hull count 262 (764 B); the lowest
+// scan's two coordinates in their own `{}` block 144; the classifier's result named before its test 144; a named point
+// pointer in the lowest scan 144 (the last three the same code).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1497,6 +1509,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
 // tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
 // guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
+// Ordinal before point/side, between them, before side/point, or between
+// side/point 133/132/133/130. Publishing the side in each input-acceptance
+// branch, before or after the point copy, after the mask update, or after duplicate
+// suppression 216/216/166/135. Early publication recovers count in ECX, swaps
+// the side slots and grows the body to 895 bytes. Late publication leaves the side in CL.
 // M3 lane 6 r214 (fast with 0x239e50; control 129, aligned 81, masked 16). Retail keeps both side bytes in memory (the
 // copy at the loop end goes through CL into +0xd), so the count holds ECX from the top; ours keeps the previous side in
 // CL. The listed copy moved ahead of `if (inside)` re-measured 157 (masked 9: left the two side-byte slots swapped, the

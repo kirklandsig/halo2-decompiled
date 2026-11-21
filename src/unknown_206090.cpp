@@ -842,6 +842,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // re-measured 1624 (5990 B, frame 0x590), so retail's extra length is elsewhere. The helpers' bodies as the existing
 // shared ones: the cross product as cross3f_staged 1357; the in-place add as vector3f_add(a, b, a) 1346 (same code); the
 // scale as vector3f_scale 1412 (6238 B, retail's length); the normalize as normalize3d 1470 (6131 B).
+// Round 499: entry object index, common zero-vector source, ray-admission component read, point pulse clock, named
+// excess slip, normalized direction scope, impact-position scope, and contact-velocity scope.
+// Fast scores in order 1370/1370/1447/1346/1370/1346/1346/1346.
+// NOT kept: Four forms tie at 1346. The named object index, common zero-vector source, ray admission and excess-
+// slip forms raise the score.
+// The excess magnitude snapshot storage, 0x58c frame and retail component and velocity homes remain.
 // Point velocity snapshots at the arm/cross (angular), sum (linear), or both
 // boundaries 1415/1415/1417/1490. Contact equivalents 1361/1361/1362/1469.
 // NOT kept: all regress. Point copies retain 0x5d0; contact copies add frame storage.
@@ -850,6 +856,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // all three 1460, kinetic direction normalized in the force output 1433, translated impact point aggregate
 // 1349, both projections through component setters 1524. NOT kept: all regress from the reduced control. The
 // 1374 and 1349 forms reach retail length but retain a frame difference.
+// contact normalization returns success, early failure 1368, impact normalization returns success, early
+// failure 1386, contact normalization and impact normalization returns success, early failure 1368,
+// contact normalization returns success, test result 1350, impact normalization returns success, test
+// result 1390, contact normalization and impact normalization returns success, test result 1405, contact
+// normalization returns success, early success 1350, contact normalization and impact normalization
+// returns success, early success 1405.
+// NOT kept: All eight forms retain the 0x5d0 frame and raise the score. Three reach retail length.
+// The 0x5d0 frame exceeds 0x58c. The component and velocity homes remain displaced.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

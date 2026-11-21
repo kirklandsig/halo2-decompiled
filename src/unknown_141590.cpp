@@ -537,6 +537,15 @@ static inline void quaternion_transform_vector(
 // NOT kept: The 187 form restores the 0x24 frame but changes the last projection’s grouping. The 199 form falls below the gain threshold.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Existing real scale for cross/input/projection contributions 299/269/291,
+// cross and input/cross and projection/input and projection 319/296/316, all three
+// 361, all three with a staged output 461.
+// NOT kept: pairwise weighted vectors recover frame 0x24 with more bytes and a higher score.
+// The quadratic spill and the first half-angle registers still differ.
+// The separate quadratic spill and copy boundary still differ.
+// Rotation accumulation in the destination per axis, first product/two-term sum, 310/266;
+// by arithmetic phase 411/379. In a complete result vector per axis 251/260, phased 405/316.
+// NOT kept: the destination forms that reach frame 0x24 extend the body by at least 30 bytes.
 // Typed basis projection with quaternion/input first: scalar snapshot 178/212,
 // scalar doubled in place 170/212, caller-owned quadratic weight 311/304.
 // Typed-member forms 187/199 reproduce earlier projection leads.
@@ -544,6 +553,11 @@ static inline void quaternion_transform_vector(
 // opening weight order 212, and original quadratic expression in retail order 259.
 // NOT kept: the shared dot changes the left-axis grouping. The staged square gains only
 // with both changes together, leaves frame 0x20, and changes the projection schedule.
+// M3 lane 11 r143 (h2m fast with 0x143120, 0x11d000 and 0x30bf0, all MATCH; control 201, aligned 236, masked 196): in the
+// quaternion helper m computed ahead of w2 247 at retail's 1317 B (aligned 213: m then lands ahead of the identity copy as
+// in retail, but w2 does too, where retail forms w2 and the doubled dot after the copy from a fresh 2.0); the cross
+// product into a separate axis vector scaled into the rotation 201 (same code); the helper as `__forceinline` 201 (same
+// code); the repair path's two crosses through cross3f 226; the cosine clamp as one ternary 301 (1318 B).
 // M3 lane 14 r135 (fast, control 201): the construction scale passed as `sine_half / sine` with no scale local 201 (same
 // code); the transform helper in place with one vector pointer 205 (1323 B); the helper's m ahead of w2 247 (1317 B: m and w2
 // then both go above the identity copy, retail only m); the sine product written at both uses 245 (1305 B); the helper taking
@@ -1637,6 +1651,14 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Stage the mixed/axial/square weights at coefficients 23 and 25, singly 1213/939/1213,
+// paired 1213/939/1213, all weights 939, and complete mixed terms through the final
+// factor 1154. NOT kept: no form recovers frame 0x300 and the shorter forms move
+// away from the retail extent.
+// One recalculated product local across the two higher bands, for r6*r0/r6*r3/both 1216/1231/1238,
+// transverse mixed pair 1282, axial squares 1281, diagonal squares 1296, off-diagonal squares 1205,
+// and the r0 mixed pair 1280. NOT kept: the off-diagonal squares reach frame 0x300 and first +0x39,
+// but all forms shorten the body past retail and raise the score.
 // Direct accumulation into the matrix, third-band rows 1 through 7 independently, then all seven
 // rows.
 // Scores 1472/1380/1608/1324/1632/1220/1203/1611.
