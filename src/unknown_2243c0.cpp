@@ -852,6 +852,16 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // as one chained assignment; the pass definition bound as `byte const *const &` with local_10 formed from it; the pass
 // tag bound as `long const &` to the element's field; the pass tag masked at its definition; one to seven unused
 // initialised locals at the top (flat: the last two lookups' registers are not a symbol-count phase). Body unchanged.
+// M3 lane 2 r126 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; main's body unchanged at 117): lane 16 r152's
+// saved reference chain rebuilt on this file 8 at +0x9e (left: the pass definition EDX where retail EAX, the material tag
+// ECX where retail EDX, the material definition EDX where retail EDI, the zero after the material lookup). On the chain:
+// the four cache zeros between the two definition lookups 13 (the stores move, the registers stay), ahead of both
+// lookups 60; both definition lookups through the chain's tag-data helper (and the material through its record helper)
+// 8, the material lookup alone 8 (same code); the geometry-block pointer named ahead of the pass tag read, between the
+// two lookups or ahead of the pass element 8 each (same code); the pass tag read without the bound pass element, the
+// element bound after the pass lookup, after both lookups or not at all 121 each (the bound element's dead `lea`, which
+// retail has, goes). Lane 16's next-fit reading still stands: retail needs ECX held from the pass tag's load to the
+// material definition's and EDX until the +0x20 read, and no spelling here holds either.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

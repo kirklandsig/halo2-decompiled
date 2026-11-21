@@ -2015,6 +2015,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // MiniMax R (11-20): score 188 (was 188): no new form; the frame stays 0x30 against retail's 0x2c (the look pair still
 // needs an aggregate slot of its own), the unit and mode still take each other's slot against retail, and esi and edi are
 // still saved ahead of the unit test where retail saves them after it, so the body stays BLOCKED by the stand-in.
+// M3 lane 2 r126 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): values re-bound by a const
+// reference at their later uses: the mode at both overlay calls 188, the zoom speed at its test and clamp 188, the
+// weapon-active flag at the set-active call 188, the user-flags copy at its test and store 188 (same code each); the mode
+// lookup after the four spring defaults 204. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
