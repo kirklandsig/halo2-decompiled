@@ -2158,6 +2158,12 @@ void function_27dd10(void)
 // loop-end compares flip, the pair stays; every user 6); node_destination_get's map entry held in a `short` 382 (1753 B);
 // the channel-counter step written in both arms of the destination test 248 (0x289580 78); the destination index
 // initialised to the node index 2 (same code). All restored.
+// M3 lane 16 r168 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
+// function_288572 the interpolation test's arms swapped (`if (!arg_3)` apply, else the frame-state path) 4 (0x281b60 4,
+// 0x285750 184, 0x28aaa0 2); the channel-counter step as one increment of a selected global (`(c == 0 ? a : c == 1 ?
+// b : d)++`) 2 (0x288570 120); node_destination_get's output index as a `long &` 2 (same code everywhere); the walk's
+// count copied into a `long const` local for the loop bound and the clamp 2 (0x288570 3, 0x289580 78); in
+// function_288571 passes 1 and 2 as a counted loop 450 (1776 B, every walk user regresses). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

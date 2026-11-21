@@ -2037,6 +2037,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // and the frame store as well 202 (2189 B); the look angles read from the global's entry at each use with no look pointer
 // 415 (2208 B); `first_weapon = user->weapons` 188 (same code); the set-active flag passed straight to the call with no named
 // bool 378 (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 16 r168 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the weapon object looked up
+// inside the 0xb000067 arm, its only use, 245 (2197 B); the sound callback selected in the update call's argument with no
+// callback local 188 (same code); the aiming speed computed ahead of the update call 388 (2204 B); the 0x98 overlay's
+// channel flags and set as two conditional expressions on `no_scope` 350 (2203 B); the busy test as `== 0` and the
+// countdown as `-= 1` 188 (same code). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

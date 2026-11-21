@@ -1768,6 +1768,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // bit as a `byte` 590 (3025 B); as a `(bool)` cast of the masked shift 590 (3025 B); declared ahead of flying 238 (first
 // difference +0x5); the general arm's delta through the existing vector3d_from_points3d(current, &scaled, &delta) 485
 // (3052 B); its step computed ahead of the limited copy 244. Body unchanged.
+// M3 lane 16 r168 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 234): every input read through the
+// `input` pointer (the direct and flying arms too) 640 (2971 B); the ground-bit test as `!((flags >> 0) & 1)` 234 (same
+// code); the direct bit tested at its use with no `direct` local 620; the gravity clear's test as `flying ||
+// !limited_step` 445 (3053 B); the direct arm's fallback copy member by member 588 (3020 B). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
