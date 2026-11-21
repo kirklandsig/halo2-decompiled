@@ -3301,10 +3301,15 @@ real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
 // MiniMax S (11-20): no new form, no lower score (597): retail reads the flags byte after the four pushes and masks it with the constant 1 there, where this build hoists the byte load to the entry; four explicit listener-gain stores instead of the memset score 767.
 // MiniMax B (11-20): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes (reading `alternate` inside the definition guard reproduces retail's entry but measures 615) and the track loop still holds the index in ESI, the track definition in EBP and NONE in EBX where retail keeps the index in memory, the track in EBP and NONE in ESI; what still differs is that entry mask, the creation arm's compare order and the track loop's register roles.
-// score 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
+// score 597 (was 597): The 0x3c frame and 2518-byte extent agree. At +0x4 this build reads the request byte
+// into BL before saving EBP. Retail saves EBP first, compares the requested state before admitting the
+// definition, and loads the request byte after that gate. One in EBX then serves the initial writes and state
+// logic. The trials test the fallback result’s dependence on definition admission and availability while
+// keeping the lookup, creation and playback paths intact.
+// Earlier at 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
 // Earlier score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // MiniMax G (11-20): no new form, no lower score (597): the entry still differs - retail tests the state before the definition index and reads the flags byte inside the definition guard, masking it with 1 kept in ebx, while this build reads the flags byte into bl at the top and computes the alternate flag before the guard; a constant-one local is folded away and swapping the two top statements changes nothing.
-// score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
+// Earlier at 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
@@ -3756,6 +3761,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // definition test, 731/731/725/731. The latter recover the entry to +0x1c
 // but the acquisition outcome then uses different stores and the scores rise.
 // Stopped state set from the resume bit 737, same with alternate decoded inside the definition guard 663.
+// Fallback from both inputs, with or without guarded alternate 762/773. Shared definition test, with or without
+// guarded alternate 780/769. Stopped-state assignment under the definition gate, with or without guarded
+// alternate 631/622. Direct missing/unavailable exits, with alternate between or after the gates 804/792. NOT
+// kept: every form raises the score and the original saved-register sequence is still missing.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
