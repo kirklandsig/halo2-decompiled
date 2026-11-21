@@ -1700,6 +1700,9 @@ void function_143250(
 // it 939 (same code: the order is set after the homes); its subtracted product with `s21 * r5` for s21_r5 1147 (10783 B);
 // entry 37's r6_r3_r8 written `r6_r3 * r8` 1571 (10765 B). Retail keeps 143 scalar cells under the workspace, this build
 // 142; 428 of the 935 differing lines differ only in stack offsets.
+// Second-band named products for sums, ordinary differences, zero-minus differences, or all paired coefficients
+// 1226/1415/1226/1226. Running accumulators for the same groups 1229/1095/1226/1229. NOT kept: all retain the
+// 0x2fc frame and raise the score.
 // M3 lane 2 r128 (H2M_FAST with 0x143250, MATCH; control 939, aligned 777, register/offset-masked 154; the convention is
 // already retail's: rotation in EAX, ret 4): third-band entries 23-25 in another statement order (value trees kept),
 // 25 first 1113 (10773 B), 24 first 942, 23 last 1114 (10773 B); entry 23 accumulated in place over four statements 939

@@ -2427,6 +2427,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // link-time expansion could keep a parameter copy, as 0xb8bd0's expansion does in 0xbd090) 233 (488 B: it stays a call),
 // with the colours read first inside it 233; colour B read into a local before the cluster test 188 (572 B); both
 // colours read there 195 (572 B); colour B read after the spawn stores, ahead of the type lookup 187 (572 B).
+// Color lookup tag reference, tag value, settings pointer plus tag and settings reference plus tag 137/128/128/128
+// with colors read at publication. With early colors, 189/184/184/184 at 572 bytes and frame 0x48. The first color
+// still misses its retail spill.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4154,6 +4157,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // with colour B first 92, with the second 0x1751d0 result named 92. This build already has retail's convention here
 // (system index in EAX, effect index from the stack); left: frame 0x4c against 0x54, system EDI / next index ESI, the
 // cached mode, colour A in EBX with colour B spilled (retail spills colour A and keeps colour B in EDI).
+// Named color lookup settings or tag with a common successor return or separate active-path return, all 93 with the
+// cached mode or 126 with per-call reads. The per-call forms keep the caller exact and recover four of the eight
+// missing frame bytes, at 352 bytes against retail 337.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

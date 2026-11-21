@@ -1656,6 +1656,10 @@ PRIVATE inline long score_string_list_1608e0()
 // player's user index read once into a `short` local 733 (2840 B); the scroll offset bound once as `real &` 740 (2840 B); the
 // player as `data + index * sizeof` (the event-player getter's shape) 679 (same code). Measured, not changed: the height
 // without its `volatile` 723 (2856 B), the fade count without it 707 (2856 B). Body unchanged.
+// Separate title/caption fades, aggregate title color and both 679/679/679.
+// Shared caption alpha alone, with separate fades, with aggregate color, with both
+// or with immutable fades and aggregate color 681 each. Frame 0x798 and the
+// viewer and origin homes still differ. Body restored.
 // M3 lane 7 r207 (h2m fast with 0x161420, MATCH; control 679): the width computed ahead of the panel's time/score
 // stores 707 (2888 B; it gives retail's second read of the window's left edge, the byte stores through the panel being
 // possible aliases, but retail's width loads follow those stores); the screen height ahead of x 698; both 701; the

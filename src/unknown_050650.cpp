@@ -1012,6 +1012,9 @@ struct s_collision_result_buffer_1697c0
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
+// Independent fallback components with aggregate output or the shared setter, by entry placement: original
+// 377/377, before fraction 377/377, after pitch-axis construction 380/380, there with fraction 380/380. NOT
+// kept: the 0xa4 frame, longer body and changed matched caller depart from retail.
 // M3 lane 5 r224 (lead, not kept): the shared in-place rotation with each cross term scaled by the sine where it is
 // computed (rows subtract the scaled term) 270 -> 199 (1433 B, plain agreed), but it raises 0x297d30 23 -> 153.
 // Yaw-axis reload after hit processing, before the fraction test, or at trace return

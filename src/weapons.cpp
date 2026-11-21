@@ -3497,6 +3497,9 @@ struct s_ammo_conversion_entry
 // single exit through negative acquisition 207; source reserve or loaded member lvalues 205 each;
 // transfer cap inside the successful search 199. NOT kept: the ordinal searches shorten the body
 // to 718 bytes, and the forms at retail length still miss the destination and key registers.
+// Cached conversion membership as shifted bool, masked bool, result of a test or shifted byte 214/214/209/214.
+// Byte or word type mask 204/190. Boolean membership with conditional retention or ternary retention 197/188.
+// NOT kept: the two-point gain leaves the source and destination register roles unresolved.
 // Destination magazine bank 207, source bank 190, both runtime banks 207, both runtime
 // arrays by reference 207, persistent tag bank 208, destination and tag banks 209, source
 // and tag banks 208, all three banks 209. NOT kept: the source bank ties, the destination
@@ -3835,6 +3838,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
 // the magazine debit where retail stores it after admission and the magazine update.
 // The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
+// Post-heat loaded short retained through the holder test, with native compound debit, signed balance, short
+// difference, or word balance. The shared and separate threshold and holder gates all score 603. Frame 0x1c64
+// and separate magazine-tag and round spills remain.
 // Exhaustive burst assignments 577; shared post-wake accumulator 630; selected burst before round
 // multiplication 639; separate round requirements 651; selected burst with short minimum 620;
 // named shot multiplier or debit conversion 603/603; short pre-wake minimum 608.
@@ -4977,6 +4983,9 @@ struct s_weapon_projectile_creation
 // Typed damage event with member stores or value initialization 1145/1145. Typed owner aggregate 1122.
 // Origin/axis/both setters 1128/1168/1140. Chained origin stores 1145. Owner aggregate with chained origins
 // 1158. NOT kept: none improve the opening frame or score.
+// Marker-average scalar sums, indexed with direct seeds or initial point copy and component/point stores
+// 1194/1139/1135/1142. The same four forms with a marker cursor 1171/1141/1130/1204. NOT kept: the 0x1ea4 frame
+// remains and the scores rise.
 // Fixed axis components with complete result or direct output 1154/1190; fixed axis
 // with projected products and direct output 1228. Projected products before direct
 // output or complete result 1215/1138. Named cosine complement with direct output
