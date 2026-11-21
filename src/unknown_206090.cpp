@@ -888,6 +888,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // contact's skip call written first (`if (field_b3) skip; else { ... }`, no inverted test) 1349 (6238 B); the zero-depth skip
 // call written first 1366 (6238 B); both 1402 (6211 B); the first loop's cross through function_206092 re-measured 1405 (6238 B);
 // both skip calls first with that cross 1451 (6195 B). Body unchanged.
+// Entry object identifier 1370, typed lookup with entry identifier 1370, scoped component index 1346,
+// scoped component with entry identifier 1370, both identifiers scoped through velocity call 1370,
+// entry identifier with shared zero-vector pointer 1346, typed lookup and scoped component 1346,
+// typed lookup and both identifiers 1370. NOT kept: the 0x5d0 frame, velocity homes and 6243-byte
+// extent persist in all eight forms.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

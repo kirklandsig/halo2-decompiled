@@ -748,6 +748,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // test 295 (1173 B), assigned in an if/else 285 (1164 B), three reals with right-first rows 295, the camera scale in a named
 // local for both views 250, the second point's rows k, i, j 250. Every form loads the scale fifth and tests it ahead of the
 // offset stores; retail loads it once the origin's z is dead (XMM6), which leaves XMM7 for right.i. Body unchanged.
+// Copied basis matrix with in-place, separate first, separate second, or separate views 379/306/359/301.
+// Copied transform matrix with the same output choices 335/306/292/301. NOT kept: the explicit axes
+// workspace grows the frame and all eight forms exceed retail length and raise the score.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

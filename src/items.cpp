@@ -1266,6 +1266,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
 // Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
 // NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
+// Returned unscaled cross with scaled scalar coefficients 245, scaled j/i/k 244, separate alignment dot 237,
+// same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
+// named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame
+// excess and grows the body to 909–919 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
