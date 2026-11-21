@@ -908,6 +908,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // EBX to `sample` (the only callee-saved byte register, live across the 0x2640c0/0x2641c0 calls), so the actor index has
 // no register and stays a stack argument. Still BLOCKED-BY 0x2641c0's expansion (its noinline declaration is in another
 // lane's file).
+// M3 lane 11 r147 (fast, single address, control 404): `update` and `sample` as two declarations, update first 402
+// (1620 B, aligned 318 against 317: BL still holds update; a declaration order worth 2, not kept); the sampled flag
+// declared ahead of the maximum 404; the two flags declared at the loop top ahead of the index 405; the old state read
+// after the flags' declaration 404; the 0x25d610 test given the node view 404 (same code). Still BLOCKED-BY 0x2641c0's
+// inline decision (rounds 114, 117 and 143: dropping its noinline loses 0x264210).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

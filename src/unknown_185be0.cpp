@@ -787,6 +787,10 @@ union s_185be7
 // on it the 0.64 test through the existing dot_product2d with the field_40/44 pair viewed as a vector2f 42 (same code),
 // the second hold-time add ahead of its scale 48. On the body: the record copy as memcpy 60 and the 0.64 test through
 // dot_product2d 60 (both the same code). Body unchanged.
+// M3 lane 11 r147 (fast, single address, control 60): the two look-sensitivity reads through the sibling files' gamepad
+// preferences record (a pointer to the player's record, read twice) 545 (first +0xcd); that record indexed at each use 60
+// (same code); the turn pair defaulted to the unscaled values at its declaration, the else arm dropped, 654 (3784 B); the
+// quotient `real const` 60 (same code); the scaled turn products written angle first 60 (same code). Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

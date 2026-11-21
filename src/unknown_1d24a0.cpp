@@ -641,6 +641,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // calls 780; the shared dot3f for the private copy 780 (each the same code). Left at 780 as r141 lists: EBX saved around
 // the loop with EBP (retail at the entry), the frame 0x1d8 against 0x1d4, the flag pairs' copy roles, `mov cl` for
 // retail's `movzx`, product sides, and the tail's ECX/EDX rotation (ours tests the response flag through DL, retail CL).
+// M3 lane 11 r147 (fast, single address, control 838): the entry test as one `if` around the body in place of the early
+// return 838 (same code: EBX is still saved around the loop, retail saves it with ESI and EDI); the removal in
+// src/unknown_1cec30.cpp's form `data[i] = data[--size]` on the array's own element type 838; the element pointer as a
+// cast of `&list->data[i]` 838; the final free through a named list local 838 (all the same code); the half rate named
+// once for both rounding calls 869 (4230 B: retail converts it twice). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
