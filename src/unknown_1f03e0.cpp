@@ -1771,6 +1771,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // M3 lane 2 r131 (H2M_FAST with 0x1f0450/0x24590/0x1f03e0, all MATCH; control 234): the damping, direct and gravity flags
 // as mask tests (`(state->flags & 0x10) != 0` and so on) one at a time and all three 234 each (same code); the history
 // test's second half as `!direct` 622 (3052 B: retail reads the flags byte again there). Body unchanged.
+// M3 lane 16 r168 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 234): every input read through the
+// `input` pointer (the direct and flying arms too) 640 (2971 B); the ground-bit test as `!((flags >> 0) & 1)` 234 (same
+// code); the direct bit tested at its use with no `direct` local 620; the gravity clear's test as `flying ||
+// !limited_step` 445 (3053 B); the direct arm's fallback copy member by member 588 (3020 B). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

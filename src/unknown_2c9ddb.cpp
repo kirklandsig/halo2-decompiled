@@ -45,7 +45,7 @@ struct s_variant_item
 bool function_212bc0(long file_index, s_game_variant *variant);
 bool __stdcall function_215f40(long type, byte *buffer);
 long function_212380(long type, long controller_index, byte *buffer);
-void ui_game_variant_build_default(long type, s_game_variant *variant);
+void ui_game_variant_build_default(s_game_variant *variant, long type);
 void function_148aa3(long error, word controller_flags);
 long saved_game_file_type_from_variant(s_game_variant *variant);
 void function_238c69(long mode, long type, word *name, long maximum_count, long controller);
@@ -468,6 +468,16 @@ extern long g_55c154;
 // the variant address per arm). On it: the failure call at each failure point (early returns) 183 (same code, tail-merged);
 // the count and destination named once at the second half's top for both requests 183; the game type read once into a
 // local for the three calls 189; the selected arm first 183; the file type named in each arm before its request 183.
+// M3 lane 13 r137 (h2m fast with 0x1489b5, 0x149f88, 0x238c69, 0x2ba9f4, 0x13fac0, all MATCH; control 61): 0x238c69 as
+// (controller, mode, type, name, maximum_count) on this body 76 (574 B); 0x1489b5 as (variant, engine type), the order
+// both retail callers' setup shows (the type is computed before the variant is pushed), 61 (same code here; kept: it
+// lets 0x149f88 match without its reference to the engine type); two load arms with both orders and a named count 183
+// (575 B: the default arm now loads the type before the push as retail, but `saved` and then &g_54e4a0 still take EBX
+// and `this` spills); that with the s_screen_parameters local at function scope 183; one load call per arm into a
+// shared `loaded` result, then the two arms 132 (547 B: the two loads merge into one call). Diagnostic on the two-arm
+// form (wrong value, reverted): the selected arm's type taken from `variant` 62, `this` EBX, the selected arm exact,
+// and the default arm still caches &g_54e4a0 in EAX for the copy and the build-default push where retail pushes
+// immediates.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -529,7 +539,7 @@ void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item
 				g_54e4a0 = variant;
 				if (create_default)
 				{
-					ui_game_variant_build_default(game_type, &g_54e4a0);
+					ui_game_variant_build_default(&g_54e4a0, game_type);
 					unicode_string_copy(g_54e4a0.name, variant.name, 0x20);
 					function_238c69(5, saved_game_file_type_from_variant(&g_54e4a0),
 						g_54e4a0.name, 0x20, (*controller)->controller_index);

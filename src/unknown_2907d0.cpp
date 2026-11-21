@@ -277,6 +277,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // to EBX at entry); no address local with the else arm copying the forward first 80 (462 B); no address local with the
 // transform declared last 33 (same code); a `bool result = true;` returned at the end with the node pointer named (`node =
 // local_3 + arg_1`) 19, the named node pointer alone 19 (same code each).
+// M3 lane 16 r169 (h2m fast with 0x200e60 and 0x142570, MATCH each time; control 19): the parameters as (record, object,
+// node, transform) 19 and as (transform, object, node, record) 19 (same code: nothing compiled calls it); the node arm's
+// point into its own `point3f` then copied to the shared point 131; the vector declared ahead of a bare point assigned from
+// the global 19; the else arm's copies through a `transform4x3f const &` bound to `**local_4` 19, the node arm's two calls
+// through that reference 19 (the 19s the same code: transform EBX, y EBP, the constant 1 shared).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

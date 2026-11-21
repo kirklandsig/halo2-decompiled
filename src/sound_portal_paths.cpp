@@ -281,6 +281,12 @@ __forceinline long portal_path_gain(real distance, real range)
 // take [base + index] where retail has [index + base]); that with the deep block's `sound` pointer dropped 15; the pointer
 // drop alone 261; the read as an assignment inside the condition 250; as `closer ? cluster->sound_index : NONE` 250; a
 // long local 293. Body unchanged here (see 0x18dc90's note for the twin's forms).
+// M3 lane 3 r291 (H2M_FAST with 0x18dc90, 0x14b240 and 0x249d60; control 287, main's callee): the nearest test through
+// `short source_sound = cluster->sound_index;` declared ahead of its `if` (lane 15's held-form fix) 287; the nearest test
+// written `distance <= nearest_distance` 287; the deep block's limit without the `sound` pointer (`&bsp->sounds[...] ?
+// ... : maximum_range`) 287; both of those 287; the portal flag test as its own `continue` 287 (same code each: with
+// main's 0x14b240 the table bases stay hoisted and the cluster read is shared with the loop compare). Still BLOCKED-BY
+// 0x14b240's write summary, whose change raises 0x18ae80 (src/sound_looping_paths.cpp, another lane's file this round).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -632,6 +638,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the walk 342; the environment compare written cluster first 295 (same code); const portal and other-cluster pointers by
 // pointer addition 295 (same code). Still BLOCKED-BY 0x14b240's write summary (ours hoists both table bases out of the
 // walk and spills one, frame 0x42c).
+// M3 lane 1 r147 (fast with 0x18d730, 0x14b240, 0x249d60, 0x18ae50; control 295, register-masked aligned 111): the gain
+// output without its `index != NONE ?` guard 312 (1346 B); the index output stored as `indices[i]` with no pointer step
+// 306 (1352 B); both 318 (1341 B); the side bit as `((dword)encoded >> 15) & 1` on the short entry 296; that with
+// `indices[i]` 307 (1352 B). Still BLOCKED-BY 0x14b240's write summary (its held form moves 0x18ae80, whose file is on
+// this round's avoid list).
 // M3 lane 15 r126 (h2m fast with 0x14b240 and 0x249d60; on lane 13's r111 held form rebuilt on this tree, 21 there with only
 // the cluster EBX / widened portal index EBP pair left; 0x18ae80 846 -> 911 on that base): the nearest test through `short
 // source_environment = cluster->environment_index;` declared ahead of its `if` 8 (pair retail's; left: that read above the
@@ -647,6 +658,15 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // test first in the nearest test 326; a `while` walk 338; a redundant count guard around the walk 22; the deepest stores
 // portals first 21; the nearest stores distance first 22; a long portal index 325; a 600 s permuter run on the 4 form
 // (75 tries) best 4. Body unchanged here.
+// M3 lane 3 r291 (H2M_FAST with 0x14b240, 0x249d60 and 0x222150; on lane 15's r126 4-difference lead rebuilt on this
+// tree, 0x18dc90 4 and 0x18d730 250 there; body unchanged here). With the nearest read after the distance compare
+// (no local) the lead is 21: a pure EBX/EBP swap of the cluster pointer and the widened portal index, nothing else.
+// On that 21 form: the local declared inside the `if` after both tests 21; the compare and the NONE test nested
+// with the local between them 21; the portal's cluster pair read through `bsp->portals[portal_index]` 317; the
+// flag test through it 25; the seed's bit set written out with the field twice 25; the seed's and the deep block's
+// bit sets through the existing bit_vector_set 21/21. Diagnostic: 0 to 31 unused initialised locals at the top
+// 21/21/25 x30 (no symbol-count state flips the pair). The pair follows where the cluster read sits, not the
+// source use count. Still BLOCKED-BY 0x14b240's write summary (0x18ae80 rises on it; its file is another lane's).
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

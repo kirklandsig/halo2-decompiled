@@ -2746,6 +2746,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // after case 20). Diagnostic: case 13 dropped alone 479 (2404 B, test after case 20). Reading: the post-switch test
 // follows case 20 whenever case 20's else arm stores the flag (it falls through into the test); retail's arm never
 // stores it (AL is tested in place), so its test went to the first predecessor, case 0. Restored.
+// The 0x1c frame agrees. The default dispatch still spans to a late success exit.
+// Selector comparison chains 0/1/2, 0/2/1, 1/0/2, 1/2/0, 2/0/1 and 2/1/0:
+// 596/596/596/595/596/595. Long selector 615, pending flag arm first 596.
+// NOT kept: the chains reverse the retail entry allocation and raise the score.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
