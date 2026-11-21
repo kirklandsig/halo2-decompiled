@@ -3133,6 +3133,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // source after the first position lookup 358 or second 343. NOT kept: the latter
 // moves a single-use field read across a call and grows the body by one byte.
 // Second source bound inside the optional sample 354.
+// Capacity as the success value 376; signed request size 354; rounded allocator with success from the handle 436;
+// existing bucket count field 354, with the signed node read before the empty-bucket test 354;
+// separate level count and requested level 354; exclusive level bound 372; coefficient address after acceptance 393.
+// NOT kept: both matrix copies still expand and none reaches the starting score at a shorter length.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
