@@ -1012,6 +1012,8 @@ struct s_collision_result_buffer_1697c0
 // Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
 // 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
 // NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
+// M3 lane 5 r224 (lead, not kept): the shared in-place rotation with each cross term scaled by the sine where it is
+// computed (rows subtract the scaled term) 270 -> 199 (1433 B, plain agreed), but it raises 0x297d30 23 -> 153.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2302,6 +2304,13 @@ struct s_actor_looking_structure_view
 // on the clamp product 1/2/3 127/129/62, on the angle 88/135/149; permuter (900 s, 93 tries) none below 6. Also on
 // the lead: the axis j read once into a named real 146 (925 B; 0x296e60 339); the axis copied into a local vector 209
 // (0x296e60 368).
+// M3 lane 5 r224 (h2m fast with 0x296e60, 0x297660, 0x2980d0 and 0x24590; control 23, 0x296e60 270): the shared in-place
+// rotation with each cross term scaled by the sine where it is computed 153 (925 B) with 0x296e60 199 (plain agreed:
+// 153 / 199; retail here reloads the sine late and scales the finished cross term, so a lead for 0x296e60 only); the
+// angle named at the loop-body top ahead of the copy 33; lane 3 r277's merged helper re-measured 6 (0x296e60 282), with
+// sine-scaled crosses 74 (0x296e60 198); the dot3f projection with sine-scaled crosses 139 (270); the staged dot with
+// sine-scaled crosses 153 (199); the score written forward-first 23 (same code); the clamp as a ternary then
+// `score *= fraction;` 141.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
