@@ -4492,6 +4492,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // The channel and count-byte address still share the packet-base allocation decision. Live count by pointer or
 // reference, with or without an entry snapshot, all 139 indexed and 164 with an advancing packet. The advancing
 // packet still gives EBP to the member and shortens the body to 478 bytes.
+// Shared payload boundary with indexed or walking packet. Prefix and stride 172/167,
+// end-minus-payload 168/158, stride-minus-payload 159/160, selected address 139/164.
+// Using the queued payload extent for the prefix gives the same 172/167.
+// The new boundary either grows the frame or leaves channel allocation unresolved.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
