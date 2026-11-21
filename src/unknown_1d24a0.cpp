@@ -654,6 +654,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // src/unknown_1cec30.cpp's form `data[i] = data[--size]` on the array's own element type 838; the element pointer as a
 // cast of `&list->data[i]` 838; the final free through a named list local 838 (all the same code); the half rate named
 // once for both rounding calls 869 (4230 B: retail converts it twice). Body unchanged.
+// M3 lane 4 r244 (h2m fast; control 838; body unchanged): the removal in the sibling contact-removal function's form
+// (`data[i] = data[--list->size]` through the list local) 838; the object-type byte read into a long local for the shift
+// 838 (still `mov cl`, the table data still in EDI where retail reuses EDX); local_2 and local_3 initialised ahead of
+// local_0/local_1 851; the two angular coefficients bound `real const &` to the record 871 (4225 B, as the reads at each
+// use); the element pointer as `data + index` 838 (same code). Reading: retail's head forms and spills the element pointer
+// because its data pointer is not kept across the attached-object lookup to the removal; ours keeps it in EBX for that path.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

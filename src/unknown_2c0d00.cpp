@@ -598,6 +598,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
+// Earlier stacked first line (925, was 925), merged here: the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
 // Earlier header (925, was 925; merged into the note above in r130): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
 // Earlier 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
 // Earlier at 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
@@ -808,6 +809,23 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // globals loaded ahead of the index where retail scales the index first (loop head, type 11, sphere node), the object
 // distance radius computed first (retail after the three differences), the marker-loop and sphere-loop dot term orders,
 // the location copy's scratch registers and the loop-entry `jmp` over padding. Body unchanged.
+// M3 lane 3 r292 (H2M_FAST with 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, which did not move; control 925 = plain):
+// the type-1 skip as `!(team != actor_team && function_1df560(...))` 925 (same code); the self-unit test with the
+// vehicle field compared first 925 (same code); self_unit declared first 925 (same code); the type-1 `if (team ==
+// actor_team || !function_1df560(...)) skip_classification = true;` alone 903 (3760 B). Diagnostics (semantics changed,
+// reverted at once): the type-1 arm without its 0x1df560 call (`if (team == actor_team) skip = true;`, or `skip = team
+// == actor_team;`) 883 at 3692 B, and the head is then retail's line for line up to +0x4a (frame 0x2cac, actor_index
+// EBX, the zero and self_unit EBP, unit_index EDI, the object-table global loaded in each block instead of hoisted to
+// the entry); the call alone (`skip = !function_1df560(team, actor_team)`) 879 and the call with (team, team) arguments
+// 868, first difference +0xb each: the call in the type-1 arm is what moves the entry allocation, not the skip flag's
+// store count. New form, match-only (a named bool used once): `bool enemy = team != actor_team && function_1df560(team,
+// actor_team); skip_classification = !enemy;` (the type-0 arms' spelling) 873 at 3740 B, first difference +0x46 (left
+// in the head: the 0x26c flag's byte home and the entry dot's operand order); with `else straight = true;` 755 (3756
+// B); with that and a long type local for the four arm tests 750; with the entry dot through dot3f(direction,
+// previous_direction) 741 (3745 B; previous first 743); all four 736 (3745 B). Left on 736: retail lays the shared
+// distance tail out right after the other-actor branch and defers the type-0 `else if` branch and the type 1/7/11 arms
+// behind it, the object pointer and index homes (+0x18/+0x1c), and scratch rotations. On the else-store base the listed
+// `if` form (708) still beats this one (755). Body unchanged.
 // M3 lane 2 r130 (h2m fast with 0x29a190, 0x29cbb0, 0x2c41b0 and 0x2c0d00; control 925 = plain): one `bool enemy = true;`
 // ahead of the type-0 branches, assigned in each, with one `skip_classification = !enemy;` after them 924 (3741 B);
 // `long object_count` 921 (3731 B); diagnostic (wrong code), the actor's unit read without the object table: still zero
@@ -2359,6 +2377,12 @@ long function_1fa7f0(void);
 // the side negated in the second tangent call's argument and flipped at the attempt loop's end 434 (1715 B, frame 0x10c
 // as retail, first difference +0x24, aligned/masked 299/199: closer in shape, shorter); that with the edge set only at
 // the hit 418 (1743 B, frame 0x114), with the repeated hit store and the top initialiser 426 (1728 B, frame 0x10c).
+// M3 lane 3 r292 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): diagnostic,
+// reverted at once: `count` read through a volatile view at its four loop uses 474 (1762 B): count leaves BX but the
+// points parameter takes EBX and the edge still sits in a slot, so count is not the edge's only competitor. Forms: the
+// emit's z and +0x02 reads through `points[index]` instead of the step pointer 473 (1758 B); the origin copied from
+// `query->source.point` (retail reads y through the query base) 400 (same code); `used` as a long 495 (1783 B). Body
+// unchanged.
 // M3 lane 2 r130 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70; control 400): the end scan as `for (end =
 // index; end < count; ++end)` 636 (1911 B); a named `short last_index = count - 1;` for the candidate test and the copied
 // last point 469 (1765 B); the scan as `while (end < count && points[end].type == NONE) ++end;` then one `if (end < count)`
