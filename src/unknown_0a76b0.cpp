@@ -2285,7 +2285,7 @@ __forceinline char unit_action_round(real value)
 // the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this build keeps the pool in EDI, the index in
 // EAX and compares the byte against an immediate; a short local for the index was measured at 297 and the 105 and 107 forms need
 // the four gotos, which the rules drop.
-// score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below (r214 lead 105 just above the marker).
+// score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below (r214 lead 105 and r222 leads 54 / aligned 8 just above the marker).
 // Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
 // control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
 // play block, `result = true` at the end of each arm with the animation failure skipping it, the tail under
@@ -2634,6 +2634,40 @@ __forceinline char unit_action_round(real value)
 // 105, the flag started false and set in both success paths 105, the switch on the expression with no `current` local 105,
 // the first-person NONE declared first (name's NONE after the actions) 105 (same code each); the channel declared at the
 // top 186 (frame 0x18, out of the dead mode parameter's home).
+// M3 lane 6 r222 (H2M_FAST with 0xe9ed0/0xea090, both matched in every run; control 234; about 120 forms, body unchanged).
+// On lane 5 r214's goto lead (rebuilt 105) what decides the entry is where `result = false` and the two NONEs sit round
+// the weapon getter: the NONEs after the getter with `result` after the biped flag 317 (1191 B: pool EAX, hand index DX,
+// weapon kept in EBX); the same with `bool result = false;` ahead of the getter LEAD 71 (1188 B: retail's `or r, -1;
+// cmp ax, r; mov [weapon], r` with one shared -1, `current` in ESI, the flag in DL); every other order of the six
+// declarations gives the code of one of those two (24-run sweep); `result` declared first but assigned after the flag
+// 316 (the store's place decides, not the declaration's). On 71: the lunge speed read at both uses LEAD 54 (retail's
+// divide from memory and the last lookup's EAX/ECX; left: pool EDI, offset EBX, NONE EBP against retail's EBP, EDI,
+// EBX, the result byte stored in the entry block where retail stores it after the flag's store, and the two byte homes
+// swapped). On 54, same code each: the existing unit_action_hand_weapon_get(unit, 0), the getter written out in the
+// body, the NONE pair chained, `type` renamed three ways, the arms' first-person copies written as constants. Also on
+// 54: a pool local for both lookups 51 (pool EDX, flag BL), for one lookup 317-320, also read by the tail lookup 329
+// (frame 0x18); the lookups through a file-local inline taking the pool 56; the biped flag ahead of the getter
+// 320-327; `result = false;` restated before each goto 260 (the exits fold again); the hand getter through an out
+// pointer on the 317 order 316; name and type picked by conditional expressions in the two mode arms 324 (0xe9ed0 and
+// 0xea090 lost). Register lead (aligned 8, masked 3; 297 by position, one instruction too many): on 54,
+// `first_person_name = NONE;` written in ONE of the two combo arms that set no first-person name gives pool EBP, offset
+// EDI, NONE EBX with `cmp ax, bx`, type EBP and `current` ESI, all retail's; left are that arm's own `or ebx, -1`, the
+// result store's block and the byte homes. In both arms 317; with the mode-2 copy in both branches 316-332; with the
+// initialiser dropped and NONE in both arms 324-327 (the -1 goes to ESI); on the `result`-after-flag order 325; with
+// the pool local 321-339: first-person name and type sit one reference apart, and so do the hand index and the pool.
+// Goto-free (no extra flag): the switch leaving the name NONE, `if (name != NONE)` round the play block, `result =
+// true` at the end of each arm and the shared tail under `if (result)` gives retail's byte homes (result 0x12, flag
+// 0x13) in every order tried: 316 with the mode-2 copy in both branches, 334 shared; with `result` ahead of the getter
+// and the one arm's NONE, mode-2 copy shared, 306 (1206 B, aligned 42): retail's registers and byte homes together,
+// left that arm's `or`, the entry-block result store and an unthreaded mode-2 `cmp edi, -1` (the both-branch copies
+// thread it but move the registers, 325); the unit lookup repeated for the getter argument, `current` as NONE plus an
+// if: same code; the flag read through a fresh lookup 322-340; a pool local on these 290-334. Diagnostics, reverted at
+// once: `volatile bool result` with four plain returns 50 (47 with the pool local), byte homes retail's; one more use
+// of the biped flag 127-205 (homes unchanged).
+// Reading: the two byte homes follow reference counts (result needs more references than the flag's four); the -1
+// register is a constant temporary made for the 16-bit compare once the hand index sits in AX, which the first-person
+// NONE then shares, so that NONE belongs after the getter; the callee-saved registers then go by counts that tie
+// (first-person name against type, hand index against pool). Patches: build/r222/lead-0xe9a20-*.patch.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

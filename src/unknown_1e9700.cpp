@@ -929,6 +929,18 @@ struct s_object_damage_view
 // pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
 // searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
 // the reported slot declared after `selected` 358.
+// M3 lane 6 r222 (H2M_FAST with 0x1e9ce0, 0x1ea770, 0x1ea880, 0xd9640, 0x197160, all matched each time; control 353,
+// aligned 179; body unchanged). Rebuilt for their aligned listings, not their scores: the listed two flags + found-flag
+// dedupe + retail's arm order + team byte argument + assist and related re-reads 366 (1544 B, frame 0x4c: the shared
+// 0x2f0 base at +0x34 is gone); that with the selected-record pointer and the amount local 423 (1563 B, frame 0x50,
+// retail's 0x2f0 cursor, but -1 in EDX, the pool in EDI, the cursor in EBX, the counter in BP and `selected` in memory
+// where retail has EDI, ESI, EBP, BX and EDI); the record pointer alone 454 (1583 B, frame 0x54, -1 in ESI, pool EDI).
+// New spellings of the selection amount read once, each 454 at 1578 B with that same rotation: `if (!(time > recent))
+// continue;` ahead of an amount local, the amount local at function scope, the amount read ahead of the two-part test
+// (1583 B, frame 0x54), the amount local with `best` stored ahead of `selected`; on main `best` stored ahead of
+// `selected` 355. Reading: with the amount read once the pool leaves ESI (the register 0x16bae0 takes it in) for EDI
+// and is copied back at each call, which is what costs `selected` its register; main keeps retail's ESI/EDI/EBP/BX
+// roles only with the amount read twice (cursor +4).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
