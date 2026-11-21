@@ -229,7 +229,7 @@ void function_1bba70(long actor_index, long vehicle_index, long seat_index)
     }
 }
 
-void __stdcall function_1e1a00(long actor_index, long value);
+void __stdcall function_1e1a00(long actor_index, bool value);
 long __stdcall function_1e0160(long squad_index, long entry_index, long unit_index, bool flag);
 bool function_1e11b0(long actor_index, bool active);
 void function_1e1150(long actor_index, short team);

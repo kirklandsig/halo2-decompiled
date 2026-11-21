@@ -590,6 +590,7 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// score 190 (was 198): Frame 0xa0 and both plane calls agree. The transformed normal, contact point and pending x87 spin scale still use different homes.
 // MiniMax C (11-19): no new form, no lower score (190): retail keeps the spin scale in the x87 stack across the branch
 // merge where this build gives it a stack home, and the plane distance written as one expression scores 203 against the
 // four accumulating statements; the body stands.
@@ -609,7 +610,7 @@ struct s_item_collision_bsp
 // plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
 // still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
 // products stay in fresh registers where retail overwrites them in place.
-// score 190 (was 198): the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
+// Earlier detail: the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
 // Earlier score 200.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
@@ -912,6 +913,14 @@ struct s_item_collision_bsp
 // Normal rows paired with translation products in coordinate order: late scale with expression or
 // accumulator 203/199, early scale 199/201; in distance-sum order, late scale 203/199, early scale 199/201.
 // NOT kept: the scalar products do not give a byte match or recover the retail coefficient homes.
+// Left products from a carried j coefficient, j/k, all three at first use, or all three
+// with overlapping rows: 191 each through plane fields or row scalars. NOT kept: j now
+// loads before k, but its XMM home and the first axis operands still differ. The 0xa0
+// frame agrees and the rebuilt body still exceeds retail by five bytes.
+// Contact point declaration beside marker, at the surface arm, before the marker query or
+// beside its plane workspaces. Direct stores and the shared point setter at each site all score
+// 190. NOT kept: the placement slot and 1366-byte extent stay the same.
+// MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1192,6 +1201,7 @@ void function_10ca80(long object_index, long owner_index)
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
+// MiniMax E (11-20): no new form, no lower score (130): our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the alignment dot as its own statement gives retail's j, i, k order (175) and writing the cross out in place also gives retail's frame and 848 bytes but scores 173.
 // MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
 // MiniMax B (11-20): no new form, no lower score (130): the cross result keeps a 12-byte stack home because its address is passed to the scale helper, which makes our frame 0xc0 against retail's 0xb4 and our locals sit 12 bytes higher; retail multiplies the dot as j, i, k and keeps the cross in registers, and a dot written as a separate statement reaches that product order but moves the old vector's components into other registers. Writing the cross out in place gives retail's frame and 848 bytes but scores 159.
 // score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
@@ -1217,6 +1227,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // conditional point selections 130; normalized vector value 246.
 // NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
 // vector value grow the body, and the earlier doubled half-root regresses.
+// Item cross 130, mixed-product scale 130, shared rotation with axial or forward
+// contribution first 273/278, shared i-k-j projection 154, value-returning cross
+// with shared scale 248, and staged cross in place on the marker or facing operand
+// 241/271. NOT kept: the shared projection recovers frame 0xb4 and 848 bytes but
+// raises the score and changes its sum grouping.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1705,6 +1720,23 @@ struct s_item_flags_view_10b850
 // 821/842/822/821. Copied origin and point difference, loop/scaled add 913/882;
 // direct scaled add with ray initializer/point difference 885/877.
 // NOT kept: the tied-length gains are below eight, and the helper forms change extent and regress.
+// Separate local normal vector plus sum at impact/bounce/both 911/870/862.
+// Shared scale plus sum at impact/bounce/both 904/855/863.
+// Ray storage for both offsets 885, also with the shared scaler 885.
+// Ray storage for bounce only 879, impact only 860. The local-sum forms
+// reach frame 0x148, while the reused-ray forms stay above retail’s 0x12c.
+// All score higher and the original position and ray expressions are restored.
+// Shared integration and fluid step, before the cross or at the first response:
+// single product 824/845, split multiplication 817/852. With a query-scoped ray,
+// 846/862 and 815/843. NOT kept: the 815 form reaches the retail extent and frame
+// 0x148, but the ray and flow still have separate slots and the scale stays in XMM4.
+// The entry Boolean stores and the 0x12c frame remain unresolved.
+// Motion-vector names for pre/post-query velocities, both query vectors, those
+// vectors plus carrier output, and all same-size motion vectors: 824 each.
+// Early collision sentinel 823, early settle result 822, both 823, and motion-entry
+// collision declaration with early sentinel 823. NOT kept: gains below eight.
+// The 0x154 frame and entry flag stores still differ.
+// MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1953,6 +1985,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax I (11-20): no new form, no lower score (140): the frame 0xac agrees and the differences are still the return byte's slot (esp+0xe here, esp+0xf in retail) and the release flag's clearing (a load and a store here, one byte read-modify-write in retail, which needs a narrower cast of the field's own address); retail also keeps two copies of the release impulse where a shared helper gives one copy.
 // MiniMax B (11-19): no new form tried this round, no lower score (140): the frame 0xac agrees and the remaining
 // differences are the return byte's slot (esp+0xe here, esp+0xf in retail) and the release flag's clearing (a load
 // and a store here, one byte read-modify-write in retail, which needs a narrower cast of the field's own address - a
@@ -2339,6 +2372,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // frame than retail's, retail still clears the release flag with one byte read-modify-write where this build
 // loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
 // build shares one: BLOCKED-BY the transform helper's own file.
+// MiniMax R (11-20): re-checked, no new form and no lower score (140): the three flag arguments to the 0xe2d80 call are written to different stack slots than retail uses, and the flag byte is cleared with a load, an and and a store where retail clears it in place with an and against [ebp + 0x12c].
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

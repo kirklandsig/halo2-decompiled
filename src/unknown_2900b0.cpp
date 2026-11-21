@@ -263,11 +263,14 @@ PRIVATE __forceinline void copy_point_28f8d0(point3f const *source, point3f *des
 	*destination = *source;
 }
 
-/* the perception's centre: every creature's position added to the origin */
+/* the perception's centre: starting from the origin, the average of every
+   creature's position; the first creature is read before the centre and the
+   count are reset */
 PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 {
-	arg_0->field_14 = 0;
 	long local_2 = arg_0->field_18;
+	copy_point_28f8d0(g_468788, &arg_0->field_8);
+	arg_0->field_14 = 0;
 	while (local_2 != NONE)
 	{
 		s_handler_object_view *local_3 = handler_object_get(local_2);
@@ -288,225 +291,13 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 	}
 }
 
-// score 28 (was 28): the entry compares the actor index with an immediate -1
-// retail loads the actor pool, the pool's data and then the origin, where
-// ours loads the origin first and the pool after it, and the loop's object lookup scales the
-// index into EDX in retail and into EAX here.
-// Earlier note, 28 from 38: the entry compares the actor index with an immediate -1
-// and the origin copy takes ebp as its temporary, as retail does. What is left
-// is the order of the first loads: ours reads the origin pointer (g_468788)
-// before the actor pool, retail reads the pool, the pool's data and then the
-// origin, so the copy's source sits in edx here and in ecx there, the actor
-// pointer's add lands between the copy's second and third component instead of
-// between its first and second, and the same swap of ecx and edx shows in the
-// loop (retail scales the object index into edx and keeps the pool pointer in
-// ecx) and in the averaging step (retail sign-extends the count into eax and
-// ours into ecx). The 28 differing instructions are the prologue (18), the
-// loop's object lookup (6), the reload of the object pointer after the call
-// (2, in the inlined 0x28f890) and the count's sign extension (2). Check it
-// with its caller 0x1e3b60 and 0x28f890 in the image (alone it takes a stack
-// argument, 151).
-// ours into ecx). Check it with its caller 0x1e3b60 and 0x28f890 in the image
-// (alone it takes a stack argument, 151).
-// Tried: an early return 38, the actor index in a local 38, a dword compare
-// with 0xffffffff 38, field_14 cleared after reading field_18 38, a point3f
-// immediate -1 and the origin copy takes ebp as its temporary, as retail
-// does. What is left is the order of the first loads: ours reads the origin
-// pointer (g_468788) before the actor pool, retail reads the pool, the
-// pool's data and then the origin, and retail's index multiply sits before
-// the copy's first component instead of after it.
-// against an immediate -1 and sets ebp to NONE at the loop head; ours sets
-// ebp to NONE before that first test and reuses it, so the origin copy and
-// the actor pointer take other registers. Check it with its caller 0x1e3b60
-// and 0x28f890 in the image (alone it takes a stack argument, 151). Tried:
-// an early return 38, the actor index in a local 38, a dword compare with
-// 0xffffffff 38, field_14 cleared after reading field_18 38, a point3f
-// assignment for the copy 70, actor_get after the centre update 115,
-// perception_get at each use 101, the actor index in a local read after the
-// centre update 111, the origin copy ahead of actor_get 99, memcpy for the
-// copy 38, a named centre pointer in the centre update 42, the copy field by
-// field 116, field_14 cleared before the copy 39, the three actor NONE stores
-// as one chained assignment 40, the creature pointer through an if/else
-// getter 38, the actor's sample reset (memset, stores, call) as an inline
-// helper 108, the count in a local 38, the copy helper taking the destination
-// first 38. Round 22: the actor pointer computed before the copy 38 (through
-// base + index and through actor_get alike), the copy after the actor pointer
-// 38, the copy inside the centre update 38, the origin pointer in a named
-// local 28, the copy through a pointer local to the centre 43, the copy
-// through a local point 111, the copy helper taking the destination by
-// reference 28, the copy helper not force-inlined 30, the copy helper's
-// plain point assignment the same code as the dword-struct copy it replaced.
-// Also in round 22: the index masked at the call site 28 (the same code), the
-// object lookup through object_header_get 28 (the same code), the copy helper
-// taking the source by reference 28 (the same code), the copy helper reading
-// the global itself 58, the copy first with the pool and the index after it
-// 99, the actor pointer in one statement 38, the pool as a named local 30
-// (it also swaps the centre sum's operands), the divisor in a named local 60.
-// This round: the copy field by field 111, the copy as a plain point
-// assignment 58, the copy helper taking the destination first 41, the copy
-// first with the pool and the index after it 99, the actor pointer before the
-// copy 38, the scaled index in a local 30 (before and after the copy), the
-// mask in a statement of its own 30, the pool, the mask, the multiply, the
-// copy and the add in that order 30, the actor pointer as a typed array index
-// 33, the count in a short local 30, the object looked up with object_get 28
-// (the same code), the index masked in a local 30, the object lookup written
-// out by hand 28 (the same code).
-// Round 23: the actor pointer before the copy 38 (the entry compare turns
-// into "or ebp,-1; cmp eax,ebp" instead of the immediate -1, and the copy's
-// loads move behind the index computation), the same through actor_get 38,
-// the copy as a plain struct assignment 58 (the entry compare changes), the
-// copy helper taking the point by value 111, the copy helper taking the
-// pointer to the global 28 (the same code), the add's operands swapped 28
-// (the same code), the origin pointer in a local declared before the pool 28
-// (the same code), the mask in a statement of its own 30 and the pool, the
-// mask, the multiply, the copy and the add 30 (the prologue is unchanged but
-// the centre sum loads the creature's position first), the object lookup
-// split into an index local and a headers local 30 (the same swap of the
-// sum's operands), the index masked in a local in the loop 30 (the same swap).
-// So the copy's shape does not move the origin load: it is hoisted to the
-// front of the prologue in every form, while retail reads the actor pool
-// first. The loop's object lookup likewise always reads the pool before the
-// index, whichever way the index and the pool are written.
-// The origin pointer's load comes first with the copy in the middle of the
-// three statements, next to the copy with the copy last and ahead of the pool
-// with the copy first, so the source order cannot put it where retail has it
-// (after the pool's data, before the index multiply). The loop's object
-// lookup issues the same six instructions in the same order whether the index
-// is masked at the call site, in a local, or the lookup is written out by
-// hand: the object pool is read before the index and kept in edx, while
-// retail scales the index into edx and keeps the pool in ecx.
-// tools/permute.py cannot search this function: its reduced image holds no
-// caller, so the argument arrives on the stack and every variant is scored
-// against the wrong convention (151), and a full build of the program does
-// not finish in the time a search allows.
-// With the three NONE stores made 0 as a diagnostic, the entry compares with
-// (after the pool's data, before the index multiply).
-// perception_get at each use 101, the actor index in a local read after
-// the centre update 111. Retail has all seven registers live during the origin
-// copy (the actor pointer's add interleaves with it, ebp is the copy temporary),
-// so NONE only reaches ebp at the loop; ours finishes the actor pointer first.
-// Origin copy ahead of actor_get 99; memcpy for the copy 38; a named centre
-// pointer in the centre update 42; the copy field by field 116; field_14
-// cleared before the copy 39. Round 148: the three actor NONE stores as one
-// chained assignment 40; the creature pointer through an if/else getter 38;
-// the actor's sample reset (memset, stores, call) as an inline helper 108;
-// the count in a local 38; the copy helper taking the destination first 38.
-// (With the three NONE stores made 0 as a diagnostic the entry compares with
-// an immediate, but the copy still takes eax/esi/ecx, so the copy registers
-// are a separate cause.
-// are a separate cause.) The copy helper's plain point assignment gives the
-// same code as the dword-struct copy it replaced.
-// Round 132 (LTCG env link with swarm.cpp's object, which reproduces the full listing; --fast puts the
-// argument on the stack, 150-151): the prologue and loop differences are one ECX/EDX colouring (retail
-// gives the actor data EDX and the origin pointer ECX after the pool pointer dies, so the origin load
-// follows the pool; ours gives the origin EDX and lets the data reuse ECX). The actor pointer through
-// actor_get after the copy 96, before the copy 32 (pool ECX and data EDX as retail, but the add
-// finishes before the copy); the centre update as plain inline 108 (out of line); the copy helper as
-// plain inline 28 (same code); the count cleared after reading the first creature 28; the creature
-// loop as a for 28; the creature pointer as a ternary 33; the actor base as a typed array 28; the
-// masked actor index in a local first 30; the copy first 96; the origin in a named local 28; a centre
-// pointer local for the copy 38.
-// Round 110 (fast, with 0x1e3b60 and 0x28f890 in the image): the actor pointer
-// defined at the top, ahead of the NONE test, 80 (not sunk into the branch);
-// the creature pointer through an if/else getter on this form 28; an early
-// return for the NONE test on this form 28; the reciprocal passed straight to
-// the scale 28; the existing vector3f_scale for the averaging 28; the existing
-// vector3f_add for the sum 28 (all four the same code). The origin copy ahead
-// of the pool read again 99 (the copy takes esi and the pool add folds into
-// memory).
-// Round 213 (m3 lane 3, fast with 0x1e3b60 and 0x28f890): actor through actor_get ahead of the copy 38; scaled index in a local ahead of the copy 30;
-// origin named between the pool and the masked index 30; a centre pointer with a plain assignment 41 (391 bytes); the pool base plus an offset local used
-// twice 98 (399); the base reused for the actor pointer 28 (same code); the record pointer declared ahead of the lookup 28 (same code). Probes (reverted):
-// a store to a new field ahead of the copy 109, ahead of the update 110, at the end 41, in the creature loop 84, one more product at the end 118: none flips the
-// loop's lookup to retail's `lea edx, [ecx + ecx*2]` with the pool in ECX. Matched functions hold both lookup shapes with the same inline.
-// Round 75 (m3 lane 11, fast with 0x1e3b60 and 0x28f890): the record is a swarm (g_5044c8): the body on swarm.h's
-// swarm record, swarm_get, the creature data record and its named fields (position, creature count, first creature,
-// next creature) 28 (same code); on it: the count cleared in the caller right after the copy 29; the swarm addressed
-// as a typed array element in place of swarm_get 28 (same code); the first creature read in the caller before the
-// copy and passed to the centre update 30; the averaging step in the caller after the centre update 28. Reading:
-// every difference is one scratch register on from retail (origin before pool data in the prologue, pool before
-// index in the loop, the reload and the sign extension), the round-robin pattern seen in 0x5c720, so the cause is
-// likely one allocation more or less before the prologue's actor block, not any one statement's form.
-// Round 160 (m3 lane 6, fast with 0x1e3b60 and 0x28f890): the actor pool's data as a typed actor array, the actor as
-// array + index 28 (same code); a pool pointer local with the data read at the actor computation 99; the record as a
-// typed perception element 28 (same code); the pool's data read before the NONE test 41 (hoisted to the entry); a named
-// sample pointer for the reset and the call 30.
-// Round 187 (m3 lane 4, fast with 0x1e3b60 and 0x28f890): the actor scale as a signed 0x888 in place of the size 28 (same
-// code); the averaging helper's factor by value 28 (same code); the next creature read ahead of the sum 80 (392 bytes);
-// the count increment ahead of the sum 38; the creature pointer started NULL and set in the `!flags134` arm 93.
-// Re-measured: the flag test written NULL arm first 33 (round 22's ternary form, same score); the origin pointer read
-// into a local at entry, ahead of the NONE test, 28 (same code as round 23's origin local ahead of the pool). No existing
-// helper does the sample reset (memset at 0x22c, three NONE stores, the call). Diagnostics (reverted): dead loads at
-// entry, in the arm, after the pool and after the copy 104-105 (397 bytes), the centre update cut 351, the reset cut
-// 144: the actor data keeps the pool's ECX and the origin EDX in every one, so the colouring is local to the prologue.
-// Round 175 (m3 lane 5, fast with 0x1e3b60 and 0x28f890): the statement order is already retail's. Retail's load order
-// follows from its registers: its origin shares ECX with the pool pointer, so that load cannot rise above the pool chain,
-// while ours sits in EDX and the scheduler lifts it to the front; in the loop retail's `lea edx` leaves ECX to the pool
-// chain, ours scales in place and the pool chain (EDX) is lifted above the index copy. Four register picks are left: the
-// pool data (EDX for our ECX), the lea, the object reload after the call (EDX for our EAX) and the count's sign extension
-// (in place in EAX for our ECX). Tried: the creature lookup as byte arithmetic on the pool data, the form matched 0x2403b0
-// has where retail's lookup is index-first, 28 (same code); the count read once into a short local for the averaging 30
-// (the x sum's operands swap); the creature loop on a local iterator record 30 (same swap); the centre update written in
-// the function body, no inline helper, 28 (same code); tools/permute.py with `--context 0x1e3b60 --context 0x28f890`
-// (its reduced image then scores 28 as the full one does): 147 tries in 1200 s, none below 28. Diagnostics (reverted):
-// one component copied 138 (the data still ECX, the origin EDX); a second use of the pool data 114 (it moves to ESI).
-// Round 253 (m3 lane 3, fast with 0x1e3b60 and 0x28f890): trivial inline accessors to shift the
-// scratch rotation: the actor index test through one 30, the origin pointer through one 28, the
-// pool data through one 28 (the prologue unchanged in each); the centre update as a member of the
-// record 60; the origin as a const reference passed to the copy 28.
-// Round 106 (m3 lane 14, fast with 0x1e3b60 and 0x28f890): the pool's data bound to a const reference ahead of
-// the copy 99 (the reference is read again at the add, after the copy); a redundant `!= NONE` guard around the
-// centre loop 28 (same code); the copy's destination through a trivial inline centre accessor 28 (same code); the
-// actor through swarm.h's swarm_leader_get after the copy 99, ahead of the copy 38 (the add then precedes the copy).
-// Round 135 (m3 lane 9, fast with 0x1e3b60 and 0x28f890): one variable for the pool data and the actor pointer
-// (`byte *&local_1 = base; local_1 += index * size;`) 90 at 390 bytes, but every other register is then retail's: the
-// prologue gives the pool ECX, the data EDX and the origin ECX, and the loop's `lea edx, [ecx + ecx*2]`, the EDX reload
-// after the call and `movsx eax, ax` all match; the only miss is that the add goes in place (`add edx, eax`) where retail
-// adds into EAX and copies (`add eax, edx; mov edx, eax`), which shifts everything after it by one instruction. So the
-// data must share EDX with the actor pointer but stay a separate value. The same with the product first in the sum 90
-// (same code); stepped as a typed element 90 (same code); the sum through a temp copied back 95 (383 bytes, still in
-// place); only the base bound by reference, the actor pointer its own local, 30 (the data ECX again); only the actor
-// pointer bound, 60; the scaled index named ahead of the copy 30 (same colouring as 28). Re-measured: actor_get ahead of
-// the copy 38 (it does give `add eax, edx; mov edx, eax` with the data in EDX, but the add then precedes the copy and the
-// origin takes EAX). Next: a form where the data and the actor pointer are two values that the allocator still ties.
-// Round 185 (m3 lane 8, fast with 0x1e3b60 and 0x28f890): the centre update as a plain static function 343 (154
-// bytes, out of line); the centre update taking the centre pointer, the count pointer and the first creature 96 (the
-// first creature is read at the call); the sample reset (memset, the three NONE stores, the flag, the call) in a
-// forceinline helper taking the actor pointer and the first creature 50 (392 bytes); the loop's object and creature
-// pointers declared at the helper's top 28 (same code); that with the creature loop as a for 28 (same code).
-// Round 214 (m3 lane 4, fast with 0x1e3b60 and 0x28f890; aligned = difflib-aligned differing instructions, 17 on
-// this body): the actor pointer declared ahead of the pool data 28 (same code); the actor index in a function-scope
-// local for the test and the pointer 30; the centre update taking the perception by reference 60; the pool data read
-// after the copy 99; a `*const` perception pointer 28; the creature walk as a `for` 28; the actor pointer started
-// from the pool data and advanced by the scaled index after the copy (`p = data; copy; p += offset;`) 90 at 390
-// bytes, aligned 6: the prologue loads (pool ECX, data EDX, origin ECX) and the whole creature loop are then
-// retail's, and the one miss is the add, in place (`add edx, eax`) where retail adds into EAX and copies to EDX,
-// which moves the mask and multiply ahead of the copy's first store; the same with the product first 90, as a typed
-// element 90, through an actor-typed pointer then a byte copy 28; the pool data in a subscript 28; the scaled index
-// named after the copy 30; the data local declared at the function's top (NULL or not, before or after the
-// perception) and assigned in the arm 28/28/28; the data local copied into the actor pointer first 28. So retail's
-// data value is loaded early in EDX but is a separate value from the actor pointer, and only the two-step form keeps
-// the load early.
-// M3 lane 16 r143 (fast with 0x1e3b60 and 0x28f890): unused initialised long locals at the top, 0-9 of them,
-// 28/30/30/30/30/28/34/28/28/30, and 1-8 inside the actor block the same 30/30/30/30/28/34/28/28 (the symbol count
-// moves the score but never below 28); actor_get ahead of the copy with 0-8 unused locals 38/38/40/40/40/40/38/42/38;
-// the copy as the first statement of the centre update (origin passed in), the actor pointer formed ahead of the call
-// 38; the first creature read into a local ahead of the memset 52 (392 bytes); the one-variable form (`p = data;
-// copy; p += offset;`) with 0-8 unused locals 90 in each but 91 at seven (the add stays in place). Reading: ours is
-// one scratch step ahead of retail from the prologue's pool data on (the data reuses the pool's ECX where retail
-// moves on to EDX, then the origin, the loop's lookup, the reload after the call and the sign extension each sit one
-// register later); a byte load/store probe ahead of the pool read (diagnostic) moves the swarm pointer to EBP (116).
-// Also: the copy from an inline returning the origin point by value 111 (402 bytes: the pool and its data now load
-// ahead of the origin, but the data still reuses the pool's ECX, and the point is held in three registers).
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {
 	s_28f8d0 *local_0 = (s_28f8d0 *)perception_get(arg_0);
 	if (local_0->field_4 != NONE)
 	{
-		byte *base = (byte *)g_4f55f0->data;
-		copy_point_28f8d0(g_468788, &local_0->field_8);
-		byte *local_1 = base + (local_0->field_4 & 0xffff) * sizeof(s_actor_view);
+		byte *local_1 = (byte *)actor_get(local_0->field_4);
 		center_update_28f8d0(local_0);
 		memset(local_1 + 0x22c, 0, 0xbc);
 		*(long *)(local_1 + 0x26c) = NONE;

@@ -907,6 +907,31 @@ void __stdcall function_1160c0(real dt)
 // Direct node indexing at input, physics and publication 275/276/242; paired boundaries 281/243/243;
 // all accesses via the record or named array base 167/280. NOT kept: these forms do not recover
 // the EDX segment and low spill at retail length.
+// M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
+// EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
+// formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the
+// first-node arm 264, in the other arm 249, or after the tick 265, the segments base and the segment both take EDX (`mov edx,
+// [ebx+0x9c]; add eax, edx; mov edx, eax`), the first-node copies and the node-position copy use ECX and the loop end reloads
+// the definition into EDX, all as retail (the spill cell stays at +0x20 and the 0x211060 set-up keeps the index in EAX);
+// stored ahead of the tick 291 (base EBP) and after the if/else 321 (count callee-saved). So one value living in ECX across
+// the segment's definition is the whole ECX/EDX difference; retail shows no instruction for it. Natural spellings that do
+// not hold ECX (144, same code, unless a count is given): the tick as `node->ticks = node->ticks + 1`, `(short)(node->ticks
+// + 1)`, `+= 1`; `!i`; `i <= 0` 145; `i < 1` 291 (1373 B); `bool first = i == 0` ahead of the tick; ahead of the segment 290
+// (1376 B: the flag takes a register, segment EDX, base EBP); `bool last = i == count` for the selection; a count local for
+// the selection; a named long index; the tick written in both arms 291 (1373 B); a long copy of `i` for the node, the
+// selection and the first-node test 283 (retail's 1368 B: `i` then stays in ECX to a `test ecx, ecx`, the count in EAX,
+// segment EDX, base EBP); the physics index in a local read ahead of the first-node test 160, ahead of the tick 162, ahead of
+// the segment 270 (1370 B), at the top of its arm 145 (base EBP in the first three, segment still ECX: the physics index is
+// not what holds ECX). The segment through accessors taking (count, base, index) by value in three parameter orders, the
+// definition and index, or clamping inside 144/144/144/144/145; the count and base as a by-value two-field block local 282
+// (1375 B), passed by value 309 (1384 B), by const reference 144; `segment = base; segment += index` re-measured 272 (1369
+// B). Diagnostics on the 0x211060 site: no call 418 (1261 B), the call without its test 295, a constant tag 262 (base EDI,
+// segment ECX in each).
+// M3 lane 11 r138 (fast with 0x116750 and 0x1160c0, matched throughout; control 144): the delta length through the
+// existing magnitude3d 144 (same code: it expands); through distance3d(&previous, &position) 313 (1408 B, a call);
+// `inverse_dt` declared at the velocity rows 292; the loop counter declared ahead of the loop 144 (same code); the
+// stiffness computed in the non-initial arm after the target 303 (1356 B).
+// MiniMax B (11-20): no new form, no lower score (144): the selected segment still sits in EDI and ECX at +0x20 where retail keeps it in EDX at +0x14; this round's permuter (76 tries in 604.8 s) found nothing below its baseline of 141 on the reduced image.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

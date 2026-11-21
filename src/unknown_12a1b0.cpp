@@ -336,10 +336,11 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
-// score 80 (was 93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and the
+// score 80 (was 93): The frameless prologue saves the wrong index register. The spatial query expands and the loop carries an element pointer.
+// Earlier measurement 80 (was 93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and the
 // walk keeps the element pointer where retail keeps a packed datum index; a pool local with the typed stride, the
 // inlined next-used scan and a sign test on the slot index reaches 80 (222 bytes); no one-use local here.
-// score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
+// Earlier measurement 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax G (11-20): no new form, no lower score (93): 0x11bed0 is still expanded here where retail calls it out of line.
 // MiniMax H (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // MiniMax I (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit; the one form that reaches 0 needs the redundant `&& data && sound` pointer tests, which the redundant-test ruling rejects. BLOCKED-BY 0x11bed0.
@@ -487,6 +488,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // element cursor 206/215/227/225; salted datum cursor 311/318/353/355.
 // NOT kept: the additional scan paths increase the score and leave the
 // location query expanded. Original traversal restored.
+// Absolute slot with signed or sentinel guard 88/90; sentinel guard with pool stride 92; element traversal with pool stride 78.
+// Signed audible interval or separate low and high nibble tests on the typed cursor 83/81, salted cursor 164/167.
+// NOT kept: the pool-stride form gains two points, and the spatial query still expands.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2102,7 +2106,8 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 305 (was 305): the second pitch-range loop's registers (retail NONE in EBX, track definition in EBP, the
+// score 305 (was 305): Frame 0x120 versus 0x128. Outer-index, playback, range and detail-request homes differ.
+// the second pitch-range loop's registers (retail NONE in EBX, track definition in EBP, the
 // two indices pushed from memory), the first loop's set and bound addresses, the mask update, the ring walk's
 // scratch registers and the gain store's two entry addresses still differ; r153 at the end of this note has the
 // form that gives the second loop's registers (336, not kept).
@@ -2150,6 +2155,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier at 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // MiniMax B (11-20): no new form, no lower score (305): our frame is 0x11c against retail's 0x128; retail keeps NONE, the track definition and the active bit in registers through the second pitch-range loop and indexes sounds[i] at each use, where this build hoists the datum index and the track index into EBX and EBP and keeps the sounds address in EDI with the active bit spilled; the listed forms (the count in each for-init, the pitch bounds pointer, the per-use reads, the byte-typed NONE field) all measure 305 or more.
+// Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
@@ -2601,6 +2607,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // latch with those guards or with a read-only entry 453 each. NOT kept: latch forms grow to 1955 bytes and reserve
 // 0x12c with the short request. The guard forms tie with the same 0x120 frame.
 // MiniMax A (11-20): no new form, no lower score (305); the frame is still 0x11c against retail's 0x128, so the native request, the range and the pitch homes sit at other offsets, and the second pitch-range loop still hoists the datum index and the track index into EBX and EBP and keeps the sounds pointer in EDI where retail holds NONE, the track definition and the active bit there and indexes the sounds array at each use; the plain check and the fast check of the nine-address set agree at 305 here.
+// Gain-phase handle, gated pitch-phase handle, early ring head and their four combined forms: 305 each.
+// All three with complete play-state storage: 305. NOT kept: the handles and ring head leave the
+// opening code intact. The full state still reserves 0x12c, with one extra scalar word.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2912,7 +2921,8 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
-// score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
+// score 339 (was 339): The aligned frame is 0x4b4 against 0x4bc. Retail holds two extra inputs before clearing the base and effects.
+// Earlier measurement 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
 // locals in a different order and the gap cannot be closed by padding;
@@ -3118,6 +3128,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // 552, inner gain addition through the existing helper 492, native in-place inner gain addition 469.
 // Primary before pitch 453, converted pitch limits 339, named scaled interval 339, primary between
 // limits and arithmetic 453, and one guarded current-chunk read 420.
+// Flags and clear payloads split 496; effect flag from the effect 346; split payloads with effect flag publication 479.
+// Controller sentinel in the base initializer 543; mixed gain in the property 341; pitch staged in the property 454.
+// Scaling gain before clearing 462; invalid permutation stop arm first 377. NOT kept: each form regresses and none recovers the missing frame words.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -3286,7 +3299,10 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// MiniMax S (11-20): no new form, no lower score (597): retail reads the flags byte after the four pushes and masks it with the constant 1 there, where this build hoists the byte load to the entry; four explicit listener-gain stores instead of the memset score 767.
 // MiniMax B (11-20): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes (reading `alternate` inside the definition guard reproduces retail's entry but measures 615) and the track loop still holds the index in ESI, the track definition in EBP and NONE in EBX where retail keeps the index in memory, the track in EBP and NONE in ESI; what still differs is that entry mask, the creation arm's compare order and the track loop's register roles.
+// score 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
+// Earlier score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // MiniMax G (11-20): no new form, no lower score (597): the entry still differs - retail tests the state before the definition index and reads the flags byte inside the definition guard, masking it with 1 kept in ebx, while this build reads the flags byte into bl at the top and computes the alternate flag before the guard; a constant-one local is folded away and swapping the two top statements changes nothing.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
@@ -3347,7 +3363,6 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // at all four pitch sites; 0x21b940 77 -> 74, 0x21b0e0/0x21c400 unchanged; under the keep bar); track definition
 // read at each use 807; `!TEST_FIELD_BIT(flags & 1)` start test 614.
 // frame 0x3c agrees; definition/identifier, result and alternate homes still differ.
-
 // MiniMax A (11-18): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp - and the request byte still occupies BL before the saved registers; the earlier rounds' forms of these measure 590 or more.
 // MiniMax H (11-12): no new form, no lower score (597); the update block's register and slot layout are unchanged.
 // Earlier: frame 0x3c and retail length recovered by the availability guard join;
@@ -3729,10 +3744,18 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Clear path first for alternate/second/third/all 600/600/597/603.
 // All clear-first with both mask tests 619. NOT kept: the five-point reduction
 // shortens the body by seven bytes and leaves the early BL load.
+// Lookup miss first with a creation guard, state test first, result in each arm, or positive creation gate 607/645/607/607.
+// The initial result store and the availability exit use the same frame byte after the EDI push.
+// With alternate scoped to the definition guard 630/630/598/630. NOT kept: the per-arm result reaches retail length and recovers the saves but raises the score.
 // Alternate request at record admission/update publication/retained-voice branch 760/780/780.
 // Direct bit at both consumers 788, shared bit test 788, rejection at track use 757,
 // admission at track use 757, track result from the complete test 745.
 // NOT kept: all grow the frame to 0x40 and raise the score. The early BL load and record/track homes remain.
+// Creation from lookup miss, retained existing decision, original lookup index
+// and miss-first creation 740/740/740/740. With alternate decoded after the
+// definition test, 731/731/725/731. The latter recover the entry to +0x1c
+// but the acquisition outcome then uses different stores and the scores rise.
+// Stopped state set from the resume bit 737, same with alternate decoded inside the definition guard 663.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

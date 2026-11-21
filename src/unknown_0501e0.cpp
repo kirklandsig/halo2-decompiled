@@ -700,9 +700,18 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // live in [esp+4] and [esp] with y in XMM0. Every first-view product loads its coefficient first, and in the second view
 // only the three x products do: the nine coefficients behave as values shared between the views, of which only right.i gets
 // a register.
+// MiniMax E (11-20): no new form, no lower score (221): the frame is still 0x20 against retail's 0x14 - retail keeps the first point's three offsets in registers and spills the second point's, where this build materialises both offset vectors; the explicit-component form measured 218 and the swapped offset loops 220, both under the 8-point bar, so the body stands.
 // MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
 // offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
 // component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
+// M3 lane 14 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the view helper taking the vectors by
+// reference 221 (same code); the scaled vector assigned in an if/else (`scaled = *in` when the scale is 1) 310 (1187 B);
+// the scaled vector initialised by aggregate copy 317 (1187 B); the weights as unary minus 221 (same code); the else
+// arm's memset as an aggregate zero assignment 227 (1120 B).
+// Paired coordinate displacements, first/second endpoint first, loop 218/218 and scalar
+// rows 216/217. Per-coordinate scaled selection with direct/shared scale tests,
+// aggregate 289/256 and loop 303/279. NOT kept: the four displacement forms gain at
+// most five. The frame stays 0x20, and the second displacement and coefficient homes differ.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

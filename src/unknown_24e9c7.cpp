@@ -79,6 +79,12 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax E (11-20): no new form and no lower score (125): retail computes the across-j product right after the size and
+// spills it at once to [ebp-8], later reusing that slot for the side point's y, so its result float sits at [ebp-0x10];
+// this build sinks both across products into the side computation, so they never get a stack home, the result stays at
+// [ebp-8] and the kind and bitmap homes sit eight bytes above retail's. The forms the earlier rounds recorded (across
+// products stored at their definition, the side point set to them, the half-width conversions) all score worse or sit
+// under the eight-point bar, so the body is unchanged.
 // MiniMax C (11-20): no new form, no lower score (125): the side point declared at function scope instead of inside the
 // corner block compiles to the same code, so the frame's homes are not set by the declaration order; the result, kind
 // and bitmap homes are still eight bytes above retail's; a permuter run with annealing (18 tries, 301 s, 1 confirming
@@ -673,6 +679,18 @@ struct s_24e9c7_points
 // Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
 // base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
 // gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
+// M3 lane 2 r122 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). Reading of retail's frame:
+// two 4-byte float cells sit between the first-bitmap cell and the result ([ebp-8] holds across j and later the side's y, read
+// from memory at every use; [ebp-0xc] is never touched), where ours has the result at [ebp-8] and an 8-byte aggregate at the
+// bottom ([ebp-0x18]). Tried: the side as two reals set to the across products and scaled in place with `=` or `*=` 133 / 133
+// (first difference +0x5); every offset as reals (no aggregates) 133; the across pair as a two-float aggregate 144 (746 B);
+// `back` from the across products 154 (753 B); the forward pair read once into locals 142 (740 B); every negation as
+// `0.0f -` 147 (735 B).
+// Separate signed-width truncation and halving, width or height first, then halve
+// after the upper offsets with an early origin, after both upper offsets, after
+// the first origin, or after its upper sums: 138/123/124/163 for either order.
+// NOT kept: 123 and 124 gain only two and one at 743 bytes. The returned height
+// still uses EBP-8 and the early across-axis product has no retail spill.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
