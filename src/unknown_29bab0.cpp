@@ -819,6 +819,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Side point as radial difference by fields/helper, or with shared query target,
 // 656 each. NOT kept: the reduced control scores 654 against 489 full, and the
 // 3499-byte forms change the frame or early stack stores.
+// Scaled side translation with aggregate axis, vector or point output, with direct or shared
+// planar difference 656/656/656/656. Axis through setter at the same uses 654/654/654/654.
+// Reduced control 654; full score 489. NOT kept: the length-exact forms move the first difference
+// earlier, and the setter forms leave the position slot displaced.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

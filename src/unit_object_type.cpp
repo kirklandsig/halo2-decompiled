@@ -3228,6 +3228,9 @@ void function_c5740(long unit_index, bool start)
 // branch, nested validation, named object definition, fallback guard and separate fallback tags
 // 123 each with the shared accessor. NOT kept: the accessor gives a 331-byte body and changes the
 // matched caller. The definition index and pool data keep their opening homes.
+// Explicit object-header lookup for unit, weapon, root, unit/weapon, weapon/root, unit/root,
+// all three or post-gate headers with typed root members: 97 each. NOT kept: no gain; the
+// definition-index and pool-data homes remain.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5623,6 +5626,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Read-once yaw/pitch/both minima 187/188/212, yaw/pitch/both maxima 178/188/199, all four 244.
 // Angle declarations before the basis 169. NOT kept: bound snapshots raise the score, and
 // early declarations tie without moving the slots.
+// Forward component copy loop ascending/descending with ordinary crosses, staged first,
+// staged second or both staged: 185 each. NOT kept: the copies lengthen the body and the
+// first cross still preloads up.i.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

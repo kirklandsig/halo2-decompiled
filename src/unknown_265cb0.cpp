@@ -1015,6 +1015,10 @@ real function_30bf0(vector3f *vector);
 // Direct default-level returns at mode, settings, unscaled radius or scaled radius failure 315/320/254/238.
 // Paired entry guards, paired radius guards, mode with unscaled radius, and all four guards 325/222/360/317.
 // NOT kept. The exits raise the score and leave the result/clip allocation unresolved.
+// Default primary threshold carried across the scaled test, with fallback block, selected secondary,
+// selected pair or final fallback 90/90/90/104. Conditional threshold initializers in both orders
+// 101/90, carried primary with one joined pair 90, separate default primary declaration 90.
+// NOT kept: the threshold lifetime variants raise the score. Result, clip and range homes still differ.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -3007,6 +3011,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 585, nested state and one view influence read 605, combined state and one view influence read 605.
 // NOT kept: The state-first forms tie. The other forms shorten the body and raise the score. The one-read forms also disagree with retail’s two influence loads.
 // The 0x80 frame agrees. The contact-head address reverses base and index, and the player iterator and direction registers still differ.
+// Player-pointer and slot searches with bounded header tests, independently and together 363/353/179.
+// Bounded slot with failure default 164, bounded pointer initialized by selection 362, shared table
+// across separate scans 158, shared table with bounded scans 179, block-scoped bounded cursors 364.
+// NOT kept: the shared table ties and the other forms regress at retail length. Contact-head address
+// encoding and the player iterator's table register still differ.
 // Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
 // each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
 // The contact-head address remains the first difference and the shared reset shortens the body.
