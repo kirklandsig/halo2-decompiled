@@ -414,6 +414,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // scoped rotation-first equality 357, reversed time-test spelling 94, flag-first snap test 100.
 // NOT kept: the first and seventh forms recover both traversal slots through +0x34a at 1396 bytes, but
 // regress. The rotation tests grow the body to 1431 bytes and lose the opening schedule.
+// The indexed deadline and short ordinal still exchange slots. Indexed post-test 134/134, indexed deadline
+// reference 88 or with post-test 143, independent deadline reference 121 or with post-test 127,
+// independent deadline value with post-test 121, and reference with advance at read 289. NOT kept: the
+// independent forms restore the traversal homes but grow the orientation tail.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1123,6 +1127,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // volume address 105; the product as `entry->key * 0x1bc + cameras` 105; the camera table copied into a local, read once
 // through its own address, or bound by const reference at the top of the admitted block 105 each (the copy folds and the
 // table still loads into EDX after the count store).
+// The camera base is still loaded late and the first push precedes the complete camera address. Indexed
+// key 105, indexed key and bounds 106, read-only projection entry 105, camera row reference after or
+// before the count store 13/13, leading record byte 105, count member reference 105, and count member with
+// camera row reference 13. NOT kept: the 13 forms use a one-use camera binding and still exchange
+// camera/key registers.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -2152,6 +2161,12 @@ struct s_pool_view_172840
 // code); the copy through a forced-inline memcpy wrapper that sets up the source first (the form of the copy helper in
 // src/unknown_1932c0.cpp) 55 / 17 (same code: `mov edi, eax` still precedes `add esi, 0x2c`). NOT kept: store orders
 // are match-only.
+// The successful-clip publisher still widens the cluster before the key store and gives AX to the portal.
+// Signed cluster from its field immediately after its store 19, after both IDs 71, or after both unset
+// links 71; direct field selection 59, branch field selection 137, chained short 150, and signed branch
+// join with a named predecessor or insertion short 151/151. NOT kept: the 19 form uses a one-use field
+// binding and emits cluster first and key after portal, whereas retail publishes link, key, cluster,
+// portal.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

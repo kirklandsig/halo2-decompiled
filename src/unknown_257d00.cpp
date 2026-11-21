@@ -2757,6 +2757,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 0x48 OR written through the global (two stores as retail, but the global is reloaded) 484 (2432 B); case 4's dot terms
 // written k, j, i 431 (same code: the sum is re-sorted to i, j, k, where retail forms k*dz + j*dy first from the state's
 // facing read in place). Body unchanged.
+// The default completion remains late, and the animation copy uses EAX before forming its receiver. Native
+// planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
+// fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
+// 431. All retain the 0x1c frame and the existing copy schedule.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
