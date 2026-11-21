@@ -852,6 +852,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // as one chained assignment; the pass definition bound as `byte const *const &` with local_10 formed from it; the pass
 // tag bound as `long const &` to the element's field; the pass tag masked at its definition; one to seven unused
 // initialised locals at the top (flat: the last two lookups' registers are not a symbol-count phase). Body unchanged.
+// M3 lane 6 r219 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each run; main 117): lane 1 r59's reference
+// chain rebuilt on this main 8 at +0x9e (the same eight lines). On the chain, match-only: the pass tag re-read through a
+// `long const &` to its local at the pass lookup 59 (first +0x50); the pass definition through the tag-data accessor 8
+// (same code); that definition bound as `void const *const &` 36 (first +0x50: the pass definition then takes EAX as
+// retail, but the stage index moves to EBP and the +0x20 read to EDX); the material lookup through the tag-data and
+// record-tag accessors 8 (same code); both accessor forms 8 (same code); the material definition bound as `void const
+// *const &` 92 (552 B); both bindings 86 (545 B). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -2016,6 +2016,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // handle is loaded after the flags zero). Without the reference-bound checksum 114 (aligned 6, checksum in ECX).
 // Reading: any by-value parameter loads the handle ahead of the call and takes no scratch-rotation step, an unnamed
 // `*handle` at the call takes the step but loads after the flags zero; retail has both. Body unchanged.
+// M3 lane 6 r219 (H2M_FAST with 0x213800, MATCH each run; control 33; lane 9 r132's 5 form rebuilt at 5 at 930 B, only
+// the write's flags zero in EAX ahead of the handle load left). On the 5 form, all match-only: a plain write-handle local
+// passed to the write 114 (917 B: the write is retail's, the close loses its `mov ecx, eax` copy and a loop pad); that local
+// read at the call through a `s_file_handle const &` bound at the top of the block 114, bound just ahead of the call 114;
+// a raw-handle local passed through its own address as the aggregate 114 (same code each); the empty header passed
+// through a named pointer 5; the count through a named pointer 5 (same code each); the named header pointer with the
+// write-handle local 114. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
