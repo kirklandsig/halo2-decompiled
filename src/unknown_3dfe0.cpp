@@ -244,6 +244,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // 235; the valid flag read once into a named local for the force test and the stationary test 168, that with update first
 // 230, with update right after the zero-elapsed return 230. In the kept form the object's reload into EBX sits ahead of the
 // force branch (both paths); retail reloads only in the force arm and keeps EBX from the lookup on the other path.
+// M3 lane 1 r145 (h2m fast with 0xd1850, MATCH; control 21): the update-time test moved after the sample block 118; no
+// update-time statement, its condition folded into the tail's `!update` test 217 (829 bytes); `bool update = force;`
+// with one `if (!force && hidden) return;` 228; the hidden return first as `initialized && valid && hidden`, ahead of
+// force, 228 (816 bytes); the hidden return deferred past the sample decision 74 (834 bytes). A compile-only build does
+// not reproduce this function (87 aligned rows off).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
