@@ -474,6 +474,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // convention for every caller (`mov edx, 3; mov ecx, edi` here); that with round 117's three forms 22 at 382 B, first
 // difference +0x1d, nothing left but that convention. So retail's two calls carry no no-write summary; nothing in this
 // file can drop it without taking the callee's address. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
+// M3 lane 11 r147 (fast with 0x103b10, MATCH each run; control 110): the sound block nested inside the reset block (the
+// only place the zoom flag is set) 130 (346 B), with the zoom flag tested first 128 (348 B); the keep flag read through its
+// address at the sound test 110 (diagnostic, same code); the weapon slot through a second named fetch of the unit 110 (same
+// code: the fetches still merge); the zoom flag declared after the weapon flag 125 (350 B). Still BLOCKED-BY 0xbadc0
+// (src/unknown_0bad50.cpp avoided this round).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

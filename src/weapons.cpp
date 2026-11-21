@@ -3511,6 +3511,10 @@ struct s_ammo_conversion_entry
 // Conversion candidate as mutable or const reference before the match test 214/214;
 // with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
 // NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
+// Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
+// Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
+// NOT kept: the joined conversion paths tie or shorten the body, and holding the pickup amount adds a frame word. The caller and both callee controls retain their scores.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {

@@ -2435,6 +2435,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // or test-scoped cursor 187/187, scoped spawn with direct multiply query 146.
 // NOT kept: color A takes a register while the cursor spills, the system stays
 // in EDI, and all forms score above 128.
+// Round 666. The 0x40 frame and late color reads remain.
+// Immutable tag and flag values 128, confined virtual receiver 128. Capture color A
+// or both before the spawn record 187/184, between tag read and type lookup 189/191,
+// and between type lookup and virtual queries 187/189. Single captures recover 0x44
+// but the system remains in EDI and the body grows to 572 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4171,6 +4176,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // address or scoped index 127/128/117/117. The low-word lookup can keep the
 // caller with live mode. Naming the multiply result reaches frame 0x54 at 352 bytes.
 // The cached low-word form gains three and shortens to 333 bytes, so it is restored.
+// The frame is 0x4c versus 0x54. Retail keeps the system in ESI and reloads the traversal mode from the spilled definition.
+// Post-gate classification from a signed/unsigned node word 93/94; sentinel/high-bit split 93/102.
+// The same four forms with per-call mode reads 108/109/108/116.
+// NOT kept: The cached forms tie or regress. Per-call mode recovers the 0x54 frame and passes the effect index in a register, raising matched caller 0x176f60 to 25 in each preview.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

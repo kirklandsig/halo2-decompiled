@@ -2158,6 +2158,11 @@ void function_27dd10(void)
 // loop-end compares flip, the pair stays; every user 6); node_destination_get's map entry held in a `short` 382 (1753 B);
 // the channel-counter step written in both arms of the destination test 248 (0x289580 78); the destination index
 // initialised to the node index 2 (same code). All restored.
+// M3 lane 12 r171 (H2M fast with 0x281b60 and the four matched walk users; control 2): the in-place flag computed once in
+// function_288571 and passed to the three passes 4 (0x281b60 4, 0x28aaa0 2); the count as function_288572's first parameter
+// 2 (same code); the kind-2 count clamp moved into function_288572's top for the translation pass, count by `long &` 2 (same
+// code); the flags pointer step written in each arm of the empty-group test 72 (1731 B, every walk user regresses);
+// node_destination_get's out-parameter as `long &` 2 (same code; 0x27f530 and 0x2898b0 keep). All restored.
 // M3 lane 16 r168 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
 // function_288572 the interpolation test's arms swapped (`if (!arg_3)` apply, else the frame-state path) 4 (0x281b60 4,
 // 0x285750 184, 0x28aaa0 2); the channel-counter step as one increment of a selected global (`(c == 0 ? a : c == 1 ?

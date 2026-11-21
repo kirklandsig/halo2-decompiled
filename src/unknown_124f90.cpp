@@ -1873,6 +1873,11 @@ long function_2197f0(real gain);
 // (ambience - elapsed)` 125 (the product then reassociates to fade_out first), `ambience - elapsed + (elapsed - hold) /
 // fade_in * fade_out` 125, the time seeded with the ambience difference then `+=` the product 124 (same code as 124:
 // the ambience load stays at the top); arm 1 as `gain = interpolation + gain` 149 (682 B), as `gain += interpolation` 124.
+// The composite attack still differs in elapsed and reciprocal registers and in the
+// first gain load. Capture hold, attack, release, hold/attack, hold/release,
+// attack/release or all durations at their comparisons 162/95/92/159/165/99/157.
+// All three with the hold arm first 154 at retail length. NOT kept: every form
+// raises the score.
 // M3 lane 12 r170 (h2m fast with 0x1251e0/0x221810, both matched; control 87; D0 = the division form, no inverse local,
 // ternary clamp, re-measured 125 at 678 B): the sum with an inline reciprocal `(elapsed - hold) * (1.0f / fade_in) *
 // fade_out` 125 (same code as D0); the clamp as `t = time / fade_in; if (!(1.0f > time / fade_in)) t = 1.0f;` 127 (672 B);
@@ -1890,6 +1895,15 @@ long function_2197f0(real gain);
 // eager quotient or compound reciprocal forms 144/144/144/144. With one retained release
 // duration 149/149/149/149. NOT kept: the body shortens to 681 bytes but each score rises;
 // the elapsed/reciprocal registers and late quotient remain.
+// M3 lane 2 r133 (h2m fast with 0x1251e0/0x221810, both matched; control 87): arm 1 without the inverse local, the
+// product `fade_out * ((elapsed - hold) / fade_in)` and the clamp `if (1.0f > time / fade_in) t = time / fade_in;` 144
+// (681 B); the product as `(elapsed - hold) / fade_in * fade_out` 145; that form with a fade-out local inside the arm
+// for the product 144; the fade-in copy dropped (`inverse = 1.0f / ducking->fade_in_time`) 94 (683 B); arm 4 as
+// `gain = interpolation + gain` 115 (684 B). Compile-only (it reproduces this body exactly): 96 combinations of the
+// fade-out source (each use, a local before the fade-in test, before the window test, inside the arm), four product
+// spellings, three clamp shapes and both time-sum orders all keep elapsed in XMM2; a deletion bisect moves elapsed to
+// XMM3 only when arm 2's interpolation or both arms of the other ambience branch are removed (the XMM colours are
+// coupled across branches, not set by arm 1 alone). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4862,6 +4876,10 @@ struct s_128ca0
 // controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
 // shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
 // swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
+// Attenuation in the opening decibel, separate initialized or assigned decibel, unsigned bits
+// from the call or through it, signed-bit view, or existing decibel value member: 48 each.
+// Attenuation as a decoded real 180. NOT kept: the decoded real shortens to 1043 bytes and
+// moves the first difference to the gain setup. The tied forms leave both pin register pairs.
 // M3 lane 12 r170 (h2m fast with 0x1293f0, matched throughout; control 48; L = the LEAD 17 above, re-measured 17; Lc = L
 // with `char count = NONE`, re-measured 204): on L, the playback byte stored in both arms of the controller test (no count
 // local) 207 (1064 B); a `char count;` declared after the controller pointer and set in both arms 204; the count from a
@@ -4880,6 +4898,13 @@ struct s_128ca0
 // short adjustment with direct construction 48/48, short or long adjustment assigned to the level 48/48 and
 // 48/48, direct signed tag adjustment assigned to the level 48/48. The pin register pairs and extent agree
 // with the opening build. NOT kept: no gain.
+// M3 lane 2 r133 (h2m fast with 0x1293f0/0x1251e0/0x125e60, matched throughout; control 48; L = the LEAD 17 rebuilt,
+// re-measured 17; Lc = L with `char count = NONE`, re-measured 204, its second controller-field test folded to
+// `cmp dword ptr [eax + 4], -1` where retail loads the field into ECX first). Both controller lookups through the
+// existing pointer getter 0x2198f0 (its result cast to the controller view) on L 229 (1019 B), on Lc 237 (1026 B),
+// the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
+// every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
+// initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
