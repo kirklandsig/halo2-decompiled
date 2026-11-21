@@ -1892,6 +1892,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // type-one arm y first, trace radius local, four fraction spellings, three paren phases; 192 forms): best 124 at
 // 1174 B (type-one arm y first, radius local, one paren pair; first +0x4f) and 125 at 1173 B (radius local, two paren
 // pairs; first +0xd7); every form without the radius local 194 or more. None moves the XMM6/XMM7 pair.
+// M3 lane 5 r227 (h2m fast with 0x29a190, MATCH; control 198 at 1173 B): the desired point as two statements, y first
+// (retail computes and stores its y first) 200; the cosine with the direction's components first 198 (same code); the
+// 3-D origin declared ahead of the 3-D direction 199; the offset written `lateral * (...)` 198; the y-first desired point
+// with the direction-first cosine 200. Still first at +0x4f (radius XMM4 against XMM5).
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

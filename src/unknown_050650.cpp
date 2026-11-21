@@ -2321,6 +2321,16 @@ struct s_actor_looking_structure_view
 // sine-scaled crosses 74 (0x296e60 198); the dot3f projection with sine-scaled crosses 139 (270); the staged dot with
 // sine-scaled crosses 153 (199); the score written forward-first 23 (same code); the clamp as a ternary then
 // `score *= fraction;` 141.
+// M3 lane 5 r226 (h2m fast with 0x296e60, 0x297660, 0x2980d0 and 0x24590; control 23, 0x296e60 270): the in-place
+// helper's rows stored i, k, j / j, i, k / k, i, j / j, k, i / k, j, i 151 (927 B) / 57 / 169 / 66 / 172 (910 B), with
+// 0x296e60 333/300/326/300/280 (the store order moves the candidate cursor, not the score's order). Every product in
+// its own parentheses (a common hand style), by site: score only 62; rows only 22 (0x296e60 282, a one-point change,
+// not kept); rows + score 25; crosses 144 (928 B); crosses + score 128; crosses + rows 144 (925 B); crosses, rows
+// and score 147; dot only 143 (0x296e60 333); dot + score 140; dot + rows 25 (0x296e60 340); dot + rows + score 37;
+// dot + crosses 62; dot + crosses + score 25; dot + crosses + rows 128; all four 166. The same styles on lane 3 r277's
+// merged-helper lead (6; 0x296e60 282): score 141 (927 B); rows 142 (926 B; 0x296e60 284); rows + score 8; crosses
+// 129; crosses + score 60; crosses + rows 54; all three 124; `(1 - cos) * dot` the same code in each. The pair count
+// acts mod 4 here too (0: 6/8, 1: 142/60, 2: 129/124, 3: 141/54), with the site deciding inside a phase.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

@@ -521,6 +521,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Named cosine rounded after the squares 334.
 // Both named trig results, rounded around the sine products 372.
 // NOT kept: The single-result forms leave the first-axis mismatch. Separating both conversions shrinks the target's frame and body. Every widened handoff raises matched caller 0x137ed0 to 42 in the reduced image. The original builder and both calls are restored.
+// M3 lane 5 r227 (h2m fast with 0x137ed0, MATCH throughout; control 334 at 1781 B): the builder's complement
+// (`inverse`) declared ahead of the squares 332 (1782 B: only the 1.0 load moves; a moved declaration, not kept); the
+// three rotate_axis_vector rows summed forward, left, up 334 (same code); the two angles as `real` 397 (1835 B); the
+// squares declared k, j, i 344 (1789 B); the two builder calls in the other order 367 (1813 B). On the complement-first
+// form: named sine products (i, k, j, after the squares) 392 (1825 B; 387 without the complement move); the rows summed
+// forward first 332 (same code); the first cross term written `axis->j * inverse * axis->i` 332 (same code); squares
+// k, j, i 344 (1790 B). The axis registers and the square spills are unchanged in all of them.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2864,6 +2871,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Distance predicate after reflected side, direct far reads 509.
 // Distance predicate after reflected side, shared far endpoint 528.
 // NOT kept: Testing after the reflected side reaches 2285 bytes with direct endpoint reads, but breaks the entry frame and scores 509. Earlier predicate forms lengthen the body and leave the camera-delta and reflection registers unresolved. The original distance test and reflection are restored.
+// M3 lane 5 r227 (h2m fast, control 281 at 2286 B; retail copies the displacement for the draw point's x product,
+// `movaps xmm1, xmm0; mulss xmm1, [reflected.i]`, after the two integer argument loads): the displacement field read at
+// each of the three uses (no local) 419 at retail's 2285 B (each row reloads it: the stores to the address-taken point
+// kill the common load); the x row written `position.x + displacement * reflected.i` 281 (same code); the x row
+// `reflected.i * displacement` 281 (same code); the y and z rows `displacement * reflected.j/k` 281 (same code); the
+// displacement declared after the point 281 (same code).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
