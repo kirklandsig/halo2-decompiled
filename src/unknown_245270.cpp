@@ -973,6 +973,11 @@ void function_245400(s_source_245400 const *source, long index,
 // or after side tests, 165/205/205/218 each. After sides with second material bound first 218;
 // separate side/ordinal decodes 199, long codes from records 198, both 167.
 // NOT kept: the final two-decode form reaches the 0x2c frame and 783 bytes but scores 167.
+// On the separate code and ordinal decode, primary material pointer/reference 167/167,
+// early normal members with direct/staged cross 167/167, facing-scope normal lvalues
+// or facing-scope plane table 208/208, and paired widening with normal selections
+// or a primary material pointer 169/169. NOT kept: the 167 and 169 forms reach
+// frame 0x2c and 783 bytes but regress. The late plane table also loses the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

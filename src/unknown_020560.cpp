@@ -836,7 +836,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 
 // score 418 (was 439): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
-// score 418 (was 418, 439 earlier):
+// Earlier score 418 (was 418, 439 earlier):
 //
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
@@ -1299,6 +1299,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 433, named sample count 433, opposite scan state declared before delta 417, loop-top ordinal
 // skip 433, candidate point pointer 433. NOT kept: the best form gains one, keeps the 0x28 frame
 // and lacks retail's second induction address.
+// Anchor record bound once 439, candidate position before ordinal test 593, both 439,
+// or both with live entry-field indexing 554. Opposite scan unequal or preincrement
+// latch 1236/418. Complete distance before the projection gate 668, or through the
+// live candidate position with bound anchor 665. NOT kept: the last form reaches
+// frame 0x2c but grows to 2218 bytes and regresses. The second induction and its
+// offset.i spill remain unresolved at the opening extent.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

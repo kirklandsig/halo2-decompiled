@@ -974,6 +974,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 287/396 or selected point and separate edge test 360/362. Pointer-only predecessor in the same
 // forms 365/408 and 414/443. NOT kept: ordinal-only recovers the frame in three forms but raises
 // the score. Pointer-only forms also raise the caller score.
+// Bounded indexed fill through the first node 282, with short link count and
+// split copy increment 361, or target record lvalue 361. Short fill with link
+// and special flags 357, shared origin 404, relative scan step 321, held scan
+// successor 329, held node depth 432, or arm-local distance producers 401.
+// NOT kept: 282 gains four with the extra frame dword. Several narrow-link
+// forms recover 0xe4, and two reach retail length but regress.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
