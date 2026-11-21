@@ -852,6 +852,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // into XMM2; each normalize's y row is `y * inverse` with y loaded first in retail, ours multiplies the dying inverse by
 // the stored y; the reversing sum's first product is input.y * blend.x in retail (the negated blend.y waits on the x87
 // stack and takes an fxch), ours multiplies the negated value first.
+// Round 454: first +0x69 interleaves the x87 speed sum and first SSE input square differently. Shared planar dot
+// in entry, gear or both 285/187/305; entry dot finished after speed root 107; explicit planar partial or running
+// magnitude finished after root 280/280; running magnitude finished before root 112; planar input snapshot 118.
+// Unity still occupies XMM2 instead of XMM3. Body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3670,6 +3674,9 @@ real g_47ff30 = 2.5f;
 // boost), so retail's allocation phase at the head is one step from ours, but the forward clamp then takes a fresh register.
 // With the state reads cut the rates pointer goes to EDX; with the turn fraction's reads through another address the
 // `lea edx` is direct and the state takes EDX.
+// Round 454: the 0x100 frame and acceleration spill still differ. Shared planar cross on the original prefixes 672;
+// heading or velocity copy 729/729; both at the slip producer or in a block 757/757; named lateral cross 672;
+// two early prefix or component copies 757/738. The copy forms add frame space. Body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6981,6 +6988,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1104 (5144 bytes, 423); the conditional-store loop + matrix + lift 1101 (5142 bytes, aligned 999, registers masked 676,
 // slots masked 390: the closest structure measured); loop + matrix + lift with `bool boosting` 1163 (411). The combination
 // does not bring the rows back in step: the lift expansion is 93 bytes longer in this build than in retail.
+// Round 454: frame 0xfc versus 0xd8 still separates the facing and current matrix homes. Common lateral-row
+// reference or pointer 1076/1076; shared dot in drift, strafe or both 1037/978/1037; strafe-only row reference
+// 1039; shared lateral-brake scale-add 978; common row pointer with both dots 1076. Body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

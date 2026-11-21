@@ -3228,6 +3228,9 @@ void function_c5740(long unit_index, bool start)
 // branch, nested validation, named object definition, fallback guard and separate fallback tags
 // 123 each with the shared accessor. NOT kept: the accessor gives a 331-byte body and changes the
 // matched caller. The definition index and pool data keep their opening homes.
+// Round 454: the definition index still misses EBP and the pool data stays live across the weapon gate.
+// Common object lookup for unit, weapon or root 97/97/97; for unit plus weapon, weapon plus root, unit plus
+// root or all three 97/97/97/97; post-gate common lookups with typed root forward member 97. Body restored.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
