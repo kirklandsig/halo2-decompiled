@@ -1123,6 +1123,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // volume address 105; the product as `entry->key * 0x1bc + cameras` 105; the camera table copied into a local, read once
 // through its own address, or bound by const reference at the top of the admitted block 105 each (the copy folds and the
 // table still loads into EDX after the count store).
+// named projection result 105; projection result with separate camera displacement 11; selected camera
+// record reference 22; byte camera record and named projection result 22; portal table in present arm
+// 105; portal displacement in non-sentinel alternative 105; projection result with leading volume field
+// 105; named projection result and portal table 105.
+// NOT kept: The 11-point form requires the one-use camera displacement and still loads the base late,
+// exchanges the base and key registers, pushes the key too early, and transfers distance through EAX.
+// The 22-point forms require a one-use camera binding. The other forms reproduce 105.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1824,6 +1831,13 @@ struct s_point_pool_173520
 // (the helper folds to the same tree); the clipped count itself as the down-counter 9; `inside` at function scope 9; the
 // cursor declared ahead of the index and step 9; the pool view at the block top 9; an ascending vertex index with a
 // per-iteration vertex pointer 990 (1471 B, unrolled).
+// signed word clip result 226; unsigned word clip result 226; published count for countdown 166; signed
+// word countdown 41; unsigned word countdown 41; typed inside copy extent 115; typed inside view with a
+// shared extent 134; published countdown and count-first recount 166.
+// NOT kept: The two 16-bit countdowns give 41 at 864 bytes. The published-count forms reach retail
+// length and advance the first difference to +0x105 but shift the loop's working registers and score
+// 166. The typed inside copy forms shorten the body and raise the score. The pointer still publishes
+// ahead of the arena commit and state test in the opening source.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2152,6 +2166,14 @@ struct s_pool_view_172840
 // code); the copy through a forced-inline memcpy wrapper that sets up the source first (the form of the copy helper in
 // src/unknown_1932c0.cpp) 55 / 17 (same code: `mov edi, eax` still precedes `add esi, 0x2c`). NOT kept: store orders
 // are match-only.
+// cluster field selection reused for list insertion 153; explicit cluster field cases 143; box-typed
+// default copy 55; bound box used for default and update 55; clip output bounds member 55; recount by
+// subtracting the reverse displacement 122; commit entry count from captured index 55; named clipped
+// count 55.
+// NOT kept: The bounds views, captured entry count and named clipped count reproduce 55. The signed-
+// field selection changes the frame and removes the retail list argument lifetime. The reverse
+// displacement grows to 872 bytes. The predecessor/key allocation and long sentinel encoding remain on
+// the opening body.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
