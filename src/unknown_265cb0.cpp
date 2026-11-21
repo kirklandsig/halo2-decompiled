@@ -2988,6 +2988,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 585, nested state and one view influence read 605, combined state and one view influence read 605.
 // NOT kept: The state-first forms tie. The other forms shorten the body and raise the score. The one-read forms also disagree with retail’s two influence loads.
 // The 0x80 frame agrees. The contact-head address reverses base and index, and the player iterator and direction registers still differ.
+// Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
+// each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
+// The contact-head address remains the first difference and the shared reset shortens the body.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
