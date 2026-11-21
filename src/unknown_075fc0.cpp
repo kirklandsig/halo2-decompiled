@@ -423,6 +423,13 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // threshold as `if (local_23 < local_13) goto done;` with no result store 409 (1369 B); the second as `if (local_6 < 48)
 // goto done;` 413 (1374 B); both 414 (1356 B); the two later reads of the channel's first flag through local_15 (one
 // read everywhere) 400 (1372 B); the tick count as an if/else of the global and the call 356 (same code). Body unchanged.
+// M3 lane 16 r167 (H2M fast with 0x75910/0x76520/0x765c0/0x77940, all matched unless noted; control 356; body unchanged):
+// 0x75910 declared and defined as returning bool 355 (the caller's `test al, al` is then retail's, but 0x75910 itself
+// becomes `mov al, 1` / `xor al, al` where retail writes EAX, 7: retail's callee is 32-bit, so the byte test is not
+// its return type, restored); the counter snapshot and the reset as plain copies through the 64-bit view 429 (1330 B,
+// re-measured: with them retail's region from the has-host call to the thresholds is longer than ours, see above);
+// `this` used directly with no `arg_0` alias 356 (same code); the has-host arm as `arg_3 = arg_4 = true;` 355 (one
+// point, not kept); the channel's first flag read from its field at every use, no local, 429 (1388 B).
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
