@@ -938,6 +938,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // and assigned after 191 (same code); origin declared first of the locals 114 (same code); the three flags computed
 // after `height` 463 (1883 B); the late scripted test as `!player->value_440 && scripted_message` 117; the count as
 // `split_screen ? 3 : 4` 479 (1886 B, re-measured on main's body).
+// M3 lane 13 r137 (h2m fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30, 0x15f120, all MATCH; control 114): the row's
+// message height as a short 261 (1903 B); the status duration defaulted by `if (!duration) duration = 1;` 115; the
+// row fade clamped by if/else on a copy of the remainder 121; the status bounds' top stored before the bottom 114 (same
+// code); the text height tested and assigned without its local 114 (same code). Homes and predicate packing remain.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

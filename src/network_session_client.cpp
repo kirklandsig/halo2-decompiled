@@ -990,6 +990,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // one stored-players pointer from `flag && &a ? &b : NULL` 215 (361 B); the machine-limit helper's live test through
 // session_state_is_live() 22 on this body, 46 on the preset pair; that helper reading the state once 46 on the preset
 // pair (the tail's helper text does not move the session register).
+// M3 lane 4 r243 (h2m fast with 0x6e500 and 0x72700; control 22): on the NULL-preset stored pair (re-measured 46: the
+// opening and every scratch register retail's, the session ESI against retail's EBX, both callers lost): its test as
+// two `== NULL` compares 46, as `!(machines && players)` 46, players tested first 46; the two buffers declared in the
+// state block ahead of the pair 46. Diagnostic: a third, never-true term in the pair's test 152 (499 B).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

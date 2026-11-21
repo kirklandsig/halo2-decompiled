@@ -2627,6 +2627,55 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Gain-phase handle, gated pitch-phase handle, early ring head and their four combined forms: 305 each.
 // All three with complete play-state storage: 305. NOT kept: the handles and ring head leave the
 // opening code intact. The full state still reserves 0x12c, with one extra scalar word.
+// M3 lane 14 r139 (H2M_FAST with 0x128020, 0x21a250, 0x126df0, 0x126c30, 0x127d00 and the matched callees on the list, all
+// MATCH each run; control 305, aligned 216 exact / 78 register-masked rows; scores below positional / exact / masked).
+// LEAD, not kept (positional above 305), saved as build/r139/lead-21b0e0.patch: the pitch through a bounds pointer and a
+// `lower` local (matched 0x21b940's spelling) 304 / 212 / 74; + one count local per pitch-range loop, the first loop's
+// range pair through a pointer at the bounds' minimum, the sounds filled by `memset(sounds, NONE, sizeof(sounds))`, the
+// active bit tested at each use, the links' last byte typed char and set to NONE, a by-value `long` copy of gains[i]
+// for the sum, and the detail request sized 0xa0: 339 / 112 / 24 at 1909 B (with one lookup for the gain store 322 /
+// 128 / 29 at retail's 1923 B, first difference +0xc2). That stack gives retail's `sub esp, 0x128`, every home, playback
+// in EDI through the ring walk and both loops, and the second loop's NONE in EBX, track definition in EBP, active bit in
+// EDI and indexed sounds[i]. Parts measured on the way: the count locals alone 364 / 216 / 69 (frame 0x12c); the memset
+// fill is what frees EDI for playback (368 / 190 / 57: an initializer list makes NONE one long-lived register value, the
+// memset's fill register dies with the fill); the char NONE store only counts once the bit is tested at each use
+// (365 / 151 / 33, frame 0x11c with the 0x94 request, so 0x128 with the full one); one shared count local for both
+// loops 409 / 119 / 25 (the approach block's add then loads its operand first).
+// Left on the lead, each tried: (1) loop one loads the mask, ORs and stores it where retail ORs into memory (2 rows that
+// shift every row after them): mask typed long, `1u << i`, `mask = mask | bit`, declared at three outer scopes, as a
+// one-element array, through a reference, through `*&`, through the file's pointer-taking flag setter, and clamp
+// spellings (named bounds 340, if/else 331, compare reversed 323, named bool 322): same code each; in a 32-run grid of
+// count / active / gain / lookup forms the in-memory OR appears only when the second loop has no count local, and then
+// the frame or the second loop's registers are wrong (best positional 303, a count local in the first loop only).
+// Diagnostic: a mask whose address goes to a call is still loaded, ORed and stored. (2) the gain block has one lookup
+// where retail forms the entry and then a second index product: a second getter, a byte-offset lookup with an unsigned
+// product, an index-taking setter with by-value bit conversions, the decibel type's by-value operator with a
+// bits-constructed temporary (346 / 138 / 24, copy and sum share one slot), an entry that is NULL for NONE with the
+// body under the pointer test (451): the products always merge. (3) the four setup statements in all 24 orders, twice:
+// none stores the mask ahead of the gains with the ring's first index copied into ECX afterwards (best mask, sounds,
+// gains, ring 409 / 119 / 25 on the one-count base; ring first puts the store right but copies the index into EAX
+// ahead of the gain constant). (4) loop one forms the set pointer and reads the bound index through it where retail
+// reads `[sets + index*12 + 2]` and forms the pointer afterwards: five spellings of the read (typed field view, short
+// array view, byte offsets, a named index, a sets-base local) give 322..320 with the pointer still first; a tables
+// pointer local for one access and the global for the other 493 (two real loads of the sets base). (5) the track
+// loop's latch registers exchange on the lead. Unused locals 0..7 change nothing here.
+// Later the same round (H2M_FAST and check.py --fast: MATCH; the full image: 2, not kept; the whole recipe is saved as
+// build/r139/lead-21b0e0-2.patch). On the 322 form: the gain store indexed by `(word)sounds[i]` 153 (110 / 24); the ring
+// step written `index = links->next; if (links->next == first) index = NONE;` (same meaning) 96 (19 / 10: the mask ORs into
+// memory, the setup order and the ring walk become retail's), other step spellings 375 / 350 / 153 / 342; the track
+// definition declared ahead of the track pointer 96 (13 / 8: the latch registers become retail's); a named
+// `long sound_index = sounds[i];` for the test and the entry with the gain store through `track_sound_get(g_4e637c,
+// sounds[i])` (two reads that merge late, retail's two `and 0xffff` products) MATCH in both fast images; counts in the
+// for-inits (`for (long i = 0, count = ...; i < count; ++i)`) MATCH. Each part dropped alone (fast): range pointer 4, pitch
+// through the bounds pointer 5, the by-value gains copy 462, one shared count 455, main's setup order 21 (sounds, mask,
+// gains, ring 11), the active bit in a local 455, no char NONE store 265, main's pointer order 6. The new step spelling
+// swaps two latch reloads in matched 0x21bd00 under every spelling tried (25 forms), so the step stays as on main for
+// 0x21b870 and 0x21bd00 and the new spelling is its own inline (0x21be20 matches with it, kept). In the full image the
+// recipe is 2: the pitch sum adds `lower` before `playing->pitch` (retail and matched 0x21b940 add the pitch first);
+// unmoved there by the term order written either way 2/2, main's modifier spelling 455 (1939 B), no `lower` local 455,
+// `real const lower` 2, a const bounds pointer 2, a named span 2, the formula through an inline helper 2/2, unused locals
+// 1..7 at the top 2 each and 1..5 between the playing pointer and `lower` 2 each. The fast images never show the order
+// (with the caller 0x125b40 and every callee listed: MATCH), so this needs plain checks (2 minutes each on a cached build).
 // Shared datum slot 305, One pool read at the datum latch 305, Shared datum slot and latch pool 418,
 // Shared datum slot and latch pool with explicit start branches 418, Shared datum slot with complete
 // request 305, One pool read at the datum latch with complete request 305, Shared datum slot and latch
@@ -3801,6 +3850,21 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // the alternate byte at [esp+0x13] after the definition_index test, this build hoists the flag into BL before the
 // test; the form that reads `alternate` inside the definition guard measures 615 and is not kept, and the track loop
 // still exchanges the index and the NONE with retail's roles.
+// M3 lane 14 r139 (H2M_FAST with 0x128020, 0x21b0e0, 0x126df0, 0x126c30, 0x127d00 and the matched callees on the list;
+// control 597, aligned 336 exact / 161 register-masked rows; scores positional / exact / masked): `alternate` read
+// inside the definition guard re-measured 615 / 322 / 146 (2500 B: the first 68 rows are then retail's, the constant 1
+// in EBX and the flags tested in their home). On that form: the creation arm written first (`if (index == NONE) { ...
+// create ... } else if (...) state = 1;`) 630 / 334 / 158; the listener gains cleared by four assignments 643 / 350 /
+// 149 (2518 B); the source copied with memcpy 615 (same code; on main's body 597, same code); the track pointer
+// declared ahead of the track definition 615 / 321 / 146 (on main's body 597 / 335 / 161); the seed pointer chosen by
+// one conditional expression 653 / 287 / 122 (2488 B, saved with the guard form as build/r139/lead-21a250.patch: the
+// best aligned count so far, not kept, positional above 597); the release test with the playing count first 613 / 328
+// / 152; the track count in a local 619 / 383 / 152 (frame 0x40). Reading from retail's listing: positionally the body
+// agrees up to the release test, where retail loads state into EBX (`mov ebx, [state]; cmp ebx, 2`) and keeps it there
+// across the track loop (reloaded at the latch), with the track in EBP, the track definition spilled to the dead
+// second parameter's home and NONE loaded into ESI inside each pass after the seed pointer; this build keeps the index
+// and the track definition in ESI / EBP. Retail also copies the source pointer from EDX into ESI for the aggregate
+// copy (this build loads it straight into ESI) and clears the four listener gains without forming their address.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

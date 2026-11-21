@@ -1351,6 +1351,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // lane 8 r168's form): the declaration order is inert, only the reads and the scale statements number the row leaves;
 // the point as a whole vector copy scaled per component (scales ijk/kji/jik/kij) 623/583/577/576 (2891-2904 B: the copy
 // goes through the frame); a vector local filled per field 484 (scales ijk) / 489 (kji) (2809 B).
+// M3 lane 7 r208 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0xc0840, all MATCH; control 290, aligned 273,
+// masked 122): the left normalize through the file's existing direction_normalize_c0840 290 (same code); that with the
+// projection storing y first 299 (2840 B, the listed y-first code); the cone reciprocal from `entry->plane_offset`
+// re-measured 562 (2815 B), with y stored first 560 (2817 B); the sphere arm's bounds call given the literal 4 for the
+// point count 600 (2777 B). Retail's cone arm holds 1.0 in XMM6 from the scale store
+// through the reciprocal (ours XMM4, the divide hoisted into the centre projection). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

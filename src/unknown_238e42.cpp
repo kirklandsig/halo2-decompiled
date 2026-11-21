@@ -1414,6 +1414,10 @@ bool __stdcall function_2399da(long controller_index)
 // with the top locals 90; `own_rank >= rank` 90; the identity test through a file-local copy of the user-set
 // inline from src/unknown_24b5bc.cpp (diagnostic) 90; the membership call's ignored bool bound to a named local (diagnostic) 90; the
 // identity declared at its assignment 90 (the same code each).
+// M3 lane 13 r137 (h2m fast with 0xac050, 0xac360, 0x2399da, all MATCH; control 90): the identity local renamed to sort
+// ahead of the rank 90 (same code: names do not break this tie either); the task index initialised to NONE at its
+// declaration 90 (same code); the rank-3 test as `rank != 3` with the set-rank arm first 92; the identity as a
+// non-const pointer 90 (same code); may_change as `(flags & 0x800) != 0` 90 (same code). Identity ECX/rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
