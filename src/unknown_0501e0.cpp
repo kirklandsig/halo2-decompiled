@@ -712,6 +712,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // rows 216/217. Per-coordinate scaled selection with direct/shared scale tests,
 // aggregate 289/256 and loop 303/279. NOT kept: the four displacement forms gain at
 // most five. The frame stays 0x20, and the second displacement and coefficient homes differ.
+// First displacement initializer, in-place/separate view 220/219; second 218/217;
+// both first-endpoint first 218/217; both second-endpoint first 220/218.
+// NOT kept: gains of at most four, with frame 0x20 and different second-offset homes.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

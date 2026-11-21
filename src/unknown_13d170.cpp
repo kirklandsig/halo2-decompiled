@@ -937,6 +937,9 @@ struct s_physical_block_iterator
 // first-block test 102 (first difference +0x338); the bool kept with that single store 92 (+0xcc); the allocation as
 // `if ((result = record_pool_allocate(...)) != NONE)` 40 (same code); the overlap test with its conjuncts swapped (block
 // end first) 108; as `!(offset >= end || offset + pages <= start)` 40 (same code). Body unchanged.
+// Winner copied by members, using ring fields, retained time, retained pages, or both:
+// 355/377/355/366. Initialized winner record with the same four inputs: 344/377/345/366.
+// NOT kept: all change the 0x1054 probe and score higher. The shared policy test still differs.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

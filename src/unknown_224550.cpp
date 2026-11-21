@@ -842,6 +842,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // re-measured 158 (1938 B, first difference +0x199, the packed colour's home moves from +0x2c to +0x24); the second
 // set's extents and reciprocals declared first 162, the blend's weight named once for the aspect block's four products
 // 162, the pivot rows' complement named once in the sequence arm 162 (same code each). Body unchanged.
+// Eager primary products 162/162, selected primary operands 441/441, selected ratio
+// 162/162, and updating the selected primary aspect 162/162, with secondary products
+// formed in or before their branch. NOT kept: the selected operands expand the frame to
+// 0x64. The other forms tie and still spill blend at the bitmap join.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

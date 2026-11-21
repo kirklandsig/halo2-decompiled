@@ -1737,6 +1737,9 @@ struct s_item_flags_view_10b850
 // collision declaration with early sentinel 823. NOT kept: gains below eight.
 // The 0x154 frame and entry flag stores still differ.
 // MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
+// Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
+// or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
+// and the reused entry Boolean bytes still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
