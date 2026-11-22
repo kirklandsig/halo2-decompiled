@@ -1381,6 +1381,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
 // dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
 // fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
+// M3 lane 16 r174 (h2m fast with 0x24550, 0x22750, 0x22c30, all MATCH; [n] = aligned rows, control 418 [273]): scan 2's
+// candidate read from the entries field (both reads) 549 [219] (2122 B: retail's two induction pointers and the pass
+// counter at +0x18, frame 0x20, but `nearest` in memory and delta.j/k spilled); on it `first` formed ahead of the delta
+// and the delta built from it 554 [216] (2112 B), the projection compare written `0.0f >= dot` 549 [219], the skip as
+// `nearest != i` 548 [216]; on it the delta written out in all six component orders (diagnostic) 549 to 581 [219 to
+// 233], none gives retail's delta.i/j in XMM5/XMM6 with only delta.k spilled. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

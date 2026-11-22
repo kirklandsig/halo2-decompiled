@@ -1027,6 +1027,11 @@ real function_30bf0(vector3f *vector);
 // pair, clip amount sharing with the squared distance, scale, motion, range; then counter, plane, cursor, delta, a, b);
 // ours follows the same order except its first slot (clip amount shared with the seat counter, 5 refs) sits below the
 // result, and the squared distance (2 refs) gets its own slot at the top.
+// M3 lane 16 r174 (h2m fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH; control 84, aligned 57): the facing limits
+// copied at the end of the facing arm (no second facing test) 101; the scaled range as `range * scale` 84 (same code);
+// the scale chosen by an if/else with a defaulted posture switch (no 1.0 initialiser) 214; the range test as
+// `distance_squared < range * range` 84; the clip test as `0.0f < amount` 84 (all same code). Retail's seat-loop
+// subtrahends load the up global's member first in all three side components (ours only in i). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -3037,6 +3042,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // that form with the far-and-slow test written first 233, with the visible decision as one direct boolean expression 227;
 // one `established || (visible && !(far && slow))` block holding the bonuses and the score test 247 (2856 B); the
 // established arm with `else if (!visible || (far && slow)) score = 0.0f;` and one score test 255 (2848 B).
+// M3 lane 16 r174 (h2m fast with 0x25d810, 0x26be00, 0x26be30, 0x25d740, 0x25d690, all MATCH; control 158, aligned 93):
+// the relative maximum as `approach = value > approach ? value : approach;` 158; approach and facing declared apart 158;
+// the velocity dot through dot3f 158 (all same code); `facing` declared just ahead of the distance test (zeroed there)
+// 706 (2854 B); the relative vector written out from the two velocities (diagnostic) 172 (2883 B). Retail loads the
+// normalized direction's k and j into XMM1/XMM2 after the relative normalize and before its length test, and i into XMM3
+// on both edges, then reads all three from registers in the facing dot. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

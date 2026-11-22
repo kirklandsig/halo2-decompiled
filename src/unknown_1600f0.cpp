@@ -1692,6 +1692,12 @@ PRIVATE inline long score_string_list_1608e0()
 // conversion as retail, but computed ahead of the lower test where retail converts after it); the clamp written as
 // `else if (scroll < 0) scroll = 0; else { limit; if (scroll > limit) scroll = limit; }` 710 (2856 B); the named limit
 // with the screen height ahead of the width 693 (2879 B); that with the fade count not volatile 709 (2856 B).
+// M3 lane 16 r174 (h2m fast with 0x161420, 0x1600f0, 0x1603f0; [n] = masked aligned rows, control 679 [570]): the
+// named limit re-measured 720 [567]; show_icon as a bool (the row builder's parameter type) 694 [525] (2861 B, frame
+// 0x79c as retail: the long show_icon is the frame's missing four bytes, but the bool sits in a stack byte where
+// retail keeps it in BL); that with the screen height ahead of the width 680 [506] (2879 B, the screen height in ESI as
+// retail, the panel in EBX where retail has EBP), ahead of x 680 [506] (same code); that with the named limit 724
+// [576] (2845 B); the bool with the named limit alone 708 [522]. Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
