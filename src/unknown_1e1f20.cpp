@@ -1084,6 +1084,16 @@ void swarm_leader_detach(long actor_index);
 // local 4; `if (!stop) continue;` then the call 4; the call as `(*stop)(...)` with a typed null arm 4; the handler table
 // bound to a `s_slot_handler *const *` local before the loop 4 (all the same code); the argument's slot through a second
 // actor_get(actor_index) 273. Body unchanged (59).
+// M3 lane 16 r174 (h2m fast with 0xf0fd0 and 0x1fb360; control 59, aligned 13): the false-then-set flag rebuilt as
+// `bool counted = false; if (definition) counted = (*(dword *)definition >> 3) & 1; if (counted)` with `actor != other`
+// 4 at 980 B (plain check 4 too); the same flag set by `if (definition && bit) counted = true;` 57 (974 B, the byte store
+// dropped) and nested under `if (definition)` 57. On the 4 form: the stop assigned inside the `if` condition 4; the
+// stop declared ahead of the loop 4; the selected slot in a local inside the call's block 4; the table read twice (test
+// and call) 4; `slot_index >= 4 ? NULL : ...` 4 (all the same code). Diagnostic, reverted: the handler read as a
+// four-byte memcpy now gives 297 in the reduced image too (996 B, frame 0x24, actor index on the stack in the loop), so
+// the reduced image agrees with the plain check on that form. Reading of the last 4: retail's handler reuses the type's
+// ECX while the slot offset is still live (the `lea` comes after the stop test); ours forms the `lea` first, the offset's
+// EDX is then free and the handler takes it, which pins the `lea` ahead of the handler load. Body unchanged (59).
 // M3 lane 8 r221 (h2m fast with 0xf0fd0 and 0x1fb360; control 59): the listed 4 form rebuilt (false-then-set definition
 // flag plus `actor != other`; 4 at 980 B, only the slot loop's `lea` ahead of the handler loads). On it: the slot loop's
 // condition as `actor->current >= slot_index` 6; `if (stop != NULL) (*stop)(..., slot_index > 3 ? NULL : &slot)` 6; the

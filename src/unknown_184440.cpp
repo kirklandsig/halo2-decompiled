@@ -552,6 +552,14 @@ __forceinline bool function_184448(long arg_0)
 // short 1013 (4621 B); the projected cell point stored member by member 965 (same code); the neighbour tests through the
 // element's address 965 (same code); the random cell offsets ahead of the point copy 966; the bounds products bound-first
 // 965 (same code). Still BLOCKED-BY 0x48e70: retail reloads XMM values after its calls here and in 0x48ee0 alike.
+// M3 lane 16 r176 (H2M_FAST with 0x9cca0, 0x184060 and 0x184250, all MATCH each run; control 965): the start face read
+// through the face-pointer local (declared at the top, reassigned per face) 965; the side bit as `> 0.0f ? 1 : 0` 965;
+// the dominant axis as an if/else-if chain 965; the definition lookup after the world-bounds loop 965; the worklist scan
+// as a for loop with a break 965 (all the same code). Diagnostic, not kept: the two 0x48e70 calls redirected to a
+// same-file copy of 0x48e70 declared `__declspec(noinline) inline` 1014 (4623 B): the inverse spacing and both clamp
+// constants are then reloaded after each call exactly as retail does (the head is unchanged); the same copy without
+// `inline` 965 (no reloads). So the reloads follow 0x48e70 being an inline-declared definition kept out of line, as
+// 0x22750 is for 0x22cf0; the lead is `inline` on 0x48e70's own definition (machine 1's file), not measured here.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

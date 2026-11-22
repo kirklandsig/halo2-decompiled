@@ -132,7 +132,7 @@ union s_185be7
     vector2f field_8;
 };
 
-// score 60 (was 62): r289's full check gives 60 (earlier rounds: plain 62, fast 60, the fast image building it differently); r216 unchanged. Left (see r131's lead below):
+// score 60 (was 62; m3 lane 11 r152 unchanged, its line just above the marker): r289's full check gives 60 (earlier rounds: plain 62, fast 60, the fast image building it differently); r216 unchanged. Left (see r131's lead below):
 // r143 unchanged (full check 60); r216 unchanged then, plain 62, fast 60 (the fast image builds it differently). Left (see r131's lead below):
 // the record copy's schedule, the second hold-time add's operand order, the quotient/1.0 XMM3/XMM4 tie, the else arm's load
 // order, the parent lookup's ECX/EDX tie, the word mask's zero-extension register and the 0.64 square order.
@@ -847,6 +847,11 @@ union s_185be7
 // the local for the first product and the expression for the second 534 (3768 B), the expression first and the local
 // second 456 (3777 B, registers renumbered); the quotient as a double 703 (3812 B). Left on the lead: a read of the
 // quotient between its division and the products that adds no code. Body unchanged (60).
+// M3 lane 11 r152 (H2M_FAST single address; control 60): lane 16 r173's 26 lead rebuilt (lane 4 r244's 28 plus the pair
+// around the 0.64 sum's first square). On the 26: 1..16 unused initialised locals at the top 26/28/30 and 1..16 just
+// before the quotient 26/28 (diagnostics: other pairs flip, the quotient/1.0 XMM tie never, so it is not a symbol-count
+// tie); `0.0f < arg_2` in the condition 26 (same code); the up component named once for its three uses 28; the
+// quotient computed just before its first product 48. Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

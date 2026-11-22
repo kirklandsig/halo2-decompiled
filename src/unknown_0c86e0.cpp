@@ -479,6 +479,13 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // address at the sound test 110 (diagnostic, same code); the weapon slot through a second named fetch of the unit 110 (same
 // code: the fetches still merge); the zoom flag declared after the weapon flag 125 (350 B). Still BLOCKED-BY 0xbadc0
 // (src/unknown_0bad50.cpp avoided this round).
+// M3 lane 16 r176 (H2M_FAST with 0x103b10 and 0x14de90; control 110): 0x14de90's own body (src/unknown_14b560.cpp) as one
+// conditional return 116 (361 B, and 0x14de90 itself 8), as an early return 116 (0x14de90 8); `inline` on 0x14de90's
+// definition 110 (same code), `__forceinline` there 110 (same code); `inline` there with round 117's three forms 128 (348 B).
+// Diagnostics, not kept (a compiler barrier is a reverted form): a barrier before the weapon lookup 130 (394 B: retail's
+// entry fetch into EBP, index*12 in ESI and the second fetch after the calls, but the zoom flag spilled); with the `== NONE`
+// weapon ternary and the zoom flag declared after the weapon flag 41 (380 B, first difference +0xd8, the sound part).
+// So a memory kill between the player queries and the weapon lookup is all the body lacks. Still BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

@@ -952,6 +952,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // reverted at once: the flags as volatile locals 428 / 418 (EBX then goes to the prop index) and every form keeps
 // `ret 4`, so the flags' register is not what keeps the actor index on the stack; the retail call graph has no cycle
 // through this function or its caller.
+// M3 lane 13 r143 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all three MATCH; control 404):
+// the byte view `p` fetched by its own prop_ref_get instead of a copy of `node` 438 (1624 B); the release pair through a
+// file-local forceinline helper at the label 404 (same code: 0x25c820 still expanded there); the two flags declared ahead
+// of the prop lookup 404 (same code); `update` declared on its own just ahead of the sampling test, after the 0x263670
+// call 405; `index` declared at function scope and assigned at the loop top 404 (same code). Retail's listing keeps all
+// three flags (+0x11/+0x12/+0x13), `next` (+0x18) and `maximum` (a dword at +0x1c) in memory with EBX the actor index
+// for the whole function. All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -1701,6 +1701,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // copies, the bias read from the record, normalize3d; check.py --fast agrees); with order moves 491 to 496. All need 0xd4080's
 // moved square (ES): without it 0xd4080 reads 427 to 486 in all 16 subsets of N/D0/IP/SS, so 513 / 316 is a lead only
 // (build/r217/lead-d37f0-d4080-316.patch in the m3-lane8 worktree). Body unchanged.
+// M3 lane 16 r174 (h2m fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0, 0xd1e10, 0x117c80, 0x13b390; control 529, aligned
+// 521): the found test through a `bool const &` to the result 530 (same code); a `const &` second name for the selected
+// block in the found block 530 (same code); the length ahead of the normal copy with the lightmap copied whole and biased
+// in place 537 (2199 B, aligned 550); the entry flags read once into a local in the scan 530 (same code); the result
+// started false at the top and set true at the start of the found block 547 (0x3db00 lost, 0xd4080 508). Body unchanged.
 // M3 lane 12 r173 (h2m fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged; control 529). Retail's found
 // block copies the lightmap colour whole into the adjusted colour and adds the bias in place, and returns constants
 // (`mov al, 1` / `xor al, al`, the entry's `xor al, al` serving the empty-block exit). The adjusted colour as
@@ -1722,6 +1727,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // through a per-iteration entry pointer local 530, the mask typed `long` 529 (same code). Retail's loop keeps the mask
 // in EAX and the flags in EBX (the block's home), ours the mask in EDI: the query then takes EBX here and EDI in
 // retail, which is the block/query exchange at the entry. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21, all unchanged; control 529): the mask as `long`
+// 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
+// with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
+// allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

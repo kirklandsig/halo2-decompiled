@@ -1042,6 +1042,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // test, the index stored at the top of the non-NONE arm and in the NONE else arm 68 (179 B: the two arm stores are not
 // merged into one store ahead of the test, and the header address is formed whole and reused for the object read); the
 // entity's index field bound by a reference and used as the index everywhere 82 (157 B). Body unchanged.
+// M3 lane 8 r222 (H2M_FAST with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 8): file-local forceinline
+// helpers taking the index by `long const &` (a header-flag predicate, an object getter): the getter at the object read with
+// the second store and no cast 42, the predicate at the header test with a plain object read 42, both 42, both without the
+// second store 77 (160 B), the predicate alone without the second store, word read kept 71; the header test as
+// `(flags & 0x10) == 0` 8 (same code); the object read as `OBJECT(object_index & 0xffff)` 42 (the double mask folds and
+// is shared), that with the header test on `(word)object_index` 14 (the object read is then retail's `mov ecx, eax; and
+// ecx, 0xffff`, the header test takes the movzx); the second store moved ahead of the header test (word read kept) 70.
+// Body unchanged.
 // M3 lane 4 r246 (H2M_FAST with 0xa5a00, 0xa5b10 and 0xbb780, matched throughout; control 8): a copy of the index set NONE
 // in the flagged arm with the valid block under a retest of the copy 75 (160 B: threaded before CSE); the flag test through
 // a forced-inline predicate on retail's shape 77 (merged as a plain inline is); on this body the object read as a byte
@@ -1053,6 +1061,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // store kept) 42, with no second store and a plain object read 72 (176 B: `test dword [ecx], 0x100000`, the header
 // address shared, f in EBP); the flag read as the header's byte [2] 8, with no second store 77 (160 B); the object read
 // as header-pointer arithmetic `(header *)data + (index & 0xffff)` 42, with no second store 77 (160 B). Body unchanged.
+// M3 lane 12 r175 (H2M_FAST; control 8), all on retail's shape (no second store, plain index, bool false first, true after
+// the attach; 77): the object read and attach through a `long const &` to the creation result 77; the header test through a
+// `const &`-bound temporary of the table's data pointer 73 (176 B: the lookups still share `shl ecx, 2`, f cached in EBP);
+// a second such temporary for the object read 73; the header test through a reference bound to a local copy of the table
+// pointer and both lookups through it 78. Diagnostic, not keepable (it takes the object table global's address): both
+// lookups through a reference bound to the global itself 42 (retail's EBP window and data reload, the scaled index still
+// shared), with the object read indexed by the entity's field 42, the header test alone through it 77. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1559,6 +1574,11 @@ bool c_projectile_type::v8(long a, long b)
 // bound through a `byte *const &` used for the 0x800 arm's index read 12; the group pool pointer read into a local at the
 // top, ahead of the call, 49 (188 B); the index as a const value local 12; the object pointer itself const 12; the entry's
 // value read as `((real *)entry)[1]` at the compare and the store 12. Word-read body kept (5).
+// M3 lane 8 r222 (H2M_FAST; word read 5, mask 12), all with the full-width mask unless noted: redundant paren pairs (1, 2
+// or 3) around the call's mask, the 0x400 store's source or the entry expression 12 each (no phase: integer picks); both
+// value compares as `!(x == y)`, each alone or both 12 each (word read 5); the bit tests as `(flags & bit) != 0`, each or
+// both 12; the result bits as `result = result | bit`, each or both 12; a second object local for the 0x800 arm's index
+// read 12 (word read 5); the 0x400 test from `b` with the other uses on the flags 12 (word read 5). Word-read body kept (5).
 // M3 lane 4 r246 (H2M_FAST with 0xa5e70 and 0xa02e0, MATCH each time; control 5), all with the full-width mask: the entry as a
 // `real *` stepped by `(index & 0xffff) * 3` and read at `[1]` 12; the byte offset written `* 3 * 4` 12; the value read as
 // `((real *)data)[(index & 0xffff) * 3 + 1]` at both uses 15; the definition copy declared after the object and the flags
@@ -1570,6 +1590,10 @@ bool c_projectile_type::v8(long a, long b)
 // `long &` for both `|=` 12; the index masked as `index & ~0xffff0000`, `index & (word)NONE` or `index ^ (index &
 // 0xffff0000)` 12 each (all fold to the one constant); `index - (index & 0xffff0000)` 27 (191 B, not folded); the 0x800
 // test held in a bool named ahead of the call 55 (192 B). Word-read body kept (5).
+// M3 lane 12 r175 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: both result bits set through a
+// file-local by-address bit setter (dword result) 12; the 0x800 test as `(flags >> 8) & 8` 12, on a `(word)flags` view 12;
+// the group mask taken on an unsigned 64-bit value 12; the object looked up through a `long const &` to `a` 12 (every
+// spelling folds to the same 0x800 and 0xffff constants before allocation). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

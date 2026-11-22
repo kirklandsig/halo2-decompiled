@@ -1548,6 +1548,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // copy and 9 on this body (the guard folds before allocation), under `if (count < 16)` 195; `current` renamed `session`
 // (sorting after `joining`) 195 on the indexed copy, 9 here; `joining` renamed `incoming` 195; both renamed to sort the
 // other way 195; the destination renamed `z_dest` / `a_dest` 9/9 (slot and register choice ignore these names).
+// M3 lane 2 r137 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): lane 8
+// r211's lead rebuilt (indexed copy, the +0x70 key-id address named at the top ahead of the count and passed by name)
+// 49: every instruction retail's up to the NONE fill, where our `or ecx, -1` comes one store late, and the call loads
+// the +0x6c mode and `joining` earlier (the named address is rematerialised at the call, `lea eax, [edi + 0x70]`); on it
+// the name declared after the count 49, the fill's stores second array first 50, the arrays filled by two loops 50; the
+// key-id name on this body 58.
 // M3 lane 7 r214 (h2m fast with 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination declared bare and set in
 // each arm (the else arm copying through it) 195; `[count++]` with the source held by a `void const *const &` 40; a
 // `dword (*)[3]` row pointer declared in the true arm and stepped inside the copy (`memcpy(dest++, ...); count++;`) 48,

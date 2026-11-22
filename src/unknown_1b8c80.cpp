@@ -1001,6 +1001,14 @@ extern "C" void _ReadWriteBarrier(void);
 // the barrier, the final store kept, 33 (205 B: the early store is not eliminated and takes EDX for its constant); the
 // same with no barrier 40; the early store between the lookup and the barrier 33; the 0x450 store also at the head of
 // the NONE block 42 (211 B); the state declared NULL and assigned from the slot after the lookup 6 (same code).
+// M3 lane 3 r296 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the busy test as a guard (`if (busy !=
+// NONE) { 0x450 store; return; }`) with the barrier 14 (209 B), without it 46 (212 B); the busy test as a one-case switch
+// (`case NONE:` ... `break;`) with the barrier 6 (same code), without it 44 (208 B); the state as a `s_slot_4c *const &`
+// bound to the parameter (a reinterpreting reference), ahead of or after the actor, 6/6 (same code).
+// M3 lane 4 r249 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, each with the barrier): the state read through a
+// `s_slot *const *` to the parameter as the first statement 6; the 0x86 test as `!(... < 7)` 6; actor first, then the state,
+// then the barrier and `(void)list;` 6; the busy test as `!(... != NONE)` 6; the flags test through a cast of the slot
+// parameter at the test 6 (all the same code: the slot still loads after the jne). Without the barrier re-measured 44 (208 B).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

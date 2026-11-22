@@ -945,6 +945,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Captured palette byte with short in the arm 750; short/long fresh lookup 728/619; early byte admission 748.
 // Cached previous index with short or explicit null and long 726/618; original capture with short/long lookup 729/620.
 // NOT kept: The long lookup forms recover the CL byte load, but spill that byte, keep NONE in EDX and raise the score. The four callee controls remain matched.
+// M3 lane 4 r247 (fast): the publication helper's weight named as the merge helper names it 607, weight and intensity named
+// 607, intensity named 607 (all the same code: weight and intensity keep XMM2/XMM1 where retail has XMM1/XMM2); the
+// three-scalar accumulation helper in statement orders r g b i d h w m 718 (3838 B), r h g w b i d m (retail's store
+// order) 718, w r g b i d h m 718, r g b w m i d h 607. Body unchanged.
 // M3 lane 3 r294 (h2m fast with 0x12e5e0/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): on the palette
 // byte read at each use (re-measured 666, 3827 B: retail's CL byte, one widening and EBX record, but NONE in EDX and the
 // 0x130f60 result kept in EAX, so the field_f0 store's EDX ends the NONE register and the +0xd4 tag test compares an
@@ -957,6 +961,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // index and assigned at the call 607 (same code), on the per-use byte 666; the cluster pointer typed `byte const *` 607,
 // on the per-use byte 666; on the per-use byte, every read through a file-local forceinline byte accessor 664 (3825 B),
 // the first test only 666. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607, aligned 487, masked 232): the
+// found flag declared ahead of the 0x130f60 call 608 (aligned 493); the out index declared ahead of the cluster record
+// pointer 607; the palette bound test as `0 <= slot` 607; the loop bound as `count > index` 607; `NONE != slot` 607 (the
+// last four the same code). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

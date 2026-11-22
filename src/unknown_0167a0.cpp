@@ -483,6 +483,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Re-measured on the direct store after the tail fix (listed in the 47 era): the chain lookup folded into the pass
 // expression 5 (+0x1a7); `second` read once through its address 5 (+0x1a7); the parameters store chained with the lookup
 // 5 (+0x19e).
+// M3 lane 8 r224 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e): the
+// table field bound as a `byte *&` with every restore-block read through it 5, with the `tables` local stored through it 5,
+// that reference bound at the top of the restore block 5 (all main's code); the chain table named from the field ahead of
+// the entry store 174 (+0x148), with the entry base from the `tables` local 178. All restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
