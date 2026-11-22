@@ -302,6 +302,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // address local 19 (same code), with `(void)local_4;` and the body reading the parameter directly 19 (same code), with no
 // address local 33 (464 B); the no-object copies placed first under `if (arg_0 == NONE)` with the node arm as `else if`
 // 135 (455 B); the else arm's copies through a `transform4x3f const &` bound to `**local_4` 19 (same code).
+// M3 lane 7 r214 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): no address local, the
+// node arm and the else arm's position reading the parameter, the else arm's forward through one volatile read of the
+// parameter's address 87 (472 B); the bounds test's second compare commuted (`node_count <= arg_1`) 21; the bounds test
+// split in place into two early returns 83 (462 B); the node pointer declared bare at function scope and assigned in the
+// node arm 19 (same code); the node pointer formed in one statement ahead of the bounds test (`function_b8c00(...) + arg_1`)
+// 119 (472 B). Re-measured: `field2e = true` 19, the transform parameter declared `const` 19, the else arm's copies as
+// memcpy 19, the position stored field by field 141 (485 B).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

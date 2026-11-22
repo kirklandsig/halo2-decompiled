@@ -1008,6 +1008,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // nine statements (63 forms each): on this opening 22 (5 forms, the same code), 120 to 132 otherwise (52 whenever the
 // summary precedes the variant with the session in ESI); on the pair 46 at best (23 forms), 62/123/131 otherwise, every
 // one with the session in ESI and both callers lost.
+// M3 lane 7 r214 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080, all MATCH; control 22; the plain `for` copy
+// re-measured 100 at 477 B: its copy loop is retail's, but the player loop's mask read folds into `test [ebx + 0x111c],
+// eax` and the bit takes EAX): on the plain `for` copy, one index declared ahead of both loops 100; the mask test written
+// `(mask & bit) != 0` 100; the player record named at the top of the player loop's body 100; the copy loop under main's
+// `if (member_count > 0)` guard 100; the player loop as a do-while on a `player_index` 100 (all 477 B, the fold kept).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1549,6 +1554,14 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // the +0x6c mode and `joining` earlier (the named address is rematerialised at the call, `lea eax, [edi + 0x70]`); on it
 // the name declared after the count 49, the fill's stores second array first 50, the arrays filled by two loops 50; the
 // key-id name on this body 58.
+// M3 lane 7 r214 (h2m fast with 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination declared bare and set in
+// each arm (the else arm copying through it) 195; `[count++]` with the source held by a `void const *const &` 40; a
+// `dword (*)[3]` row pointer declared in the true arm and stepped inside the copy (`memcpy(dest++, ...); count++;`) 48,
+// with the source named first 48; the walked destination in the true arm stepped from memcpy's return (`dest = (dword
+// *)memcpy(dest, ...) + 3;`) 216 (728 B). Reading of the 48 listing: a destination defined in the true arm keeps retail's
+// colouring (count EBX, the index spilled, `current` reloaded) when its step sits inside the copy's arguments, and flips
+// to the 195 colouring when the step follows the copy; a step inside the arguments evaluates the destination before the
+// source, so the copy's two pointers swap (ECX/ESI) as in the `[count++]` 40.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

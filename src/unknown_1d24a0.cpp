@@ -677,6 +677,16 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // identical result. Diagnostic: lane 11 r141's hand-written 780 body with the header untouched loses nothing (only
 // 0x1d24a0 moves), so the header's members, not the body, flip the 0x54590/0xc2d00 pair. Restored. On main's body
 // (h2m fast): the type mask as `long` 838 and the four running-maximum updates as conditionals 838 (same code each).
+// M3 lane 7 r215 (H2M_FAST, single address; control 838, difflib-aligned 386 here). Lead, under the keep bar (4
+// points): the object-type byte in a `long` local read by both mask tests (`(1 << type) & 1`, `(1 << type) & 0x1000`,
+// no mask local) 834 at 4256 B: the dispatch block is then retail's byte for byte (`movzx ecx`, the header table in
+// EDX; aligned 384). The two tests written on the byte itself with no local 852 (4259 B: `lea` + `mov cl`); the mask
+// local with a `(long)` cast on the byte 838 (same code). With the type local and field_5c read at its two uses (lane
+// 13 r140's frame form, 843 alone at 4242 B) 838 at 4243 B, frame 0x1d4, first difference +0x14, aligned 365. Diagnostic,
+// restored at once: an indirect call right after the attached-object lookup (0xbadc0 made opaque) 820 at 4262 B, aligned
+// 333: the list is then in EBX with the element pointer formed by `shl eax, 3; add` as retail, but EBX is still saved
+// with EBP around the loop and the frame is still 0x1d8, so neither follows from 0xbadc0's write summary; with the
+// type local too 864 (4261 B). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

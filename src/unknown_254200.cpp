@@ -350,6 +350,12 @@ void function_254200(void)
 // the two lookup tags read into named longs before each bitmap lookup 4 (same code); the colour helper storing its three
 // products into a colour local member by member 28; the point copy and size declared after the bitmap choice, ahead of
 // the texture block 57; the size alone there 25. The x, y + size, constant group stays ours.
+// M3 lane 7 r216 (single-address H2M_FAST, control 4): a 32-run grid of five same-code named values in every
+// combination (the texture lookup result named before its store, the doubling factor as a named `2.f`, x and y read
+// into named reals from the point copy for all four vertices, the depth as a named real, w as a second named real)
+// 4 each; the depth through an `extern real const` declared above the file's first function and defined after this
+// one (so the front end cannot fold it) 4 (the whole-program build folds it); that in both functions 4. Diagnostic,
+// restored: the file built with each processor target (G5, G6, G7) 4 (0x2548f0 2): the reload order ignores them.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -799,6 +805,13 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the first quad's first two texture coordinates through one `point2f` updated in place 393 (2286 B); its first two
 // depth pairs from a `real const depth[2]` 18. Reading: 0xc2d00's note records the same kind of slow-path reload tie
 // flipping with other files' contents.
+// M3 lane 7 r216 (single-address H2M_FAST with 0x254490 4 and 0x254200 matched; control 2): the depth through an
+// `extern real const` defined in the file 2, used in both functions 2 (folded); the four lower texture coordinates of
+// the first quad through a file-local forceinline (scale) helper 298 (2264 B), lower and upper through two helpers 324
+// (2275 B); both first-quad texture calls in C form 467 (2157 B); the first vertex's position call alone in member form 2
+// (same code). Diagnostic, restored: each processor target on the file 2. Reading: in this pair and in 0x254490's triple,
+// retail's call-edge reloads follow the order the values are first defined (0x254490: x, the depth, y + size; here the
+// lower coordinate, then the depth), ours descend by register; neither named values nor a later-folded constant move it.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

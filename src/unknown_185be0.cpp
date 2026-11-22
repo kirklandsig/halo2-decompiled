@@ -834,6 +834,19 @@ union s_185be7
 // around local_19's PIN 26; the 1.0 named as a `real const` local for local_19 28. Left at 26: the quotient/1.0
 // XMM3/XMM4 tie only (retail gives 1.0 XMM4 at every load in the function). On the body: the 0.64 pair alone 58
 // (two under the bar). Body unchanged.
+// M3 lane 7 r215 (H2M_FAST with 0x24590, 0x185b30, 0x186ab0, 0x187b30, all MATCH; control 60). Lane 16 r173's 26 lead
+// rebuilt on today's file (the per-axis hold helper, record copy first, else arm local_17 first, the parent bound by
+// `byte *const &`, one pair around the first 0.64 square): 26 at 3777 B, only the quotient/1.0 XMM3/XMM4 rows left.
+// Diagnostics on it (restored at once) show the pair follows the quotient's reads inside its own live range, not the
+// text order: the quotient also multiplied into local_20 gives retail's XMM3 quotient and XMM4 1.0 through the whole
+// block (599, 3784 B, other code); the same extra read placed in the first blend, past the products, leaves the pair
+// as it is (601); with both clamps bounded by another constant, so that 1.0 is read once, the quotient takes XMM3
+// (498); with only local_20's clamp bounded by another constant the registers renumber (603). Forms on the lead:
+// local_18 and local_19 as two declarators of one declaration 26 (same code); the products as copies of the angle
+// pair scaled by `*=` 26 (same code); `i * (arg_3 / arg_2)` and `j * (arg_3 / arg_2)` with no local 550 (3768 B),
+// the local for the first product and the expression for the second 534 (3768 B), the expression first and the local
+// second 456 (3777 B, registers renumbered); the quotient as a double 703 (3812 B). Left on the lead: a read of the
+// quotient between its division and the products that adds no code. Body unchanged (60).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
