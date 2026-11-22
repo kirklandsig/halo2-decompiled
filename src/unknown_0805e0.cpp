@@ -923,6 +923,20 @@ void function_1537f0(s_profile_record *record);
 // first 18; the entry pointer renamed to sort last 18 (both the same code); the loop ended on `index != 350` 19; on
 // round 136's lead (view from the array element, `entry->` link pairs in retail's order; re-measured 46) the four heads
 // as one chain in retail's store order 46, the tail stored field_64 first 46 (NONE hoisted into EBP each time).
+// M3 lane 2 r136 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18). LEAD 14, not kept (a mix of the
+// array element and `entry` for one address, match-only): the builder's view from the array element with main's single
+// link pointer and the tail through `entry` 14 (store order now retail's; left are displacements only); with the links as
+// `links[0] = links[2] = NONE; links[1] = links[3] = NONE;` 14 (link store order retail's too, base +0x5e); the same
+// with `entry` declared first 14, with a named view pointer 14, with the tail stored field_64 first 14; main's entry view
+// with that link chain and the tail through the element 14. The base follows the link pointer: for one chain of four
+// it sits at links[2], otherwise at the third link stored in source order (separate statements 0,1,2,3 / 2,0,3,1 and the
+// pairs 2=0, 3=1 / 0=2, 1=3 give links[2] / links[3] / links[1] / links[3]); retail's +0x4c appears only without a link
+// pointer family, and then NONE is hoisted. Hoisting forms: no `entry` local (view, links and tail from the element) 44;
+// the link pointer from the element ahead of the record 44; the tail through the element with the view from it too 44;
+// the tail through the link pointer 46; the link pointer from the element with main's entry view 45; the round-136 lead
+// with `(short)NONE` links 46, with one four-link chain 46, with the heads and the links each one chain 46; main's entry
+// view with `entry->` link pairs or four link statements 49. Diagnostic: the head stores moved below the loop still
+// hoist NONE (73, `or ebp, -1` ahead of the loop), so the hoist is the loop constant's own weight, not the heads alone.
 // @retail 0x7f930
 void function_7f930(void)
 {

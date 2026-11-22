@@ -1543,6 +1543,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // copy and 9 on this body (the guard folds before allocation), under `if (count < 16)` 195; `current` renamed `session`
 // (sorting after `joining`) 195 on the indexed copy, 9 here; `joining` renamed `incoming` 195; both renamed to sort the
 // other way 195; the destination renamed `z_dest` / `a_dest` 9/9 (slot and register choice ignore these names).
+// M3 lane 2 r137 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): lane 8
+// r211's lead rebuilt (indexed copy, the +0x70 key-id address named at the top ahead of the count and passed by name)
+// 49: every instruction retail's up to the NONE fill, where our `or ecx, -1` comes one store late, and the call loads
+// the +0x6c mode and `joining` earlier (the named address is rematerialised at the call, `lea eax, [edi + 0x70]`); on it
+// the name declared after the count 49, the fill's stores second array first 50, the arrays filled by two loops 50; the
+// key-id name on this body 58.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

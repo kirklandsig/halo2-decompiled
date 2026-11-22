@@ -344,6 +344,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // the kind local `short const` 4; the controller index declared ahead of the kind and assigned after it 4; the kind
 // renamed `result` (the received message's result word, so it sorts after `controller_index`) 4 (the three 4s the
 // same code); `changed` declared first 33 (94 B); the selector taking `long` 4 (same code: the widening folds).
+// M3 lane 2 r136 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with plain reads (no volatile): a
+// `long` kind local passed to a `long` selector parameter 32 (95 B); an `int` kind local 32 (95 B); the kind arm as
+// `setting = available ? payload : 1;` in the selector 32 (95 B); the availability helper single-exit (`bool available`)
+// 32 (95 B); the selector seeded `setting = 1` with the payload setting read into a local ahead of the kind test 16 (96 B:
+// the compare still folds, `cmp word ptr [eax + 0xe], cx` with the 1 in ECX). Re-measured: seeded `setting = 1` with
+// `kind == 1 && available` in place 30 (94 B).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
