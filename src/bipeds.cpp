@@ -1430,7 +1430,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax I (11-19): no new form, no lower score (175): the 0xfc frame and the body length agree, but the constant loads still come early (the 1.0f is materialised at the top of the prologue where retail loads it after the tag lookup) and the definition, material and point homes still differ.
-// score 158 (was 175): The 0xfc frame and length agree. The definition, material and point homes differ.
+// score 158 (was 158; earlier 175): The 0xfc frame and length agree. The definition, material and point homes differ.
 // Earlier at 175, unity loaded ahead of the retail schedule.
 // The 0xfc frame and extent agree. Tag, flags, position and material homes differ.
 // At 175 the unity load was early and the definition, material and point homes differed.
@@ -1923,6 +1923,16 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // switch 480/643/637/645; ending the tag scope at the split 480/643/637/645.
 // NOT kept: first +0x51 stays at the displaced tag spill in all eight forms.
 // The point and material homes remain displaced.
+// M3 lane 1 r153 (single-address H2M_FAST, control 158): on the walking-preload lead (the +0x134 globals pointer and
+// the 0xdfa60 rate both named, match-only) 137 at first +0x84, with no typed state needed; there 57 differing lines
+// are frame offsets and about 56 are calls and jumps displaced because ours puts slots above 0x7f (disp32) where
+// retail's take a disp8, so the slot layout is the one cause left. Frame map on it, ours -> retail: material +0x60 ->
+// +0x8c, animation flags +0x64 -> +0x60, facing +0x68 -> +0x70, case 6 target +0x74 -> +0x7c, position +0x80 -> +0x64,
+// flags_c0 bit 8 byte +0x8c -> +0x90, boost +0x90 -> +0x88, gravity +0x94 -> +0x9c, flags_348 bit 1 byte +0x9c ->
+// +0x94. Forms: the walking speed as `speed_scale = function_dfa60(...); speed_scale = (1.0f - a * b) * speed_scale;`
+// 590; the globals pointer named alone 587 (definition home fixed); the rate named alone 590; case 1's float as
+// `(real)count * (rate / recovery_time)` 158 (same code; on the lead 137); on the lead, material declared after
+// position 137 and the case 6 target declared after moved/distance 137 (same code).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3249,6 +3259,16 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // NOT kept: The named pre-call clear is closest at 64 and 246 bytes. Clearing all three sites through
 // the byte shifts the entry and grows the body, including with the shared failure flag setter. The saved
 // pool base, step transport and signed body selection remain different.
+// M3 lane 1 r153 (H2M_FAST with 0x1d5120, 0x1c3770 and 0xe0d70, all MATCH; control 63): the header's main-rigid-body
+// getter into a long (0xe1a80's form) for the select written out here 73 (258 B; the select is then retail's shape in
+// DL/EBP); with the count tested in place and read again at the call 99 (266 B, the index moves to the stack); with
+// bit_vector_set for the +0x134 bit 63 (250 B); with the first clear as a word_flags_set pair 63 (253 B); getter,
+// bit_vector_set and that pair together 53 at 245 B, LEAD (match-only: the other two clears, like 0xdee60's, stay
+// masks): both tails are then retail's (three byte clears, no hoisted 0x9fff, the memory OR). Left on it: the count
+// held in EAX from a movsx at the top, so the pool base and the rate pointer borrow EBP (retail tests the byte in AL
+// and reloads the count at the call). On the lead: 0x1d5120 reordered (rate, count, result) at every declaration and
+// the call 53 (same code); the count tested in place and read again 93 (261 B), as `char` 93; all three clears as
+// pairs 120 (285 B), with or without bit_vector_set.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4216,7 +4236,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax I (11-19): no new form, no lower score (537): the frame is still 0x7c against retail's 0x78 - the definition's row pointer is taken into ebx where retail takes it into ebp - so the changed flag byte sits at [esp+0x12] against retail's [esp+0x11] and the flight threshold's home at +0x14 against +0x18.
 // MiniMax E (11-20): no new form, no lower score (537): the frame is 0x7c against retail's 0x78 - this build keeps the definition's row pointer in ebx and homes the index offset at [esp+0x1c] where retail keeps it in ebp; a single index local used at all three lookups measures 644 and both weapon reads taken from the biped local 670, so the body stands.
 // MiniMax G (11-20): no new form, no lower score (598): the changed byte is still at +0x12 where retail keeps it at +0x11, this build's frame is still 0x7c against retail's 0x78 because retail keeps the definition pointer in ecx with a home at +0x18 where this build keeps it in ebp with a home at +0x1c, and the flight call's arguments are still one register out; the listed three-part combination gives 590 in the full image, so the body stands.
-// score 537 (was 548): Full frame 0x78 agrees. The changed byte is at +0x12 against retail +0x11, and the flight scalar uses +0x14 against +0x18.
+// score 537 (was 537; earlier 548): Full frame 0x78 agrees. The changed byte is at +0x12 against retail +0x11, and the flight scalar uses +0x14 against +0x18.
 // Earlier detail: The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight
 // threshold uses +0x14 versus +0x18 and the vector schedules differ.
 // MiniMax E (11-17): no new form, no lower score (548): the frame is still 0x7c against retail's 0x78, and the definition's row pointer is still taken into ebx where retail takes it into ebp and pushes ebp as well, so the definition, biped and state homes sit four bytes apart and the flight call's arguments stay one register out.
@@ -4617,6 +4637,15 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 618, branches 614, or a named immediate decision 614. NOT kept: the two
 // 590 forms expand the reduced frame from 0x7c to 0x84; retail uses 0x78.
 // The full changed-byte and flight-threshold homes remain displaced.
+// M3 lane 1 r153 (plain checks; the fast image gives 602 here): the flight rate ternary written in the 0x1faf80 call
+// 536 (under the bar); `special` as a direct bool 596 (2722 B: changed +0x11 and special +0x12 are retail's homes, but
+// through sete where retail branches). Diagnostics (flag-set-in-test forms, match-only): `special = false` then set by
+// an if, in place 564 (the two bytes swapped against retail); declared at the top beside changed 590; just ahead of a
+// nested 0x6000084 test (the else-if split into `mode != 5` and a nested if) 563, that block then retail's but for the
+// swapped bytes; the same with the flag declared ahead of changed 563 or renamed to sort first 563 (the homes follow
+// neither); and with the mode-6 exit returning `changed` 543 (2714 B: both bytes at retail's homes, so one more
+// reference to changed flips the tie, but that exit then merges with the final return where retail keeps `mov al, 1`).
+// With both bytes placed 543 remain: the wall-vector products' operand order and xmm scheduling.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

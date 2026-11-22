@@ -324,6 +324,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // `for (i = 0;` in every loop 66; `long i = 0;` in the pane block after the animating test 66; the model loop as `if
 // (!model) continue;` 23; the model declared apart from its assignment 23; the model call or the type read through an
 // explicit cast to the base type, both, or a qualified member: same code on the harness (the `mov eax, esi` copy stays).
+// M3 lane 2 r137 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): on `long i = 0;` above the pane
+// lookup (25): the model call and read through a base-typed local in the loop body 25; the model's null test as `if
+// (!model) continue;` 25; the text tests nested 25; those two together 25; the base-typed local with the nested text
+// tests 25 (all the 25 form's code). Retail has `and [frame slot], reg` in only four functions; in the matched ones it is
+// a constant zero stored after a memset or compare left a zero register, so retail's text reset is a folded constant
+// and its model reset a copy of the counter's register.
 // M3 lane 14 r144 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf/0x22f6ca, all MATCH; control 23): the shared counter declared and
 // zeroed at the pane block's top, ahead of the animating call 66; the model loop's test as `pane->model_count > i` 23 (same
 // code); the text loop's test so 25, both 25; `long i = 0;` above the pane lookup with the model test swapped 25 (first

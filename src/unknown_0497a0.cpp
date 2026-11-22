@@ -674,6 +674,11 @@
 // local wave vector, no helper 638 (2670 B, masked 321). None lowers the positional score, so none is kept; by structure the
 // pointer-copy helper stays the closest form (150 masked rows: the wave cells' homes, the first cross's i home and the perspective
 // rows' registers).
+// M3 lane 15 r132 (H2M_FAST with 0x4a1e0; control 536 at 2622 B): retail computes the first cross k, j, i (the staged
+// helper's order) with each first product stored to its own cell (+0x28/+0x2c/+0x30) while the x87 wave code runs, and the
+// homes run v1 0x34, v2 0x40, w 0x4c, v3 0x58, v4 0x64. Forms: the special test without its doubled parens 536, the first
+// cross through cross3f_staged 536, s1 computed ahead of the first cross 536, the second cross (w) through cross3f_staged
+// 536 (the same code each); v4 declared ahead of v3 554 (register-masked 477 -> 406). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
