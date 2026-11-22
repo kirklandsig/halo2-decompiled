@@ -350,6 +350,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // 32 (95 B); the selector seeded `setting = 1` with the payload setting read into a local ahead of the kind test 16 (96 B:
 // the compare still folds, `cmp word ptr [eax + 0xe], cx` with the 1 in ECX). Re-measured: seeded `setting = 1` with
 // `kind == 1 && available` in place 30 (94 B).
+// M3 lane 13 r144 (h2m fast with 0x8c5b0, MATCH each run; control 4), diagnostics with plain reads (no volatile):
+// `__assume(kind >= 0 && kind <= 2)` after the reads 4 (the volatile read's code), `__assume(kind != 0 && kind != 2)` 4,
+// `__assume(kind == 0 || kind == 1 || kind == 2)` 32 (95 B, folded); the selector's last arm as `else if (kind != 1)`
+// (an implied test) 4; the selector seeded 1 with `switch (kind)` on case 1 and empty `case 0: case 2:` arms 30. All
+// restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

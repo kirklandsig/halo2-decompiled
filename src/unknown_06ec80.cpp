@@ -295,6 +295,11 @@ union s_6ec80
 // the NULLs and the block test 231, just before the getter 225 (with the mask as now, after the getter 98). Also: the
 // 0x49c8 read by hand with both pointers NULL at their declarations 261 (975 B), with the player-array view 195, with
 // the NULL stores players first 189; the getter's default as a local NONE default in the `arg_1` block 225.
+// M3 lane 14 r144 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5), all with the mask zeroed in the guard: the do loop
+// as `if (!active) continue;` with `while (++local_15 < 16)` 225; the mask declared before the guard and zeroed in it with
+// one joined clear `if (!local_2 || !players || !data || !mask)` after the guard 226; a `s_session_player *` copy of the
+// players pointer declared in the guard 225; a `dword` counter with `1u <<` and `active != 0` 226; the active byte read by
+// raw stride from the block 225; a `for` loop re-measured 348 (1059 B).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

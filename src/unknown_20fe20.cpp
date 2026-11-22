@@ -1381,6 +1381,10 @@ void function_2118c0(void)
 // pointers); `dword` knot indices with the shifted row 170 (761 B); `long row = b * 8` with each knot subscript cast
 // `(dword)(row + w)` 150. With any `b * 8` the whole knot address reduces (pointer bases precomputed at the k level), so
 // retail's row step with unreduced knot rows needs the knot sum to be non-affine to the reducer at that point.
+// M3 lane 13 r144 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): the knot rows as flat pointer
+// sums `&noise[0][0] + (row + w) * 8` 10 (same code); as `noise[w] + b * 64` 150 (every row reduced); `long row = b * 8`
+// for the knots with p1 and out from `(b << 3) + k` 150; `unsigned long row` 10 (same code); `long row = b;` then
+// `row *= 8;` 150. All restored.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

@@ -319,6 +319,13 @@ struct s_item_object_2bc1
 // the 0x10da60 call 144. Left: state/maximum swap ebx/esi (0x2bc9d4-0x2bc9dc, `push esi; lea esi`) and the copy pair
 // (0x2bcaef-0x2bcaf3). The existing `countdown == 0 || countdown < 0` is score-steered (`<= 0` is 91, same 542 bytes,
 // one `jg` as retail): kept as merged, flagged for review. No match-only recipe found.
+// Round 228 (m3 lane 6, fast, 542 bytes each): `= --timer` re-measured on the reset-first tail 71; a char countdown
+// computed ahead of the NONE test 92 (timer in CL, countdown in AL: the copy's registers reversed); `char countdown =
+// --timer;` stored, timer tested 71; the countdown copied back into timer and timer tested 93; `timer - 1` stored into
+// the field and the field tested 93 (the reload is forwarded with no copy); the field decremented and tested in place
+// 93; a char countdown stored and the field tested 93; a long countdown ahead of the test, stored and tested through
+// char casts 92; `timer - 1` stored with `(char)(timer - 1) <= 0` tested 93. Every char form puts the state in EBX as
+// retail but still decrements in AL.
 // @retail 0x2bc990
 void __stdcall function_2bc990(long team)
 {
