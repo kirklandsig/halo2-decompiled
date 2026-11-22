@@ -423,6 +423,21 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // reference 88 or with post-test 143, independent deadline reference 121 or with post-test 127,
 // independent deadline value with post-test 121, and reference with advance at read 289. NOT kept: the
 // independent forms restore the traversal homes but grow the orientation tail.
+// M3 lane 8 r225 (h2m fast, control 64): the whole check-and-repair tail as a file-local helper taking forward and up:
+// `inline` stays a call 993 (631 B); `__forceinline` 110 at retail length 1395 B (both normalizes then load as
+// retail, the cross section is one instruction long); with the explicit time cursor 125 (1413 B: the loop and both
+// length tests are retail's, the dot and cross are not). Inside the forced helper: left through cross3f 110, left and
+// up through cross3f 126, both through cross3f_staged 117, up alone staged 117 or through cross3f 126, the dot
+// through dot3f either way 110; the corrected up computed in the six orders and stored j, k, i: i-first orders 117,
+// k or j-k first orders 60 (1392 B); without the helper 70 (i first) / 119 (others). The helper taking one basis
+// pointer 117 (kji 142), taking the channel array 446; up as `forward + 1` in the body 64. Dead locals inside the
+// helper change nothing (diagnostic); caller-side phases 1..7 on the helper form 88/112/112/112/116/157/125,
+// with the explicit cursor 121/123/123/123/96/91/121. Lead (match-only: a one-caller helper and statement orders
+// picked by score): in the forced helper, the 36 compute x store orders of the corrected up give 56 (1392 B) for
+// j-i-k, j-k-i or k-j-i computed and stored k first (k-i-j or k-j-i), 60 with j stored first, 117 with i computed
+// first; on 56 the dot through dot3f or left through cross3f 60; with the explicit time cursor the six compute
+// orders 124/124/124/128/128/128 (1413 B). On 56 the loop slots, the dot's k-i-j order, the cross section's
+// schedule and the first normalize's j product still differ.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1534,6 +1549,13 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Symmetric positive-field sine or cosine contributions 345/350. Square plus sine fields 358, diagonal and
 // symmetric cosine fields 380 (reduced control 337). NOT kept: the tied form grows to 1473 bytes, and the other
 // allocations score higher. Unity and the two square spills still differ.
+// M3 lane 8 r225 (h2m fast, reduced control 337): retail squares each difference as fld/fmul from its own spill,
+// interleaved with the SSE rows; ours converts each once and squares on the x87 stack. The differences held in a
+// vector with stores k, j, i / i, j, k / k, i, j and the squares summed k, j, i, or summed i, j, k: 353 each (1444 B,
+// the tail still loads all three first); both sides cast to double 337; the differences as doubles 396 (1417 B);
+// the squares summed x, y, z 337; the rows computed x, y, z 337. The matrix stored transposed (tij - s*k at +0xc as
+// retail) with the transform reading it transposed 358 (1453 B); a second matrix for the second rotation, declared
+// there or at the top, 344 (1442 B).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2564,6 +2586,14 @@ struct s_camera_reference_171830
 // products named with the plane arm first 281/287/281/284 or the unconditional
 // arm first 283/287/283/282. NOT kept: all keep the lookup branch difference
 // and grow the body. The zero and center SSE schedule remain displaced.
+// M3 lane 8 r225 (h2m fast, control 155): every product of the side cross loads the forward field first where
+// retail follows the written order, and the center block keeps depth live one product longer. The nine parameter
+// interleavings retail's call allows (ECX forward before EAX up; point, distance, offset on the stack) 155 each;
+// forward, up, point or distance renamed 155 each; the narrow test as a flagged arm then `else narrow = true`
+// 155 (zero on the left 155), as `if (!flag) ... else if (plane)` 282, as one assigned disjunction 283; the j
+// product written forward first, the z sum back first, both 155, the back stores i, k, j 157; the side written
+// straight into the second offset and scaled in place 155; both offsets through vector3f_scale 263, with the
+// side through cross3f 263.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

@@ -528,6 +528,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // form: named sine products (i, k, j, after the squares) 392 (1825 B; 387 without the complement move); the rows summed
 // forward first 332 (same code); the first cross term written `axis->j * inverse * axis->i` 332 (same code); squares
 // k, j, i 344 (1790 B). The axis registers and the square spills are unchanged in all of them.
+// M3 lane 8 r225 (h2m fast with 0x137ed0, MATCH throughout; control 334): one matrix reused for both rotations, the
+// second built after the first pass's stores, 444 (1670 B, frame changes); two matrices with the second builder after
+// the first pass 460 (1654 B); each rotated row stored straight into g_467104 in both passes (each row reads only its
+// own input) 367 (1751 B), in the first pass only 333 (one point, same frame); the rows rotated up, left, forward in
+// both passes 334. Retail builds both matrices (both fsin before any rotation) and scalar-replaces most of the first
+// matrix: only forward.j, left.i, forward.k and left.k are stored to it.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2910,6 +2916,14 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // products, delta first in the i and k ones, ours the global first in all six); the global-side cast with delta
 // assigned i, j, k 280 (aligned 130; the sums then emit k, j, i); the opacity's two arms as one conditional multiply,
 // `opacity *= (*flags & 0x20) ? unoccluded_alpha : attenuation;` or `opacity = opacity * (...)`, 306 each (2288 B).
+// M3 lane 8 r225 (h2m fast with 0x2e3f0/0x222d0, both MATCH; control 281): retail's opacity test falls through to the
+// attenuation arm (`jne` to the unoccluded arm). The arms in that order under a negated test 278, with delta assigned
+// i, j, k 277, as `opacity *= !(*flags & 0x20) ? attenuation : unoccluded_alpha;` 306 (2288 B); the zero or the far
+// bound on the other side of the visibility, attenuation, opacity/size tests 281 each, of the near-distance test 286,
+// of the near-angle test 489; attenuation's 1.0 assigned in an else arm 424; the forward dot through dot3f in either
+// argument order 281 (same code); delta through vector3d_from_points3d 284, with the opacity arms in retail's order 281.
+// Reading: the extra byte is loop-top padding (ours jumps from the entry-pointer reload over four bytes of padding;
+// retail's reload falls into an already aligned body), so it follows the pre-loop length, not the loop.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
