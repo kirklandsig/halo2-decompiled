@@ -1847,6 +1847,14 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // form (re-measured 18 at 1394 B) the mirrored flag ahead of the matrix 18, `long const` parent index 18, the parent node
 // read into a `short` ahead of the test 18 (the else-arm form's code each). Retail keeps the defaults in EAX/DL across the
 // test with the pool still in ECX, so its index takes ESI and is copied to EAX in the arm; still BLOCKED-BY 0xb8bd0.
+// M3 lane 11 r154 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): on lane 3's else-arm defaults form
+// (re-measured 18 at 1394 B: pool held in ECX, index in EAX, the defaults behind a `jmp`), the index read from the field at
+// each use 18, the else arm's defaults flag first 18, the flag declared ahead of the parent 18, the parent and flag
+// declared after the index 18, both lookups through this file's header-array view 18 (same code each); the parent index
+// loaded once ahead of the render-index test for both arms 378 (1399 B), with the else-arm defaults 380 (1401 B: the entry
+// reorders); the 0xbdc40 call written in each arm of the parent test (parent and flag declared in the found arm, `0,
+// false` in the other) 414 (1421 B); the mirrored flag as `byte` 387 (1397 B). Retail's block is the link-time expansion of
+// 0xb8bd0 (its parameter copy `mov eax, esi`); still BLOCKED-BY 0xb8bd0's inline decision.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

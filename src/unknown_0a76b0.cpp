@@ -4166,6 +4166,13 @@ extern vector3f *g_4687bc;
 // (forwarded, same code); the material copy-initialised from a constructed temporary 8; the impulse and strength declared at
 // the effect block's top 8; the node tests joined in one condition 8 (all the 8s the same code). Kept: the impulse through
 // the existing vector3f_scale (same code).
+// M3 lane 11 r154 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): a code-free `static __forceinline`
+// long identity around one read at each of twelve places (the Havok component index, the model tag index, the target
+// index at its read, test and 0xbadc0 argument, both point-target reads, the damage definition and owner fields, the
+// 0xb67a0 result, its NONE test, the first node, the effect-tag test) 8 each (same code: the scratch rotation is not
+// shifted at either site); the same identity as a function template 99 to 296 (1102-1127 B: not code-free); the element
+// as `.data + index`, `index + .data` and `&.data[index]` re-measured 8 each; 0x1eb020's output as `(short *)&material_index`
+// 8. Permuter (600 s, 23 tries, reduced image of 542 sources) best 8.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

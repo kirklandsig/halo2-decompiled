@@ -273,6 +273,14 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // byte cast of its address 216 and its false store so 216 (the address is seen through: update stays a candidate); on
 // update-first, `bool sample;` declared right under update 218. Retail keeps the object in EBX from its lookup, stores
 // its home after the false store and reloads it only in the force arm; the two homes are force 0x10, object 0x14.
+// M3 lane 11 r154 (h2m fast with 0xd1850, MATCH; control 21, update-first 218, update right after the zero return 216):
+// redundant paren pairs (1-3 around the blend products, or 1-3 around the two elapsed subtractions and the object index
+// mask) on all three forms 21 / 218 / 216 each (the integer ties ignore the paren phase); a folded-looking `elapsed > 0`
+// guard (not folded) on the threshold chain, the force block, the update-time test, or both of the first two: kept order
+// 223 / 234 / 200 / 242, update-first 205 / 207 / 205 / 212; the cache lookup through a file-local inline or forceinline
+// getter 21 / 21, a game-tick getter at the three reads 21, both 21, the same on update-first 218 each (same code); the
+// stationary test as a file-local inline or forceinline helper (flag form or early-return form) 195 (831 B), on
+// update-first 202; update-first with the force arm storing `update = force` 163.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
