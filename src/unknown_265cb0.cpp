@@ -363,7 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// score 84 (was 84): m3 lane 5 r233 unchanged (its lines just above the marker); r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // M3 lane 6 r223 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): local renames, to test name order among
 // same-size homes: `a`/`b` as occupant_secondary/occupant_primary, the facing pair as secondary_reach/primary_reach,
 // the squared distance and clip amount as distance_sq/clip_fraction, range and scale as perception_range/range_scale,
@@ -1027,6 +1027,11 @@ real function_30bf0(vector3f *vector);
 // pair, clip amount sharing with the squared distance, scale, motion, range; then counter, plane, cursor, delta, a, b);
 // ours follows the same order except its first slot (clip amount shared with the seat counter, 5 refs) sits below the
 // result, and the squared distance (2 refs) gets its own slot at the top.
+// M3 lane 16 r174 (h2m fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH; control 84, aligned 57): the facing limits
+// copied at the end of the facing arm (no second facing test) 101; the scaled range as `range * scale` 84 (same code);
+// the scale chosen by an if/else with a defaulted posture switch (no 1.0 initialiser) 214; the range test as
+// `distance_squared < range * range` 84; the clip test as `0.0f < amount` 84 (all same code). Retail's seat-loop
+// subtrahends load the up global's member first in all three side components (ours only in i). Body unchanged.
 // M3 lane 12 r173 (h2m fast with 0x263740 and 0x26d370, both MATCH; control 84). Where the two bytes come from: our
 // first range load goes to XMM2 and stays there on the early path, so the no-endpoint and unknown007 jumps land six bytes
 // past the join's range reload while the clip path's jumps land on it; retail loads into XMM0 and every path reloads.
@@ -1037,6 +1042,26 @@ real function_30bf0(vector3f *vector);
 // Optional endpoint via condition declaration, named selection, complete branches or clear
 // 152/152/152/152, range after the initial delta 155/155/155/155. NOT kept:
 // the result stays at +0xc and the clip fraction still shares with the seat count.
+// M3 lane 5 r233 (h2m fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84, aligned 55; body
+// unchanged). A link-time lab with named homes (this file's unit and the nine objects of its reduced link, 1.3 s a
+// variant, the full build's frame and code exactly; build/r233/lab.py and p263.py) gives ours as clip amount + seat
+// down-counter, result, range, scale, facing primary, motion + side, facing secondary, cursor, plane + up, delta, a, b,
+// squared distance, seats, against retail's result, facing secondary, facing primary, clip amount + squared distance,
+// scale, motion + side, range, counter, plane + up, cursor, delta, a, b, seats. Both are in descending references per
+// byte (2.0, 1.25, the 1.0 group, 0.75, 0.67, 0.5); what differs is the clip amount's partner and the order inside
+// each equal group. Measured in the lab: one to five unused locals leave every home where it is (they only move the
+// seat-loop products); the squared distance declared first in the settings block (so that it is the older symbol) the
+// same frame; the clip amount pairs with the seat loop's counter in every form, the compiler's down-counter or a named
+// index held in memory (a long count, a guarded do-while), and the squared distance is always placed last; the facing
+// pair's order follows the order of the two copies after the seat loop (secondary copied first puts the secondary
+// home below the primary one, retail's order) and a and b follow the order of the two maxima tests; a restated
+// `result = 0;` moves the result first and also exchanges range and scale. Scored: the seat loop as a do-while under
+// `if (count > 0)` 183 (1308 B); secondary copied first 84 (same score); one scalar for the clip amount and the squared
+// distance re-measured 81, with secondary copied first 81 (the homes then run range, scale, result, facing secondary,
+// amount, facing primary, motion + side, cursor, plane + up, counter, delta, a, b), with a restated result and
+// secondary copied first 101 (1311 B). No form here gives the squared distance the clip amount's cell without naming
+// them as one variable, and on that form range and scale still sort ahead of the facing pair where retail has them
+// behind it.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -3047,6 +3072,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // that form with the far-and-slow test written first 233, with the visible decision as one direct boolean expression 227;
 // one `established || (visible && !(far && slow))` block holding the bonuses and the score test 247 (2856 B); the
 // established arm with `else if (!visible || (far && slow)) score = 0.0f;` and one score test 255 (2848 B).
+// M3 lane 16 r174 (h2m fast with 0x25d810, 0x26be00, 0x26be30, 0x25d740, 0x25d690, all MATCH; control 158, aligned 93):
+// the relative maximum as `approach = value > approach ? value : approach;` 158; approach and facing declared apart 158;
+// the velocity dot through dot3f 158 (all same code); `facing` declared just ahead of the distance test (zeroed there)
+// 706 (2854 B); the relative vector written out from the two velocities (diagnostic) 172 (2883 B). Retail loads the
+// normalized direction's k and j into XMM1/XMM2 after the relative normalize and before its length test, and i into XMM3
+// on both edges, then reads all three from registers in the facing dot. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

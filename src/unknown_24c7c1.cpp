@@ -942,6 +942,14 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // message height as a short 261 (1903 B); the status duration defaulted by `if (!duration) duration = 1;` 115; the
 // row fade clamped by if/else on a copy of the remainder 121; the status bounds' top stored before the bottom 114 (same
 // code); the text height tested and assigned without its local 114 (same code). Homes and predicate packing remain.
+// M3 lane 7 r215 (H2M_FAST with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 114). The bool timer re-measured:
+// 191 at 1888 B, `left` still a dword store. On it, going after the two bytes above retail's word `left` with a second
+// short local that never needs memory: the right edge named in a short local declared after `left` 191, declared
+// ahead of `left` 191, declared at its assignment 191, the bottom edge named the same way 191 (the same code each:
+// a short that stays in a register reserves no home, so it cannot be what shares `left`'s cell); the scripted flag
+// computed ahead of the tutorial flag 460 (1883 B). In both builds the byte flags keep one order from EBP down
+// (split screen, scripted, tutorial, timer); retail's bounds/origin home sorts above the scripted flag where ours
+// sorts below it, which is why ours back-fills the byte beside the split-screen flag. Body unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
