@@ -1033,6 +1033,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // kept): the else arm's add-scaled as three field statements on the 358 form 356 (1652 B, aligned 121), alone on main 343.
 // Left on the 358 form: the scale rows' stores ahead of the y/z products, the 0x173ba0 argument setup, the collision call's
 // argument order and homes, and the gate's folded address. Body unchanged.
+// M3 lane 4 r247 (fast, 0x247fd0/0x248cc0 matched in each): the blended position as its own point3f (out of the grouped
+// workspace) 406 (1601 B, frame shrinks), with the workspace member left in place (unused, diagnostic) 390 (1617 B, the blend
+// sums then stay in XMM2-4 as retail); the in-loop lookup through the inline particle_object_for_tag 371 (1696 B), both lookups
+// through it 371 (same code, the first stays a call); in-loop lookup plus the separate position 361, with the unused member 359
+// (1648 B). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

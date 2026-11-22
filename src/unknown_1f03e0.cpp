@@ -694,6 +694,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // first 7, the dots inside the compare 22); the counts 0-5, 7 and 8 with that dot 9/13/13/13/26/9/39/9. On that 5 form: 1-8 unused
 // locals inside 0x1201a0 5 each (0x1201a0 MATCH), a result-pointer local for the tail 5, and probe stores of out's i, j or k before
 // or after the tail or a use of the tail's result never give retail's copy-first j product (64-65, 34-35, 294). Body unchanged.
+// M3 lane 4 r247 (fast): one selected-normal pointer declared before the switch for cases 2 and 3 198 (991 B), with case 3
+// selected-first 178; `a`/`b` declared before the switch 31 (same code), with case 3 selected-first 178 (case 3 then exactly
+// retail's, case 2's first cross recolours and its selected arms stop sharing their j/k stores); case 3 selected-first with the
+// normal as a `vector3f const &` 178. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1016,6 +1020,13 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Diagnostics: the fallback without its second cross 226 (1229 B), its second cross on the old up 258, its first cross into
 // `forward` and the second back 265: the fallback cross loads the old up first in all three; up handed to the four final crosses
 // through a pointer local or a reference local 235 (same code).
+// M3 lane 4 r247 (fast, 0x1e5af0 matched in each): the rotation written into a new `rotated` vector 239 (frame grows),
+// with rows i, j, k 238; the old-up pointer dropped (state->up at each use) 246, with the old-forward pointer dropped too
+// 294; the rotation rows in i, j, k order 233 (1239 B: limited.i then loads into a register as retail), orders ikj 233,
+// jki 236, kji 236, jik 238 (row spellings commuted change nothing); on rows i, j, k: the rotation dot through the existing
+// dot3f(&limited, &axis) or (&axis, &limited) 232 (1234 B, same (k + j) + i tree, limited's components copied as retail,
+// sine and cosine slots swap), with `(1.0f - cosine)` first 232, the acceptance dot through dot3f either order 234,
+// cosine before sine 234; `limited` copied right after old_up 290. Three points at best: body unchanged.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -2263,6 +2274,15 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // first and copying it to desired 417; the count-2 arm by fields with the dot named and grouped (j + i) + k as retail sums it 318
 // (2112 B, retail's 547 instructions; direction still read from memory in the inner loop), the same with dot3f 395, through
 // vector3f_scale with the grouped dot 491, with direction initialised by fields too 471. Body unchanged.
+// M3 lane 4 r247 (fast; aligned = instructions left after a masked sequence alignment, base 185): retail tests bit 3 of the
+// settings word as `shr 3; test al, 1` at both sites (the file's forced-inline bit-3 helper gives that) and snapshots the
+// stepping bit as a byte before the final loop (`and al, 1; mov [esp+0x84], al`, tested in the loop while the call recomputes
+// its own); its count test after `indices[count++]` is a dec chain (switch lowering). Bit-3 helper at both tests 464 (aligned
+// 173), first only 440, second only 417; stepping bool before the final loop 421 (aligned 157); both 375 (aligned 148, a
+// one-use bool: match-only, not kept); on that, both negations through vector3f_scale 377, `-shape_dot` 375, height operands
+// swapped 375, direction rows written out 468, scaled in place then copied 501; `switch (count)` 439, on helper+bool 412;
+// count without volatile 531, on helper+bool 541, on helper+bool+switch 428 (aligned 136: count and component then in
+// retail's homes); switch+plain count 442, with the helper 423, with the bool 435; helper+switch 433. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

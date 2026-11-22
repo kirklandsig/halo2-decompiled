@@ -775,6 +775,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // normalization (retail stores x before it forms `y * inv`), the tangent dot and the rotated y row taking the x product first
 // where retail takes the y product first (every source order gives the same code), the emitter copy's x/y registers and its
 // field_c stores after the first push.
+// M3 lane 4 r247 (fast, 0x29a190 listed): the candidate count as short re-measured 469 (1686 B, 0x29a190 684), with the inner
+// endpoint counter short 469, long 492; the read of arg_0 through its address removed 316 (0x29a190 345); `-arg_6` written at
+// both uses 418 (1708 B); the count as the global itself with that read removed 476 (0x29a190 702); the near arm's two
+// quarter-turn candidates through one forced-inline helper called twice 313 (1732 B, y times cosine still on x87), with a short
+// count 469. Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
