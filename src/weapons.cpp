@@ -1979,6 +1979,11 @@ static inline bool unit_dual_wielding(long unit_index)
 // declared bare and assigned false in an else arm 121 (520 B), with weapon_get_102e10 at lookup 1 121. On the 2 form:
 // the animation test and the holder helper both through weapon_get_102e10 2; the put-away pointer `s_weapon const *` 2;
 // renames of the put-away pointer, `current` and `weapon` 2 each (inert).
+// M3 lane 4 r249 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time), on the 2 form rebuilt (2): the holder helper's
+// weapon read as `(&headers[index])->weapon` (0x101f20's spelling) 2; the weapon-kind value set in an if/else with no
+// initialiser 39; the holder and dual-wield tests in one inline helper taking the weapon index 2; the definition read
+// through a second weapon lookup 2 (the 2s the same code); the animation test's index cast to short before the mask 104
+// (545 B, the offset is no longer shared).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
