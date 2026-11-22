@@ -1048,6 +1048,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // offset `data + (index & 0xffff) * 12 + 8` with no word cast 42 (the index product is still shared); retail's shape with
 // the flagged arm first and the set-and-attach through the existing 0xbb780 75; the result assigned from the header test
 // and then tested 79 (184 B). Body unchanged.
+// M3 lane 12 r175 (H2M_FAST; control 8), all on retail's shape (no second store, plain index, bool false first, true after
+// the attach; 77): the object read and attach through a `long const &` to the creation result 77; the header test through a
+// `const &`-bound temporary of the table's data pointer 73 (176 B: the lookups still share `shl ecx, 2`, f cached in EBP);
+// a second such temporary for the object read 73; the header test through a reference bound to a local copy of the table
+// pointer and both lookups through it 78. Diagnostic, not keepable (it takes the object table global's address): both
+// lookups through a reference bound to the global itself 42 (retail's EBP window and data reload, the scaled index still
+// shared), with the object read indexed by the entity's field 42, the header test alone through it 77. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1559,6 +1566,10 @@ bool c_projectile_type::v8(long a, long b)
 // `((real *)data)[(index & 0xffff) * 3 + 1]` at both uses 15; the definition copy declared after the object and the flags
 // 51 (first difference +0x0), last after flags and object 51; the flags local declared ahead of the object 12. The head
 // pair stays swapped (flags ESI, object EDI) whatever the constant 12 is spelled as. Word-read body kept (5).
+// M3 lane 12 r175 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: both result bits set through a
+// file-local by-address bit setter (dword result) 12; the 0x800 test as `(flags >> 8) & 8` 12, on a `(word)flags` view 12;
+// the group mask taken on an unsigned 64-bit value 12; the object looked up through a `long const &` to `a` 12 (every
+// spelling folds to the same 0x800 and 0xffff constants before allocation). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
