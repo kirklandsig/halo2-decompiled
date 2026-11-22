@@ -2051,7 +2051,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged, its line just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2771,6 +2771,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
 // fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
 // 431. All retain the 0x1c frame and the existing copy schedule.
+// M3 lane 11 r152 (h2m fast with 0x110ab0 and 0x258a00; control 429): retail's jump table sends case 13 and the bounds
+// default to the shared `mov eax, 1` block after the post-switch test. On main: case 20's main arm returning 1 itself
+// (`{ local_30 = 1; goto local_31; } local_3 = false;`) 498 (2432 B); its else arm as `local_3 = b0 == NONE || d1;`
+// 523 (2432 B); `case 13: break;` 477 (2404 B); the first with it 490, the second with it 494 (2416 B each).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

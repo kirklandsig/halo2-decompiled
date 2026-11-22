@@ -391,7 +391,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 295 (was 295; 305 before r204): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
+// score 295 (was 295; 305 before r204; m3 lane 11 r152 unchanged, its line just above the marker): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
 // BSP table bases stay live through the walk. (Earlier header: 305, was 315.)
 // The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
 // Earlier comparisons were 315 and 354. Advancing the required index at the row latch brought the
@@ -689,6 +689,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the deep limit through main's `environment` pointer local 21 (the output stores stay retail's); `short portal_index`
 // declared at the top ahead of the cluster pointer 21; the deep stores in the seed block's order (clusters, portals,
 // distances) 292 (1379 B). Body unchanged; still BLOCKED-BY 0x14b240's write summary.
+// M3 lane 11 r152 (H2M_FAST with 0x14b240 (MATCH) and 0x18d730 (287); control 295): on main, the portal index as a
+// `short` local (retail's `movsx` of the masked index) 356, with the side bit as `((dword)encoded >> 15) & 1` 356; the
+// distance as the 0x14b240 result then `+= travel` 295, the nearest test as `distance <= nearest_distance` 295, the
+// deep limit without the environment pointer 295 (same code each). Retail's 0x249d60 and 0x14b240 store nothing
+// outside their frames, so the per-entry portal-base reload is still the write-summary question. Body unchanged.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
