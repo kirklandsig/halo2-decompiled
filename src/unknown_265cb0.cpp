@@ -1034,6 +1034,9 @@ real function_30bf0(vector3f *vector);
 // code); the seat array declared at the top of the settings block 84 (same code); the plane distance through dot3f 138
 // (1308 B: the second seat cross product reschedules, the range load does not move); the plane sum with its first two
 // terms parenthesised 150 (1312 B), each product parenthesised 154 (1312 B). Body unchanged.
+// Optional endpoint via condition declaration, named selection, complete branches or clear
+// 152/152/152/152, range after the initial delta 155/155/155/155. NOT kept:
+// the result stays at +0xc and the clip fraction still shares with the seat count.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

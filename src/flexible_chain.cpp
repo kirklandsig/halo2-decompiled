@@ -981,6 +981,9 @@ void __stdcall function_1160c0(real dt)
 // difference output before commit 343, saved old position 346, next prediction after
 // commit 175, and coordinate loop for the staged velocity 170. NOT kept: all regress,
 // and the segment carrier and +0x20 spill persist in the closest forms.
+// Joint velocity/position coordinate pass alone, with prediction, with previous point,
+// and with both 363/375/370/393; with the reused coordinate 337/350/349/363.
+// NOT kept: the joint pass changes the frame and shortens the function.
 // Round 666. Segment selection still uses EDI/ECX and spills at +0x20.
 // Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
 // as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
@@ -995,6 +998,11 @@ void __stdcall function_1160c0(real dt)
 // (same code). Trial copies of other files' rotations: the angle-taking one with crosses in each row 320 (1442 B), the
 // result-vector one with mixed operand orders 399 (1457 B), the scalar-axis one written with an axis pointer 144. Body
 // statements: the angle call ahead of cross3f 320 (1353 B); the tick after the if/else 231, at the loop end 263.
+// M3 lane 4 r246 (H2M_FAST with 0x116750 and 0x1160c0, MATCH each time; control 144): the selected segment through a
+// file-local inline element getter taking the definition and the index 144, through a forced-inline one 144 (same code: the
+// base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as
+// `i < count ? i : count - 1` 145; the tick increment ahead of the selection 285 (1376 B). Retail also ends each pass with a
+// store of the rotated offset's middle term to +0x70 from XMM5 where this build stores it inside the rotation. Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

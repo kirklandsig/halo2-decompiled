@@ -775,6 +775,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // normalization (retail stores x before it forms `y * inv`), the tangent dot and the rotated y row taking the x product first
 // where retail takes the y product first (every source order gives the same code), the emitter copy's x/y registers and its
 // field_c stores after the first push.
+// M3 lane 2 r134 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; main 305): lane 14 r141's 229 lead rebuilt
+// 229 (1734 B, first +0x194). On it, match-only: the distance helper returning double, held in a double local that the
+// radius test compares, with local_9 its float copy, 249 fast (1722 B): the loop head is then retail's (`fstp st(2); fstp
+// st(0); fst`, the root compared on the x87 stack) and the code is retail's length through +0x320, but the far arm's
+// second normalization is 4 bytes short (retail stores x before it forms `y * inv`) and the inner loop's alignment pad
+// goes; the double result cast at the call with no double local 229 (same code); on the 249 form one to three redundant
+// paren pairs around the near rows' `y * cos` 249 each. Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

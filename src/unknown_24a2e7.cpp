@@ -169,7 +169,7 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
-// score 67 (was 67): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
+// score 67 (was 67; m3 lane 8 r221 unchanged, its line just above the marker): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
 // Earlier (67, was 67): Retail spills the entry-array base and recomputes the indexed
 // terminator after the string calls.
 // independent read cursor and indexed terminator 84; cursor search condition with
@@ -488,6 +488,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // before the call); the found test as `if (... != index) continue;` with the body and `break` after it 67 and the if/else
 // arms swapped 67 (same code each); the indexed terminator with that continue form 84, with i declared first 80, that with
 // the result indexed 80. Body unchanged.
+// M3 lane 8 r221 (h2m fast with 0x24a64d, MATCH each time; control 67): a redundant `if (0 < count)` guard ahead of the
+// search loop 66 (189 B; one point, under the bar), with the terminator indexed 83 (198 B); the search as a guarded
+// do-while 67 (same code), with the indexed terminator 84 (same code as the indexed for); lane 10 r119's two-member
+// lead rebuilt 39 (204 B), with the guard 39 (same code). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

@@ -1689,6 +1689,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
 // test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
 // mask takes EDI ahead of the query in every form where the copy stays in the found block.
+// Default-false with late success and primary/reflected/ambient/all curve scopes 573/573/573/573.
+// Constant exits with those scopes 566/566/563/563, frame 0x28.
+// NOT kept: the default forms lose the matched caller; constant exits recover the frame but raise the score.
 // M3 lane 8 r217 (h2m fast with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10; controls 529 / 378; letters as in 0xd4080's note). New
 // pair: a file-local in-place colour scale helper (each channel `scale * channel`) for the six scalings of both functions,
 // together with lighting_rotate reading its axis through a `vector3f const *` from g_4687b0, keeps record on the stack and
@@ -1706,6 +1709,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (2213 B); the scan without its `count > 0` guard 579 (2172 B), with the constant returns 570 (2164 B), with both
 // forms 575 (2198 B). Retail's caller sets the block in EAX first, then EDX = query, ECX = type: the declared order
 // (block, type, query) is the one its setup implies, so the exchange is the body's. Body unchanged.
+// Shared flag predicate on the default bit, category mask, or both 577/529/577;
+// default bit compared with its set value 529. One flag word with both predicates
+// 530, separately named decisions 530, reject before selection 530, conditional
+// category/fallback 564. NOT kept: the result spill, 0x2c frame, and exchanged
+// block/query registers persist.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

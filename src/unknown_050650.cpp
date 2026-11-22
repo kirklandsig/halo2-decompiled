@@ -2346,6 +2346,15 @@ struct s_actor_looking_structure_view
 // pair 44-76, without one 9 (12 forms), 23, 29, 31, 33: the count sets the products, no site mix flips the axis j. On the
 // lead: the fraction as a ternary initialiser after the trace 100; one `direction` pointer for the copy, rotation and
 // trace 128 (928 B); the score read through a `vector3f const &` to the candidate 146 (928 B). All restored.
+// M3 lane 7 r212 (h2m fast with 0x296e60/0x297660/0x2980d0/0x24590; control 23, 0x296e60 270): the loop score grouped
+// explicitly as (i + k) + j 124 (928 B), as (k + i) + j 124 (928 B); the shared rotation helper's dot grouped (j + i) + k
+// 31 (0x296e60 339, 1442 B), that with the j product written axis-first 31 (0x296e60 339), the dot written k + (j + i) 31
+// (0x296e60 283). Restored.
+// M3 lane 14 r143 (h2m fast with 0x296e60 at 270 throughout, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the
+// trace result typed as the header's named sector-trace view, `trace.blocked` for the first-byte read (as matched
+// 0x1b2340) 23 (same code); that with both traces through the eight-argument declaration 66; a `point3f const *` origin
+// for both trace calls 69; the actor's sector index named for its test and both calls 182; the best direction indexed at
+// each use without the `best` pointer 39. All restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

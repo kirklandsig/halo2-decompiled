@@ -287,6 +287,16 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // the transform, point and vector renamed `transform`, `point` and `facing` 19; the address local declared inside the node
 // arm only, the else arm copying from the parameter directly 19 (all the same code: transform EBX, y EBP, constant 1
 // shared).
+// M3 lane 1 r151 (h2m fast with 0xb8c00, 0x200e60 and 0x142570, all MATCH; control 19): one to three redundant paren
+// pairs around `arg_0 != NONE` 19/19/19, around the rotate helper's first scale product 19/19/19, around each side of the
+// bounds test 19/19. Diagnostics (reverted): 1-8 unused initialised locals inside the rotate helper 19 each; 16 and 17 at
+// the top 19 / 113 (453 B: the convention changes at K = 1, 9, 17, a mod-8 state; the EBX/EBP pair never moves).
+// M3 lane 6 r227 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the transform read through a
+// new `__forceinline` identity inline returning its pointer argument at the node arm's point call, at its vector call, at the
+// else arm's position copy, at its forward copy, at both node calls, at both copies, at all four, and around the node pointer
+// passed to the rotate helper 19 each (the same code: no scratch or callee-saved shift here, the transform keeps EBX and the
+// point's y EBP). Reading of the tail: retail sets the result with a byte `mov al, 1`, so AX is not 1 and field2e takes an
+// immediate; ours materialises a 32-bit `mov eax, 1` shared by the result and the word store.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
