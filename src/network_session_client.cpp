@@ -1013,6 +1013,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // eax` and the bit takes EAX): on the plain `for` copy, one index declared ahead of both loops 100; the mask test written
 // `(mask & bit) != 0` 100; the player record named at the top of the player loop's body 100; the copy loop under main's
 // `if (member_count > 0)` guard 100; the player loop as a do-while on a `player_index` 100 (all 477 B, the fold kept).
+// M3 lane 13 r146 (h2m fast with 0x6e500, 0x72700; control 22): an identity forceinline pointer view (no code of its own)
+// around one read at a time, aimed at the one-step scratch rotation: the member count's session read 133 (495 B), the mask
+// store's machine buffer 130 (495 B), the summary getter's session 165 (511 B, both callers lost), the variant's session
+// read 157 (506 B), the opening's flag read 150 (495 B), the copy loop's member read 132 (495 B); every placement grows the
+// body by 12 B or more, so it changes more than the rotation.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1562,6 +1567,13 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // colouring (count EBX, the index spilled, `current` reloaded) when its step sits inside the copy's arguments, and flips
 // to the 195 colouring when the step follows the copy; a step inside the arguments evaluates the destination before the
 // source, so the copy's two pointers swap (ECX/ESI) as in the `[count++]` 40.
+// M3 lane 13 r146 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): a new forced-inline
+// 12-byte copy helper (dest, source) called with a `dword (*)[3]` row pointer declared in the true arm and stepped in the
+// call's arguments (`copy(dest++, ...); count++;`) 216 (728 B), with `count++` ahead of the call 203 (704 B), with
+// `copy(*dest++, ...)` 216; a plain `static inline` copy helper with `identities[count++]` re-measured 195; the true arm
+// through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
+// 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
+// colouring (that needs memcpy's own argument order).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

@@ -272,6 +272,11 @@ bool function_1946f0(s_bitstream *stream)
 // only (clear on the field) 48, the same just ahead of the index 39 (the mask folds into `[edx + edi]`, index first; the
 // clear reloads, data first); that local for the clear only 40 (the clear's LEA is retail's `[edx + edi + 1]`, but the
 // mask's field read numbers to the local and folds `[edi + edx]`), at the function's top 52; an unused early data read 2.
+// M3 lane 13 r146 (h2m fast with 0x1957d0/0x195820, both MATCH; base 2): one data local read just ahead of the index and
+// used by both blocks, with the masked byte through a `byte &` element 40, through a `byte *` element pointer 40, as an
+// explicit read-modify-write 40 (each: the mask folds into `[edx + edi]` memory operands, the clear's LEA is retail's
+// `[edx + edi + 1]`); the body flattened with two early returns (`if (!discard) return;`, then the mode/position miss storing
+// the position and returning) 2 (same code), that with the masked byte through a `byte &` element on the field 9.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
