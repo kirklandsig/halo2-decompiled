@@ -1046,6 +1046,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // random pick in 0x247fd0's spelling 334; the allocated record indexed as 0x247fd0 does 334; on lane 1 r135's 317 lead
 // (re-measured 317, 1665 B) the velocity's effect record bound the same way under an if 322 (the prologue changes). Body
 // unchanged.
+// M3 lane 15 r136 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334): the three later draws each into
+// a block-scoped sample local 338; the allocation list linked through a `long *` to the list head 334 (same code); the gate
+// and the bit-4 test both through the bitfields (`flag3` of the effect, `flag4` of the definition) 361; the child link
+// call re-deriving the child record as 0x247fd0 does 335 (1654 B); the velocity selection testing the system's effect
+// index field instead of `local_0` 411; re-measured, the collision result declared ahead of the workspace 334. Body
+// unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

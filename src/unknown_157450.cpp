@@ -978,6 +978,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // mask read through a `word const &` bound to it at both post-loop uses 20 (same code); the update as one uncast store
 // `*team_mask = old_team_mask | present_teams;` 78; the dword local of the uncast OR 21; the mask compare first in the
 // change test 129 (374 B); the added teams computed after the playing store 20 (same code). Body unchanged.
+// M3 lane 15 r136 (h2m fast with 0xb58c0/0x196780; control 23; all on the one-use team-bit carrier, 20, where only the
+// post-loop block differs): the engine looked up into a local ahead of the two field stores 20; the playing store
+// through the globals getter 20; index24's test and argument through the getter 20 (same code each); the old mask read
+// from `globals->team_mask` with the pointer kept for the store 131 (374 B); only the mask compare's operands swapped
+// (`old_team_mask != present_teams`) 20 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6048,6 +6053,14 @@ void __stdcall function_d6bc0(long object_index);
 // schedule block (zero test to the delay store) in such a helper 182 (858 B); the index test as `if (entries[i].index !=
 // NONE) { schedule = false; switch ... } else schedule = true;` 172 (same code); the object declared ahead of the loop-top
 // index local 172 (same code). Body unchanged.
+// M3 lane 15 r136 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B, where `entries` is
+// reloaded into EDI at the loop top, the reset join and the zero test and the timer address takes EBX): on the 7 form case 1
+// as `if (!bit) break; schedule = true;` 7 (same code, CL stays); case 1 testing the bitfield without the bool cast, plain
+// or `!= 0`, 125 / 125 (864 B: a direct `test byte` on the field); the delay computation and store in a forceinline
+// helper called in each passing arm (index NONE, case 1, both case-0 exits) with no flag 415 (1029 B: the copies are not
+// tail-merged); diagnostic, on the field-test form the countdown block given the loop-top index 244 (882 B).
+// Re-measured listed forms: case 1 as `schedule = bit;` 129, the flag initialised from the field test 154, from the
+// local test 130. Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

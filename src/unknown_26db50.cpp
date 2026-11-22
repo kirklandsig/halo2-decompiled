@@ -1247,6 +1247,12 @@ struct s_record_collision_view
 // index read ahead of the radius 50 (the head reorders). All restored.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 26 (same code; plain
 // check agrees). KEPT as the shared spelling.
+// M3 lane 15 r136 (h2m fast; control 26; 0x2551f0/0x1ff360 MATCH, 0x1e5bb0 111 at control): in the shared axis helper
+// the projection's dot as dot_product2d of the planar parts plus the k term 26 (0x1e5bb0 114); the dot written j, i, k
+// 26 (same code everywhere); the helper naming the vector's j in place of its k 26 (0x2551f0 116, 0x1ff360 96, 0x1e5bb0
+// 118: this body's dot order does not follow which component the helper names); the unread pathfinding pointer and the
+// collision buffer as one local aggregate (0x26bfa0's request form, no volatile) 131 (1093 B, frame moves); the trace
+// origin pointer declared at the top of the spoke body 26 (same code). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
