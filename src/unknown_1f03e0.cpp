@@ -2334,6 +2334,14 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // swapped 375, direction rows written out 468, scaled in place then copied 501; `switch (count)` 439, on helper+bool 412;
 // count without volatile 531, on helper+bool 541, on helper+bool+switch 428 (aligned 136: count and component then in
 // retail's homes); switch+plain count 442, with the helper 423, with the bool 435; helper+switch 433. Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x1f19c0/0x1f2e60 MATCH, 0x1f2a80 31; control 413, aligned 213, masked 161): the count-2
+// arm by fields (`along = dot3f(&tangent, &desired)`, three products into direction) 435 (2105 B); scaled into a temporary
+// then copied to direction 481 (2112 B); scaled in place (`vector3f_scale(&tangent, ..., &tangent); direction = tangent;`)
+// 412 (2121 B, under the bar); direction with no aggregate use (field-wise init, fallback copy and count-2 arm) 421 (2073
+// B), the same on an unnamed three-real aggregate 421. Diagnostics (reverted): final loop removed 838, first contact loop
+// removed 721, desired read through a volatile view in both arms 435, direction as three scalar locals 453; in all of them
+// the inner loop still reads direction from the stack, so direction loses XMM6/7 to desired.i/j (and XMM5 to -1.0) across
+// the inner loop, not to its address, its copies or the function's size. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

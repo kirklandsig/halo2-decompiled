@@ -1460,6 +1460,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // callee matches in either order, so not kept); (forward, up, out) and (forward, out, up) 124 with 0x142d10 at 2; (out, up,
 // forward) and (up, out, forward) 126 (same code); `switch (camera->mode)` with no mode local 126 (the yaw dot's i product
 // swaps operands), with (out, forward, up) 124; `field_of_view` declared at its assignment 126 (same code).
+// M3 lane 11 r156 (H2M fast with 0x142d10/0x16c6f0/0x13cb40, all MATCH; control 126, aligned 103, masked 37): case 2
+// through one point-state pointer for all its reads 395 (1700 B); the denominator as `dot3f(&left, &plane.n)` (0x26d370's
+// ray style) 394 (1700 B); `t = -(distance / length_squared)` 126 (same code); the plane constant dotted with the left
+// vector itself 172; the length as `dot3f(&left, &left)` 392 (1700 B); the tail as `if (function_13cb40() && target !=
+// 0.0f)` with start read at each use 134 (aligned 102), with the lerp arm first 134; the tail's test as `target != 0.0f`
+// alone 149 (1700 B). Reading: the 14 jumps into the tail sit 3 bytes late because of the animation arm's `movaps xmm0,
+// xmm1`; retail's success path stores the zero from XMM0 and re-enters the tail at its `xorps xmm0, xmm0`. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

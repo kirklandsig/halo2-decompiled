@@ -1263,6 +1263,11 @@ void function_143250(
 // retail keeps in two cells, so the short frame is a cell our packer reuses, not a missing value. Band two's three unnamed
 // squares named like its other six (entries 12 and 14) 1095; r8's square alone 1231 (10744 B); r2's and r5's alone 1231
 // (10744 B); its three unnamed mixed products named (entries 10, 11, 13) 1710 (10816 B); all six 1648 (10792 B).
+// M3 lane 11 r156 (H2M fast with 0x143250 MATCH, 0x22850 209 and 0x23690 354 unchanged; control 939, aligned 777): `s5`
+// declared ahead of `s15` 939; band one's negations as unary minus 939 (same code each); the order tests as `order < 3` /
+// `order < 4` 894 (10776 B, aligned 781: positional only, the first test becomes `cmp ebp, ebx; jb` on the call's 3 where
+// retail has `cmp ebp, 2; jbe`, so not kept); 0x143250 as (n, matrix, coefficients, out) re-measured 935, with `s5`
+// declared first 935. Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

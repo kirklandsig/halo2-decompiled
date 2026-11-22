@@ -990,6 +990,10 @@ struct s_object_damage_view
 // is promoted like a plain local); the fallback validating a named copy of the reported player that then becomes the
 // killer 353 (same code, the copy folds); the killer block working on a named copy of the killer 353 (same code),
 // both 353; the two flags in retail's shape with the killer-block copy 344 (the listed flag forms' code).
+// M3 lane 11 r156 (H2M fast with 0x1e9ce0/0x1ea770/0x1ea880/0xd9640/0x197160, all MATCH; control 353, aligned 179):
+// `long killer = NONE;` declared first 370; `bool hostile = false;` declared first 439 (first difference +0x8); the two
+// assist arrays declared first 353 (same code); the two assist counts declared first 451 (+0x8); the selection amount
+// read once inside the time test with the killer declared first 435 (1578 B). Body unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
