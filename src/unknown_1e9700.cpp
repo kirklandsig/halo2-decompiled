@@ -967,6 +967,13 @@ struct s_object_damage_view
 // fallback) as a forceinline helper writing the killer, code and threshold through pointers 353 (promoted; all the same
 // code); round 209's friendly test in the call plus the consideration flag true by default and cleared by the team test
 // 341 at 1544 B (a flag set inside a test, match-only; the direct form is 350).
+// M3 lane 8 r222 (H2M_FAST with 0x197160, 0xd9640, 0x1ea770 MATCH and 0x1ea5b0 at its 76 each run; control 353, aligned
+// 132, register- and offset-masked 35): the selection amount read once inside the time test re-measured 454 (aligned 217,
+// masked 58), the assist stores re-reading the record's player index re-measured 392 (1564 B; 167/43); both together 451
+// (1578 B; 206/50); both with the killer test's team taken from the player byte 416 (218/53); the assist re-read with the
+// team byte 392 (178/46); the selected entry bound as `s_damage_record const &` for the datum test, the killer and the
+// threshold, declared before or after the damage code read, 454 each (1583 B; 263/68 and 263/72: the same code as the
+// record pointer). No form here is closer than main's body on the masked count either. Body unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -1042,6 +1042,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // test, the index stored at the top of the non-NONE arm and in the NONE else arm 68 (179 B: the two arm stores are not
 // merged into one store ahead of the test, and the header address is formed whole and reused for the object read); the
 // entity's index field bound by a reference and used as the index everywhere 82 (157 B). Body unchanged.
+// M3 lane 8 r222 (H2M_FAST with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 8): file-local forceinline
+// helpers taking the index by `long const &` (a header-flag predicate, an object getter): the getter at the object read with
+// the second store and no cast 42, the predicate at the header test with a plain object read 42, both 42, both without the
+// second store 77 (160 B), the predicate alone without the second store, word read kept 71; the header test as
+// `(flags & 0x10) == 0` 8 (same code); the object read as `OBJECT(object_index & 0xffff)` 42 (the double mask folds and
+// is shared), that with the header test on `(word)object_index` 14 (the object read is then retail's `mov ecx, eax; and
+// ecx, 0xffff`, the header test takes the movzx); the second store moved ahead of the header test (word read kept) 70.
+// Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1548,6 +1556,11 @@ bool c_projectile_type::v8(long a, long b)
 // bound through a `byte *const &` used for the 0x800 arm's index read 12; the group pool pointer read into a local at the
 // top, ahead of the call, 49 (188 B); the index as a const value local 12; the object pointer itself const 12; the entry's
 // value read as `((real *)entry)[1]` at the compare and the store 12. Word-read body kept (5).
+// M3 lane 8 r222 (H2M_FAST; word read 5, mask 12), all with the full-width mask unless noted: redundant paren pairs (1, 2
+// or 3) around the call's mask, the 0x400 store's source or the entry expression 12 each (no phase: integer picks); both
+// value compares as `!(x == y)`, each alone or both 12 each (word read 5); the bit tests as `(flags & bit) != 0`, each or
+// both 12; the result bits as `result = result | bit`, each or both 12; a second object local for the 0x800 arm's index
+// read 12 (word read 5); the 0x400 test from `b` with the other uses on the flags 12 (word read 5). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

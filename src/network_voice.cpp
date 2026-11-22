@@ -2084,6 +2084,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // two-element array, through memcpy; the reference-bound length written directly (before or after the header stores);
 // the reference-bound compound form with the header stores first or between its steps 151 [137] (same code as
 // above). Patch: build/r222/lead-0x55c40-score5.patch.
+// M3 lane 8 r222 (H2M_FAST with 0x56380, 0x564c0, 0x53b00 and 0x56000; control 60; caller 0x56380's score in brackets
+// when it breaks). Lane 6 r222's lead rebuilt at 5 (450 B; only `movsx edi, cx` where retail has `mov edi, ecx`). On it,
+// the length as `written * entry_size + 2`, `entry_size * written + 2`, `2 + written * entry_size`, `2 + entry_size *
+// written`, `written * entry_size;` then `+= 2`, `written * entry_size + sizeof(word)`, `written * (dword)entry_size + 2`,
+// `(long)(written * entry_size) + 2`, `(long)written * entry_size + 2` 134 [12] each (456 B, the player on the stack);
+// `entry_size * (short)written + 2`, `(short)written * entry_size + sizeof(word)`, `(word)written * entry_size + 2` 5
+// each (the extension stays). Body unchanged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
