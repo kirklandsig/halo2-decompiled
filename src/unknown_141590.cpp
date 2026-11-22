@@ -1263,6 +1263,11 @@ void function_143250(
 // retail keeps in two cells, so the short frame is a cell our packer reuses, not a missing value. Band two's three unnamed
 // squares named like its other six (entries 12 and 14) 1095; r8's square alone 1231 (10744 B); r2's and r5's alone 1231
 // (10744 B); its three unnamed mixed products named (entries 10, 11, 13) 1710 (10816 B); all six 1648 (10792 B).
+// M3 lane 12 r177 (H2M_FAST with 0x143250, MATCH; control 939): our cell +0x8c holds band two's r5 square, band three's
+// r2-square-times-root-105 product and a later value; retail keeps the second in its own cell under the matrix (+0x234).
+// Band three's r2_r2_s105 declared ahead of r5_r5_s105 939, r5_r5 ahead of r2_r2 939 (both the same code); r2_r2 and
+// r5_r5 at the top of band three 1569 (10780 B); r8_r8 after r5_r5 944 (10781 B); band two's s5 and s5_s15 declared
+// just ahead of entry 0 1134 (10763 B, frame 0x2f8). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

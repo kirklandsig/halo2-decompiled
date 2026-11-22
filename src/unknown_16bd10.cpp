@@ -1460,6 +1460,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // callee matches in either order, so not kept); (forward, up, out) and (forward, out, up) 124 with 0x142d10 at 2; (out, up,
 // forward) and (up, out, forward) 126 (same code); `switch (camera->mode)` with no mode local 126 (the yaw dot's i product
 // swaps operands), with (out, forward, up) 124; `field_of_view` declared at its assignment 126 (same code).
+// M3 lane 12 r177 (H2M_FAST with 0x142d10/0x16c6f0/0x13cb40, all MATCH; control 126): the point arm's object_index local
+// at its later uses too 328; the pan arm's game time through the game_time local 126 and its transform declared at the
+// arm's top 126 (both the same code); the pan arm's rotation matrix without its own scope 219 (1708 B, the frame moves);
+// the position blend from the once-pinned t (no second PIN) 239 (1672 B). Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
