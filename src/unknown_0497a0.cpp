@@ -644,6 +644,12 @@
 // wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
 // the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
 // so no out-of-line copy of a wave helper exists to show the removed third use.
+// M3 lane 11 r151 (H2M_FAST with 0x4a1e0; control 536): retail's 12 extra frame bytes are the two wave values in separate
+// cells (+0x18/+0x1c, ours share one) and the first cross's i/j components in their own cells (ours reuse w's), with the
+// 12-byte homes v1, v2, w, v3, v4 in that address order (ours v1, v2, w, v4, v3). Forms: v3 defaulting to v2 and replaced
+// by the shape's vector when not special 664 (2639 B), the same declared after v4 677 (2646 B); v3 copied from a selected
+// pointer 536 (same code); s1's sine argument with the y term first 536 (same code); the v3/v4 names swapped 536 (same
+// code: names do not move these homes). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -696,6 +696,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct handle or shared case-zero handle 132/132, with promoted type 135/135, and with
 // the whole rigid-body reference 117/117. NOT kept: the 88 forms make the handle a one-use copy
 // and retain the flags address where retail keeps the body. The other single-type forms lose the caller.
+// M3 lane 11 r151 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): retail masks the object index again in case 0
+// although the entry already masked it, so the type was read once at entry with the object-index local used twice (the
+// entry read and case 0's havok_object_get(object_index)), no one-use local: with `(word)object_index` at the entry 98 at
+// 256 B [13] (case 0 re-masks as retail, the entry gives `movzx` and the component/index registers swap); with `& 0xffff`
+// at the entry 133 (220 B) [213] (the mask is shared); with the rigid body declared first 98 [13]; with the type read
+// ahead of the rigid body 86 (260 B) [9]; with a long type 94 [13]. Body unchanged.
+// More r151 forms: a twice-used header-array local (the type through `headers[(word)object_index]`, case 0 through
+// `headers[object_index & 0xffff].object`) 98 [13]; the same with the header array declared first 57 at 256 B [13]
+// (the component then arrives in EDX and the index in EAX, so the caller's setup changes); with the type read ahead of
+// the rigid body 86 (260 B) [9].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -507,6 +507,11 @@ long g_55e6c0;
 // count field (`long &levels = entry->element_count; levels = ...`) 30, with the round-51 signed packing 30 (484 B); the
 // round-51 packing with the width and height stores ahead of the kind store 31, that with round 122's late levels store and
 // header pointer 33; round 122's lead re-measured 31 (484 B). The top block's height/count swap stays in all of them.
+// M3 lane 11 r150 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the offset declared in the level loop's
+// for-init (`for (long i = 0, offset = 0; ...)`) 109 (480 B, first difference +0x1: data leaves EBP); the offset declared
+// right after the register call 110 (480 B); the packing's `width - 1` term first 29 (same code: the OR operands are
+// canonicalised); the height store moved after the packing 98 (480 B); the width and height stores both after the
+// packing 103 (480 B). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

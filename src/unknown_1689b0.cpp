@@ -2240,6 +2240,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // projection and candidate, miss endpoints and midpoint, or all points 558/553/551/571/558/570/588.
 // Shared vector setter for clamped and midpoint separations 552. NOT kept: the midpoint ties.
 // The count and clearance spills and radius-square schedule still differ.
+// M3 lane 11 r151 (H2M_FAST with 0x16a440, 0x120790 and 0x2469b0, the two matched ones MATCH each run; control 551): the
+// normal test as `!(inside && fabs(distance) < 0.01f)` 555; the separation started at the nearest distance and zeroed in
+// the inside arm 550 (2878 B); the clamp's second test written length first 551, the side test written zero first 551,
+// `0.01f < magnitude` 551 (same code each). Body unchanged.
+// More r151 forms: the zero store ahead of the closest copy in that arm 550 (same as above); the inside arm zeroing
+// nearest_squared_local with the radius test reading it (no separation local) 557 (2879 B).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
