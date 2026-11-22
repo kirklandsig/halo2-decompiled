@@ -634,6 +634,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // P608: Library copies into surround bins/volumes, stereo bins/volumes, then surround pair,
 // stereo pair, both bins and all: 301/302/296/292/315/300/307/334.
 // NOT kept: longer bodies and no retail memory-status/clock/audio frame recovery.
+// M465: 64 KiB count long 278; 64 KiB count dword 277; page count long 280; page count dword 280; MiB
+// count long 279; MiB count dword 280; selected bytes long 290; selected bytes dword 292.
+// NOT kept: all reservation-size carriers shrink the frame to 0x38 against retail 0x40.
+// The dword mode, status and clock homes still differ.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

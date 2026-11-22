@@ -833,6 +833,16 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // Full fallback value selected before validation, on the valid-angle path, after yaw, or before
 // current pitch 379/386/386/391. Fallback address selected at those sites 364/256/291/367.
 // NOT kept: the original J/depth pair remains or the first difference moves earlier.
+// shared coordinates with full aggregate first 407; shared coordinates with planar aggregate first 407;
+// scoped shared coordinates with full copy first 407; scoped shared coordinates with planar copy first
+// 407; full aggregate from coordinate array 406; both aggregates from coordinate array 406; full copy
+// with named planar assignments 130; separate depth publication after the planar pair 406.
+// NOT kept: Explicit planar member assignments reproduce 130. Sharing the two input coordinates changes
+// the first normalizer, and the full aggregate forms alter the 0x2c frame. The projected J and depth
+// stores remain exchanged in the tying form.
+// The planar J and depth stores still exchange order. One immutable input for both projections scored 394,
+// with degenerate restore 394, pitch angle 383, rotation input 384, restore and pitch 383, restore and
+// rotation 384, pitch and rotation 375, and all consumers 375. NOT kept because the frame grew to 0x38 or 0x3c.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

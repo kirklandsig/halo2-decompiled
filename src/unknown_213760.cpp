@@ -2086,6 +2086,19 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // close exactly (108: only the probe's own load and a pad differ), so retail has one more register temporary between
 // the write's handle and the close than the write-copy form; no source form found that adds it without code. Body
 // unchanged.
+// M3 lane 2 r134 (H2M_FAST with 0x2141f0, 0x213800 and 0x2149c0, all MATCH throughout; main 33): the close test as
+// `(!resized || bytes_written != 0x800) && open` with no else store 157 (frame 0x1140: the count shares the query size's
+// slot), the count declared beside the size, before or after it, 157/157; the count scoped in `if (resized)` with `written
+// = bytes_written == 0x800;` assigned there 98 (first +0x1e0: retail branches where this materialises the bool). On lane 9
+// r132's 5 form (rebuilt 5), match-only: a named write-flags local before the call or at the block top 5/5 (same code); the
+// write's handle through `file->handle` or the global element, or the flags from a false constant, 5 each; a named handle copy at the
+// top of the resized block for the write 114 (917 B: the write's setup is then retail's, handle EAX first and the zero in
+// ECX, but the close pushes the tested EAX where retail copies it to ECX); on that, the copy const, the close test or its
+// argument through `file->handle`, the copy after the header, declared then assigned, copied from `file->handle`, a second
+// copy for the close, the checksum binding removed or unbound, 114 each; the copy just before the call 114, ahead of `if
+// (resized)` 119, that also for the close 127, as a const reference 5 (same code), one copy at the open test for query,
+// resize and write 170, for query and write 154, ahead of the resize for resize and write 139, and the close 153. Any named
+// handle copy loses the close's `mov ecx, eax`. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
