@@ -946,6 +946,13 @@ struct s_item_collision_bsp
 // separate aggregates 269/269, separate vector setters 269/269, reused row setter 194/194,
 // and a three-axis matrix 273/273. NOT kept: the reused row leaves the normal coefficients
 // in other registers at 1366 bytes. The other forms grow to 1392 bytes.
+// Dead normal scaled in place with field point publication 247 / In-place scale and point setter 247 /
+// In-place scale and indexed point publication 247 / In-place scale and translated marker copy 283 /
+// Marker point translated in place 200 / Corrected coordinates in dead normal with setter 247 /
+// Corrected coordinates in dead normal with point initializer 247 / Corrected coordinates in dead normal
+// by index 247.
+// NOT kept: Reusing the normal makes the contact block longer, and the marker-point form reaches 200 at
+// 1378 bytes. The earlier instance-plane coefficient homes still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1281,6 +1288,13 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
 // named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame
 // excess and grows the body to 909–919 bytes.
+// Scale and accumulate projection 200 / Native projection-product loop 168 / In-place scale and
+// projection with setter 188 / In-place last-use components 205 / In-place deferred rows 174 / Split
+// alignment with in-place setter 166 / In-place workspace in both branches 161 / Shared cross and
+// uniform rotation loop 220.
+// NOT kept: The both-branch workspace recovers frame 0xb4 and 848 bytes at 161 differences. The
+// alignment and projection-product forms also recover the frame and raise the score. Retail still
+// retains the scaled axis in different registers.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

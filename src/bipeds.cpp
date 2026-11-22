@@ -1888,6 +1888,16 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // preload 137, typed state with material address 158. NOT kept: the 137 form restores
 // the low tag spill and walking load order but stages one-use settings and rate locals.
 // The animation flags, position and material homes still differ.
+// Round 629: The low definition spill shared with the grab distance remains unresolved.
+// short animation-flags offset 645.
+// promoted animation-flags offset 649.
+// short common state offset 650.
+// promoted common state offset 659.
+// both offsets as shorts 657.
+// both offsets promoted 658.
+// short flags offset with promoted state 654.
+// promoted flags offset with short state 661.
+// NOT kept: storing relative offsets changes the early allocation and raises every score.
 // On the retained state and speed declaration order, lexical ranks for tag, flags,
 // material, grab distance, position, facing, tag with distance, and tag with flags
 // and material each score 158. The +0x64 definition spill and other homes stay in place.
@@ -3213,6 +3223,13 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
 // with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
 // conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
+// Named high byte before follow-up 64 / Named high byte after follow-up 65 / Named high byte on failure
+// 72 / Named high byte at both successful clears 94 / Named high byte before follow-up and on failure 73
+// / Named high byte after follow-up and on failure 74 / Named high byte at all clears 103 / Named high
+// byte at all clears and shared failure flag setter 93.
+// NOT kept: The named pre-call clear is closest at 64 and 246 bytes. Clearing all three sites through
+// the byte shifts the entry and grows the body, including with the shared failure flag setter. The saved
+// pool base, step transport and signed body selection remain different.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4553,6 +4570,16 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // and walking lookups 677 with flight-arm acquisition or 686 with call-local
 // acquisition. One branch-local reacquisition 630 for either branch.
 // NOT kept: the reduced control is 598 and separate lookups enlarge the body.
+// Round 629: The changed byte and flight threshold still occupy different homes.
+// turn key carried through both paths 612.
+// previous key as the selected value 615.
+// turn key selected in each facing arm 638.
+// conditional validated key override 615.
+// signed short direction 637.
+// signed short with conditional key override 655.
+// signed turn expression with explicit overrides 635.
+// signed turn expression with conditional override 635.
+// NOT kept: all eight forms raise the reduced control of 602.
 // Animation-key case fallthrough with special or ordinary permission 595/595. Three
 // walking outcomes by if/else, exclusion-first or special-first conditional, default
 // ordinary, key cases or a second dispatch 628/642/643/626/628/708.
