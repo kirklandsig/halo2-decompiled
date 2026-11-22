@@ -3511,6 +3511,10 @@ struct s_ammo_conversion_entry
 // Conversion candidate as mutable or const reference before the match test 214/214;
 // with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
 // NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Promoted ordinal for both destination rows 211, both runtime rows 190, definition and source 190,
+// all three 190, all three with runtime row declared first 197, and source branch only 190.
+// Same-definition predicate with separate source observations 234, also with shared source key 234.
+// NOT kept: The four ties preserve the exchanged saved roles. Both separate-source forms grow to 760 bytes.
 // Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
 // Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
 // Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
