@@ -616,7 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115; m3 lane 8 r221 unchanged, its line just above the marker): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115; m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): coefficient XMM roles, classification operands and projection staging still differ.
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1253,6 +1253,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // `s_plane &` bound to planes[0] 285 (1867 B, first +0xaf); a redundant `if (0 < point_count)` ahead of the
 // classification loop 271 (1867 B); plane 1's negated vector through vector_products.h's vector3f_negate_ab 257 (1830 B);
 // both planes' in-place normal negations through vector3f_negate_ab 129 (1851 B). Body unchanged.
+// M3 lane 1 r154 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH each run; control 115): lane 12 r123's match-only 18
+// form rebuilt 18 (first +0x384). On main: plane 1's d read from the `negated` local instead of the copied normal 440
+// (1835 B); the forward vector as a local copy (`vector3f forward = *(vector3f const *)&view->point54;`) 367 (1862 B,
+// first +0x2); the clip ratio as one conditional expression with the distance summed in it 253 (1867 B). On the 18
+// form: the classification through a `point3f const *` element pointer 32 (first +0x28a); plane 1's d from `negated`
+// 448 (1814 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

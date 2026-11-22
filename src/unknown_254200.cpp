@@ -341,6 +341,11 @@ void function_254200(void)
 // the top, ahead of the point copy, both, and on the chosen bitmap inside its test 4 each (6 runs); the minus edges
 // written `x + -size` 4; the two dimension locals, the chosen bitmap, or the size and point copy declared bare at the top
 // and assigned in place 4 / 4 / 4 (all the same code: the x, y + size, constant group stays ours).
+// M3 lane 1 r153 (single-address H2M_FAST, control 4): the scale, size and flag parameters `real const` / `bool const`
+// 4; the chosen bitmap a const pointer 4; the drawing block (primitive start to end) in a scope block of its own 4
+// (all the same code); the size read through a `real const *` to the size local at the x sums 259 (1205 B, re-read per
+// use). Diagnostic: 0x2548f0's body emptied 4 (0x254200 MATCH), so the pair does not follow the other function's
+// compilation.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -781,6 +786,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // ahead of the coordinate pointers, on the colour getter's result, and both 2 each; the offset quad's half size or the
 // two coordinate pointers declared bare at the top 2 / 2; the coordinate pointers declared y first 2; the minus edges
 // written `x + -size` 2 (all the same code).
+// M3 lane 1 r153 (single-address H2M_FAST, control 2): the first quad (colour fetch to its end call) in a scope block
+// of its own 2; the point parameter a const pointer 2 (same code each). Diagnostics: 0x254490's body emptied 2
+// (0x254200 MATCH); the colour call after the first texture call 359 (first +0xe); the first region's inline depth 1
+// instead of 0 419 (2365 B, the later calls inline).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
