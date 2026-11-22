@@ -1002,6 +1002,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `collection` local (`&watcher->players` at each use) 294; the swap's count step as its own statement with the call
 // passing `&updates[*count - 1]` 28 (same code); the loop-top player formed as `&collection->players[i]` 267 (1064 B);
 // the occupied record as `updates + (++*count - 1)` 28 (same code). All restored.
+// M3 lane 13 r144 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; control 28): `collection`
+// renamed `watcher_players` (a name-order probe for the key sum) 28 (same code); the session player pointer declared
+// ahead of the session-mask `continue` 251; the tail after the conflict scan nested under `if (!conflict)` 28 (same
+// code); the occupied record's count step as `*count += 1;` 28 (same code); the swap's and the occupied record's
+// updates as `&updates[(*count)++]` 63 (1051 B). All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
