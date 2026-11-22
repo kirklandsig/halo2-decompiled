@@ -786,7 +786,7 @@ struct s_biped_flags_10a_view
 // MiniMax E (11-20): no new form, no lower score (222): retail computes the state pointer at the top and spills it
 // where this build reads it at its one use, and the 0x111650 call pushes both arguments where ours takes the names in
 // EAX: BLOCKED-BY 0x111650.
-// score 222 (was 224; 241; 280 before round 48): Frame 0x16c agrees. Retail
+// score 222 (was 224): Frame 0x16c agrees. Retail
 // keeps the animation-state pointer at +0x20 and the pool offset at +0x24.
 // The build reads the state at its use and spills the offset at +0x20.
 // The type-0 bit still uses `and al, 4` where retail shifts then masks.
@@ -872,6 +872,11 @@ struct s_biped_flags_10a_view
 // pair in its own Boolean 222, both calls accumulated into changed 235. Both
 // animation-request arguments already use stack slots. The animation-state and
 // pool-offset homes and the tail byte combine still differ.
+// Earlier scores 241 and 280 before round 48.
+// The early animation-state and pool-offset homes still differ. Tail disjunction, conditional result update,
+// accumulated result first or animation-success return: 273/255/271/295.
+// With the state pointer computed at entry: 359/331/359/381.
+// NOT kept: conditional update approaches retail length but raises the score. Early state takes EBX.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -1888,9 +1893,36 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // preload 137, typed state with material address 158. NOT kept: the 137 form restores
 // the low tag spill and walking load order but stages one-use settings and rate locals.
 // The animation flags, position and material homes still differ.
+// Round 629: The low definition spill shared with the grab distance remains unresolved.
+// short animation-flags offset 645.
+// promoted animation-flags offset 649.
+// short common state offset 650.
+// promoted common state offset 659.
+// both offsets as shorts 657.
+// both offsets promoted 658.
+// short flags offset with promoted state 654.
+// promoted flags offset with short state 661.
+// NOT kept: storing relative offsets changes the early allocation and raises every score.
 // On the retained state and speed declaration order, lexical ranks for tag, flags,
 // material, grab distance, position, facing, tag with distance, and tag with flags
 // and material each score 158. The +0x64 definition spill and other homes stay in place.
+// M3 lane 5 r231 (fast, control 158): frame map ours -> retail: material +0x04 -> +0x8c, definition +0x60 -> +0x04,
+// animation flags +0x64 -> +0x60, facing +0x68 -> +0x70, position +0x80 -> +0x64. Retail's definition home has four
+// references (it keeps the +0x134 globals pointer in ESI across the 0xdfa60 call and reloads the definition after it),
+// ours three, tied with material's three. Case 1's float argument as a named `real recovery` ahead of its call 158; the
+// walking speed written call first 158; its product's factors swapped 158 (all the same code); diagnostic, 1/2/3/4 dead
+// longs at the top 158/158/176/176. All restored.
+// M465: selected tag-array pointer long 620; selected tag-array pointer dword 620; selected tag-array
+// reference long 620; selected tag-array reference dword 620; branch-owned tag array and offset long
+// 593; branch-owned tag array and offset dword 593; selected tag array from movement reference long
+// 620; selected tag array from movement reference dword 620.
+// NOT kept: conditional array selection repairs the definition, animation flags and material
+// slots but shifts position and grows the body. Selecting array and offset in a branch shrinks
+// the frame to 0xf8 against 0xfc.
+// Modes 1, 1 and 2, 1 and 3, or 1 through 3 handled before the remaining
+// switch 480/643/637/645; ending the tag scope at the split 480/643/637/645.
+// NOT kept: first +0x51 stays at the displaced tag spill in all eight forms.
+// The point and material homes remain displaced.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3204,9 +3236,19 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
 // `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
 // All restored.
+// Captured raw byte with signed conversion at query, original selection, shared short getter,
+// direct body-field bounds and signed local bounds 82/89/76/76. The raw dword forms 83/90/77/77.
+// NOT kept: the count still needs a saved carrier, and all eight move the first difference to entry.
 // In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
 // with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
 // conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
+// Named high byte before follow-up 64 / Named high byte after follow-up 65 / Named high byte on failure
+// 72 / Named high byte at both successful clears 94 / Named high byte before follow-up and on failure 73
+// / Named high byte after follow-up and on failure 74 / Named high byte at all clears 103 / Named high
+// byte at all clears and shared failure flag setter 93.
+// NOT kept: The named pre-call clear is closest at 64 and 246 bytes. Clearing all three sites through
+// the byte shifts the entry and grows the body, including with the shared failure flag setter. The saved
+// pool base, step transport and signed body selection remain different.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4547,16 +4589,34 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // and walking lookups 677 with flight-arm acquisition or 686 with call-local
 // acquisition. One branch-local reacquisition 630 for either branch.
 // NOT kept: the reduced control is 598 and separate lookups enlarge the body.
+// Round 629: The changed byte and flight threshold still occupy different homes.
+// turn key carried through both paths 612.
+// previous key as the selected value 615.
+// turn key selected in each facing arm 638.
+// conditional validated key override 615.
+// signed short direction 637.
+// signed short with conditional key override 655.
+// signed turn expression with explicit overrides 635.
+// signed turn expression with conditional override 635.
+// NOT kept: all eight forms raise the reduced control of 602.
 // Animation-key case fallthrough with special or ordinary permission 595/595. Three
 // walking outcomes by if/else, exclusion-first or special-first conditional, default
 // ordinary, key cases or a second dispatch 628/642/643/626/628/708.
 // NOT kept: the 595 forms gain three in the reduced image and grow the frame to 0x80.
 // The full 0x78 frame still needs the changed byte and flight threshold at +0x11 and +0x18.
+// M3 lane 5 r231 (plain, control 537): the wall turn's `along` as dot3f(&biped->up, &turned) 536 (2725 B, one step);
+// `(1.0f - turn_cosine) * dot3f(...)` 537; the wall cosine as dot3f(&facing, &biped->forward) 537; `left = 0.0f < sine`
+// 537 (same code each); the planar turn naming the new j first 632 (2742 B). All restored.
 // Typed keys with Boolean special result direct or declared before admission 615/615. False-default result 606.
 // Shared mode key 611, with entry-scope byte 633, admitted byte 615, nested modes 615, or renamed changed result
 // 611. NOT kept: preview control 602 with the orientation-callee caveat. The variants recover the 0x78 frame and
 // flight spill. The two 615 direct assignment forms also recover the changed byte, with the entry key and tag
 // homes exchanged.
+// Turn-selector snapshot 629, named immediate result 606, conditional result 590,
+// deferred result 606, branch-set result 590, three turn outcomes by selection
+// 618, branches 614, or a named immediate decision 614. NOT kept: the two
+// 590 forms expand the reduced frame from 0x7c to 0x84; retail uses 0x78.
+// The full changed-byte and flight-threshold homes remain displaced.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6297,6 +6357,23 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // with success exit 79, ordinary crosses 203, staged crosses with direct
 // forward 154, trig construction with success exit 79. The first rotation
 // still spills the complement before its dot sum finishes.
+// M3 lane 5 r231 (fast with 0x1ecf50/0x30bf0; the rotation helper's file was open this round): rotate_direction's text,
+// screened against its five users (this 79, 0x1ecf50 matched, 0xd0080 58, 0x1e5bb0 114, 0x26d570 26): cross_j's second
+// product axis first, cross_k's first product axis first, both, the dot as dot3f(axis, vector), `(1.0f - cosine) * dot`
+// 79 each, every user unchanged (same code); the dot not named 144 (0x1ecf50 91, 0xd0080 36, 0x1e5bb0 94 at 1382 B,
+// 0x26d570 77); the cross locals declared k, j, i 89 (0x1ecf50 51); the cosine complement named 79 (0x1ecf50 14). The
+// helper's named-local count moves every user, its written operand orders none. Body unchanged.
+// Generic object forward getter as pointer, named receiver with pointer, direct member and
+// member reference 79/153/89/79. With an ordinary final cross 203/197/83/203.
+// NOT kept: the ties leave the early complement spill and the final memory operand unchanged.
+// Alternate shared rotation for forward, up, or both with a uniform forward
+// reference 124/89/134 or direct member access 136/160/140. Alternate forward
+// or up rotation with a staged side cross 124/89. NOT kept: the altered
+// rotation loads regressed. The original complement spill and final cross remain.
+// Rotation axis name, rotated-up and side names, or all three 79 each. Angle limited to the
+// trig producers, with or without the workspace names, 79 each. Rotation scope ending at the
+// up rotation, with workspace names or a nested angle scope, 79 each. The first complement
+// spill and the final forward-j reload remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

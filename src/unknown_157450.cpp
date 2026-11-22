@@ -949,6 +949,17 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the old mask `word const` 23 (same code each); on the word-mask base (77) `1u <<` in the present update 77, in both 77.
 // Re-measured: word mask with a plain present 63 (384 B); the dword mask with a plain present and the one-expression
 // store `(word)(old_team_mask | present_teams)` 128 (375 B).
+// M3 lane 7 r213 (h2m fast with 0xb58c0/0x196780; control 23; screened on a multi-object LTCG harness that reproduces
+// this function exactly): 320 random natural combinations (volatile or plain present; word, dword, unsigned short or
+// long mask; pointer or field paths; all 24 orders of the saved/accumulator declarations; compare sides; six mask-store
+// spellings; store order; added-mask place; engine through the getter or the table; early return; `continue`): with a
+// word mask and a plain present every combination folds the saved mask into field re-reads. Forms: long mask, plain
+// present, early return, mask stored first through the field 100 (378 B); the added teams assigned after the two field
+// stores 23 (the engine-index load rises to retail's place); that with the OR uncast into the dword local 24; long mask,
+// plain present, playing/mask/old playing/present declared in that order 108 (378 B); dword mask, plain present, a
+// `continue` loop and `old | (word)present` 109 (378 B). Diagnostic (reverted at once): a compiler barrier after the
+// entry reads on the word mask with a plain present keeps the word spill, but present still takes EDI and the globals
+// pointer is re-read after the loop.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6002,6 +6013,11 @@ void __stdcall function_d6bc0(long object_index);
 // a const pointer to the parameter's address 172 (same code: the indirection folds before allocation); 0x15aad0 given
 // `&entries[0]` 172 (same code). On the 7 form: case 0 written ahead of case 1, 7 (same code, CL stays). Reading: the
 // timer only wins EDI while the loop-top index is live through the schedule test; no form here moved `entries` below it.
+// M3 lane 6 r226 (h2m fast; base 29, label form 7, label + field test 172 at 858 B): the delay store written in each
+// kind arm (kind 0, kinds 1-7, else) to add timer-address uses 133 (908 B, not tail-merged), on the label form 125 (904 B),
+// on the label + field-test form 119 (904 B); the countdown stored as `countdown - 1` and tested by re-reading the field
+// 29 (same code), on the label form 7, on the label + field-test form 172 (same code each). Timer-address use counts do
+// not move `entries` out of EDI.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

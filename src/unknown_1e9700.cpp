@@ -433,6 +433,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
 // +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
 // is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
@@ -440,7 +441,6 @@ struct s_object_damage_view
 // the three homes are not reachable from the expression's spelling.
 // MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
 // MiniMax I (11-20): no new form, no lower score (353): the permuter ran over the function for 690 s and kept its baseline (350 differing instructions on the reduced image); the three small homes stay rotated (killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c there, victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c here) and the history cursor stays biased +4.
-// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // M3 lane 6 r214 (fast with 0x197160 and 0xd9640, both MATCH throughout): on 0x197160's code parameter typed byte (the
 // listed lead, re-measured 354), each listed form: consideration flag 345, friendly flag 354, found-flag dedupe 366 (1528 B),
 // retail's arm order 363 (1532 B), team byte argument 354, `self` in the call 350 (1544 B), assist stores re-read 377, related
@@ -967,6 +967,11 @@ struct s_object_damage_view
 // fallback) as a forceinline helper writing the killer, code and threshold through pointers 353 (promoted; all the same
 // code); round 209's friendly test in the call plus the consideration flag true by default and cleared by the team test
 // 341 at 1544 B (a flag set inside a test, match-only; the direct form is 350).
+// M3 lane 2 r134 (H2M_FAST with 0x197160, MATCH throughout; main 353): the self test written in the 0x1ea770 call 350
+// (1544 B, retail's length, but ESI/EBX are then popped before the friendly test where retail computes `self` first); a
+// `0 < assist_count` guard ahead of the first dedupe loop 353; both dedupe scans as a `for` with `break` 353; the killer's
+// team byte named as a char and passed to 0x1df560 as the byte 358 (1552 B); friendly as false then set by its test 353.
+// Body unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
