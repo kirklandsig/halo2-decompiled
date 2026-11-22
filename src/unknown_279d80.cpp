@@ -1962,7 +1962,7 @@ void function_27dd10(void)
 	compute_orientations(1, 0, false, false);
 }
 
-// score 2 (was 2): r131 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
+// score 2 (was 2): r133 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
 // The order is a register-allocator tie that follows the constants live in the walk's loops (any
 // new one flips it) and not the source shape. Tried: blend-1 translation and scale through
 // interpolate_real 159; a node lookup returning the index or NONE 382; the per-arm walk as a
@@ -2174,6 +2174,26 @@ void function_27dd10(void)
 // (same code); the walk's output-cursor advances as `+= 1` 2 (same code); the interpolation's translation arm as `+=`
 // statements with a `real const &` fraction 2 (same code); component_interpolate reading the blend fraction once into a
 // value local for all three arms 2 (0x288570 120). All restored.
+// M3 lane 15 r133 (one-object link-time screen of this file scoring all 60 samplers against retail at once; control 58
+// of 60 equal, this function 2, 0x281b60 2). Retail has both reload orders among siblings of one source (0x285750 and
+// these two flags first, 0x2898b0 count first), and the pair exists only with the destination mask (the map-flag bit
+// test then takes the flags' EBX on the miss path; mask-less 0x27eae0 reloads only the count at the join). Forms, as
+// this function / 0x281b60 / samplers equal: the samplers as instances of a function template over the four constants
+// calling the pass helper 4 / 4 / 28 (method 3's twelve all 13; instances expand their helpers only without the
+// generated unit's trailing inline pragmas), with the per-arm apply walk 2 / 2 / 28; the three counters as one array
+// global indexed by the component 53 / 4 / 29 (`inc [mem]` for retail's load, inc, store); the decoders as an array
+// member indexed by the component 2 / 2 / 33; the bit-flag pointers as an array member 2 / 2 / 46; the map-flag bit test
+// in node_destination_get mask first, with a named mask, shift, word or word index, both named in either order, or the
+// mask through a new one-line helper 2 / 2 / 58 each (same code); those spellings in node_flags_test 2 / 2 / 57; the
+// method-2 translation add with its operands swapped 2 / 2 / 58 (same code). Each existing wrapper applied to all 60:
+// compute_orientations 4 / 4 / 41, function_288571 2 / 2 / 35, the split form 22 / 31 / 25, the component-count form
+// 4 / 7 / 29, the split-index-last form 29 / 32 / 8, the inheritance-mapping form 110 / 46 / 15. A generated walk over
+// apply once or per arm, node index, flags, group end and destination index each walk-local, shared or per pass, count
+// shared, separate for passes 1-2 or by reference, inheritance by reference or read in place, either node lookup and the
+// mask test as function or macro (3,888 combinations, plus 233 with the bit-flag pointer or a wrapper inheritance local
+// varied): best 2 / 2, best family 44 (mapping lookup with the macro mask test); no combination matches either function.
+// Diagnostics: 0..47 dead initialised locals at the wrapper's top, the pass helper's top or in the sampler's own body
+// never move the pair (they move method 3's float registers for 8..28).
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2246,7 +2266,7 @@ void function_2818e0(void)
 	compute_orientations_component_count(2, 0, false, false);
 }
 
-// score 2 (was 2): r131 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
+// score 2 (was 2): r133 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
 // The same allocator tie as 0x27dff0. Tried: blend-2 `+=` and `*=` 2; the blend-2 translation as a
 // loop over vector.n 364; the multiply's sign mask as long 2, as `1UL << 31` 2, as real lanes 245.
 // Round 40 (screen): the existing compute_component_orientations_shared with each of node index, bit
@@ -2440,6 +2460,11 @@ void function_2818e0(void)
 // settings' decoder table in place of component_decompress 39 (0x289580 2, 0x288570 120); the pass's bit-flags pointer
 // selected in function_288571 ahead of each pass instead of in the walk 2 (same code); function_288573's apply index
 // ahead of its output parameter (definition and both calls) 2 (same code). All restored.
+// M3 lane 15 r133 (one-object link-time screen scoring all 60 samplers; the forms and counts are listed above
+// 0x27dff0): template instances 4 (per-arm apply 2); the counters as one array global 4; the decoders or the bit-flag
+// pointers as array members 2 / 2; bit-test spellings in either helper 2; each existing wrapper 4, 2, 31, 7, 32 and 46
+// (compute_orientations, function_288571, split, component count, split index last, inheritance mapping); the 3,888
+// generated walk combinations best 2. Nothing below 2.
 // @retail 0x281b60
 void function_281b60(void)
 {

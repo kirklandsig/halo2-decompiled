@@ -1709,7 +1709,7 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
-// score 26 (was 26): r131 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
+// score 26 (was 26): r133 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
 // M3 lane 11 r135 (fast; control 26): the magnitude helper taking its value by `real const &` 26; `target -= position`
 // through a forceinline helper writing through a pointer 26; the stop distance in a forceinline (velocity, step, `real
 // const *` time step) helper given `&delta_time` 26; the scale helper writing its result through an out parameter 26 (all
@@ -1932,6 +1932,28 @@ PRIVATE __forceinline real const &component_time_step()
 // M3 lane 15 r131 (h2m fast with 0x1d87b0/0x1d06c0/0x1d0400/0x181db0; control 26): compare operands constant-first or
 // target-right: the step test `0.001f < step` 26; `0.0f > target` 26; `step < target && stop_distance < target` 26; the
 // scale helper's `0.001f < exponent` and `0.001f < mass` 26; the ratio's `0.001f < magnitude(limit)` 26 (all the same code).
+// M3 lane 15 r133 (h2m fast; control 26; a = aligned unmatched rows, control 14): what gives retail's kept address
+// (`mulss xmm0, [eax + 4]`, `add eax, 4`, later `[eax]`), measured here. (1) The rate's address defined on two paths:
+// the step product written in each arm of the mass test, the getter called in each arm, keeps `add eax, 4` and reads the
+// second product from `[eax]`, but once per arm and never merged: as `x / mass * dt` and `x * dt` 135 (487 B, a 19; the
+// compiler regroups to `dt / mass` and factors `* x` out of both arms, not `* dt`); in place (`step /= mass; step *= dt`
+// and `step *= dt`) 141 (489 B, a 23); the time step written first 141; through a new one-line per-tick helper called in
+// each arm, either operand order, as a ternary, or with the step started as the scale result 135 each; a reference bound
+// in each arm 141 (a 19); each of these unchanged by 0..8 dead locals ahead of the test. One reference bound ahead of
+// the two arms 128 (477 B, no kept address). (2) Diagnostics, reverted at once: with the globals pointer's address taken
+// in this file and the ratio stored between the two reads, the kept address appears (139, 472 B); the address taken
+// alone 26 (same code); the early ratio store alone 137 (no kept address). With the address taken, `target -= position`
+// through a pointer local, a reference local or a new inline helper writing through a pointer, and the step stored
+// through a pointer local 26 each (same code: a local's pointer is resolved first and kills nothing). Retail has no
+// store through a pointer and no call between its two reads, so (2) needs a cause not in the final code. Full-image
+// diagnostic (reverted): the globals pointer's address taken in the file that defines it loses 164 matched functions
+// and gains none, so retail does not treat that pointer as address-taken and (2) is ruled out; (1) is the open cause.
+// Also: the time-step reference bound ahead of the scale helper 142 (476 B: the globals pointer loaded before the
+// power call, kept in ESI, `[esi + 4]` at both reads); r121's helper lead re-measured: 105 step-first (a 8: only the
+// kept address, the second read and the test order differ), 106 stop-first (a 31: plus the XMM2/XMM3 swap); the same
+// helper with the time step third and the target fourth, the getter as the argument, 26 step-first and 43 stop-first
+// (main's code: the lead needs the reference parameter last); the mass test and the per-arm product moved into that
+// helper (reference parameter) 128-131 (477-480 B, no kept address), with the getter called in each arm 135/141.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
