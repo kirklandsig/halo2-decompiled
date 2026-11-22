@@ -538,7 +538,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
-// score 1346 (was 1346; m3 lane 8 r221 unchanged, its line just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// score 1346 (was 1346; m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // header line, 1375 (was 1375), sits further up this file).
 // (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
@@ -906,6 +906,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // flag set at the match and `if (!found && ...)` 1342 (6243 B; four points, a flag set inside a test: match-only); the
 // handbrake bit as `(... & 2) != 0` 1346 (same code); the first loop's wheel record read at each of its six uses (no
 // local_8) 1446. Body unchanged.
+// M3 lane 1 r154 (H2M_FAST with 0x2056e0, MATCH each run; control 1346): the magnitude helper reading its input directly
+// re-measured 1624 (5990 B); its stack references then follow retail's map (the same counts per offset, ours 4 bytes
+// higher from the middle of the frame up: 0x158/0x15a and 0x1e4/0x1e8 for retail's 0x154/0x156 and 0x1e0/0x1e4; 133
+// references at +0x80 or above in both), so the 248 missing bytes are not displacement size: retail has 25 more movss,
+// 9 more mulss, 6 fewer fld/fmul, three imul and a second ret. On that direct form: local_5 declared before local_4 1624
+// (same code); the ray record local_19 declared at function scope 1608; the scale helper as three component statements
+// 1649 (5974 B); the two normalisations through the existing normalize3d 1609 (5990 B). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
