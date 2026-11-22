@@ -1248,6 +1248,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // their operands swapped 115 (same code): the emitted load order of a product does not follow its written operand order
 // here (retail loads in written order, ours the other operand first for the j term and the first two distance terms).
 // Body unchanged.
+// M3 lane 12 r174 (h2m fast with 0x1648d0 and 0x320b0, both MATCH; control 115). At +0xbb retail loads e4.i ahead of
+// the forward copy into plane 0's normal (e4.i is then the product's destination and the zero takes XMM4); ours loads the
+// copied n.i first. Plane 0's d from `forward->` after the copy 442 (1835 B, first +0x60), from `forward` ahead of the copy
+// 441; the products written normal first 115 (same code); through dot3f(&e4, &normal) 278 (1867 B); redundant parentheses
+// around the i, k, j, i+k or all three products 163/176/145/281/271. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
