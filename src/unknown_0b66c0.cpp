@@ -665,6 +665,16 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (92 B) [6] (the text pointer is then passed in a register; the address read does not keep it on the stack); the bound
 // named first (`long end = start + count;`) 21 [match]; the source as `(char const *)((long)string + start)` (0xb61d0's
 // integer sum) 21 [match]; the test written `length >= start + count` 21 [match] (the three the same code).
+// M3 lane 1 r157 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the natural body with a
+// plain string, `start += (long)string` after the clamp 41 (104 B) [35], the source as `string + start` at the copy 41 [35]
+// (same code: the string arrives in ECX and takes EBX for the whole function, start stays in EDX, the scan walks in EDI and
+// its byte takes AL, two exits). By-value one-pointer wrapper parameters (callers building them through file-local
+// inlines), re-measured: the string wrapped, destination plain 52 (91 B) [83]; both wrapped 22 [match] (retail's length,
+// entry moves and scan; the string is loaded once into EBP after the tests and the destination late into EDI). New on
+// those: the wrapped string read through an inline accessor returning the wrapper by value (a fresh aggregate copy at each
+// use, the form that matched 0x151b80) at both uses with both wrapped 22 [match], with the destination plain 52 [83], at
+// the source only 22 [match], at the scan only 22 [match] (each the same code as the plain member reads: copies of a
+// by-value parameter are merged, so the string still takes EBP in place of retail's two loads from its home).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
