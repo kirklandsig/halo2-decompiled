@@ -1068,6 +1068,21 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // pointer and both lookups through it 78. Diagnostic, not keepable (it takes the object table global's address): both
 // lookups through a reference bound to the global itself 42 (retail's EBP window and data reload, the scaled index still
 // shared), with the object read indexed by the entity's field 42, the header test alone through it 77. Body unchanged.
+// M3 lane 5 r236 (H2M_FAST with 0xbb780, matched throughout; control 8), no second store unless noted: the NONE test on the
+// entity's field, the rest on the local 77 (160 B); 0xbb780 given the local with the tests on the field 77; every read after
+// the store through `entity->object_index` (NONE test, header test, 0xbb780's index, the v31 call) 67 at 176 B: the object
+// read's index is then recomputed `mov ecx, eax; and ecx, 0xffff` as retail (the only form so far that does not share
+// it), but the data pointer stays shared in EDX and `f` is cached in EBP (no EBP window); the same with the call result
+// stored straight into the field (no local) 67; the other seven field/local mixes of the NONE and header tests with
+// 0xbb780 or the plain store and attach 77/82; that form with the second store `entity->object_index = object_index` before
+// the call 42 (the data reload and window come back, but the scaled index is shared again), with the field stored to
+// itself 45 (179 B); the current body with `(word)entity->object_index` at the object read 18. Diagnostics (allowed only
+// with a match, reverted): on the 67 form `e` and `f` read at the v31 call through const volatile casts of their addresses
+// 45 (retail's whole head to +0x3a; left: data shared in EDX where retail keeps g_4e0300 in EDX and reloads data after the
+// EBP window), `f` alone 68, `f` through a pointer to it 67. Also on the field-read form: the flagged clear first
+// (`if (index != NONE && flagged) index = NONE;`, flat or nested) and the valid block under a retest of the field 67 / 67
+// (the retest is threaded away). Lead: the 67 form plus a barrier that emits no code between the header test and the
+// object read.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1594,6 +1609,10 @@ bool c_projectile_type::v8(long a, long b)
 // file-local by-address bit setter (dword result) 12; the 0x800 test as `(flags >> 8) & 8` 12, on a `(word)flags` view 12;
 // the group mask taken on an unsigned 64-bit value 12; the object looked up through a `long const &` to `a` 12 (every
 // spelling folds to the same 0x800 and 0xffff constants before allocation). Word-read body kept (5).
+// M3 lane 5 r236 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the entry chosen as
+// `index != NONE ? <masked entry> : NULL` and tested `if (entry && ...)` 37 (190 B: the NULL test is not threaded into
+// the NONE test), that with the value compare nested under `if (entry)` 37, the entry started NULL and set under the NONE
+// test 37; the flags local as `(dword)b` 12; a value `long index` with a `byte const *` entry 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
