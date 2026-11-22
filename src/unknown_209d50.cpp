@@ -317,6 +317,12 @@ static inline void *function_xc5914d(long thread_index, short size)
 // volatile-free 95, volatile-free null-first 83; the same with the size read into a `short size` first 21 / 95 / 83. In
 // the null-first listing the expression pool is rematerialised per block (`mov ecx, [pool]` in the init block, again in
 // the test), the pointer keeps EAX and the result ESI: the pool temp, not the pointer, loses the register contest.
+// M3 lane 4 r249 (h2m fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the three slot
+// pointers kept in a local three-member record 95 (promoted); the allocation named `result` with the pointer copied from
+// it 95; no frame local with the result copy after the second allocation 78 (278 B, as without the copy move).
+// Diagnostics (a probe global taking the pointer's address, reverted): copy at the top 83 (287 B: the pointer gets its
+// stack home but is still computed straight into EAX and the frame load still folds), copy after the second allocation
+// 118 (302 B, the convention changes). A memory home alone does not give retail's EBX pointer and late `mov eax, ebx`.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

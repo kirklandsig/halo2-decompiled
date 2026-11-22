@@ -1312,6 +1312,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // merge early, the index in ESI): only a mix of the player local and the getter keeps the lookup's read apart. The
 // sibling 0x151aa0 is one exchange off in the same way (retail player ESI, hand EDI): in both, retail's registers come
 // only when the unit lookup's index read is a value of its own at allocation.
+// M3 lane 4 r249 (h2m fast with 0x151aa0 and 0x152bf0; 0x151aa0 43, 0x152bf0 MATCH each time; control 5): on the getter-reload
+// form the mode read into a `long mode` local 5 (same code); the weapon test as an early `return result;` inside the slot
+// test 51 (143 B); `long hand = !primary;` declared at function scope after the result 28; the reload as `[0].unit_index` 5
+// (same code); the e68c0 code as `hand ? 0x13 : 9` 54 (146 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

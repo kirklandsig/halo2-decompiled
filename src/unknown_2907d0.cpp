@@ -297,6 +297,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // passed to the rotate helper 19 each (the same code: no scratch or callee-saved shift here, the transform keeps EBX and the
 // point's y EBP). Reading of the tail: retail sets the result with a byte `mov al, 1`, so AX is not 1 and field2e takes an
 // immediate; ours materialises a 32-bit `mov eax, 1` shared by the result and the word store.
+// M3 lane 4 r249 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19). Retail 0x2902b0 sets up
+// EDX first, then the transform push, EAX, EDI last, which reads as (record, object, transform, node): that order with the
+// address local 19 (same code), with `(void)local_4;` and the body reading the parameter directly 19 (same code), with no
+// address local 33 (464 B); the no-object copies placed first under `if (arg_0 == NONE)` with the node arm as `else if`
+// 135 (455 B); the else arm's copies through a `transform4x3f const &` bound to `**local_4` 19 (same code).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
