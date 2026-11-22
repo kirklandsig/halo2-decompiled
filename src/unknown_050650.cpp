@@ -2355,6 +2355,16 @@ struct s_actor_looking_structure_view
 // 0x1b2340) 23 (same code); that with both traces through the eight-argument declaration 66; a `point3f const *` origin
 // for both trace calls 69; the actor's sector index named for its test and both calls 182; the best direction indexed at
 // each use without the `best` pointer 39. All restored.
+// M3 lane 8 r224 (h2m fast with 0x296e60, 0x2980d0, 0x297660 and 0x24590; 0x296e60 270 and the rest matched in every build;
+// control 23): the loop score as `dot3f(&forward, &directions[i])`, either argument order, with 0-3 redundant pairs on the clamp
+// product 35/144/11/128 (928 B at 3). LEAD 11 at 924 B (steering parens, not kept; the shared helper untouched): the rotation dot
+// and cross k are retail's; left are the j row (v.j * cos and axis j * projection in each other's registers) and the score's
+// order (k, j, i for retail's i, k, j). The hand-written score in all 12 written orders x 0-3 clamp pairs: 23/25 at 0, 60, 144,
+// 141. On the dot3f score: the clamp as an if then `score *= fraction` 128 (928 B); as a ternary statement then `*=` 128;
+// fraction-first clamp product 35; constant-first angle and `0.2f * distance` the same cycle (35/144/11/128); a `direction`
+// pointer for copy, rotation, trace and score 139/143/143/126; the selected or best test reversed 35/35; the fraction as a
+// ternary initialiser 114/130/103/129; the angle named 32/145/29/128; the dot3f call itself in 1-3 pairs: total count mod 4.
+// No natural form gives the 2-pair shift.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

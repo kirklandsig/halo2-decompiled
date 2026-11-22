@@ -923,6 +923,11 @@ void function_1537f0(s_profile_record *record);
 // first 18; the entry pointer renamed to sort last 18 (both the same code); the loop ended on `index != 350` 19; on
 // round 136's lead (view from the array element, `entry->` link pairs in retail's order; re-measured 46) the four heads
 // as one chain in retail's store order 46, the tail stored field_64 first 46 (NONE hoisted into EBP each time).
+// M3 lane 8 r224 (h2m fast with 0x1537f0, 0x7f8b0 and 0x80490, plus 0x80330 and 0x18fd94 for 0x1537f0 forms; control 18):
+// 0x1537f0's value40 clear (the source of the two forwarded zero words) as four element stores 70 (250 B; 0x1537f0 26),
+// value40 and value70 as element stores 117 (210 B; 0x1537f0 27), value40 by a counted loop 18 (0x1537f0 26); the identity
+// zeroed by one chained element assignment 64 (256 B), that with the `entry->` links as chained pairs in retail's order 62.
+// 0x1537f0 keeps its own bytes only with its memsets. All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

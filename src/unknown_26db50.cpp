@@ -1230,6 +1230,17 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // unread-parameter form) and a plain local for it 164 (1058 B: the unread store is dropped, so retail's store is not an
 // inlined parameter's); a `vector3f const *up` local for the 0.5 lift loop only 26 (same code); the angle, sine and cosine
 // in their own block 26 (same code); M with that lift-only pointer 20 (M's code). All restored.
+// M3 lane 8 r224 (h2m fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each run; control 26): lane 12 r164's axis-helper lead
+// (include/axis_rotation.h, M, offset x,z,y) re-measured 8. With the collision record and its marker store moved ahead of the entry
+// pointer (between the endpoint and the lift) the offset x,y,z 20 / x,z,y 6, the same with rotate_direction (no helper swap)
+// 20 / 6; world, collision, entry 20 / 6; collision ahead of the endpoint 20; after the lift 26. At 6 the only rows left are the
+// offset's own y/z stores: retail's dot follows the offset's store order (z stored before y), not where the z value is computed
+// (a one-use z local ahead of the y store, or collision z read first, 20; main 26). Main with only the offset stored x,z,y 12.
+// On the collision-first x,y,z form, redundant pairs on the lift, angle, offset or distance product cycle 71/179/39,
+// 41/181/73, 39/179/71, 39/179/71; the lift as three `+=` statements, six orders, 179/71/179/179/187/187 (1082-1088 B); the
+// lift loop counting down 42 (main 44; with x,z,y 28); the offset through real_point3d_set 20 (main 26); a separate point
+// local for the 0x14a280 probe 55 (main 58, frame grows); on the collision-first form the endpoint as three statements in
+// the six orders 39/168/149/152/167/152 (xyz first; the others 1092-1095 B). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
