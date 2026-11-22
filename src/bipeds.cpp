@@ -1933,6 +1933,15 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 590; the globals pointer named alone 587 (definition home fixed); the rate named alone 590; case 1's float as
 // `(real)count * (rate / recovery_time)` 158 (same code; on the lead 137); on the lead, material declared after
 // position 137 and the case 6 target declared after moved/distance 137 (same code).
+// M3 lane 16 r178 (H2M_FAST, control 158; the walking-preload lead re-measured 137): retail sets up 0xe59e0's register
+// arguments velocity (EBX) first, then position (ESI), and 0xe59e0's own body passes (position, velocity) on to the
+// animation state, so its order looks like (index, position, velocity): that reorder (definition, declaration and this
+// call; 0xe59e0 is contributor code and stays matched) 157, on the lead 136 (under the bar, and a contributor signature:
+// not kept). On the lead with that reorder: the flags_348 bit 1 argument as TEST_FIELD_BIT((flags_348 >> 1) & 1) 533
+// (2812 B); flags_c0 bit 8 the same way 533 (2816 B); flags_c0 bit 6 526 (2816 B): the shift spellings move the frame. On
+// main with the reorder: case 4/5 using the entry `state` (no re-derivation) 205 (2816 B); the state read inline in the
+// 0x1e67f0 argument 416. Retail's argument temporaries sit c0 byte +0x90, flags_348 byte +0x94, gravity +0x9c; ours (lead)
+// c0 byte +0x8c, gravity +0x94, flags_348 byte +0x9c.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4646,6 +4655,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // neither); and with the mode-6 exit returning `changed` 543 (2714 B: both bytes at retail's homes, so one more
 // reference to changed flips the tie, but that exit then merges with the final return where retail keeps `mov al, 1`).
 // With both bytes placed 543 remain: the wall-vector products' operand order and xmm scheduling.
+// M3 lane 16 r178 (fast 602 here, unfaithful; plain control 537): `special` as `== 0x7000039 ? true : false` compiles to
+// the direct bool's sete (fast 645); the pitch rows with the trig written inline, `(real)cos(pitch) * heading->i + axis.i
+// * (real)sin(pitch)` and no sine/cosine locals, plain 607 (2724 B: fcos is then evaluated first, and the rows still form
+// axis * sine before cosine * v); that with the addends swapped or each product's operands swapped, fast 599/599 (same
+// order); sine/cosine declared cosine first, fast 604. The x87 row order (retail cosine * v first in rows i and j) follows
+// none of the spellings.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

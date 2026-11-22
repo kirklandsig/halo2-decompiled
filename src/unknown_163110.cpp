@@ -1267,6 +1267,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // M3 lane 15 r134 (h2m fast with 0x1648d0 and 0x320b0, both MATCH; control 115): redundant paren pairs (diagnostic): around
 // the near sum 1/2/3 pairs 145/247 (1867 B)/271 (1867 B); around the far-plane flag test 115/115/115 (same code); one pair
 // around plane 0's d i, k or j product 163/176/145. Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH; control 115): the near sum and distance after plane 0's
+// copy 141 (re-measured, first +0x5d); the segment flags cleared after the near distance 172 (first +0x4a); the near
+// distance's compare as `near_sum < 1.52588e-5f` 115 (same code); the forward pointer declared with the locals at the top
+// 196 (first +0x6); the planes array declared ahead of the point arrays 115 (same code). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

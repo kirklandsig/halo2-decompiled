@@ -982,6 +982,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (aligned 128: frame 0x14 and the entry as retail, but `count` stays in EBX and the pass loop still rotates, the hull
 // count in EAX); both with `current` and the hull test reading the count through a const volatile view of the parameter
 // 216/216 (784 B, aligned 125). Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH; control 144). Retail's pass loop is not rotated: the
+// entry jumps over the header's alignment to a top test block (`mov ebx, [hull]; cmp bx, word [count]; jge`) and the
+// three continuing paths of the closure tests jump back to it, so the closure's last compare falls through to the return.
+// On main with one counter (`indices[(short)hull_count] = current; hull_count++;`, main's gotos): the loop as `for (;;)`
+// with a top `if ((short)hull_count >= count) break;` 236 (759 B, frame 0x14 as retail; it is rotated all the same, the
+// same code as) `while ((short)hull_count < count)` 236; that with `current` initialised at function scope ahead of the
+// classifier call 236 (766 B); with a bool departure flag 236; with the candidate bound written `count > j` 258 (762 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
