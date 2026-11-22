@@ -322,8 +322,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Complete supplied-direction native/const/setter/CRT observations 731/731/743/731,
 // frame 0x2c and caller loss in each. Original 0x24 frame, inputs, qualifiers and caller restored;
 // direction/sample residence and coefficient schedules remain.
-// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
-// scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm
+// forms; scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
 // Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
 // all with the activation workspace declared at entry 642. Original initializers and complete body restored.
 // Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
@@ -839,6 +839,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the factor's flag byte for the duration, but a function-wide XMM zero is hoisted to the entry); the second clamp's
 // factor ahead of t2 in main's if form 716. Diagnostic, reverted: d dropped from the 0.866 test 743 (b takes EBX, not q).
 // Retail compares both normalise results with the memory zero constant; ours keeps a zero in XMM6 for the active PIN.
+// M3 lane 16 r172 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the three limit tests written
+// `0.f != limit` 604; both normalise tests `0.f == function_30bf0(...)` 653 (2884 B); the settle test's `0.f != nlen` 605
+// (2881 B, retail's length); its alignment check `len * 0.087155744f < align` 614 (2891 B); the activation delta scaled
+// factor first 603 (same code). d keeps EBX. Body unchanged.
 // Shared setters for the start copy, impulse, activation target, all target updates,
 // both direction differences, reference sample, ramp position, and activation displacement
 // with scaling and impulse 699/708/678/693/675/603/661/713.
