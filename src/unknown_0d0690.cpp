@@ -1698,6 +1698,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // copies, the bias read from the record, normalize3d; check.py --fast agrees); with order moves 491 to 496. All need 0xd4080's
 // moved square (ES): without it 0xd4080 reads 427 to 486 in all 16 subsets of N/D0/IP/SS, so 513 / 316 is a lead only
 // (build/r217/lead-d37f0-d4080-316.patch in the m3-lane8 worktree). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged; control 529). Retail's found
+// block copies the lightmap colour whole into the adjusted colour and adds the bias in place, and returns constants
+// (`mov al, 1` / `xor al, al`, the entry's `xor al, al` serving the empty-block exit). The adjusted colour as
+// `= *lightmap` then three `+= bias` 538 (2199 B); constant returns (`if (parameters) { ... return true; } return
+// false;`) 566 (frame 0x28 as retail, first difference +0xc: the block and query registers stay exchanged); both 587
+// (2213 B); the scan without its `count > 0` guard 579 (2172 B), with the constant returns 570 (2164 B), with both
+// forms 575 (2198 B). Retail's caller sets the block in EAX first, then EDX = query, ECX = type: the declared order
+// (block, type, query) is the one its setup implies, so the exchange is the body's. Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
