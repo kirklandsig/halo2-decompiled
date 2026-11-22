@@ -1788,6 +1788,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // party or capacity rejection 885/895/893. Single exit with rejection byte 874, or with
 // result initialized after the clear 903. The frame stays above 0xb4 and the opening
 // lookup still inlines.
+// M3 lane 1 r153 (H2M_FAST with 0x73530 and 0x192e60, both MATCH; control 871): the type-5 exit as `return false` 871;
+// the opening test as two early returns (summary, count and variant, then the capacity pair) 871; the rated test on
+// `rating` for `adjusted` 875; the loop lookup's validity tests and its 0x1934f0 test as nested ifs 871;
+// `adding_group` declared beside `result` 881. Retail re-reads the variant type after each call and threads the loop
+// lookup's negative-index branch past the `if (variant_index)` test.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
