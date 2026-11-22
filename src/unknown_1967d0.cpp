@@ -1045,6 +1045,12 @@ static inline long team_score_195ed0(long team)
 // test's bit folded into its condition with `result = true;` 151 (1210 B). Diagnostic (behaviour change, reverted): an
 // extra guarded 0x199460 call with a team test ahead of the team loop 381 (1253 B), and the third score read still
 // expands with its team test called, so the third read's expansion does not follow the inline work spent before it.
+// M3 lane 2 r138 (h2m fast with 0x1587f0, 0x159460, 0x161e60, 0x162030, 0xd9640, 0x15b3a0, 0x15c550, 0x15ca10, 0x15ce70,
+// 0x162060, 0x196780, 0x64d70): this file and the file of the real team test and statistics getter are both /Ob1, so
+// neither can expand here; with PIN over the real 0x1587f0 (re-measured 192 at 1241 B): `inline` on 0x161e60's definition
+// 489 (1338 B; 0x159460 lost), on 0x162030's 180 (1225 B; 0x1587f0, 0x159460, 0x15b3a0, 0x15c550, 0x162060 lost), on
+// both 442 (1301 B); `inline` on 0x1587f0's own definition 192 and a forced-inline declaration of it here 192 (both the
+// same code as the plain call). Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
