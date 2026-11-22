@@ -2051,6 +2051,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// score 429 (was 429; m3 lane 5 r233 unchanged, its lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // score 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2771,6 +2772,38 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
 // fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
 // 431. All retain the 0x1c frame and the existing copy schedule.
+// M3 lane 5 r233 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, aligned 129/130, register-masked
+// 81/82; body unchanged). Case 2's record written as the matched siblings write it (0x1ac090, 0x1bd3b0, 0x1c10a0: type,
+// mode, vector, flag, typed fields) with the vector read straight from the actor (`actor->unknown424.vector = *(vector3f
+// const *)((byte *)actor + 0x4d8)`, no pointer local) gives retail's copy schedule exactly (two loads ahead of the first
+// store, the type and mode stores ahead of the copy's last store) but exchanges the actor and state registers 608
+// (2404 B); the same order through the `turn_facing` pointer 606, with vector3f_assign kept 431 (same code as main but
+// for the store order). 64 subsets of {case 13 dropped, case 20's else arm as a conditional clear, case 7/8's
+// conditional flag, case 5's swapped arms, case 18's held targets, the second publish flag-first} on that case 2 form
+// with case 4's direct facing: every one exchanged (first difference +0x9), best 551. A closing `default: local_3 = true;`
+// arm with case 13 dropped 477 (2404 B: the restated store goes before layout, case 20's else arm still falls into the
+// post-switch test). The state parameter as a by-value one-pointer aggregate (diagnostic) 429 (same code as the plain
+// pointer; it does not pin the parameter here).
+// DIAGNOSTIC LEAD, not keepable (it needs a volatile read): case 13 dropped, case 20's arms as conditional clears, case
+// 7/8's conditional flag, case 5's swapped arms, case 2 in the siblings' form above, case 4 as `dot3f(&displacement,
+// &local_2->field_c)` with no facing copy, case 18's two targets in named locals tested one at a time, `? 1 : 0` at
+// +0x465, cases 9 and 11 actor field first, the iterator set up data, index, datum_index, the second publish flag-first,
+// and case 21's `field_3 |= 0x20` reading the state through the parameter's own address with a volatile cast: 249 at
+// retail's 2396 B, first difference +0x171, aligned 58/64, register-masked 28/34 (with case 4's facing read member by
+// member 394; dot3f with its operands the other way round 394; without the volatile read 631, exchanged). On it the
+// prologue, dispatch, cases 1, 2 (but one product's operand side in the turn test), 4, 7/8, 0, 5, 9, 10, 12, 11, 21 and
+// 14, the post-switch test after case 0 with the shared return-1 block and the tail's first half are retail's. Left: the
+// turn test's first product (retail loads the copied x and multiplies by the actor's field; main's body has it right, so
+// it follows the function's local count), case 6's two ORs and late global load, case 18's selector read ahead of the
+// record pointer's load, case 20's subtraction and sum order in both arms and its arms' exits (retail `jne tail; jne
+// tail;` + its own return-1 epilogue, then `mov al, [d1]; jmp` into the test, ours `je; jmp` and `test; jne; jmp`), and a
+// one-step scratch rotation from the tail's 0x110ab0 argument on (retail EAX, ours EDX; the second publish and the
+// planar copy after it follow). Case 6's flags through a named byte with two stores on the lead 504 (exchanged again,
+// even with the volatile read). Case 14 placed after case 20 (a case moved, match-only; listed above as 419) 417 on
+// main: case 20's else arm is then retail's `mov al, [d1]; jmp` into the test and case 14's own block is retail's.
+// Reading: retail colours the actor before the state (the actor takes EBX, whose one conflict is the 0x1ffa30
+// argument; the state is left EDI with holes at the 0x210b60 and 0x1c1080 arguments, read from its home there); every
+// natural retail-shaped body here colours the state first, and only removing the state's use after 0x1c1080 turns it.
 // M3 lane 11 r152 (h2m fast with 0x110ab0 and 0x258a00; control 429): retail's jump table sends case 13 and the bounds
 // default to the shared `mov eax, 1` block after the post-switch test. On main: case 20's main arm returning 1 itself
 // (`{ local_30 = 1; goto local_31; } local_3 = false;`) 498 (2432 B); its else arm as `local_3 = b0 == NONE || d1;`

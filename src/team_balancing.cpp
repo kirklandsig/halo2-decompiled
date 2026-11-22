@@ -1071,6 +1071,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // the scan and copy in a forced-inline helper returning the next party 34 (same code); the clamp in a named local 34
 // (same code); the copy loop reading through the stepped party-list pointer 82 (172 B); the fill through a slot pointer
 // from the copy's end (`*slot++ = next_party`) 35. Still BLOCKED-BY 0x7e210.
+// M3 lane 16 r176 (H2M_FAST with 0x91e30 MATCH and 0x7e210 871 each run; control 34): the copy loop under a redundant
+// `if (0 < player_count)` 34; the fill under `if (player_count < total)` 34; both guards 34 (the real build, not a first
+// pass; same code each); the fill value through a no-op conversion, `(dword)`, `(int)` and `(unsigned int)` 34 each (same
+// code: only a conversion that emits an instruction moves the load after the count and destination). Still BLOCKED-BY 0x7e210.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

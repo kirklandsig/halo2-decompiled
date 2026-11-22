@@ -1084,11 +1084,38 @@ void swarm_leader_detach(long actor_index);
 // local 4; `if (!stop) continue;` then the call 4; the call as `(*stop)(...)` with a typed null arm 4; the handler table
 // bound to a `s_slot_handler *const *` local before the loop 4 (all the same code); the argument's slot through a second
 // actor_get(actor_index) 273. Body unchanged (59).
+// M3 lane 16 r174 (h2m fast with 0xf0fd0 and 0x1fb360; control 59, aligned 13): the false-then-set flag rebuilt as
+// `bool counted = false; if (definition) counted = (*(dword *)definition >> 3) & 1; if (counted)` with `actor != other`
+// 4 at 980 B (plain check 4 too); the same flag set by `if (definition && bit) counted = true;` 57 (974 B, the byte store
+// dropped) and nested under `if (definition)` 57. On the 4 form: the stop assigned inside the `if` condition 4; the
+// stop declared ahead of the loop 4; the selected slot in a local inside the call's block 4; the table read twice (test
+// and call) 4; `slot_index >= 4 ? NULL : ...` 4 (all the same code). Diagnostic, reverted: the handler read as a
+// four-byte memcpy now gives 297 in the reduced image too (996 B, frame 0x24, actor index on the stack in the loop), so
+// the reduced image agrees with the plain check on that form. Reading of the last 4: retail's handler reuses the type's
+// ECX while the slot offset is still live (the `lea` comes after the stop test); ours forms the `lea` first, the offset's
+// EDX is then free and the handler takes it, which pins the `lea` ahead of the handler load. Body unchanged (59).
 // M3 lane 8 r221 (h2m fast with 0xf0fd0 and 0x1fb360; control 59): the listed 4 form rebuilt (false-then-set definition
 // flag plus `actor != other`; 4 at 980 B, only the slot loop's `lea` ahead of the handler loads). On it: the slot loop's
 // condition as `actor->current >= slot_index` 6; `if (stop != NULL) (*stop)(..., slot_index > 3 ? NULL : &slot)` 6; the
 // flag computed as `(... & 8) != 0` 4 (same code). On main's body with `actor != other`: the bit held by a conditional
 // initialiser (`bool counted = definition ? bit : false;`) 52 (976 B, no byte store). Body unchanged.
+// M3 lane 7 r215 (h2m fast with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B). Retail's own
+// 0x1e22d0 loop keeps the slot offset in EAX and forms the address in place after the stop test, 0x1e23c0's forms it
+// right after the type load: the placement follows from whether the type load and the argument share one address
+// temporary. On the 4 form: the slot loop, the `current` store and the 0x258600 call as a force-inlined routine that
+// looks the actor up itself 275 (980 B), the loop alone in such a routine 275: the loop then forms the address after
+// the test as retail does (offset in EAX, address in place, the handler still through EDX), but two actor pointers
+// are live, the outer one is spilled to a stack home and the memory countdown takes EBP (aligned 19). The same
+// routines declared plain `static inline` stay out of line: 366 (894 B), 347 (910 B), and 328 (932 B) for the one
+// that receives the actor pointer; force-inlined, the one that receives the actor pointer 4 (same code); a per-slot
+// routine taking the actor pointer and the index 4 (same code); a per-slot routine taking the slot pointer 297
+// (996 B, the listed whole-allocation flip). A second actor pointer local for the loop, declared after or ahead of
+// the main one 275/275, also with the `current` store through it 275; a slots pointer taken from a second lookup
+// 275; only a loop-local actor pointer, the main one looked up after the 0x258600 call 282 (pool reloaded there).
+// Diagnostic, restored at once: 0x1e22d0's text (short type local, handler through a pointer-to-volatile) in this
+// image 297 (996 B, frame 0x24), as the plain check gave in r289. The loop's pointer as a plain copy of the main
+// one 4, the main one copied from the loop's after the 0x258600 call 4 (same code: copies coalesce, so the late
+// address needs two looked-up pointers live at once). Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

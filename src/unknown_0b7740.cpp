@@ -1855,6 +1855,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // reorders); the 0xbdc40 call written in each arm of the parent test (parent and flag declared in the found arm, `0,
 // false` in the other) 414 (1421 B); the mirrored flag as `byte` 387 (1397 B). Retail's block is the link-time expansion of
 // 0xb8bd0 (its parameter copy `mov eax, esi`); still BLOCKED-BY 0xb8bd0's inline decision.
+// M3 lane 13 r143 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): the model and render index as two
+// conditional initialisers on the model index 20; `render_index` declared ahead of `model` 20 (both the same code); the
+// stored flag initialised from the orientation test itself (one definition) with the orientations as if/else 372 (1398 B);
+// `stored` declared after the early return 39; the early-return test reading the object fetched at the top (no second
+// lookup) 364 (1392 B). Listing reading: our no-model arm reads the parent node and scales it before the parent object
+// lookup (the node argument is evaluated first), retail looks the object up first and reads the node after. All restored.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

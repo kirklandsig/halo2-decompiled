@@ -3969,7 +3969,7 @@ extern vector3f *g_4687bc;
 // type 31 (kept); constructed after the component lookup 33; short rigid body index 46 (1099 B); rigid body fields at
 // each use 35; component and index declared first, assigned after the material 31; rigid body through
 // `rigid_bodies.data + index` 31.
-// Earlier: score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
+// Earlier head at 45 (from 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
 // data and offset registers swap in its address add, and the 0x188180 call setup differs
 // (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
 // in eax, forward in ecx and pushes the short material slot raw).
@@ -4173,6 +4173,9 @@ extern vector3f *g_4687bc;
 // shifted at either site); the same identity as a function template 99 to 296 (1102-1127 B: not code-free); the element
 // as `.data + index`, `index + .data` and `&.data[index]` re-measured 8 each; 0x1eb020's output as `(short *)&material_index`
 // 8. Permuter (600 s, 23 tries, reduced image of 542 sources) best 8.
+// M3 lane 13 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the permuter (fast, anneal, one
+// job, 1810 s, 70 tries) best 8; the rigid-body index as a `long const` 8; the rigid-body index declared between the
+// material and the component lookup, assigned at the call 8 (both the same code). All restored.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
