@@ -973,6 +973,9 @@ void function_3dd10(long object_index, bool force);
 // reproduces the unrolling): every natural `for`/`while` scan with `<` unrolls (pointer IV, `continue`, indexed
 // fields, `entry->count` bound, reordered updates, a dword index); an escaped variant address (diagnostic call
 // taking `&variant`) still unrolls; only a volatile variant read (diagnostic, not kept) or a short index keeps it rolled.
+// Typed object view at the tag, position, bank fields or variant read 77 each.
+// Typed position and variant, tag and bank, tag/bank/position, or all reads 77 each.
+// NOT kept: the object view leaves the pre-guard ordinal and the scan homes unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

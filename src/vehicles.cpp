@@ -7118,6 +7118,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // basis builder and direct flip output 1063.
 // basis builder, direct flip output and separate relative matrix 1095.
 // NOT kept: early flip publication reaches 0xdc, but every form raises the score.
+// Complete forward-basis initializer 1160; cross from the copied up/forward rows 1071.
+// Direct transposed basis by aggregate, row setters, column stores or the spent facing buffer
+// 1173 each, after desired basis 1209, with separate relative product 1214. NOT kept:
+// direct assembly reaches frame 0xdc but shortens the 5094-byte body. The handle and four-byte frame gap remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -1031,6 +1031,9 @@ static inline long font_character_pixel(long alpha, long color)
 // The parity width, literal byte assembly and packed run register still differ. Word byte swap after a sized
 // copy or an unaligned read scored 59 with byte parity and 207 with dword parity. Network-order conversion
 // scored 119 and 204 for either load. NOT kept because the byte swap ties and the network-order form adds a call.
+// Packed opacity still narrows before masking. Pixel helper with inferred opacity width, using the
+// original producers, byte high, byte low or both byte-sized: 265/265/269/269 with either parity mask.
+// NOT kept: inferred widths shorten the decoder to 404–408 bytes and raise the score.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

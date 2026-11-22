@@ -1295,6 +1295,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // NOT kept: The both-branch workspace recovers frame 0xb4 and 848 bytes at 161 differences. The
 // alignment and projection-product forms also recover the frame and raise the score. Retail still
 // retains the scaled axis in different registers.
+// The 0xc0 frame and scaled-axis spill remain. Output cross/scale with scalar or vector capture 200/234.
+// Separate cross scaled into output, with a final setter or scalar capture 183/202.
+// Separate alignment via the item/shared dot with output cross 167/167, with separate cross 168/168.
+// NOT kept: the best output-plus-dot forms recover 0xb4 but raise the score and remain seven bytes long.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

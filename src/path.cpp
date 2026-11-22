@@ -1041,6 +1041,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // file 2 again (the same back-edge pair). On it: `special ||` tested first in the type chain 341 (1372 B); the special
 // test as a one-case `switch (node->target.type)` 79; the scan's count read through `short const &` 2; the scan's steps
 // read through `s_path_step_view *const &` 2 (same code each); the truncation as `count = ++j;` 35 (1392 B). Body unchanged.
+// score 286 (was 286): Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
+// short capped fill bound with the same guards 396/396/396. Separate seed node 390,
+// shared edge-table receiver 391. NOT kept: frame 0xe4 returns but the state is stacked
+// and the matched caller changes. The opening extra cursor and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

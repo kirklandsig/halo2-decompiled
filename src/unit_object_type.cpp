@@ -5662,6 +5662,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // 169/169/169/169. Named forward terms before or after the transverse sum: real 169/169,
 // double 197/197. NOT kept: the copy and real terms leave the early up.i read. The double
 // terms enlarge the body and change the caller's reduced score.
+// Typed two-mode limit record 169; native bitfield enables 169; indexed mode 206;
+// paired angles with typed limits 169; const aim copy 169; separately published corrected up
+// 210; transform declared with the basis 169; scoped basis with paired angles 169.
+// NOT kept: the indexed mode moves the first difference into setup. The separate correction
+// enlarges the frame and body. The other forms still preload up.i and consume the forward scale.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9881,6 +9886,11 @@ struct s_unit_melee_collision
 // range read at each product 529/529/536/536.
 // NOT kept: all repeated-range forms recover the 0x17c frame. The pool forms align through the
 // first argument load (first difference +0xd) but reach 2243 bytes, and every repeated-range score rises.
+// Typed weapon tag view with cached range 484, with per-product range 531. On the per-product
+// form: signed int ordinals 531; named row and column weights 531; attack slot ordinal 532;
+// consistent direct unit aim through the ray rows 521; shared self-damage direction negation
+// 531; typed collision plane 531. NOT kept: the repeated loads recover 0x17c but shorten
+// the body by at least 13 bytes and raise the score. The unit and fan homes still differ.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
