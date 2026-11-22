@@ -1038,6 +1038,18 @@ real g_55e618;
 // direct particle position 254/254, position snapshot 102/103.
 // With the shared sweep scale, direct 256/256 and snapshot 129/130.
 // Frame stays 0x124 and the sweep/collision slots remain displaced.
+// M3 lane 3 r297 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH unless noted; control 102, aligned [exact, stack masked,
+// registers masked] 84/69/40; body unchanged). The velocity through a pointer with the dot named once: v.i read from the
+// particle for the dot and the tangent, v.j and v.k through the pointer, the pointer handed to the placement call 197
+// (1542 B, the frame changes) [103/75/50]; every component through the pointer 194 (1541 B) [102/75/52]; the pointer for
+// the dot with the copy kept for the tangent 202 (1557 B) [68/57/46]; no pointer and no copy, the particle's fields at each
+// use 199 (1543 B) [110/83/54]; the pointer typed const and not handed to the call 197 (same code as the first).
+// Diagnostics, removed at once: the collision call given a scratch record, so that the record local is never handed to a
+// callee, 342 (1535 B) [129/113/53]: the value's early EDX load and the tangent.i home at +0x38 are then retail's, the
+// position rows still store x and y ahead of the call setup; the call's point and vector arguments cut 524 (1385 B; the
+// sweep setup folds away, so it says nothing about them). BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands;
+// 0x1697c0 also reads its point and vector parameters through their addresses, which captures a caller's local in the
+// same way (measured on 0x1fe620 this round), and its file is on this round's avoid list.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
