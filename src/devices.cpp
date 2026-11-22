@@ -2125,6 +2125,13 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // declared at the top of the 0xbf5a0 block 2; the render model renamed to sort before the other locals (symbol
 // order) 2; the animation renamed to sort after the time 2; had_animation renamed to sort first 2 (the 2s the same
 // code: local names do not move the fstp).
+// M3 lane 2 r136 (h2m fast with 0x107cc0; control 2): the render model's test and the 0xbf5a0 call as one `&&` with the
+// lookup in a comma expression (diagnostic) 2; the three matrices declared in one statement 2; the two flag-block samples
+// in the other order (the timed one first) 16; the object matrix built into `adjusted` and copied to `original` 5;
+// `original` and `adjusted` declared at function scope 7. Compile-only replica of the flag block (rm and the state
+// spilled, the animation a field load; it reproduces our order exactly): 16 spellings of the time, the animation read,
+// the flag test and the render model (a copy, a temp written at each use, a block-scoped call) keep the store at slot 7;
+// only reading the animation ahead of the branch moves it, as round 119 found. Restored.
 // M3 lane 13 r144 (h2m fast; control 2): the time and both samples through a file-local forceinline pair helper 2;
 // the flag test negated with an empty first arm and the block in the else arm 2; the first sample's zero time named
 // `real const start_time` 2; the animation and the time `const` 2 (the four the same code); the first sample reading

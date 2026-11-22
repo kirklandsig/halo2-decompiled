@@ -799,6 +799,12 @@ s_1a8a10 g_4453c0[] =
 // declared at function scope 17, the facing copy declared ahead of the score array 17, the score array declared ahead of
 // the rotated point 17 (the three the same code); the negated j named ahead of the first switch 48 (its load stays ahead
 // of the dispatch). All restored.
+// M3 lane 3 r296 (H2M_FAST with 0x1a8c30, MATCH; control 17): on the copy's j assigned between the sums (17, re-measured:
+// the folded j reload is retail's, forward's j load stays late): the identifier, index, score initialisation order 15;
+// stores [3], [1], [2], [0] 19, with the initialisation order 17; forward terms j*y first, left terms i*y first, both 17
+// each (same code). The left sum reading the actor's i (the copy's i assigned first, its j between the sums) 27, with
+// left terms i*y first 27, with the copy's j assigned before the sums 29, with stores [3], [1], [2], [0] 29, with the
+// initialisation order 25. All restored.
 // M3 lane 13 r144 (h2m fast with 0x1a8c30, MATCH; control 17): the rotated point and the value array as one local
 // aggregate (retail's homes 0x10..0x24 are contiguous; a test of whether an escaped point store splits the j reads) 27
 // (float block unchanged, j still shared, homes move); that with y carried in a scalar through the switch and stored to

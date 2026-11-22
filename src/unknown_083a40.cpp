@@ -996,6 +996,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // (forwarded, same code); the occupied index stored after the key copy 36; a const occupant pointer to
 // `collection->players[i]` formed ahead of the slot search 222 (1073 B, its own induction variable); the last record's two
 // source reads named at the else arm's top and used by the conflict scan 274 (1085 B). All restored.
+// M3 lane 3 r296 (H2M_FAST with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; control 28; of the 28, the 11
+// jumps, two call displacements and the closing pad follow from the key sum being one byte shorter in ours): the
+// occupied key read through `watcher->players.players[i].key` 294 (1064 B, the key gets its own induction variable); no
+// `collection` local (`&watcher->players` at each use) 294; the swap's count step as its own statement with the call
+// passing `&updates[*count - 1]` 28 (same code); the loop-top player formed as `&collection->players[i]` 267 (1064 B);
+// the occupied record as `updates + (++*count - 1)` 28 (same code). All restored.
 // M3 lane 13 r144 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; control 28): `collection`
 // renamed `watcher_players` (a name-order probe for the key sum) 28 (same code); the session player pointer declared
 // ahead of the session-mask `continue` 251; the tail after the conflict scan nested under `if (!conflict)` 28 (same

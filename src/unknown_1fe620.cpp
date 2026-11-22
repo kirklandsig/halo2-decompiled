@@ -408,6 +408,26 @@ static __forceinline long real_to_long(real value);
 // (its own out-of-line copy keeps them in order, so retail knew the point and the output did not overlap), the
 // up-cross block numbers the cross result xmm1/xmm2/xmm3 where ours uses xmm4/xmm3/xmm1, and the NONE path's copy.
 // All of it rests on the one-use early bound locals, so nothing is kept. Body unchanged.
+// M3 lane 3 r297 (H2M_FAST with 0x210850, 0x2104b0, 0x1fdce0, 0x1fe410 and 0x259d0, all MATCH unless noted; control 373,
+// aligned [exact, stack masked, registers masked] 324/255/112; body unchanged). Re-measured: the existing 0x210850 called
+// with `inline` on its definition, on this body 466 (1889 B), with the final sums through a named output pointer 460;
+// lane 1 r148's early-bounds lead 266, with that pointer 251 [184/134/32]; lane 6 r204's composite 347 (1855 B)
+// [127/118/16], the same code with the resolver written out or through the inline 0x210850. New on the composite:
+// (1) Retail's failed-lookup copy loads all three words before the stores; ours interleaves because the resolved point
+// counts as captured, and the path is 0x1fe410 handing it to 0x1697c0 as its point argument: with that call's point cut
+// (diagnostic NULL in 0x1fe620's or 0x1fe410's call, or a copy passed instead) the copy is retail's [120/111/10]. A callee
+// that takes the address of its own pointer parameter reproduces the capture (0x1fe410 given a `point3f **` to its
+// parameter, with the 0x1697c0 argument still cut: the copy interleaves again), and 0x1697c0 reads its point and vector
+// through such parameter addresses: BLOCKED-BY 0x1697c0 (its file is on this round's avoid list; next: measure this
+// function with those two parameter-address locals removed, and with each onward callee's point cut).
+// (2) Evaluation order: retail computes the rescaled timer as (limit / cap) * count (0x1feb7c `movaps xmm6, xmm4; divss
+// xmm6, [cap]; mulss xmm6, xmm3`); this body's `local_12 / local_19 * (real)local_17` compiles to (count / cap) * limit.
+// The quotient named, cast to real, written second, or scaled in a second statement all give retail's order: 427 on this
+// body (1863 B, aligned 323/254/110; not kept, the count rises), 340 on the composite at retail's 1861 B [132/123/20].
+// (3) On composite + quotient: the side vector through cross3f or cross3f_staged against a local up vector 340
+// [134/121/18], against a static const up vector 340 [136/123/20], the k zero product named 340 [138/123/20], the three
+// rows held in scalars and then stored 340 [130/121/18]: the side vector's homes stay XMM4/XMM3/XMM1 (retail XMM1/2/3,
+// with one extra copy of the k zero product).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
