@@ -277,6 +277,10 @@ union s_6ec80
 // pointer or both initialised at their declarations 263/269; the 0x49c8 block split into a getter `if` and a second
 // `if (arg_1 && ...)`, `if (arg_1) { if ... }` or `if (... && arg_1)` test 225 each (threaded back into one); an
 // out-parameter getter for the two blocks in the getters' file (0x5b0d0's shape, inlined by the link) 225.
+// M3 lane 7 r213 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5; screened on a multi-object LTCG harness exact
+// here), all with the mask zeroed in the guard: a `short` loop counter 247 (981 B); the counter declared ahead of the
+// mask inside the guard 221 positional on the harness; a `s_session_player const *` stepped beside the counter 227; the
+// data and mask tests as `if (!data) ... else if (!mask)` 225; the scoped mask alone 219 positional on the harness.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

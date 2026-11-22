@@ -256,6 +256,10 @@ bool function_1946f0(s_bitstream *stream)
 // stores) gives the clear index first but folds the mask's address into `[index + data]` memory operands (no LEA); the
 // index or saved typed `int`, a `size_t` count, `saved / 8` written at the addresses only, and a byte pointer to the end
 // byte formed at the index all keep both LEAs data first.
+// M3 lane 7 r213 (h2m fast with 0x1957d0/0x195820, both MATCH; base 2): the mask and clear through a signed `char` view
+// of the buffer 2; the bit offset named beside the byte index 2; the mask as `~(byte)(0xff << (saved % 8))` 4; the count
+// as `size - 1 - index` 2; the masked byte as `*(data + index)` with the clear from `&data[index + 1]` 2. Both LEAs stay
+// data first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

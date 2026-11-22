@@ -624,6 +624,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // const` 1 (same code); both loop restarts as `(type == 0) & ((playback_flags & 3) != 0)` 231 (636 B); a per-pass `wrap`
 // bool computed at the loop body's top and copied into restart in both boundary blocks 242 (619 B); both loop disposals
 // with the type test first 232 (636 B); the per-pass disposal reset moved into each boundary block's top 1 (same code).
+// M3 lane 7 r213 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): restart typed `byte` 1; `bool
+// restart = false, dispose;` 1 (both the same code); no entry initialiser with `restart = false;` just before the loop 16
+// (still threaded); the boundary blocks setting restart only when it wraps 197 (645 B). Diagnostic (undefined, not
+// kept): restart never initialised 226 (653 B), but the in-range `jne` then targets the restart test as retail's does,
+// so the thread follows a known false start wherever it is written. On a multi-object LTCG harness (exact here) a
+// one-member aggregate, a one-element array and a two-member flags aggregate all keep the thread.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
