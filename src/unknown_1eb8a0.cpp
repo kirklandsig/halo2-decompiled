@@ -183,7 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 603 (was 603): r131 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
+// score 603 (was 603): r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
 // MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
@@ -857,6 +857,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // through vector3d_from_points3d 672 (2874 B). Diagnostics, restored: the active pin's lower bound non-zero 685, both
 // normalise compares against a non-zero constant 712, both 668 (new constants, so they do not isolate the shared XMM6
 // zero). Body unchanged.
+// M3 lane 5 r232 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603, aligned 658, register-masked 302): the
+// first clamp alone as `real k = s->fast ? 12.f : 8.f; real t = step * 0.375f; real e = PIN(t, 0.001f, globals->rate *
+// k);` 703 (2869 B, frame 0x20, caller 0x1eb6f0 22: the factor is selected ahead of t as retail, but the fast byte
+// takes CL and a function-wide XMM zero moves to the entry); the output stage's hi declared ahead of lo 603 (same
+// code); the output stage's third computed right after e3 615; the first block's up declared ahead of third 603 (same
+// code); the second clamp's length as `real len3 = len2; if (limit != 0.f && len3 > limit) len3 = limit;` 688 (2882
+// B, aligned 637, register-masked 306). All restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
