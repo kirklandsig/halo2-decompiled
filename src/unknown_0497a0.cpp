@@ -664,6 +664,16 @@
 // or late selection with separate intermediate 731/770/631/643. With both staged crosses
 // 732/771/628/645. NOT kept: late selection alone retains retail length but raises the
 // score and reserves 0x64 bytes. Separate intermediates increase the frame further.
+// M3 lane 14 r145 (H2M_FAST with 0x2e9e0 281 and 0x2f2d0 142, unchanged in every run; control 536; body unchanged). With general
+// registers, XMM registers and ESP offsets masked the aligned difference is 183 of 681 rows (477 with the offsets kept), so most
+// of the 536 is the 0x54/0x60 frame shift. Re-measured with that count: the two wave values from a forceinline helper (point,
+// wave vector) that stores the plain sine, names the 8.2 phase and the three factors as reals, stores the mixed wave and writes an
+// unread third component `phase * sine * cosine_a + cosine_b` through a copy of the output pointer 628 (2607 B, masked 150); the
+// same with the third component written through the parameter 621 (2622 B, masked 186); with a third component that leaves the
+// phase out 635 (2605 B, masked 158); as a plain sum of the four 628 (masked 150); the same statements written in the body on a
+// local wave vector, no helper 638 (2670 B, masked 321). None lowers the positional score, so none is kept; by structure the
+// pointer-copy helper stays the closest form (150 masked rows: the wave cells' homes, the first cross's i home and the perspective
+// rows' registers).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
