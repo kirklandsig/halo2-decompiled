@@ -344,6 +344,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // the kind local `short const` 4; the controller index declared ahead of the kind and assigned after it 4; the kind
 // renamed `result` (the received message's result word, so it sorts after `controller_index`) 4 (the three 4s the
 // same code); `changed` declared first 33 (94 B); the selector taking `long` 4 (same code: the widening folds).
+// M3 lane 13 r144 (h2m fast with 0x8c5b0, MATCH each run; control 4), diagnostics with plain reads (no volatile):
+// `__assume(kind >= 0 && kind <= 2)` after the reads 4 (the volatile read's code), `__assume(kind != 0 && kind != 2)` 4,
+// `__assume(kind == 0 || kind == 1 || kind == 2)` 32 (95 B, folded); the selector's last arm as `else if (kind != 1)`
+// (an implied test) 4; the selector seeded 1 with `switch (kind)` on case 1 and empty `case 0: case 2:` arms 30. All
+// restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

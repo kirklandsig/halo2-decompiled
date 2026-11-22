@@ -1375,6 +1375,10 @@ void function_2118c0(void)
 // pass with its own `short band` counter (b left to the first pass) 10 (same code). Diagnostic: the three `word` knot
 // indices computed in the band body 174 (756 B): they are hoisted without the movzx and the band loop still keeps b
 // with `esi*8` leas, so an index the optimizer must hoist does not give retail's stepped row either.
+// M3 lane 13 r144 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): the knot rows as flat pointer
+// sums `&noise[0][0] + (row + w) * 8` 10 (same code); as `noise[w] + b * 64` 150 (every row reduced); `long row = b * 8`
+// for the knots with p1 and out from `(b << 3) + k` 150; `unsigned long row` 10 (same code); `long row = b;` then
+// `row *= 8;` 150. All restored.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

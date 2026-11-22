@@ -799,6 +799,12 @@ s_1a8a10 g_4453c0[] =
 // declared at function scope 17, the facing copy declared ahead of the score array 17, the score array declared ahead of
 // the rotated point 17 (the three the same code); the negated j named ahead of the first switch 48 (its load stays ahead
 // of the dispatch). All restored.
+// M3 lane 13 r144 (h2m fast with 0x1a8c30, MATCH; control 17): the rotated point and the value array as one local
+// aggregate (retail's homes 0x10..0x24 are contiguous; a test of whether an escaped point store splits the j reads) 27
+// (float block unchanged, j still shared, homes move); that with y carried in a scalar through the switch and stored to
+// the point after the facing copy 88 (the y store sinks); the forward sum's i read from the actor in place 38 (left is
+// then computed first, but i loads twice and j once); the value array by an initializer list after the sums 18 (same
+// float block); left from the copy with the negated copy j, forward read in place, 118 (548 B). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
