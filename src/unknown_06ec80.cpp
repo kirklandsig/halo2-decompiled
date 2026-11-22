@@ -287,6 +287,19 @@ union s_6ec80
 // here), all with the mask zeroed in the guard: a `short` loop counter 247 (981 B); the counter declared ahead of the
 // mask inside the guard 221 positional on the harness; a `s_session_player const *` stepped beside the counter 227; the
 // data and mask tests as `if (!data) ... else if (!mask)` 225; the scoped mask alone 219 positional on the harness.
+// M3 lane 2 r137 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5), all with the mask zeroed in the guard: the 0x49c8
+// NONE default moved from the top to just before `if (arg_1)` 48 (NONE stays in ECX and the zero lands in the guard as
+// retail's; left: that store's place and the two block pointers' EBX/EDI swapped); on it the NULL stores players first
+// 41, the assignments players first 48, both 41, the guard tested players first 46, the 0x49c8 read by hand 219, the
+// loop through a 16-element player-array view 41; the default moved instead just after the 0x4d08 getter 231, between
+// the NULLs and the block test 231, just before the getter 225 (with the mask as now, after the getter 98). Also: the
+// 0x49c8 read by hand with both pointers NULL at their declarations 261 (975 B), with the player-array view 195, with
+// the NULL stores players first 189; the getter's default as a local NONE default in the `arg_1` block 225.
+// M3 lane 14 r144 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5), all with the mask zeroed in the guard: the do loop
+// as `if (!active) continue;` with `while (++local_15 < 16)` 225; the mask declared before the guard and zeroed in it with
+// one joined clear `if (!local_2 || !players || !data || !mask)` after the guard 226; a `s_session_player *` copy of the
+// players pointer declared in the guard 225; a `dword` counter with `1u <<` and `active != 0` 226; the active byte read by
+// raw stride from the block 225; a `for` loop re-measured 348 (1059 B).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

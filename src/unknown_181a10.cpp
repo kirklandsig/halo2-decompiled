@@ -1198,6 +1198,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // aggregate publication 311 (1249 B); friction and restitution declared beside the material 230 (same code). On the kept
 // body: the plane declared at the top of the body 238; the entity declared at the top 238; `valid` declared after the two
 // indices 238; the instance arm's side test written x, y, z 238 (same code each).
+// M3 lane 12 r176 (h2m fast, control 238): origin as a brace initialiser through a position pointer 312 (1248 B);
+// origin as three reals read z, y, x through a position pointer 310 (retail's load order, homes still packed in a 0x40
+// frame); that with the hit through real_point3d_set and aggregate publication 348, with only the aggregate publication
+// 350 (1243 B), with the hit read member-wise y, x, z and aggregate publication 346; origin through real_point3d_set from
+// the position pointer re-measured 251 (1260 B: x, y, z loads into the one 12-byte home, no member leaves it). Body unchanged.
 // M3 lane 16 r175 (H2M_FAST with 0x1829b0/0x1821d0/0x182800, all MATCH; control 238): retail's register-preset 1..16
 // classifier occurs nowhere else in the retail text, and the 0x1e byte test only here and in matched 0x1c5400/0x1d4880 (both
 // compiled as ours), so no existing out-of-line helper carries it. The origin through a `point3f const *` to the transform's

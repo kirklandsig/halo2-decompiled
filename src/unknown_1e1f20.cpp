@@ -1099,6 +1099,23 @@ void swarm_leader_detach(long actor_index);
 // condition as `actor->current >= slot_index` 6; `if (stop != NULL) (*stop)(..., slot_index > 3 ? NULL : &slot)` 6; the
 // flag computed as `(... & 8) != 0` 4 (same code). On main's body with `actor != other`: the bit held by a conditional
 // initialiser (`bool counted = definition ? bit : false;`) 52 (976 B, no byte store). Body unchanged.
+// M3 lane 7 r215 (h2m fast with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B). Retail's own
+// 0x1e22d0 loop keeps the slot offset in EAX and forms the address in place after the stop test, 0x1e23c0's forms it
+// right after the type load: the placement follows from whether the type load and the argument share one address
+// temporary. On the 4 form: the slot loop, the `current` store and the 0x258600 call as a force-inlined routine that
+// looks the actor up itself 275 (980 B), the loop alone in such a routine 275: the loop then forms the address after
+// the test as retail does (offset in EAX, address in place, the handler still through EDX), but two actor pointers
+// are live, the outer one is spilled to a stack home and the memory countdown takes EBP (aligned 19). The same
+// routines declared plain `static inline` stay out of line: 366 (894 B), 347 (910 B), and 328 (932 B) for the one
+// that receives the actor pointer; force-inlined, the one that receives the actor pointer 4 (same code); a per-slot
+// routine taking the actor pointer and the index 4 (same code); a per-slot routine taking the slot pointer 297
+// (996 B, the listed whole-allocation flip). A second actor pointer local for the loop, declared after or ahead of
+// the main one 275/275, also with the `current` store through it 275; a slots pointer taken from a second lookup
+// 275; only a loop-local actor pointer, the main one looked up after the 0x258600 call 282 (pool reloaded there).
+// Diagnostic, restored at once: 0x1e22d0's text (short type local, handler through a pointer-to-volatile) in this
+// image 297 (996 B, frame 0x24), as the plain check gave in r289. The loop's pointer as a plain copy of the main
+// one 4, the main one copied from the loop's after the 0x258600 call 4 (same code: copies coalesce, so the late
+// address needs two looked-up pointers live at once). Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

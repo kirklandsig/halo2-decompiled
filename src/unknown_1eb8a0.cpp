@@ -183,7 +183,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 603 (was 603): r131 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
+// score 603 (was 603): r131 and m3 lane 1 r154 unchanged (delta helper forms below; r154 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
+// r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
 // MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
@@ -863,6 +864,19 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // (byte-identical code). Tried: d read at each use through its address (`vector3f *const *home = &d`) 675 (2885 B, d still
 // EBX: the reads are forwarded); the volatile sample count declared after w 603; qr declared at the active block's top
 // 603; w scaled by the rate in its initialiser 667 (2886 B). d keeps EBX in each.
+// M3 lane 1 r154 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603): the output position pointer declared at
+// the top of the function 710 (2886 B; 0x1eb6f0 drops to 11); `fail` typed long 603 (2891 B); the result returned by
+// re-reading `s->counter` 611 (2891 B); the closing flag test written as the failing condition first (`|= 4` arm first)
+// 603 (same code); the alignment factor clamped and scaled in one expression after the delta 673 (2875 B). Retail loads q
+// (fourth stack argument) into EBX at entry for the no-update path, clobbers it as a copy temporary in the activation
+// block and reloads it before the output stage. Body unchanged.
+// M3 lane 5 r232 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603, aligned 658, register-masked 302): the
+// first clamp alone as `real k = s->fast ? 12.f : 8.f; real t = step * 0.375f; real e = PIN(t, 0.001f, globals->rate *
+// k);` 703 (2869 B, frame 0x20, caller 0x1eb6f0 22: the factor is selected ahead of t as retail, but the fast byte
+// takes CL and a function-wide XMM zero moves to the entry); the output stage's hi declared ahead of lo 603 (same
+// code); the output stage's third computed right after e3 615; the first block's up declared ahead of third 603 (same
+// code); the second clamp's length as `real len3 = len2; if (limit != 0.f && len3 > limit) len3 = limit;` 688 (2882
+// B, aligned 637, register-masked 306). All restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

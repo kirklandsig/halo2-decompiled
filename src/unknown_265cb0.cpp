@@ -363,7 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// score 84 (was 84): m3 lane 5 r233 unchanged (its lines just above the marker); r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // M3 lane 6 r223 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): local renames, to test name order among
 // same-size homes: `a`/`b` as occupant_secondary/occupant_primary, the facing pair as secondary_reach/primary_reach,
 // the squared distance and clip amount as distance_sq/clip_fraction, range and scale as perception_range/range_scale,
@@ -1042,6 +1042,26 @@ real function_30bf0(vector3f *vector);
 // Optional endpoint via condition declaration, named selection, complete branches or clear
 // 152/152/152/152, range after the initial delta 155/155/155/155. NOT kept:
 // the result stays at +0xc and the clip fraction still shares with the seat count.
+// M3 lane 5 r233 (h2m fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84, aligned 55; body
+// unchanged). A link-time lab with named homes (this file's unit and the nine objects of its reduced link, 1.3 s a
+// variant, the full build's frame and code exactly; build/r233/lab.py and p263.py) gives ours as clip amount + seat
+// down-counter, result, range, scale, facing primary, motion + side, facing secondary, cursor, plane + up, delta, a, b,
+// squared distance, seats, against retail's result, facing secondary, facing primary, clip amount + squared distance,
+// scale, motion + side, range, counter, plane + up, cursor, delta, a, b, seats. Both are in descending references per
+// byte (2.0, 1.25, the 1.0 group, 0.75, 0.67, 0.5); what differs is the clip amount's partner and the order inside
+// each equal group. Measured in the lab: one to five unused locals leave every home where it is (they only move the
+// seat-loop products); the squared distance declared first in the settings block (so that it is the older symbol) the
+// same frame; the clip amount pairs with the seat loop's counter in every form, the compiler's down-counter or a named
+// index held in memory (a long count, a guarded do-while), and the squared distance is always placed last; the facing
+// pair's order follows the order of the two copies after the seat loop (secondary copied first puts the secondary
+// home below the primary one, retail's order) and a and b follow the order of the two maxima tests; a restated
+// `result = 0;` moves the result first and also exchanges range and scale. Scored: the seat loop as a do-while under
+// `if (count > 0)` 183 (1308 B); secondary copied first 84 (same score); one scalar for the clip amount and the squared
+// distance re-measured 81, with secondary copied first 81 (the homes then run range, scale, result, facing secondary,
+// amount, facing primary, motion + side, cursor, plane + up, counter, delta, a, b), with a restated result and
+// secondary copied first 101 (1311 B). No form here gives the squared distance the clip amount's cell without naming
+// them as one variable, and on that form range and scale still sort ahead of the facing pair where retail has them
+// behind it.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

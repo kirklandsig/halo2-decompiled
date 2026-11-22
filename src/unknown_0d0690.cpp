@@ -1719,6 +1719,18 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 530, separately named decisions 530, reject before selection 530, conditional
 // category/fallback 564. NOT kept: the result spill, 0x2c frame, and exchanged
 // block/query registers persist.
+// M3 lane 7 r216 (H2M_FAST with 0xd4080, 0x3db00 and 0x3dfe0; control 529, 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21): lane 2
+// r129's input pointer and normal copy ahead of the count test re-measured 532 (0xd4080 380); on it the adjusted colour
+// copied whole from the lightmap with the bias added in place 553 (2205 B), the bias read once into a named real 562
+// (2193 B; 0xd4080 504, 0x3db00 lost), the whole lightmap copy at the top of the found block with the bias added after
+// the normalize 558 (2197 B; 0x3db00 lost); that last form on main's entry 552 (2191 B; 0x3db00 lost); on main, the scan
+// through a per-iteration entry pointer local 530, the mask typed `long` 529 (same code). Retail's loop keeps the mask
+// in EAX and the flags in EBX (the block's home), ours the mask in EDI: the query then takes EBX here and EDI in
+// retail, which is the block/query exchange at the entry. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21, all unchanged; control 529): the mask as `long`
+// 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
+// with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
+// allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

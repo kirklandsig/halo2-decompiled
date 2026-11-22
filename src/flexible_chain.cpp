@@ -988,6 +988,16 @@ void __stdcall function_1160c0(real dt)
 // Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
 // as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
 // typed point setter at the target 144, at the blend 144, and at both boundaries 144.
+// M3 lane 12 r174 (h2m fast with 0x116750 and 0x1160c0, MATCH throughout; control 144). Shared rotation helper forms
+// screened on all four users (0x2551f0 and 0x1ff360 MATCH, 0x117dd0 130): cross terms declared up front (i/j/k or k/j/i)
+// and assigned i, j, k 144; declared k, j, assigned j, k with cross_i in row i 144; declared ahead of the projection 144
+// (same code each: declaration order is inert); any form that assigns cross_k before cross_j 113 (1369 B; 0x2551f0 15,
+// 0x1ff360 60, 0x117dd0 158); crosses then projection 147; cross_i, projection, cross_j, cross_k 144 (0x117dd0 152);
+// k/j/i then projection 147; j/k/i then projection 147; projection, j, i, k 144 (same code); rows j/i/k 138, i/k/j 143
+// (1368 B), k/j/i 174 (every row order loses both matched users). All 64 operand orders of the six cross products 144
+// (same code). Trial copies of other files' rotations: the angle-taking one with crosses in each row 320 (1442 B), the
+// result-vector one with mixed operand orders 399 (1457 B), the scalar-axis one written with an axis pointer 144. Body
+// statements: the angle call ahead of cross3f 320 (1353 B); the tick after the if/else 231, at the loop end 263.
 // M3 lane 4 r246 (H2M_FAST with 0x116750 and 0x1160c0, MATCH each time; control 144): the selected segment through a
 // file-local inline element getter taking the definition and the index 144, through a forced-inline one 144 (same code: the
 // base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as
@@ -997,6 +1007,21 @@ void __stdcall function_1160c0(real dt)
 // cell at +0x20 (retail +0x14, below the axis): `axis` renamed `turn_axis` 144 and `unit_axis` 144, `scale` renamed
 // `along` 144 (same code each: names do not order these homes); the normalise test as `!normalize3d(&axis)` 144 (same
 // code); sine and cosine named ahead of the rotation call 169 (1373 B, first difference +0x2). Body unchanged.
+// M3 lane 15 r133 (h2m fast; control 144 at 1371 B, aligned 159 unmatched rows of 322; every rotation form below was a
+// trial copy of the shared helper, measured and removed: a second spelling of an existing helper is not keepable). The
+// rotation has three states here whatever the dot's spelling (written out i, j, k; through the existing dot3f either way
+// round) and with or without the k local, 30 forms: the three cross terms named i, j, k, or the i term at its row with j
+// then k named, 144 (1371 B, aligned 159: main's code); the cross through the existing cross3f or cross3f_staged into a
+// local vector 143 (1368 B, retail's length, aligned 138: the shared cell moves to +0x1c and the axis to +0x10); the i
+// term at its row with k then j named 113 (1369 B, aligned 138: retail's frame with the shared cell at +0x14 and the
+// axis at +0x18, all six inputs in registers as retail, but each in another XMM register and the segment still in
+// EDI/ECX). Also 144 (same code): the dot written k first; the axis components read into three locals. On the 113 form
+// 1..32 dead initialised locals at the top give 113, or 115 for 3, 4 and 5 modulo 8: no state nearer retail.
+// Segment selection, with aligned rows: `segment = definition->segments; segment += <the ternary>` 272 (1369 B, aligned
+// 134); the index set by an `if` into a local, then the base, then `+=` 144 (same code); that index with the element
+// address 144 (same code); the base with `+=` written in both arms of the test 289 (1381 B, aligned 193). Diagnostic,
+// the first of those with the 113 rotation: 274 at retail's 1368 B, aligned 108 (the base load still sits ahead of the
+// branch and the XMM registers stay permuted). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

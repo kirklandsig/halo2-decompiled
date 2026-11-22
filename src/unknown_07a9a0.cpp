@@ -1099,8 +1099,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // declaration, which this lane may not change.
 // w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
 // (0x10 dwords cleared at 0x7e66c/0x7e6a5 with rep stosd, 4-byte inc at 0x7e682-0x7e68f and 0x7e740-0x7e74d); `long
-// histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
-// scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
+// histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots)
+// but scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
 // Earlier note (766, was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // Earlier 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
@@ -1794,6 +1794,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // at the top 874; `available` computed after the averages, ahead of the party masks, 862 (2800 B, but 0x73530 loses its
 // match, 8); `adding_group` declared with the party locals 882. Still BLOCKED on the link's inline choice for the top
 // 0x192e60 call.
+// M3 lane 1 r153 (H2M_FAST with 0x73530 and 0x192e60, both MATCH; control 871): the type-5 exit as `return false` 871;
+// the opening test as two early returns (summary, count and variant, then the capacity pair) 871; the rated test on
+// `rating` for `adjusted` 875; the loop lookup's validity tests and its 0x1934f0 test as nested ifs 871;
+// `adding_group` declared beside `result` 881. Retail re-reads the variant type after each call and threads the loop
+// lookup's negative-index branch past the `if (variant_index)` test.
+// M3 lane 6 r229 (H2M_FAST with 0x73530 and the callees, control 871): the existing noinline declaration on 0x1934f0
+// dropped 871 (0x192e60, 0x1934f0, 0x192db0, 0x66050 and 0x73530 MATCH; the top lookup still expands); `inline` on
+// 0x631f0's definition 871 and a `__forceinline` redeclaration of it here 871 (same size: the loop's call stays a call);
+// the loop's hand-written 0x1931a0 scan as a call to 0x1931a0 986 (2648 B, 0x73530 148); that with `inline` on
+// 0x1931a0's definition 962 (0x63220 55, 0x73530 164). Survey: every matched function that keeps a depth-0 0x192e60 call
+// out of line does so under a test (0x73ca0) or inside an existing inline_depth(0) region (0x6dcc0, 0x73530, 0x66050,
+// 0x90880), so the top call stays the link's choice.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

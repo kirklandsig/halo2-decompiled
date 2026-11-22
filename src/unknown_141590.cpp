@@ -1255,6 +1255,9 @@ void function_143250(
 // written into its three uses 1507 (10747 B); s21_r5_r6_r6 as `r6_r6 * s21_r5` 939, s7_s2_s21 as `s21 * s7_s2` 939 and entry
 // 25's last product with s7_s2 first 939 (each the same code); s21_s35 from its own root with s21 declared after it 1491
 // (10773 B, frame still 0x2fc). Body unchanged.
+// M3 lane 1 r155 (H2M_FAST; control 939): entry 23's first product as `r6_r3 * r8 * ...` with the named product kept for
+// its other use 1601 (10732 B); entry 25's as `r6_r0 * r8 * ...` 1517 (10757 B); both 1592 (10743 B); the matrix declared
+// after the nine rotation scalars 939, the band-two constant product as `s15 * s5` 939 (same code each).
 // M3 lane 16 r175 (H2M_FAST; control 939): outside the matrix our cells hold 59/63/16/4 values with 1/2/3/4 stores, retail's
 // 60/64/15/4: one cell of ours is shared by three values (a band-two square, a band-three product and a later value) that
 // retail keeps in two cells, so the short frame is a cell our packer reuses, not a missing value. Band two's three unnamed

@@ -11,6 +11,7 @@
 #include "normalize3d.h"
 #include "vector_products.h"
 
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* src/unknown_1eb8a0.cpp */
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 
 struct s_motion_adjustment
@@ -534,8 +535,11 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // the three normalisations agree too. Remaining difference is scheduling only (retail loads axis.j and axis.k
 // before fcos and reloads the angle for fsin; ours dups it with `fld st(0)`). Also tried: cross3f before the
 // trig 235 (1161 bytes, the retail size), cross3f between sin and dot 223, cross3f after cos+dot and before sin 221.
-// score 214 (was 214): frame 0x28 agrees; angle/trig homes, the x87 angle copy (ours `fld st(0)`, retail reloads
-// the angle from its home for fsin in both arms) and projection/product scheduling remain. Earlier, 214 from 251:
+// score 132 (was 214): the x87 trig sequence, the angle/trig homes and the active rotation are retail's; left: the active
+// arm's sine store and one product two slots late, the idle first cross loading g before forward->i in two products, and
+// the idle second cross and final projection loading forward first where retail copies the register operand (`movaps reg;
+// mulss mem`), 12 bytes in all. Earlier at 214: frame 0x28 agrees; angle/trig homes, the x87 angle copy (ours `fld st(0)`,
+// retail reloads the angle from its home for fsin in both arms) and projection/product scheduling remain. Earlier, 214 from 251:
 // trig homes and projection registers differ;
 // shared trig scope 254; sine declared first 251; forward projection loop 235;
 // rotation loop 246; idle base loop 235; projection plus base loops 235; all loops 246.
@@ -555,6 +559,21 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // shared cross3f in place of a file-local copy of it, 214 (same code). The active arm is 4 bytes and the idle arm
 // 11 bytes longer than retail's; the idle crosses differ in product operand order (`movss mem; mulss reg` against
 // retail's `movaps reg; mulss mem`).
+// Round 228 (m3 lane 6, fast with 0xc7840 listed, confirmed plain): kept 132 = the idle trig reading the angle field at
+// each call (both arms then reload for fsin as retail) with the base scaled by the existing vector3f_scale, the existing
+// rotate_direction for the active rotation, both projections as vector3f_scale(.., dot3f(up, forward), &offset) then three
+// subtractions (every component read before the first store, as retail), and cosf/sinf for the four trig calls.
+// Steps: cosf/sinf alone 226 (1161 bytes); the field read at each call alone 214, with the loop 214, the sine after the
+// scaling 214; the cosine inside the base loop 236 (the active arm's x87 becomes retail's); three scaling statements 251,
+// with the field read 252; rotate_direction on that 248 (sin/cos arguments 247); the offset projections 193 (active only
+// 204, idle only 245); active cosf/sinf 186 (either alone 230, all four 188); vector3f_scale for the base 130 (plain
+// cos/sin in the active arm then 202; all four cosf/sinf 132, kept for one spelling). Same code: dot term orders,
+// cross3f_staged or a plain-order cross for either idle cross, dot3f either way round, base/axis declaration order,
+// renamed cosine, the projection named or passed straight in. Worse: vector3f_add_scaled for the idle up rows 142-163;
+// sin/cos as rotate_direction arguments 141; main's idle projection statements 186; a normalize call between the idle
+// crosses 163 (diagnostic: the second cross still loads forward first). Dead-local phase scans 0-7: no effect.
+// Permuter (900 s, 94 tries): best 103 by its own count only through a swapped cross3f argument order (a sign change,
+// not usable) plus constant and volatile temporaries.
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {
@@ -569,19 +588,14 @@ void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *t
             *(real *)(settings + 0x88), *(real *)(settings + 0x8c));
         vector3f axis = *velocity;
         real angle = function_30bf0(&axis) * g_510c54->rate;
-        real cosine = (real)cos(angle);
-        real sine = (real)sin(angle);
-        real dot = (up->j * axis.j + up->k * axis.k + up->i * axis.i) * (1.0f - cosine);
-        vector3f cross;
-        cross3f(up, &axis, &cross);
-        vector3f_scale(&axis, dot, &axis);
-        up->i = up->i * cosine + axis.i - cross.i * sine;
-        up->j = up->j * cosine + axis.j - cross.j * sine;
-        up->k = up->k * cosine + axis.k - cross.k * sine;
-        real projection = up->k * forward->k + up->j * forward->j + forward->i * up->i;
-        forward->i -= up->i * projection;
-        forward->j -= up->j * projection;
-        forward->k -= up->k * projection;
+        real cosine = cosf(angle);
+        real sine = sinf(angle);
+        rotate_direction(up, &axis, sine, cosine);
+        vector3f offset;
+        vector3f_scale(up, dot3f(up, forward), &offset);
+        forward->i -= offset.i;
+        forward->j -= offset.j;
+        forward->k -= offset.k;
         if (function_30bf0(forward) == 0.0f)
         {
             *up = *g_4687b0;
@@ -601,20 +615,19 @@ void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *t
             base = *g_4687a8;
             axis = *g_4687ac;
         }
-        real angle = *(real const *)(state + 0x28);
-        real cosine = (real)cos(angle);
-        real sine = (real)sin(angle);
-        for (long component = 0; component < 3; ++component)
-            base.n[component] *= cosine;
+        real cosine = cosf(*(real const *)(state + 0x28));
+        real sine = sinf(*(real const *)(state + 0x28));
+        vector3f_scale(&base, cosine, &base);
         function_30bf0(&axis);
         up->i = axis.i * sine + base.i;
         up->j = axis.j * sine + base.j;
         up->k = axis.k * sine + base.k;
         function_30bf0(forward);
-        real projection = up->k * forward->k + up->j * forward->j + forward->i * up->i;
-        up->i -= forward->i * projection;
-        up->j -= projection * forward->j;
-        up->k -= projection * forward->k;
+        vector3f offset;
+        vector3f_scale(forward, dot3f(up, forward), &offset);
+        up->i -= offset.i;
+        up->j -= offset.j;
+        up->k -= offset.k;
         function_30bf0(up);
     }
 }
