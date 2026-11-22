@@ -689,6 +689,17 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the deep limit through main's `environment` pointer local 21 (the output stores stay retail's); `short portal_index`
 // declared at the top ahead of the cluster pointer 21; the deep stores in the seed block's order (clusters, portals,
 // distances) 292 (1379 B). Body unchanged; still BLOCKED-BY 0x14b240's write summary.
+// M3 lane 7 r215 (H2M_FAST with 0x18d730, 0x14b240, 0x249d60, 0x222150; control 295 here). HELD, re-measured on
+// today's tree: lane 15 r126's lead (0x14b240's reference-bound form, the twin-shaped body, the hoisted short read)
+// is 4 at 1363 B again, 0x18d730 250, 0x222150 MATCH without its volatile reads, and 0x18ae80 still rises 846 -> 911
+// (its file is another lane's this round); the full diff is build/r215/held-0x18dc90.patch (held: kept only with a match).
+// On that lead with the nearest test read after the compare (21, a pure EBX/EBP swap of the cluster pointer and
+// the widened portal index): the tie is the portal index's read in the nearest block. Diagnostics, restored at once:
+// the nearest store writing NONE in place of the portal index gives retail's pair (237, other rows move); the deep
+// store writing NONE leaves the pair as it is (255, 1365 B). Forms: a long copy of the portal index for the two
+// stores 21 (same code), for the portal lookup 21 (same code); the nearest store written `(short)(encoded & 0x7fff)`
+// 353 (1382 B); the portal looked up through that expression with the short local declared after it 335 (1379 B);
+// the nearest store written `portal - bsp->portals` 335 (1395 B, the pair retail's, a divide added). Body unchanged.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

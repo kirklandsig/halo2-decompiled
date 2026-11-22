@@ -960,6 +960,20 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // `continue` loop and `old | (word)present` 109 (378 B). Diagnostic (reverted at once): a compiler barrier after the
 // entry reads on the word mask with a plain present keeps the word spill, but present still takes EDI and the globals
 // pointer is re-read after the loop.
+// M3 lane 7 r215 (h2m fast with 0xb58c0/0x196780; control 23; about 95 forms screened first on the multi-object LTCG
+// harness, which reproduces this function): what decides the tail is how many reads each saved value has after the
+// loop. With a plain present and the word mask, present takes EDI for the whole function whenever the change block
+// reads it at full width; eleven spellings of the mask store (`old | (word)present`, present first, in place with or
+// without the cast, a word or dword named result, `present & 0xffff`) are one and the same code (384 B). Diagnostics,
+// restored at once: with the change block not reading present at all (`(word)(old_team_mask + 1)` stored) the frame,
+// the word entry, the globals in EBP and the loop are retail's (98, 380 B); with a third read of the word mask (in
+// the added-teams expression) the mask is reloaded once ahead of the first jne and the compare gets retail's
+// `movzx reg, cx` (112, 384 B, present still in EDI); the same third read with the volatile present folds the mask
+// into field re-reads. Forms: the mask compare through a two-argument inline predicate (dword teams, word mask) 85,
+// with the one-expression store 77, with the predicate's parameters the other way round 77 (the compare block then
+// loads the mask, then present, then compares registers, in retail's order, but the mask is still zero-extended from
+// memory); the predicate with a plain present and the one-expression store 63 (384 B); both saved masks word with a
+// plain present and the one-expression store 139 (368 B). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
