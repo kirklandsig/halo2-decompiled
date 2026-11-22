@@ -1718,6 +1718,15 @@ PRIVATE inline long score_string_list_1608e0()
 // conditional initialiser 719 (2888 B); the alternate-score flag set by an if/else on the call 682; the clamp test as
 // `screen_height > height` 679; the title edges read from the row position 679; the three 1.0f foreground channels
 // chained 679 (the last three the same code). Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x161420, MATCH; control 679, aligned 597, masked 222): the team loop reading the team
+// row's entry at each use (no team local) 706 (2904 B); the player loop reading the row's player at each use 701 (2901 B);
+// the language fetch through the existing get_current_language() 679 (same code). Retail's team-name block is the
+// existing 0x19eae0 inlined (name[0] cleared twice): called as written 880 (2680 B, out of line); with `inline` on its
+// definition 691 (2888 B, aligned 592, masked 220: team EBP and team row EBX as retail, 0x19eae0, 0x19e1c0 and 0x232d77
+// unchanged; the row counter increment lands after the name block, retail's sits inside the helper's first block);
+// that with the increment ahead of the call 691, with 0x19eae0's `team == NONE ? 8 : team` as a conditional argument
+// 691, both 691. HELD as a lead, restored (inline on an existing helper is the user's decision): the inlined 0x19eae0 call with the fade count no longer volatile 679 (2879 B, aligned 598,
+// masked 225; the increment ahead of the call 679 too); with the height also plain 737 (2840 B), the height alone 723.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

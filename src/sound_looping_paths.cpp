@@ -883,6 +883,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // tail's `ret` and jumps back to the scan head, the record-pool iterator layout); the target level named ahead of the
 // current level in the target loop 857 (3332 B); the first scan's datum index formed ahead of its type and source tests 846
 // (same code). Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, aligned 1004, masked 473): the
+// target loop's search ending on `index == NONE` in its condition (no break) 857 (3338 B); the existing list appended as a
+// store then `existing_count++` 846 (same code); the gain sum written portal first 846 (same code); the override loop
+// through a named target pointer 850; the listener slot through a `long *` used for its three accesses 846 (same code).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
