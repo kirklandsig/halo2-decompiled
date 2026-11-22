@@ -2254,6 +2254,23 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `0.01f < magnitude` 551 (same code each). Body unchanged.
 // More r151 forms: the zero store ahead of the closest copy in that arm 550 (same as above); the inside arm zeroing
 // nearest_squared_local with the radius test reading it (no separation local) 557 (2879 B).
+// M3 lane 14 r145 (H2M_FAST with 0x16a440, 0x120790, 0x2469b0, 0x17a380 and 0xc2d00, unchanged in every run; control 551; body
+// unchanged). Second metric "masked": aligned rows with general registers, XMM registers and ESP offsets masked, so a 4-byte frame
+// shift does not hide structure (control 235 of 629 rows). 48 combinations of the radius square (named before the loop / in the
+// test / named at the top of the prism loop) x the nearest reset and `inside` right after the plane distance x a named second-
+// vertex pointer x counts and clearances initialised as pairs x the normal ray arm first: best 503 (2858 B, all five on; the
+// pointer takes the length 24 B under retail's). 120 combinations of those x the edge loop 1-based, zero-based with `long
+// next_vertex = (vertex + 1) % prism->point_count;` at its top, or zero-based with the modulo in the second reconstruction, by
+// masked count: normal arm first 217 -> 135 on average, zero-based with the named successor 180 -> 155 (unnamed modulo 182), the
+// square at the top of the prism loop 179 -> 171, the reset after the distance 179 -> 173, paired initialisation 177 -> 175; the
+// closest form is all of these without the pointer: masked 107, positional 584 at 2895 B, frame 0xb968 (retail 0xb964). Retail's
+// own listing has that shape (`mov ecx, 8; jg; mov ecx, eax; xor eax, eax; test ecx, ecx` for the clamp and guard, `inc eax; cdq;
+// idiv` at the top of the edge loop, the normal arm laid out first). Not kept: the positional score rises and the form is made of
+// moved declarations and an arm swap (the swap alone 547); saved as build/r145/lead-16a8e0-structural.patch. Diagnostic on it:
+// 1..7 dead initialised locals at four positions give the same result at every position (masked 107, 108, 113, 106, 106, 106, 105;
+// K = 7: 545 positional at 2880 B), so its product sides follow the whole function's symbol count and no phase clears them. Left
+// on the lead: one frame temporary too many, the plane-distance and side-test product sides (retail keeps plane.j in XMM7 across
+// the projection and loads the plane first in two products) and the second ray's set-up schedule.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -60,7 +60,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
 // score 489 (was 489; m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
-// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
 // The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r220 unchanged, its line just above the marker.
 // Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
@@ -851,6 +851,17 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // velocity 672, steering 738, both 752, rotated 715, velocity/rotated 722, steering/rotated 749,
 // all 740, all with shared collision addition 764. Reduced control 654, full score 489.
 // NOT kept: the length-exact velocity form moves the first difference earlier; the rest grow.
+// M3 lane 14 r145 (plain check each, with 0x30bf0, 0x1f9760, 0x29b990 matched and 0x2922b0 521 throughout; control 489; body
+// unchanged). With general registers, XMM registers and ESP offsets masked the aligned difference is 77 of 844 rows (125 with the
+// offsets kept): the structure is close and most of the 489 is the exchanged position/path-output homes. What the 77 rows are: the
+// side point's y computed inside both arms of the side select in retail (ours once after it) with the planar difference's i squared
+// first; a `test al, al; setne al` after the first 0x2922b0 call; the half-angle block's 0.5 products; the stopping block's zero
+// kept in XMM1 (ours compares with the pooled zero). Tried: the call's result compared `!= false` 667 (3508 B, masked 109: the
+// conversion appears and the homes move); the side select as an assignment and an `if` 648 (masked 105); the side point as two
+// scalars with y first 688 (3499 B, masked 103); diagnostics, removed: one dead initialised local at the top 665 (3499 B, masked
+// 103), one after the position query 665 (masked 101), two at the top 665 (masked 99). Every added symbol moves the frame homes
+// and the float product sides together (masked 99 to 109), so a form has to be judged over the count phases, which costs a plain
+// check per phase here (the reduced image gives another body).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

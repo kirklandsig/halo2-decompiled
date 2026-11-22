@@ -639,6 +639,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // through the flag's own address (`*(byte *)&restart = 0;` after a bare declaration) 1; through a named `char *` to the
 // flag 1; `restart = dispose = false;` at the top 1; restart typed `char` with an integer start 1; typed `byte` with the
 // break as `restart != 0` 1 (all the same code: the address folds and the thread stays).
+// M3 lane 14 r144 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): dispose initialised false at its
+// declaration too 1 (same code); an explicit in-range arm `else { restart = false; }` before the restart break 153 (663 B,
+// the store is kept); the loop test as `next_time <= time` 5; the timing step ahead of the flag-8 store 9; restart typed
+// `long` 230 (661 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
