@@ -2898,6 +2898,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 2285 B (136/50); the entry table read once into a named `entries` base ahead of the loop 497 (2290 B, 146/68).
 // Reading: the loop's latch `mov edi, [esp + 0x30]` falls into the body in retail, where ours jumps over alignment
 // padding to it (`jmp; lea esp, [esp]; nop`), so the byte over retail sits ahead of the loop.
+// m3 lane 4 r248 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0; control 281, aligned 127): the camera sums with the double cast
+// on each product's global operand 281, on both operands 281 (same code: retail loads the global first only in the j
+// products, delta first in the i and k ones, ours the global first in all six); the global-side cast with delta
+// assigned i, j, k 280 (aligned 130; the sums then emit k, j, i); the opacity's two arms as one conditional multiply,
+// `opacity *= (*flags & 0x20) ? unoccluded_alpha : attenuation;` or `opacity = opacity * (...)`, 306 each (2288 B).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
