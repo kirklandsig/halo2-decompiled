@@ -6403,6 +6403,28 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // trig producers, with or without the workspace names, 79 each. Rotation scope ending at the
 // up rotation, with workspace names or a nested angle scope, 79 each. The first complement
 // spill and the final forward-j reload remain.
+// M3 lane 14 r145 (control 79; screened on a one-object link of this file with the rotation helper's and the normalize's code linked in,
+// 0 rows off the full build, and a reader that scores each product's operand sides and each sum's order against retail). By operand
+// role this body is exactly four products from retail: forward.i * axis.k and forward.i * axis.j in the first rotation (retail axis
+// first) and the two forward.j products of the final cross (retail side first). HELD lead (build/r145/held-e3910-shared-helper.patch;
+// it needs the rotation helper's file, held by another lane this round): the rotation with separate input and result vectors (vector,
+// axis, sine, cosine, result), called with the same vector for both, and the forward field at every use (no pointer local): 12 at 887 B
+// (fast and H2M_FAST, first difference +0xc6); the second rotation and both crosses are then retail's, left are the first rotation's
+// dot, summed (k + j) + i for retail's (i + k) + j, and its j store ahead of the k row. As the shared helper's signature it costs matched
+// 0x1ecf50 (102) and moves 0x1e5bb0 114 -> 150 at retail's 1382 B (0xd0080 58 and 0x26d570 26 unchanged); copy-free input/result calls
+// in those two 207 / 220. As a second private copy in this file it is a twin of the shared helper, so not kept. Screen grids (aligned
+// rows, control 37): dead initialised locals at 12 positions x 1..8: only those ahead of the forward pointer's declaration move the
+// first rotation (1: 56; 2: 49, its products then retail's and its dot (k + j) + i; 3: 42; 4..6: 100; 7, 8: 95; over 0..71 the sum order
+// has period 8 and the products are retail's at 2, 34, 42 and 66, never both), those after it 37 (1..3) or 95 (4..8); ahead 0..16 x after
+// 0..8 37 at best. The field at every use x 0..11: 35 at best. Shared or header rotation for each call x the pointer introduced at six
+// places x crosses plain or staged x 0..7 (768 states): 21 at best (the listed 60 mix). Reference or pointer bindings of forward, the axis
+// and the new up x 0..7 (288): 35. Diagnostic copies of the helper (screen only): its dot in six term orders x three projection forms x
+// 0..7 (288) 37 (the order is canonical at every phase); named copies of the vector's components per use group (1000) 37; extra locals
+// inside either rotation instance x 0..7 (432) 35 (the final cross never takes retail's sides without the result parameter). On the
+// input/result form: parameter orders x which reads go through the result x 0..7 (472) 8 (the lead, 12 in the fast check); dot,
+// complement and cross spellings x statement order x 0..7 (640) 8, a vector-local or in-row cross 142+; the helper returning its result
+// pointer, consumed by the normalize or the side cross (288) 8; input and result spelled as the field or a pointer local in each
+// combination x 0..7 (232) 15.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

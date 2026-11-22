@@ -984,6 +984,10 @@ struct s_physical_block_iterator
 // limit test as `limit_index <= 0 || pages < limit` 333; case 0 as `if (time != best time) better = older; else better =
 // fewer pages;` 284 (1182 B); both ages `dword` with `MAX(x, 0)` (retail's two clamps) 209 (1228 B); the failure limit
 // update through a MIN macro 202.
+// M3 lane 16 r175 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 as `time == best.time ? pages < best.pages :
+// time < best.time` 284 (1182 B); with every compare best-first 201 (same code); as `!(time > best.time) && (time !=
+// best.time || pages < best.pages)` 222 (1220 B); as an if/else on `time != best.time` setting `better` in each arm 284
+// (1182 B); the default arm with both ages `MAX(x, 0)` and `pages * best_age < best.pages * age` 209 (1228 B). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
