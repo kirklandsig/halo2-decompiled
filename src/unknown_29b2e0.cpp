@@ -840,6 +840,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // NOT kept: Explicit planar member assignments reproduce 130. Sharing the two input coordinates changes
 // the first normalizer, and the full aggregate forms alter the 0x2c frame. The projected J and depth
 // stores remain exchanged in the tying form.
+// The planar J and depth stores still exchange order. One immutable input for both projections scored 394,
+// with degenerate restore 394, pitch angle 383, rotation input 384, restore and pitch 383, restore and
+// rotation 384, pitch and rotation 375, and all consumers 375. NOT kept because the frame grew to 0x38 or 0x3c.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -1904,6 +1904,10 @@ long function_2197f0(real gain);
 // spellings, three clamp shapes and both time-sum orders all keep elapsed in XMM2; a deletion bisect moves elapsed to
 // XMM3 only when arm 2's interpolation or both arms of the other ambience branch are removed (the XMM colours are
 // coupled across branches, not set by arm 1 alone). Body unchanged.
+// The composite elapsed and reciprocal registers and separate gain load still differ. Immutable decibel base gain
+// for both same-ambience attacks 180, hold 178, release 180, attacks and hold 180, attacks and release 180,
+// hold and release 180, all 180. A scalar base gain for all phases before accumulation scored 173.
+// NOT kept because the decibel forms add bytes and the scalar form moves the first difference into the prologue.
 // @retail 0x127010
 long function_127010(short class_index)
 {

@@ -1505,6 +1505,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
 // complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
 // the 0x50 frame and regress from the 337 reduced control. Unity and square homes still differ.
+// Pass rounded sine at the matrix call, named there or named at angle production
+// 363/330/378 against the 337 reduced control. Cosine counterparts 367/358/351.
+// Pass cosine and its complement at the call or angle producer 350/376.
+// NOT kept: the 330 form shortens to 1445 bytes, loads unity into XMM3 and
+// still spills two squares. Cosine inputs grow the frame to 0x54.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

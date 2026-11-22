@@ -5023,6 +5023,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Existing vehicle cross for facing/axis/both 129/118/131, for final left alone or with
 // facing/axis/both 116/127/116/127, all with forward negation helper 137.
 // NOT kept: the two 116 forms gain two. The projection still first differs at +0x99.
+// The projection I operand rank still differs. Vehicle velocity in the dot 213, scale 209, first cross 210,
+// dot and scale 208, dot and cross 157, scale and cross 167, all three 165, all three with source up 206.
+// NOT kept because these forms grew the one-word frame. The final four changed the caller preview.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

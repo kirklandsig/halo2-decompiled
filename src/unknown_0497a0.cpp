@@ -650,6 +650,12 @@
 // by the shape's vector when not special 664 (2639 B), the same declared after v4 677 (2646 B); v3 copied from a selected
 // pointer 536 (same code); s1's sine argument with the y term first 536 (same code); the v3/v4 names swapped 536 (same
 // code: names do not move these homes). Body unchanged.
+// Both saved projections via memcpy, four-field aggregates or direct component
+// stores 536/687/590, with camera shifts read at use 537/687/591.
+// Overlap-safe copies with shifts at use 735. Bind both projection addresses from
+// copy through shift 536, or read each shift at its use 537.
+// NOT kept: the aggregate grows to 2712 bytes and frame 0x58, while the other
+// forms retain the 0x54 frame. The overlap-safe copies also change the caller.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

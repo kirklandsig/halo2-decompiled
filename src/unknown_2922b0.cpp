@@ -843,6 +843,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the memory operand); the two angles zeroed by one chained assignment 516 (same code); the minimum test as `local_4 <
 // FLT_MAX` 516 (same code); the cross helper's rows computed k, j, i 648 (2873 B); the input copy declared after the hit
 // flags 518. Body unchanged.
+// Assign the collision result to the hit entry before its test 630 or in the test 630.
+// Named hit result stored early/late, bool 629/638 and byte 629/638.
+// Explicit hit and miss stores, bool/byte 620/620. NOT kept: the four early
+// hit clears disappear and the success store keeps the wrong home.
 // Round 666. The frame agrees and success stays at ESP+0x13 against +0x17.
 // Names for success/minimum/hits 521, ray workspaces 521, response angles 521, and all three
 // sets 521. Reused fallback axis 522, shared ray vector setter 564, minimum from the

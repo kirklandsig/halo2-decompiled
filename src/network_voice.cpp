@@ -4501,6 +4501,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // end-minus-payload 168/158, stride-minus-payload 159/160, selected address 139/164.
 // Using the queued payload extent for the prefix gives the same 172/167.
 // The new boundary either grows the frame or leaves channel allocation unresolved.
+// Remaining bytes from input size and consumed bytes, indexed/walking 161/167.
+// Whole packet end versus input size 161/155. Last complete packet offset 175/169.
+// Available payload bytes from header-excluded size 160/167.
+// NOT kept: the derived budget drops the retail size update and the last-offset forms change the caller.
 // Round 666. The channel still needs EBP from entry.
 // Next cursor at admission 172, with early byte debit 171, at both validated prefixes 159,
 // with debit and prefix advance 160. One count read for the clamp 139, with admission cursor

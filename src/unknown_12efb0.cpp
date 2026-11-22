@@ -937,6 +937,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // (retail's `xor ebx, ebx` there and a join test) 607 (same code); that with the byte read at each use 666 (3827 B); the
 // accumulator helper in retail's store order (red, height, green, weight, intensity, distance, remaining, blue) 716
 // (3838 B). Body unchanged.
+// Provider index into source field, then saved before defaults, short/byte/per-use slot
+// 617/613/712. Keep the index in the field with branch clears 691/735/692 or
+// with the common metadata check 726/716. NOT kept: retail uses a separate provider
+// out slot and the palette and provider registers still differ.
 // The 0x4820 frame and metadata cursor agree. Provider result, selected record and SIMD zero still use different registers.
 // Captured palette byte with short in the arm 750; short/long fresh lookup 728/619; early byte admission 748.
 // Cached previous index with short or explicit null and long 726/618; original capture with short/long lookup 729/620.
