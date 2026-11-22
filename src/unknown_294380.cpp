@@ -363,6 +363,15 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // gives every tie group from last-use order except the five 4-reference cells, whose base order here is record, nearest,
 // count, object, sum (record, object, count, nearest, sum with three strengths named); retail's layout needs sum, object,
 // count, nearest, record. What orders register spill homes against address-taken locals in that base list is not found.
+// M3 lane 2 r135 (a one-object frame screen, lane 4 r239's kit, printing each home by name; identical code is scored by
+// identity): the 3.0 guard moved inside the clamp helper 0x294b56 with the callers' guards dropped 252 (identical code:
+// the jumps thread); the flock-flag test as `(flags & 0x10) == 0` 252 (identical code); the speed vector and the steering
+// direction as one two-member local aggregate, +2 instructions (the direction then lives in memory, frame 0xdc kept);
+// 0x2949aa taking the wander state member instead of the record, +5 instructions; 0x2949aa taking the steering vector by
+// value, +9 instructions. Slot map read off the listing: retail and this build agree at every frame offset except the three
+// pairs (retail's walk position, not the offset, shares the post-walk vector's slot); on the three-strengths form the
+// four-reference group reads object, count, nearest, record, sum (retail object, count, nearest, sum, record), and lane 4's
+// tie model reaches retail's group from no input order with that home set. Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

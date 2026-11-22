@@ -682,6 +682,13 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // bit sets through the existing bit_vector_set 21/21. Diagnostic: 0 to 31 unused initialised locals at the top
 // 21/21/25 x30 (no symbol-count state flips the pair). The pair follows where the cluster read sits, not the
 // source use count. Still BLOCKED-BY 0x14b240's write summary (0x18ae80 rises on it; its file is another lane's).
+// M3 lane 16 r173 (H2M_FAST with 0x14b240, MATCH each run; control 295): lane 15's r126 lead re-applied from its saved
+// patch is 4 again (0x18d730 250, 0x18ae80 911, 0x14b240/0x221da0/0x222150/0x249d60 MATCH); with the nearest test reading
+// the cluster's index after the compare (no local) 21 as listed. On that 21 form: the deep update's last test as
+// `if (limit < distance) continue;` 23; the deep store of the portal index as `(short)(encoded & 0x7fff)` 374 (1381 B);
+// the deep limit through main's `environment` pointer local 21 (the output stores stay retail's); `short portal_index`
+// declared at the top ahead of the cluster pointer 21; the deep stores in the seed block's order (clusters, portals,
+// distances) 292 (1379 B). Body unchanged; still BLOCKED-BY 0x14b240's write summary.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

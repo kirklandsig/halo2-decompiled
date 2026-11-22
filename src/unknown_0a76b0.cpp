@@ -4160,6 +4160,12 @@ extern vector3f *g_4687bc;
 // operator[] at each use 12 (`lea eax, [ecx + edx]` forms the element first); the index and node-count tests joined with
 // `&&`, the node through operator[] inside 12; the default material read through a `short const *` cast of the global 8;
 // the component as a const pointer under LTCG 8 (the 8s the same code).
+// M3 lane 14 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the material constructed after the
+// component lookup 10 (its load then follows the lookup in AX, not hoisted: retail's load comes first in the block and only
+// its register differs); the default material read into a `short` ahead of the lookup and the object built after it 10
+// (forwarded, same code); the material copy-initialised from a constructed temporary 8; the impulse and strength declared at
+// the effect block's top 8; the node tests joined in one condition 8 (all the 8s the same code). Kept: the impulse through
+// the existing vector3f_scale (same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
@@ -4273,9 +4279,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											vector3f impulse;
 											byte strength;
 
-											impulse.i = shove.i * -1.0f;
-											impulse.j = shove.j * -1.0f;
-											impulse.k = shove.k * -1.0f;
+											vector3f_scale(&shove, -1.0f, &impulse);
 											function_1eb020(effect_tag_index, node_index, &material_index.m_index);
 											strength = target_definition->impact_sound_size;
 											if (strength > definition->impact_sound_size)

@@ -785,6 +785,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // the busy result in a named flag re-tested at the loop's end 27 (same code); a second named pointer `group` copied from
 // the block local and passed to the release 27 (same code: the copy folds, no second use); the loop test as `busy(...)
 // == true` 28.
+// M3 lane 6 r226 (h2m fast with 0x12e210, which stays matched; control 27): `__assume(local_1 == cache_block->block);`
+// in the loop's arm 45 (first difference +0x23: the time test's registers move, the block still goes straight to ESI);
+// `__assume(local_1->cache_block_index == block_index);` there (diagnostic) 45; the page shift named ahead of the
+// linked test 27, the arm's physical offset named there 27 (both sink into the arm, same code); the block bound as an
+// object reference for the test and `&block` 27 (same code).
 // M3 lane 7 r213 (h2m fast with 0x12e210, which stays matched; control 27; screened on a multi-object LTCG harness that
 // reproduces this function exactly): 540 combinations of the pre-loop time fix, the loop's block spelling (named, per
 // use, a group local, `continue`, declared ahead of the task store), the release address and the tail spelling. Every

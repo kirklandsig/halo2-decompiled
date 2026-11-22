@@ -596,6 +596,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // 2 either way); the forward.i and forward.j spellings, the value dot through dot3f, the then-arm copy's spelling, the
 // cross components in k-i-j or i-k-j order (14-31), cross3f(forward, up) (12, 8 with the value dot), the test's written
 // orders, a parenthesised pair, `threshold <`, a facing alias and a threshold copy do not give both.
+// M3 lane 5 r230 (h2m fast with 0x1faf80, 0x118700 and 0x11f0d0; control 15; this function alone on the reduced image
+// measures 72 at 1031 B, so screen it with those three): the forward agreement inside one, two or three parenthesis
+// pairs 15 each; both agreements parenthesised 15; the forward agreement's dot3f arguments swapped 15 (same code each: its
+// i product still loads the object's forward first). Still BLOCKED-BY 0x1faf80 for the call setup.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

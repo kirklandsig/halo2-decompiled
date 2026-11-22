@@ -939,6 +939,28 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the candidate loop 229 (0x239d50 34), in all three loops 235 (0x239d50 34), in the candidate loop alone 242 (0x239d50 34).
 // On 116 the homes left are points (retail ESI, ours EBX after the classifier call), current (retail EDI) and count (never
 // a register in retail). Body unchanged.
+// M3 lane 4 r246 (H2M_FAST with 0x239d50 and 0x239b80, MATCH unless noted; control 144). Completion-flag family (match-only):
+// lane 1 r103's body (`while (!done && (short)hull_count < count)`, `if (!left_start) left_start = differ(first, next)`, the
+// positive written-out closure, memmove under `if (!done)`) with `current = count` after the classifier call and BOTH that
+// read and the hull test through the parameter's volatile view 109 (767 B), with lowest_y declared before lowest_x 107: the
+// prologue, lowest scan, candidate scan and departure are then retail's instruction for instruction. Left: the hull test
+// (`movsx ecx, word [count]; movsx eax, bx; cmp eax, ecx` for retail's `cmp bx, word [count]`, and retail's `jmp` over the
+// head's alignment), the compaction's scratch naming, retail's own epilogue for the compaction's normal end, the eps load
+// ahead of the count load. On 107: the current read placed after the lowest-point declarations 107, the compaction compare
+// written `indices[i] == indices[j]` 107; with only the current read volatile 217, with the hull test through a plain or
+// cast address read instead 217 / 217, both through address reads 216, both through a `short const *const` to the count 216
+// (the count then takes EBX for the whole body). Reading: the volatile views keep the count out of the register allocation
+// (its lowest-scan bound then reuses the classifier's EBX argument, `mov edx, ebx`, as retail); one plain hull-test or
+// current read gives it a register. A grid of 32 plain flag bodies (test `(short)hull_count < count` or `count >
+// (short)hull_count`, long/short hull count, current set after the call or initialised at function scope, lowest_y/x
+// first, bool/long flag) best 114 (784 B: current at function scope, lowest_y first, long hull count; the count in ESI,
+// points EBX); the short hull count 235-254. The lowest scan as a forced-inline helper (returning the index from a passed
+// start, starting from its count, or writing through a pointer) 216 / 216 / 216, through a pointer with current at
+// function scope 114. Body unchanged.
+// The widened append bound still holds an extra frame word. Use the minimum scan’s visited count as
+// append bound, candidate bound, both, or both with one append counter: short 144/251/225/246,
+// long 645/675/616/616. NOT kept: the short append-bound form ties. Other short forms raise
+// the caller score. The long count unrolls the minimum scan and grows the body.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
