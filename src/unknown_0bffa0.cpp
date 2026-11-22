@@ -1357,6 +1357,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // re-measured 562 (2815 B), with y stored first 560 (2817 B); the sphere arm's bounds call given the literal 4 for the
 // point count 600 (2777 B). Retail's cone arm holds 1.0 in XMM6 from the scale store
 // through the reciprocal (ours XMM4, the divide hoisted into the centre projection). Body unchanged.
+// M3 lane 6 r229 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the cone corners'
+// four x0..y1 locals dropped (bounds stored, the points read back from the bounds) 486 (2809 B: the sphere arm's cross
+// products reorder, so the operand ranking follows the symbol numbering); the half extents written into the four corner
+// expressions 576 (2800 B); the projection helper in 0x1427f0's own spelling (x, y, z, `inverse * x`, rows k, j, i) 290
+// (same code); the face row named for the four projections 481 (2814 B); the entry's point array named for the four
+// projections and the bounds call 555 (2798 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

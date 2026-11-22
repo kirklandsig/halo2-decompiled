@@ -1038,6 +1038,13 @@ static inline long team_score_195ed0(long team)
 // into the results record 100/100, returned typed copy destination 204, and shared device-view
 // copies from the byte or typed member or through assignment 100/100/100. NOT kept: the
 // copy and address-index write still follow the teams-flag read in the tied forms.
+// m3 lane 4 r248 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH): the counter store written as the
+// counter's own 15-bit field (`.value = 1`, as the file's other counter writers do) for the hand mask through a `word *`
+// cast 100, the same code (`and ecx, 0x8001; or ecx, 1`): kept; with a named counter pointer 100. Both helpers with
+// external `inline` linkage, alone or together, 100; the clamp's `(short)` cast dropped 100 (all the same code); the team
+// test's bit folded into its condition with `result = true;` 151 (1210 B). Diagnostic (behaviour change, reverted): an
+// extra guarded 0x199460 call with a team test ahead of the team loop 381 (1253 B), and the third score read still
+// expands with its team test called, so the third read's expansion does not follow the inline work spent before it.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
@@ -1087,8 +1094,7 @@ void function_195ed0(void)
 						}
 					}
 				}
-				word *counter = (word *)&g_511bf4.groups[index][0];
-				*counter = (*counter & 0x8001) | 1;
+				g_511bf4.groups[index][0].value = 1;
 			}
 		}
 		if ((bool)((function_xaee93d()->flags >> 5) & 1))

@@ -1381,6 +1381,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
 // dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
 // fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
+// M3 lane 16 r174 (h2m fast with 0x24550, 0x22750, 0x22c30, all MATCH; [n] = aligned rows, control 418 [273]): scan 2's
+// candidate read from the entries field (both reads) 549 [219] (2122 B: retail's two induction pointers and the pass
+// counter at +0x18, frame 0x20, but `nearest` in memory and delta.j/k spilled); on it `first` formed ahead of the delta
+// and the delta built from it 554 [216] (2112 B), the projection compare written `0.0f >= dot` 549 [219], the skip as
+// `nearest != i` 548 [216]; on it the delta written out in all six component orders (diagnostic) 549 to 581 [219 to
+// 233], none gives retail's delta.i/j in XMM5/XMM6 with only delta.k spilled. Body unchanged.
 // M3 lane 12 r173 (h2m fast with 0x24550; control 418): the vector difference and dot as plain functions in another
 // of this machine's files, so only link-time code generation inlines them (diagnostic, helpers removed) 418 (same code:
 // the homes retail keeps do not come from link-time inlining); the offset read through a `vector3f const &` in the dot
@@ -1400,6 +1406,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // with `opposite` renamed to sort ahead of `nearest` 549 (same code: names do not move these slots); that with the delta
 // written out k, i, j (retail's load order) 624 (2182 B); the compare sides swapped (`0.0f >= dot`, `other_distance >
 // distance`, both scans' `closest > distance`) 418/418/418 here and 549 on the entries-at-each-use form (same code).
+// M3 lane 12 r176 (h2m fast with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 273): the fraction as one
+// conditional expression 418; `first` declared ahead of `second` 439 (2088 B); the opposite scan's update as `other_distance >
+// distance` 418; one scan index declared once for both scans 418 (same code each); `nearest` declared after the closest
+// distance 416 (a declaration move under the bar, not kept). Retail's scan 2 runs four passes with a second index (i + 2)
+// in a stack cell and two record pointers, and sums both the projection and the distance from the offset registers.
+// Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

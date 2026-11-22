@@ -433,7 +433,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// score 353 (was 353): m3 lane 5 r233 unchanged (its lines just above the marker). victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
 // +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
 // is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
@@ -979,6 +979,17 @@ struct s_object_damage_view
 // `0 < assist_count` guard ahead of the first dedupe loop 353; both dedupe scans as a `for` with `break` 353; the killer's
 // team byte named as a char and passed to 0x1df560 as the byte 358 (1552 B); friendly as false then set by its test 353.
 // Body unchanged.
+// M3 lane 5 r233 (h2m fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640 and 0x197160; control 353, aligned
+// 128/132, register-masked 52/56; body unchanged). Reading of retail's selected block: the record pointer and the
+// record's player sit in EAX and EDX and the validation's index, data pointer and salt copy take EBP, EBX and EDI, so
+// neither value is a long-lived register there; the killer is stored to its home at each assignment, held in EDX
+// through the fallback (which validates the reported player in EDI and copies it, `mov edx, edi`) and loaded into EDI
+// only at the top of the killer block, although EDX holds it on every path in. Tried for that split: victim, killer,
+// victim team and damage code as members of one local record in retail's home order (diagnostic) 384 (first
+// difference +0x8), without the victim 369 (listed), the killer alone in such a record 353 (same code: a lone member
+// is promoted like a plain local); the fallback validating a named copy of the reported player that then becomes the
+// killer 353 (same code, the copy folds); the killer block working on a named copy of the killer 353 (same code),
+// both 353; the two flags in retail's shape with the killer-block copy 344 (the listed flag forms' code).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

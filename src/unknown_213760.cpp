@@ -1156,7 +1156,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
+// score 33 (was 33): m3 lane 5 r233 unchanged (its lines just above the marker). Frame 0x1144 and extent agree. Query size and write count exchange stack
 // slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax I (11-20): no new form, no lower score (33): the write block's close test written as one shared condition (the count test or the not-resized path with the handle test inside) measures 157, and the close duplicated in both arms measures 179 (994 bytes against retail's 930), so the body stands; what still differs is retail's single close block reached from the resized and the not-resized path, which needs a goto (kept only with a byte match), the swapped pair of homes (ours the query size at [esp+0x28] against retail's [esp+0x24] and the write count at [esp+0x24] against retail's [esp+0x28]), the write call's flags zero built in EAX where retail builds it in ECX, and the checksum compare taking EDX where retail takes EAX.
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
@@ -2099,6 +2099,21 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // (resized)` 119, that also for the close 127, as a const reference 5 (same code), one copy at the open test for query,
 // resize and write 170, for query and write 154, ahead of the resize for resize and write 139, and the close 153. Any named
 // handle copy loses the close's `mov ecx, eax`. Body unchanged.
+// M3 lane 5 r233 (H2M_FAST with 0x213760, 0x213800, 0x2138f0, 0x2149c0 and 0x2141f0, all MATCH each run; control 33,
+// aligned 18). Rebuilt: round 53's 7 form 7 (aligned 7), lane 9 r132's 5 form 5 (aligned 5: the handle load after the
+// flags zero, nothing else), the plain write-handle local on it 114 at 917 B (aligned 3 of ours, 6 of retail's: the
+// close pushes EAX where retail has `mov ecx, eax; push ecx`, and the two loop pads that follow). New on the 5 form:
+// the write's handle through a file-local inline accessor called in the argument list (a nested call is evaluated
+// ahead of the outer call's pushes, so the handle is loaded first with no named local) 114 (917 B, the write-local
+// code exactly: handle EAX first, zero ECX, and the close's copy gone), the same accessor at the close as well 114
+// (same code); on the write-local form the count test as `0x800 == bytes_written` 114 (same code), the success as
+// `written = !(bytes_written != 0x800)` 107 (930 B: a sete join, still no copy), the write's returned task named and
+// tested with the count (`task != NONE && count == 0x800`) 117 (930 B). Reading: every way of getting the handle
+// loaded ahead of the flags zero (named copy, by-value helper parameter, accessor result) makes it a value that takes
+// no scratch step, and the close's `mov ecx, eax` needs that step; no spelling here gives both. A converting
+// constructor on the file-handle type (callers passing the raw handle, a temporary built at each call) cannot be the
+// answer: the type is a member of the async task aggregate that overlays the task records, which rules a constructor
+// out. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

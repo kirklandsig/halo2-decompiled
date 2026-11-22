@@ -130,7 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
-// score 378 (was 378): earlier 393; the extra frame word (0x5b8 against 0x5b4) is the side test's `local_9.i * local_13.i`
+// score 378 (was 378; m3 lane 11 r152 unchanged, its line just above the marker): earlier 393; the extra frame word (0x5b8 against 0x5b4) is the side test's `local_9.i * local_13.i`
 // CSE'd with the 0.9 block's `local_9.i * left_i`: the left vector's store is forwarded to the side test (likely because LTCG
 // sees our 0x299460 leave its sixth parameter alone; round 148's no-LTCG probe gives retail's frame), where retail reads the
 // left vector's home (+0x84) and keeps only
@@ -353,6 +353,11 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // and the 0.9 block's term from the vector 378 (same code each); the left vector stored member by member just before the
 // obstacle list is built 550 (2842 B). None of 0x29cbb0, 0x299460, 0x210770, 0x2108a0, 0x29cb10, 0x29c860, 0x1427f0 or
 // 0x210d10 lies on a direct-call cycle in retail's call graph, so the missing callee knowledge is not a cycle-entry effect.
+// M3 lane 11 r152 (H2M_FAST with 0x29c860 and 0x29cb10, MATCH each run; control 378): the 0.9 block's j as one
+// expression (`local_9.i * left_i + local_25`, or local_25 first) 403 at 2800 B: the frame is then retail's 0x5b4, but the
+// whole side-test sum is shared with the block (its +0x60 home holds the sum, where retail keeps local_25 there and
+// multiplies left_i's own home by local_9.i); the i as one expression 376, either term order (same code), with the j
+// form 403. Body unchanged.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

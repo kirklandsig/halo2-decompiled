@@ -2355,6 +2355,10 @@ struct s_actor_looking_structure_view
 // 0x1b2340) 23 (same code); that with both traces through the eight-argument declaration 66; a `point3f const *` origin
 // for both trace calls 69; the actor's sector index named for its test and both calls 182; the best direction indexed at
 // each use without the `best` pointer 39. All restored.
+// M3 lane 2 r136 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched throughout; control 23): the
+// fraction set by if/else after the trace (no initialiser) 144 (the ternary's code); the trace record declared at function
+// scope 23; the candidate array declared ahead of the first trace 23; forward's i and j copied as a planar pair before
+// the k clear 217 (906 B); the direction loop as a do/while on `++i < 8` 23 (the 23s the same code). Restored.
 // M3 lane 8 r224 (h2m fast with 0x296e60, 0x2980d0, 0x297660 and 0x24590; 0x296e60 270 and the rest matched in every build;
 // control 23): the loop score as `dot3f(&forward, &directions[i])`, either argument order, with 0-3 redundant pairs on the clamp
 // product 35/144/11/128 (928 B at 3). LEAD 11 at 924 B (steering parens, not kept; the shared helper untouched): the rotation dot
