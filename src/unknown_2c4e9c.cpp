@@ -3350,6 +3350,17 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // `iterator.datum` 27 (80 B, not retail's rotated loop; the head unchanged); that with the pool stored before the guard
 // 25 (layout only, the same direct EBX load); the guard joined with `&& data` 33 (84 B); `if (map_id == NONE) return;`
 // with `return` after the selection 30. All restored.
+// M3 lane 3 r296 (H2M_FAST with 0x2c9a58, matched unless noted): the walk (iterator loop and selection) as a file-local
+// `__forceinline` helper taking (list, map id by value) 30 (same code), the id as `long const &` 30 (same code), the
+// helper plain `inline` 91 (23 B: it stays out of line and this function is expanded into 0x2c9a58, which scores 8);
+// the id declared `long const` 30; the loop's compare written `map_id == definition->map_id` 30 (all the 30s the same
+// direct EBX load).
+// M3 lane 13 r144 (h2m fast with 0x2c9a58, matched in each): the id assigned through a non-const reference bound to
+// it (`long &saved_map_id = map_id;`) 30; the if/else two-definition id with the iterator's datum index stored from
+// `iterator.index` (one NONE literal fewer) 36 (87 B: NONE still in ECX, the NONE arm not threaded); the id left
+// uninitialised and set under a test of the field, the walk guarded by a second test of the field, 30; the guard as
+// `map_id ^ NONE` 32 (83 B, `not` and `test`); as `map_id - NONE` 9 (82 B: the one-based `lea`/`test` form, the load
+// still straight into EBX). All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

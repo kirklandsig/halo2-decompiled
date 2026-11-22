@@ -1639,6 +1639,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // on that the iterator's fields in the siblings' order 812, the outputs set type, class, mode 810, by one chained
 // assignment 810; the second request's graph through a const reference to a copy of `this` 812 (same code); the result
 // bound by a const reference for the 0x1dd9d0 call 812 (same code).
+// M3 lane 11 r153 (H2M_FAST with 0x1dc790 and 0x1dc8c0, both MATCH; control 812; the record forms re-measured on the twin
+// 0x1dbc80 with the same counts): the siblings' found-flag loop re-measured 755 (aligned 297); lane 9's record (the three
+// outputs and the id as one local) on it re-measured 732 (aligned 84, match-only). On the record: `bool found` declared at
+// the block top 732 (same code); the post-loop block tested on `found` 1065 (2873 B); the loop test as `entry && !found`
+// 1104 (2905 B); the id as the record's first member 746 (aligned 286); diagnostic, the three output stores disabled 973
+// (2831 B: LTCG then drops the output parameters). Read from matched 0x1dc8c0 (its request inside the loop): its fifth kind
+// keeps `test` and its inheritance setup takes a scratch `xor ecx, ecx` across the zero-trip `jle`, as our second request
+// does; only the twins' retail promotes the zero to EBP from the fifth kind's first test. Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2231,6 +2239,17 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // on that the iterator's fields in the siblings' order 812, the outputs set type, class, mode 810, by one chained
 // assignment 810; the second request's graph through a const reference to a copy of `this` 812 (same code); the result
 // bound by a const reference for the 0x1dd9d0 call 812 (same code).
+// M3 lane 6 r230 (H2M_FAST with 0x1dc790, 0x1dc8c0, 0x1dd9d0, all MATCH; control 812, difflib-aligned 578, register-
+// and offset-masked 74). Reading: retail gives the dead parameter homes to the candidate (found_mode's) and to the
+// inheritance loop's counter and offset (found_weapon_class's and found_weapon_type's), and in the second request holds
+// the graph in EBX and the iterator mode in EBP with the cached mode-table address in memory; ours holds the graph in
+// EBP and the table address in EBX, so the iterator mode's copy takes found_mode's home. Tried: the iterator's fields
+// in the sibling's order (graph, step, entries, keys) 812 (same code); the type entry declared inside the loop 812
+// (same code); the second request on the iterator's graph field 948 (2805 B); the loop as a while tested on the
+// iterator's result with a break on a found id 1022 (2853 B); an early return on a NONE class 828 (2807 B). Body
+// unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x1dc790 and 0x1dc8c0, both MATCH; control 812): the twin 0x1db170's forms of this round
+// measured the same here (the record 732, the id as its first member 746); the list is in 0x1db170's note. Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

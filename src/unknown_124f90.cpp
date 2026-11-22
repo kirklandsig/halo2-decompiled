@@ -1908,6 +1908,11 @@ long function_2197f0(real gain);
 // for both same-ambience attacks 180, hold 178, release 180, attacks and hold 180, attacks and release 180,
 // hold and release 180, all 180. A scalar base gain for all phases before accumulation scored 173.
 // NOT kept because the decibel forms add bytes and the scalar form moves the first difference into the prologue.
+// M3 lane 12 r175 (H2M_FAST with 0x1251e0/0x221810, both matched; control 87; D0 above re-measured 125 at 678 B): on this
+// body, elapsed read through a `real const &` bound to its local 97 (685 B); a fade-out local for the two window tests
+// with the product reading the field 102 (685 B); the product's fade-out through a trivial file-local accessor 87 (same
+// code); arm 1 alone as `gain += ...` 87 (same code: the add is still interpolation plus the gain from memory); arm 1 alone
+// written interpolation first 157 (688 B: the gain copy takes a new stack slot). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4921,6 +4926,21 @@ struct s_128ca0
 // operands with permutation first, processed bits first, or both scoped to publication 48 each.
 // Channel arguments named after publication, with or without scoped gain objects, 48 each.
 // The two scratch-register exchanges and full-width synchronization sentinel still differ.
+// M3 lane 6 r230 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17;
+// Lc = L with `char count = NONE`, re-measured 204): the definitions view named once for the range and bound lookups on
+// L 17, on Lc 204 (same code each); on Lc the flag cleared before the decrement 203 (1053 B); the count block as a
+// function in the controller file 166 (1017 B, it stays a call); on Lc the four statements after the range lookup
+// (permutation P, field_34 store Z, effect-index store E, bound B) in the 22 orders not listed above: PZBE 216, PEZB
+// 208, PEBZ 210, PBZE 218, PBEZ 218, ZPEB 209, ZPBE 221, ZEPB 78, ZEBP 82, ZBPE 44, ZBEP 81, EPZB 79, EPBZ 79, EZPB 78,
+// EZBP 82, EBPZ 82, EBZP 82, BPEZ 45, BZPE 44, BZEP 81, BEPZ 82, BEZP 82. With the bound early the first controller
+// block and the count block are retail's and only the pitch block's registers move. Body unchanged.
+// M3 lane 12 r175 (H2M_FAST with 0x1293f0, matched; control 48; L = the LEAD 17 above, rebuilt from its patch, re-measured
+// 17; Lc = L with `char count = NONE`, re-measured 204): on Lc, the count through a reference bound to a char local 204, the
+// first block's two NONE tests written constant-first 204; on L, `short count = NONE` 111 (1056 B: the count block's
+// `or edx, -1` and both register compares are retail's with no upstream shift, but the extraction adds `movzx dx, dl` and
+// the second pin's scratch registers then rotate one step), `long count = NONE` 118 (extraction `xor edx, edx` / `and edx,
+// 0x7f`, the rest of the block and the second pin as retail), `word count = NONE` 115 (0xffff is shared with the lookup's
+// mask: `mov edx, 0xffff`, `and eax, edx`). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

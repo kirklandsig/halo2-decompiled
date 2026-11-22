@@ -766,6 +766,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // with a single scale read 256/261. Shared vector setter in the same four forms
 // 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
 // forms score higher, and the frame remains 0x20.
+// M3 lane 12 r175 (H2M_FAST with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the camera origin copied once
+// into a const point local for both offset loops 262 (1136 B, frame still 0x20); the second point's view transform called
+// first 218 (1114 B, three points, under the bar); that with the second offset loop first as well 219; that with the
+// helper's rows in 0x142640's order (+0x1c by z, +0x10 by y, +4 by x) 218; the two offset vectors declared in the other
+// order 221 (same code). Body unchanged.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
