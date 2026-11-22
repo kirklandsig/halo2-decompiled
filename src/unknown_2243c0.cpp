@@ -217,7 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// score 117 (was 117): the fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
+// score 117 (was 117): m3 lane 5 r233 unchanged (its lines just above the marker). The fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
 // and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax D (11-20, round 132): no new form, no lower score (117): the body is unchanged. Masking the fallback tag index
 // in place gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX and hoists its load above the frame
@@ -911,6 +911,24 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // beside their one use 145 (546 B, 0x224d90 36); local_11 bound as `byte const *const &` 8 (same code); local_10 bound so
 // 8 (same code). Retail's zero is live in EAX before the material definition loads (so that load takes EDI); no
 // spelling here starts the zero earlier. Body unchanged.
+// M3 lane 5 r233 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; main 117; lane 1 r59's reference chain
+// rebuilt from its saved body 8 at +0x9e, aligned 12 with the image's address rows, 7 real rows: pass definition EDX
+// where retail reuses EAX, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the
+// definition's +8 read). A link-time lab (this file's unit with the objects of its reduced link, 3.5 s a variant,
+// main's code exactly; build/r233/lab.py, s224.py) scored 517 random combinations of the chain's binding choices
+// against retail's window: the pass tag (plain local, const-reference local, or read in place), the pass definition
+// (in place, plain local, tag-data accessor in place, const-reference from the accessor, plain local from the
+// accessor), the +0x20 block (in place or named), `+ 0x132` and `+ 0x1c` (in the initialiser or as their own steps),
+// the material tag (in place, plain local, record accessor in place, const-reference from it), the material definition
+// (four forms as the pass definition's), the four cache zeros (after both lookups, the first ahead of the pass
+// definition, all ahead of it, all between the two lookups, the first between them) and the 0x1c590 argument (the
+// bound reference or the field read in place): 16 combinations tie the chain at 7 rows, 51 give 8, none fewer. Also
+// in the lab: the value cache as a derived local type whose inline constructor zeroes the four members, declared at the
+// top, ahead of the pass element, after the pass tag, after local_10 or after local_11: 42, 39, 30, 8 and 7 rows (a
+// constructor is the four stores at its declaration, nothing more); diagnostics (wrong code) that keep the pass tag
+// alive past the material lookup 26 rows (the pass element's load unfuses instead), so the busy-register reading above
+// is not what gives retail's EAX/EDX/EDI picks; the pass tag masked once into a named index 7 (same code as the chain).
+// Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
