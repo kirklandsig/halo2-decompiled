@@ -2280,6 +2280,13 @@ bool function_1900a5(long index);
 // 637 (diagnostic). Reading: the positional count is set by the request loop's instruction count (ours is 10 short ahead of
 // its 0x1934f0 call: retail's request flag in DL and the two counts stored before the clock) and by the polls' range
 // chains, neither keepable without a match.
+// output-driven user ordinal with ordered bound 816; output-driven user ordinal with equality bound 816;
+// separate slot test 643; separate identity sentinel test 643; nested slot and identity tests 643;
+// unavailable variant early continue 658; team exclusion early continue 643; three availability arms
+// 658.
+// NOT kept: The nested tests and team exclusion reproduce 643. The output cursor grows to 2910 bytes,
+// and the explicit unavailable path changes the branch layout. The user base and logon comparison remain
+// different.
 // The logon compare and validity-based cursor home still differ. A user cursor deriving the cache index scored 773,
 // with direct cache indexing 777. A cache cursor deriving the user index scored 816, with the user bound once 795.
 // Relational and equality bounds had identical scores. NOT kept because all forms added bytes and differences.

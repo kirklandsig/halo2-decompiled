@@ -2056,6 +2056,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
 // NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
 // the player on the stack.
+// Optional field selected by entry size >11 or ==13, optional byte count or prefix size
+// 134/134/171/184. With mask, written count and capacity debit ahead of size 159/159/181/129.
+// NOT kept: the last form reaches 445 bytes but changes the incoming convention and loses the caller.
 // M3 lane 6 r222 (H2M_FAST with 0x56380, 0x564c0, 0x53b00, 0x56000; control 60, aligned 58; the caller 0x56380's score in
 // brackets when it breaks; body unchanged; about 100 runs). LEAD 5 (450 B, aligned 1, every neighbour matched, and 4
 // differing instructions in the full image too): the head statements in retail's order kept, written, capacity, size
@@ -2084,6 +2087,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // two-element array, through memcpy; the reference-bound length written directly (before or after the header stores);
 // the reference-bound compound form with the header stores first or between its steps 151 [137] (same code as
 // above). Patch: build/r222/lead-0x55c40-score5.patch.
+// M3 lane 4 r246 (H2M_FAST with 0x56380; control 60): r222's lead rebuilt and re-measured 5 (450 B, 0x56380 MATCH; left
+// `movsx edi, cx` for retail's `mov edi, ecx`), the same shape with a plain long count 134 (456 B, 0x56380 12). On the plain
+// shape: the length as `2 + written * entry_size` 134, as `entry_size * written + 2` 134, with `+ sizeof(word)` 134 (each
+// the same code: the product is formed in the dying size register); the size declared `short` or `byte` 127 / 127 (445 B,
+// 0x56380 13). Body unchanged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4505,6 +4513,13 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // with debit and prefix advance 160. One count read for the clamp 139, with admission cursor
 // 173, or with prefix advance 159. Immutable current packet and admission cursor 172.
 // The prefix-advance forms reach 488 bytes with a larger 0x14 frame.
+// M3 lane 4 r246 (H2M_FAST with 0x564c0, MATCH each time; control 139): on the packet-cursor form (re-measured 167, 478 B; every
+// register role but EBP is retail's: cursor EDI, members BX, stride ESI split around the submit call, the member in EBP where
+// retail keeps the channel): `long consumed = 2; size -= consumed;` then the cursor, then the stride 164 (478 B); then the stride,
+// then the cursor 162 (479 B); on that, the route declared at function scope 162, the member declared at function scope 162,
+// the members word read into a dword 188 (460 B). Reading: retail's zero-trip exit returns ECX, the register holding the
+// constant 2 that also feeds `size -= 2` and the count's store, so that exit returns the constant while the loop exit reloads
+// the count from its slot. Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -1381,9 +1381,19 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
 // dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
 // fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0x24550; control 418): the vector difference and dot as plain functions in another
+// of this machine's files, so only link-time code generation inlines them (diagnostic, helpers removed) 418 (same code:
+// the homes retail keeps do not come from link-time inlining); the offset read through a `vector3f const &` in the dot
+// 418; the delta the same way 418; one `long i` shared by both scans 418; that with the delta declared beside it 418
+// (all the same code). Retail's delta home is the fallback direction's slot (frame offset 0x20 in both paths). Body unchanged.
 // Both strict reductions through one updater. Reference/pointer state outputs 419/419,
 // accepted-result outputs 418/418, returned ordinal 608/608, returned cutoff 545/545.
 // The 0x2c frame and separate candidate spill still differ.
+// The second scan still needs its first-coordinate offset spill and second induction address. Horizontal
+// pair written before or after the depth component 563/460, horizontal pair with aggregate or setter
+// 433/437, depth pair before or after the first component 540/540, and depth pair with aggregate or setter
+// 601/557. NOT kept: the 433 form reaches 2122 bytes and frame 0x24 but raises the score and still lacks
+// eight frame bytes.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

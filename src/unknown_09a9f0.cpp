@@ -1042,6 +1042,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // test, the index stored at the top of the non-NONE arm and in the NONE else arm 68 (179 B: the two arm stores are not
 // merged into one store ahead of the test, and the header address is formed whole and reused for the object read); the
 // entity's index field bound by a reference and used as the index everywhere 82 (157 B). Body unchanged.
+// M3 lane 4 r246 (H2M_FAST with 0xa5a00, 0xa5b10 and 0xbb780, matched throughout; control 8): a copy of the index set NONE
+// in the flagged arm with the valid block under a retest of the copy 75 (160 B: threaded before CSE); the flag test through
+// a forced-inline predicate on retail's shape 77 (merged as a plain inline is); on this body the object read as a byte
+// offset `data + (index & 0xffff) * 12 + 8` with no word cast 42 (the index product is still shared); retail's shape with
+// the flagged arm first and the set-and-attach through the existing 0xbb780 75; the result assigned from the header test
+// and then tested 79 (184 B). Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1548,6 +1554,11 @@ bool c_projectile_type::v8(long a, long b)
 // bound through a `byte *const &` used for the 0x800 arm's index read 12; the group pool pointer read into a local at the
 // top, ahead of the call, 49 (188 B); the index as a const value local 12; the object pointer itself const 12; the entry's
 // value read as `((real *)entry)[1]` at the compare and the store 12. Word-read body kept (5).
+// M3 lane 4 r246 (H2M_FAST with 0xa5e70 and 0xa02e0, MATCH each time; control 5), all with the full-width mask: the entry as a
+// `real *` stepped by `(index & 0xffff) * 3` and read at `[1]` 12; the byte offset written `* 3 * 4` 12; the value read as
+// `((real *)data)[(index & 0xffff) * 3 + 1]` at both uses 15; the definition copy declared after the object and the flags
+// 51 (first difference +0x0), last after flags and object 51; the flags local declared ahead of the object 12. The head
+// pair stays swapped (flags ESI, object EDI) whatever the constant 12 is spelled as. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

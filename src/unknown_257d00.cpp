@@ -2051,7 +2051,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 431 (was 431; m3 lane 8 r220 unchanged, its line just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged, its line just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2757,11 +2757,20 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 0x48 OR written through the global (two stores as retail, but the global is reloaded) 484 (2432 B); case 4's dot terms
 // written k, j, i 431 (same code: the sum is re-sorted to i, j, k, where retail forms k*dz + j*dy first from the state's
 // facing read in place). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0x110ab0 and 0x258a00, both as before; control 431): kept, case 20's two squared
+// lengths through the existing length_sq3f in place of the written-out sums 429 (plain 429). On it: cases 9 and 11
+// comparing the actor field first 428; that with the iterator set up data, index, datum_index 428; that with the
+// second facing publish storing the flag ahead of the copy 426; the flag-first publish alone 427 (retail-evidenced
+// orders, together 3 under the kept body, not kept).
 // Use direct returns through the function, with search success on acknowledgement,
 // absence or acknowledgement, active completion, or both active and inactive paths
 // 521/517/494/540. Share the explicit default with case 13 on these forms
 // 653/565/633/666. NOT kept: the closest form still misses the retail dispatch
 // displacement. Three explicit-default forms also change the entry allocation.
+// The default completion remains late, and the animation copy uses EAX before forming its receiver. Native
+// planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
+// fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
+// 431. All retain the 0x1c frame and the existing copy schedule.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2957,7 +2966,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 						function_b9dd0(local_14, &local_15);
 						vector3f local_16;
 						vector3d_from_points3d((point3f *)((byte *)local_0 + 0x238), &local_15, &local_16);
-						real local_17 = local_16.i * local_16.i + local_16.j * local_16.j + local_16.k * local_16.k;
+						real local_17 = length_sq3f(&local_16);
 						if (local_12 > local_17)
 						{
 							local_1->unknownac = false;
@@ -2982,7 +2991,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				vector3f local_19;
 				function_b9dd0(local_1->unknownb0, &local_18);
 				vector3d_from_points3d((point3f *)((byte *)local_0 + 0x238), &local_18, &local_19);
-				if (*(real *)((byte *)local_1 + 0xb8) > local_19.i * local_19.i + local_19.j * local_19.j + local_19.k * local_19.k)
+				if (*(real *)((byte *)local_1 + 0xb8) > length_sq3f(&local_19))
 					local_1->unknownac = false;
 			}
 			local_3 = !local_1->unknownac && !*((byte *)local_1 + 0xd0);

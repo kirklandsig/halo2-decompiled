@@ -987,6 +987,15 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `collection->player_mask`) 263 (the second loop's preheader and cursors are rebuilt), on the swap order 264; the
 // occupied record's apply given `&watcher->players` 28, the last record's 28 (retail rebuilds it from the parameter there
 // too; both the same code), both on the swap order 32. All restored.
+// M3 lane 7 r212 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; main's swap order): the occupied key
+// bound to a `t_player_key const &` and copied from it 41; the key copied by element addresses with `sizeof(t_player_key)`
+// 28; the swap test as nested ifs (slot valid, then slot differs) 28; the occupied record in its own block-local update
+// pointer 28; the swap's update named in a block-local pointer inside the swap test 28 (the 28s the same code).
+// M3 lane 14 r143 (h2m fast with 0x84e90/0x84c90/0x83c90, all MATCH each time; control 28): the swap's update through a
+// `const &` bound to `updates` 28 (same code); the occupied key indexed by the just-stored `update->player_index` 28
+// (forwarded, same code); the occupied index stored after the key copy 36; a const occupant pointer to
+// `collection->players[i]` formed ahead of the slot search 222 (1073 B, its own induction variable); the last record's two
+// source reads named at the else arm's top and used by the conflict scan 274 (1085 B). All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

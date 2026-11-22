@@ -759,6 +759,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // 307/307/384/298/382/382/473. Independent complete capture in each view 433.
 // NOT kept: all change the caller preview and enlarge the body. The shared right.i
 // register and the 0x14 frame remain unresolved.
+// Shared first-row right/up/forward coefficients individually 266/266/266, each pair
+// 265/265/265, and all three before the transforms or before the second displacement
+// 258/258. NOT kept: the complete shared row reaches 1136 bytes but raises the score.
+// Shared scalar origin with vector initialization, first or second endpoint first 218/219,
+// with a single scale read 256/261. Shared vector setter in the same four forms
+// 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
+// forms score higher, and the frame remains 0x20.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

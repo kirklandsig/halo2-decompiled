@@ -4909,6 +4909,18 @@ struct s_128ca0
 // the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
 // every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
 // initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
+// The shared decibel addition's by-value operand updated with the compound operation or decoded
+// member before returning 257/257. Direct/named construction from the decoded sum 177/177.
+// Const-reference operand with copied result, direct constructor, returned compound sum, or
+// named decoded sum 177/308/48/308. NOT kept: copying the operand and returning the compound
+// sum ties. The other forms shorten the function and some change the matched gain producer.
+// Round 463. Valid-arm byte, char, long or short count with direct sentinel publication 208/208/208/212.
+// With staged pin gain producers, shifted pending test and direct channel read 194/194/201/205. The
+// direct sentinel shifts registers at +0x12a and keeps the count comparisons displaced.
+// First, second or both gain scopes ending at the packet write 48 each. Separate decibel
+// operands with permutation first, processed bits first, or both scoped to publication 48 each.
+// Channel arguments named after publication, with or without scoped gain objects, 48 each.
+// The two scratch-register exchanges and full-width synchronization sentinel still differ.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
