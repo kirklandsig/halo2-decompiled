@@ -1215,6 +1215,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // redundant pairs over the angle's two products, the endpoint's x product, the lift product and the 0.1 offset's x product
 // (56 forms): 20 (4 forms), 23, 39, 41, 71, 73, 179, 181; the pair count cycles the states the statement orders give (179
 // is the statement-lift state, retail's dot with the axis k as memory operands), none below M. All restored.
+// M3 lane 13 r142 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26, M re-measured 20): on M the trace
+// endpoint as a component loop (`point.n[c] = direction.n[c] * trace_distance + origin->n[c]`) 39; on M the 0.1 offset as
+// vector3f_scale of the axis into an `offset` vector then three adds 103 (1101 B); on M the collision record declared at
+// the top of the spoke body (marker store left in place) 44; on M `point` declared at the top of the spoke body 20, `world`
+// declared ahead of the collision record 20 (same code as M). The shared rotate_direction (src/unknown_1eb8a0.cpp) with
+// the `1.0f - cosine` complement named, here / 0x1ecf50 / 0xe3910 / 0xd0080 / 0x1e5bb0: complement after the dot 26/14/79/
+// 58/112, complement first 26/14/79/58/112, the projection after the crosses 47/160/147/67/154, the projection read off
+// the dot inline with the named complement 77/91/79/58/128, the complement named ahead of the crosses with the projection
+// after them 47/160/147/67/181 (0x1ecf50 is lost in each). All restored.
 // M3 lane 14 r142 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26): the rotation through the existing
 // scalar-axis inline helper of src/unknown_146240.cpp (axis components as arguments) 243 (1110 B); the marker store and the
 // 0x26d100 call through a forceinline wrapper taking the unread pathfinding pointer with its address named (0x26d0e0's

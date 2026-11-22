@@ -2219,6 +2219,11 @@ bool function_17afd0(long effect_index, long value);
 // with the owner/view arm setting true then clearing it when unavailable 129 (506 B); the true default with `else same_view
 // = true;` on the clearing test 138; the true default with that arm and `else` false 148; a NONE-defaulted owner with the
 // false-default arm 149 (517 B). All restored.
+// M3 lane 13 r142 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): same_view read through a `bool const &`
+// for the draw compare and the camera test 12 (same code); the clearing test moved after the attached flag 59 (501 B); the
+// plain conjunction's if/else of constants after the attached flag 102 (490 B); the attached flag as a false default then
+// `if (available) attached = effect_index != NONE && call` (a two-definition bool) 124 (504 B), that with the plain
+// conjunction's if/else 125 (504 B). All restored.
 // M3 lane 14 r142 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the plain conjunction as an if/else of
 // constants into a one-member aggregate, copied out 138 (510 B), the member read at every use 138; into a one-element array
 // 138 (both promoted like a scalar: retail's memory-resident flag is not an aggregate's); `same_view = owner != NONE &&

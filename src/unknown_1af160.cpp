@@ -284,6 +284,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // for both uses 107; the 0x1e4be0 result typed `byte *` 12; the search flag as `local_4 != NULL && (*local_4 & 1) != 0` 12;
 // the scratch buffer pointer declared at the function's top and assigned at its call 12; the marker pointer declared at
 // the top and assigned where chosen 12 (same code each). A `dword` long output does not compile (`long *` outputs).
+// M3 lane 13 r142 (h2m fast with 0x1e1f20, MATCH; control 12): aggregate declarations moved to the function's top to shift
+// the small cells, each alone: the 0x261280 entry record 12, the search record (its memset left in place) 12, the short and
+// marker arrays (short first) 12, the 0x1af530 real output 12, the distance vector 12 (all the same code: the two swapped
+// pairs stay). Still BLOCKED-BY 0x260670 (on the bool output's callee chain, 440 at 3097 B).
 // M3 lane 14 r142 (h2m fast with 0x1e1f20, MATCH each run; control 12): the node lookup through a second actor lookup (no
 // call between, CSE'd) 79 (the prologue's loads reorder, both home pairs unchanged); the 0x265c30 prop index through a fresh
 // actor lookup 77 (984 B); the node and 0x25d690 result pointers `*const` 12 (same code); the equal arm's unknown227 test
