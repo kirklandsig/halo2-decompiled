@@ -429,6 +429,10 @@ static __forceinline bool structure_bsp_collision_available()
 // literal -1 in the requery 76; found first 81; long flag 81; byte result 79-81 (290/291 bytes); collision only
 // through source 81; flag by if-set 82; `!excluded` alone 93 (262 bytes); a plain collision pointer parameter 109.
 // Best match-only recipe: none under 76. Needed: NONE in ECX only, flag in BL, source.collision spilled, not the flag.
+// Round 228 (m3 lane 6, fast with 0xd2bb0): the three triangle NONE stores chained 55; the whole body nested under the
+// availability test 99; that with an if/else flag (cleared in the else arm), the model result stored in `result` and
+// g_4687bc read into a local at the join 131 (312 bytes); the 0xbf9a0 result tested through a `bool const &` 53 and the
+// model-index field named as a `long *` for both of its uses 53 (same code each).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
