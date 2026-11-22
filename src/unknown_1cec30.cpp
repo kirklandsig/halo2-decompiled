@@ -1923,6 +1923,12 @@ PRIVATE __forceinline real const &component_time_step()
 // mass argument of the scale helper or the stop distance's `velocity / step` 26 each (same code). Diagnostic, reverted:
 // an opaque float store through a table pointer between the two reads 125 (483 B): the rate is still loaded first and
 // read again from `[eax + 4]`, so killing the loaded value alone gives neither the memory operand nor `add eax, 4`.
+// M3 lane 11 r150 (h2m fast with 0x1d24a0; control 26): plain `inline` (not forceinline) helpers, in case a late
+// expansion kept the rate's address as a pointer argument: the stop distance through a (velocity, step, `real const &`
+// time step) helper 26, with the stop-first test 43; both products through a (value, `real const &` time step) helper
+// 138 (462 B); the time-step getter itself plain `inline` 26; a plain-inline getter returning the rate's address, read
+// through a `real const *` at both products, stop-first 43 (each the forceinline form's code: /Ob1 expands them before
+// optimisation, so the address still folds into `[eax + 4]` twice). All restored.
 // M3 lane 15 r131 (h2m fast with 0x1d87b0/0x1d06c0/0x1d0400/0x181db0; control 26): compare operands constant-first or
 // target-right: the step test `0.001f < step` 26; `0.0f > target` 26; `step < target && stop_distance < target` 26; the
 // scale helper's `0.001f < exponent` and `0.001f < mass` 26; the ratio's `0.001f < magnitude(limit)` 26 (all the same code).

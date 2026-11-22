@@ -2430,6 +2430,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Color lookup tag reference, tag value, settings pointer plus tag and settings reference plus tag 137/128/128/128
 // with colors read at publication. With early colors, 189/184/184/184 at 572 bytes and frame 0x48. The first color
 // still misses its retail spill.
+// M3 lane 11 r150 (h2m fast with 0x178eb0/0x179020, both matched throughout, and 0x177040 93; control 128; a/m = aligned /
+// register-masked aligned unmatched lines, control 75/31): both type queries as the colour call's arguments with the
+// colours read at the call (main's colour reads, no query locals) 146 at 552 B, a 73/29 (after the call the definition
+// takes EDI and the multiplied result is pushed straight from EAX as retail, but the loop is entered by a jump into the
+// dispatch); that with the 0x1751d0 definition named 146, a 70/29; with the spawn's location index stored first 146; with
+// the existing location_point_in_zone_inline (NULL zone index) for both zone tests 166, a 44/27; the 0x1751d0 result's
+// tag index named ahead of the 0x137bd0 call 128 (same code). The entry (system in EDI, colours read at the call) is
+// unchanged in all. All restored.
 // Round 627. Early color A with cursor, spawn or matrix renamed 187/187/187;
 // spawn declaration at initialization 187, aggregate 187, aggregate with named
 // or test-scoped cursor 187/187, scoped spawn with direct multiply query 146.
@@ -4176,6 +4184,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // address or scoped index 127/128/117/117. The low-word lookup can keep the
 // caller with live mode. Naming the multiply result reaches frame 0x54 at 352 bytes.
 // The cached low-word form gains three and shortens to 333 bytes, so it is restored.
+// M3 lane 11 r150 (h2m fast with 0x176f60, matched in a control run, and 0x178c80 128): both type queries as the colour
+// call's arguments (no tint local) 120 (325 B; 0x176f60 25); that with the colours read at the call 135 (310 B); with the
+// cached mode as a long 120 (325 B); with the mode read from the definition at each call 103 (331 B); with colour B read
+// ahead of colour A 120 (0x176f60 25 in all five: the shorter body changes the caller). All restored.
 // The frame is 0x4c versus 0x54. Retail keeps the system in ESI and reloads the traversal mode from the spilled definition.
 // Post-gate classification from a signed/unsigned node word 93/94; sentinel/high-bit split 93/102.
 // The same four forms with per-call mode reads 108/109/108/116.

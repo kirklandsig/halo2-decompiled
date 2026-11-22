@@ -988,6 +988,19 @@ extern "C" void _ReadWriteBarrier(void);
 // destination 9; no barrier with the busy test written `actor->unknown26c + 1 == 0` 42 (205 B: `mov edx, [eax+0x26c]; inc
 // edx`, the slot still loads after the branch); no barrier, actor first, the busy test with both sides cast to `dword` 44
 // (208 B); the NONE test joined with `&& state`, with the barrier, 47 (209 B).
+// M3 lane 7 r212 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state converted through a two-member
+// shared-storage local after the lookup 6; the state as the address of the slot's first member (zero offset, two uses) after the
+// lookup 6; retail's entry order spelled out (the pool's data named, the state cast, then the actor arithmetic, then the
+// barrier) 6; that order with the slot's data block as a two-use tail view in place of the cast 29 (205 B: the slot loads
+// right after the pool pointer as retail, but the pool pointer takes EDX, the data base folds into the add and ESI's
+// push moves to the entry); that order with a second state copy for the point 6; the flags test through a file-local
+// inline predicate taking the state by const reference 6. Diagnostics (reverted at once): the volatile read after the
+// lookup with the barrier 31, the same with the 0x420 store changed to 5 (no shared 4 in EDX) 44 with the data base
+// still in ESI, so ESI is not taken because of the shared constant: an anchored slot value overlaps the data base.
+// M3 lane 14 r143 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): a dead early copy of the 0x450 store after
+// the barrier, the final store kept, 33 (205 B: the early store is not eliminated and takes EDX for its constant); the
+// same with no barrier 40; the early store between the lookup and the barrier 33; the 0x450 store also at the head of
+// the NONE block 42 (211 B); the state declared NULL and assigned from the slot after the lookup 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

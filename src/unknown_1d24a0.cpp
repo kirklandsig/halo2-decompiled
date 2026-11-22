@@ -105,7 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 838 (was 838): r143 unchanged; the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 838 (was 838): r143 and m3 lane 8 r221 unchanged (r221's line just above the marker); the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
@@ -669,6 +669,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // aligned 299: the whole entry block, frame and `push ebx` are then retail's to the loop head, where this body still keeps the
 // element list's data pointer in a register (retail re-reads it; r141's 780 removal form). With r141's list local moved to the
 // removal as well 739 at 4254 B (aligned 239; three match-only forms together). Body unchanged.
+// M3 lane 8 r221 (full checks unless marked). The removal as the
+// shared Havok array's existing `remove_at` (s_havok_array08 typed in include/unknown_1cec30.h with the existing
+// growable-array members macro, the loop head reading the component's field) 780 (h2m fast and full, 4264 B), but the
+// full check loses matched 0x54590 (two loads swapped at +0xff) and gains 0xc2d00, 0x24cf66 114 -> 115; with all four
+// arrays of that header typed the same way (a second change, as the coordinator advises for a lone 0x54590 loss) the
+// identical result. Diagnostic: lane 11 r141's hand-written 780 body with the header untouched loses nothing (only
+// 0x1d24a0 moves), so the header's members, not the body, flip the 0x54590/0xc2d00 pair. Restored. On main's body
+// (h2m fast): the type mask as `long` 838 and the four running-maximum updates as conditionals 838 (same code each).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

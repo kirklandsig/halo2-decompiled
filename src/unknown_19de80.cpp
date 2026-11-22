@@ -938,6 +938,20 @@ static inline bool teams_enabled_19e1c0()
 // scores, local timers, or opponent score only, 438/432/434/389. With ordinary
 // result storage, 666/642/646/691. NOT kept: opponent-only gains one but
 // keeps the 0x208 frame. Ordinary results merge name preparation.
+// M3 lane 1 r152 (h2m fast with 0x19e0f0, MATCH each time; control 390, plain result 691): every formatter failure as
+// `result = result < 0 ? remaining : result;` 573 (1570 B), on the plain result 691; the name clamps as a named length and
+// `length < remaining ? length : remaining` on the plain result 692; the two player cases with the index in a named
+// `player_index` local 390 (same code), on the plain result 691. Reading (plain result): the merge starts at the player
+// cases' `lea esi` / zero store / 0x19ea60 call, which both cases emit in one order; retail's first player case stores the
+// zero from SI (the zero result) ahead of the `lea esi` and its second case stores an immediate after it, and the
+// following wcslen/cmovle tails take different scratch registers, so only the final copy call is shared.
+// M3 lane 5 r230 (h2m fast with 0x19e0f0, MATCH; control 390, plain result 691 at 1170 B). Reading: the plain result
+// ranks result ESI, token EDI, token length EBX, event EBP with `remaining` on the stack (retail: result ESI, token
+// length EDI, event EBX, remaining EBP, token on the stack), and its opponent loop counts down an extra EBX counter where
+// retail runs `inc edi; cmp edi, 8; jl`. On the plain result: `remaining` renamed with an `a_` prefix 691, `token`
+// renamed with a `z_` prefix 691, `long const remaining` 691, the text buffer declared ahead of the result 691 (same code
+// each: no name or declaration tie); the loop counter typed long 688 (1172 B); the score test written
+// `best_score <= score` 691, with the long counter 688. On the volatile result: `best_score <= score` 388.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

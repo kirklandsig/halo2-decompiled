@@ -1785,6 +1785,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // game_time - 1` 235; the general output through the existing pointer `vector3f_add(current, &limited, out + 0xc)` with
 // the direct arm's vector3f_assign kept 540 (rows then stored as formed, but the k row still commutes), with the moved
 // gravity clear 540. Body unchanged.
+// M3 lane 2 r134 (H2M_FAST; main 234): redundant parenthesis pairs (1, 2, 3) as a float operand-side shift: around the
+// first arm's speed argument 234 each (same code); around the general arm's final `current->k + limited.k` 236/232 (3050 B)
+// /234 (they move the low arm's 0x4687b0 cross, two pairs giving its first product retail's side, and the flying arm's
+// normal products, never the first arm's cross); around `state->up` in the first cross's argument or the damping bit's
+// shift and mask 234 each (same code); around the direct arm's `speed * rotated.x` 576/575/585 (3020-3024 B); around the
+// high-normal arm's `normal.i * desired.i` 251/241 (3050 B)/320 (3040 B). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

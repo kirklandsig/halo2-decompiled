@@ -1692,6 +1692,13 @@ PRIVATE inline long score_string_list_1608e0()
 // conversion as retail, but computed ahead of the lower test where retail converts after it); the clamp written as
 // `else if (scroll < 0) scroll = 0; else { limit; if (scroll > limit) scroll = limit; }` 710 (2856 B); the named limit
 // with the screen height ahead of the width 693 (2879 B); that with the fade count not volatile 709 (2856 B).
+// M3 lane 12 r173 (h2m fast with 0x161420, 0x1600f0 MATCH, 0x1603f0 253; control 679): the team colour declared with its
+// call result 679; the three string-list lookups in their own named locals 679; the title and header fades in two named
+// locals 679 (all the same code); the score and time widths as `= 0` then set in an if 693 (2888 B); the scores pointer
+// as one conditional expression 719 (2888 B, first difference +0x0). Body unchanged.
+// Existing player accessor for the viewer, row or both 721/685/719; viewer, row or both by reference
+// 721/685/719; typed score member with viewer or both 721/719. NOT kept: the accessor preserves a
+// sentinel branch after 16-bit masking and leaves the frame at 0x798.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
