@@ -285,6 +285,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // getter 21 / 21, a game-tick getter at the three reads 21, both 21, the same on update-first 218 each (same code); the
 // stationary test as a file-local inline or forceinline helper (flag form or early-return form) 195 (831 B), on
 // update-first 202; update-first with the force arm storing `update = force` 163.
+// M3 lane 3 r298 (h2m fast with 0xd1850, MATCH; control 21): the elapsed clamp moved inside the sample-time NONE test
+// (its only reader) 31; that with `bool update = false;` ahead of force 226; the update-time test moved into the
+// not-force arm after the hidden return 242 (first +0x0); the blend clamp through the existing PIN_126660 macro 196 (882 B:
+// the product is evaluated per use); a redundant `else update = false;` after the hidden return 222.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

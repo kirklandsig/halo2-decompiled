@@ -2299,6 +2299,12 @@ bool function_1900a5(long index);
 // (aligned 691), with the switch idiom 690 (aligned 687): 0x1900a5's expansion then selects with retail's `cmovne` (its
 // own file is SSE), but the users loop pad is still missing, so the pad is not the flag. Lead for the user: retail's
 // 0x1900a5 expansion here uses cmov, so retail built this function with `/arch:SSE`.
+// M3 lane 3 r298 (h2m fast with 0x75790, 0x749b0, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / registers
+// masked 298): `inline` on 0x75790's definition (the completion loop's only out-of-line callee, to drop its memory
+// summary) 643 (same code: the property count is still hoisted); the users loop's group index as `dword` 715 (2878 B);
+// the team and failed flags renamed to sort first, or those two and the valid flag renamed to sort last, 643 each (same
+// code: the shared byte cell stays at +0x17 against retail's +0x13); the delay as an `else if` / `else` pair 643 (same
+// code, still `setg`).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
