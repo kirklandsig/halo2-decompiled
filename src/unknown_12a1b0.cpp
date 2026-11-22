@@ -1490,6 +1490,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // const &` 48 (215 B); the loop on the next call's result with the body's index a `long const &` bound to iterator.index 24
 // (same code); a named char state with an `else if (state == 3) continue;` arm 60 (211 B); the fade index selected first
 // (`state == 2 ? index : NONE`) with the call under `!= NONE` 24 (same code). 0x126df0's file was held by another lane.
+// M3 lane 13 r141 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all MATCH each run; control 24, the
+// index ESI / element EDI swap): no index local, the loop testing the next step's result and the body reading
+// `iterator.index` 24; the index renamed `sound_index` 24; the iterator renamed to sort before the index 24 (the three
+// the same code: names do not break the tie); `dword index` 47 (215 B); the index declared in the loop body from the
+// next step with a `break` on NONE 24 (same code). 0x126df0's fade-in half (still the lever) sits in a file another
+// lane holds this round.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

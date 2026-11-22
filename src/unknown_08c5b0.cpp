@@ -340,6 +340,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // to a `short const &` local 32 (95 B), `short kind = 0; kind = request->kind;` 32 (95 B); the availability tests nested in
 // the selector (two `if`s on the header's fields, each failing arm giving 1) with the existing read 4 (same code), with a
 // plain read 32 (95 B).
+// M3 lane 13 r141 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with the existing kind read:
+// the kind local `short const` 4; the controller index declared ahead of the kind and assigned after it 4; the kind
+// renamed `result` (the received message's result word, so it sorts after `controller_index`) 4 (the three 4s the
+// same code); `changed` declared first 33 (94 B); the selector taking `long` 4 (same code: the widening folds).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

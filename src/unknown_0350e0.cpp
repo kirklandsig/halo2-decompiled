@@ -2892,6 +2892,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // The three delta statements in the other five written orders: i, j, k 280; k, j, i 280; j, k, i 281; i, k, j 281; j, i, k
 // 281 (each order only rotates which components take which roles: two axis loads, two deltas, the 1.0 stores, then the
 // third delta in xmm5); i, j, k with the early attenuation 504 (2290 B).
+// M3 lane 13 r141 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0; control 281, aligned 127, register-masked 43): delta
+// assigned i, j, k 280 (aligned 130/49); that with the forward written `delta.i * g.i + delta.j * g.j + delta.k * g.k`
+// 280 (130/49, same code); delta assigned i, k, j 281 (127/45); reflected as three plain statements i, j, k 417 at
+// 2285 B (136/50); the entry table read once into a named `entries` base ahead of the loop 497 (2290 B, 146/68).
+// Reading: the loop's latch `mov edi, [esp + 0x30]` falls into the body in retail, where ours jumps over alignment
+// padding to it (`jmp; lea esp, [esp]; nop`), so the byte over retail sits ahead of the loop.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
