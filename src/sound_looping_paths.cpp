@@ -876,6 +876,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // with long query and choice counts 993 (3225 B, 1082 / 394); with the targets and the existing list as count-first
 // records (diagnostic: retail's homes put each count right ahead of its array) 905 (the frame differs); with `used` and
 // the existing count declared ahead of the list 860 (same code). Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, aligned 1004): lane 11 r133's
+// lead re-measured 879 at 3291 B (aligned 305, registers and offsets masked 152). On main's body: the decibel pin helper as
+// one conditional expression 905 (3337 B); `used` declared ahead of the existing count 846 (same code); the fade scan's
+// near-zero test with its arms swapped under `>=` 838 (an arm swap, match-only; retail places both arms after the listener
+// tail's `ret` and jumps back to the scan head, the record-pool iterator layout); the target level named ahead of the
+// current level in the target loop 857 (3332 B); the first scan's datum index formed ahead of its type and source tests 846
+// (same code). Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

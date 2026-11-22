@@ -1692,6 +1692,12 @@ PRIVATE inline long score_string_list_1608e0()
 // conversion as retail, but computed ahead of the lower test where retail converts after it); the clamp written as
 // `else if (scroll < 0) scroll = 0; else { limit; if (scroll > limit) scroll = limit; }` 710 (2856 B); the named limit
 // with the screen height ahead of the width 693 (2879 B); that with the fade count not volatile 709 (2856 B).
+// M3 lane 16 r174 (h2m fast with 0x161420, 0x1600f0, 0x1603f0; [n] = masked aligned rows, control 679 [570]): the
+// named limit re-measured 720 [567]; show_icon as a bool (the row builder's parameter type) 694 [525] (2861 B, frame
+// 0x79c as retail: the long show_icon is the frame's missing four bytes, but the bool sits in a stack byte where
+// retail keeps it in BL); that with the screen height ahead of the width 680 [506] (2879 B, the screen height in ESI as
+// retail, the panel in EBX where retail has EBP), ahead of x 680 [506] (same code); that with the named limit 724
+// [576] (2845 B); the bool with the named limit alone 708 [522]. Body unchanged.
 // M3 lane 12 r173 (h2m fast with 0x161420, 0x1600f0 MATCH, 0x1603f0 253; control 679): the team colour declared with its
 // call result 679; the three string-list lookups in their own named locals 679; the title and header fades in two named
 // locals 679 (all the same code); the score and time widths as `= 0` then set in an if 693 (2888 B); the scores pointer
@@ -1707,6 +1713,11 @@ PRIVATE inline long score_string_list_1608e0()
 // 693 (y is then reloaded after 0x15f120 as in retail, x kept in EBP from the copy). On this body: `y` declared short
 // 681; the time flag as one `||` expression 701 (2888 B); the scroll clamp's arms swapped 676 (under the bar, an arm
 // swap by score: not kept). Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x161420, 0x1600f0 and 0x1603f0; control 679; matched 0x1603f0 reads 253 in the reduced
+// image with every body unchanged, a caveat on its callee 0x68a90, and check.py --fast agrees): the score table as a
+// conditional initialiser 719 (2888 B); the alternate-score flag set by an if/else on the call 682; the clamp test as
+// `screen_height > height` 679; the title edges read from the row position 679; the three 1.0f foreground channels
+// chained 679 (the last three the same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

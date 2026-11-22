@@ -843,6 +843,12 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // The planar J and depth stores still exchange order. One immutable input for both projections scored 394,
 // with degenerate restore 394, pitch angle 383, rotation input 384, restore and pitch 383, restore and
 // rotation 384, pitch and rotation 375, and all consumers 375. NOT kept because the frame grew to 0x38 or 0x3c.
+// M3 lane 1 r155 (H2M_FAST with 0x29b990 and 0x170d70, both MATCH; control 130): the second axis vector declared at
+// function scope 130, declared ahead of the facing copy 130 (same code each); the global up axis read into a pointer local
+// ahead of the facing copy 151 (1709 B); the second rotation's sine and cosine as named locals 228 (1691 B); the first
+// rotation's sine and cosine as named locals ahead of the facing copy 164. Reading: retail gives both rotations' sines one
+// home (+0x10) and spills the first rotation's turned j into the facing's j home (+0x24), keeping the second axis in
+// registers; ours gives the second sine +0x14 and spills the second axis's k into +0x34.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

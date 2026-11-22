@@ -901,6 +901,23 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // but the section stays in EDX. On the lead: the loop index declared at function scope 133, the range declared first
 // 133, the section declared ahead of the definition 133, the range typed const 133 (all the same code); the loop bound
 // in a local 209; the unknown18 clear at the top 237 (744 B). Body unchanged.
+// M3 lane 3 r297 (H2M fast with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH each run; control 172 at 733 B,
+// aligned [exact, stack masked, registers masked] 95/77/48; body unchanged). Re-measured: lane 7 r123's form (result,
+// definition, section set at their declarations, the vertex getter's result unset on a miss, no else arm, unknown18
+// stored before part_index) 208 at 726 B [19/19/15], its definition/section/result order 133 at 733 B [75/68/25].
+// Retail's head also reads the instance index once into ECX and uses that register in the type-3 arm (ours reloads its
+// home there), and keeps the BSP in EBX with a home, as the 208 form does. On the 208 form: the triangle loop as a
+// forced-inline helper returning true from inside the loop, called as `if (section && helper(...)) result = true;` 208
+// (same code); called as `result = helper(...)` under the section test 196 (735 B) [53/44/32]; with the section test, or
+// the clear and the section test, inside the helper 223 (714 B) [66/59/46]; returned directly with no result local 223;
+// that helper with the instance index bound to `collision->instance_index` and no instance local 241 (738 B) [87/89/28],
+// with result declared last or first 242 each. Declaration orders of the function-scope locals (p point, b BSP, x range
+// index, n plane index, i instance index, r result, d definition, s section, g range): pbxnirdsg (the form) 208;
+// gpbxnirds, pbxngirds and pbxnirsdg 208 (same code); pbxinrdsg 216 [24/24/20]; pbixnrdsg 217 [28/25/21]; ipbxnrdsg 224
+// [32/29/23]; bxnirdsgp 221 [36/34/34] (all eight keep the zero in EBP); pbxnridsg 221 [38/35/24], rpbxnidsg 221
+// [36/33/22], pbxnrdsig, pbxnrdsgi and rdspbxnig 220 [37/35/24] (739 B: no zero register, the instance index takes EBP);
+// pbxnisrdg 220 (744 B) [76/69/27]; range set to NULL at its declaration 240 (745 B) [94/96/40]. The zero register stays
+// exactly when the instance index is declared ahead of result; the range takes EBP in none of them.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

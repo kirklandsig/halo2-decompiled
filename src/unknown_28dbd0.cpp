@@ -765,6 +765,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // cosine`, scalar cross j and k in retail's operand orders and cross i written in row i, rows `projection * axis + v *
 // cosine - cross * sine` 228 (1194 B); the outer cross through cross3f_staged 226; the helper's cross through
 // cross3f_staged 173 (same code). Body unchanged.
+// M3 lane 8 r223 (h2m fast with 0x28dab0, MATCH except where named; control 173): the existing point resolver 0x210850
+// called in place of function_28dbd4 353 (1159 B: it stays a call, and 0x28dab0 42 / 0x256bd0 27 stop matching); the
+// helper's closing sums as `v.i += axis.i + cross.i` 173 and written cross, axis, vector 173 (same code each); the
+// three in-place scales ordered vector, axis, cross 245 (1231 B); the up vector pointer named once for the outer cross
+// and both 0.1 updates 173 (same code). Helper and body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

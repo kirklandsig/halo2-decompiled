@@ -264,6 +264,14 @@ bool function_1946f0(s_bitstream *stream)
 // of the buffer 2; the bit offset named beside the byte index 2; the mask as `~(byte)(0xff << (saved % 8))` 4; the count
 // as `size - 1 - index` 2; the masked byte as `*(data + index)` with the clear from `&data[index + 1]` 2. Both LEAs stay
 // data first.
+// M3 lane 2 r137 (h2m fast with 0x1957d0/0x195820, both MATCH; base 2): the data read through the stream's first member
+// (`*(byte **)stream`) at both addresses 2, at the masked byte only 2, at the clear only 2, with the masked byte as an
+// explicit read-modify-write through it 2 (the four the same code, both LEAs data first); the bound test as
+// `size_in_bytes - byte_index > 0` 52 (142 B).
+// M3 lane 14 r144 (h2m fast with 0x1957d0/0x195820, both MATCH; base 2): a data local at the discard block's top for the mask
+// only (clear on the field) 48, the same just ahead of the index 39 (the mask folds into `[edx + edi]`, index first; the
+// clear reloads, data first); that local for the clear only 40 (the clear's LEA is retail's `[edx + edi + 1]`, but the
+// mask's field read numbers to the local and folds `[edi + edx]`), at the function's top 52; an unused early data read 2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
