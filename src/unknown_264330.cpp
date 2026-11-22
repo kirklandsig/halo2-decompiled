@@ -959,6 +959,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // call 405; `index` declared at function scope and assigned at the loop top 404 (same code). Retail's listing keeps all
 // three flags (+0x11/+0x12/+0x13), `next` (+0x18) and `maximum` (a dword at +0x1c) in memory with EBX the actor index
 // for the whole function. All restored.
+// M3 lane 6 r232 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all three MATCH; control 404):
+// sample/update declared at function scope and cleared at the loop top 404 (re-measured); `short old_state` 404 (same code); the
+// flags declared `update, sample` 402 (1620 B; EBX still the sample flag in the loop); a `long const` actor parameter 404;
+// sampled_one declared ahead of maximum 404. All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
