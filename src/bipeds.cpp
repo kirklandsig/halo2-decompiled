@@ -4593,6 +4593,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M3 lane 5 r231 (plain, control 537): the wall turn's `along` as dot3f(&biped->up, &turned) 536 (2725 B, one step);
 // `(1.0f - turn_cosine) * dot3f(...)` 537; the wall cosine as dot3f(&facing, &biped->forward) 537; `left = 0.0f < sine`
 // 537 (same code each); the planar turn naming the new j first 632 (2742 B). All restored.
+// Typed keys with Boolean special result direct or declared before admission 615/615. False-default result 606.
+// Shared mode key 611, with entry-scope byte 633, admitted byte 615, nested modes 615, or renamed changed result
+// 611. NOT kept: preview control 602 with the orientation-callee caveat. The variants recover the 0x78 frame and
+// flight spill. The two 615 direct assignment forms also recover the changed byte, with the entry key and tag
+// homes exchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
