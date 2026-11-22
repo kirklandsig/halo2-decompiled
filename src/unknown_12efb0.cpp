@@ -951,6 +951,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // immediate): NONE written first in the +0xd4 test 666, in the tag-arm test 666, in the previous-index test 666, in all
 // four tests with the byte test too 666 (same code each: operand order canonicalises); the source index reset stored
 // first 665. Retail keeps NONE in EAX through the palette arm to that tag test (loaded into EDI), the result in EDX.
+// M3 lane 7 r216 (H2M_FAST with 0x130f60, 0x131030 and 0x1317a0, MATCH each run; control 607 at 3832 B): the palette
+// byte read at each use re-measured 666 (3827 B: retail's CL byte and EBX record, but NONE in EDX and the 0x130f60
+// result kept in EAX where retail moves it to EDX and keeps NONE in EAX); the 0x130f60 result declared ahead of the out
+// index and assigned at the call 607 (same code), on the per-use byte 666; the cluster pointer typed `byte const *` 607,
+// on the per-use byte 666; on the per-use byte, every read through a file-local forceinline byte accessor 664 (3825 B),
+// the first test only 666. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
