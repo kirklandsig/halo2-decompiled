@@ -539,6 +539,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
 // score 1346 (was 1346; m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// score 1346 (was 1346; m3 lane 8 r221 and m3 lane 5 r234 unchanged, its line just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // header line, 1375 (was 1375), sits further up this file).
 // (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
@@ -913,6 +914,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 9 more mulss, 6 fewer fld/fmul, three imul and a second ret. On that direct form: local_5 declared before local_4 1624
 // (same code); the ray record local_19 declared at function scope 1608; the scale helper as three component statements
 // 1649 (5974 B); the two normalisations through the existing normalize3d 1609 (5990 B). Body unchanged.
+// M3 lane 5 r234 (h2m fast with 0x2056e0, MATCH each run; control 1346). Retail materialises `field_82 || field_83` into
+// DL right after the field_90 store and tests it at the local_65 choice, recomputing the `||` at both impact calls; at
+// that choice it reads local_58/local_60 straight from their homes where ours copies them into the magnitude snapshot.
+// A named bool for the `||` ahead of the friction ternaries, tested at the choice, 1431 (6262 B); declared at the friction
+// block's top and used at the choice and both impact calls 1440 (6195 B), that with the first loop's cross through
+// function_206092 1442 (6195 B; function_206092 alone re-measured 1405 at 6238 B); the friction ternaries in the order
+// local_62, local_64, local_63 on this body 1346 (same code); the else arm's residual as `local_60 = local_58;` then three
+// in-place `-=` 1426 (6259 B). All restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
