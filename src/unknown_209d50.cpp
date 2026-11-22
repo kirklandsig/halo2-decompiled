@@ -331,6 +331,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // Diagnostic, reverted at once: one global store of the pointer after the call (the pointer live across it) 102 (292 B:
 // the pointer spills to a frame slot, but the thread index then arrives in EDX), so a use past the call is not what
 // keeps retail's result and pointer apart.
+// M3 lane 13 r145 (h2m fast with 0x2099f0, which stays matched; control 12): one to four unused initialised locals at the
+// top of the kept body 12 each, of the volatile-free body with `result = NULL` first in the arm 83 each (no symbol-count
+// effect); the first allocation's size named in a `long size` local ahead of the frame reference on the kept body 12, on
+// the null-first body 83, on the volatile-free control 95 (all three the same code). Diagnostic (reverted at once): the
+// home on the result copy instead of the pointer 81 (277 B). In the null-first listing there is no frame slot at all
+// (no `push ecx`): the pointer keeps EAX for the whole function and the result ESI, so retail's spill needs more
+// pressure than any volatile-free form here gives.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

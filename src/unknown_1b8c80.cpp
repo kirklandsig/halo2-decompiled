@@ -1009,6 +1009,10 @@ extern "C" void _ReadWriteBarrier(void);
 // `s_slot *const *` to the parameter as the first statement 6; the 0x86 test as `!(... < 7)` 6; actor first, then the state,
 // then the barrier and `(void)list;` 6; the busy test as `!(... != NONE)` 6; the flags test through a cast of the slot
 // parameter at the test 6 (all the same code: the slot still loads after the jne). Without the barrier re-measured 44 (208 B).
+// M3 lane 13 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state converted through `(void *)` 6;
+// the actor as an `s_actor_view &` with the barrier 6; the busy test held in a named bool after the barrier 6 (all three
+// the same code); a second barrier at the head of the NONE block 7; a second barrier ahead of the state and the lookup
+// 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

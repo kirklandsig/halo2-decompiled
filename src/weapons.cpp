@@ -1984,6 +1984,14 @@ static inline bool unit_dual_wielding(long unit_index)
 // initialiser 39; the holder and dual-wield tests in one inline helper taking the weapon index 2; the definition read
 // through a second weapon lookup 2 (the 2s the same code); the animation test's index cast to short before the mask 104
 // (545 B, the offset is no longer shared).
+// M3 lane 13 r145 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 0xc9d00-call form rebuilt 27, with
+// `result` first 4, with weapon_get_102e10 at lookup 1 as well 2): on the 2 form one, two or three redundant parenthesis
+// pairs around the b7360 argument, the lookup-3 initialiser, the gate's state read or the animation test's lookup 2 each
+// (twelve forms, same code: the address operand orders ignore parens). Diagnostics on the 2 form: the dual-wield test
+// removed 116 (501 B) or the whole holder test removed 239 (421 B) leave lookup 4 offset-first and the put-away lookup
+// data-first, so lookup 4's order does not come from its data load being shared with the unit lookups. On the
+// 0xc9d00-call form the put-away pointer as `current` reassigned 27 (same code); the 0xc9d00 call's unit argument read
+// again through the getter 67 (on the 2 form 42).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

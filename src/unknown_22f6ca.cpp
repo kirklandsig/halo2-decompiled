@@ -335,6 +335,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // code); the text loop's test so 25, both 25; `long i = 0;` above the pane lookup with the model test swapped 25 (first
 // +0xb). The matched sibling 0x22facd keeps a `mov ecx, esi` copy in its model loop, so the direct `[esi + 0x34]` read is
 // particular to this loop.
+// M3 lane 13 r145 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): one, two or three redundant
+// parenthesis pairs around the model call's definition argument 23/23/23, around the text call's 23/23/23 (no phase
+// effect on this integer code); 0x22fa5b returning the concrete model type, the model local typed so, 23; the text
+// helper's index typed `short` with `(short)i` at the call 23 (same code); the pane declared in the `if` condition with
+// `long i = 0;` above it 25 (the 25 form's code), with `long i = 0;` at the block's top 66. Diagnostic: the text loop
+// without its flag test 46 (411 B; its reset stays `mov`, so the flag test does not set it).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
