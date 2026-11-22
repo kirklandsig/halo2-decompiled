@@ -760,6 +760,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 173 (same code); the sine row stored ahead of the cosine row 177; the heading as one brace initialiser 173; the cross
 // output declared beside the heading 173; both arms' two draws in two reals declared at the heading block's top 173.
 // Retail's third draw converts through its own cell (+0x20) and keeps the cosine at +0x10; ours reuses +0x10 for it.
+// M3 lane 6 r230 (H2M_FAST with 0x28dab0, MATCH; control 173): the cross-file rotate_direction with `sinf`/`cosf`
+// arguments 230 (1192 B); the kept helper with `cosf`/`sinf` 185; the helper as sine, dot3f, cosine, `projection *= 1 -
+// cosine`, scalar cross j and k in retail's operand orders and cross i written in row i, rows `projection * axis + v *
+// cosine - cross * sine` 228 (1194 B); the outer cross through cross3f_staged 226; the helper's cross through
+// cross3f_staged 173 (same code). Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
