@@ -961,6 +961,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // index and assigned at the call 607 (same code), on the per-use byte 666; the cluster pointer typed `byte const *` 607,
 // on the per-use byte 666; on the per-use byte, every read through a file-local forceinline byte accessor 664 (3825 B),
 // the first test only 666. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607, aligned 487, masked 232): the
+// found flag declared ahead of the 0x130f60 call 608 (aligned 493); the out index declared ahead of the cluster record
+// pointer 607; the palette bound test as `0 <= slot` 607; the loop bound as `count > index` 607; `NONE != slot` 607 (the
+// last four the same code). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

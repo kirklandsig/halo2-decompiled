@@ -292,6 +292,13 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // call between, CSE'd) 79 (the prologue's loads reorder, both home pairs unchanged); the 0x265c30 prop index through a fresh
 // actor lookup 77 (984 B); the node and 0x25d690 result pointers `*const` 12 (same code); the equal arm's unknown227 test
 // through a fresh actor lookup 61; the rounding asm as two single-line statements 12 (same code). All restored.
+// M3 lane 11 r154 (h2m fast with 0x1e1f20, MATCH; control 12): reading: both swapped pairs tie in reference count in
+// both builds (actor 4 against offset-or-0x262b40-result 4, prop node 2 against bool output 2) and, with a branch
+// halving the estimated frequency, in weight too (1.875 / 1.875, 1.125 / 1.125), and retail's branch structure in this
+// function is ours branch for branch, so the tie is broken elsewhere. Tried: the 0x2626b0 test as `!(local_17 ||
+// local_18)` 12 (same code); the equal arm's two arms the other way round (the unknown227 test positive) 29; the
+// not-found arm's flag test in its own braces under a plain else 12 (same code); the 0x1f4a20 result tested negated with
+// the arms swapped 21; the 0x262b40 result declared ahead of both 0x1f4a20 flags 15.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

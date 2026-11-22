@@ -1722,6 +1722,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // through a per-iteration entry pointer local 530, the mask typed `long` 529 (same code). Retail's loop keeps the mask
 // in EAX and the flags in EBX (the block's home), ours the mask in EDI: the query then takes EBX here and EDI in
 // retail, which is the block/query exchange at the entry. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21, all unchanged; control 529): the mask as `long`
+// 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
+// with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
+// allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
