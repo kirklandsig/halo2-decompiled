@@ -2254,6 +2254,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `0.01f < magnitude` 551 (same code each). Body unchanged.
 // More r151 forms: the zero store ahead of the closest copy in that arm 550 (same as above); the inside arm zeroing
 // nearest_squared_local with the radius test reading it (no separation local) 557 (2879 B).
+// M3 lane 15 r132 (H2M_FAST with 0x16a440, 0x120790 and 0x2469b0; control 551): retail's homes (loop frame) are face_count
+// 0x84, edge_radius 0x88, edge_count 0x8c, face_radius 0x90, the prism index 0xa4; ours edge_radius 0x88, face_radius 0x8c,
+// edge_count 0x90, face_count 0x94, index 0x98 (all four have equal reference counts). Forms: `radius * radius` at its one
+// use with no square local 553 (2883 B; the head is retail's, index store and `jle` ahead of the square, but the three
+// distance products flip to plane-first); that with the distance operands swapped in the source 553 (same code); the
+// four declared face_count, edge_radius, edge_count, face_radius 550, with the square at its use 552; the `opposite`
+// local written into its call 552 (2879 B), with the square at its use 553. Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

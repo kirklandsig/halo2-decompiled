@@ -888,6 +888,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // blended term first 162 (same code); the inverse sums with the next term first 162 (same code); the pivot terms written
 // next first 162 (same code); `else blend = 0.0f;` on the 0x20 test 246 (1953 B); the pivot as `first + (next - first) *
 // blend` (diagnostic, not retail's two products) 233 (1929 B). Body unchanged.
+// M3 lane 15 r132 (H2M_FAST with 0x2243c0, MATCH each run; control 162): retail carries the blend in XMM5 from the sequence
+// block through the join (the two non-sequence entries reload it from +0x10 at 0x2249c6; the sequence block jumps past that
+// reload), ours ends its XMM2 copy at the join. Forms: the blend copied into a second local at the join for the aspect block
+// 162 (same code, the copy is coalesced); the same through a `real const &` binding 162 (same code); `blend` declared after
+// the packed colour 497 (1953 B, first +0x7); the frame value and `remaining_blend` declared `real const` 162 (same code).
+// Body unchanged.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

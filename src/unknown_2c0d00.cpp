@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 925 (was 925): r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// score 925 (was 925): r132 (m3 lane 15, lead below), r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
 // previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
 // shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
@@ -869,6 +869,19 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 914/921/874 in both filter orders. Early raw capture with a later Boolean result: 921 in both orders.
 // NOT kept: the raw forms compare a dword with NONE at the sphere filter where retail tests a saved byte.
 // The 874 form grows to 3744 bytes. Late Boolean materialization grows the frame to 0x2cb4.
+// M3 lane 15 r132 (H2M_FAST with the three callers and 0x2c0d00/0x2c3550/0x29c860/0x2c3030/0x2c2060; control 925 = plain;
+// [aligned, register-masked] difflib counts, control [519, 491]): LEAD, not kept (a local copy at the four arm tests with the
+// field read directly at the three later uses is the reload mix, match-only): the four type tests through one `long type`
+// local (retail 0x2c1020 `movsx eax, byte ptr [esi+0xaa]; test eax, eax`, the chain `cmp eax, 1 / 7 / 0xb`, and `push eax`
+// passing the known-zero type as 0x25d810's false; retail re-reads the field at the later uses) 916 [507, 491], plain 916.
+// Tried: the type local at the three later uses too 920 [484, 455] (under the gate), with the object-flags casts 920, with
+// the velocity pointers dropped 923; self_unit as `unit[0xaa] == 0 ? unit : NULL` (redundant
+// NULL arm, match-only) 890 on main, 888 on 916 [508, 409] (self_unit then gets a register for the loop as in retail's EBP);
+// the two one-use velocity pointers dropped 940 on main (3692 B), 918 on 916; with the ternary 868 / 856; the object-flags
+// pointer as the cast at both uses 916 on the 916 lead (tie); the entry dot through dot3f(direction, previous_direction) 924
+// (3714 B) on it; the type-1 `if (...) skip_classification = true;` 903 (3760 B) on it, with the ternary 934. Retail lays
+// the type-0 `else if` branch and the 1/7/11 chain after the motion-disabled `jmp` (0x2c129e), each jumping back to the
+// distance test 0x2c11ad. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

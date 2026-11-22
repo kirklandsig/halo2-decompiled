@@ -59,8 +59,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489; m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
-// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r220 unchanged, its line just above the marker.
 // Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
@@ -851,6 +851,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // velocity 672, steering 738, both 752, rotated 715, velocity/rotated 722, steering/rotated 749,
 // all 740, all with shared collision addition 764. Reduced control 654, full score 489.
 // NOT kept: the length-exact velocity form moves the first difference earlier; the rest grow.
+// M3 lane 15 r132 (plain each; the reduced image still reads 654; control 489): retail 0x29be20-0x29be5f selects the side
+// distance into XMM1 with `0.0 - d` in the else arm and computes the y row (`* local_17.i + local_8.y`) inside each arm,
+// the x row after the join; ours computes both rows after the join. Forms: the select written in each coordinate (no
+// local_24) 589 (3512 B, first +0x4e; the 384 measured on an older base no longer holds); local_14 declared beside local_9
+// 489 (same code); both 589; the else arm as `0.0f - local_23` 489 (same code); local_14 typed point3f 489 (same code).
+// Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
