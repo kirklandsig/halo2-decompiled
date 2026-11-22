@@ -713,6 +713,23 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // through `headers[object_index & 0xffff].object` 102 [13]; the absolute index from the component's field first and the
 // object-index local after it 28 [0] (same code); the absolute index from the field with no object-index local 101 [0].
 // Body unchanged.
+// M3 lane 14 r145 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]; body unchanged). Round 118's one-read form rebuilt 28 at
+// 256 B [0]. Diagnostics on it, each removed at once: 1, 2, 3 and 5 dead initialised locals at each of seven places (after the object
+// index, the absolute index, the rigid body, the header array, the type, inside the kind-7 block, ahead of the main switch) 28 [0]
+// every time, so the entry's colouring has no symbol-position phase either; a store of 0, 1, 2, 4, 5, -1, 0x2001, 256, 7 or 0x90 to a
+// probe global at the top 107 or ahead of the main switch 94 (268 B, [0]): the entry's load order does not move for any value (not
+// the global-before-stack tie). Re-measured header-early orders that keep the caller: object index, header array, absolute index,
+// rigid body, type 83 byte / 91 long [0]; object index, absolute index, header array, rigid body, type 88 / 97 [0]; with the rigid body
+// after the type 106 [9] / 124 [194]. In each the object-index read comes first and frees EAX, so the pool pointer takes EAX and the
+// object index EDX; retail reads the component after the header array and the body chain (component still in EAX, pool pointer straight
+// into EDX, the incoming index copied to ESI), which every source order that reads the pool first loses with the caller's registers.
+// M3 lane 15 r132 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): the one-read form (object index, absolute index,
+// rigid body, header array, byte type, case 0 through havok_object_get with the s_object_flags_10a bit2 view) rebuilt 28 at
+// 256 B [0] (aligned 23, register-masked 13), long type 89 [0]; left only the entry permutation (ours header array ESI,
+// object index EDX, rigid body in place in ECX; retail header array EDX loaded ahead of the pushes, object index ECX,
+// rigid body ESI through `mov esi, ecx`). On it: the object index as `long const &` bound to the component's field 96
+// (caller 208); the absolute index, the header array and the rigid body each bound by a const reference 28 [0] (same code
+// each). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

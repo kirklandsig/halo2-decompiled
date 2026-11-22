@@ -1156,7 +1156,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
+// score 33 (was 33): m3 lane 5 r233 unchanged (its lines just above the marker). Frame 0x1144 and extent agree. Query size and write count exchange stack
 // slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax I (11-20): no new form, no lower score (33): the write block's close test written as one shared condition (the count test or the not-resized path with the handle test inside) measures 157, and the close duplicated in both arms measures 179 (994 bytes against retail's 930), so the body stands; what still differs is retail's single close block reached from the resized and the not-resized path, which needs a goto (kept only with a byte match), the swapped pair of homes (ours the query size at [esp+0x28] against retail's [esp+0x24] and the write count at [esp+0x24] against retail's [esp+0x28]), the write call's flags zero built in EAX where retail builds it in ECX, and the checksum compare taking EDX where retail takes EAX.
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
@@ -2068,6 +2068,24 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // query size (`written_size`) 33 (same code: names do not order these two homes, the else arm's zero store does); the
 // not-resized arm written first (`if (!resized) count = 0; else ...`) 123; the close written in both arms re-measured 179
 // (994 B). The resize result as `bool volatile` does not build (the resize routine takes a plain `bool *`). Body unchanged.
+// M3 lane 8 r222 (H2M_FAST with 0x213800, MATCH each run; control 33). On lane 9 r132's 5 form (rebuilt at 5): the flags
+// literal `0u`, the handle as `handle[0]`, the header cast to `void const *` 5 each (same code). A grid of separate named
+// `s_file_handle` copies, one declared just ahead of each of the four by-value calls (query, resize, write, close): write
+// alone 114 (917 B), close alone 119, resize alone 122, query alone 122, write + close 114, resize + write 6 (930 B), query
+// + write 6, query + resize + write 6, query + resize 10, resize + close 122, query + close 122, every set with the close
+// 118-122. The 6 forms are retail's write with each later scratch pick one step off (resize handle EAX/ECX, header lea
+// ECX/EDX, close copy EDX/ECX). On the write-only copy (114: only the close's `mov ecx, eax` and two pads left) these are
+// all 114: the copy declared by constructor, from an explicit temporary, by assignment, brace-initialised, member-set,
+// const, from `file`, bound `const &` to a temporary or cast; the write given an explicit temporary of the copy; the
+// count compare through a `dword const &` or as `sizeof(empty_header)`, the flag through a `bool const &`, `written ==
+// false`, `written = 1`, `written = bytes_written == 0x800 || written`, an if/else setting both values, the flag declared
+// ahead of the resize or at the size block's top, the goto past the close in place of the flag; the close test and
+// argument through a pointer copy, `(*handle).handle`, the table element, `file`, casts, the invalid-handle constant first;
+// `written |= ...` or a ternary 107 (sete materialised). A plain `const &` to `*handle` is the 5 form. Diagnostic (a
+// volatile load, reverted at once): one more scratch value right after the write call or after its wait gives retail's
+// close exactly (108: only the probe's own load and a pad differ), so retail has one more register temporary between
+// the write's handle and the close than the write-copy form; no source form found that adds it without code. Body
+// unchanged.
 // M3 lane 2 r134 (H2M_FAST with 0x2141f0, 0x213800 and 0x2149c0, all MATCH throughout; main 33): the close test as
 // `(!resized || bytes_written != 0x800) && open` with no else store 157 (frame 0x1140: the count shares the query size's
 // slot), the count declared beside the size, before or after it, 157/157; the count scoped in `if (resized)` with `written
@@ -2081,6 +2099,21 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // (resized)` 119, that also for the close 127, as a const reference 5 (same code), one copy at the open test for query,
 // resize and write 170, for query and write 154, ahead of the resize for resize and write 139, and the close 153. Any named
 // handle copy loses the close's `mov ecx, eax`. Body unchanged.
+// M3 lane 5 r233 (H2M_FAST with 0x213760, 0x213800, 0x2138f0, 0x2149c0 and 0x2141f0, all MATCH each run; control 33,
+// aligned 18). Rebuilt: round 53's 7 form 7 (aligned 7), lane 9 r132's 5 form 5 (aligned 5: the handle load after the
+// flags zero, nothing else), the plain write-handle local on it 114 at 917 B (aligned 3 of ours, 6 of retail's: the
+// close pushes EAX where retail has `mov ecx, eax; push ecx`, and the two loop pads that follow). New on the 5 form:
+// the write's handle through a file-local inline accessor called in the argument list (a nested call is evaluated
+// ahead of the outer call's pushes, so the handle is loaded first with no named local) 114 (917 B, the write-local
+// code exactly: handle EAX first, zero ECX, and the close's copy gone), the same accessor at the close as well 114
+// (same code); on the write-local form the count test as `0x800 == bytes_written` 114 (same code), the success as
+// `written = !(bytes_written != 0x800)` 107 (930 B: a sete join, still no copy), the write's returned task named and
+// tested with the count (`task != NONE && count == 0x800`) 117 (930 B). Reading: every way of getting the handle
+// loaded ahead of the flags zero (named copy, by-value helper parameter, accessor result) makes it a value that takes
+// no scratch step, and the close's `mov ecx, eax` needs that step; no spelling here gives both. A converting
+// constructor on the file-handle type (callers passing the raw handle, a temporary built at each call) cannot be the
+// answer: the type is a member of the async task aggregate that overlays the task records, which rules a constructor
+// out. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

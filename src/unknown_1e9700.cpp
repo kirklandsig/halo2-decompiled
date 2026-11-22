@@ -433,7 +433,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// score 353 (was 353): m3 lane 5 r233 unchanged (its lines just above the marker). victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
 // +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
 // is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
@@ -967,11 +967,29 @@ struct s_object_damage_view
 // fallback) as a forceinline helper writing the killer, code and threshold through pointers 353 (promoted; all the same
 // code); round 209's friendly test in the call plus the consideration flag true by default and cleared by the team test
 // 341 at 1544 B (a flag set inside a test, match-only; the direct form is 350).
+// M3 lane 8 r222 (H2M_FAST with 0x197160, 0xd9640, 0x1ea770 MATCH and 0x1ea5b0 at its 76 each run; control 353, aligned
+// 132, register- and offset-masked 35): the selection amount read once inside the time test re-measured 454 (aligned 217,
+// masked 58), the assist stores re-reading the record's player index re-measured 392 (1564 B; 167/43); both together 451
+// (1578 B; 206/50); both with the killer test's team taken from the player byte 416 (218/53); the assist re-read with the
+// team byte 392 (178/46); the selected entry bound as `s_damage_record const &` for the datum test, the killer and the
+// threshold, declared before or after the damage code read, 454 each (1583 B; 263/68 and 263/72: the same code as the
+// record pointer). No form here is closer than main's body on the masked count either. Body unchanged.
 // M3 lane 2 r134 (H2M_FAST with 0x197160, MATCH throughout; main 353): the self test written in the 0x1ea770 call 350
 // (1544 B, retail's length, but ESI/EBX are then popped before the friendly test where retail computes `self` first); a
 // `0 < assist_count` guard ahead of the first dedupe loop 353; both dedupe scans as a `for` with `break` 353; the killer's
 // team byte named as a char and passed to 0x1df560 as the byte 358 (1552 B); friendly as false then set by its test 353.
 // Body unchanged.
+// M3 lane 5 r233 (h2m fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640 and 0x197160; control 353, aligned
+// 128/132, register-masked 52/56; body unchanged). Reading of retail's selected block: the record pointer and the
+// record's player sit in EAX and EDX and the validation's index, data pointer and salt copy take EBP, EBX and EDI, so
+// neither value is a long-lived register there; the killer is stored to its home at each assignment, held in EDX
+// through the fallback (which validates the reported player in EDI and copies it, `mov edx, edi`) and loaded into EDI
+// only at the top of the killer block, although EDX holds it on every path in. Tried for that split: victim, killer,
+// victim team and damage code as members of one local record in retail's home order (diagnostic) 384 (first
+// difference +0x8), without the victim 369 (listed), the killer alone in such a record 353 (same code: a lone member
+// is promoted like a plain local); the fallback validating a named copy of the reported player that then becomes the
+// killer 353 (same code, the copy folds); the killer block working on a named copy of the killer 353 (same code),
+// both 353; the two flags in retail's shape with the killer-block copy 344 (the listed flag forms' code).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

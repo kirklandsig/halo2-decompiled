@@ -391,7 +391,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 31 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
+// score 31 (was 31; 43 before lane 5 r192; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
 // since r192 both dots too. Left: case 3's arms are laid out none-first (retail selected-first, about 22 lines), the first cross's
 // a.k * b.i and average.i load a first (retail b.i first) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
 // Before r192 both dots summed k, j, i (retail i, k, j).
@@ -694,6 +694,14 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // first 7, the dots inside the compare 22); the counts 0-5, 7 and 8 with that dot 9/13/13/13/26/9/39/9. On that 5 form: 1-8 unused
 // locals inside 0x1201a0 5 each (0x1201a0 MATCH), a result-pointer local for the tail 5, and probe stores of out's i, j or k before
 // or after the tail or a use of the tail's result never give retail's copy-first j product (64-65, 34-35, 294). Body unchanged.
+// M3 lane 4 r247 (fast): one selected-normal pointer declared before the switch for cases 2 and 3 198 (991 B), with case 3
+// selected-first 178; `a`/`b` declared before the switch 31 (same code), with case 3 selected-first 178 (case 3 then exactly
+// retail's, case 2's first cross recolours and its selected arms stop sharing their j/k stores); case 3 selected-first with the
+// normal as a `vector3f const &` 178. Body unchanged.
+// M3 lane 16 r175 (H2M_FAST with 0x1f2250 413 each run; control 31): case 3 selected-first with the selected normal as a
+// `vector3f const &` 178 (991 B, the same code as selected-first); the contact list read once into a function-level pointer
+// for the loop only 35, at all six contact reads 259 (977 B: the list load is hoisted where retail reloads it in each
+// case); case 3 selected-first with that pointer at all six reads 263 (973 B), in the loop only 178. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1035,6 +1043,13 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // a one-caller inline rotation taking (vector, axis, sine, cosine), 21 bodies (dot through dot3f either way, written
 // i, j, k or k, j, i, or grouped; cross through contact_cross, named, or at each row; rows direct or with i and j held)
 // 249-301 (1242-1288 B: the dot then copies the vector's components as retail does, but the vector and axis homes swap).
+// M3 lane 4 r247 (fast, 0x1e5af0 matched in each): the rotation written into a new `rotated` vector 239 (frame grows),
+// with rows i, j, k 238; the old-up pointer dropped (state->up at each use) 246, with the old-forward pointer dropped too
+// 294; the rotation rows in i, j, k order 233 (1239 B: limited.i then loads into a register as retail), orders ikj 233,
+// jki 236, kji 236, jik 238 (row spellings commuted change nothing); on rows i, j, k: the rotation dot through the existing
+// dot3f(&limited, &axis) or (&axis, &limited) 232 (1234 B, same (k + j) + i tree, limited's components copied as retail,
+// sine and cosine slots swap), with `(1.0f - cosine)` first 232, the acceptance dot through dot3f either order 234,
+// cosine before sine 234; `limited` copied right after old_up 290. Three points at best: body unchanged.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -1810,6 +1825,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // normal products, never the first arm's cross); around `state->up` in the first cross's argument or the damping bit's
 // shift and mask 234 each (same code); around the direct arm's `speed * rotated.x` 576/575/585 (3020-3024 B); around the
 // high-normal arm's `normal.i * desired.i` 251/241 (3050 B)/320 (3040 B). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST; control 234): delta/limited homes are swapped in both arms (retail's general limited shares
+// desired's cell, delta the flying forward's). `limited` renamed to sort before `delta` in the direct, general or both arms
+// 234/234/234 (diagnostic, same code: names do not order these homes); `limited` declared ahead of `delta` in the general,
+// direct or both arms 234/234/234 (same code); flags flying, direct, damping, gravity re-measured 230, with both arms'
+// `limited` declared first 230. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -2305,6 +2325,15 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // on the 397 form 401, through vector3f_scale with the grouped dot 485 (2124 B); the count-2 arm as a one-caller inline
 // helper (desired, two normals, direction) 747 (1880 B: it stays out of line and 0x1f19c0 drops to 11). Nothing kept:
 // the lead needs the contact's move ahead of the stores (retail's read order, but a statement move) and the switch.
+// M3 lane 4 r247 (fast; aligned = instructions left after a masked sequence alignment, base 185): retail tests bit 3 of the
+// settings word as `shr 3; test al, 1` at both sites (the file's forced-inline bit-3 helper gives that) and snapshots the
+// stepping bit as a byte before the final loop (`and al, 1; mov [esp+0x84], al`, tested in the loop while the call recomputes
+// its own); its count test after `indices[count++]` is a dec chain (switch lowering). Bit-3 helper at both tests 464 (aligned
+// 173), first only 440, second only 417; stepping bool before the final loop 421 (aligned 157); both 375 (aligned 148, a
+// one-use bool: match-only, not kept); on that, both negations through vector3f_scale 377, `-shape_dot` 375, height operands
+// swapped 375, direction rows written out 468, scaled in place then copied 501; `switch (count)` 439, on helper+bool 412;
+// count without volatile 531, on helper+bool 541, on helper+bool+switch 428 (aligned 136: count and component then in
+// retail's homes); switch+plain count 442, with the helper 423, with the bool 435; helper+switch 433. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
