@@ -391,7 +391,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 31 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
+// score 31 (was 31; 43 before lane 5 r192; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
 // since r192 both dots too. Left: case 3's arms are laid out none-first (retail selected-first, about 22 lines), the first cross's
 // a.k * b.i and average.i load a first (retail b.i first) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
 // Before r192 both dots summed k, j, i (retail i, k, j).
@@ -694,6 +694,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // first 7, the dots inside the compare 22); the counts 0-5, 7 and 8 with that dot 9/13/13/13/26/9/39/9. On that 5 form: 1-8 unused
 // locals inside 0x1201a0 5 each (0x1201a0 MATCH), a result-pointer local for the tail 5, and probe stores of out's i, j or k before
 // or after the tail or a use of the tail's result never give retail's copy-first j product (64-65, 34-35, 294). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST with 0x1f2250 413 each run; control 31): case 3 selected-first with the selected normal as a
+// `vector3f const &` 178 (991 B, the same code as selected-first); the contact list read once into a function-level pointer
+// for the loop only 35, at all six contact reads 259 (977 B: the list load is hoisted where retail reloads it in each
+// case); case 3 selected-first with that pointer at all six reads 263 (973 B), in the loop only 178. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1791,6 +1795,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // normal products, never the first arm's cross); around `state->up` in the first cross's argument or the damping bit's
 // shift and mask 234 each (same code); around the direct arm's `speed * rotated.x` 576/575/585 (3020-3024 B); around the
 // high-normal arm's `normal.i * desired.i` 251/241 (3050 B)/320 (3040 B). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST; control 234): delta/limited homes are swapped in both arms (retail's general limited shares
+// desired's cell, delta the flying forward's). `limited` renamed to sort before `delta` in the direct, general or both arms
+// 234/234/234 (diagnostic, same code: names do not order these homes); `limited` declared ahead of `delta` in the general,
+// direct or both arms 234/234/234 (same code); flags flying, direct, damping, gravity re-measured 230, with both arms'
+// `limited` declared first 230. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

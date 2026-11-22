@@ -1255,6 +1255,11 @@ void function_143250(
 // written into its three uses 1507 (10747 B); s21_r5_r6_r6 as `r6_r6 * s21_r5` 939, s7_s2_s21 as `s21 * s7_s2` 939 and entry
 // 25's last product with s7_s2 first 939 (each the same code); s21_s35 from its own root with s21 declared after it 1491
 // (10773 B, frame still 0x2fc). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST; control 939): outside the matrix our cells hold 59/63/16/4 values with 1/2/3/4 stores, retail's
+// 60/64/15/4: one cell of ours is shared by three values (a band-two square, a band-three product and a later value) that
+// retail keeps in two cells, so the short frame is a cell our packer reuses, not a missing value. Band two's three unnamed
+// squares named like its other six (entries 12 and 14) 1095; r8's square alone 1231 (10744 B); r2's and r5's alone 1231
+// (10744 B); its three unnamed mixed products named (entries 10, 11, 13) 1710 (10816 B); all six 1648 (10792 B).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1446,6 +1446,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Copied normal through displacement 427; component setter 485, aggregate normal 485, representation copy 427.
 // Snapshot squared length 435; j capture and setter with that length 485; indexed setter 485; snapshot self-dot 435.
 // NOT kept: extending the copied normal changes the entry and displaces the original direction load. The component and aggregate forms move the body away from retail length.
+// M3 lane 16 r175 (H2M_FAST with 0x142d10; control 126): retail sets up 0x142d10's arguments ECX (forward), EDX (up), EAX
+// (out), ours EDX first. 0x142d10 as (out, forward, up) at its definition, declaration and call 124 (0x142d10 MATCH; the
+// callee matches in either order, so not kept); (forward, up, out) and (forward, out, up) 124 with 0x142d10 at 2; (out, up,
+// forward) and (up, out, forward) 126 (same code); `switch (camera->mode)` with no mode local 126 (the yaw dot's i product
+// swaps operands), with (out, forward, up) 124; `field_of_view` declared at its assignment 126 (same code).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

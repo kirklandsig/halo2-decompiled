@@ -980,6 +980,10 @@ struct s_physical_block_iterator
 // (`if (!at_head)` with the predecessor arm first) 92; the overlap test written range-first (`best.offset + pages >
 // offset && best.offset < offset + block pages`) 40 (same code); the head flag's comparison inside one, two or three
 // parenthesis pairs 40 each (no phase effect on this integer code). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 as `time == best.time ? pages < best.pages :
+// time < best.time` 284 (1182 B); with every compare best-first 201 (same code); as `!(time > best.time) && (time !=
+// best.time || pages < best.pages)` 222 (1220 B); as an if/else on `time != best.time` setting `better` in each arm 284
+// (1182 B); the default arm with both ages `MAX(x, 0)` and `pages * best_age < best.pages * age` 209 (1228 B). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
