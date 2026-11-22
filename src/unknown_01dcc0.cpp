@@ -192,6 +192,7 @@ dword function_1d6f0(bool linear, bool alternate, dword format, long width, long
 long g_55e6c0;
 
 // score 29 (was 29): r131, r232 and r234 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// r133 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
 // keeps the size packing unfolded (lea/shr 6/shl 24/sub, shl 12/sub) where /Og folds it
 // ((w<<20)&mask, (h+0xfffff)<<12), and height/count then take each other's register.
 // Kept: the offset declared after the kind store (data stays in EBP) 107; one result variable
@@ -528,6 +529,12 @@ long g_55e6c0;
 // CRT's `__min(__max(count, 0), 4)` 140 (484 B), as `__max(0, __min(count, 4))` 151 (495 B); the clamp's upper arm as
 // `count < 4 ? count : 4` 30; round 51's signed pitch/packed packing with the `__min(__max(...))` clamp 150 (495 B).
 // All restored.
+// M3 lane 15 r133 (h2m fast; control 29, aligned 20 unmatched rows; the round-51 signed lead re-measured 29 at 484 B,
+// aligned 18): the two header zero stores as one chained assignment 31; the clamp's lower test as `!(count >= 0)` 29
+// (same code); on the signed lead the size word's three terms named in retail's order of computation (rows, pitch,
+// then the OR) 29 (484 B, the lead's code); the height term written first in the one-expression OR 29 (the lead's
+// code); the last column and last row named ahead of the pitch 29 (the lead's code); the three zero stores moved ahead
+// of the dimension stores 38 (484 B, aligned 32). The height/count EAX/EDX choice stays in all of them.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

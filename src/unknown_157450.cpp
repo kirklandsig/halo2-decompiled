@@ -974,6 +974,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // loads the mask, then present, then compares registers, in retail's order, but the mask is still zero-extended from
 // memory); the predicate with a plain present and the one-expression store 63 (384 B); both saved masks word with a
 // plain present and the one-expression store 139 (368 B). Body unchanged.
+// M3 lane 15 r134 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23; on the one-use team-bit carrier, 20): the saved
+// mask read through a `word const &` bound to it at both post-loop uses 20 (same code); the update as one uncast store
+// `*team_mask = old_team_mask | present_teams;` 78; the dword local of the uncast OR 21; the mask compare first in the
+// change test 129 (374 B); the added teams computed after the playing store 20 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6038,6 +6042,12 @@ void __stdcall function_d6bc0(long object_index);
 // called as `index == NONE || helper(...)` 129 (877 B), as `entries[i].index == NONE || helper(...)` 139 (869 B); on the
 // field-test 7 form the reset limit named once for both uses 182 (869 B), the reset counter's arms swapped 172 (same
 // code); on the 7 form the switch value named 7 (same code).
+// M3 lane 15 r134 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B): on the field-test
+// form the countdown block (decrement, release, 0x15aad0) in a file-local forceinline helper taking entries, i, placement,
+// object and preset 182 (858 B; the helper's parameter folds back into `entries`, still EDI), on the 7 form 17; the whole
+// schedule block (zero test to the delay store) in such a helper 182 (858 B); the index test as `if (entries[i].index !=
+// NONE) { schedule = false; switch ... } else schedule = true;` 172 (same code); the object declared ahead of the loop-top
+// index local 172 (same code). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

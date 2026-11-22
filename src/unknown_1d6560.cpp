@@ -723,6 +723,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // after the type 106 [9] / 124 [194]. In each the object-index read comes first and frees EAX, so the pool pointer takes EAX and the
 // object index EDX; retail reads the component after the header array and the body chain (component still in EAX, pool pointer straight
 // into EDX, the incoming index copied to ESI), which every source order that reads the pool first loses with the caller's registers.
+// M3 lane 15 r132 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): the one-read form (object index, absolute index,
+// rigid body, header array, byte type, case 0 through havok_object_get with the s_object_flags_10a bit2 view) rebuilt 28 at
+// 256 B [0] (aligned 23, register-masked 13), long type 89 [0]; left only the entry permutation (ours header array ESI,
+// object index EDX, rigid body in place in ECX; retail header array EDX loaded ahead of the pushes, object index ECX,
+// rigid body ESI through `mov esi, ecx`). On it: the object index as `long const &` bound to the component's field 96
+// (caller 208); the absolute index, the header array and the rigid body each bound by a const reference 28 [0] (same code
+// each). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -991,6 +991,21 @@ void function_3dd10(long object_index, bool force);
 // not an operand-order spelling); the selection guarded again by `0 < choice_count` 74 (folds); the four accumulators
 // declared ahead of the count (their stores hoisted above the guard) 315 (999 B). A 600 s annealing permuter run on this
 // body (67 tries) found nothing below 77. Body unchanged.
+// M3 lane 15 r134 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77, aligned 34; R = r280's rolled form
+// with the float remainder and the outer guard, 74; N = R without the outer guard, 95 [61]). LEAD: any one of the mask,
+// `last` or `variant` given its value ahead of the choice-count test (declared just before `long choice_count`) gives
+// the count EBP, the mask the dead colours-argument home and the weight +0x10, as retail: on R the mask 147 [18]; on N the
+// mask 139 [16], last 138 [16], variant 139 [15]; with the variant and one redundant paren pair `((real)i)` 135 [11]
+// (the weight add and the fstp/fld order become retail's; two pairs 150 at 1019 B, three 135). Left there: that zero
+// store sits before the count test's `jle` (retail: in the arm) and the not-found exit's own 1.0 row. Tried for the
+// store: the mask declared at function scope and zeroed in the arm 74 (on R, same code: the def's place decides); the
+// count tested as `0 < entry->count` with its local assigned after the accumulators 95 (N); the weight zeroed first 278
+// (1012 B); the count read ahead of the default colour copy 238; one `j` for both loops 95; the scan index zeroed ahead
+// of the count test, scan as a while, 113 [76]; paren pairs on N 95/195/95. On the mask-first form the weight update as
+// `choice->weight + weight` 147, before `last = j` 141 [17], after the mask 139. After the round's full check, on N with
+// one paren pair: a dead first `variant = 0` or `eligible = 0` ahead of the count read with the arm's own zero kept 95/95
+// (the dead def is removed before allocation; only a live range reaching the count test flips EBP). Patch of the 135
+// form: build/r134 of m3 lane 15. Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
