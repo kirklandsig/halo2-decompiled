@@ -951,6 +951,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // immediate): NONE written first in the +0xd4 test 666, in the tag-arm test 666, in the previous-index test 666, in all
 // four tests with the byte test too 666 (same code each: operand order canonicalises); the source index reset stored
 // first 665. Retail keeps NONE in EAX through the palette arm to that tag test (loaded into EDI), the result in EDX.
+// M3 lane 11 r153 (H2M_FAST with 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607, aligned 487, masked 232): the
+// found flag declared ahead of the 0x130f60 call 608 (aligned 493); the out index declared ahead of the cluster record
+// pointer 607; the palette bound test as `0 <= slot` 607; the loop bound as `count > index` 607; `NONE != slot` 607 (the
+// last four the same code). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

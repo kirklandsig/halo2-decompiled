@@ -1714,6 +1714,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 530, separately named decisions 530, reject before selection 530, conditional
 // category/fallback 564. NOT kept: the result spill, 0x2c frame, and exchanged
 // block/query registers persist.
+// M3 lane 11 r153 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21, all unchanged; control 529): the mask as `long`
+// 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
+// with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
+// allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

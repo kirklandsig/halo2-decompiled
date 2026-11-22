@@ -1699,6 +1699,11 @@ PRIVATE inline long score_string_list_1608e0()
 // Existing player accessor for the viewer, row or both 721/685/719; viewer, row or both by reference
 // 721/685/719; typed score member with viewer or both 721/719. NOT kept: the accessor preserves a
 // sentinel branch after 16-bit masking and leaves the frame at 0x798.
+// M3 lane 11 r153 (H2M_FAST with 0x161420, 0x1600f0 and 0x1603f0; control 679; matched 0x1603f0 reads 253 in the reduced
+// image with every body unchanged, a caveat on its callee 0x68a90, and check.py --fast agrees): the score table as a
+// conditional initialiser 719 (2888 B); the alternate-score flag set by an if/else on the call 682; the clamp test as
+// `screen_height > height` 679; the title edges read from the row position 679; the three 1.0f foreground channels
+// chained 679 (the last three the same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
