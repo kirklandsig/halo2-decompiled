@@ -1485,6 +1485,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // end time named at the top of the half 63 (212 B; 0x126df0 58); the gain arms swapped under the negated fading test 28
 // (0x126df0 5; registers unchanged); one milliseconds local shared by both halves 63 (0x126df0 52, 186 B); the flags word
 // through a pointer for the setter 24 (same code); the curve stored ahead of the gain test 38 (0x126df0 9). Restored.
+// M3 lane 3 r295 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all MATCH each run; this reduced image gives
+// the full build's 24): the state test as `switch` with one case 64 (214 B); the test held in a bool read through a `bool
+// const &` 48 (215 B); the loop on the next call's result with the body's index a `long const &` bound to iterator.index 24
+// (same code); a named char state with an `else if (state == 3) continue;` arm 60 (211 B); the fade index selected first
+// (`state == 2 ? index : NONE`) with the call under `!= NONE` 24 (same code). 0x126df0's file was held by another lane.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -2882,6 +2882,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // that with `reflected` as an aggregate initialiser (no vector3f_assign) 416 at retail's 2285 B; the forward axis through
 // a `vector3f const *` to g_4b9dac in the dot and the reflection 281 (same code), with the delta initialiser 280; the delta
 // initialiser with `real attenuation = 1.0f;` beside `animated` 504 (2290 B), with the reflected initialiser too 496 (2285 B).
+// M3 lane 3 r295 (h2m fast with 0x2e3f0/0x222d0, both MATCH, and 0x2f2d0 at its 142; control 281): `real attenuation = 1.0f;`
+// beside `animated` with the vector3f_assign kept 503 (2290 B); on that form the forward dot's terms in all six written
+// orders 503 each and the eight operand-side choices of its products 503 each (the chain is reassociated); main's dot as
+// `(j-term + i-term) + k-term` 487, as `j-term + (i-term + k-term)` 487. Re-measured round 242's retail-length lead 495
+// (2285 B): its delta/forward block is one instruction longer than retail's (forward copied for two reflected products),
+// which shifts every later row by one. Retail's product sides follow the order its values are produced: delta.i, the axis
+// j, delta.j and delta.k, then the axis i and k (deltas in xmm1-xmm3, axis in xmm4-xmm6); ours makes the axis i and j first.
+// The three delta statements in the other five written orders: i, j, k 280; k, j, i 280; j, k, i 281; i, k, j 281; j, i, k
+// 281 (each order only rotates which components take which roles: two axis loads, two deltas, the 1.0 stores, then the
+// third delta in xmm5); i, j, k with the early attenuation 504 (2290 B).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

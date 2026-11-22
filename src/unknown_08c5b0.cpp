@@ -335,6 +335,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // if/else on that pointer 11 (the setting then takes EDX); the kind test inside the availability helper with the setting
 // as one ternary on it 11; the payload getter single-exit (`payload = NULL; if (kind == 1) { if (available) payload =
 // ...; }`) with a ternary on it 11; the first two with a plain read 32/32 (95 B, folded compare).
+// M3 lane 3 r295 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): plain reads: the kind through an inline
+// accessor on the request returning the result word 32 (95 B, folded compare), the accessor returning `short const &` bound
+// to a `short const &` local 32 (95 B), `short kind = 0; kind = request->kind;` 32 (95 B); the availability tests nested in
+// the selector (two `if`s on the header's fields, each failing arm giving 1) with the existing read 4 (same code), with a
+// plain read 32 (95 B).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
