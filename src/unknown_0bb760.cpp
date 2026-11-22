@@ -976,6 +976,9 @@ void function_3dd10(long object_index, bool force);
 // Typed object view at the tag, position, bank fields or variant read 77 each.
 // Typed position and variant, tag and bank, tag/bank/position, or all reads 77 each.
 // NOT kept: the object view leaves the pre-guard ordinal and the scan homes unchanged.
+// Round 463. Positive choice count via conditional, condition declaration, explicit negative floor, or
+// empty-default assignment 237/237/267/227. With signed first-scan bounds 652/652/672/645. NOT kept:
+// signed first scans unroll and the bank ordinal and choice-count homes remain different.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

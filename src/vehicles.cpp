@@ -869,6 +869,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // named velocity squares around control norm 118.
 // named velocity squares before control norm 118.
 // NOT kept: every form ties or raises the score.
+// Round 463. Captured controls in steering/lift/throttle order, then computed the full sum, paired sum
+// after the velocity stores, paired sum after the first velocity product, or finished after the root
+// 221/222/222/282. Component-order capture with the same producer placements 118/120/120/249.
+// The frame stays 0x28. Unity still loads into XMM2 after the third square.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3759,6 +3763,9 @@ real g_47ff30 = 2.5f;
 // both shared bases with separate mass reads 703.
 // scoped shared bases with separate mass reads 702.
 // NOT kept: separate mass reads recover frame 0xfc, with higher scores and nonretail lengths.
+// Round 463. Directional mass folded into force, computed at use, or declared early and assigned at use
+// 721 each; named scaled delta 730. With separate final mass reads 707/707/707/711. The first three of
+// those recover frame 0xfc and retail length, but the acceleration and velocity homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

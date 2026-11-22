@@ -1912,6 +1912,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // ours three, tied with material's three. Case 1's float argument as a named `real recovery` ahead of its call 158; the
 // walking speed written call first 158; its product's factors swapped 158 (all the same code); diagnostic, 1/2/3/4 dead
 // longs at the top 158/158/176/176. All restored.
+// M465: selected tag-array pointer long 620; selected tag-array pointer dword 620; selected tag-array
+// reference long 620; selected tag-array reference dword 620; branch-owned tag array and offset long
+// 593; branch-owned tag array and offset dword 593; selected tag array from movement reference long
+// 620; selected tag array from movement reference dword 620.
+// NOT kept: conditional array selection repairs the definition, animation flags and material
+// slots but shifts position and grows the body. Selecting array and offset in a branch shrinks
+// the frame to 0xf8 against 0xfc.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3225,6 +3232,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // two-use local 63 (same code); the header's main-rigid-body getter into a short 75 (254 B); a two-caller
 // `game_ticks_to_seconds(real)` inline (tick length held in a local) for the rate here and in 0xe0d70 63, 0xe0d70 13.
 // All restored.
+// Captured raw byte with signed conversion at query, original selection, shared short getter,
+// direct body-field bounds and signed local bounds 82/89/76/76. The raw dword forms 83/90/77/77.
+// NOT kept: the count still needs a saved carrier, and all eight move the first difference to entry.
 // In-place invalidation of short/signed-char/long body indices with retained steps 87/83/63,
 // with a byte test and signed call read 85/80/82. Direct query admission without a sentinel
 // conversion, short/signed-char 64/65. The count lifetime, extra EBP and word mask remain.
@@ -6344,6 +6354,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 79 each, every user unchanged (same code); the dot not named 144 (0x1ecf50 91, 0xd0080 36, 0x1e5bb0 94 at 1382 B,
 // 0x26d570 77); the cross locals declared k, j, i 89 (0x1ecf50 51); the cosine complement named 79 (0x1ecf50 14). The
 // helper's named-local count moves every user, its written operand orders none. Body unchanged.
+// Generic object forward getter as pointer, named receiver with pointer, direct member and
+// member reference 79/153/89/79. With an ordinary final cross 203/197/83/203.
+// NOT kept: the ties leave the early complement spill and the final memory operand unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

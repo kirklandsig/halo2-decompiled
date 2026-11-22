@@ -1689,6 +1689,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
 // test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
 // mask takes EDI ahead of the query in every form where the copy stays in the found block.
+// Default-false with late success and primary/reflected/ambient/all curve scopes 573/573/573/573.
+// Constant exits with those scopes 566/566/563/563, frame 0x28.
+// NOT kept: the default forms lose the matched caller; constant exits recover the frame but raise the score.
 // M3 lane 8 r217 (h2m fast with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10; controls 529 / 378; letters as in 0xd4080's note). New
 // pair: a file-local in-place colour scale helper (each channel `scale * channel`) for the six scalings of both functions,
 // together with lighting_rotate reading its axis through a `vector3f const *` from g_4687b0, keeps record on the stack and

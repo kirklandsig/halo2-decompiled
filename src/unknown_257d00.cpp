@@ -2767,6 +2767,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 521/517/494/540. Share the explicit default with case 13 on these forms
 // 653/565/633/666. NOT kept: the closest form still misses the retail dispatch
 // displacement. Three explicit-default forms also change the entry allocation.
+// The default completion remains late, and the animation copy uses EAX before forming its receiver. Native
+// planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
+// fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
+// 431. All retain the 0x1c frame and the existing copy schedule.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

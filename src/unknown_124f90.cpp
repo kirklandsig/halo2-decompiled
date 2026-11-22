@@ -4914,6 +4914,9 @@ struct s_128ca0
 // Const-reference operand with copied result, direct constructor, returned compound sum, or
 // named decoded sum 177/308/48/308. NOT kept: copying the operand and returning the compound
 // sum ties. The other forms shorten the function and some change the matched gain producer.
+// Round 463. Valid-arm byte, char, long or short count with direct sentinel publication 208/208/208/212.
+// With staged pin gain producers, shifted pending test and direct channel read 194/194/201/205. The
+// direct sentinel shifts registers at +0x12a and keeps the count comparisons displaced.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

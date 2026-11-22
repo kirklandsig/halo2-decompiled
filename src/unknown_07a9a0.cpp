@@ -1780,6 +1780,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // independent accumulator 878/858/880/915. With dword cells 915/891/916/954.
 // NOT kept: conjunction moves the matched caller's session argument to the stack. The
 // independent dword accumulator reaches 0xb4 but shortens the body to 2700 bytes.
+// Round 463. Captured group count for group construction only, summary field throughout, summary count
+// throughout, or published count throughout 884/901/879/879 with word cells. Dword versions
+// 921/929/943/943. Dword cells shrink the frame but shorten the body. The lookup and capacity call
+// boundaries still differ.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

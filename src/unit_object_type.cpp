@@ -5823,6 +5823,11 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 // (b->i * a->k, canonicalised to the same code) 2; the aim argument cast to a const pointer 2; the first product
 // computed into a local and copied into left 191 (840 bytes); written out with the world-up in a local (the loads
 // then differ at the dot, 108, 796 bytes); first through cross3f alone 12 (dot product registers change).
+// M465: compound row subtractions 2; positive products first 2; all subtrahends first 21; subtrahend
+// then paired row 21; rows start with left components 2; rows start with right components 4; basis dot
+// aim-first 2; basis dot offset-first 2.
+// NOT kept: the staged helper forms regress a matched caller. The basis-dot forms leave
+// the first cross j load and multiplier exchanged.
 // @retail 0xc8290
 void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
@@ -5933,6 +5938,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P552: Complementary default-direction outcomes in bool/byte/short/long; wider original actor carriers
 // short/long; overlap-safe fallback transfer and complete fallback source object.
 // Fast scores 168/168/172/171/85/84/182/58. NOT kept: no permitted confirmed gain; original body restored.
+// M465: in-place angular scales 170; in-place rate scales 54; both pairs in place 170; named angular
+// coefficient 168; both coefficients named 173; angular coefficient declared first 168; compare angular
+// products to each bound 67; in-place angular scales and bound comparisons 166; complete angular scales
+// before bound tests 66.
+// NOT kept: in-place rate scales gain four at retail length. The angular clamp registers
+// and reused coefficient still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
