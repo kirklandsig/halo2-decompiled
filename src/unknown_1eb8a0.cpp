@@ -183,7 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
+// score 603 (was 603): r131 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
 // MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
@@ -322,8 +322,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Complete supplied-direction native/const/setter/CRT observations 731/731/743/731,
 // frame 0x2c and caller loss in each. Original 0x24 frame, inputs, qualifiers and caller restored;
 // direction/sample residence and coefficient schedules remain.
-// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
-// scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm
+// forms; scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
 // Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
 // all with the activation workspace declared at entry 642. Original initializers and complete body restored.
 // Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
@@ -839,11 +839,24 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the factor's flag byte for the duration, but a function-wide XMM zero is hoisted to the entry); the second clamp's
 // factor ahead of t2 in main's if form 716. Diagnostic, reverted: d dropped from the 0.866 test 743 (b takes EBX, not q).
 // Retail compares both normalise results with the memory zero constant; ours keeps a zero in XMM6 for the active PIN.
+// M3 lane 16 r172 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the three limit tests written
+// `0.f != limit` 604; both normalise tests `0.f == function_30bf0(...)` 653 (2884 B); the settle test's `0.f != nlen` 605
+// (2881 B, retail's length); its alignment check `len * 0.087155744f < align` 614 (2891 B); the activation delta scaled
+// factor first 603 (same code). d keeps EBX. Body unchanged.
 // Shared setters for the start copy, impulse, activation target, all target updates,
 // both direction differences, reference sample, ramp position, and activation displacement
 // with scaling and impulse 699/708/678/693/675/603/661/713.
 // NOT kept: the sample setter ties and leaves the supplied direction in EBX.
 // The impulse setter reaches retail length with earlier prologue differences.
+// M3 lane 15 r131 (h2m fast with 0x1ed4a0, 0x30bf0, 0x1eb6f0 and 0x1ecf50; control 603 at 2885 B, 0x1eb6f0 and 0x1ed4a0
+// MATCH in each). Retail stores all three scaled delta components and adds the impulse on the x87 stack from memory, ours
+// keeps the scaled delta.k in XMM2 across the length test and adds it in SSE. The delta built by the existing
+// vector3d_from_points3d(pos, b, &delta) 671 (2875 B, first difference +0x5); with the impulse through the existing
+// vector3f_add(&delta, &s->impulse, &delta) 667 (2895 B); with the length scale through vector3f_scale(&delta, dt / len,
+// &delta) 671 (same code as without it); all three 667 (2895 B); the delta and the activation direction refresh both
+// through vector3d_from_points3d 672 (2874 B). Diagnostics, restored: the active pin's lower bound non-zero 685, both
+// normalise compares against a non-zero constant 712, both 668 (new constants, so they do not isolate the shared XMM6
+// zero). Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -1186,6 +1186,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data word named inside `if (component != NONE && kind != 24)` 238; the material buffer declared at the kind-24 arm's
 // top 238 (all the same code); the arm-local shape for the decode and the 0x1ee410 call (re-measured for the slot
 // reading above) 327 (1249 B).
+// M3 lane 1 r152 (h2m fast, control 238): the kind decode named (`long kind = data >> 29;` then `if (kind != 1)`) 238
+// (same code); `short material` declared at the top of the kind-24 block (ahead of `data`) 238 (frame stays 0x40); the
+// two NONE outputs declared bare and set by one chained `index = other_index = NONE;` 237 (one point, under the bar);
+// the hit read through real_point3d_set and published by aggregate assignment (retail's dword copy-out) 309 (1249 B);
+// origin and hit declared `point3f const` 238 (same code).
 // M3 lane 5 r230 (h2m fast with 0x183670, MATCH; control 238). Lead, not kept (a declaration moved, kept only with a
 // match): `short material;` declared at the top of the body 230 (frame 0x44 as retail; first and second then sit at +8 and
 // +0xc of the frame where retail has +4 and +0x14). On that lead: a kind-24 shape local for the data read and the material

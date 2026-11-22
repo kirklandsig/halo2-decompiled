@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 925 (was 925): r130 and m3 lane 8 r220 unchanged (r220 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// score 925 (was 925): r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
 // previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
 // shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
@@ -847,6 +847,28 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `actor_index != NONE` 947 (3772 B); the reference test as `if (actor)` 921 (retail compares the index with NONE there:
 // `cmp ebx, ebp` with EBP = -1, so not retail's form); the actor and self-unit pointers declared ahead of the four
 // priorities 925 (same code). Body unchanged.
+// M3 lane 11 r151 (H2M_FAST with 0x29a190 and 0x2c0d00, both MATCH; control 925): in the loop retail gives EBX to
+// actor_index and EBP to self_unit (both reloaded on the back edge, EBP then reused for NONE in the type-0 block) and
+// keeps the skip flag in a stack byte; ours gives BL to the skip flag (also the zero for the device/restricted defaults)
+// and EBP to actor_index. Forms: the skip flag declared at function scope and reset per object 925 (same code); declared
+// just before the type tests 922 (3725 B; skip leaves BL and EBX goes to object_index); declared right after the
+// unit/ignore continue 917 (3760 B); inflation, skip and device defaults declared at the type tests 919 (all three are
+// declaration moves, match-only); the type-1 arm with a named `short actor_team` 925 (same code); the self-unit vehicle
+// compare with the field first 925 (same code); `bool enemy = false; if (actor) enemy = ...` 932 (3741 B). Body unchanged.
+// More r151 forms (same control): the skip flag declared last of the four defaults 921, first 925, just before the
+// hidden-object test 917 (3760 B; with the declaration after the unit/ignore continue the entry is retail's actor_index
+// EBX and zero EBP, frame 0x2cb0); the type-0 other-actor `if (!enemy) skip = true;` 932 (3741 B); the type-1 arm as
+// `if (team == actor_team || !function_1df560(...)) skip = true;` with the late declaration 903 (3760 B, the type-1 form
+// alone also scores 903). All declaration moves or a flag set in a test: match-only.
+// Three-level direction result, strict-first, broad-first, conditional and reversed levels
+// 909/903/909/898. NOT kept: retail stores two separate bytes and the best form shortens to 3712.
+// Both dot tests after location/query 934/931; direction scope after settings 928,
+// optional prior-direction pointer 940. The frame and actor/unit homes still differ.
+// Frame 0x2cb0 versus 0x2cac; actor index and self-unit zero still exchange registers.
+// Raw tracked-unit index with entry default, two complete arms, or conditional selection after actor setup:
+// 914/921/874 in both filter orders. Early raw capture with a later Boolean result: 921 in both orders.
+// NOT kept: the raw forms compare a dword with NONE at the sphere filter where retail tests a saved byte.
+// The 874 form grows to 3744 bytes. Late Boolean materialization grows the frame to 0x2cb4.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

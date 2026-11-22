@@ -1776,6 +1776,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M3 lane 5 r231 (fast with 0x73530, control 871): the party histogram as `long histogram[16] = {0}` 911 (2748 B), as
 // `long histogram[16]` cleared by memset 936 (2716 B); an `inline` declaration of 0x192e60 in this file 871, of 0x193300
 // 871; the capacity compares written callee first 871 (same code each). All restored.
+// Machine validity via Boolean AND, logical conjunction, conditional preservation, or an
+// independent accumulator 878/858/880/915. With dword cells 915/891/916/954.
+// NOT kept: conjunction moves the matched caller's session argument to the stack. The
+// independent dword accumulator reaches 0xb4 but shortens the body to 2700 bytes.
+// Round 463. Captured group count for group construction only, summary field throughout, summary count
+// throughout, or published count throughout 884/901/879/879 with word cells. Dword versions
+// 921/929/943/943. Dword cells shrink the frame but shorten the body. The lookup and capacity call
+// boundaries still differ.
+// Rejection byte 890, declared at entry 890 or after admission 904. Accumulated machine,
+// party or capacity rejection 885/895/893. Single exit with rejection byte 874, or with
+// result initialized after the clear 903. The frame stays above 0xb4 and the opening
+// lookup still inlines.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

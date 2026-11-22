@@ -262,6 +262,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // ahead of update elapsed, then update and force (object, update elapsed, update, force) 186; on the kept order `bool update
 // = force;` after the clamp with `if (!update && hidden) return;` 231; force renamed `stale` 21 and the object local renamed
 // `body` 21 (name-order probes for the swapped homes: same code each).
+// M3 lane 1 r152 (h2m fast with 0xd1850, MATCH; control 21): force started true and cleared in an `initialized && valid`
+// arm holding the hidden return, update false ahead of it and set in the else arm, 240 (816 B); the object as `byte const *`
+// 21 (same code); the update-time test as `update |= ...` 211 (842 B); force replaced by `current = initialized && valid`
+// with `!current` at the force test and the 0xd1850 argument 106 (833 B); update started as the stale predicate and force
+// as its copy, with one `if (!force && hidden) return;` 222.
 // M3 lane 5 r230 (h2m fast with 0xd1850, MATCH; control 21; update-first re-measured 218, update right after the
 // zero-elapsed return 216): the velocity vector declared at the top of the body 21, on update-first 218; the stationary
 // test's delta declared at the top 21, on update-first 218; on the after-return form, update's two true stores through a

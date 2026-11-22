@@ -644,6 +644,26 @@
 // wave or cross homes); the view flags read once into a local for the special test and the case-1 test 675 (2628 B);
 // the default depth named before its reciprocal 537. The wave constants are referenced by this function alone in retail,
 // so no out-of-line copy of a wave helper exists to show the removed third use.
+// M3 lane 11 r151 (H2M_FAST with 0x4a1e0; control 536): retail's 12 extra frame bytes are the two wave values in separate
+// cells (+0x18/+0x1c, ours share one) and the first cross's i/j components in their own cells (ours reuse w's), with the
+// 12-byte homes v1, v2, w, v3, v4 in that address order (ours v1, v2, w, v4, v3). Forms: v3 defaulting to v2 and replaced
+// by the shape's vector when not special 664 (2639 B), the same declared after v4 677 (2646 B); v3 copied from a selected
+// pointer 536 (same code); s1's sine argument with the y term first 536 (same code); the v3/v4 names swapped 536 (same
+// code: names do not move these homes). Body unchanged.
+// Both saved projections via memcpy, four-field aggregates or direct component
+// stores 536/687/590, with camera shifts read at use 537/687/591.
+// Overlap-safe copies with shifts at use 735. Bind both projection addresses from
+// copy through shift 536, or read each shift at its use 537.
+// NOT kept: the aggregate grows to 2712 bytes and frame 0x58, while the other
+// forms retain the 0x54 frame. The overlap-safe copies also change the caller.
+// Frame 0x54 versus 0x60, with one shared rounded-wave transfer slot. Two displacement entries
+// indexed or advanced by pointer, parallel direction/amplitude arrays, and two scaled offsets.
+// With the later opposite cross 625/659/635/707. With the earlier cross 655/666/664/586.
+// NOT kept: The best form keeps retail length but retains the frame mismatch and raises the score.
+// Final origin assigned by path, separate intermediate and final origins, late selection,
+// or late selection with separate intermediate 731/770/631/643. With both staged crosses
+// 732/771/628/645. NOT kept: late selection alone retains retail length but raises the
+// score and reserves 0x64 bytes. Separate intermediates increase the frame further.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

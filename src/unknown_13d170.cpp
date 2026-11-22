@@ -971,6 +971,10 @@ struct s_physical_block_iterator
 // (the offset load then follows the handle as retail, but the sum still lands in best.offset's register); that with
 // best.offset in a local read through a `long const &` for both tests 55; the const-reference start alone 40; the end
 // as `long end = pages; end += best.offset;` 40 (same code). Body unchanged.
+// M3 lane 1 r152 (h2m fast with 0x13d320, MATCH each time; control 201): the switch's case 1 written ahead of case 0
+// 201 (same code); the take test as `better || !have_best` 201 (same code); the ring head advanced ahead of the take test
+// 243 (1194 B); `better` started as `!have_best` with the switch under `if (have_best)` and the take test on `better`
+// alone 222 (1228 B); the default arm's two ages typed dword 201 (same code).
 // M3 lane 5 r230 (h2m fast with 0x13d320, MATCH; control 201): lane 1 r124's 40 lead rebuilt 40 (1213 B, first difference
 // +0x356; the insertion tail after the flag's `sete dl; test dl, dl` is retail's). On it: the first stage's arms inverted
 // (`if (!at_head)` with the predecessor arm first) 92; the overlap test written range-first (`best.offset + pages >

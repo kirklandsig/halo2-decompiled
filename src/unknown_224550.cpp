@@ -697,8 +697,8 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // definition bounds to second UV 451. Sequence-local blend published after pivots 273, selected local published
 // after/before pivots 217/217, both pivot weights named with deferred blend 214.
 // NOT kept: the 1942-byte form approaches retail length but leaves the tint stack slot and raises the score.
-// MiniMax S (11-17): fast build on r852: declaring the four 16-byte locals at the top in the order geometry, uv_a, tint, uv_b
-// scored 194 (same code, the slot order does not follow the declarations), so the tint keeps its home at +0x60 against retail's
+// MiniMax S (11-17): fast build on r852: declaring the four 16-byte locals at the top in the order geometry, uv_a, tint,
+// uv_b scored 194 (same code, the slot order does not follow the declarations), so the tint keeps its home at +0x60 against retail's
 // +0x50 with uv_b the other way round; retail's join block reloads the blend into XMM5 where ours reads it from memory, which
 // leaves the body 10 bytes longer than retail.
 // Separate input bounds for dynamic UV a/b/both, fixed UV a, and their combinations: 219/162/162/202/199/170/207.
@@ -874,10 +874,20 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // difference +0x199, the blend still in XMM2); the reciprocals as two point2f pairs 164 (1944 B); all three as point2f 266;
 // the geometry ahead of the two encodes 385 (2019 B); the pivot as two scalars 295 (1971 B); the second bounds by an
 // initializer 162 (same code).
+// M3 lane 16 r172 (H2M_FAST with 0x2243c0, MATCH each run; control 162): a second `blend=0.0f;` at the head of the
+// bitmap arm 288 (1953 B); the extents and reciprocals declared `real const` 162 (same code); the aspect pair declared
+// at function scope 162 (same code); the second bounds box declared at function scope 162 (same code); a two-use `frames`
+// pointer for both frame picks 263 (1943 B). Body unchanged.
 // Indexed axes for both spans, primary reciprocals, secondary reciprocals, both
 // reciprocals, two-pass spans and reciprocals, one pass, or those last two with
 // indexed inverse mixing 219/164/162/226/214/329/184/312.
 // NOT kept: the secondary reciprocal loop ties. The 1942-byte spans-only loop still spills blend.
+// M3 lane 11 r151 (H2M_FAST with 0x2243c0, MATCH throughout; control 162): both builds give the blend a register inside the
+// sequence block (retail XMM5, this build XMM2; the 0x20 path reloads it from its home in both), but retail carries it
+// through the bitmap join into the aspect block and this build ends it at the join. Forms: the second test's sums with the
+// blended term first 162 (same code); the inverse sums with the next term first 162 (same code); the pivot terms written
+// next first 162 (same code); `else blend = 0.0f;` on the 0x20 test 246 (1953 B); the pivot as `first + (next - first) *
+// blend` (diagnostic, not retail's two products) 233 (1929 B). Body unchanged.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

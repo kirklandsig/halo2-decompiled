@@ -337,6 +337,10 @@ void function_254200(void)
 // 0x2477b0 reload theirs in descending register order as ours does. The depth as a `real const` declared at the top 4;
 // the point copy direct-initialised 4; the point parameter a const pointer 4 (all the same code). Diagnostics: the first
 // vertex's depth and w as 0.f 134, its depth alone 0.f 125 (the constant no longer stays live). All restored.
+// M3 lane 15 r130 (single-address H2M_FAST, control 4): true `__assume(p != NULL)` on the point and colour parameters at
+// the top, ahead of the point copy, both, and on the chosen bitmap inside its test 4 each (6 runs); the minus edges
+// written `x + -size` 4; the two dimension locals, the chosen bitmap, or the size and point copy declared bare at the top
+// and assigned in place 4 / 4 / 4 (all the same code: the x, y + size, constant group stays ours).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -773,6 +777,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // Diagnostics: the first vertex's depth 0.f 74; the first vertex's two texture coordinates swapped 27, where the group then
 // loads the constant into xmm0 first and the coordinate into xmm1: ours keeps the constant first whichever registers the
 // two values get. All restored.
+// M3 lane 15 r130 (single-address H2M_FAST, control 2): true `__assume(... != NULL)` on the point parameter at the top or
+// ahead of the coordinate pointers, on the colour getter's result, and both 2 each; the offset quad's half size or the
+// two coordinate pointers declared bare at the top 2 / 2; the coordinate pointers declared y first 2; the minus edges
+// written `x + -size` 2 (all the same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
