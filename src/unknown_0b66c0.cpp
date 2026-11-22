@@ -629,6 +629,21 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // summed into EAX); that with `start += (long)string` after the clamp 27 (same code: the sum still lands in EAX); on it the
 // bound as `count <= length - start` 27, `length - count >= start` 28, `length >= start + count` 28; the count tested first
 // 39; the volatile read into a named `text` used by the scan and the source 48 (93 B).
+// M3 lane 6 r227 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21). LEAD, not kept (a new
+// one-caller inline that only steers): the early source's string passed through a new `__forceinline` identity inline
+// returning its argument (`char const *source = identity(string) + start;`) 15 [match]: the length scan is then retail's
+// exactly (walk EDX, counter ECX, start ECX moved to EDI at entry); left is only that the source is summed ahead of the
+// compare (`mov edx, [esp + 0x14]; add edx, edi`, then `add edi, esi` for the bound) where retail forms the bound in a
+// `lea edx, [edi + esi]` and sums the reloaded string into start's EDI at the copy (patch build/r227/lead-b6220-15.patch).
+// On it the source as `start + identity(string)`, `&identity(string)[start]`, `(char const *)(start + (long)identity(
+// string))` 15/15/15 [match]; a grid of the identity on the scan, the source or both against the source named early,
+// after the compare, after the clamp or at the call: early 21/15/15 [match], after the compare 32 [6], after the clamp
+// 28/27/27 [6], at the call 28/27/27 [6] (start then arrives in EDX); the identity on the scan only 21 [match]; on the
+// compare's start or count 21/21 [match]; with a plain string 49 (92 B) [6] early, 41 (104 B) [35] at the call; the scan
+// argument as `&string[0]` 21 [match]. The parameter as `s_text512_ab const *volatile` (callers cast as for find) reading
+// `->bytes` at the scan and the source 21 [match], at either one 21/21, without the volatile 49 (92 B) [6].
+// A 600 s permuter run (annealing, context 0xb5f10/0xb61d0) on the identity lead: 79 tries, best 15 (the full image also
+// scores the lead 15).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

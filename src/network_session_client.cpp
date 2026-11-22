@@ -994,6 +994,15 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // opening and every scratch register retail's, the session ESI against retail's EBX, both callers lost): its test as
 // two `== NULL` compares 46, as `!(machines && players)` 46, players tested first 46; the two buffers declared in the
 // state block ahead of the pair 46. Diagnostic: a third, never-true term in the pair's test 152 (499 B).
+// M3 lane 6 r227 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, both callers lost): early returns in place of `result` (`if (state != 5) return false;`, `return true`)
+// 142, on the pair 143; the pair tested positively with the work in an else arm 46; the summary declared ahead of the
+// variant on this body 52 (the session moves to ESI, both callers lost: the session register is a declaration-order tie),
+// on the pair 46; the pair under `session_state_is_live(session) && flag` 46, with the variant preset NULL and set under
+// the same live test 46. Grid of the variant and summary declarations over the eight positions of the work block's first
+// nine statements (63 forms each): on this opening 22 (5 forms, the same code), 120 to 132 otherwise (52 whenever the
+// summary precedes the variant with the session in ESI); on the pair 46 at best (23 forms), 62/123/131 otherwise, every
+// one with the session in ESI and both callers lost.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1519,6 +1528,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // `dest - count * 3` 129 (721 B); a source player pointer stepped beside the index 202; `[count++]` with the key-id
 // address named at the top 89 (first difference +0x82). Re-measured: the indexed copy with `long identity_count =
 // count` at the call 195.
+// M3 lane 6 r227 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; the indexed copy
+// re-measured 195): on the indexed copy one, two and three redundant parenthesis pairs around the else arm's size 195/195/195
+// (no paren phase on this integer colouring); the player loop under a redundant `if (count == 0)` guard 195 on the indexed
+// copy and 9 on this body (the guard folds before allocation), under `if (count < 16)` 195; `current` renamed `session`
+// (sorting after `joining`) 195 on the indexed copy, 9 here; `joining` renamed `incoming` 195; both renamed to sort the
+// other way 195; the destination renamed `z_dest` / `a_dest` 9/9 (slot and register choice ignore these names).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
