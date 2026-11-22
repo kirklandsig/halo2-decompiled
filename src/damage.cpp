@@ -2744,6 +2744,13 @@ struct s_unit_event
 // its test on the first, second, or both 519/527/577. Named unit classification 602, supported-type guard 581.
 // NOT kept: The joined receivers can restore the entry register assignment through +0x5a, but change the
 // drop control flow and move the length away from 1868 bytes.
+// m3 lane 4 r248 (fast with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420, aligned 200): the region-state update as
+// pointer arithmetic (`(states + region_index)->`, as the file's other region-state users write it) 420; the two
+// notifications through a named attached index 420; the vehicle pointer through the pool cast 420 (all the same code);
+// the section-name search indexing the sections (`info->unknowne4 + i * 0x14 + 4`) with no cursor pointer 420 but
+// aligned 193: the search loop is then retail's (count ESI, cursor EDX set up after the guard) but for the EBX/EBP
+// exchange of the permutation and object pointers, which runs through the whole body; with the pointer-arithmetic
+// update or the named attached index 420 (aligned 193).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3705,7 +3712,13 @@ enum
 
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
-// score 371 (was 371): The 0xf4 frame agrees. The 1893-byte body exceeds retail's 1880 bytes, and the flag homes
+// score 309 (was 371): the loop's frame homes and ESI/EDI roles are retail's (1885 bytes for 1880); left: the reported
+// block's shield material (retail reads the accumulator's info field there, ours the info local, which then stays live
+// in EDI), the head (the count in ESI where retail has EDI, `add ecx, 0x10` for retail's `lea ecx, [eax + 0x10]`, the
+// store order of the child flags and of friendly), the loop's first index (`dec esi` for `lea eax, [edi - 1]`), the
+// kill block's object pointer (ESI, retail EBX, so info is reloaded after it), and scratch rotations in the inlined info
+// lookup, the team block and the accumulator's three node fields. Earlier (371): The 0xf4 frame agrees. The 1893-byte
+// body exceeds retail's 1880 bytes, and the flag homes
 // and ESI/EDI assignments differ. Earlier scores were 470 and 661, with 470 at 1907 bytes.
 // Retail's bools sit at esp+0x13..0x17, then object, i, definition, info. This build orders them differently and
 // keeps region_absorbs in memory where retail holds it in bl. Retail holds object_count in EDI and this build holds it in ESI.
@@ -3750,6 +3763,16 @@ enum
 // Completed count at the join 400, count after link 371, shared original-target test 547, report status first 498,
 // reverse while 371, shared masked slot 534, shared owner team 371, and child permissions from the info result 482.
 // NOT kept: The count-after-link, reverse while and shared team forms tie and the rest regress. The flag homes remain.
+// m3 lane 4 r248 (fast, plain confirmed): the side-effect block's datum local dropped, its type and object read through
+// the pool at each use as the db210 test below does, 371 -> 309 (1885 B): kept (the object through DAMAGE_OBJECT or the
+// pool cast is the same code). With it the reported block's shield material read through the accumulator's info field
+// (retail's `[accumulator + 4]` read there; the d8cb0 and db210 tests already read that field) 297 (1882 B): not kept,
+// it mixes the field and the info local (match-only). Alone that info-field read 365; with the datum local kept and
+// only the object re-read 297. On 297: the info lookup after the definition lookup
+// 376; the child flags declared body first 295; `for (i = object_count; --i >= 0;)` 297; `kill = true;` ahead of the
+// hit byte's store 295; both 293; with them `friendly` declared ahead of the definition 291; the definition through a
+// named tag pointer plus 0x10 (as 0xd82e0 writes it) 293, with friendly first 291; `object_count` declared first 300;
+// the accumulator's direction field typed as a vector pointer 291 (same code). Orders not kept (match-only).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -3881,9 +3904,8 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 					definition->side_effect == 2 && function_cc010(current_index, &data->direction) &&
 					!TEST_FIELD_BIT(object->damage_flags.unknown7))
 				{
-					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[current_index & 0xffff];
-
-					if (!((1 << datum->type) & 3) || function_1df560(data->owner.team, datum->object->team))
+					if (!((1 << ((s_damage_object_datum *)g_4e0300->data)[current_index & 0xffff].type) & 3) ||
+						function_1df560(data->owner.team, DAMAGE_OBJECT(current_index)->team))
 					{
 						*(byte *)&data->unknown84 = (*(byte *)&data->unknown84 & 0x3f) | 0x80;
 						kill = true;
@@ -5478,6 +5500,11 @@ struct s_damage_object_creation
 // signed/unsigned membership shifts: 167 in all eight forms. A positive guard with
 // terminal-ordinal test, with or without the promoted primary mask, 181/181.
 // NOT kept: the count stays in EDI, and the terminal-ordinal loop raises the score.
+// m3 lane 4 r248 (h2m fast with 0xdb810/0xdbb40, control 167, aligned 37): the bound read as `info->unknowne0` at each
+// test re-measured 179 (811 B): the loop body then has retail's registers exactly (first mask hoisted in EDI, bit EDX,
+// index ECX) because info itself stays live in EAX; retail keeps its count in EAX, loaded over info, so retail's count
+// is a variable that takes info's register where ours takes EDI. On main's body: the count `long const` 167; a redundant
+// `if (section_count > 0)` around the loop 181; info declared in the `if` condition 167; info typed `const` 167.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

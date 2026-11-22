@@ -864,6 +864,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the block's whole difference): the second cross as direct stores in global-first product order 331 (same code: the
 // global's i still folds as the memory operand of two products); the point array declared first in the function 331
 // (same code); parens around the three ray products 572 (2886 B, every second-cross product then local-first).
+// M3 lane 8 r223 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): the hit flags as `{ false }` 659 (2848 B,
+// block store); the success flag declared after the object lookup 521; the ray clamp as `local_19 / local_6 < 0.1f` 521,
+// the minimum test as `local_19 < local_4` 521, the range test as `local_4 < FLT_MAX` written with the literal 521 (same
+// code each). Lane 2 r113's 331 lead rebuilt on today's file 331 at 2896 B (not applied): its first difference is still the
+// second cross, where retail loads each axis component into a fresh register for all six products (the axis's j and k
+// twice) and ours folds the axis's i as the memory operand of two. Body unchanged.
 // M3 lane 12 r176 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364): the hit flag set ahead
 // of the hit distance store 522; the minimum update as `local_4 = local_19 < local_4 ? local_19 : local_4` 521; the clearance
 // test as `local_19 / local_6 < 0.1f` 521; the collision result declared and its index cleared ahead of the start point 521

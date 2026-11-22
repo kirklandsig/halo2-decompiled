@@ -3969,7 +3969,7 @@ extern vector3f *g_4687bc;
 // type 31 (kept); constructed after the component lookup 33; short rigid body index 46 (1099 B); rigid body fields at
 // each use 35; component and index declared first, assigned after the material 31; rigid body through
 // `rigid_bodies.data + index` 31.
-// Earlier: score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
+// Earlier head at 45 (from 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
 // data and offset registers swap in its address add, and the 0x188180 call setup differs
 // (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
 // in eax, forward in ecx and pushes the short material slot raw).
@@ -4166,6 +4166,16 @@ extern vector3f *g_4687bc;
 // (forwarded, same code); the material copy-initialised from a constructed temporary 8; the impulse and strength declared at
 // the effect block's top 8; the node tests joined in one condition 8 (all the 8s the same code). Kept: the impulse through
 // the existing vector3f_scale (same code).
+// M3 lane 11 r154 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): a code-free `static __forceinline`
+// long identity around one read at each of twelve places (the Havok component index, the model tag index, the target
+// index at its read, test and 0xbadc0 argument, both point-target reads, the damage definition and owner fields, the
+// 0xb67a0 result, its NONE test, the first node, the effect-tag test) 8 each (same code: the scratch rotation is not
+// shifted at either site); the same identity as a function template 99 to 296 (1102-1127 B: not code-free); the element
+// as `.data + index`, `index + .data` and `&.data[index]` re-measured 8 each; 0x1eb020's output as `(short *)&material_index`
+// 8. Permuter (600 s, 23 tries, reduced image of 542 sources) best 8.
+// M3 lane 13 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the permuter (fast, anneal, one
+// job, 1810 s, 70 tries) best 8; the rigid-body index as a `long const` 8; the rigid-body index declared between the
+// material and the component lookup, assigned at the call 8 (both the same code). All restored.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

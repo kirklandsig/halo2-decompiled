@@ -169,7 +169,7 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
-// score 67 (was 67; m3 lane 8 r221 unchanged, its line just above the marker): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
+// score 67 (was 67; m3 lane 5 r233 unchanged, its lines just above the marker; m3 lane 8 r221 unchanged): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
 // Earlier (67, was 67): Retail spills the entry-array base and recomputes the indexed
 // terminator after the string calls.
 // independent read cursor and indexed terminator 84; cursor search condition with
@@ -492,6 +492,20 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // search loop 66 (189 B; one point, under the bar), with the terminator indexed 83 (198 B); the search as a guarded
 // do-while 67 (same code), with the indexed terminator 84 (same code as the indexed for); lane 10 r119's two-member
 // lead rebuilt 39 (204 B), with the guard 39 (same code). Body unchanged.
+// M3 lane 5 r233 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67, aligned 24/26).
+// Reading: retail's base spill at [ebp-8] does not need an escaping pointer: the suffix clear (`xor eax, eax; rep
+// stosd`) and the calls destroy EAX, so the base is stored once and reloaded for the terminator; what has to be
+// explained is only that the found entry's address (ESI, lost when ESI takes the 0x31 argument) is formed again from
+// the index, which keeps the index in EBX across the calls and leaves no register for a zero. Tried: the found entry's
+// name built by a forced-inline helper taking the list and the index by value, everything inside indexed, 84 (197 B,
+// the indexed-terminator code: the entry address is kept in EBX), with direct returns in the caller 86; the search
+// with its exhaustion exit inside the loop (`for (i = 0; ; ++i) { if (i >= count) return result; if (match) break; }`)
+// and the found entry handled after it, indexed 87, through a per-iteration entry pointer 77 (195 B, aligned 13: the
+// cursor is kept in ESI); round 101's search-then-`if (i < count)` form re-measured 69 (201 B, aligned 7: the cursor
+// copied to ESI at the break and the extra count test), the same with the count copied into a plain local for the loop
+// and the test 69 (same code); a found pointer cleared before the loop and tested after it 88; lane 10 r119's
+// two-member lead re-measured 39 (204 B: index ECX, cursor EDX, loaded id ESI, product EBX against retail's index EBX,
+// cursor ECX, id EDX, product ECX). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

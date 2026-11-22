@@ -770,8 +770,8 @@ struct s_physical_block_iterator
 // branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
 // NOT kept: no closer case-zero result or native size. Case-zero/case-one
 // placement and the weighted-age register allocation still differ.
-// Case-zero non-later admission, combined admission, later rejection and non-earlier rejection
-// scored 222/222/222/201, also when reading each timestamp once.
+// Case-zero non-later admission, combined admission, later rejection and non-earlier rejection scored
+// 222/222/222/201, also when reading each timestamp once.
 // P598: Advance the ring ordinal after prefetch/after accumulation/before prefetch 250/355/273.
 // While scan with early advance 250, with undersized entries skipped 355. Conditional
 // best record/pointer/reference 248/248/248. The case-zero Boolean still needs its retail join.
@@ -980,6 +980,14 @@ struct s_physical_block_iterator
 // (`if (!at_head)` with the predecessor arm first) 92; the overlap test written range-first (`best.offset + pages >
 // offset && best.offset < offset + block pages`) 40 (same code); the head flag's comparison inside one, two or three
 // parenthesis pairs 40 each (no phase effect on this integer code). Body unchanged.
+// M3 lane 1 r155 (H2M_FAST with 0x13d320, MATCH; control 201): the limit index through a PIN macro 201 (same code); the
+// limit test as `limit_index <= 0 || pages < limit` 333; case 0 as `if (time != best time) better = older; else better =
+// fewer pages;` 284 (1182 B); both ages `dword` with `MAX(x, 0)` (retail's two clamps) 209 (1228 B); the failure limit
+// update through a MIN macro 202.
+// M3 lane 16 r175 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 as `time == best.time ? pages < best.pages :
+// time < best.time` 284 (1182 B); with every compare best-first 201 (same code); as `!(time > best.time) && (time !=
+// best.time || pages < best.pages)` 222 (1220 B); as an if/else on `time != best.time` setting `better` in each arm 284
+// (1182 B); the default arm with both ages `MAX(x, 0)` and `pages * best_age < best.pages * age` 209 (1228 B). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

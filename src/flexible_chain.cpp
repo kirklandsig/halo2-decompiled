@@ -1003,6 +1003,21 @@ void __stdcall function_1160c0(real dt)
 // base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as
 // `i < count ? i : count - 1` 145; the tick increment ahead of the selection 285 (1376 B). Retail also ends each pass with a
 // store of the rotated offset's middle term to +0x70 from XMM5 where this build stores it inside the rotation. Body unchanged.
+// M3 lane 15 r133 (h2m fast; control 144 at 1371 B, aligned 159 unmatched rows of 322; every rotation form below was a
+// trial copy of the shared helper, measured and removed: a second spelling of an existing helper is not keepable). The
+// rotation has three states here whatever the dot's spelling (written out i, j, k; through the existing dot3f either way
+// round) and with or without the k local, 30 forms: the three cross terms named i, j, k, or the i term at its row with j
+// then k named, 144 (1371 B, aligned 159: main's code); the cross through the existing cross3f or cross3f_staged into a
+// local vector 143 (1368 B, retail's length, aligned 138: the shared cell moves to +0x1c and the axis to +0x10); the i
+// term at its row with k then j named 113 (1369 B, aligned 138: retail's frame with the shared cell at +0x14 and the
+// axis at +0x18, all six inputs in registers as retail, but each in another XMM register and the segment still in
+// EDI/ECX). Also 144 (same code): the dot written k first; the axis components read into three locals. On the 113 form
+// 1..32 dead initialised locals at the top give 113, or 115 for 3, 4 and 5 modulo 8: no state nearer retail.
+// Segment selection, with aligned rows: `segment = definition->segments; segment += <the ternary>` 272 (1369 B, aligned
+// 134); the index set by an `if` into a local, then the base, then `+=` 144 (same code); that index with the element
+// address 144 (same code); the base with `+=` written in both arms of the test 289 (1381 B, aligned 193). Diagnostic,
+// the first of those with the 113 rotation: 274 at retail's 1368 B, aligned 108 (the base load still sits ahead of the
+// branch and the XMM registers stay permuted). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

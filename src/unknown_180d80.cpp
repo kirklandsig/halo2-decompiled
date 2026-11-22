@@ -384,6 +384,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // named local 297 (2661 B); the two `+=` of the left terms written `local_4 = local_4 + ...` 93 (same code). Retail's rows
 // keep every product in its spelled operand order and statement order; ours evaluates the x row's left product ahead of
 // its up product and commutes three products, at every symbol count tried. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// m3 lane 4 r248 (h2m fast with 0x180b60, 0x17cfa0, 0x13d370, 0x439d0; control 91, aligned 55): the luminance terms red,
+// green, blue 91 (same code); red, blue, green re-measured 89 (gain under 3, not kept); the three centre sums spelled
+// lower field first 91 (same code); the vertex counter declared in its `for` after the luminance store 142, with the
+// red, blue, green terms 140. Diagnostic: the clamp helper's two input pointers without `volatile` 694 (2551 B), so
+// those reads are what give retail's per-test re-reads. Still BLOCKED-BY 0x17cfa0 for the call setup.
 // M3 lane 12 r176 (h2m fast, control 91, 63 non-address lines): the short count-loop index again 102 (entry and count
 // loop exact, the three centre sums and two call setups turn); that with a short count sum 102 (same code); the scale
 // steps as `x = scale * x` 91 (same code); the transform rows as one expression each 314 (2647 B); one named sum per row

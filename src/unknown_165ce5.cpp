@@ -2073,6 +2073,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // tests spelled `== 0` / `!= false` 188 (same code each). Re-measured by mistake: zoom computed at its declaration ahead
 // of the update call 388 (listed). From the look values to the weapon loop the rows now differ only in the unit and mode
 // slot numbers. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 8 r223 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `mode` declared ahead of `unit`
+// and assigned in place 188; `zoom` declared at the function's top 188; `active` declared at the function's top 188;
+// the channel frame declared at its assignment 188; the orientation index written `user_index * 2 + weapon` 188 (same
+// code each). Retail's -0x1c slot is shared by the unit, the zoom and two later spills, ours by the unit and the active
+// byte. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // M3 lane 12 r176 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): our 0x30 frame never
 // touches its lowest cell (both builds use -0x2c..-0x4), so the extra four bytes are an unused home; the active byte declared at
 // function scope 188, zoom at function scope 188, the two zoom flags at function scope 188, the weapon-slot index declared in

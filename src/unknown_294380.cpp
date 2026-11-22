@@ -372,6 +372,10 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // pairs (retail's walk position, not the offset, shares the post-walk vector's slot); on the three-strengths form the
 // four-reference group reads object, count, nearest, record, sum (retail object, count, nearest, sum, record), and lane 4's
 // tie model reaches retail's group from no input order with that home set. Body unchanged.
+// M3 lane 8 r223 (h2m fast, control 280 at 3717 B; the plain build stays 252): the neighbour count as `long` 526 (3716 B);
+// compare sides swapped at the nearest-distance test (`local_26 < local_10`) 280, at the cone test (cosine on the left)
+// 638 (3716 B), at the radius test (`local_26 < radius && 0.0f < local_26`) 280, at the separation test (squared
+// distance on the left) 280 (same code where 280). Body unchanged.
 // M3 lane 12 r176 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; control 252, aligned 90, masked 32;
 // operand-side sites read from both listings: the field_70 product, the k/j/i preload before 0x295600, the xmm0/xmm3 reload
 // after 0xb75a0, the second dot of both 0x2949aa copies, the scaled centre's y/z and the nearest fallback's i row): the

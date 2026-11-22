@@ -230,7 +230,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 144 (was 144): earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
+// score 144 (was 144): r154 unchanged; earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
 // MiniMax E (11-20): no new form, no lower score (144): the frame is still 0x18 against retail's 0x14 because the
 // departure flag is a dword local here and a byte in retail's dead indices home (our hull count then takes a dead
@@ -967,6 +967,21 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // append bound, candidate bound, both, or both with one append counter: short 144/251/225/246,
 // long 645/675/616/616. NOT kept: the short append-bound form ties. Other short forms raise
 // the caller score. The long count unrolls the minimum scan and grows the body.
+// M3 lane 1 r154 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH each run; control 144): lane 1 r103's completion-flag
+// body (match-only) rebuilt 118 (784 B, masked aligned 25); with lowest_y declared before lowest_x 116; that with memcpy for
+// the compaction 218 (first +0x1d); on 116 the count read through a `short const &` bound at entry, at every read or only
+// at the current/hull/candidate reads, 116 / 116, and through a `short const *` to the parameter 116 / 116 (all the same
+// code: the view folds and the count keeps its register; only the volatile view of the earlier rounds moved it); the
+// done flag replaced by three `return hull_count;` exits with the compaction unguarded 262 (731 B: the hull loop rotates).
+// Retail leaves EBX free in the candidate loop yet still reads the count from its home there, so the count is memory
+// resident by some property of its source (not register pressure). Body unchanged.
+// M3 lane 15 r134 (h2m fast with 0x239d50 and 0x239b80, both MATCH; control 144, aligned 137): the bound written count
+// first (an uncounted loop) on the pass loop, the candidate scan, the lowest scan, all three, and the compaction's outer
+// loop 144 each (same code). The one-counter form (`while ((short)hull_count < count)`, bool flag, heading before the
+// lowest scan, memcpy, main's gotos) re-measured 260 (757 B); with `while (count > (short)hull_count)` 210 at 784 B
+// (aligned 128: frame 0x14 and the entry as retail, but `count` stays in EBX and the pass loop still rotates, the hull
+// count in EAX); both with `current` and the hull test reading the count through a const volatile view of the parameter
+// 216/216 (784 B, aligned 125). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
