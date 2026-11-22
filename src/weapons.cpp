@@ -3511,6 +3511,10 @@ struct s_ammo_conversion_entry
 // Conversion candidate as mutable or const reference before the match test 214/214;
 // with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
 // NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Promoted ordinal for both destination rows 211, both runtime rows 190, definition and source 190,
+// all three 190, all three with runtime row declared first 197, and source branch only 190.
+// Same-definition predicate with separate source observations 234, also with shared source key 234.
+// NOT kept: The four ties preserve the exchanged saved roles. Both separate-source forms grow to 760 bytes.
 // Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
 // Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
 // Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
@@ -3869,6 +3873,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // runtime element reference 636, with indexed tag 752, with tag reference 636.
 // NOT kept: full check of the indexed runtime form scores 645 and shortens to 2518 bytes.
 // The 0x1c60 stack probe returns, but the barrel offset is formed after the wake call and still takes EBX.
+// Zero-extended loaded count with signed threshold and separate or combined
+// gate, signed or unsigned cost: word 603 each, dword 561 each.
+// NOT kept: dword shortens to 2525 bytes, replaces retail's xor and word load
+// with movzx and leaves the count at +0x50 and the frame at 0x1c64.
 // Required rounds scoped to ammunition 603. Magazine selector by field
 // reference 568. Loaded balance by field reference, both field references,
 // or both scoped to ammunition 647/647/647. Late tag defaults 630, late scale
@@ -4383,6 +4391,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Flag-first selected barrel value 1423, tag field reference 1578, reference with shifted control bit 1577,
 // and separate selected-barrel assignments 1426. NOT kept: the names leave the 0x34 frame and early dual spill.
 // The flag-first forms grow the body and allocate 0x34 with a value or 0x3c with a reference.
+// Shared idle/charged trigger release, seeded from the input edge, joined tests,
+// selected source or early positive edge: 1559/1399/1411/1404, also after the
+// blocked exit with the same scores. NOT kept: the 1399 form shortens to 5680
+// bytes and retains frame 0x34. The 1559 form recovers 0x38 but grows to 5824.
 // Player presence from an owner-path assignment 1429, short-circuit
 // tests 1422, absence 1422, explicit owner arms 1422, or typed owner lookup
 // for presence/absence 1422/1422. Shared trigger test from the signed player
@@ -5035,6 +5047,9 @@ struct s_weapon_projectile_creation
 // 1215. Shared dot and projected products before complete result or direct output
 // 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
 // and raise the score. The separate clipping point and opening rotation remain.
+// Rotation result by value, explicit destination, returned destination, or staged component stores:
+// saved axis 1121/1121/1121/1239, direct marker axis 1141/1141/1141/1273.
+// NOT kept: the saved-axis result forms tie. The separate clipped point and retail frame remain.
 // The rotation still needs the retail scalar homes at the 0x1e98 frame.
 // Dot before cosine, cross before cosine, dot then cross, or cross then dot:
 // vector result 1121 each, staged scalar result stores 1239 each.

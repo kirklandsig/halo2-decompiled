@@ -650,6 +650,20 @@
 // by the shape's vector when not special 664 (2639 B), the same declared after v4 677 (2646 B); v3 copied from a selected
 // pointer 536 (same code); s1's sine argument with the y term first 536 (same code); the v3/v4 names swapped 536 (same
 // code: names do not move these homes). Body unchanged.
+// Both saved projections via memcpy, four-field aggregates or direct component
+// stores 536/687/590, with camera shifts read at use 537/687/591.
+// Overlap-safe copies with shifts at use 735. Bind both projection addresses from
+// copy through shift 536, or read each shift at its use 537.
+// NOT kept: the aggregate grows to 2712 bytes and frame 0x58, while the other
+// forms retain the 0x54 frame. The overlap-safe copies also change the caller.
+// Frame 0x54 versus 0x60, with one shared rounded-wave transfer slot. Two displacement entries
+// indexed or advanced by pointer, parallel direction/amplitude arrays, and two scaled offsets.
+// With the later opposite cross 625/659/635/707. With the earlier cross 655/666/664/586.
+// NOT kept: The best form keeps retail length but retains the frame mismatch and raises the score.
+// Final origin assigned by path, separate intermediate and final origins, late selection,
+// or late selection with separate intermediate 731/770/631/643. With both staged crosses
+// 732/771/628/645. NOT kept: late selection alone retains retail length but raises the
+// score and reserves 0x64 bytes. Separate intermediates increase the frame further.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

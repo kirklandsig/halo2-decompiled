@@ -47,7 +47,7 @@ real function_2008fc(s_interface_pulse const *arg_0, bool arg_1);
 void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
     long arg_2, long arg_3, long arg_4);
 
-// score 14 (was 14): draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
+// score 14 (was 14): r131 unchanged. Draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
 // Round 74: half-height lower/all/upper/early-lower copies 14/20/14/14;
 // half-width right/all/early-right copies 14/14/14; bounds pointer with early-right copy 12
 // (one-use pointer, not kept without a match). Opening graph restored.
@@ -327,6 +327,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // pointer formed at the iteration's top, ahead of the bitmap entry, as the first pass does 14; the corner array declared
 // at the iteration's top 14 (both the same code); the draw pass's definition lookup ahead of the mask test 31. All
 // restored.
+// M3 lane 15 r131 (h2m fast with 0x2008fc 0x200891, control 14): the pulse and both half extents declared `real const`
+// 14; the first x step written product first (`x = w * pulse + x`) 14; both x steps so 14; the corners as a flat `real[8]`
+// array 14; the corner sums written extent first (`w + x`, `h + y`) 14 (all five the same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

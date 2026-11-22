@@ -1962,7 +1962,7 @@ void function_27dd10(void)
 	compute_orientations(1, 0, false, false);
 }
 
-// score 2 (was 2): the two stack slots are read in the opposite order inside the inlined helper.
+// score 2 (was 2): r131 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
 // The order is a register-allocator tie that follows the constants live in the walk's loops (any
 // new one flips it) and not the source shape. Tried: blend-1 translation and scale through
 // interpolate_real 159; a node lookup returning the index or NONE 382; the per-arm walk as a
@@ -2169,6 +2169,11 @@ void function_27dd10(void)
 // b : d)++`) 2 (0x288570 120); node_destination_get's output index as a `long &` 2 (same code everywhere); the walk's
 // count copied into a `long const` local for the loop bound and the clamp 2 (0x288570 3, 0x289580 78); in
 // function_288571 passes 1 and 2 as a counted loop 450 (1776 B, every walk user regresses). All restored.
+// M3 lane 15 r131 (h2m fast with 0x281b60 and the four matched walk users; control 2): component_interpolate as a switch
+// on the component 2 (0x288570 120); quaternion_blend's fraction as its first parameter, definition and all three calls, 2
+// (same code); the walk's output-cursor advances as `+= 1` 2 (same code); the interpolation's translation arm as `+=`
+// statements with a `real const &` fraction 2 (same code); component_interpolate reading the blend fraction once into a
+// value local for all three arms 2 (0x288570 120). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2241,7 +2246,7 @@ void function_2818e0(void)
 	compute_orientations_component_count(2, 0, false, false);
 }
 
-// score 2 (was 2): the two stack slots are read in the opposite order inside the inlined helper.
+// score 2 (was 2): r131 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
 // The same allocator tie as 0x27dff0. Tried: blend-2 `+=` and `*=` 2; the blend-2 translation as a
 // loop over vector.n 364; the multiply's sign mask as long 2, as `1UL << 31` 2, as real lanes 245.
 // Round 40 (screen): the existing compute_component_orientations_shared with each of node index, bit
@@ -2429,6 +2434,12 @@ void function_2818e0(void)
 // mapped arm under `node_kind != 0`, the kind-0 result last) 2; its out parameter as `long &` at all three walks 2; in
 // function_288572 the bit-flags selection ahead of the output selection 2 (0x288570 3, 0x289580 78); root_offset_scale
 // given the walk's inheritance as a first parameter at all eight calls 2 (same code). All restored.
+// M3 lane 15 r131 (h2m fast with 0x27dff0 and the four matched walk users; control 2): in function_288572 the output
+// cursor selected from the settings field directly with the output pointer local declared after it 2 (0x288570 120); the
+// three frame-state saves declared const 2 (same code); the first-frame decode written through a `const &` to the
+// settings' decoder table in place of component_decompress 39 (0x289580 2, 0x288570 120); the pass's bit-flags pointer
+// selected in function_288571 ahead of each pass instead of in the walk 2 (same code); function_288573's apply index
+// ahead of its output parameter (definition and both calls) 2 (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
