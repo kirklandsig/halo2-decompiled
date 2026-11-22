@@ -1973,6 +1973,12 @@ static inline bool unit_dual_wielding(long unit_index)
 // getter 21; both helpers `__forceinline` 2; the existing weapon_get_owner_unit_index in place of the holder helper 2
 // (same code; on main's body 17, same code); redundant parens around the animation test, the put-away NONE test, the
 // gate's state read, the 0xc9d00 argument, the holder call or the animation-pointer sum 2 each (same code).
+// M3 lane 3 r296 (H2M_FAST with 0xc9d00 and 0x1058b0, both MATCH each time): the 2 form rebuilt (2: lookup 4
+// `[esi+ecx+8]` where retail has `[ecx+esi+8]`, the put-away lookup the reverse). On the 0xc9d00-call form: early returns
+// in place of `result` (gate `if (!immediate && !replaceable) return false;`, `return true`) 121 (520 B); `result`
+// declared bare and assigned false in an else arm 121 (520 B), with weapon_get_102e10 at lookup 1 121. On the 2 form:
+// the animation test and the holder helper both through weapon_get_102e10 2; the put-away pointer `s_weapon const *` 2;
+// renames of the put-away pointer, `current` and `weapon` 2 each (inert).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

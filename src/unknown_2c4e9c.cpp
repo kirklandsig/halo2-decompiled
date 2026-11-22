@@ -3350,6 +3350,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // `iterator.datum` 27 (80 B, not retail's rotated loop; the head unchanged); that with the pool stored before the guard
 // 25 (layout only, the same direct EBX load); the guard joined with `&& data` 33 (84 B); `if (map_id == NONE) return;`
 // with `return` after the selection 30. All restored.
+// M3 lane 3 r296 (H2M_FAST with 0x2c9a58, matched unless noted): the walk (iterator loop and selection) as a file-local
+// `__forceinline` helper taking (list, map id by value) 30 (same code), the id as `long const &` 30 (same code), the
+// helper plain `inline` 91 (23 B: it stays out of line and this function is expanded into 0x2c9a58, which scores 8);
+// the id declared `long const` 30; the loop's compare written `map_id == definition->map_id` 30 (all the 30s the same
+// direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
