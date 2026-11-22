@@ -2287,6 +2287,9 @@ bool function_1900a5(long index);
 // NOT kept: The nested tests and team exclusion reproduce 643. The output cursor grows to 2910 bytes,
 // and the explicit unavailable path changes the branch layout. The user base and logon comparison remain
 // different.
+// The logon compare and validity-based cursor home still differ. A user cursor deriving the cache index scored 773,
+// with direct cache indexing 777. A cache cursor deriving the user index scored 816, with the user bound once 795.
+// Relational and equality bounds had identical scores. NOT kept because all forms added bytes and differences.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -498,6 +498,17 @@ const dword g_455978[81] = {
 // its condition (`local_13 < local_6 && !local_0`, no break) 392 (2007 B), with `!local_0` first 403 (2003 B); the bounds'
 // upper corner as `local_4 + arg_3->x` (all three) 268 (same code); the found flag declared at the top with the two
 // optional-state locals 370; the direction count as `arg_8 ? 27 : 18` 412 (2073 B). Still BLOCKED-BY 0x11bed0's expansion.
+// M3 lane 16 r173 (H2M_FAST with 0x11bed0, MATCH each run; control 268, aligned 206, register-masked 130): the ray end
+// as retail's copy of `*arg_11` then `local_19.x += arg_4->i;` per row (round 87's form) 350 (2111 B); with the direction
+// loop as `long local_13 = 0; if (0 < local_6) { for (; ...) }` (0x11bed0 then called out of line, as with the always-
+// true guard) 323 (2037 B, first difference +0x54: the entry registers and both optional-state homes are retail's); with
+// the first release through a file-local copy of 0x1d01c0's release helper (diagnostic) 277 at retail's 2083 B, aligned
+// 121, register-masked 42 (lead saved as build/r173/lead-1d48f0-277.patch in m3-lane16). Left on it: the bounds block's
+// upper x (retail loads x again), one SIB operand order, the planar block's x87 square order (y first here) and its
+// products' XMM numbers (retail multiplies the reciprocal by the zero register, this build by a 0.0 constant), the ray
+// end's operand orders. On it: the upper bounds written `local_4 + arg_3->x` (all three) 277; the reciprocal and the
+// radial term after the zero test, written `local_17 * 0.0f`, 277 (same code each). The keepable route for the helper
+// is moving 0x1d01c0's helper into a header both files include. Body unchanged.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

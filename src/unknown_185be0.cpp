@@ -825,6 +825,15 @@ union s_185be7
 // turn + angle * local_20`) 60 (same code); local_17 declared ahead of local_16 60 (same code); the two angle products
 // computed ahead of local_19/local_20 487; local_20 ahead of local_19 re-measured 611; local_19/local_20 written `k * PIN(...)`
 // 60 (same code). The quotient/1.0 XMM3/XMM4 swap and the else arm's load order stand. Body unchanged.
+// M3 lane 16 r173 (H2M_FAST with 0x24590, 0x185b30, 0x186ab0, 0x187b30, all MATCH; control 60): lane 4 r244's 28 lead
+// re-applied (its helper hunk by hand). On it: one redundant pair around the quotient 30 (the word mask's `and` operands
+// flip instead), two 28, three 28; the quotient read through `real const &` for both products 30 (the second hold-time
+// add flips); one pair around the first square of the 0.64 sum, `(local_2.field_44 * local_2.field_44) + ...`, 26 (the
+// squares then load field_44 first, as retail; saved as build/r173/lead-185be0-26.patch in m3-lane16); on that 26 one
+// pair around local_19's product 28, around local_20's PIN 26, around local_16's first product 28, around local_21 28,
+// around local_19's PIN 26; the 1.0 named as a `real const` local for local_19 28. Left at 26: the quotient/1.0
+// XMM3/XMM4 tie only (retail gives 1.0 XMM4 at every load in the function). On the body: the 0.64 pair alone 58
+// (two under the bar). Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

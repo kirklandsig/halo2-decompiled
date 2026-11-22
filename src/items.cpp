@@ -1295,6 +1295,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // NOT kept: The both-branch workspace recovers frame 0xb4 and 848 bytes at 161 differences. The
 // alignment and projection-product forms also recover the frame and raise the score. Retail still
 // retains the scaled axis in different registers.
+// The 0xc0 frame and scaled-axis spill remain. Output cross/scale with scalar or vector capture 200/234.
+// Separate cross scaled into output, with a final setter or scalar capture 183/202.
+// Separate alignment via the item/shared dot with output cross 167/167, with separate cross 168/168.
+// NOT kept: the best output-plus-dot forms recover 0xb4 but raise the score and remain seven bytes long.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1814,6 +1818,13 @@ struct s_item_flags_view_10b850
 // copied-origin component or indexed integration 886/905, early ray setter 824,
 // paired point and displacement setters 824, and component writes through the query origin 824.
 // NOT kept: the tied forms retain the 0x154 frame. The point setter alone shortens the body and the copied-origin forms grow it.
+// Shared forward/up spin cosine, sine, or both 852/853/848; shared axis 932;
+// axis with cosine, sine, or both 872/878/878; all with shared cosine complement 861.
+// NOT kept: all raise the score and retain or expand the 0x154 frame. Entry Boolean and motion homes remain.
+// Settle eligibility from floor fallback, conditional fallback, slow gate, slow selection, rejected-floor
+// fallback, surface arms, qualified publication, shared support and bounce rejection
+// 859/862/871/871/892/886/817/875/903. NOT kept: the seven-point lead grows to 4099 bytes and retains frame
+// 0x154. Entry flag bytes and low motion homes still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
