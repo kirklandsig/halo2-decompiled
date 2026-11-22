@@ -1312,6 +1312,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // merge early, the index in ESI): only a mix of the player local and the getter keeps the lookup's read apart. The
 // sibling 0x151aa0 is one exchange off in the same way (retail player ESI, hand EDI): in both, retail's registers come
 // only when the unit lookup's index read is a value of its own at allocation.
+// M3 lane 3 r296 (H2M_FAST with 0x151aa0, 43 each time, and 0x152bf0, MATCH; control 5): diagnostics, not keepable: the
+// compiler read/write barrier intrinsic after `result` 48 (142 B), at the head of the tested block 64 (150 B), right after
+// the player 49 (142 B). Forms: the unit pointer typed const 5 (same code); `player` assigned again from the getter as
+// its own statement ahead of the lookup, the lookup reading `player->unit_index`, 26 (137 B).
 // M3 lane 4 r249 (h2m fast with 0x151aa0 and 0x152bf0; 0x151aa0 43, 0x152bf0 MATCH each time; control 5): on the getter-reload
 // form the mode read into a `long mode` local 5 (same code); the weapon test as an early `return result;` inside the slot
 // test 51 (143 B); `long hand = !primary;` declared at function scope after the result 28; the reload as `[0].unit_index` 5

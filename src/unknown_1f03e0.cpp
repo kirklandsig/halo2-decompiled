@@ -391,7 +391,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 31 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
+// score 31 (was 31; 43 before lane 5 r192; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
 // since r192 both dots too. Left: case 3's arms are laid out none-first (retail selected-first, about 22 lines), the first cross's
 // a.k * b.i and average.i load a first (retail b.i first) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
 // Before r192 both dots summed k, j, i (retail i, k, j).
@@ -698,6 +698,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // selected-first 178; `a`/`b` declared before the switch 31 (same code), with case 3 selected-first 178 (case 3 then exactly
 // retail's, case 2's first cross recolours and its selected arms stop sharing their j/k stores); case 3 selected-first with the
 // normal as a `vector3f const &` 178. Body unchanged.
+// M3 lane 16 r175 (H2M_FAST with 0x1f2250 413 each run; control 31): case 3 selected-first with the selected normal as a
+// `vector3f const &` 178 (991 B, the same code as selected-first); the contact list read once into a function-level pointer
+// for the loop only 35, at all six contact reads 259 (977 B: the list load is hoisted where retail reloads it in each
+// case); case 3 selected-first with that pointer at all six reads 263 (973 B), in the loop only 178. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1020,6 +1024,25 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Diagnostics: the fallback without its second cross 226 (1229 B), its second cross on the old up 258, its first cross into
 // `forward` and the second back 265: the fallback cross loads the old up first in all three; up handed to the four final crosses
 // through a pointer local or a reference local 235 (same code).
+// M3 lane 3 r297 (H2M fast with 0x1e5af0, MATCH each run; control 235, aligned [exact, stack masked, registers masked]
+// 209/186/62; body unchanged). Reading: up's XMM5-7 at the join are the three registers the rotation block frees last
+// (retail computes the rows i, j, k and stores k, i, j, so cosine, sine and limited.k die last and up.k, up.j, up.i take
+// their XMM7, XMM6, XMM5); ours computes k, i, j, so cosine is still live when up.k is loaded and up lands in XMM4-6.
+// Retail's two second forward crosses also hold all three results to the end (one store group after the `lea`) and
+// multiply up.k and up.j in place by the first cross's i. Forms: the rotation through include/axis_rotation.h's helper
+// 301 (1275 B); the cross terms named j, k with i at its row and rows i, j, k 237 (1240 B), named k, j 235, all three
+// named 232 (1238 B), the j, k form with the shared helper's `v * cosine + dot * axis` row order 237; the new i and j held
+// in locals with k stored first 235 (same code as the body), with the cross call ahead of the dot 239, with every cross
+// term written at its row 239 [214/220/117: the rows then run i, j, k with stores k, i, j as retail, up in XMM4/7/5]; on
+// that, the dot through shape_dot 232 (1238 B) [215/174/79], through dot3f 238, written i, j, k 234 (1239 B), axis first
+// 239; rows i, j, k after the cross call 233 (1239 B), with the cross call first 238. Both forward pairs computed in
+// place (`contact_cross(old_forward, &up, &forward); cross3f_staged(&up, &forward, &forward);`) 235 [207/186/59: the
+// second cross's stores then sit after the `lea` as retail, up still XMM4-6], through this file's 0x1f087b 235
+// [202/183/70], the fallback pair only 236. Diagnostics, removed: 1-8 unused initialised longs after the axis
+// declaration, ahead of `limited`, or ahead of the old-forward pointer 235 each, 232 at three (no state at any anchor);
+// a one-caller inline rotation taking (vector, axis, sine, cosine), 21 bodies (dot through dot3f either way, written
+// i, j, k or k, j, i, or grouped; cross through contact_cross, named, or at each row; rows direct or with i and j held)
+// 249-301 (1242-1288 B: the dot then copies the vector's components as retail does, but the vector and axis homes swap).
 // M3 lane 4 r247 (fast, 0x1e5af0 matched in each): the rotation written into a new `rotated` vector 239 (frame grows),
 // with rows i, j, k 238; the old-up pointer dropped (state->up at each use) 246, with the old-forward pointer dropped too
 // 294; the rotation rows in i, j, k order 233 (1239 B: limited.i then loads into a register as retail), orders ikj 233,
@@ -1802,6 +1825,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // normal products, never the first arm's cross); around `state->up` in the first cross's argument or the damping bit's
 // shift and mask 234 each (same code); around the direct arm's `speed * rotated.x` 576/575/585 (3020-3024 B); around the
 // high-normal arm's `normal.i * desired.i` 251/241 (3050 B)/320 (3040 B). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST; control 234): delta/limited homes are swapped in both arms (retail's general limited shares
+// desired's cell, delta the flying forward's). `limited` renamed to sort before `delta` in the direct, general or both arms
+// 234/234/234 (diagnostic, same code: names do not order these homes); `limited` declared ahead of `delta` in the general,
+// direct or both arms 234/234/234 (same code); flags flying, direct, damping, gravity re-measured 230, with both arms'
+// `limited` declared first 230. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -2280,6 +2308,23 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // first and copying it to desired 417; the count-2 arm by fields with the dot named and grouped (j + i) + k as retail sums it 318
 // (2112 B, retail's 547 instructions; direction still read from memory in the inner loop), the same with dot3f 395, through
 // vector3f_scale with the grouped dot 491, with direction initialised by fields too 471. Body unchanged.
+// M3 lane 3 r297 (H2M fast with 0x1f19c0, MATCH unless noted; control 413, aligned [exact, stack masked, registers masked]
+// 213/181/118; body unchanged). Lane 10 r91's lead rebuilt step by step: plain count + switch + the bit helper at both
+// flying tests 423 [210/183/124]; with the selected contact formed ahead of the surface/index stores 421 (2073 B)
+// [196/170/114]; with the inner candidate as `list + i * 0x48` 400 [173/154/99]; count declared between the NONE stores
+// 398 [171/152/97]; case 2's normals through the list and the counts read in the loop heads 397 [162/140/78]; a stepping
+// bool before the final loop for call and test 384 (2088 B) [149/151/85]; the same with the contact after the stores 481
+// (2085 B); with an if-chain for the switch 510 (2110 B, 0x1f19c0 11). On the 384 form everything through the first loop
+// is retail's; left are who holds XMM6/XMM7 over the iteration loop (retail: direction.i/j, loaded after the aggregate
+// copy and assigned in the arms with no store, desired.i/j reloaded at the join; ours: the normalized desired.i/j,
+// direction in memory), the entry zero that retail keeps in XMM6 up to the normalize test, the -1 constant, the flying
+// arm's subtraction merge and the final loop. On 384: `direction` declared at the top, ahead of `desired` or after it
+// (assigned at the loop) 384 each (same code); direction copied by fields 444; the fallback's minimum set ahead of its
+// direction copy 384 (same code); the inner dot with direction first in each product 384 (same code), without the normal
+// pointer 533 (2053 B); the count-2 arm by fields with the dot named and grouped (j + i) + k 383 (2104 B) [174/168/107],
+// on the 397 form 401, through vector3f_scale with the grouped dot 485 (2124 B); the count-2 arm as a one-caller inline
+// helper (desired, two normals, direction) 747 (1880 B: it stays out of line and 0x1f19c0 drops to 11). Nothing kept:
+// the lead needs the contact's move ahead of the stores (retail's read order, but a statement move) and the switch.
 // M3 lane 4 r247 (fast; aligned = instructions left after a masked sequence alignment, base 185): retail tests bit 3 of the
 // settings word as `shr 3; test al, 1` at both sites (the file's forced-inline bit-3 helper gives that) and snapshots the
 // stepping bit as a byte before the final loop (`and al, 1; mov [esp+0x84], al`, tested in the loop while the call recomputes

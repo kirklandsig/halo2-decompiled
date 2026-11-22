@@ -475,6 +475,18 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the direct form's code: `second` still loads into ESI right after the entry lea); the reference bound but the store
 // written directly and the word read through the reference 292 (979 B), the store through the reference and the word read
 // from the field 293 (980 B).
+// M3 lane 7 r214 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e, the
+// direct entry store re-measured 5 at +0x1a7): the one-dword clear of +0x58 written as a plain store in place of the
+// memset 15 (+0x111, the clears' schedule moves: the memset is retail's spelling); the inverse scale as a ternary 5
+// (+0x19e, same code); the two-pass mask loop written out as two statements 163 (977 B); the first mask pair (v6c) as a
+// two-pass loop like the second 5 (+0x19e, same code); the logarithm as `logf(inverse)` 5 (+0x19e, same code).
+// Re-measured on the direct store after the tail fix (listed in the 47 era): the chain lookup folded into the pass
+// expression 5 (+0x1a7); `second` read once through its address 5 (+0x1a7); the parameters store chained with the lookup
+// 5 (+0x19e).
+// M3 lane 8 r224 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e): the
+// table field bound as a `byte *&` with every restore-block read through it 5, with the `tables` local stored through it 5,
+// that reference bound at the top of the restore block 5 (all main's code); the chain table named from the field ahead of
+// the entry store 174 (+0x148), with the entry base from the `tables` local 178. All restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

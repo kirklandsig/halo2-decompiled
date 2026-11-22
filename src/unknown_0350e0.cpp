@@ -2898,6 +2898,13 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 2285 B (136/50); the entry table read once into a named `entries` base ahead of the loop 497 (2290 B, 146/68).
 // Reading: the loop's latch `mov edi, [esp + 0x30]` falls into the body in retail, where ours jumps over alignment
 // padding to it (`jmp; lea esp, [esp]; nop`), so the byte over retail sits ahead of the loop.
+// M3 lane 1 r155 (H2M_FAST with 0x2f2d0 and 0x2e3f0; control 281): the near distance read at both uses (no local) 281
+// (same code); the near angle read at both uses 487; the far distance named as well 492; the far angle named as well 234
+// (2290 B; the frame homes move off retail's, tag +0x34, with a new spill; register- and offset-masked aligned rows 40
+// against 39, so a positional accident, and it names only one of the two parallel far bounds: not kept); both far bounds
+// named 522 (2302 B); the clamp helper with early returns 514 (2270 B). Reading: retail holds the attenuation in XMM4 after
+// the distance block and stores it to its home in each clamp arm (the equal-distance path reloads it); ours keeps it in
+// memory.
 // m3 lane 4 r248 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0; control 281, aligned 127): the camera sums with the double cast
 // on each product's global operand 281, on both operands 281 (same code: retail loads the global first only in the j
 // products, delta first in the i and k ones, ours the global first in all six); the global-side cast with delta
@@ -4446,6 +4453,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // through a `byte *flags` as pass 1 does 317 (all five `first` in EBP). R149's always-true `last >= i &&` re-measured 227
 // (1305 B): pass 3 is then retail's instruction for instruction, the first differences are the sort call's setup order
 // and the decay loop's base, so the open cause is still only how pass 3's body is weighted.
+// M3 lane 1 r155 (H2M_FAST with 0x4b160, MATCH; control 317): pass 3's test as `created == current && removable` 317, pass
+// 4's elapsed store ahead of the initial store 317, pass 1's flags pointer const 317 (same code each); pass 1's test with
+// the bound check last 341; the limit clamp as `state->count < limit` 319.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
