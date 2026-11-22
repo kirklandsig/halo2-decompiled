@@ -2290,6 +2290,15 @@ bool function_1900a5(long index);
 // The logon compare and validity-based cursor home still differ. A user cursor deriving the cache index scored 773,
 // with direct cache indexing 777. A cache cursor deriving the user index scored 816, with the user bound once 795.
 // Relational and equality bounds had identical scores. NOT kept because all forms added bytes and differences.
+// M3 lane 11 r154 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / masked 298 by
+// difflib with addresses, then registers too, masked): the opening test through the existing online_logon_connected()
+// with online_tasks.h included 743 (aligned 697, masked 304), as this file's own `connected` switch idiom 743, the helper's
+// result held in a named bool 743, `g_467214 != NONE && online_logon_connected()` 743 (all the same code: retail's `dec
+// eax`, but the users loop then loses its alignment pad: at that offset retail pads 9 bytes, a `jmp` over a 7-byte `lea`,
+// where ours drops a pad over 7 bytes). Diagnostic, reverted at once (the one flag trial): `/arch:SSE` on this file 759
+// (aligned 691), with the switch idiom 690 (aligned 687): 0x1900a5's expansion then selects with retail's `cmovne` (its
+// own file is SSE), but the users loop pad is still missing, so the pad is not the flag. Lead for the user: retail's
+// 0x1900a5 expansion here uses cmov, so retail built this function with `/arch:SSE`.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

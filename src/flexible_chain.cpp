@@ -988,6 +988,16 @@ void __stdcall function_1160c0(real dt)
 // Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
 // as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
 // typed point setter at the target 144, at the blend 144, and at both boundaries 144.
+// M3 lane 12 r174 (h2m fast with 0x116750 and 0x1160c0, MATCH throughout; control 144). Shared rotation helper forms
+// screened on all four users (0x2551f0 and 0x1ff360 MATCH, 0x117dd0 130): cross terms declared up front (i/j/k or k/j/i)
+// and assigned i, j, k 144; declared k, j, assigned j, k with cross_i in row i 144; declared ahead of the projection 144
+// (same code each: declaration order is inert); any form that assigns cross_k before cross_j 113 (1369 B; 0x2551f0 15,
+// 0x1ff360 60, 0x117dd0 158); crosses then projection 147; cross_i, projection, cross_j, cross_k 144 (0x117dd0 152);
+// k/j/i then projection 147; j/k/i then projection 147; projection, j, i, k 144 (same code); rows j/i/k 138, i/k/j 143
+// (1368 B), k/j/i 174 (every row order loses both matched users). All 64 operand orders of the six cross products 144
+// (same code). Trial copies of other files' rotations: the angle-taking one with crosses in each row 320 (1442 B), the
+// result-vector one with mixed operand orders 399 (1457 B), the scalar-axis one written with an axis pointer 144. Body
+// statements: the angle call ahead of cross3f 320 (1353 B); the tick after the if/else 231, at the loop end 263.
 // M3 lane 4 r246 (H2M_FAST with 0x116750 and 0x1160c0, MATCH each time; control 144): the selected segment through a
 // file-local inline element getter taking the definition and the index 144, through a forced-inline one 144 (same code: the
 // base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as

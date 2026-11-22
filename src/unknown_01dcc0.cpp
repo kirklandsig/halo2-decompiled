@@ -191,7 +191,8 @@ bool function_01de20(long index)
 dword function_1d6f0(bool linear, bool alternate, dword format, long width, long height);
 long g_55e6c0;
 
-// score 29 (was 29): r133 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// score 29 (was 29): r131, r232 and r234 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// r133 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
 // keeps the size packing unfolded (lea/shr 6/shl 24/sub, shl 12/sub) where /Og folds it
 // ((w<<20)&mask, (h+0xfffff)<<12), and height/count then take each other's register.
 // Kept: the offset declared after the kind store (data stays in EBP) 107; one result variable
@@ -517,6 +518,17 @@ long g_55e6c0;
 // data test, 36 (the `imul` hoists above the test); the entry bound as a reference (`entry.` throughout) 29 (same code);
 // the round-51 signed pitch/packed lead with the constant-left clamp 29 (484 B); that lead with the entry pointer at the
 // top 36 (484 B).
+// M3 lane 5 r232 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp's store moved between the data
+// store and the +0x8c clear 33; round 51's signed pitch/packed lead (re-measured 29 at 484 B) with the select read from
+// the stored flag field (`entry->flag94 ? packed : 0`, 0x1ddd0's idiom) 29 (484 B); the clamp as a `levels` local
+// capped by two independent ifs 168 (497 B); round 51's lead with the packing ahead of the clamp, after the +0x8c clear,
+// 31 (the height in EAX as retail, but the clamp branch and the zero register move); the clamp written non-negative
+// first (`count >= 0 ? (count > 4 ? 4 : count) : 0`) 32. All restored.
+// M3 lane 5 r234 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): early returns (`return false;` for a busy
+// entry, `return true;` on the other paths, no result local) 104 (486 B, first difference +0x1); the clamp through the
+// CRT's `__min(__max(count, 0), 4)` 140 (484 B), as `__max(0, __min(count, 4))` 151 (495 B); the clamp's upper arm as
+// `count < 4 ? count : 4` 30; round 51's signed pitch/packed packing with the `__min(__max(...))` clamp 150 (495 B).
+// All restored.
 // M3 lane 15 r133 (h2m fast; control 29, aligned 20 unmatched rows; the round-51 signed lead re-measured 29 at 484 B,
 // aligned 18): the two header zero stores as one chained assignment 31; the clamp's lower test as `!(count >= 0)` 29
 // (same code); on the signed lead the size word's three terms named in retail's order of computation (rows, pitch,

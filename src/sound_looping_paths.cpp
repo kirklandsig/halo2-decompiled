@@ -867,6 +867,22 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // order (tag, source, decibels, cluster) and the three 1.0f defaults as statements 898 (same code); with a short
 // choice count 930 (3304 B). The silence floor g_44a0b4 declared const where it is defined and in both files that read
 // it 846 (same code here), but matched 0x2197b0 falls to 15 and 0x18d730/0x18dc90 rise, so not kept.
+// M3 lane 6 r230 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, all MATCH; control 846; difflib-aligned / register- and
+// offset-masked 998 / 470): the existing-sound scan as a NONE-start while over data_next_absolute_index_inlined 893
+// (3268 B, 977 / 453); through the existing data_iterator_next_inlined (iterator from NONE, the list storing the
+// iterator's datum index) 860 (3296 B, 1022 / 415): the scan is then retail's exactly (`or esi, -1; mov ebp, 0xfdff;
+// inc esi; js`, one bit-search expansion with the index advanced in place, the 0x200 clear as a word AND from the
+// hoisted mask), retail evidence for the iterator, but the pool stays in EDX (retail EDI) and the score rises; that
+// with long query and choice counts 993 (3225 B, 1082 / 394); with the targets and the existing list as count-first
+// records (diagnostic: retail's homes put each count right ahead of its array) 905 (the frame differs); with `used` and
+// the existing count declared ahead of the list 860 (same code). Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, aligned 1004): lane 11 r133's
+// lead re-measured 879 at 3291 B (aligned 305, registers and offsets masked 152). On main's body: the decibel pin helper as
+// one conditional expression 905 (3337 B); `used` declared ahead of the existing count 846 (same code); the fade scan's
+// near-zero test with its arms swapped under `>=` 838 (an arm swap, match-only; retail places both arms after the listener
+// tail's `ret` and jumps back to the scan head, the record-pool iterator layout); the target level named ahead of the
+// current level in the target loop 857 (3332 B); the first scan's datum index formed ahead of its type and source tests 846
+// (same code). Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

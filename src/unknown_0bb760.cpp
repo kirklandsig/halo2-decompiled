@@ -983,6 +983,14 @@ void function_3dd10(long object_index, bool force);
 // both sets 77. Signed completed-choice bound 61, count first 170, scoped remainder and variant
 // scratch 77. NOT kept: the 61 form restores the count and mask homes, but compares a second ordinal
 // one ahead of the scan index, and the ordinal store still follows the bank guard.
+// M3 lane 12 r175 (H2M_FAST with 0x1318d0, 0x131a00, 0x3dd10, all MATCH; control 77; R = the rolled form: enclosing test
+// `0 < choice_count`, scan `for (long j = 0; choice_count > j; ++j)`, blend through `fmod(seed, 1.0f)`, re-measured 74 at
+// 1034 B, the mask in EBP and the count spilled to +0x10, the weight in the colours home): on R, the selection loop testing a
+// copy of the mask taken just ahead of it 83 (mask still EBP); the guard on `entry->count` with `choice_count` declared
+// inside it 74 (same code); the scan sum as `weight = choice->weight + weight` 74 (same code: retail's choice-first add is
+// not an operand-order spelling); the selection guarded again by `0 < choice_count` 74 (folds); the four accumulators
+// declared ahead of the count (their stores hoisted above the guard) 315 (999 B). A 600 s annealing permuter run on this
+// body (67 tries) found nothing below 77. Body unchanged.
 // M3 lane 15 r134 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77, aligned 34; R = r280's rolled form
 // with the float remainder and the outer guard, 74; N = R without the outer guard, 95 [61]). LEAD: any one of the mask,
 // `last` or `variant` given its value ahead of the choice-count test (declared just before `long choice_count`) gives

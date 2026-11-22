@@ -214,7 +214,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 925 (was 925): r132 (m3 lane 15, lead below), r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// score 925 (was 925): r130, m3 lane 8 r220, m3 lane 11 r151 and m3 lane 1 r154 unchanged (r220, r151 and r154 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// r132 (m3 lane 15, lead below), r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
 // previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
 // shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
@@ -869,6 +870,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 914/921/874 in both filter orders. Early raw capture with a later Boolean result: 921 in both orders.
 // NOT kept: the raw forms compare a dword with NONE at the sphere filter where retail tests a saved byte.
 // The 874 form grows to 3744 bytes. Late Boolean materialization grows the frame to 0x2cb4.
+// M3 lane 1 r154 (H2M_FAST with 0x2c0d00 and 0x29a190, both MATCH; control 925): the definition no-obstacle view as a word
+// bitfield alone 924 (retail's shift-and-test, re-measured); the type-0 other-actor test inverted (NONE arm first, the
+// other-actor branch in the else) 914 (masked aligned 125 -> 179: not retail's layout; an arm swap, match-only); the vehicle
+// block's dot as one expression 924 (3741 B); the vehicle dot through vector3d_from_points3d and dot3f 922 (3740 B); both
+// marker-loop up dots as dot3f(&offset, &up) 923 (3741 B). Body unchanged.
 // M3 lane 15 r132 (H2M_FAST with the three callers and 0x2c0d00/0x2c3550/0x29c860/0x2c3030/0x2c2060; control 925 = plain;
 // [aligned, register-masked] difflib counts, control [519, 491]): LEAD, not kept (a local copy at the four arm tests with the
 // field read directly at the three later uses is the reload mix, match-only): the four type tests through one `long type`

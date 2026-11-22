@@ -355,6 +355,9 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // `__assume((unsigned long)type < 6)` before the switch, no default, 434 (1840, the range check
 // stays); the builder as plain inline 1829 (out of line, 0x1d6ad0 63); the builder written into
 // the body 445 (0x1eb1b0's argument moves to the stack); `break` after `__assume(0)` 22.
+// Round 228 (m3 lane 6, fast): `constraint` initialised NULL at its declaration 22; `constraint = NULL;` ahead of
+// the default's `__assume(0)` 22; case 1's friction ternary as if/else 22; the rigid-body list getter as if/return 22
+// (same code each); the joint count test as its own `break` ahead of the element address 486 (1856 bytes).
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

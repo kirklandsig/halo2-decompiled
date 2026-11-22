@@ -1962,7 +1962,8 @@ void function_27dd10(void)
 	compute_orientations(1, 0, false, false);
 }
 
-// score 2 (was 2): r133 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
+// score 2 (was 2): r131, r232 and r234 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
+// r133 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
 // The order is a register-allocator tie that follows the constants live in the walk's loops (any
 // new one flips it) and not the source shape. Tried: blend-1 translation and scale through
 // interpolate_real 159; a node lookup returning the index or NONE 382; the per-arm walk as a
@@ -2174,6 +2175,16 @@ void function_27dd10(void)
 // (same code); the walk's output-cursor advances as `+= 1` 2 (same code); the interpolation's translation arm as `+=`
 // statements with a `real const &` fraction 2 (same code); component_interpolate reading the blend fraction once into a
 // value local for all three arms 2 (0x288570 120). All restored.
+// M3 lane 5 r232 (h2m fast with 0x281b60 and the four matched walk users; control 2): quaternion_blend's fraction
+// copied into a local that the asm reads 2; component_interpolate's rotation arm reading the blend fraction into a local
+// first 2; in function_288572 the destination lookup's result named and read through a `bool const &` 2 (0x289580 78);
+// that result in a plain named bool 2 (same code); the interpolation arm's apply destination through an
+// `s_animation_output *const &` bound to the output pointer 365 (1742 B; 0x281b60 352, 0x285750 370). All restored.
+// M3 lane 5 r234 (h2m fast with 0x281b60 and the four matched walk users; control 2): quaternion_blend taking the
+// destination and source by reference 2; component_decompress as a switch on the component 2 (0x288570 120, 0x289580
+// 78); orientation_vector_blend and orientation_scale_blend taking both outputs by reference 2; node_destination_get
+// with failure early returns (`if (!bit) return false;`, `if (index < 0 || index >= count) return false;`) 2; the
+// output pointer as `&g_sampling_settings.field_4c[index]` 2 (all but the switch the same code everywhere). All restored.
 // M3 lane 15 r133 (one-object link-time screen of this file scoring all 60 samplers against retail at once; control 58
 // of 60 equal, this function 2, 0x281b60 2). Retail has both reload orders among siblings of one source (0x285750 and
 // these two flags first, 0x2898b0 count first), and the pair exists only with the destination mask (the map-flag bit
@@ -2266,7 +2277,8 @@ void function_2818e0(void)
 	compute_orientations_component_count(2, 0, false, false);
 }
 
-// score 2 (was 2): r133 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
+// score 2 (was 2): r131, r232 and r234 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
+// r133 unchanged. The two stack slots are read in the opposite order inside the inlined helper.
 // The same allocator tie as 0x27dff0. Tried: blend-2 `+=` and `*=` 2; the blend-2 translation as a
 // loop over vector.n 364; the multiply's sign mask as long 2, as `1UL << 31` 2, as real lanes 245.
 // Round 40 (screen): the existing compute_component_orientations_shared with each of node index, bit
@@ -2460,6 +2472,12 @@ void function_2818e0(void)
 // settings' decoder table in place of component_decompress 39 (0x289580 2, 0x288570 120); the pass's bit-flags pointer
 // selected in function_288571 ahead of each pass instead of in the walk 2 (same code); function_288573's apply index
 // ahead of its output parameter (definition and both calls) 2 (same code). All restored.
+// M3 lane 5 r232 (the shared-walk trials listed above 0x27dff0): the blend fraction local in quaternion_blend 2; the
+// interpolation's rotation fraction local 2; the lookup result through a `bool const &` 2; the lookup result in a plain
+// named bool 2; the apply destination through an `s_animation_output *const &` 352 (1685 B). All restored.
+// M3 lane 5 r234 (measured with 0x27dff0, the same walk forms; control 2): the blend's destination and source by
+// reference 2; the decompressor choice as a switch 2; the vector and scale blends' outputs by reference 2; the node
+// lookup with failure early returns 2; the output pointer as a typed element address 2. All restored.
 // M3 lane 15 r133 (one-object link-time screen scoring all 60 samplers; the forms and counts are listed above
 // 0x27dff0): template instances 4 (per-arm apply 2); the counters as one array global 4; the decoders or the bit-flag
 // pointers as array members 2 / 2; bit-test spellings in either helper 2; each existing wrapper 4, 2, 31, 7, 32 and 46

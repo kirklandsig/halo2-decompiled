@@ -374,7 +374,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 286 (was 286): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
+// score 286 (was 286; m3 lane 11 r152 unchanged, its line just above the marker): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
 // homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // MiniMax B (11-20): no new form, no lower score (286): the link count's increment split out of the copy's index
 // (`memcpy(&links[link_count], ...)` then `link_count++`) measures 298, so the post-increment form is the better one;
@@ -1041,10 +1041,15 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // file 2 again (the same back-edge pair). On it: `special ||` tested first in the type chain 341 (1372 B); the special
 // test as a one-case `switch (node->target.type)` 79; the scan's count read through `short const &` 2; the scan's steps
 // read through `s_path_step_view *const &` 2 (same code each); the truncation as `count = ++j;` 35 (1392 B). Body unchanged.
-// score 286 (was 286): Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
+// Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
 // short capped fill bound with the same guards 396/396/396. Separate seed node 390,
 // shared edge-table receiver 391. NOT kept: frame 0xe4 returns but the state is stacked
 // and the matched caller changes. The opening extra cursor and flag homes remain.
+// M3 lane 11 r152 (H2M_FAST with 0x270930, MATCH each run): the two-flag lead rebuilt on today's body 2 again (the same
+// scan-latch pair). On it: one file-local inline range predicate shared by the link test and the scan's edge test,
+// expression return 2, `if` with `return true; return false;` 2 (same code each: no vanishing block); the link test
+// through an inline edge getter returning the edge or NULL 314 (1389 B); the previous point as a default then
+// `if (j > 0)` 280 (1396 B, 0x270930 260); `*const steps` in the definition 2 (same code). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

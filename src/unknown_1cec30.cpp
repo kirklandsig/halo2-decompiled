@@ -1709,7 +1709,8 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
-// score 26 (was 26): r133 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
+// score 26 (was 26): r131, r232 and r234 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
+// r133 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
 // M3 lane 11 r135 (fast; control 26): the magnitude helper taking its value by `real const &` 26; `target -= position`
 // through a forceinline helper writing through a pointer 26; the stop distance in a forceinline (velocity, step, `real
 // const *` time step) helper given `&delta_time` 26; the scale helper writing its result through an out parameter 26 (all
@@ -1932,6 +1933,15 @@ PRIVATE __forceinline real const &component_time_step()
 // M3 lane 15 r131 (h2m fast with 0x1d87b0/0x1d06c0/0x1d0400/0x181db0; control 26): compare operands constant-first or
 // target-right: the step test `0.001f < step` 26; `0.0f > target` 26; `step < target && stop_distance < target` 26; the
 // scale helper's `0.001f < exponent` and `0.001f < mass` 26; the ratio's `0.001f < magnitude(limit)` 26 (all the same code).
+// M3 lane 5 r232 (h2m fast with 0x1d24a0; control 26): the magnitude taken after `target -= position` with the
+// step-first test 55; the stop distance as `0.5f * (velocity / step + 1.0f) * (velocity * delta_time)` 26; its sum as
+// `1.0f + velocity / step` 26; the final change named ahead of the return's pin 26; the step started as the scale
+// result and multiplied in place (`step *= delta_time;`) with the step-first test 26 (the last four the same code).
+// All restored.
+// M3 lane 5 r234 (h2m fast with 0x1d24a0; control 26): the scale helper's result started as the acceleration and
+// multiplied by the power (`result *= (real)pow(...)`, no else arm) 132 (468 B), with the stop-first test 132; three
+// natural names (the power's base and the power in the scale helper, the limit's magnitude in the ratio) 26 (same code),
+// with the stop-first test 43; the ratio stored by if/else with no fraction local 143 (477 B). All restored.
 // M3 lane 15 r133 (h2m fast; control 26; a = aligned unmatched rows, control 14): what gives retail's kept address
 // (`mulss xmm0, [eax + 4]`, `add eax, 4`, later `[eax]`), measured here. (1) The rate's address defined on two paths:
 // the step product written in each arm of the mass test, the getter called in each arm, keeps `add eax, 4` and reads the
