@@ -249,6 +249,10 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // offset read through a `real const &` before its fabs 2 (the offset block and angle homes become retail's, as the
 // at-each-use form; a steering form, kept only with a match); on the 2 form, an unused `raw x * scale` local ahead of
 // the angle 550 (1996 bytes, no flip: a dead reference does not count). Body unchanged.
+// Round 228 (m3 lane 6, fast, all on the fabs-at-each-use 2 form): products as `raw / 32767.0f / maximum` (reciprocal
+// made by the compiler) 20; the clamp testing the upper bound first 45; products as `boost * scale * raw` 2 (same
+// code); the first stick's raw coordinates named as float locals for atan2 and the products 535; products as
+// `raw / maximum * scale` 20. 1.0 still loads first in every form.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

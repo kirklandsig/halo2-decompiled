@@ -4921,6 +4921,14 @@ struct s_128ca0
 // operands with permutation first, processed bits first, or both scoped to publication 48 each.
 // Channel arguments named after publication, with or without scoped gain objects, 48 each.
 // The two scratch-register exchanges and full-width synchronization sentinel still differ.
+// M3 lane 6 r230 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17;
+// Lc = L with `char count = NONE`, re-measured 204): the definitions view named once for the range and bound lookups on
+// L 17, on Lc 204 (same code each); on Lc the flag cleared before the decrement 203 (1053 B); the count block as a
+// function in the controller file 166 (1017 B, it stays a call); on Lc the four statements after the range lookup
+// (permutation P, field_34 store Z, effect-index store E, bound B) in the 22 orders not listed above: PZBE 216, PEZB
+// 208, PEBZ 210, PBZE 218, PBEZ 218, ZPEB 209, ZPBE 221, ZEPB 78, ZEBP 82, ZBPE 44, ZBEP 81, EPZB 79, EPBZ 79, EZPB 78,
+// EZBP 82, EBPZ 82, EBZP 82, BPEZ 45, BZPE 44, BZEP 81, BEPZ 82, BEZP 82. With the bound early the first controller
+// block and the count block are retail's and only the pitch block's registers move. Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

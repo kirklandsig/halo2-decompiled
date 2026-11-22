@@ -1699,6 +1699,14 @@ PRIVATE inline long score_string_list_1608e0()
 // Existing player accessor for the viewer, row or both 721/685/719; viewer, row or both by reference
 // 721/685/719; typed score member with viewer or both 721/719. NOT kept: the accessor preserves a
 // sentinel branch after 16-bit masking and leaves the frame at 0x798.
+// M3 lane 6 r230 (H2M_FAST with 0x161420, MATCH; control 679; lane 4 r213's LEAD re-applied, 610). Reading: retail's
+// origin point at +0x10 shares its slot with the later header bounds rectangle; after the title-text call 0x15f120
+// retail reloads x (dword at +0x10) and y (dword at +0x12) for the far edges and the advance, and keeps y across the
+// title's own initialize call, so only the call that writes the local title buffer is treated as writing the point. On
+// the lead: the origin as a two-short array 610 (same code); that copied whole into the row position ahead of the fade
+// 693 (y is then reloaded after 0x15f120 as in retail, x kept in EBP from the copy). On this body: `y` declared short
+// 681; the time flag as one `||` expression 701 (2888 B); the scroll clamp's arms swapped 676 (under the bar, an arm
+// swap by score: not kept). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

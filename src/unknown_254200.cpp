@@ -346,6 +346,10 @@ void function_254200(void)
 // (all the same code); the size read through a `real const *` to the size local at the x sums 259 (1205 B, re-read per
 // use). Diagnostic: 0x2548f0's body emptied 4 (0x254200 MATCH), so the pair does not follow the other function's
 // compilation.
+// M3 lane 6 r229 (single-address H2M_FAST, control 4): the colour helper scaling a copy of the colour in place 218 (1133 B);
+// the two lookup tags read into named longs before each bitmap lookup 4 (same code); the colour helper storing its three
+// products into a colour local member by member 28; the point copy and size declared after the bitmap choice, ahead of
+// the texture block 57; the size alone there 25. The x, y + size, constant group stays ours.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -790,6 +794,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // of its own 2; the point parameter a const pointer 2 (same code each). Diagnostics: 0x254490's body emptied 2
 // (0x254200 MATCH); the colour call after the first texture call 359 (first +0xe); the first region's inline depth 1
 // instead of 0 419 (2365 B, the later calls inline).
+// M3 lane 6 r229 (H2M_FAST with 0x254490, control 2): the pixel-shader clears and commits through the program-words view
+// that the matched 0x254200 uses 2 (same code); the colour read as a `real const *` triple 2 (same code); both together 2;
+// the first quad's first two texture coordinates through one `point2f` updated in place 393 (2286 B); its first two
+// depth pairs from a `real const depth[2]` 18. Reading: 0xc2d00's note records the same kind of slow-path reload tie
+// flipping with other files' contents.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

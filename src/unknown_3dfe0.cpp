@@ -273,6 +273,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // byte cast of its address 216 and its false store so 216 (the address is seen through: update stays a candidate); on
 // update-first, `bool sample;` declared right under update 218. Retail keeps the object in EBX from its lookup, stores
 // its home after the false store and reloads it only in the force arm; the two homes are force 0x10, object 0x14.
+// M3 lane 6 r228 (h2m fast with 0xd1850, MATCH; control 21): force started true and cleared under `initialized && valid`
+// with no hidden return inside 49 (830 B); the object read by raw header arithmetic 21 (same code); the update-time test
+// right after the hidden return 240; update declared ahead of force with the not-force arm first in braces (hidden
+// return) and `else update = true;` 218; force ahead of the object lookup with update elapsed after the clamp 236.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
