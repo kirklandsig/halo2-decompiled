@@ -2771,6 +2771,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
 // fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
 // 431. All retain the 0x1c frame and the existing copy schedule.
+// M3 lane 16 r177 (h2m fast with 0x110ab0; control 429; the r160 lead re-measured 403 at 2416 B, with case 2's aggregate
+// copy and case 4's direct facing reads 518 at 2384 B, actor EDI / state EBX). New forms, same code on both bases: case
+// 20's actor position named once for its two difference calls 429 / 518; the state local declared `const` 518; case 2's
+// two short stores ahead of the aggregate copy 518; case 21's 0x20 flag set through the parameter's own flags field 429 /
+// 518, and through one read of the parameter's address 518. The exchange is not a matter of names or order. Body unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

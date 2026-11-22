@@ -857,6 +857,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // through vector3d_from_points3d 672 (2874 B). Diagnostics, restored: the active pin's lower bound non-zero 685, both
 // normalise compares against a non-zero constant 712, both 668 (new constants, so they do not isolate the shared XMM6
 // zero). Body unchanged.
+// M3 lane 16 r177 (h2m fast with all 18 of the file's functions, which reproduces the full build's 603; with only
+// 0x1eb6f0 listed the image builds 597 under a builds-differently caveat): kept, the output block's target difference
+// through the existing vector3d_from_points3d(pos, &s->target, &dl) with the three qr rate rows grouped ahead of it, 603
+// (byte-identical code). Tried: d read at each use through its address (`vector3f *const *home = &d`) 675 (2885 B, d still
+// EBX: the reads are forwarded); the volatile sample count declared after w 603; qr declared at the active block's top
+// 603; w scaled by the rate in its initialiser 667 (2886 B). d keeps EBX in each.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1028,13 +1034,11 @@ long function_1eb8a0(
 		real hi = (e3 - third3) * 3.f * 0.5f;
 		if (lo < 0.f)
 			lo = 0.f;
-		vector3f dl;
-		dl.i = s->target.x - pos->x;
 		qr.i = qr.i * globals->rate;
-		dl.j = s->target.y - pos->y;
 		qr.j = qr.j * globals->rate;
-		dl.k = s->target.z - pos->z;
 		qr.k = qr.k * globals->rate;
+		vector3f dl;
+		vector3d_from_points3d(pos, &s->target, &dl);
 		real dist = (real)sqrt(length_sq3f(&dl));
 
 		if (e3 > 0.001f)

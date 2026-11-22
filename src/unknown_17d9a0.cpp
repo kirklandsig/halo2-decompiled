@@ -1102,6 +1102,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // the prologue changes); the definition read through the tag table at each of its four uses (no `definition` local)
 // 720 (3649 B); `remaining -= group_count;` after the search loop 746; the sign through dot3f re-measured 699 (3615 B);
 // the short-axis arm first (`if (fabs(length) < 0.0001f) length = 0.0f; else ...`) 535 (same code). Body unchanged.
+// M3 lane 16 r177 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535, difflib-
+// aligned with stack offsets and registers masked 355): the axis scaled by three `*=` statements k, j, i 559 (3631 B,
+// masked 339); cosine declared ahead of sine 535 (masked 350, a schedule change only); `one_minus_cosine` declared
+// after the three squares 535 (same code); the nine rotation stores column by column (forward.i, left.i, up.i, ...)
+// 662 (first difference +0x7); the scaling loop index as a short 600 (3615 B). Body unchanged.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

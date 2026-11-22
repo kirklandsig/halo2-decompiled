@@ -766,6 +766,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // with a single scale read 256/261. Shared vector setter in the same four forms
 // 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
 // forms score higher, and the frame remains 0x20.
+// M3 lane 16 r177 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221, difflib-aligned 270, register-
+// masked 156): the perspective weight sum as `local_4 + local_5` 221; field_14 stored ahead of the blended position 220
+// (1113 B, one point); field_10 ahead of field_c 221; the depth limits as `4.f * k * k` 221 (same code each); the view
+// helper's scale test as `1.f != arg_0` 259 at retail's 1136 B (aligned 263, masked 168: it loads the scale fifth and
+// compares the constant from a register, not retail's shape). Body unchanged.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

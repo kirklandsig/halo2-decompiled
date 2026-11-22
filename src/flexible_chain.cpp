@@ -993,6 +993,10 @@ void __stdcall function_1160c0(real dt)
 // base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as
 // `i < count ? i : count - 1` 145; the tick increment ahead of the selection 285 (1376 B). Retail also ends each pass with a
 // store of the rotated offset's middle term to +0x70 from XMM5 where this build stores it inside the rotation. Body unchanged.
+// M3 lane 16 r177 (h2m fast with 0x116750 and 0x1160c0, MATCH each; control 144): the name-order lever for the shared
+// cell at +0x20 (retail +0x14, below the axis): `axis` renamed `turn_axis` 144 and `unit_axis` 144, `scale` renamed
+// `along` 144 (same code each: names do not order these homes); the normalise test as `!normalize3d(&axis)` 144 (same
+// code); sine and cosine named ahead of the rotation call 169 (1373 B, first difference +0x2). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
