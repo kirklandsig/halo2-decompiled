@@ -4176,6 +4176,15 @@ extern vector3f *g_4687bc;
 // M3 lane 13 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the permuter (fast, anneal, one
 // job, 1810 s, 70 tries) best 8; the rigid-body index as a `long const` 8; the rigid-body index declared between the
 // material and the component lookup, assigned at the call 8 (both the same code). All restored.
+// M3 lane 12 r178 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8). Matched 0x22a110 has retail's
+// `lea edx, [eax + eax*2]; mov eax, [reg + 0x70]; shl edx, 5` where the 0xb67a0 result indexes the array directly (it
+// calls 0xb67a0 twice; this function calls it once, so that spelling does not apply), and 0x1d1b60 reads the node count
+// through an array pointer and re-reads the array for the node. Tried: 0x1d1b60's spelling (an array pointer for the
+// node-count test only, the node through `rigid_bodies.data[index]`) 12; the array pointer for the test and the element
+// pointer for the node 12; the node count through the element pointer and the node through the array again 12 (all three
+// form the element first with `lea eax, [ecx + edx]`); the callee's result named as a `short` and widened into the index
+// 8 (same code); that `short` indexing the element with the widened index for the NONE test 25 (1099 B, a second
+// `movsx`); the element indexed by `(short)rigid_body_index` 73 (1101 B).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

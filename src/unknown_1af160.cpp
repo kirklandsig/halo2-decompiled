@@ -304,6 +304,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // the entry record 12 (the three the same code); the second 0x25d690 call on a fresh prop_node_get of the actor's prop
 // index 87 (1002 B); the prop index read once at the top into a long used for the node lookup and the 0x265c30 call 256.
 // All restored.
+// M3 lane 12 r178 (h2m fast with 0x1e1f20, MATCH; control 12, the same two swapped home pairs): changes to the set of
+// locals, each match-only: no marker-pointer local, `local_6 ? local_7 : NULL` written at the record store and at the
+// 0x1f4a20 argument 12; the 0x1e5280 record carried in the 0x1e4be0 pointer local 12; the 0x265c30 flag carried in
+// `local_6` 12; the 0x1f4a20 result flag carried in `local_6` 12 (all four the same code: none of these locals owns a
+// frame home); the chosen reference as its own local from the top of the not-equal arm 135 (979 bytes).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
