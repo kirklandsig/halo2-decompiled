@@ -1842,6 +1842,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // (1385 B, the plain call's code); the node index named ahead of the parent test 20 (same code); parent and flag as two
 // conditional initialisers on the index test 45 (1391 B); the matrix written as a conditional argument of the 0xbdc40
 // call with only the flag set under the test 42 (1392 B). Re-measured: the parent object named for the matrix only 44.
+// M3 lane 14 r142 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): the no-model parent index and node
+// read through the current-object pointer 214 (1408 B), on lane 3's else-arm defaults form 209 (1403 B); on the else-arm
+// form (re-measured 18 at 1394 B) the mirrored flag ahead of the matrix 18, `long const` parent index 18, the parent node
+// read into a `short` ahead of the test 18 (the else-arm form's code each). Retail keeps the defaults in EAX/DL across the
+// test with the pool still in ECX, so its index takes ESI and is copied to EAX in the arm; still BLOCKED-BY 0xb8bd0.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

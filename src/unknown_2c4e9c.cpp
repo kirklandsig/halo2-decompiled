@@ -3344,6 +3344,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // two-definition id with the iterator's pool stored first and the two NONE stores chained 36 (87 B: NONE still cached in
 // ECX); the field bound to a `long const &` for the guard with the id copied from it for the hit test 30 (same code).
 // Re-measured the if/else two-definition id 36: its head is retail's through `mov eax, [field]`, then `or ecx, -1`.
+// M3 lane 14 r143 (h2m fast with 0x2c9a58, matched in each): the id from a file-local inline getter switching on a
+// constant selector into a NONE-initialised result 30, with a return per case 30 (the switch folds before allocation);
+// the walk as `while (next(&iterator) && definition->map_id != map_id) {}` with the selection after it on
+// `iterator.datum` 27 (80 B, not retail's rotated loop; the head unchanged); that with the pool stored before the guard
+// 25 (layout only, the same direct EBX load); the guard joined with `&& data` 33 (84 B); `if (map_id == NONE) return;`
+// with `return` after the selection 30. All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

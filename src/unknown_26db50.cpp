@@ -1224,6 +1224,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 58/112, complement first 26/14/79/58/112, the projection after the crosses 47/160/147/67/154, the projection read off
 // the dot inline with the named complement 77/91/79/58/128, the complement named ahead of the crosses with the projection
 // after them 47/160/147/67/181 (0x1ecf50 is lost in each). All restored.
+// M3 lane 14 r142 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26): the rotation through the existing
+// scalar-axis inline helper of src/unknown_146240.cpp (axis components as arguments) 243 (1110 B); the marker store and the
+// 0x26d100 call through a forceinline wrapper taking the unread pathfinding pointer with its address named (0x26d0e0's
+// unread-parameter form) and a plain local for it 164 (1058 B: the unread store is dropped, so retail's store is not an
+// inlined parameter's); a `vector3f const *up` local for the 0.5 lift loop only 26 (same code); the angle, sine and cosine
+// in their own block 26 (same code); M with that lift-only pointer 20 (M's code). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

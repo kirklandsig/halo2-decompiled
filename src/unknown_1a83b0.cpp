@@ -795,6 +795,10 @@ s_1a8a10 g_4453c0[] =
 // forwarded away and j is shared). Diagnostics (duplicated statements, not keepable): the copy at the end of each arm 30
 // (merged into the join ahead of the y store, j still shared); the copy in each arm between the x and y stores 31. The
 // copy made at the function's top, ahead of the path-trace call, 170 (564 B: the copy is kept on the stack).
+// M3 lane 14 r143 (h2m fast with 0x1a8c30, MATCH; control 17): the facing copy assigned j first 20; the rotated point
+// declared at function scope 17, the facing copy declared ahead of the score array 17, the score array declared ahead of
+// the rotated point 17 (the three the same code); the negated j named ahead of the first switch 48 (its load stays ahead
+// of the dispatch). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
