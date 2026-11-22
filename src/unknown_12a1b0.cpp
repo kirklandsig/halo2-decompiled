@@ -1509,6 +1509,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // and forceinline 24 (0x126df0 matched); the fading bit read into a named bool ahead of the gain test 24 (same code).
 // Diagnostic: 0x126df0's halves in the other order (fade-out first) 24 (0x126df0 66), so the inlinee's symbol order is
 // not the tie-breaker. Restored.
+// M3 lane 11 r155 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all MATCH unless noted; control 24): in
+// 0x126df0 the fading bit set through the file's flags_set_bit (0x128020's spelling of the same fade) in the fade-in half,
+// the fade-out half or both 24 each (same code); the element looked up again after the gain's join (0x126360's re-get
+// after a call) 76 (223 B; 0x126df0 77: the second lookup is not merged across the 0x12a810 call); the fade-in element
+// formed at 0x126df0's top ahead of its NONE test 24 (0x126df0 52); the element through the typed-pointer pool form
+// `(T *)pool->data + (index & 0xffff)` in the state test or in 0x126df0 24/24 (same code). Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -487,6 +487,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // table field bound as a `byte *&` with every restore-block read through it 5, with the `tables` local stored through it 5,
 // that reference bound at the top of the restore block 5 (all main's code); the chain table named from the field ahead of
 // the entry store 174 (+0x148), with the entry base from the `tables` local 178. All restored.
+// M3 lane 11 r155 (h2m fast with 0x16f60/0x17000/0x189a0, all MATCH; control 5 at +0x19e, the direct entry store
+// re-measured 5 at +0x1a7): permuter (`--fast --anneal --jobs 1`, 600 s, 59 tries, 17 failed builds) none below 5; the
+// restore block's entry stored and kept in the existing `entry` local by one chained assignment, the word read through
+// the local, from the direct store 5 (+0x1a7), from the reference 5 (+0x19e); the tables stored to the field and the
+// `tables` local by one chained assignment on main's body 5 (+0x19e), on the direct store 5 (+0x1a7) (each its base
+// form's code). All restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
