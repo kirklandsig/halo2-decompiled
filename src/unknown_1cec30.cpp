@@ -1709,7 +1709,7 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
-// score 26 (was 26): r131 and r232 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
+// score 26 (was 26): r131, r232 and r234 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
 // M3 lane 11 r135 (fast; control 26): the magnitude helper taking its value by `real const &` 26; `target -= position`
 // through a forceinline helper writing through a pointer 26; the stop distance in a forceinline (velocity, step, `real
 // const *` time step) helper given `&delta_time` 26; the scale helper writing its result through an out parameter 26 (all
@@ -1937,6 +1937,10 @@ PRIVATE __forceinline real const &component_time_step()
 // `1.0f + velocity / step` 26; the final change named ahead of the return's pin 26; the step started as the scale
 // result and multiplied in place (`step *= delta_time;`) with the step-first test 26 (the last four the same code).
 // All restored.
+// M3 lane 5 r234 (h2m fast with 0x1d24a0; control 26): the scale helper's result started as the acceleration and
+// multiplied by the power (`result *= (real)pow(...)`, no else arm) 132 (468 B), with the stop-first test 132; three
+// natural names (the power's base and the power in the scale helper, the limit's magnitude in the ratio) 26 (same code),
+// with the stop-first test 43; the ratio stored by if/else with no fraction local 143 (477 B). All restored.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

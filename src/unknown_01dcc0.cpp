@@ -191,7 +191,7 @@ bool function_01de20(long index)
 dword function_1d6f0(bool linear, bool alternate, dword format, long width, long height);
 long g_55e6c0;
 
-// score 29 (was 29): r131 and r232 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// score 29 (was 29): r131, r232 and r234 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
 // keeps the size packing unfolded (lea/shr 6/shl 24/sub, shl 12/sub) where /Og folds it
 // ((w<<20)&mask, (h+0xfffff)<<12), and height/count then take each other's register.
 // Kept: the offset declared after the kind store (data stays in EBP) 107; one result variable
@@ -523,6 +523,11 @@ long g_55e6c0;
 // capped by two independent ifs 168 (497 B); round 51's lead with the packing ahead of the clamp, after the +0x8c clear,
 // 31 (the height in EAX as retail, but the clamp branch and the zero register move); the clamp written non-negative
 // first (`count >= 0 ? (count > 4 ? 4 : count) : 0`) 32. All restored.
+// M3 lane 5 r234 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): early returns (`return false;` for a busy
+// entry, `return true;` on the other paths, no result local) 104 (486 B, first difference +0x1); the clamp through the
+// CRT's `__min(__max(count, 0), 4)` 140 (484 B), as `__max(0, __min(count, 4))` 151 (495 B); the clamp's upper arm as
+// `count < 4 ? count : 4` 30; round 51's signed pitch/packed packing with the `__min(__max(...))` clamp 150 (495 B).
+// All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
