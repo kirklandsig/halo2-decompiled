@@ -952,6 +952,10 @@ static inline bool teams_enabled_19e1c0()
 // renamed with a `z_` prefix 691, `long const remaining` 691, the text buffer declared ahead of the result 691 (same code
 // each: no name or declaration tie); the loop counter typed long 688 (1172 B); the score test written
 // `best_score <= score` 691, with the long counter 688. On the volatile result: `best_score <= score` 388.
+// M3 lane 8 r223 (h2m fast with 0x19e0f0, MATCH; control 390): the engine-text arm as `if (result) return result;` ahead of
+// the token copy (retail returns there with a dead `mov esi, eax`) 390 (same code), on the plain result 693 (1168 B); the
+// switch-side-time failure as `result = remaining;` on the volatile result 431 (1398 B); the text buffer declared ahead of
+// the volatile result 390; the opponent arm's mode read from the global at each of its three uses 390 (same code each).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

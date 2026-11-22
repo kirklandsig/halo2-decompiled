@@ -1394,6 +1394,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 433/437, depth pair before or after the first component 540/540, and depth pair with aggregate or setter
 // 601/557. NOT kept: the 433 form reaches 2122 bytes and frame 0x24 but raises the score and still lacks
 // eight frame bytes.
+// M3 lane 8 r223 (h2m fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418): the entries field read at each
+// use (549 re-measured, 2122 B: in scan 2 `nearest` sits at frame 0 and is reloaded into EBX for each skip test with EDI
+// as the pass temporary, where retail keeps `nearest` in EDI with its home at frame 4 and `opposite` at frame 0); that
+// with `opposite` renamed to sort ahead of `nearest` 549 (same code: names do not move these slots); that with the delta
+// written out k, i, j (retail's load order) 624 (2182 B); the compare sides swapped (`0.0f >= dot`, `other_distance >
+// distance`, both scans' `closest > distance`) 418/418/418 here and 549 on the entries-at-each-use form (same code).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
