@@ -415,7 +415,7 @@ extern point2f *g_468778;
 
 // score 389 (was 389): one note (the r125 header below gives the current state). Earlier 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
 // Frame 0x40 agrees. The optional prop spills into the second argument home.
-// score 389 (was 389; 407 before m3 lane 2 r125): Frame 0x40 agrees. The optional prop spills into the second argument home.
+// Earlier at 389 (was 389; 407 before m3 lane 2 r125; stacked header merged in m3 lane 16 r172): Frame 0x40 agrees. The optional prop spills into the second argument home.
 // Earlier 375 (was 375): The actor loaded after the settings call, with different actor, settings and prop homes.
 // Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
@@ -915,6 +915,11 @@ extern point2f *g_468778;
 // facing pointer 410 (1549 B: retail's `xor ebx, ebx` prop and length, but arg_0 ESI, the actor EDI and spilled, the
 // slot EBP, frame 0x44); that with the prop pointer declared at the function's top 410 (same code); the dot written
 // `dot < -0.4f` 389 (same code).
+// M3 lane 16 r172 (H2M_FAST with 0x265d30, MATCH; control 389): re-measured the facing dot through the facing pointer 410
+// (1549 B; prop EBX and the in-place add, but arg_0 ESI, actor EDI spilled, slot EBP, frame 0x44) and r147's lead with the
+// facing pointer straight from the 0x25d740 call 384 (1551 B). On the 384 lead: the dot as `dot3f(local_8, &actor)` 404
+// (1549 B), as `dot3f(&actor, local_8)` 404, written i, j, k 384 (same code). On the 410 form: the three facing copies
+// read through the view 410, the weight dot through dot3f 410 (same code each). Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

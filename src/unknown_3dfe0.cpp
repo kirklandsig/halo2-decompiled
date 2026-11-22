@@ -267,6 +267,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // 21 (same code); the update-time test as `update |= ...` 211 (842 B); force replaced by `current = initialized && valid`
 // with `!current` at the force test and the 0xd1850 argument 106 (833 B); update started as the stale predicate and force
 // as its copy, with one `if (!force && hidden) return;` 222.
+// M3 lane 5 r230 (h2m fast with 0xd1850, MATCH; control 21; update-first re-measured 218, update right after the
+// zero-elapsed return 216): the velocity vector declared at the top of the body 21, on update-first 218; the stationary
+// test's delta declared at the top 21, on update-first 218; on the after-return form, update's two true stores through a
+// byte cast of its address 216 and its false store so 216 (the address is seen through: update stays a candidate); on
+// update-first, `bool sample;` declared right under update 218. Retail keeps the object in EBX from its lookup, stores
+// its home after the false store and reloads it only in the force arm; the two homes are force 0x10, object 0x14.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

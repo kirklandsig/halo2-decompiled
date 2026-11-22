@@ -1191,6 +1191,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // two NONE outputs declared bare and set by one chained `index = other_index = NONE;` 237 (one point, under the bar);
 // the hit read through real_point3d_set and published by aggregate assignment (retail's dword copy-out) 309 (1249 B);
 // origin and hit declared `point3f const` 238 (same code).
+// M3 lane 5 r230 (h2m fast with 0x183670, MATCH; control 238). Lead, not kept (a declaration moved, kept only with a
+// match): `short material;` declared at the top of the body 230 (frame 0x44 as retail; first and second then sit at +8 and
+// +0xc of the frame where retail has +4 and +0x14). On that lead: a kind-24 shape local for the data read and the material
+// call 328 (1249 B); origin by components z, y, x from a position pointer 312; the hit through real_point3d_set with
+// aggregate publication 311 (1249 B); friction and restitution declared beside the material 230 (same code). On the kept
+// body: the plane declared at the top of the body 238; the entity declared at the top 238; `valid` declared after the two
+// indices 238; the instance arm's side test written x, y, z 238 (same code each).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

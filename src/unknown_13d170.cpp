@@ -975,6 +975,11 @@ struct s_physical_block_iterator
 // 201 (same code); the take test as `better || !have_best` 201 (same code); the ring head advanced ahead of the take test
 // 243 (1194 B); `better` started as `!have_best` with the switch under `if (have_best)` and the take test on `better`
 // alone 222 (1228 B); the default arm's two ages typed dword 201 (same code).
+// M3 lane 5 r230 (h2m fast with 0x13d320, MATCH; control 201): lane 1 r124's 40 lead rebuilt 40 (1213 B, first difference
+// +0x356; the insertion tail after the flag's `sete dl; test dl, dl` is retail's). On it: the first stage's arms inverted
+// (`if (!at_head)` with the predecessor arm first) 92; the overlap test written range-first (`best.offset + pages >
+// offset && best.offset < offset + block pages`) 40 (same code); the head flag's comparison inside one, two or three
+// parenthesis pairs 40 each (no phase effect on this integer code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

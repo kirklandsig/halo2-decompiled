@@ -3231,6 +3231,16 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (same code); the last loop's row widget hidden first 106 (932 B); the no-team flag compared on the team byte 89; the
 // voice state preset to 2 with the query arm overwriting it 116 (927 B). The players[i] reload after 0x53b40 and the
 // slot homes remain.
+// M3 lane 16 r173 (H2M_FAST with 0x24fd74, 0x2507c3, 0x22f042, 0x250155, 0x22ee47, 0x2514fd, all MATCH; control 87, aligned
+// 80): lane 16 r157's lead re-applied 84 (926 B, aligned 42: left the three homes one step round, the voice block's
+// players[i] reload and the last loop, where retail gives bitmap_a EBX, loads the screen into ECX and then EDI and pushes
+// immediate zeros). On it: both case arms computing bitmap_b before bitmap_a 88; the default arm chained, `*text_a =
+// *text_b = NONE; *bitmap_b = *bitmap_a = NONE;` 83 (925 B); the default arm as retail's last-loop order through the
+// outputs (`*text_b = NONE; *bitmap_a = NONE; *text_a = *text_b; *bitmap_b = *bitmap_a;`) 84; `inline` on 0x53b40's
+// definition 84 (no change; its six callers keep their matches); `inline` on 0x53c30's definition 84 (0x53c30 is then
+// expanded into 0x53de0, 0x53e30, 0x54a20 and 0x54a70, which lose their matches). The players[i] reload is still
+// BLOCKED-BY the 0x53b40 chain's link-time summary (retail's 0x59670 stores through its pointer only conditionally, as
+// ours does). Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

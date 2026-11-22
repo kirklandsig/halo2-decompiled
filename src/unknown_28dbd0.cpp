@@ -756,6 +756,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // the bare dot, cosine, then `projection *= 1.0f - cosine` ahead of the cross 182; the closing sums through the existing
 // vector3f_add twice 233 (1200 B); the axis passed const, its projection added by the existing vector3f_add_scaled and the
 // scaled cross by vector3f_add (no in-place scale of the axis) 204 (1223 B). Helper restored.
+// M3 lane 5 r230 (h2m fast with 0x28dab0, MATCH; control 173): the heading's zero k stored ahead of its cosine and sine
+// 173 (same code); the sine row stored ahead of the cosine row 177; the heading as one brace initialiser 173; the cross
+// output declared beside the heading 173; both arms' two draws in two reals declared at the heading block's top 173.
+// Retail's third draw converts through its own cell (+0x20) and keeps the cosine at +0x10; ours reuses +0x10 for it.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
