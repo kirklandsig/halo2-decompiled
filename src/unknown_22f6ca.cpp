@@ -324,6 +324,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // `for (i = 0;` in every loop 66; `long i = 0;` in the pane block after the animating test 66; the model loop as `if
 // (!model) continue;` 23; the model declared apart from its assignment 23; the model call or the type read through an
 // explicit cast to the base type, both, or a qualified member: same code on the harness (the `mov eax, esi` copy stays).
+// M3 lane 14 r144 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf/0x22f6ca, all MATCH; control 23): the shared counter declared and
+// zeroed at the pane block's top, ahead of the animating call 66; the model loop's test as `pane->model_count > i` 23 (same
+// code); the text loop's test so 25, both 25; `long i = 0;` above the pane lookup with the model test swapped 25 (first
+// +0xb). The matched sibling 0x22facd keeps a `mov ecx, esi` copy in its model loop, so the direct `[esi + 0x34]` read is
+// particular to this loop.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

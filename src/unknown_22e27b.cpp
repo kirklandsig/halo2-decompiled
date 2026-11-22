@@ -635,6 +635,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // kept): restart never initialised 226 (653 B), but the in-range `jne` then targets the restart test as retail's does,
 // so the thread follows a known false start wherever it is written. On a multi-object LTCG harness (exact here) a
 // one-member aggregate, a one-element array and a two-member flags aggregate all keep the thread.
+// M3 lane 14 r144 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): dispose initialised false at its
+// declaration too 1 (same code); an explicit in-range arm `else { restart = false; }` before the restart break 153 (663 B,
+// the store is kept); the loop test as `next_time <= time` 5; the timing step ahead of the flag-8 store 9; restart typed
+// `long` 230 (661 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

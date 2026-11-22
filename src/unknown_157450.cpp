@@ -6018,6 +6018,12 @@ void __stdcall function_d6bc0(long object_index);
 // on the label + field-test form 119 (904 B); the countdown stored as `countdown - 1` and tested by re-reading the field
 // 29 (same code), on the label form 7, on the label + field-test form 172 (same code each). Timer-address use counts do
 // not move `entries` out of EDI.
+// M3 lane 14 r144 (h2m fast; control 29, the 7 form rebuilt at 7, its field-test form 172 at 858 B): with the field test
+// case 1 already reads into AL, so both spots left on the 7 form come from `entries` taking EDI from the reset counter's
+// join through the index test. The schedule decision as a forced-inline (object, placement) helper with direct returns
+// called as `index == NONE || helper(...)` 129 (877 B), as `entries[i].index == NONE || helper(...)` 139 (869 B); on the
+// field-test 7 form the reset limit named once for both uses 182 (869 B), the reset counter's arms swapped 172 (same
+// code); on the 7 form the switch value named 7 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

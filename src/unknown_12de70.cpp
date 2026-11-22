@@ -798,6 +798,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // Forms: the time fix through the field 45 (tail retail's, pre-loop and scratch rotation shift); that with a group local
 // in the tail 45; the time fix as `physical_block->time--` 55; the loop's offset read through the physical block local
 // 87 (248 B); the tail's offset through the geometry block's own +0x1c field 27 (same code, the copy stays).
+// M3 lane 14 r144 (h2m fast with 0x12e210, which stays matched; control 27, round 85's field-pointer form re-measured 14): the
+// release address as one integer sum cast at the call 27, as `(byte *)g_4e6494 + (offset << shift)` 27, that on the 14 form
+// 14; on the 14 form a new forced-inline release step taking (physical index, group) 14 (the arm's own load still comes
+// after the pool data and offset loads); the group or the linked test through a `const &` bound to the block local 27/27
+// (all the same code as their bases).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
