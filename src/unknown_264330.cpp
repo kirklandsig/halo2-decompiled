@@ -932,6 +932,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 473 (1580 B); diagnostics, noinline dropped: with the flags after the call 509 (1696 B, still `ret 4`: the expansion alone
 // does not give retail's EAX convention), with the `for` walk 454 (1640 B, `ret 4`). BLOCKED-BY 0x2641c0's expansion and the
 // stacked actor index, as before.
+// M3 lane 1 r152 (h2m fast with 0x1e34e0 25 throughout; control 404): the sampler's result tested directly, `sample = false`
+// only on failure (`if (!0x2641c0(...)) sample = false; else if (update && ...)`) 460 (1652 B), the same with the success
+// arm first and the failure in an else 460 (retail stores the false only on the failure path, but the form adds 28 bytes);
+// a `__forceinline` redeclaration of 0x2641c0 just ahead of this body 404 (same code: the definition's noinline wins, and
+// 0x265680 / 0x264210 / 0x2641c0 stay matched); case 3's decrement as an if/else on the tracked-prop test 404 (same code);
+// the closing reset as a flag set under the view test with one shared maximum store 421 (1644 B).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

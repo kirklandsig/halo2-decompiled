@@ -287,6 +287,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // the transform, point and vector renamed `transform`, `point` and `facing` 19; the address local declared inside the node
 // arm only, the else arm copying from the parameter directly 19 (all the same code: transform EBX, y EBP, constant 1
 // shared).
+// M3 lane 1 r151 (h2m fast with 0xb8c00, 0x200e60 and 0x142570, all MATCH; control 19): one to three redundant paren
+// pairs around `arg_0 != NONE` 19/19/19, around the rotate helper's first scale product 19/19/19, around each side of the
+// bounds test 19/19. Diagnostics (reverted): 1-8 unused initialised locals inside the rotate helper 19 each; 16 and 17 at
+// the top 19 / 113 (453 B: the convention changes at K = 1, 9, 17, a mod-8 state; the EBX/EBP pair never moves).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
