@@ -468,6 +468,13 @@ PRIVATE inline byte const *material_parameters(long tag)
 // lookup as pointer arithmetic `*(chain + (packed & 0x1ff) + second)` 5/5; the chain and pass indices through the file's
 // packed-range view `index()` 5/5, on the direct store reading the view straight from the stored field 5 (+0x1a7). Each
 // is its base form's code: on the direct store `second` still loads right after the entry lea.
+// M3 lane 6 r227 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e; the direct
+// entry store re-measured 5 at +0x1a7): `packed`, `next` and both typed `long` in place of `word`, on the direct store 5/5/5
+// (+0x1a7) and on the reference form 5/5/5 (+0x19e); on the direct store a new `__forceinline` identity inline around
+// `second` in the chain index, `third` in the pass index, the chain base, the pass base, `packed` and `first` 5 each (+0x1a7,
+// the direct form's code: `second` still loads into ESI right after the entry lea); the reference bound but the store
+// written directly and the word read through the reference 292 (979 B), the store through the reference and the word read
+// from the field 293 (980 B).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

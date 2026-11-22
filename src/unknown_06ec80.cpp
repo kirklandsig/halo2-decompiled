@@ -277,6 +277,12 @@ union s_6ec80
 // pointer or both initialised at their declarations 263/269; the 0x49c8 block split into a getter `if` and a second
 // `if (arg_1 && ...)`, `if (arg_1) { if ... }` or `if (... && arg_1)` test 225 each (threaded back into one); an
 // out-parameter getter for the two blocks in the getters' file (0x5b0d0's shape, inlined by the link) 225.
+// M3 lane 6 r226 (h2m fast with 0x6ec10; base 5): on the mask zeroed in the guard with the 0x49c8 read by hand (195,
+// local_2 EDI / players EBX), one fewer machines-pointer use to let players outrank it: the machines memcpy from
+// `&arg_0->data4f24` 276 (988 B), the data test on `arg_0->data4f24.data[0]` 266, the players memcpy from
+// `&arg_0->data4f90` 278 (984 B); the machines memcpy from the session on main's body 256 (981 B), with the mask zeroed
+// in the guard and the getter kept 269 (985 B). Each session re-read keeps `arg_0` live to the tail and unmatches 0x6ec10
+// in the fast image.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

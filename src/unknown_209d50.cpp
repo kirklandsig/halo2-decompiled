@@ -310,6 +310,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // a named `evaluate` bool 95 (266 B); the tests nested with `result = NULL` first in the inner arm and the element passed
 // straight 83 (277 B); re-measured: `result = NULL` first with the element passed straight 83, the copy declared just
 // before the test 95.
+// M3 lane 6 r227 (h2m fast with 0x2099f0, which stays matched; control 12): one, two and three redundant parenthesis
+// pairs around the first allocation's size on the volatile-free body 95/95/95 and on the null-first body (`result = NULL`
+// first in the arm) 83/83/83 (no paren phase here); the first allocation in matched 0x208310's spelling (the frame read
+// through the frame reference, `top->size += ...` in place of the allocator call): with the volatile home 21 (279 B),
+// volatile-free 95, volatile-free null-first 83; the same with the size read into a `short size` first 21 / 95 / 83. In
+// the null-first listing the expression pool is rematerialised per block (`mov ecx, [pool]` in the init block, again in
+// the test), the pointer keeps EAX and the result ESI: the pool temp, not the pointer, loses the register contest.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

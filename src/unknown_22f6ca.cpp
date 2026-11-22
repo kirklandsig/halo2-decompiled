@@ -313,6 +313,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // (`if (!pane) return;`, and as `pane == NULL`) 23/23; the screen parameter declared `*const` 23; the model's animation
 // type named inside its animating block 23; the model's `(short)i` named at the top of its `if (model)` block 23 (all five
 // the same code: the swapped text/model zero stores and the model loop's EAX copy of the screen stay).
+// M3 lane 6 r226 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the text loop as a guarded do loop
+// 23, the text and model loops both so 23; new trivial inline count accessors in the model loop's test, the text loop's
+// test, both 23/23/23 (all five the same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
