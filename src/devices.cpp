@@ -2121,6 +2121,10 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // (same code); a redundant `speed = 0.0f;` at the top of the flag block 342 (1636 B, the store is emitted); a redundant
 // `result = false;` there 2 (same code); speed declared at function scope beside the result 48; had_animation declared
 // there 92.
+// M3 lane 13 r141 (h2m fast; control 2): had_animation set right after the first sample call 34; the node index
+// declared at the top of the 0xbf5a0 block 2; the render model renamed to sort before the other locals (symbol
+// order) 2; the animation renamed to sort after the time 2; had_animation renamed to sort first 2 (the 2s the same
+// code: local names do not move the fstp).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

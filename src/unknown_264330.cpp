@@ -938,6 +938,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // a `__forceinline` redeclaration of 0x2641c0 just ahead of this body 404 (same code: the definition's noinline wins, and
 // 0x265680 / 0x264210 / 0x2641c0 stay matched); case 3's decrement as an if/else on the tracked-prop test 404 (same code);
 // the closing reset as a flag set under the view test with one shared maximum store 421 (1644 B).
+// M3 lane 13 r142 (h2m fast with 0x1e34e0, 25 throughout; control 404): the release calls written at case 3's underflow test
+// (retail's block order: its `jge` skips them) with case 2's and case 3's first gotos jumping there, `goto tracking_complete`
+// gone and the decrement written in the subtraction, 404 (the same code: the release block is placed and 0x25c820 expanded
+// exactly as before, so written depth does not move that inline here); diagnostic, the three flags as members of one local
+// aggregate 394 (1616 B, frame 0xa0 as retail, `update` still scalarised into BL, so the actor index stays stacked; a
+// grouping steer, not kept); `update` as a long 404 (it keeps EBX as a long); the 0x2641c0 result tested directly with
+// `sample = false` only on its failed path (retail's store) 460 (1652 B), with the long `update` 454 (1648 B). All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -1836,6 +1836,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // local for the matrix lookup only 20; a second index local for the flag lookup only 20; the parent object named for the
 // flag only, after the matrix lookup 20; the node argument cast to `short` (0xb8bd0's node type) 20 (all the same code);
 // the parent object named for the matrix only, the flag through object_get again 44 (1390 B, data from EDI).
+// M3 lane 13 r142 (h2m fast with 0xb8bd0/0xbdc40, MATCH unless noted; control 20 at 1399 B): `inline` on 0xb8bd0's own
+// definition with the no-model arm calling it 394 (1373 B: both arms' sites expand, and 0xbcc20 228, 0x11b710 116 and
+// 0x18c3b0 157 stop matching); a `__forceinline` declaration of 0xb8bd0 in this file with the no-model arm calling it 47
+// (1385 B, the plain call's code); the node index named ahead of the parent test 20 (same code); parent and flag as two
+// conditional initialisers on the index test 45 (1391 B); the matrix written as a conditional argument of the 0xbdc40
+// call with only the flag set under the test 42 (1392 B). Re-measured: the parent object named for the matrix only 44.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -919,6 +919,10 @@ void function_1537f0(s_profile_record *record);
 // +0x5a); that with the builder's view from the array element (a mix, match-only) 14 (rows left are displacements only,
 // base +0x5a); no `entry` local (view, both link pointers and the tail from the element) 44 (base +0x4c as retail, but
 // NONE hoisted into EBP and the record's two zero words sharing EBX); the tail cleared by one 8-byte memset 31 (260 B).
+// M3 lane 13 r141 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18): the record renamed to sort
+// first 18; the entry pointer renamed to sort last 18 (both the same code); the loop ended on `index != 350` 19; on
+// round 136's lead (view from the array element, `entry->` link pairs in retail's order; re-measured 46) the four heads
+// as one chain in retail's store order 46, the tail stored field_64 first 46 (NONE hoisted into EBP each time).
 // @retail 0x7f930
 void function_7f930(void)
 {

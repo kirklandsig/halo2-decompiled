@@ -1368,6 +1368,13 @@ void function_2118c0(void)
 // band` counter 134, with a `short band` counter 10 (same code); the knot indices computed in the band body with `long row =
 // b * 8` 180 (755 B: they are hoisted before the rows are reduced, so every row reduces), with the shifted row 174 (756 B);
 // `word` knot indices at the sample loop's head with the shifted row 155 (780 B).
+// M3 lane 13 r141 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): every noise row (knots, p1,
+// out) through a `s_cell_field_globals *` to g_4f93bc taken ahead of the second pass 10; the three knot indices declared
+// at function scope beside k, m and b and assigned at the knot level 10; `long row = b; row <<= 3;` 10 (the three 10s
+// the same code); the weights ta/tb/tc computed ahead of the row and the knot pointers 14 (first +0x105); the second
+// pass with its own `short band` counter (b left to the first pass) 10 (same code). Diagnostic: the three `word` knot
+// indices computed in the band body 174 (756 B): they are hoisted without the movzx and the band loop still keeps b
+// with `esi*8` leas, so an index the optimizer must hoist does not give retail's stepped row either.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
