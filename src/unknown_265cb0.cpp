@@ -1032,6 +1032,16 @@ real function_30bf0(vector3f *vector);
 // the scale chosen by an if/else with a defaulted posture switch (no 1.0 initialiser) 214; the range test as
 // `distance_squared < range * range` 84; the clip test as `0.0f < amount` 84 (all same code). Retail's seat-loop
 // subtrahends load the up global's member first in all three side components (ours only in i). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0x263740 and 0x26d370, both MATCH; control 84). Where the two bytes come from: our
+// first range load goes to XMM2 and stays there on the early path, so the no-endpoint and unknown007 jumps land six bytes
+// past the join's range reload while the clip path's jumps land on it; retail loads into XMM0 and every path reloads.
+// Forms: the facing copies moved into the facing arm (no second `if (facing)`) 101; the seat maxima as ternaries 84 (same
+// code); the seat array declared at the top of the settings block 84 (same code); the plane distance through dot3f 138
+// (1308 B: the second seat cross product reschedules, the range load does not move); the plane sum with its first two
+// terms parenthesised 150 (1312 B), each product parenthesised 154 (1312 B). Body unchanged.
+// Optional endpoint via condition declaration, named selection, complete branches or clear
+// 152/152/152/152, range after the initial delta 155/155/155/155. NOT kept:
+// the result stays at +0xc and the clip fraction still shares with the seat count.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

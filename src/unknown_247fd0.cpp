@@ -223,6 +223,8 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
+// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax G (11-19): no new form, no lower score (334): the gate byte is still read from the folded address
 // (`mov al, byte [eax+edx+2]`) into AL and stored at [esp+0x1f], where retail adds the base to the index first, reads
 // the byte into DL and stores it at [esp+0x1b]; a pointer local for the datum (418), the shift chain in one statement
@@ -233,8 +235,6 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // imul eax,eax,0x190; add eax,edx` and reads the flag byte at `[eax+2]` where ours uses the two-register address
 // `[eax+edx+2]`, and the flag mask chain starts from `xor edx,edx; mov dx, word [ebp+2]` where ours zeroes EAX;
 // binding the datum to a pointer local of its own does not change the code (334). Body unchanged.
-// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
-// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
 // only adds a local holding a constant, which is on the reverted list, and one point is under the bar anyway; an
 // annealed run (19 tries) found nothing below the 334 of the baseline in either image.
@@ -1033,6 +1033,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // kept): the else arm's add-scaled as three field statements on the 358 form 356 (1652 B, aligned 121), alone on main 343.
 // Left on the 358 form: the scale rows' stores ahead of the y/z products, the 0x173ba0 argument setup, the collision call's
 // argument order and homes, and the gate's folded address. Body unchanged.
+// M3 lane 2 r134 (H2M_FAST with 0x247fd0 and 0x248cc0, both MATCH throughout; main 334): diagnostic, reverted at once:
+// `optimize("", off)` then `optimize("gy", on)` around this function 334 (same code: no speed preference does not unfold
+// the base+index sites). Forms: the gate's effect record named and read through a `const &` 355 (first +0x43: the entry is
+// retail's to the flag update but for the flag byte's and the definition's homes, and the first draw's store into the
+// record member then shifts the rest); the age copy through a `real const &` to the field 334 (integer move); the 5-way
+// random pick in 0x247fd0's spelling 334; the allocated record indexed as 0x247fd0 does 334; on lane 1 r135's 317 lead
+// (re-measured 317, 1665 B) the velocity's effect record bound the same way under an if 322 (the prologue changes). Body
+// unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
