@@ -961,6 +961,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // append bound, candidate bound, both, or both with one append counter: short 144/251/225/246,
 // long 645/675/616/616. NOT kept: the short append-bound form ties. Other short forms raise
 // the caller score. The long count unrolls the minimum scan and grows the body.
+// M3 lane 15 r134 (h2m fast with 0x239d50 and 0x239b80, both MATCH; control 144, aligned 137): the bound written count
+// first (an uncounted loop) on the pass loop, the candidate scan, the lowest scan, all three, and the compaction's outer
+// loop 144 each (same code). The one-counter form (`while ((short)hull_count < count)`, bool flag, heading before the
+// lowest scan, memcpy, main's gotos) re-measured 260 (757 B); with `while (count > (short)hull_count)` 210 at 784 B
+// (aligned 128: frame 0x14 and the entry as retail, but `count` stays in EBX and the pass loop still rotates, the hull
+// count in EAX); both with `current` and the hull test reading the count through a const volatile view of the parameter
+// 216/216 (784 B, aligned 125). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

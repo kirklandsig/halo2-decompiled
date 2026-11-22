@@ -1253,6 +1253,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // `s_plane &` bound to planes[0] 285 (1867 B, first +0xaf); a redundant `if (0 < point_count)` ahead of the
 // classification loop 271 (1867 B); plane 1's negated vector through vector_products.h's vector3f_negate_ab 257 (1830 B);
 // both planes' in-place normal negations through vector3f_negate_ab 129 (1851 B). Body unchanged.
+// M3 lane 15 r134 (h2m fast with 0x1648d0 and 0x320b0, both MATCH; control 115): redundant paren pairs (diagnostic): around
+// the near sum 1/2/3 pairs 145/247 (1867 B)/271 (1867 B); around the far-plane flag test 115/115/115 (same code); one pair
+// around plane 0's d i, k or j product 163/176/145. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

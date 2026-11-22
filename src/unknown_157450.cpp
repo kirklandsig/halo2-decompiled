@@ -960,6 +960,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // `continue` loop and `old | (word)present` 109 (378 B). Diagnostic (reverted at once): a compiler barrier after the
 // entry reads on the word mask with a plain present keeps the word spill, but present still takes EDI and the globals
 // pointer is re-read after the loop.
+// M3 lane 15 r134 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23; on the one-use team-bit carrier, 20): the saved
+// mask read through a `word const &` bound to it at both post-loop uses 20 (same code); the update as one uncast store
+// `*team_mask = old_team_mask | present_teams;` 78; the dword local of the uncast OR 21; the mask compare first in the
+// change test 129 (374 B); the added teams computed after the playing store 20 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6018,6 +6022,12 @@ void __stdcall function_d6bc0(long object_index);
 // on the label + field-test form 119 (904 B); the countdown stored as `countdown - 1` and tested by re-reading the field
 // 29 (same code), on the label form 7, on the label + field-test form 172 (same code each). Timer-address use counts do
 // not move `entries` out of EDI.
+// M3 lane 15 r134 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B): on the field-test
+// form the countdown block (decrement, release, 0x15aad0) in a file-local forceinline helper taking entries, i, placement,
+// object and preset 182 (858 B; the helper's parameter folds back into `entries`, still EDI), on the 7 form 17; the whole
+// schedule block (zero test to the delay store) in such a helper 182 (858 B); the index test as `if (entries[i].index !=
+// NONE) { schedule = false; switch ... } else schedule = true;` 172 (same code); the object declared ahead of the loop-top
+// index local 172 (same code). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

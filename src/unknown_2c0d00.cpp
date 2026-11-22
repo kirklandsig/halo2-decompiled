@@ -882,6 +882,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (3714 B) on it; the type-1 `if (...) skip_classification = true;` 903 (3760 B) on it, with the ternary 934. Retail lays
 // the type-0 `else if` branch and the 1/7/11 chain after the motion-disabled `jmp` (0x2c129e), each jumping back to the
 // distance test 0x2c11ad. Body unchanged.
+// M3 lane 15 r134 (H2M_FAST with the three callers 0x29a190/0x29cbb0/0x2c41b0 and the five callees above: without the
+// callers it builds 3741 B; control 925 = plain, [aligned, masked] [519, 236]): `straight` set true in the two else arms
+// (MiniMax E) re-measured 849 [424, 234]; the r132 `long type` local re-measured 916 [507, 236]; both together 887 (3724
+// B) [413, 235]; both with `straight = true` also kept at the declaration 849/887 (same code: that store is dead). 1, 2
+// or 3 unused locals at the top (diagnostic) 925/925/934: the actor index keeps EBP and the zero EBX (not a symbol-count
+// tie). Retail also reloads the object-table global in the actor and location blocks, where ours loads it once into ESI
+// at the entry. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
