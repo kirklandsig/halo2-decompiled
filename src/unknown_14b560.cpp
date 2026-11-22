@@ -1040,6 +1040,10 @@ bool function_e4050(long object_index);
 // avoid file). Use-count forms for the EDI/EBX swap, each the same code (44): 0xe4050 passed the player's field; the unit
 // object looked up from the field; the walk's root started from the field; the continue test on the field with the unit
 // read after it. A single exit (`result = true; break;` at the four exits) 144 (450 B).
+// M3 lane 16 r176 (H2M_FAST with 0xbaf80 and 0x226190, both MATCH; control 43): the parent walk as a for loop 43; the
+// walk stepping through the parent rather than the root 43; no player local (the datum read through the iterator at
+// the unit read and the three exits) 43; the walk under a redundant `if (parent != NONE)` 43 (all the same code); the
+// vehicle arm first (`!= NONE`) 114 (408 B). Still BLOCKED-BY 0xbaf80.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2630,6 +2634,13 @@ static __forceinline long player_round_ticks(real value)
 // second from 100) and 0xccd20 from 64; there the 0x80 test nested or repeated changes neither at 81. Trials: the 0x80 site
 // as `if (actions & 0x80) { bool dropped = ... || ...; if (dropped) ... }` 703; the 0xccd20 site nested under
 // `if (buttons & 0x10)` 703; both 703 (34 calls still); the last request through the existing 0xe68c0 725 (2698 B, a call).
+// M3 lane 16 r176 (H2M_FAST with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970, unchanged each run; control 703):
+// the attack target as `long target = NONE; if (function_bae20(input[+0x30], 3)) target = input[+0x30];` 699 (2740 B:
+// retail's `or edi, -1; call; test eax, eax; cmovne edi, esi`, a gain of four, under the bar), with the input word in a
+// named local 699, as one conditional initialiser 707 (2746 B), with the activity clamp and `cmovg` forms of round 101
+// 699; the lunge count as `(short)(lunge + 1)` 699 (2740 B), with the target form 700; `1.0f > progress` written
+// `progress < 1.0f` 703; the lunge distance summed x, y, z 703; the first 4-bit clear as a word mask 704. Still
+// BLOCKED-BY 0xe68c0 (its /Ob1 file keeps the last request out of line), 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3351,6 +3362,12 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // 105; the busy test with its arms swapped 120; the vehicle arm as `if (vehicle && vehicle[0x34c] > 0) busy = true;` 117.
 // Reading: ours loads the globals pointer into EDI at loop 1's head each pass and uses it for the busy store; retail reloads
 // it at the store itself. BLOCKED-BY 0xb8540 (its draft still loses 23 functions when enabled, see its file).
+// M3 lane 16 r176 (H2M_FAST with lane 4 r242's list, all MATCH, 0x14f2e0 included; control 103): the position copied
+// before `last_unit` is assigned (retail stores the unit after forming the position address) 101 (a statement order
+// worth two, under the bar); that copy as a memcpy 101, memcpy with the unit assigned first 103 (same code as the
+// assignments); `failed` declared after loop 2's set-up 108 (612 B); loop 2's unit test first 107; `if (last_unit ==
+// NONE) return;` 103; the final store under `if (!failed)` 103 (same code). Retail loads the three position words
+// before storing them (x ECX, y EDX, z EAX); ours interleaves. Still BLOCKED-BY 0xb8540/0xb7b40.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
