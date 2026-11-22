@@ -903,6 +903,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // then late definition mask 93. NOT kept: 103 needs bound one-use
 // element addresses. The late mask loses caller 0x224d90. The EDX mask
 // and EDI table can coexist. The fallback payload still takes EAX.
+// M3 lane 8 r222 (H2M_FAST with 0x2243c0 and 0x224d90, MATCH each run; control 117). Lane 16 r152's saved chain (two
+// file-local accessors, the elements bound by const reference; match-only) rebuilt at 8, first +0x9e: left the pass
+// definition EDX (retail EAX), the material index ECX (EDX), the material definition EDX (retail reuses the table's EDI)
+// and the zero's `xor` after the material read. On the chain: the pass definition read through the tag-data accessor 8,
+// the material definition through it 8, both 8, the material tag through the record accessor 8 (same code each); the
+// pass definition bound by const reference to the accessor 36 (first +0x50), the material definition bound 92 (552 B),
+// both 86 (545 B). Diagnostic volatile loads through `local_6` ahead of the pass tag, the pass definition or the material
+// read move the whole head (81-141), so no single later temporary is isolated here. Body unchanged.
 // M3 lane 2 r134 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless given; main 117): lane 16 r152's
 // reference chain rebuilt on this main 33 with the +0xd8 read where main has it, 8 at +0x9e with it read just before
 // 0x173ba0. On the chain, match-only: the material definition through the tag-data accessor with `local_11 += 0x1c` as its

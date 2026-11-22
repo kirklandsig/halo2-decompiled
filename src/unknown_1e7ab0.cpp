@@ -637,6 +637,16 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // NULL`) 606 (2324 B); the player index and the entry declared const 117; the entry's flag byte at +0x10 read through a
 // typed byte member 117 (same code each); case 4's result set true before the child walk and cleared at the blocking
 // child, no blocked flag, 504 (2332 B). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list).
+// M3 lane 3 r297 (H2M_FAST with 0x1e83c0, 0x1e8d50, 0xd0590 and 0xd05c0, all MATCH each run; control 117, aligned
+// 57/57/4; body unchanged). Case 4's seat test as a forced-inline bool helper with early returns (parent, seat, the
+// three seat bits, the child walk returning false at a blocking child), taking the unit index and unit pointer 117,
+// taking the unit index and fetching the unit itself 117 (the same code as the body each time); the same two on the
+// existing 0x1e8d50 entry 165 each (2312 B, the listed entry's code); that helper as a plain `inline` 639 (2284 B: it
+// stays out of line). The child loop with named locals: the child's seat then its unit, its unit then its seat, its
+// unit only, the seat widened into a named long index, the seat's flags through `(seats + index)->flags`: 117 each,
+// and 165 each on the 0x1e8d50 entry (same code; the child test keeps `movsx eax, ax` / `test cl, 1` where retail has
+// `movsx edx, ax` / `test al, 1`). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list, so
+// the held order was not re-measured).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

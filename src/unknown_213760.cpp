@@ -2068,6 +2068,24 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // query size (`written_size`) 33 (same code: names do not order these two homes, the else arm's zero store does); the
 // not-resized arm written first (`if (!resized) count = 0; else ...`) 123; the close written in both arms re-measured 179
 // (994 B). The resize result as `bool volatile` does not build (the resize routine takes a plain `bool *`). Body unchanged.
+// M3 lane 8 r222 (H2M_FAST with 0x213800, MATCH each run; control 33). On lane 9 r132's 5 form (rebuilt at 5): the flags
+// literal `0u`, the handle as `handle[0]`, the header cast to `void const *` 5 each (same code). A grid of separate named
+// `s_file_handle` copies, one declared just ahead of each of the four by-value calls (query, resize, write, close): write
+// alone 114 (917 B), close alone 119, resize alone 122, query alone 122, write + close 114, resize + write 6 (930 B), query
+// + write 6, query + resize + write 6, query + resize 10, resize + close 122, query + close 122, every set with the close
+// 118-122. The 6 forms are retail's write with each later scratch pick one step off (resize handle EAX/ECX, header lea
+// ECX/EDX, close copy EDX/ECX). On the write-only copy (114: only the close's `mov ecx, eax` and two pads left) these are
+// all 114: the copy declared by constructor, from an explicit temporary, by assignment, brace-initialised, member-set,
+// const, from `file`, bound `const &` to a temporary or cast; the write given an explicit temporary of the copy; the
+// count compare through a `dword const &` or as `sizeof(empty_header)`, the flag through a `bool const &`, `written ==
+// false`, `written = 1`, `written = bytes_written == 0x800 || written`, an if/else setting both values, the flag declared
+// ahead of the resize or at the size block's top, the goto past the close in place of the flag; the close test and
+// argument through a pointer copy, `(*handle).handle`, the table element, `file`, casts, the invalid-handle constant first;
+// `written |= ...` or a ternary 107 (sete materialised). A plain `const &` to `*handle` is the 5 form. Diagnostic (a
+// volatile load, reverted at once): one more scratch value right after the write call or after its wait gives retail's
+// close exactly (108: only the probe's own load and a pad differ), so retail has one more register temporary between
+// the write's handle and the close than the write-copy form; no source form found that adds it without code. Body
+// unchanged.
 // M3 lane 2 r134 (H2M_FAST with 0x2141f0, 0x213800 and 0x2149c0, all MATCH throughout; main 33): the close test as
 // `(!resized || bytes_written != 0x800) && open` with no else store 157 (frame 0x1140: the count shares the query size's
 // slot), the count declared beside the size, before or after it, 157/157; the count scoped in `if (resized)` with `written

@@ -952,6 +952,16 @@ static inline bool teams_enabled_19e1c0()
 // renamed with a `z_` prefix 691, `long const remaining` 691, the text buffer declared ahead of the result 691 (same code
 // each: no name or declaration tie); the loop counter typed long 688 (1172 B); the score test written
 // `best_score <= score` 691, with the long counter 688. On the volatile result: `best_score <= score` 388.
+// M3 lane 6 r230 (H2M_FAST with 0x19e0f0, MATCH; control 390, plain result 691): a text buffer declared in each arm, on
+// the plain result 691 and on the kept result 390 (same code each). Diagnostics, not keepable: the plain result with
+// the token read through a volatile view of its own address at every use 469 (1386 B: result ESI, token length EDI,
+// event EBX and the per-compare token reloads as retail, but EBP goes to a hoisted zero used by the event NULL tests
+// and the `text[0]` stores, and `remaining` stays on the stack); those reads at the twelve compares only 473 (1381 B);
+// with a long team counter 469 (same ranking). Body unchanged.
+// M3 lane 8 r223 (h2m fast with 0x19e0f0, MATCH; control 390): the engine-text arm as `if (result) return result;` ahead of
+// the token copy (retail returns there with a dead `mov esi, eax`) 390 (same code), on the plain result 693 (1168 B); the
+// switch-side-time failure as `result = remaining;` on the volatile result 431 (1398 B); the text buffer declared ahead of
+// the volatile result 390; the opponent arm's mode read from the global at each of its three uses 390 (same code each).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
