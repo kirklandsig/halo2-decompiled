@@ -459,7 +459,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Earlier head (at 45, was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier score history (71 before).
 // Earlier 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
-// Earlier score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier head at 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
@@ -1230,6 +1230,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // unread-parameter form) and a plain local for it 164 (1058 B: the unread store is dropped, so retail's store is not an
 // inlined parameter's); a `vector3f const *up` local for the 0.5 lift loop only 26 (same code); the angle, sine and cosine
 // in their own block 26 (same code); M with that lift-only pointer 20 (M's code). All restored.
+// M3 lane 13 r143 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26): `direction` declared at function
+// scope and assigned in the spoke body 26; the trace result declared at function scope 26; the direction copied through
+// a `vector3f const *` source local 26; `sine` and `cosine` declared at function scope 26 (all the same code); the sector
+// index read ahead of the radius 50 (the head reorders). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

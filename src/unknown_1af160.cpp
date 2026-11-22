@@ -292,6 +292,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // call between, CSE'd) 79 (the prologue's loads reorder, both home pairs unchanged); the 0x265c30 prop index through a fresh
 // actor lookup 77 (984 B); the node and 0x25d690 result pointers `*const` 12 (same code); the equal arm's unknown227 test
 // through a fresh actor lookup 61; the rounding asm as two single-line statements 12 (same code). All restored.
+// M3 lane 13 r143 (h2m fast with 0x1e1f20, MATCH; control 12): the equal arm's clear looked up as `actor_get(arg_0 &
+// 0xffff)` 12; the node's +0x28 range read into a named real for its test 12; the long and bool outputs declared ahead of
+// the entry record 12 (the three the same code); the second 0x25d690 call on a fresh prop_node_get of the actor's prop
+// index 87 (1002 B); the prop index read once at the top into a long used for the node lookup and the 0x265c30 call 256.
+// All restored.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

@@ -1847,6 +1847,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // form (re-measured 18 at 1394 B) the mirrored flag ahead of the matrix 18, `long const` parent index 18, the parent node
 // read into a `short` ahead of the test 18 (the else-arm form's code each). Retail keeps the defaults in EAX/DL across the
 // test with the pool still in ECX, so its index takes ESI and is copied to EAX in the arm; still BLOCKED-BY 0xb8bd0.
+// M3 lane 13 r143 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): the model and render index as two
+// conditional initialisers on the model index 20; `render_index` declared ahead of `model` 20 (both the same code); the
+// stored flag initialised from the orientation test itself (one definition) with the orientations as if/else 372 (1398 B);
+// `stored` declared after the early return 39; the early-return test reading the object fetched at the top (no second
+// lookup) 364 (1392 B). Listing reading: our no-model arm reads the parent node and scales it before the parent object
+// lookup (the node argument is evaluated first), retail looks the object up first and reads the node after. All restored.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

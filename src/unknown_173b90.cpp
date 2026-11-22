@@ -2073,7 +2073,7 @@ bool function_17afd0(long effect_index, long value);
 // P589: Original pool/salted-index/current-system identities, seven subsets then
 // cluster identity too: 47/47/47/47/47/47/47/47. NOT kept: no availability-clear/result
 // or later-view recovery; complete original body and observations restored.
-// MiniMax D (11-17): score 12 (was 47): the same_view flag is set true and cleared by one test, the availability is
+// MiniMax D (11-17): reached 12 (from 47): the same_view flag is set true and cleared by one test, the availability is
 // MiniMax D (11-17): cleared and then set by the query's result, and the view global is read at each use instead of
 // MiniMax D (11-17): through a local; one byte store of the true value sits ahead of the query call, where retail
 // MiniMax D (11-17): stores it in the flag's set path.
@@ -2229,6 +2229,13 @@ bool function_17afd0(long effect_index, long value);
 // 138 (both promoted like a scalar: retail's memory-resident flag is not an aggregate's); `same_view = owner != NONE &&
 // g == owner ? available : false` 56; the true default at the loop body's top 51; the availability as a ternary initialiser
 // 96. All restored.
+// M3 lane 13 r143 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the effect-index test named once as a
+// bool for the owner lookup and the attached test 128 (510 B), with the plain conjunction 157 (522 B); lane 8 r135's
+// attached-in-both-arms form re-measured 17 (498 B: retail's registers, but our cross-jump keeps the tail in the true
+// arm and the false arm jumps back into it, where retail's true arm jumps forward into the false arm's copy); that form
+// with the availability repeated in the true arm (the two arms' attached identical) 17 (same code); with the false value
+// as the declaration's initialiser and only the true arm storing 113 (502 B); with attached false by default and the
+// else arm's set under `if (available)` 121 (506 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

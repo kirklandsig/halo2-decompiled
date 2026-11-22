@@ -1302,6 +1302,10 @@ void function_1e3b60(long actor_index);
 // the sampling threshold read through a fresh actor lookup 452 (1636 B); `sample = update = sampled_one = true;` ahead of
 // the field clear 405; the node and byte-view pointers `*const` 404 (same code); `update` typed `byte` 404 (same code).
 // Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion keeps retail's actor index in EBX).
+// M3 lane 13 r143 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form): five forms in
+// 0x262ba0 (listed in its note: a second prop lookup for the byte view 438 there, the release pair through a
+// forceinline helper 404, the flags declared ahead of the lookup 404, `update` declared after the 0x263670 call 405,
+// `index` at function scope 404); the actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
