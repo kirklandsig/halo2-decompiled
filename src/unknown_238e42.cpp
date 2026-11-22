@@ -1418,6 +1418,10 @@ bool __stdcall function_2399da(long controller_index)
 // ahead of the rank 90 (same code: names do not break this tie either); the task index initialised to NONE at its
 // declaration 90 (same code); the rank-3 test as `rank != 3` with the set-rank arm first 92; the identity as a
 // non-const pointer 90 (same code); may_change as `(flags & 0x800) != 0` 90 (same code). Identity ECX/rank EAX remain.
+// M3 lane 6 r229 (single-address H2M_FAST, control 90): the selected identity bound to a const reference for its test and
+// the removal call 90; the requested rank bound to a `long const &` 90; both 90; a second named identity pointer for the
+// removal call 90; the rank read once through its parameter's address into a local 90; every rank use through a
+// parameter-address pointer 90 (all the same code). Identity ECX / rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

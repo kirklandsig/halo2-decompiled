@@ -341,6 +341,10 @@ void function_254200(void)
 // the top, ahead of the point copy, both, and on the chosen bitmap inside its test 4 each (6 runs); the minus edges
 // written `x + -size` 4; the two dimension locals, the chosen bitmap, or the size and point copy declared bare at the top
 // and assigned in place 4 / 4 / 4 (all the same code: the x, y + size, constant group stays ours).
+// M3 lane 6 r229 (single-address H2M_FAST, control 4): the colour helper scaling a copy of the colour in place 218 (1133 B);
+// the two lookup tags read into named longs before each bitmap lookup 4 (same code); the colour helper storing its three
+// products into a colour local member by member 28; the point copy and size declared after the bitmap choice, ahead of
+// the texture block 57; the size alone there 25. The x, y + size, constant group stays ours.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -781,6 +785,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // ahead of the coordinate pointers, on the colour getter's result, and both 2 each; the offset quad's half size or the
 // two coordinate pointers declared bare at the top 2 / 2; the coordinate pointers declared y first 2; the minus edges
 // written `x + -size` 2 (all the same code).
+// M3 lane 6 r229 (H2M_FAST with 0x254490, control 2): the pixel-shader clears and commits through the program-words view
+// that the matched 0x254200 uses 2 (same code); the colour read as a `real const *` triple 2 (same code); both together 2;
+// the first quad's first two texture coordinates through one `point2f` updated in place 393 (2286 B); its first two
+// depth pairs from a `real const depth[2]` 18. Reading: 0xc2d00's note records the same kind of slow-path reload tie
+// flipping with other files' contents.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
