@@ -1408,8 +1408,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // ahead of the three matrix copies 186; `t` as one conditional expression 126 (same code).
 // Plane-to-origin numerator direct, named, accumulated or joined 389/382/389/389.
 // Negated residual before division direct, named, compound or joined 135/395/135/135.
-// NOT kept: the numerator alternatives change the rounding boundary, raise the
-// score and leave the preload and persistent zero unresolved.
+// NOT kept: the numerator alternatives change the rounding boundary, raise the score
+// and leave the preload and persistent zero unresolved.
 // MiniMax C (11-20): no new form, no lower score (126): the length agrees (1696 bytes), but the plane length's dot
 // accumulates in the other register order - this build keeps the third component's product in xmm1 and the sum in xmm0,
 // retail keeps the product in xmm0 and the sum in xmm1 - while the offset's own terms agree with retail's
@@ -1446,6 +1446,15 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Copied normal through displacement 427; component setter 485, aggregate normal 485, representation copy 427.
 // Snapshot squared length 435; j capture and setter with that length 485; indexed setter 485; snapshot self-dot 435.
 // NOT kept: extending the copied normal changes the entry and displaces the original direction load. The component and aggregate forms move the body away from retail length.
+// M3 lane 1 r155 (H2M_FAST with 0x16c6f0, 0x13cb40, 0x142d10 and 0x16c740, all MATCH; control 126). Lead: the field-of-view
+// tail is the computation of matched 0x16c740's file-local field_of_view_current (target tested first, start read after
+// the clamp); written that way (`if (function_13cb40() && target != 0.0f)`, start after the PIN) the tail is retail's
+// instruction for instruction but for the zero register, 149 (1700 B: the animation arm's zero copy remains); through that
+// helper itself (declared here, LTCG inlines it) 399 (1704 B; case 2's normal registers move). On the 149 form: the
+// animation arm's zero stores chained 149, the timer test as `0.0f != time_scale` 149 (same code each). The squared length
+// at each use 441 (1728 B). Diagnostics (reverted): the end stores moved to the top 496 (one zero register for the whole
+// body, still XMM1); every pan-arm zero removed 321 and case 2's zero tests removed 437 (the other blocks keep the value in
+// XMM0, the zero in XMM1 or XMM2): each block gives XMM0 to the value where retail gives it to the zero.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
