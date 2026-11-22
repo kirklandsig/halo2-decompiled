@@ -1773,6 +1773,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // of the session reads 870 (2796 B; 0x73530 drops to 8); the opening test split in two 871; the opening exit as
 // `{ result = false; return result; }` 871; the imbalance excess test returning at once (retail's exit at 0x7ea98) 895
 // (2752 B); the type-5 scan's exit as `return false` 871. Still BLOCKED on the link's inline choices.
+// M3 lane 5 r231 (fast with 0x73530, control 871): the party histogram as `long histogram[16] = {0}` 911 (2748 B), as
+// `long histogram[16]` cleared by memset 936 (2716 B); an `inline` declaration of 0x192e60 in this file 871, of 0x193300
+// 871; the capacity compares written callee first 871 (same code each). All restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
