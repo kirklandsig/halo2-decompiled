@@ -939,6 +939,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the candidate loop 229 (0x239d50 34), in all three loops 235 (0x239d50 34), in the candidate loop alone 242 (0x239d50 34).
 // On 116 the homes left are points (retail ESI, ours EBX after the classifier call), current (retail EDI) and count (never
 // a register in retail). Body unchanged.
+// M3 lane 12 r174 (h2m fast with 0x239d50 and 0x239b80, both MATCH throughout; control 144): ours keeps a long copy of
+// count in a frame cell for `pass < count` (the 0x18 frame's extra dword), holds count in EBX through the pass loop and
+// gives the hull count the dead indices home, where retail's counter is the hull count itself in its own cell. The pass
+// bound compared as a word, `(short)pass < count`, 240 (784 B, frame 0x14, points then EBP); the closure written `if
+// (!left_start || points2d_differ(...)) continue; goto finished;` 144 (same code); both 240; the departure flag declared
+// beside previous_angle after the lowest scan 240; `hull_count = pass + 1;` ahead of the index store 207. Body unchanged.
 // M3 lane 4 r246 (H2M_FAST with 0x239d50 and 0x239b80, MATCH unless noted; control 144). Completion-flag family (match-only):
 // lane 1 r103's body (`while (!done && (short)hull_count < count)`, `if (!left_start) left_start = differ(first, next)`, the
 // positive written-out closure, memmove under `if (!done)`) with `current = count` after the classifier call and BOTH that

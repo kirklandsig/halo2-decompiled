@@ -901,6 +901,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // outputs declared local_5 first 1346 (same code); on the i, j, k form, the contact cross written into the contact's
 // velocity field with the base velocity added there 1419 (6185 B); the scale helper copying its input vector (retail
 // copies the normal before the projection at 0x206d0c) with the magnitude read directly 1543 (6358 B, frame 0x5e8).
+// M3 lane 12 r174 (h2m fast with 0x2056e0, MATCH each run; control 1346): the first loop's offset rows through the
+// existing vector3d_from_points3d(&field_60, element + 0x34, local_9) 1379; the definition row pointer declared ahead of
+// the element pointer 1347; the torque pointer declared ahead of the offset pointer 1346 (same code); the ground probe's
+// component reused from the entry lookup (same index) 1453; the probe's component index read at the loop top 1431.
+// Diagnostic, the magnitude read directly (1624, 5990 B, frame 0x590): 1426 instructions against retail's 1455; between
+// the two 0x2078f0 skip calls 425/439, and the three tail calls sit in another block order (119/72, then 8/60
+// instructions), so most of the byte shortfall is displacement size and tail block order. Body unchanged.
 // M3 lane 8 r221 (h2m fast with 0x2056e0, MATCH each run; control 1346): lane 2 r119's lead rebuilt (magnitude read in
 // place, the contact cross straight into field_4c, local_64 ahead of local_63, the root ahead of the normalised copy)
 // 1618 (5977 B); that with `(dword)` on every contact index 1618 (same code); the duplicate-impact search with a found

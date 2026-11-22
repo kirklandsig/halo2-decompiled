@@ -2078,6 +2078,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // the channel frame declared at its assignment 188; the orientation index written `user_index * 2 + weapon` 188 (same
 // code each). Retail's -0x1c slot is shared by the unit, the zoom and two later spills, ours by the unit and the active
 // byte. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 12 r176 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): our 0x30 frame never
+// touches its lowest cell (both builds use -0x2c..-0x4), so the extra four bytes are an unused home; the active byte declared at
+// function scope 188, zoom at function scope 188, the two zoom flags at function scope 188, the weapon-slot index declared in
+// the for statement 188, the active byte declared at its assignment 188 (same code each: scopes move no home). Still BLOCKED
+// by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

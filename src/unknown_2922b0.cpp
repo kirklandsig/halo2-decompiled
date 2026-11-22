@@ -870,6 +870,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // code each). Lane 2 r113's 331 lead rebuilt on today's file 331 at 2896 B (not applied): its first difference is still the
 // second cross, where retail loads each axis component into a fresh register for all six products (the axis's j and k
 // twice) and ours folds the axis's i as the memory operand of two. Body unchanged.
+// M3 lane 12 r176 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364): the hit flag set ahead
+// of the hit distance store 522; the minimum update as `local_4 = local_19 < local_4 ? local_19 : local_4` 521; the clearance
+// test as `local_19 / local_6 < 0.1f` 521; the collision result declared and its index cleared ahead of the start point 521
+// (same code each); the first output as `local_4 / local_6 * 0.7f + 0.3f` 649 (2874 B). Lane 2 r113's lead patch
+// re-applied 331 (2896 B, aligned 183): beyond its crosses and the loop pad, both rotations differ by an xmm1/xmm2/xmm3 colour
+// rotation and the tail by schedule only. Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

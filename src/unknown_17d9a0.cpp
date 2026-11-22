@@ -1096,6 +1096,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // rotated offset and the start 543; the sign as an if/else 535 (same code); the edge's reverse flag as a long 646 (3631
 // B); the edge's minimum and maximum as two conditionals 613; the angle written `sign * angle` 535 (same code). Body
 // unchanged.
+// M3 lane 12 r174 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535): in the
+// group block the start/end points declared ahead of the selected face, the selected plane declared first, the selected
+// face declared last, the axis declared with the selected-edge locals ahead of the face loop, the quad declared ahead of
+// the axis: 535 each (same code: the group block's declaration order moves no home). Body unchanged.
 // M3 lane 8 r221 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; 0x17d9a0 and 0x17d900
 // MATCH each time; control 535): a redundant `if (0 < group_count)` ahead of the final call loop 535 (same code); the
 // group search as a plain `for` ended by `break` after the group (no `!group_count` in the condition) 779 (first +0x0,
