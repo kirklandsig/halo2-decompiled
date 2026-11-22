@@ -2056,6 +2056,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 71/184; shared cursor and ordinal 71; entry base before capacity 62; acquisition and copy-return advance 184.
 // NOT kept: the closest form retains the split zero exit. Acquisition grows the body to 476 bytes and passes
 // the player on the stack.
+// Optional field selected by entry size >11 or ==13, optional byte count or prefix size
+// 134/134/171/184. With mask, written count and capacity debit ahead of size 159/159/181/129.
+// NOT kept: the last form reaches 445 bytes but changes the incoming convention and loses the caller.
 // M3 lane 6 r222 (H2M_FAST with 0x56380, 0x564c0, 0x53b00, 0x56000; control 60, aligned 58; the caller 0x56380's score in
 // brackets when it breaks; body unchanged; about 100 runs). LEAD 5 (450 B, aligned 1, every neighbour matched, and 4
 // differing instructions in the full image too): the head statements in retail's order kept, written, capacity, size
@@ -4501,6 +4504,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // end-minus-payload 168/158, stride-minus-payload 159/160, selected address 139/164.
 // Using the queued payload extent for the prefix gives the same 172/167.
 // The new boundary either grows the frame or leaves channel allocation unresolved.
+// Remaining bytes from input size and consumed bytes, indexed/walking 161/167.
+// Whole packet end versus input size 161/155. Last complete packet offset 175/169.
+// Available payload bytes from header-excluded size 160/167.
+// NOT kept: the derived budget drops the retail size update and the last-offset forms change the caller.
 // Round 666. The channel still needs EBP from entry.
 // Next cursor at admission 172, with early byte debit 171, at both validated prefixes 159,
 // with debit and prefix advance 160. One count read for the clamp 139, with admission cursor

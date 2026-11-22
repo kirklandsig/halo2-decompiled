@@ -981,6 +981,9 @@ void __stdcall function_1160c0(real dt)
 // difference output before commit 343, saved old position 346, next prediction after
 // commit 175, and coordinate loop for the staged velocity 170. NOT kept: all regress,
 // and the segment carrier and +0x20 spill persist in the closest forms.
+// Joint velocity/position coordinate pass alone, with prediction, with previous point,
+// and with both 363/375/370/393; with the reused coordinate 337/350/349/363.
+// NOT kept: the joint pass changes the frame and shortens the function.
 // Round 666. Segment selection still uses EDI/ECX and spills at +0x20.
 // Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
 // as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
