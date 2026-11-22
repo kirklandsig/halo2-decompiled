@@ -3338,6 +3338,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // test stays, NONE cached in ECX with four references); `if (map_id != NONE) map_id = field;` ahead of the guard 13 (four
 // NONE references at the caching point, the tests merged later); a second named local for the value (test on the first,
 // walk on the copy) at the top or as the block's first statement 30/30 (propagated). All restored.
+// M3 lane 7 r212 (h2m fast with 0x2c9a58, matched in each): the guard negated with an empty first arm and the walk in the
+// else arm 30 (same code); the id given two definitions by a switch on the field (a NONE case and a default) 36 (87 B, the
+// if/else code); the id as a ternary on the field with the walk guarded by the field itself 33 (85 B); the if/else
+// two-definition id with the iterator's pool stored first and the two NONE stores chained 36 (87 B: NONE still cached in
+// ECX); the field bound to a `long const &` for the guard with the id copied from it for the hit test 30 (same code).
+// Re-measured the if/else two-definition id 36: its head is retail's through `mov eax, [field]`, then `or ecx, -1`.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

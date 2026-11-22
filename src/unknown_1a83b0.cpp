@@ -786,6 +786,15 @@ s_1a8a10 g_4453c0[] =
 // into the negated product with a copy of i); that with the stores [3], [1], [2], [0] 19; each sum stored and negated right
 // after it 30; the first sum read from the actor ahead of the copy 87; the point's y carried through the switch in a
 // scalar and stored to the point after the copy 24 (the scalar takes the 0x50 slot, j folded). All restored.
+// M3 lane 7 r212 (h2m fast with 0x1a8c30, MATCH; control 17). Retail's join (0x1a8abf, case 0's jump target) begins
+// with the copy's i and j loads, then the point's y store, then the negated j read from memory again, so a store sits
+// between the two j reads there. The facing copy made ahead of the first switch 54 (the arms' point stores then split
+// the reads and the negated j is reloaded from memory as in retail, but the copy's loads move ahead of the dispatch into
+// XMM4/XMM5); that with the arms storing y before x 129 (548 B); the arms storing y before x alone 101; re-measured lane
+// 4 r245's y carried in a scalar and stored after the copy 24 (the scalar takes the 0x50 home, the point's y store is
+// forwarded away and j is shared). Diagnostics (duplicated statements, not keepable): the copy at the end of each arm 30
+// (merged into the join ahead of the y store, j still shared); the copy in each arm between the x and y stores 31. The
+// copy made at the function's top, ahead of the path-trace call, 170 (564 B: the copy is kept on the stack).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
