@@ -5069,6 +5069,7 @@ struct s_weapon_projectile_creation
 // separate results 1214/1210, direct marker input with separate results 1273/1273, or direct marker input
 // with a shared result 1142/1142. NOT kept: one result for the saved inputs recovers 0x1e98 and first +0x75
 // at 5195 bytes, but raises the score. The separate trace point and original rotations remain.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both weapon_emission_rotate calls through include/axis_rotation.h's helper 1190 (5150 B). Restored.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

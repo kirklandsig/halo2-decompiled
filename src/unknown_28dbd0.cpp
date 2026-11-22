@@ -770,6 +770,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // helper's closing sums as `v.i += axis.i + cross.i` 173 and written cross, axis, vector 173 (same code each); the
 // three in-place scales ordered vector, axis, cross 245 (1231 B); the up vector pointer named once for the outer cross
 // and both 0.1 updates 173 (same code). Helper and body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the spread rotation through include/axis_rotation.h's helper in place of function_28dbd2 236 (1190 B).
+// Restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

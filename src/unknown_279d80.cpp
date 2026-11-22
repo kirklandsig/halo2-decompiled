@@ -2205,6 +2205,11 @@ void function_27dd10(void)
 // varied): best 2 / 2, best family 44 (mapping lookup with the macro mask test); no combination matches either function.
 // Diagnostics: 0..47 dead initialised locals at the wrapper's top, the pass helper's top or in the sampler's own body
 // never move the pair (they move method 3's float registers for 8..28).
+// M3 lane 15 r135 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): the
+// walk's mask and interpolation flags as long parameters of function_288571 and function_288572 2 (0x281b60 2, 0x288570
+// 120); the three counter resets in reverse order 2; the wrapper's count declared `register` 2; the in-place flag as long
+// 2; the group end declared `long const` 2; the method-2 scale product with its operands swapped 2 (all the same code
+// here and in 0x281b60). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2483,6 +2488,9 @@ void function_2818e0(void)
 // pointers as array members 2 / 2; bit-test spellings in either helper 2; each existing wrapper 4, 2, 31, 7, 32 and 46
 // (compute_orientations, function_288571, split, component count, split index last, inheritance mapping); the 3,888
 // generated walk combinations best 2. Nothing below 2.
+// M3 lane 15 r135 (the shared-walk trials listed above 0x27dff0, control 2): mask and interpolation flags as long
+// parameters 2; counter resets reversed 2; `register` count 2; in-place flag as long 2; group end const 2; the method-2
+// scale product's operands swapped 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

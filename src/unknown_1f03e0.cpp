@@ -1050,6 +1050,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // dot3f(&limited, &axis) or (&axis, &limited) 232 (1234 B, same (k + j) + i tree, limited's components copied as retail,
 // sine and cosine slots swap), with `(1.0f - cosine)` first 232, the acceptance dot through dot3f either order 234,
 // cosine before sine 234; `limited` copied right after old_up 290. Three points at best: body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the limit rotation through include/axis_rotation.h's helper 301 (1275 B). Restored.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)

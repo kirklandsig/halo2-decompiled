@@ -2350,6 +2350,8 @@ real function_17c900(short function_type, real input);
 // opposite order (this build takes the unit table through ecx and edx, retail takes one through eax and the other
 // through ecx), and the shared normalizer still pins the rest of the body.
 // MiniMax R (11-20): re-checked, no new form and no lower score (348): retail reads the index from [esp + 0x34] and masks it before the prologue pushes while this build loads the two table pointers first and keeps the masked index in esi where retail keeps the unit entry there.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the aim offset's rotation through include/axis_rotation.h's helper (the cross axis turned about the
+// target direction in place, then scaled into the point) 370 (1474 B). Restored.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2823,7 +2825,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the projectile index in EBX where retail keeps it in EDI; the range check's 0xfaa30 call is emitted at all five of our uses
 // where retail inlines it at two of them and calls it twice, and the merged inline on magnitude3d expands that helper at our
 // second use.
-// score 946 (was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
+// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
 // common rotated output 1096; both common 1069; existing state helper 1050/1131; complete guidance/roll inputs 994,
@@ -2849,6 +2851,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // file (0xfaa30 itself still matches, its out-of-line copy survives) inlines it at all five uses and takes 0xf8eb0 to
 // 1093 (4790 bytes, frame 0x114); reverted. The two per-arm calls and the two inlined uses are compiler-level, not
 // reachable from this source without writing 0xfaa30's body out by hand.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the velocity turn through include/axis_rotation.h's helper 1042 (4703 B). Restored.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {

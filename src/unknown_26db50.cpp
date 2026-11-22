@@ -8,6 +8,7 @@
 #include "data_array.h"
 #include "unknown_2626b0.h"
 #include "object_markers.h"
+#include "axis_rotation.h"
 
 /* Location records share one owner and type, with a bitmap of active entries. */
 struct s_location_record_view
@@ -450,7 +451,6 @@ struct s_record_collision_view
 	byte field_14[0x5c - 0x14];
 };
 
-void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
 // score 26 (was 26; 45 before, 71 earlier): the 0xd8 frame and 1089-byte length agree. Left: inside the rotation the
 // dot sums (k + i) + j where retail sums (j + i) + k (so the direction's j and k are stored and reloaded in the other
@@ -1245,6 +1245,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // scope and assigned in the spoke body 26; the trace result declared at function scope 26; the direction copied through
 // a `vector3f const *` source local 26; `sine` and `cosine` declared at function scope 26 (all the same code); the sector
 // index read ahead of the radius 50 (the head reorders). All restored.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 26 (same code; plain
+// check agrees). KEPT as the shared spelling.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -1264,7 +1266,7 @@ long function_26d570(long object_index)
 				real angle = (real)spoke * 0.7853981852531433f + (real)ring * 0.39269909262657166f;
 				real sine = (real)sin(angle);
 				real cosine = (real)cos(angle);
-				rotate_direction(&direction, g_4687b0, sine, cosine);
+				function_x84d9e8(&direction, g_4687b0, sine, cosine);
 				s_record_pathfinding_view *structure = (s_record_pathfinding_view *)g_4e0348;
 				s_pathfinding_data *pathfinding = NULL;
 				if (structure->count > 0)

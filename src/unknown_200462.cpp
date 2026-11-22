@@ -350,6 +350,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // lower and upper corner points named and the four corners filled from their members 12; the half extents as one
 // two-member extent local used by both steps and the corners 12; the stepped y read into a local for the y corners 12
 // (all three the pointer form's code).
+// M3 lane 15 r135 (h2m fast with 0x2008fc 0x200891, control 14): on this body the four edges named (left, right, top,
+// bottom, each used twice) ahead of the corner stores 39 (first difference +0x119); the bitmap test as a positive arm
+// around the rest of the draw iteration 14; the half height declared bare ahead of the half width and assigned after it
+// 14; the corner array and the draw call in their own block 14; the corner array declared at function scope beside the
+// position 14 (the last four the same code). All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

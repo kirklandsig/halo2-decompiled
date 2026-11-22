@@ -4646,6 +4646,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // neither); and with the mode-6 exit returning `changed` 543 (2714 B: both bytes at retail's homes, so one more
 // reference to changed flips the tie, but that exit then merges with the final return where retail keeps `mov al, 1`).
 // With both bytes placed 543 remain: the wall-vector products' operand order and xmm scheduling.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the wall turn through include/axis_rotation.h's helper 556 (2732 B). Restored. biped_rotate (the look
+// turn) is a different rotation (no projection term) and was not switched.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6425,6 +6427,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // complement and cross spellings x statement order x 0..7 (640) 8, a vector-local or in-row cross 142+; the helper returning its result
 // pointer, consumed by the normalize or the side cross (288) 8; input and result spelled as the field or a pointer local in each
 // combination x 0..7 (232) 15.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_direction calls through include/axis_rotation.h's helper 134 (895 B). Restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

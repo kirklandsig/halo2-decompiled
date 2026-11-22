@@ -849,6 +849,7 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // rotation's sine and cosine as named locals ahead of the facing copy 164. Reading: retail gives both rotations' sines one
 // home (+0x10) and spills the first rotation's turned j into the facing's j home (+0x24), keeping the second axis in
 // registers; ours gives the second sine +0x14 and spills the second axis's k into +0x34.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_vector_170d70 calls through include/axis_rotation.h's helper 151 (1696 B). Restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
