@@ -652,6 +652,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // `->bytes` at the scan and the source 21 [match], at either one 21/21, without the volatile 49 (92 B) [6].
 // A 600 s permuter run (annealing, context 0xb5f10/0xb61d0) on the identity lead: 79 tries, best 15 (the full image also
 // scores the lead 15).
+// M3 lane 7 r214 (h2m fast with 0xb5f10/0xb61d0; control 21; the identity lead re-measured 15, the source at the call
+// with the identity on the scan 28 [6]: start then arrives in EDX and stays there, the scan walking in EDI, where retail
+// moves start to EDI and walks in EDX): no volatile, the scan reading the text through one read of the parameter's
+// address (`char const *const *text = &string;`), the source at the call 40 (104 B) [6], with main's early source 49
+// (92 B) [6] (the text pointer is then passed in a register; the address read does not keep it on the stack); the bound
+// named first (`long end = start + count;`) 21 [match]; the source as `(char const *)((long)string + start)` (0xb61d0's
+// integer sum) 21 [match]; the test written `length >= start + count` 21 [match] (the three the same code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

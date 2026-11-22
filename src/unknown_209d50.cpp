@@ -317,6 +317,14 @@ static inline void *function_xc5914d(long thread_index, short size)
 // volatile-free 95, volatile-free null-first 83; the same with the size read into a `short size` first 21 / 95 / 83. In
 // the null-first listing the expression pool is rematerialised per block (`mov ecx, [pool]` in the init block, again in
 // the test), the pointer keeps EAX and the result ESI: the pool temp, not the pointer, loses the register contest.
+// M3 lane 7 r214 (h2m fast with 0x2099f0, which stays matched; volatile-free forms): the three slots as plain pointers
+// declared bare in reverse order (`expression_index`, `argument_index`, `result`, `arguments`) and assigned in retail's
+// order 95 (266 B); the allocator as a plain function (no `inline`, still expanded) 95 (266 B); `result = NULL` first in
+// the arm with the element through a `long *const &` bound to the pointer 83 (277 B); `result = NULL` first with the
+// element passed as `arguments + argument_index` and the index stepped ahead of the expression update 83 (277 B).
+// Diagnostic, reverted at once: one global store of the pointer after the call (the pointer live across it) 102 (292 B:
+// the pointer spills to a frame slot, but the thread index then arrives in EDX), so a use past the call is not what
+// keeps retail's result and pointer apart.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

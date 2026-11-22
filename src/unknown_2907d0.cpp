@@ -297,6 +297,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // passed to the rotate helper 19 each (the same code: no scratch or callee-saved shift here, the transform keeps EBX and the
 // point's y EBP). Reading of the tail: retail sets the result with a byte `mov al, 1`, so AX is not 1 and field2e takes an
 // immediate; ours materialises a 32-bit `mov eax, 1` shared by the result and the word store.
+// M3 lane 7 r214 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): no address local, the
+// node arm and the else arm's position reading the parameter, the else arm's forward through one volatile read of the
+// parameter's address 87 (472 B); the bounds test's second compare commuted (`node_count <= arg_1`) 21; the bounds test
+// split in place into two early returns 83 (462 B); the node pointer declared bare at function scope and assigned in the
+// node arm 19 (same code); the node pointer formed in one statement ahead of the bounds test (`function_b8c00(...) + arg_1`)
+// 119 (472 B). Re-measured: `field2e = true` 19, the transform parameter declared `const` 19, the else arm's copies as
+// memcpy 19, the position stored field by field 141 (485 B).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
