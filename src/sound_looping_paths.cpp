@@ -847,6 +847,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Choice cap at scan-body entry with short/short, short/long, long/short and long/long query/choice counts
 // 846/964/919/965. Cap after choice publication in the same width order 950/965/965/995. Widening the accepted
 // count restores the ESI zero but shortens the body and leaves the array homes displaced.
+// M3 lane 2 r135 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): the muted flag as `!g_509420`
+// 846 (same code); the choice distance as one conditional expression 852; the query loop's tests as `choice_count != 2 &&
+// i < query_count` 934 (3305 B); the override's suppression gain computed once ahead of its loop 959 (3380 B: retail
+// evaluates it per target); the fade scan's flag test as `!(sound->flags & 0x200)` 845 (under the bar, not kept); on that,
+// the fade scan as a head-tested for loop 899 (3369 B), the fade's flag set through the scanned datum 854 (3308 B: retail
+// looks the datum up again), the duplicate test as `if (equal) duplicate = true;` 908, the query loop's continues as nested
+// ifs 924 (3304 B), `clusters[0] == cluster` 845 (same code). Reading: retail forms the choice address from the incremented
+// count in ESI (`lea esi, [esi + esi*4]; lea esi, [esp + esi*8 + 0x10]`), spills the count to +0x34 and reloads it after
+// the store block, so its count is never strength-reduced. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

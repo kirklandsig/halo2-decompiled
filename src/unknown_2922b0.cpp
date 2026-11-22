@@ -847,6 +847,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Names for success/minimum/hits 521, ray workspaces 521, response angles 521, and all three
 // sets 521. Reused fallback axis 522, shared ray vector setter 564, minimum from the
 // stored hit distance 521, ray names with the shared setter 564. The setter shortens the ray loop.
+// M3 lane 2 r135 (H2M_FAST with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): both rotations through the existing
+// cross-file forced-inline rotate_direction with sine and cosine as direct arguments, plain check (the fast image keeps that
+// helper out of line) 565 (2867 B; callers 0x29ab90 286 and 0x29bab0 489 unchanged); the root helper's `1 - x / limit`
+// named once 521 (same code); the clamp helper 0x2922b3 as one conditional expression 551 (2863 B); the rotation helper's
+// projection dot in plain i, j, k order 521 (same code: the order canonicalises); the hit distance from the loop's named ray
+// length instead of the array element 650 (2886 B, the entry registers move). Lane 2 r113's lead rebuilt on today's file
+// 331 at 2896 B (not applied). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
