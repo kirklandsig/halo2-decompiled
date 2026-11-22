@@ -1502,6 +1502,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // continue;` 24; the duration copied to a local ahead of the loop 24; the curve copied to a local ahead of the loop 24
 // (the 24s the same code). Re-measured: the for loop with the next step as init and step 64 (219 B); a named element
 // read through a `*const &` 24. 0x126df0's file is on this round's avoid list again.
+// M3 lane 8 r224 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all MATCH unless noted; control 24, the
+// index ESI / element EDI swap; 0x126df0's file was free this round, so these are its fade-in half): a pool-data pointer
+// local at 0x126df0's top for both halves 24 (0x126df0 51, 203 B); a record-pool local there with the data read per half
+// 24 (0x126df0 52, 205 B); the fade-in half as a file-local helper taking the index, plain inline 147 (not expanded, 117 B)
+// and forceinline 24 (0x126df0 matched); the fading bit read into a named bool ahead of the gain test 24 (same code).
+// Diagnostic: 0x126df0's halves in the other order (fade-out first) 24 (0x126df0 66), so the inlinee's symbol order is
+// not the tie-breaker. Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

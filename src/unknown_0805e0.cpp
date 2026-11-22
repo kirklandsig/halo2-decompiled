@@ -937,6 +937,11 @@ void function_1537f0(s_profile_record *record);
 // with `(short)NONE` links 46, with one four-link chain 46, with the heads and the links each one chain 46; main's entry
 // view with `entry->` link pairs or four link statements 49. Diagnostic: the head stores moved below the loop still
 // hoist NONE (73, `or ebp, -1` ahead of the loop), so the hoist is the loop constant's own weight, not the heads alone.
+// M3 lane 8 r224 (h2m fast with 0x1537f0, 0x7f8b0 and 0x80490, plus 0x80330 and 0x18fd94 for 0x1537f0 forms; control 18):
+// 0x1537f0's value40 clear (the source of the two forwarded zero words) as four element stores 70 (250 B; 0x1537f0 26),
+// value40 and value70 as element stores 117 (210 B; 0x1537f0 27), value40 by a counted loop 18 (0x1537f0 26); the identity
+// zeroed by one chained element assignment 64 (256 B), that with the `entry->` links as chained pairs in retail's order 62.
+// 0x1537f0 keeps its own bytes only with its memsets. All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -2229,6 +2229,11 @@ bool function_17afd0(long effect_index, long value);
 // 138 (both promoted like a scalar: retail's memory-resident flag is not an aggregate's); `same_view = owner != NONE &&
 // g == owner ? available : false` 56; the true default at the loop body's top 51; the availability as a ternary initialiser
 // 96. All restored.
+// M3 lane 8 r224 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction after main's
+// availability, re-measured 138 at 510 B): P with same_view declared at function scope above the walk 138, with the
+// availability too 138, with camera_relative too 138 (all P's code: scope does not move same_view off BL); draw as
+// `same_view ? view_pass : !view_pass` 98 (510 B), on P 138 (514 B); the camera block's arms swapped under `if (!same_view)`
+// 43, on P 138. All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
