@@ -1394,6 +1394,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 433/437, depth pair before or after the first component 540/540, and depth pair with aggregate or setter
 // 601/557. NOT kept: the 433 form reaches 2122 bytes and frame 0x24 but raises the score and still lacks
 // eight frame bytes.
+// M3 lane 12 r176 (h2m fast with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 273): the fraction as one
+// conditional expression 418; `first` declared ahead of `second` 439 (2088 B); the opposite scan's update as `other_distance >
+// distance` 418; one scan index declared once for both scans 418 (same code each); `nearest` declared after the closest
+// distance 416 (a declaration move under the bar, not kept). Retail's scan 2 runs four passes with a second index (i + 2)
+// in a stack cell and two record pointers, and sums both the projection and the distance from the offset registers.
+// Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

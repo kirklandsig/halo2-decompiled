@@ -864,6 +864,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the block's whole difference): the second cross as direct stores in global-first product order 331 (same code: the
 // global's i still folds as the memory operand of two products); the point array declared first in the function 331
 // (same code); parens around the three ray products 572 (2886 B, every second-cross product then local-first).
+// M3 lane 12 r176 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364): the hit flag set ahead
+// of the hit distance store 522; the minimum update as `local_4 = local_19 < local_4 ? local_19 : local_4` 521; the clearance
+// test as `local_19 / local_6 < 0.1f` 521; the collision result declared and its index cleared ahead of the start point 521
+// (same code each); the first output as `local_4 / local_6 * 0.7f + 0.3f` 649 (2874 B). Lane 2 r113's lead patch
+// re-applied 331 (2896 B, aligned 183): beyond its crosses and the loop pad, both rotations differ by an xmm1/xmm2/xmm3 colour
+// rotation and the tail by schedule only. Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

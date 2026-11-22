@@ -107,10 +107,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// score 91 (was 93): r176 baseline 91 (fast and full); the 0x17cfa0 call setup now agrees with retail. Left: the entry
+// guard's registers, the count loop's movsx (retail tests the word and zero-extends), the count-sum/vertex-index slot pair
+// and the inlined point transform's x/y row product forms (24 lines over the four copies).
 // MiniMax C (11-19): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the
 // 0x17cfa0 call setup all still differ, and the callee that decides the last one lives in another file; the body stands.
 // MiniMax E (11-20): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the 0x17cfa0 call setup still differ, and the callee that decides the last one is in another file and does not match yet: BLOCKED-BY 0x17cfa0.
-// score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
+// Earlier first line: score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
 // Round 127 (m3 lane 10, fast): dead initialised locals at the top for K = 8/10/12 216/216/261 and K = 14..32 (even)
 // 93 each, the transform rows never flip (diagnostic, removed); the count sum as a `short` without its two casts 93
 // (same code); with the short count-loop index as well 102 (aligned 36 against 38); the luminance in red, green, blue
@@ -381,6 +384,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // named local 297 (2661 B); the two `+=` of the left terms written `local_4 = local_4 + ...` 93 (same code). Retail's rows
 // keep every product in its spelled operand order and statement order; ours evaluates the x row's left product ahead of
 // its up product and commutes three products, at every symbol count tried. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// M3 lane 12 r176 (h2m fast, control 91, 63 non-address lines): the short count-loop index again 102 (entry and count
+// loop exact, the three centre sums and two call setups turn); that with a short count sum 102 (same code); the scale
+// steps as `x = scale * x` 91 (same code); the transform rows as one expression each 314 (2647 B); one named sum per row
+// 167 (rows unchanged, the rest moves). The rows never flip. Body unchanged.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
