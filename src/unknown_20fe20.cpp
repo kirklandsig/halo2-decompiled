@@ -1364,6 +1364,10 @@ void function_2118c0(void)
 // p1 and out with the knot rows as `index + (w - k)` 150 (every row reduced); the knot indices as `(word)((k + 7) % 8)`,
 // `(k + 1) % 8`, `(k + 2) % 8` 189 (799 B); `long row = b * 8; row &= 0xff;` 169 (787 B); `long row = (b * 8) & 0x18` 166
 // (784 B); `long row = (long)(dword)(b * 8)` 150.
+// M3 lane 3 r295 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): the second pass with its own `long
+// band` counter 134, with a `short band` counter 10 (same code); the knot indices computed in the band body with `long row =
+// b * 8` 180 (755 B: they are hoisted before the rows are reduced, so every row reduces), with the shifted row 174 (756 B);
+// `word` knot indices at the sample loop's head with the shifted row 155 (780 B).
 // M3 lane 13 r141 (h2m fast with 0x212100 and 0x211fd0, both MATCH each run; control 10): every noise row (knots, p1,
 // out) through a `s_cell_field_globals *` to g_4f93bc taken ahead of the second pass 10; the three knot indices declared
 // at function scope beside k, m and b and assigned at the knot level 10; `long row = b; row <<= 3;` 10 (the three 10s

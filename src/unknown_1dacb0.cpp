@@ -1626,6 +1626,19 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 1011 (2837 B). Body unchanged.
 // Separate optional-output destination bindings in their publication conditions, all seven subsets and a
 // const-pointer binding for all three, 812 each. The candidate and the resolved-mode home still differ.
+// M3 lane 2 r135 (H2M_FAST with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812; each
+// form applied to both twins with the same counts): the second request's three keys bound by `long const &` locals 812
+// (same code: the references coalesce with the outputs' homes); the first request handed `iterator.graph` in place of
+// `this` 1016 (2805 B); the 0x1dd9d0 call handed `iterator.graph` 983 (2837 B); the found block tested on the entry pointer
+// (`if (weapon_type_entry)`) 960 (2825 B: the first difference moves from +0x4 to +0x1c, the entry's class/NONE pair then
+// retail's, but the frame homes move away; retail tests the result after the loop); the do-while test as `NONE ==
+// result.index` 812 (same code). Body unchanged.
+// M3 lane 3 r294 (h2m fast, both twins together with 0x1dc790/0x1dc8c0/0x1dd9d0, all MATCH; control 812 each): 0x1dd9d0
+// and both requests called on the iterator's graph field 958; the inner `return result;` dropped (one return) 1040 (2857 B);
+// the three outputs declared bare and set to NONE after the iterator's fields 810 (two points, a store order, not kept);
+// on that the iterator's fields in the siblings' order 812, the outputs set type, class, mode 810, by one chained
+// assignment 810; the second request's graph through a const reference to a copy of `this` 812 (same code); the result
+// bound by a const reference for the 0x1dd9d0 call 812 (same code).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1709,7 +1722,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // slot, and the second request reloads its mode. (828 before the count fell to 812.)
 // MiniMax I (11-20): no new form, no lower score (812): this round only re-measured the body; the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
 // MiniMax D (11-19): no new form, no lower score (828): the frame agrees (0x2c) and the iterator's seven words sit in the same slots, but retail's result sits four bytes higher than ours, retail's third resolved output is homed in the frame where ours rides in the incoming argument slot, and the NONE compare loads its argument into edx where this build loads it into ecx.
-// score 812 (was 812): earlier 828 (was 828), r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
+// Earlier at 812 (was 812): earlier 828 (was 828), r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
 // The class and NONE registers are exchanged. The iterator mode output takes the candidate
 // slot, and the second request reloads its mode.
 // Earlier at 828 (was 828): r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
@@ -2205,6 +2218,19 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // after it 810 (same code); the candidate folded into `result = named ? named->animation_id : animation_id;` 934; the
 // first request fed the iterator's own three key fields 943 (2839 B); the candidate declared after the lookup
 // 1011 (2837 B). Body unchanged.
+// M3 lane 2 r135 (H2M_FAST with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812; each
+// form applied to both twins with the same counts): the second request's three keys bound by `long const &` locals 812
+// (same code: the references coalesce with the outputs' homes); the first request handed `iterator.graph` in place of
+// `this` 1016 (2805 B); the 0x1dd9d0 call handed `iterator.graph` 983 (2837 B); the found block tested on the entry pointer
+// (`if (weapon_type_entry)`) 960 (2825 B: the first difference moves from +0x4 to +0x1c, the entry's class/NONE pair then
+// retail's, but the frame homes move away; retail tests the result after the loop); the do-while test as `NONE ==
+// result.index` 812 (same code). Body unchanged.
+// M3 lane 3 r294 (h2m fast, both twins together with 0x1dc790/0x1dc8c0/0x1dd9d0, all MATCH; control 812 each): 0x1dd9d0
+// and both requests called on the iterator's graph field 958; the inner `return result;` dropped (one return) 1040 (2857 B);
+// the three outputs declared bare and set to NONE after the iterator's fields 810 (two points, a store order, not kept);
+// on that the iterator's fields in the siblings' order 812, the outputs set type, class, mode 810, by one chained
+// assignment 810; the second request's graph through a const reference to a copy of `this` 812 (same code); the result
+// bound by a const reference for the 0x1dd9d0 call 812 (same code).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

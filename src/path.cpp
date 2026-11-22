@@ -374,6 +374,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// score 286 (was 286): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
+// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // MiniMax B (11-20): no new form, no lower score (286): the link count's increment split out of the copy's index
 // (`memcpy(&links[link_count], ...)` then `link_count++`) measures 298, so the post-increment form is the better one;
 // retail still counts the links in a dword (`inc dword ptr [esp + 0x1c]`) but compares it as a word (`cmp dx, word ptr
@@ -395,8 +397,6 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `previous` pointer, set to NULL here and left alone there; dropping that initializer gives retail's frame but the body grows
 // by two bytes and the score rises to 357), the node depth is still read at one address here and through a lea there, and the
 // prologue's saves and stores are in another order; the permuter (27 tries in 313 s, annealing) found no variant under 286.
-// score 286 (was 286): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
-// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
 // (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
 // edge). On that 2, looking for retail's extra loop block that is gone after allocation: the projection clamp with the
@@ -1037,6 +1037,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // guard block folds before allocation); the truncation test written in both distance arms 488 (1489 B, the tails are not
 // cross-jumped and the state leaves EBX); the truncation storing `complete` before `count` 4 (the two stores swap, the pair
 // stays); the previous point chosen by an if/else statement in place of the ternary 2 (same code). Body unchanged.
+// M3 lane 16 r173 (H2M_FAST with 0x270930, MATCH each run; control 286): the r154 two-flag lead re-applied to today's
+// file 2 again (the same back-edge pair). On it: `special ||` tested first in the type chain 341 (1372 B); the special
+// test as a one-case `switch (node->target.type)` 79; the scan's count read through `short const &` 2; the scan's steps
+// read through `s_path_step_view *const &` 2 (same code each); the truncation as `count = ++j;` 35 (1392 B). Body unchanged.
+// score 286 (was 286): Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
+// short capped fill bound with the same guards 396/396/396. Separate seed node 390,
+// shared edge-table receiver 391. NOT kept: frame 0xe4 returns but the state is stacked
+// and the matched caller changes. The opening extra cursor and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
