@@ -356,6 +356,10 @@ void function_254200(void)
 // 4 each; the depth through an `extern real const` declared above the file's first function and defined after this
 // one (so the front end cannot fold it) 4 (the whole-program build folds it); that in both functions 4. Diagnostic,
 // restored: the file built with each processor target (G5, G6, G7) 4 (0x2548f0 2): the reload order ignores them.
+// M3 lane 7 r217 (H2M_FAST), at 4: the four vertex position calls through the platform's device-interface inline that
+// takes a device pointer (one more inline layer) 10 (the colour block's three spills change slots, the pair stays ours);
+// the two-short texture calls through that inline 4 (same code), in the plain C form 392 (914 B, no longer expanded);
+// every Begin, texture, position and End call through it 10; the half size as `2.f * arg_2` 4 (same code).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -812,6 +816,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // (same code). Diagnostic, restored: each processor target on the file 2. Reading: in this pair and in 0x254490's triple,
 // retail's call-edge reloads follow the order the values are first defined (0x254490: x, the depth, y + size; here the
 // lower coordinate, then the depth), ours descend by register; neither named values nor a later-folded constant move it.
+// M3 lane 7 r217 (H2M_FAST), at 2: the first quad's calls through the platform's device-interface inline that takes a
+// device pointer: the four position calls 2, the texture calls 2, both 2, Begin and the colour call 2, all of them 2. In
+// both this pair and 0x254490's, retail's two loads after the reservation are ascending by xmm number and ours descending.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

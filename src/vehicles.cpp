@@ -1319,6 +1319,12 @@ __forceinline long vehicle_round(real value)
 // (reverted at once): on the staged first cross one dead helper local anywhere from the else arm's top to just before
 // the side cross MATCHES (fast), and so does a byte accessor at one mode read (the axis test's first compare). No
 // existing cross helper in the tree has four locals.
+// M3 lane 7 r217 (H2M_FAST), at 4: re-measured the lead: cross3f_staged at the first cross 4 (+0x1e1), plus one dead
+// forced-inline helper local after the strength update MATCH (diagnostic only). Real forms on the staged first cross:
+// the rate on vehicle->up.k (up pointer at the first cross only) 4; the file's `real dt = g_510c54->rate;` for the
+// rate's tick length 6; a ticks-to-time inline `(real)ticks * rate` called with 1 (the tick-length idiom of the other
+// sites) 4, with a real parameter 4, with a named result 4/4 (long/real), on the plain first cross 4/17/4/17; a byte
+// mode local read after the velocity call for the axis and side tests 6 (plain first cross 13); no up pointer at all 10.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2474,6 +2480,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // in i, j, k order 9 and in k, j, i order 9 (same code). Diagnostic: through a forced-inline or plain inline dot helper
 // with its terms written k, j, i (either operand order) or i, j, k 11 each: every inline dot gives (j + k) + i, the
 // direct sum (i + j) + k, neither retail's (k + j) + i.
+// M3 lane 7 r217 (H2M_FAST), at 9: overlay 1's dot with the other seven operand orientations of its k, j, i terms
+// (left-first L / velocity-first V) LLL 308, LLV 33, LVV 369 (2011 B), VLL 29, VLV 368 (2011 B), VVL 361 (2011 B),
+// VVV 376 (2007 B); the graph test's second lookup dropped (the first vehicle pointer's offset) 530 (2011 B).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

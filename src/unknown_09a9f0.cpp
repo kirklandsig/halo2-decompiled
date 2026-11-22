@@ -1068,6 +1068,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // pointer and both lookups through it 78. Diagnostic, not keepable (it takes the object table global's address): both
 // lookups through a reference bound to the global itself 42 (retail's EBP window and data reload, the scaled index still
 // shared), with the object read indexed by the entity's field 42, the header test alone through it 77. Body unchanged.
+// M3 lane 7 r217 (H2M_FAST), at 8: no second store with the object read masked and `result = true` ahead of the field
+// store 72; the object read as `OBJECT_HEADER((word)object_index)->object` 8 (same code); the attach passed
+// `entity->object_index` 21; no second store with the object lookup and the attach both through `entity->object_index` 82
+// (157 B); the second store moved after the field store 69.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1594,6 +1598,11 @@ bool c_projectile_type::v8(long a, long b)
 // file-local by-address bit setter (dword result) 12; the 0x800 test as `(flags >> 8) & 8` 12, on a `(word)flags` view 12;
 // the group mask taken on an unsigned 64-bit value 12; the object looked up through a `long const &` to `a` 12 (every
 // spelling folds to the same 0x800 and 0xffff constants before allocation). Word-read body kept (5).
+// M3 lane 7 r217 (H2M_FAST; word read 5, mask 12), all with the full-width mask: both device-bit tests from `b` with the
+// flags local only for the call's mask 12; the flags local ahead of the object with the call's mask from `b` 12; the entry
+// pointer declared with the index reference and assigned in the NONE block 12; `NONE != index` with a const entry pointer
+// 12; the 0x800 arm's result bit set ahead of its store 14. Diagnostics (semantics changed, reverted): `| 0x3ff` or
+// `| 0xffff` on the call's result 48 (192 B), `& NONE` 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
