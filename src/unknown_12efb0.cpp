@@ -941,6 +941,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Captured palette byte with short in the arm 750; short/long fresh lookup 728/619; early byte admission 748.
 // Cached previous index with short or explicit null and long 726/618; original capture with short/long lookup 729/620.
 // NOT kept: The long lookup forms recover the CL byte load, but spill that byte, keep NONE in EDX and raise the score. The four callee controls remain matched.
+// M3 lane 3 r294 (h2m fast with 0x12e5e0/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): on the palette
+// byte read at each use (re-measured 666, 3827 B: retail's CL byte, one widening and EBX record, but NONE in EDX and the
+// 0x130f60 result kept in EAX, so the field_f0 store's EDX ends the NONE register and the +0xd4 tag test compares an
+// immediate): NONE written first in the +0xd4 test 666, in the tag-arm test 666, in the previous-index test 666, in all
+// four tests with the byte test too 666 (same code each: operand order canonicalises); the source index reset stored
+// first 665. Retail keeps NONE in EAX through the palette arm to that tag test (loaded into EDI), the result in EDX.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

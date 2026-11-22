@@ -856,6 +856,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // ifs 924 (3304 B), `clusters[0] == cluster` 845 (same code). Reading: retail forms the choice address from the incremented
 // count in ESI (`lea esi, [esi + esi*4]; lea esi, [esp + esi*8 + 0x10]`), spills the count to +0x34 and reloads it after
 // the store block, so its count is never strength-reduced. Body unchanged.
+// M3 lane 3 r294 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): long counts with the query count
+// read directly, the choice count incremented right after the duplicate test and every choice store addressed
+// `choices[choice_count - 1]` 898 (3283 B: the entry zero is then ESI as retail and three query arrays take retail's
+// homes, gains 4 bytes off, but the choice address is strength-reduced into a pointer stepped by 0x28 where retail
+// recomputes it from the incremented count); that with one named `choice` pointer 960 (3267 B); with retail's store
+// order (tag, source, decibels, cluster) and the three 1.0f defaults as statements 898 (same code); with a short
+// choice count 930 (3304 B). The silence floor g_44a0b4 declared const where it is defined and in both files that read
+// it 846 (same code here), but matched 0x2197b0 falls to 15 and 0x18d730/0x18dc90 rise, so not kept.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

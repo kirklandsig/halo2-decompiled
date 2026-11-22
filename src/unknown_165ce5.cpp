@@ -2064,6 +2064,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // 0xd03b0 query, every later test rewritten directly) 205 (2203 B; the older rounds' 385 is out of date); that with the
 // 0x98 overlay play written per arm with constant arguments 352 (2201 B). Still BLOCKED by the stand-in (round 98) for the
 // ESI/EDI saves. Body unchanged.
+// M3 lane 3 r294 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the four spring defaults declared
+// d, c, b, a 192; `no_scope` set by an if/else on `no_zoom` 376 (2197 B); the sound callback chosen by an if/else on the
+// nonzero index 188; the idle counter incremented in its own statement ahead of the test 188; the busy and animating
+// tests spelled `== 0` / `!= false` 188 (same code each). Re-measured by mistake: zoom computed at its declaration ahead
+// of the update call 388 (listed). From the look values to the weapon loop the rows now differ only in the unit and mode
+// slot numbers. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

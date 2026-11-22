@@ -854,6 +854,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // projection dot in plain i, j, k order 521 (same code: the order canonicalises); the hit distance from the loop's named ray
 // length instead of the array element 650 (2886 B, the entry registers move). Lane 2 r113's lead rebuilt on today's file
 // 331 at 2896 B (not applied). Body unchanged.
+// M3 lane 3 r294 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): the hit flags as `= {}` 663 (2826 B,
+// block store); the inactive exit as `return local_0;` 521 (same code). On lane 2 r113's lead (rebuilt, 331 at 2896 B: after
+// the second cross every row up to the ray loop is retail's shifted by one, so that cross and the loop-entry pad are
+// the block's whole difference): the second cross as direct stores in global-first product order 331 (same code: the
+// global's i still folds as the memory operand of two products); the point array declared first in the function 331
+// (same code); parens around the three ray products 572 (2886 B, every second-cross product then local-first).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
