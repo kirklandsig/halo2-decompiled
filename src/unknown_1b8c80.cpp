@@ -988,6 +988,10 @@ extern "C" void _ReadWriteBarrier(void);
 // destination 9; no barrier with the busy test written `actor->unknown26c + 1 == 0` 42 (205 B: `mov edx, [eax+0x26c]; inc
 // edx`, the slot still loads after the branch); no barrier, actor first, the busy test with both sides cast to `dword` 44
 // (208 B); the NONE test joined with `&& state`, with the barrier, 47 (209 B).
+// M3 lane 14 r143 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): a dead early copy of the 0x450 store after
+// the barrier, the final store kept, 33 (205 B: the early store is not eliminated and takes EDX for its constant); the
+// same with no barrier 40; the early store between the lookup and the barrier 33; the 0x450 store also at the head of
+// the NONE block 42 (211 B); the state declared NULL and assigned from the slot after the lookup 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

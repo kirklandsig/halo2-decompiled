@@ -786,6 +786,10 @@ s_1a8a10 g_4453c0[] =
 // into the negated product with a copy of i); that with the stores [3], [1], [2], [0] 19; each sum stored and negated right
 // after it 30; the first sum read from the actor ahead of the copy 87; the point's y carried through the switch in a
 // scalar and stored to the point after the copy 24 (the scalar takes the 0x50 slot, j folded). All restored.
+// M3 lane 14 r143 (h2m fast with 0x1a8c30, MATCH; control 17): the facing copy assigned j first 20; the rotated point
+// declared at function scope 17, the facing copy declared ahead of the score array 17, the score array declared ahead of
+// the rotated point 17 (the three the same code); the negated j named ahead of the first switch 48 (its load stays ahead
+// of the dispatch). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
