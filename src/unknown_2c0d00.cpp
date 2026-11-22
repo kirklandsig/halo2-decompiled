@@ -864,6 +864,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 909/903/909/898. NOT kept: retail stores two separate bytes and the best form shortens to 3712.
 // Both dot tests after location/query 934/931; direction scope after settings 928,
 // optional prior-direction pointer 940. The frame and actor/unit homes still differ.
+// Frame 0x2cb0 versus 0x2cac; actor index and self-unit zero still exchange registers.
+// Raw tracked-unit index with entry default, two complete arms, or conditional selection after actor setup:
+// 914/921/874 in both filter orders. Early raw capture with a later Boolean result: 921 in both orders.
+// NOT kept: the raw forms compare a dword with NONE at the sphere filter where retail tests a saved byte.
+// The 874 form grows to 3744 bytes. Late Boolean materialization grows the frame to 0x2cb4.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

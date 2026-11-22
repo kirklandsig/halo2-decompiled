@@ -1919,6 +1919,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: conditional array selection repairs the definition, animation flags and material
 // slots but shifts position and grows the body. Selecting array and offset in a branch shrinks
 // the frame to 0xf8 against 0xfc.
+// Modes 1, 1 and 2, 1 and 3, or 1 through 3 handled before the remaining
+// switch 480/643/637/645; ending the tag scope at the split 480/643/637/645.
+// NOT kept: first +0x51 stays at the displaced tag spill in all eight forms.
+// The point and material homes remain displaced.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4608,6 +4612,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 611. NOT kept: preview control 602 with the orientation-callee caveat. The variants recover the 0x78 frame and
 // flight spill. The two 615 direct assignment forms also recover the changed byte, with the entry key and tag
 // homes exchanged.
+// Turn-selector snapshot 629, named immediate result 606, conditional result 590,
+// deferred result 606, branch-set result 590, three turn outcomes by selection
+// 618, branches 614, or a named immediate decision 614. NOT kept: the two
+// 590 forms expand the reduced frame from 0x7c to 0x84; retail uses 0x78.
+// The full changed-byte and flight-threshold homes remain displaced.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6357,6 +6366,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Generic object forward getter as pointer, named receiver with pointer, direct member and
 // member reference 79/153/89/79. With an ordinary final cross 203/197/83/203.
 // NOT kept: the ties leave the early complement spill and the final memory operand unchanged.
+// Alternate shared rotation for forward, up, or both with a uniform forward
+// reference 124/89/134 or direct member access 136/160/140. Alternate forward
+// or up rotation with a staged side cross 124/89. NOT kept: the altered
+// rotation loads regressed. The original complement spill and final cross remain.
+// Rotation axis name, rotated-up and side names, or all three 79 each. Angle limited to the
+// trig producers, with or without the workspace names, 79 each. Rotation scope ending at the
+// up rotation, with workspace names or a nested angle scope, 79 each. The first complement
+// spill and the final forward-j reload remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

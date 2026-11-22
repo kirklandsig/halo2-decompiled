@@ -4917,6 +4917,10 @@ struct s_128ca0
 // Round 463. Valid-arm byte, char, long or short count with direct sentinel publication 208/208/208/212.
 // With staged pin gain producers, shifted pending test and direct channel read 194/194/201/205. The
 // direct sentinel shifts registers at +0x12a and keeps the count comparisons displaced.
+// First, second or both gain scopes ending at the packet write 48 each. Separate decibel
+// operands with permutation first, processed bits first, or both scoped to publication 48 each.
+// Channel arguments named after publication, with or without scoped gain objects, 48 each.
+// The two scratch-register exchanges and full-width synchronization sentinel still differ.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

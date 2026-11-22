@@ -1784,6 +1784,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // throughout, or published count throughout 884/901/879/879 with word cells. Dword versions
 // 921/929/943/943. Dword cells shrink the frame but shorten the body. The lookup and capacity call
 // boundaries still differ.
+// Rejection byte 890, declared at entry 890 or after admission 904. Accumulated machine,
+// party or capacity rejection 885/895/893. Single exit with rejection byte 874, or with
+// result initialized after the clear 903. The frame stays above 0xb4 and the opening
+// lookup still inlines.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

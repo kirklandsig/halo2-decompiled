@@ -448,7 +448,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 77 (was 77; 97 before that): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// score 77 (was 77): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
 // the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
@@ -979,6 +979,10 @@ void function_3dd10(long object_index, bool force);
 // Round 463. Positive choice count via conditional, condition declaration, explicit negative floor, or
 // empty-default assignment 237/237/267/227. With signed first-scan bounds 652/652/672/645. NOT kept:
 // signed first scans unroll and the bank ordinal and choice-count homes remain different.
+// Last ordinal name 77, total and variant names 77, all three 77, separate scan ordinal names 77,
+// both sets 77. Signed completed-choice bound 61, count first 170, scoped remainder and variant
+// scratch 77. NOT kept: the 61 form restores the count and mask homes, but compares a second ordinal
+// one ahead of the scan index, and the ordinal store still follows the bank guard.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

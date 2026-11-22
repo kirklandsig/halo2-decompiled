@@ -2560,6 +2560,10 @@ struct s_camera_reference_171830
 // alone 386, indexed scale with shared negation 391, indexed update of copied center 384, copied forward with
 // loop and negation 399, explicit plane admission plus fused loop 390. NOT kept: each grows beyond 1219 bytes
 // and raises the score. Plane-exit zero and center scheduling remain.
+// Plane products accumulated, subtotal named, indexed accumulation, or all
+// products named with the plane arm first 281/287/281/284 or the unconditional
+// arm first 283/287/283/282. NOT kept: all keep the lookup branch difference
+// and grow the body. The zero and center SSE schedule remain displaced.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

@@ -873,6 +873,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // after the velocity stores, paired sum after the first velocity product, or finished after the root
 // 221/222/222/282. Component-order capture with the same producer placements 118/120/120/249.
 // The frame stays 0x28. Unity still loads into XMM2 after the third square.
+// The frame and velocity-copy registers agree. The entry SSE and x87 scheduling still differ.
+// One forward/heading fallback pointer, acquired at the first normalization, before the second forward
+// component, before the second input component, at the start of the forward copy, before input rotation,
+// after speed root, before speed root, or before the velocity copy: 111/122/118/118/118/278/133/141.
+// NOT kept: the earliest form moves the first difference earlier; the others keep +0x69 and raise the score.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1898,6 +1903,10 @@ long function_10f5f0(long object_index);
 // NOT kept: The box and disjoint scopes leave frame 0x1990 and the bounds and velocity addresses apart.
 // Zero-initializing the scoped names raises the score. The returned state shortens the body to 2216
 // bytes and raises the score to 614.
+// In-place radial scale with component stores, setter, in-place add or damped
+// sample 570/570/570/603. Separate radial delta with those publications
+// 570/561/570/603. NOT kept: the setter with a separate delta ties at retail
+// length, and all leave the 0x1990 frame.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3766,6 +3775,9 @@ real g_47ff30 = 2.5f;
 // Round 463. Directional mass folded into force, computed at use, or declared early and assigned at use
 // 721 each; named scaled delta 730. With separate final mass reads 707/707/707/711. The first three of
 // those recover frame 0xfc and retail length, but the acceleration and velocity homes still differ.
+// Frame 0x100 versus 0xfc; acceleration and velocity homes still differ.
+// Tick-rate scope through climb approach or boosted speed, each alone, with query-local angular output,
+// with up-magnitude scope, or with both: 672 in all eight forms. The acceleration spill stays at +0x20.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5033,6 +5045,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // The projection I operand rank still differs. Vehicle velocity in the dot 213, scale 209, first cross 210,
 // dot and scale 208, dot and cross 157, scale and cross 167, all three 165, all three with source up 206.
 // NOT kept because these forms grew the one-word frame. The final four changed the caller preview.
+// Indexed projection removal, default axis and rotation rows in seven subsets
+// 116/118/116/118/116/116/118. All with projection scope 118.
+// NOT kept: the 116 forms recover the projection prefix through +0x107 but
+// gain only two. The cross operand allocation and the sine/cosine homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6283,6 +6299,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // NOT kept: The single-case and two-path forms reproduce 759 at 2976 bytes. Changing all three paired-
 // limit paths grows the body to 3024 bytes and scores 781. The XMM zero and entry definition remain
 // different.
+// Entry tag record for kind, angular ceiling and engine limit, seven subsets
+// 930/930/938/938/930/930/938. Entry tag ordinal for all three 864.
+// NOT kept: the record forms coalesce retail's separate lookups and
+// shorten to 2795–2798 bytes. The ordinal form reaches 2870 but changes
+// the entry scheduling. The zero and result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7129,6 +7150,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Direct transposed basis by aggregate, row setters, column stores or the spent facing buffer
 // 1173 each, after desired basis 1209, with separate relative product 1214. NOT kept:
 // direct assembly reaches frame 0xdc but shortens the 5094-byte body. The handle and four-byte frame gap remain.
+// The 0xfc frame, entry registers and rotation homes still differ.
+// One drive word with masked Boolean/shifted byte/shifted Boolean/masked byte boost
+// 1083/1108/1108/1083; the same forms with the consumed flip matrix as the relative output
+// 1063/1128/1128/1063. NOT kept: scores rise and matrix output forms shorten below retail length.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

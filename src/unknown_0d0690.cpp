@@ -1709,6 +1709,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (2213 B); the scan without its `count > 0` guard 579 (2172 B), with the constant returns 570 (2164 B), with both
 // forms 575 (2198 B). Retail's caller sets the block in EAX first, then EDX = query, ECX = type: the declared order
 // (block, type, query) is the one its setup implies, so the exchange is the body's. Body unchanged.
+// Shared flag predicate on the default bit, category mask, or both 577/529/577;
+// default bit compared with its set value 529. One flag word with both predicates
+// 530, separately named decisions 530, reject before selection 530, conditional
+// category/fallback 564. NOT kept: the result spill, 0x2c frame, and exchanged
+// block/query registers persist.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

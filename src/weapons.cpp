@@ -3873,6 +3873,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // runtime element reference 636, with indexed tag 752, with tag reference 636.
 // NOT kept: full check of the indexed runtime form scores 645 and shortens to 2518 bytes.
 // The 0x1c60 stack probe returns, but the barrel offset is formed after the wake call and still takes EBX.
+// Zero-extended loaded count with signed threshold and separate or combined
+// gate, signed or unsigned cost: word 603 each, dword 561 each.
+// NOT kept: dword shortens to 2525 bytes, replaces retail's xor and word load
+// with movzx and leaves the count at +0x50 and the frame at 0x1c64.
 // Required rounds scoped to ammunition 603. Magazine selector by field
 // reference 568. Loaded balance by field reference, both field references,
 // or both scoped to ammunition 647/647/647. Late tag defaults 630, late scale
@@ -4387,6 +4391,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Flag-first selected barrel value 1423, tag field reference 1578, reference with shifted control bit 1577,
 // and separate selected-barrel assignments 1426. NOT kept: the names leave the 0x34 frame and early dual spill.
 // The flag-first forms grow the body and allocate 0x34 with a value or 0x3c with a reference.
+// Shared idle/charged trigger release, seeded from the input edge, joined tests,
+// selected source or early positive edge: 1559/1399/1411/1404, also after the
+// blocked exit with the same scores. NOT kept: the 1399 form shortens to 5680
+// bytes and retains frame 0x34. The 1559 form recovers 0x38 but grows to 5824.
 // Player presence from an owner-path assignment 1429, short-circuit
 // tests 1422, absence 1422, explicit owner arms 1422, or typed owner lookup
 // for presence/absence 1422/1422. Shared trigger test from the signed player
