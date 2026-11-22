@@ -239,6 +239,16 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // the lower address loads first); on the kept body: each stick prepared in turn (quadrant, offset, magnitude) 415 (2028
 // bytes); the second offset ahead of the first 25; each stick's snap step in its own block scope 25; both angles declared
 // at the top of the controller block and assigned at the atan2 25 (all three the same code). All restored.
+// Round 173 (m3 lane 12; fast unless marked): the two hoisted loads follow the first reference to each constant in the
+// loop body, in the full link as well, so the link-order reading above does not hold: a probe store of `raw x * scale`
+// into the output block at the loop top gives retail's load order plain and fast (482, the store is extra code), one
+// between the trig and the maximum too (552), one at the end of the body does not (496). Retail's source reaches the
+// scale before the first `1.0f /` without emitting code there; a one-use value is forwarded behind the reciprocal, so
+// the reference has to survive forwarding. On the fabs-at-each-use 2 form: both sticks' axes stored as `raw * scale`
+// ahead of the angle, then boosted and clamped 562 (1988 bytes, products ahead of the trig). On the kept body: the first
+// offset read through a `real const &` before its fabs 2 (the offset block and angle homes become retail's, as the
+// at-each-use form; a steering form, kept only with a match); on the 2 form, an unused `raw x * scale` local ahead of
+// the angle 550 (1996 bytes, no flip: a dead reference does not count). Body unchanged.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

@@ -462,6 +462,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // entry store 5 (+0x1a7); the packed word read from the entry store's own value (`packed = *(word *)(field = ...)`) 5
 // (+0x1a7); on the reference form, the entry reference bound at the top of the restore block 5 (+0x19e). Each is its base
 // form's code.
+// M3 lane 1 r151 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0; control 5 at +0x19e, the direct entry
+// store re-measured 5 at +0x1a7), each on both forms: the restore block's pass index written `third + (next & 0x1ff)` 5/5;
+// the pass table named in a block local before the chain lookup 5/5; the chain and pass tables both named 5/5; the chain
+// lookup as pointer arithmetic `*(chain + (packed & 0x1ff) + second)` 5/5; the chain and pass indices through the file's
+// packed-range view `index()` 5/5, on the direct store reading the view straight from the stored field 5 (+0x1a7). Each
+// is its base form's code: on the direct store `second` still loads right after the entry lea.
 // M3 lane 6 r227 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e; the direct
 // entry store re-measured 5 at +0x1a7): `packed`, `next` and both typed `long` in place of `word`, on the direct store 5/5/5
 // (+0x1a7) and on the reference form 5/5/5 (+0x19e); on the direct store a new `__forceinline` identity inline around

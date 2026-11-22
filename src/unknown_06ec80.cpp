@@ -283,6 +283,10 @@ union s_6ec80
 // `&arg_0->data4f90` 278 (984 B); the machines memcpy from the session on main's body 256 (981 B), with the mask zeroed
 // in the guard and the getter kept 269 (985 B). Each session re-read keeps `arg_0` live to the tail and unmatches 0x6ec10
 // in the fast image.
+// M3 lane 7 r213 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5; screened on a multi-object LTCG harness exact
+// here), all with the mask zeroed in the guard: a `short` loop counter 247 (981 B); the counter declared ahead of the
+// mask inside the guard 221 positional on the harness; a `s_session_player const *` stepped beside the counter 227; the
+// data and mask tests as `if (!data) ... else if (!mask)` 225; the scoped mask alone 219 positional on the harness.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

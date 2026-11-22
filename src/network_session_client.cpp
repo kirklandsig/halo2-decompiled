@@ -994,6 +994,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // opening and every scratch register retail's, the session ESI against retail's EBX, both callers lost): its test as
 // two `== NULL` compares 46, as `!(machines && players)` 46, players tested first 46; the two buffers declared in the
 // state block ahead of the pair 46. Diagnostic: a third, never-true term in the pair's test 152 (499 B).
+// M3 lane 1 r151 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; controls 22, `for` copy 100, NULL-preset pair 46,
+// preset + `for` 108): `inline` on 0x6e910's definition 22/100/46 and `static` on it 22/100/46 (same code each); the
+// machine-limit helper moved beside 0x5c490 in 0x5c490's shape (only the link inlines it) 22/46/108; the preset pair with
+// the summary as `flag49fd ? data4a00 : NULL` 130, with the variant passed at the call 130; a chained pair (`machines =
+// flag ? &a : NULL; players = machines ? &b : NULL;`) 48, as nested ifs on a NULL preset 48 (session ESI, both callers lost).
 // M3 lane 6 r227 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
 // re-measured 46, both callers lost): early returns in place of `result` (`if (state != 5) return false;`, `return true`)
 // 142, on the pair 143; the pair tested positively with the work in an else arm 46; the summary declared ahead of the
@@ -1528,6 +1533,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // `dest - count * 3` 129 (721 B); a source player pointer stepped beside the index 202; `[count++]` with the key-id
 // address named at the top 89 (first difference +0x82). Re-measured: the indexed copy with `long identity_count =
 // count` at the call 195.
+// M3 lane 1 r151 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination
+// as a `dword (*)[3]` row pointer stepped by `dest++` after the count 9; as a `byte *` stepped by 12 9; the mask test as
+// `(1 << i) & current->player_mask` 9; the copy size `sizeof(identities[0])` 9 (the four the same code); the player-loop
+// index typed `short` 341 (577 B, the loop no longer unrolled).
 // M3 lane 6 r227 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; the indexed copy
 // re-measured 195): on the indexed copy one, two and three redundant parenthesis pairs around the else arm's size 195/195/195
 // (no paren phase on this integer colouring); the player loop under a redundant `if (count == 0)` guard 195 on the indexed
