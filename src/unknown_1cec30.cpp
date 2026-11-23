@@ -1964,6 +1964,12 @@ PRIVATE __forceinline real const &component_time_step()
 // helper with the time step third and the target fourth, the getter as the argument, 26 step-first and 43 stop-first
 // (main's code: the lead needs the reference parameter last); the mass test and the per-arm product moved into that
 // helper (reference parameter) 128-131 (477-480 B, no kept address), with the getter called in each arm 135/141.
+// M3 lane 14 r147 (h2m fast with 0x1d24a0; control 26): the time step bound straight to the field (no getter) 26 (same
+// code); the magnitude helper negative-first (`value < 0.0f ? 0.0f - value : value`) 52; the stop distance computed at the
+// top of the step block, ahead of the force test, with the stop-first test 43; the mass test nested (`if (scale_by_mass)
+// { if (mass > 0.001f) ... }`) 26 (same code); the power product acceleration-first 26 (same code). Diagnostic, reverted
+// at once: a pointer getter defined in another source (expanded only at link time) read at both products 26 (same code:
+// the link-time expansion folds `base + 4` as well). All restored.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

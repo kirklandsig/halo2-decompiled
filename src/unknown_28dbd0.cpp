@@ -774,6 +774,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // ahead of the cosine and the dot, 210 (1198 B); the projection as the dot then `*= 1.0f - cosine` 173 (same code); the
 // cross as cross3f(v, axis) subtracted in rows written axis + v - cross 187; in the body, the cross output declared at
 // the top of its arm 173 and field_40 through the existing vector3f_scale 173 (same code each). Helper and body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x28dab0, MATCH throughout; control 173, aligned 183, masked 66): the rotation helper's
+// four locals renamed in all 23 other permutations of their names 173 each (same code: inlined locals take no name order);
+// the projection folded into the axis scale's argument (`dot3f` alone, then `local_2 * (1.0f - cosine)` at the call) 239
+// (1198 B); the angle taken through a `double` local for both trig calls 229 (the heading's cosine and sine then spill to
+// other cells); the outer cross's output declared ahead of the forward copy 173 (same code); the owner test written
+// positive first (`if (local_4->field_30)`) 175, as a conditional expression 175.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

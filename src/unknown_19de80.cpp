@@ -967,6 +967,11 @@ static inline bool teams_enabled_19e1c0()
 // team arms reading the event's team field at each use 394; the local team typed long 393 (1436 B); the token
 // fallback's clamp as one ternary 395 (1432 B). Retail reads the token from its argument slot ahead of the prologue
 // (`mov eax, [esp + 4]` before `sub esp`), so the token is its lightest value. Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x19e0f0, MATCH; control 390, aligned 324, masked 203): the opponent test as
+// `best_score <= function_1587f0(team)` 388 (retail's `cmp esi, eax; jg`; under the bar); that with a long team counter
+// 421 (1424 B); the opponent text cleared after the scan instead of before it 408 (1432 B); the time-mode test inverted
+// with the arms swapped 390 (same code); the local player lookup as one conditional initialiser 390 (same code). Retail
+// re-reads the zero of `wcsncmp`'s result for the score-to-win buffer clear (`mov word [text], ax`).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
