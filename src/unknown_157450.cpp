@@ -987,6 +987,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // through the globals getter 20; index24's test and argument through the getter 20 (same code each); the old mask read
 // from `globals->team_mask` with the pointer kept for the store 131 (374 B); only the mask compare's operands swapped
 // (`old_team_mask != present_teams`) 20 (same code). Body unchanged.
+// M3 lane 6 r236 (h2m fast with 0xb58c0/0x196780; control 23): the present accumulator `volatile long` 23; a `word *` to
+// the playing field for its entry read and store (like the mask pointer) 23; the present update as `present_teams =
+// present_teams | (1 << team)` 23 (the three the same code); the field read in the present update and the team local in
+// the playing one 37 (383 B, the bits CSE); no volatile, the player loop in a forceinline collector taking both
+// accumulators by address 63 (384 B: scalar-replaced, the plain-present code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {

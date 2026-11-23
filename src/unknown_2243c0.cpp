@@ -948,6 +948,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 47 (the flags load is hoisted above the search). On the 8 chain: the pass tag `long const` 8; the field_44 zero back
 // between the pass tag and the pass definition 59 (first +0x50); the instance pointer to const 8; the root tag not
 // const 8; the cache local declared ahead of the context local 8 (same code each). Body unchanged.
+// M3 lane 7 r221 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117; lane 16 r152's chain
+// rebuilt at 8, first +0x9e: pass definition EDX for retail's EAX, material tag ECX for EDX, material definition EDX
+// for retail's EDI, the cache zero's xor after the material lookup). On the chain, the material lookup split into a
+// named definition pointer and its +8 read: with the four zeros after both 8 (same code), the zeros between the two
+// 95 (552 B), only the first zero ahead of the split 23 (first +0x50); the definition bound to a const reference from
+// the tag-data accessor with the zeros between 95, after 92 (552 B). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -620,6 +620,13 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // forms 2-10, never 0 (the ties move with the symbol count). Reading: retail's six products load forward.j, up.j, up.i,
 // up.k, up.j, up.i (the last forward.j read through the forward pointer formed mid-cross); each of our forms gets five
 // of the six with the test, or all six without it. Still BLOCKED-BY 0x1faf80.
+// M3 lane 13 r150 (h2m fast with 0x1faf80, 0x118700, 0x11f0d0 and 0xe01d0; control 15). On round 129's reorder lead (0x1faf80
+// as (object_index, facing, settings, control, threshold, turn), re-measured: here 2, 0x1faf80 2, 0xe01d0 569), in 0x1faf80's
+// test: the i product's object operand re-fetched through object_get(object_index) 4 (the re-fetch folds into the object
+// pointer; a cross-product row flips), all three test products so 238 (890 B); facing as a `vector3f &` parameter (definition,
+// both declarations, both calls) 2; the facing i leaf through a `real const *` declared after the object 2; the object's
+// forward.i leaf through a `real const *` so 2 (each the same code: the i product still loads facing first). Still
+// BLOCKED-BY 0x1faf80. All restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1689,6 +1696,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // so the store's 14 is a row realignment and not retail's shape. Still BLOCKED-BY 0x1c4b00's bool formal (this round one
 // of its declarations sits in src/unknown_1cec30.cpp, another lane's file, and one in a contributor's src/bipeds.cpp)
 // and by 0x1ec690 (not yet written) for the copy's hoisted loads. Body unchanged.
+// M3 lane 13 r150 (h2m fast with 0x1c4b00 and 0x11f0d0, both MATCH; control 14; 0x1c4b00's formal kept `long`): the object
+// write and the 0x1c4b00 call through a file-local inline (object, linear, angular, force) helper, without the member store 92,
+// with it 16 (first +0x273); the +0x88 copy component by component 106 (1050 B); the force bool declared at the top and
+// assigned at the call 14; the copy through a `vector3f *` to the re-fetched object's +0x88 14 (both the same code).
+// Still BLOCKED-BY 0x1c4b00 (round 272's bool form stays held: it raises contributor 0xe24f0).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
