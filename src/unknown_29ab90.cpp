@@ -40,6 +40,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
 // score 286 (was 286): r130, r275 and r164 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// M3 lane 13 r148 (plain checks; the fast screen builds 0x29b2e0 at 1309 bytes here): local_20 built from local_4 ahead of
+// the 0x29b2e0 call with no local_27 copy 378 (1816 bytes); each local_5 component computed and clamped in one PIN 338;
+// local_6 copied from local_5 (the 0x4687a4 vector read once) 286 (same code); the 0x30bf0 fallback copying +0x290 directly
+// 286 (same code); *arg_5 written from the +0x66c copy 320. Frame reading (one-object LTCG kit with the callees' objects
+// and the ballast reproduces this build's homes exactly): homes follow compiled reference counts, local_4 18 against
+// local_5 15, and the shared local_12/local_27 slot 10 against local_6 7; retail has local_5 below local_4 and local_6
+// below that shared slot, and keeps local_27.i in ESI across the 0x29b2e0 call where this build stores all three.
 // MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
 // 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
 // view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
