@@ -16,7 +16,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
-// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// score 536 (was 536; m3 lane 2 r139 unchanged, its lines just above the marker): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
 // MiniMax A (11-20): no new form, no lower score (536): the frame is 0x64 against retail's 0x60
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
@@ -679,6 +679,11 @@
 // homes run v1 0x34, v2 0x40, w 0x4c, v3 0x58, v4 0x64. Forms: the special test without its doubled parens 536, the first
 // cross through cross3f_staged 536, s1 computed ahead of the first cross 536, the second cross (w) through cross3f_staged
 // 536 (the same code each); v4 declared ahead of v3 554 (register-masked 477 -> 406). Body unchanged.
+// M3 lane 2 r139 (H2M_FAST with 0x4a1e0; control 536 at 2622 B, aligned 420, register-masked 437). Retail evaluates the
+// 8.2 phase product, sin x, cos 7.8y and cos 7.75y first, then `fxch st(3); fsin` on the phase, and pops the other three
+// after the rounded store: three common values whose second use was removed. Forms: shape1 declared ahead of shape0 536
+// (same code); inv declared after the shape pointers 549; special computed ahead of the shape pointers 704 (2643 B); w
+// declared ahead of v1 536 (same code); v4 declared ahead of v1 658 (2633 B). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

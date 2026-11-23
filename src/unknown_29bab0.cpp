@@ -59,9 +59,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489; m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489; m3 lane 2 r139, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
-// score 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier header line, a stack merged here in m3 lane 2 r139: 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r220 unchanged, its line just above the marker.
@@ -869,6 +869,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the x row after the join; ours computes both rows after the join. Forms: the select written in each coordinate (no
 // local_24) 589 (3512 B, first +0x4e; the 384 measured on an older base no longer holds); local_14 declared beside local_9
 // 489 (same code); both 589; the else arm as `0.0f - local_23` 489 (same code); local_14 typed point3f 489 (same code).
+// Body unchanged.
+// M3 lane 2 r139 (plain each; control 489, aligned 178, slot-masked 155): the side point built as two statements with the
+// y row first (retail's order) 708 (3488 B, first +0x4e), with the select written into each row 722 (3514 B), with the
+// select as an if/else 708; local_26 formed straight from the rows (no local_25) 711 (3484 B); the perpendicular as a
+// 2-D vector `{ 0.0f - local_17.j, local_17.i }` with both side tests through dot_product2d 661 (3499 B, aligned 235).
 // Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,

@@ -1006,6 +1006,14 @@ void function_3dd10(long object_index, bool force);
 // one paren pair: a dead first `variant = 0` or `eligible = 0` ahead of the count read with the arm's own zero kept 95/95
 // (the dead def is removed before allocation; only a live range reaching the count test flips EBP). Patch of the 135
 // form: build/r134 of m3 lane 15. Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77): lane 15 r134's 135 form E rebuilt
+// (no outer guard, count-first rolled scan under `0 < choice_count`, float remainders, the variant zeroed ahead of the
+// count, `((real)i)`): 135 at 1034 B with two differences left, masked or not: the variant's zero store before the
+// count test's `jle` (retail: in the arm) and retail's `movss xmm5, 1.0` ahead of the count reload at the selection
+// loop's not-found exit (ours reloads the count first, then jumps into the clamp entry's shared 1.0 load). On E: the
+// selection increment in its condition 135 and the eligibility guard as two nested ifs 135 (both the same code); the
+// selection latch count first 137 (`jg`); the mask zeroed ahead of the count too 260; the mask declared ahead of
+// `last` 134. Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

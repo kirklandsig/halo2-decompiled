@@ -506,6 +506,13 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // and the test 69 (same code); a found pointer cleared before the loop and tested after it 88; lane 10 r119's
 // two-member lead re-measured 39 (204 B: index ECX, cursor EDX, loaded id ESI, product EBX against retail's index EBX,
 // cursor ECX, id EDX, product ECX). Body unchanged.
+// M3 lane 2 r138 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67, aligned 26). On the
+// two-member lead only one choice is left: ours keeps the product `i * 0x248` in EBX across the string calls (EBX pushed
+// after the loop), retail keeps i in EBX and multiplies again (ESI pushed after the loop). Tried to keep the three index
+// expressions apart: a file-local inline getter taking the entries and the position at the arm, the terminator and the
+// plain arm 84 on main's locals (197 B) and 39 on the lead (the getter's copies fold); on the lead `buffer` named before
+// the ascii conversion 44, `result = buffer;` ahead of the indexed terminator 39, the terminator through the arm's
+// entry pointer 54 (199 B). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
