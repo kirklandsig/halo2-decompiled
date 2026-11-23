@@ -1325,6 +1325,12 @@ void function_1e3b60(long actor_index);
 // diagnostic, 0x2641c0's noinline declaration dropped: 0x262ba0 509 (1696 B), this 25, 0x264210 114 (139 B); reverted. In
 // 0x262ba0 (404 each, same code): a `short volatile` maximum, `short old_state`, `long const index`, the node pointer and its
 // byte view declared the other way round, the state cases in numeric order. Still BLOCKED-BY 0x262ba0.
+// M3 lane 16 r182 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form): in 0x262ba0, `update` typed
+// `short` 408 (1628 B), with integer stores 408; `sampled_one` typed `long` 408 (1628 B); the update test nested under
+// `if (sample)` after the sampler 404 (same code); the actor pointer `byte *const` 404 (same code). Reading: retail's loop
+// is top-tested (the walk test at the loop head, `mov edi, edi` aligned) with sample/update/sampled_one in stack bytes
+// 0x11/0x12/0x13 and the actor index in EBX throughout; ours is rotated and keeps sample in BL, so the actor index is
+// spilled in the loop and LTCG keeps it a stack argument. Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

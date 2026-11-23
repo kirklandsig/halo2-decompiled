@@ -881,6 +881,14 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and the x row after the join (retail 0x29be20-0x29be5f's shape) 718 (3501 B, first +0x2); the 0x47c override read
 // into a named local used for the test and the store 665 (3499 B, first +0x60); the turn factor's dot as
 // `dot_product2d(&local_17, &local_15)` 489 (same code). Body unchanged.
+// M3 lane 15 r139: the h2m fast screen reproduces the full check (489 at 3503 B, 0x29b2e0 130, 0x29b990 MATCH) once
+// 0x29b2e0, 0x29b990, 0x170d70 (the file of the rotation 0x29b2e0 expands), 0x11ce20, 0x11cc90 and 0x1e5450 are listed with
+// 0x1f9e70, 0x110ab0 and 0x2922b0; without 0x170d70 it builds 0x29b2e0 at 1309 B and this body at 654. Call list and order
+// agree with retail (23 calls). Control 489, aligned 224. Forms: the first 0x2922b0 result read through a `bool const &`
+// 665 (3499 B, aligned 305: the new symbol moves the homes from +0x60); the side decision cleared to false at the top of
+// the steering arm 489 and initialised false at its declaration 489 (same code each); the planar distance read through
+// a `real const &` at the field_44 test 665 (3499 B); the blend field read at each of its six uses (no local) 572
+// (3502 B). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
