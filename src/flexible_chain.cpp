@@ -1018,6 +1018,11 @@ void __stdcall function_1160c0(real dt)
 // address 144 (same code); the base with `+=` written in both arms of the test 289 (1381 B, aligned 193). Diagnostic,
 // the first of those with the 113 rotation: 274 at retail's 1368 B, aligned 108 (the base load still sits ahead of the
 // branch and the XMM registers stay permuted). Body unchanged.
+// M3 lane 13 r147 (h2m fast with 0x116750 and 0x1160c0, MATCH each run; control 144, difflib-aligned 35 groups): the
+// velocity rows through the existing vector3d_from_points3d and vector3f_scale 195 (1399 B); the predicted point through
+// the existing vector3f_add 204 (1368 B, retail's length, aligned 46); the chain delta through vector3d_from_points3d in
+// place of its initializer 259 (1368 B); `previous = node->position = position;` 144 (same code); vector3f_add with the
+// helper delta 282 (1355 B). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
