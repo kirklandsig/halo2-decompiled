@@ -1117,6 +1117,14 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // long 540; the cosine taken before the sine 535; the edge search keeping the two endpoint pointers and copying them after
 // the loop 712 (3695 B). Retail's rotation of the offset in place stages each row's running sum through one stack cell
 // (+0x10, stored and reloaded after every product) and forms `axis.i * sine` on x87. Body unchanged.
+// M3 lane 11 r157 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535). The two
+// edge distances: retail loads the plane's i first in the i product of both (ours loads the point's x first); compile-only,
+// the nine combinations of plane_distance_to_point, dot3f(normal, point) - d and dot3f(point, normal) - d for the two give
+// retail's order for the first only with dot3f(point, normal) and never for the second; measured: both as dot3f(point,
+// normal) - d 559 (3631 B), the first only 533 (a mixed spelling: not kept). The rotation helper copying its input and
+// writing the output rows directly 586 (3663 B, first +0x7), the same with each row accumulated in the output 586 (retail
+// stages the in-place offset rotation's running sums through one stack cell; neither form gives it). The axis scaled by
+// three component statements in place of the component loop 559 (3631 B). Body unchanged.
 // m3 lane 4 r251 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535): the offset
 // vector declared ahead of the rotation rows 535, the endpoints ahead of the selected face 535, the first edge read first
 // with the walking index copied from it 535, the orientation bounds pair through a pointer to the pair 535 (same code

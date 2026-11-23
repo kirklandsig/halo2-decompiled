@@ -1044,6 +1044,10 @@ bool function_e4050(long object_index);
 // walk stepping through the parent rather than the root 43; no player local (the datum read through the iterator at
 // the unit read and the three exits) 43; the walk under a redundant `if (parent != NONE)` 43 (all the same code); the
 // vehicle arm first (`!= NONE`) 114 (408 B). Still BLOCKED-BY 0xbaf80.
+// M3 lane 8 r228 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): the
+// iterator set-up as `iterator.datum_index = iterator.index = NONE;` 43; the kind byte named once for its two tests 43;
+// `player` declared at function scope 43; the vehicle arm's 0xbaf40 result named before 0xbadc0 43; the root object
+// named as a const pointer for the bit-18 test 43 (all the same code). Still BLOCKED-BY 0xbaf80.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2379,7 +2383,7 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax E (11-20): no new form, no lower score (703): retail holds two separate request homes (the 0x1b request at esp+0x44 and the 0x16 request at esp+0x64) where this build shares one, so retail's frame is 0x74 against our 0x4c; giving the 0x16 request its own local reproduces retail's request setup but leaves the frame 8 bytes short and scores 806.
 // MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
 // MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
-// score 703 (was 701): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
+// score 703 (was 703; 701 before round 218): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
 // still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
 // files this lane may not edit, so the body stands.
@@ -2641,6 +2645,11 @@ static __forceinline long player_round_ticks(real value)
 // 699; the lunge count as `(short)(lunge + 1)` 699 (2740 B), with the target form 700; `1.0f > progress` written
 // `progress < 1.0f` 703; the lunge distance summed x, y, z 703; the first 4-bit clear as a word mask 704. Still
 // BLOCKED-BY 0xe68c0 (its /Ob1 file keeps the last request out of line), 0x151b80 and 0xccd20.
+// M3 lane 8 r228 (H2M_FAST with 0x151b80 (5), 0x151aa0 (43), 0x151940, 0x14f2e0 and 0x14e970; control 703): the
+// 0x212/0x213 slot test through the entry `unit` pointer 702 (2736 B); `player` and `unit` initialised at their
+// declarations 703 (same code); the idle block's parent test on `parent_index` 704 (2744 B); the +0x238 object named
+// once for its test and the 0x151ea0 argument 703 (same code); the activity tests on `buttons` with no copy 721
+// (2714 B). Still BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3368,6 +3377,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // assignments); `failed` declared after loop 2's set-up 108 (612 B); loop 2's unit test first 107; `if (last_unit ==
 // NONE) return;` 103; the final store under `if (!failed)` 103 (same code). Retail loads the three position words
 // before storing them (x ECX, y EDX, z EAX); ours interleaves. Still BLOCKED-BY 0xb8540/0xb7b40.
+// M3 lane 8 r228 (H2M_FAST with lane 4 r242's list, all MATCH; control 103): the body after the 0x9e test nested under
+// `if (globals->unknown9e)` 103 (same code); loop 2's player as a const pointer 103 (same code); loop 2 on its own
+// iterator local 155 (597 B); loop 1 testing the player's field before naming `unit` 103 (same code); the root walk and
+// the vehicle test through the file's typed unit/vehicle view 103 (same code). Still BLOCKED-BY 0xb8540/0xb7b40.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

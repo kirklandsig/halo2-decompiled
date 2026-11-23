@@ -347,6 +347,12 @@ static inline void *function_xc5914d(long thread_index, short size)
 // home on the result copy instead of the pointer 81 (277 B). In the null-first listing there is no frame slot at all
 // (no `push ecx`): the pointer keeps EAX for the whole function and the result ESI, so retail's spill needs more
 // pressure than any volatile-free form here gives.
+// M3 lane 12 r179 (h2m fast with 0x2099f0, which stays matched; control 12): the file's allocator taking the frame
+// reference (`s_hs_macro_frame *const *`) and reading the frame through it at each of the three allocations,
+// volatile-free 109 (253 B: no per-allocation pool reload), with the volatile home 99 (291 B), volatile-free with
+// `result = NULL` first in the arm 107 (255 B); the first allocation written out through `*frame` with the result copy
+// after the third allocation and `result = NULL` first in the arm, volatile-free, 83 (277 B, the null-first code); on
+// the kept body the argument index stepped ahead of the expression update 19 (279 B).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

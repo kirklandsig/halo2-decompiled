@@ -345,6 +345,15 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // the 0x2600a0 call 604 (same as the call alone). Diagnostic, restored: `inline` on 0x262a30's definition 499 (3191 B,
 // 0x13e2d0 expands too; 0x2623a0 stays 65). Retail's expanded owner lookup with 0x13e2d0 still a call fits an
 // auto-inlined 0x262a30, which its /Ob1 file prevents (a flags question). Body unchanged.
+// M3 lane 14 r148 (H2M_FAST with 0x2600a0, 0x2605d0, 0x2613d0, all MATCH; control 440): on lane 15's packed form (the
+// within-limit test named once for its two uses, the sort scratch in its own block; re-measured 565, frame 0x8a0, the flags
+// at +6/+7 in the opposite order): the flags renamed so their alphabetical order flips 565 (same code, four name pairs);
+// the two flag declarations exchanged 563 (3081 B: both flag bytes at retail's +6/+7; `result` still sorts above the
+// scalar cells, +0x14 against retail's +0x8); that with the `selected == NONE` return after the if/else 563 (3061 B); with
+// the first evaluator pass as `function_2600a0(actor_index, context, NULL)` 489 (3057 B, first +0x3b); both 503 (3037 B).
+// Diagnostic (held form, restored): the exchanged form with `inline` on 0x262a30's definition 519 (3191 B; 0x13e2d0
+// expands too, 0x2623a0 65): the actor takes retail's home and only result/selected stay swapped, so retail's slot order
+// fits the owner lookup's expansion adding references to `result`.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

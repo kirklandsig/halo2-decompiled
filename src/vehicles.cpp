@@ -1334,6 +1334,15 @@ __forceinline long vehicle_round(real value)
 // rate's tick length 6; a ticks-to-time inline `(real)ticks * rate` called with 1 (the tick-length idiom of the other
 // sites) 4, with a real parameter 4, with a named result 4/4 (long/real), on the plain first cross 4/17/4/17; a byte
 // mode local read after the velocity call for the axis and side tests 6 (plain first cross 13); no up pointer at all 10.
+// M3 lane 7 r219 (H2M_FAST), at 4 (S = cross3f_staged at the first cross): S with `-2.0f * (up->k / rate)` 6; S with the
+// angular scale done in place on the axis and then copied 86 (774 B); the side scale as `-vehicle->forward.k` 4 and on S 4
+// (both the same code as `0.0f - k`); S with the tick product written `2.0f * (real)ticks` 4; S with the up pointer declared
+// at the function's top 4. New regime: the success arm first with the three clears in an else 4 (+0x131, same layout: the
+// side cross's j-by-i product becomes retail's, but the first cross's k-row up.j * forward.i and the side cross's i-by-k
+// flip instead); on it: S 13, S with a plain side cross 4, the plain side cross alone 4, the rate on vehicle->up.k 6 (each
+// cross choice), no up pointer 12-14, the dot as (velocity, forward) 4, the up pointer at the top 4, `strength` declared
+// after the vectors 4, `-k` 4, byte_flags_set for the clear 4, the bit-field clear 7; 1/2/3 redundant paren pairs at the
+// rate's division 4/6/10 (S with the plain side 6/6/8), at the tick product 4/12/12 (6/12/10).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2497,6 +2506,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // M3 lane 7 r217 (H2M_FAST), at 9: overlay 1's dot with the other seven operand orientations of its k, j, i terms
 // (left-first L / velocity-first V) LLL 308, LLV 33, LVV 369 (2011 B), VLL 29, VLV 368 (2011 B), VVL 361 (2011 B),
 // VVV 376 (2007 B); the graph test's second lookup dropped (the first vehicle pointer's offset) 530 (2011 B).
+// M3 lane 7 r219 (H2M_FAST), at 9: the kind loop counting down from 2, 133; as a while loop 508 (1946 B); the overlay-1
+// value halved as `/ 2.0f` 9 (same code); the state looked up from a second VEHICLE_GET 465; the final loop's value declared
+// at the loop body's top and assigned in the test 9 (same code); re-measured: the forward speed velocity-first k, j, i 9 and
+// grouped (k + j) + i 11.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

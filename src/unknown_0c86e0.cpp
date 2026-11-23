@@ -486,6 +486,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // entry fetch into EBP, index*12 in ESI and the second fetch after the calls, but the zoom flag spilled); with the `== NONE`
 // weapon ternary and the zoom flag declared after the weapon flag 41 (380 B, first difference +0xd8, the sound part).
 // So a memory kill between the player queries and the weapon lookup is all the body lacks. Still BLOCKED-BY 0xbadc0.
+// M3 lane 8 r228 (H2M_FAST with 0x103b10/0x14de90/0xbadc0/0xcbd50/0x100f70, all MATCH; control 110): the weapon lookup
+// ahead of the user-index lookup 115 (385 B, matched 0x103b10 then 21); the reset test as `!(keep_weapon_zoom &&
+// weapon_zoomed)` 110 (same code); the zoom flag cleared in an `else` of the reset test 124 (352 B); the user index
+// defaulted to NONE and set under `!= NONE` 127 (357 B); the sound block's two tests nested 110 (same code). Still
+// BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

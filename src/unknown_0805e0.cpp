@@ -952,6 +952,12 @@ void function_1537f0(s_profile_record *record);
 // after the builder call 46; E with the record declared at function scope 46; the tail as `entry->field_64 = entry->flags =
 // 0;` on E 46, on main 18 (same code each). Main with `entry` declared after the builder call (view from the element) 14,
 // round 110's mix. All restored.
+// M3 lane 3 r300 (h2m fast with 0x7f8b0, 0x1537f0 and 0x80490, MATCH each run; control 18): the link chain in retail's
+// store order through the pointer (`links[1] = links[3] = links[0] = links[2] = NONE;`) 18 (stores as retail, base +0x5e:
+// the third link stored); the chains 3,1,2,0 and 2,0,3,1 18/18; that retail-order chain with the builder's view from the
+// array element 14 (round 136's mix, base +0x5e); the link pointer declared at the loop top 18 (same code). Diagnostics: the
+// links half through a pointer and half through `entry`, four shapes, 47/47/47/46 with NONE in EBP each. Reading: without
+// the all-pointer chain the record's first forwarded word is stored once ahead of the loop and its EBP goes to NONE.
 // @retail 0x7f930
 void function_7f930(void)
 {
