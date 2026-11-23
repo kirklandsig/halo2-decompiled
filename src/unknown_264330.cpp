@@ -967,6 +967,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // sample/update declared at function scope and cleared at the loop top 404 (re-measured); `short old_state` 404 (same code); the
 // flags declared `update, sample` 402 (1620 B; EBX still the sample flag in the loop); a `long const` actor parameter 404;
 // sampled_one declared ahead of maximum 404. All restored.
+// M3 lane 3 r300 (h2m fast with 0x1e34e0 (25 throughout), 0x2641c0, 0x264210, 0x265680, 0x263210, 0x264330, all MATCH;
+// control 404): the maximum as `short volatile` 404; `short old_state` 404; `long const index` 404; the byte view declared
+// ahead of the node pointer 404; the state switch's cases in numeric order 404 (all the same code). Diagnostic: 0x2641c0's
+// noinline declaration dropped 509 (1696 B; 0x264210 114). All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
