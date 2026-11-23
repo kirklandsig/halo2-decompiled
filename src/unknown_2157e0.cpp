@@ -28,10 +28,6 @@ struct s_profile_location_table
 
 
 void *g_51ea14;
-byte g_55c14e;
-byte g_55c14f;
-s_55c160 g_55c160_table;
-s_saved_game_file_lock g_saved_game_file_lock;
 #define g_55c274 g_saved_game_file_lock.free
 #define g_55c278 g_saved_game_file_lock.file_index
 #define g_55c27c g_saved_game_file_lock.thread
@@ -245,5 +241,3 @@ bool function_2168b0(long file_index, s_saved_game_file_location *location)
 	return result;
 }
 
-
-bool g_55c14d;

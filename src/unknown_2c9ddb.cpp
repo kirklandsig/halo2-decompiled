@@ -8,6 +8,7 @@
 #include "screen_widgets.h"
 #include "user_interface_lists.h"
 #include "unknown_19b516.h"
+#include "saved_game_storage.h"
 
 void function_148a58();
 
@@ -53,7 +54,6 @@ bool __stdcall function_19a728(s_game_variant *variant);
 bool __stdcall function_2cb001(long controller_index);
 c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
-extern long g_55c154;
 
 // MiniMax E (11-20): no new form and no lower score (61): retail calls the name copy out of line at 0x13fac0 with
 // the count in a register, where this build expands the copy in place, because 0x13fac0's own body lives in

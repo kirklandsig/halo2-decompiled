@@ -1,5 +1,6 @@
 #include "unknown_11c920.h"
 #include "loop_allocator.h"
+#include "saved_game_storage.h"
 #include <new>
 
 // @flags /O2 /Gr
@@ -31,15 +32,12 @@ struct s_location_storage
 };
 
 extern void *g_51ea14;
-long g_55c150;
-long g_55c15c;
 
 // Matches as a link-time object. The tables are an array of one: the compiler constructs it with its vector
 // constructor iterator, expands that call here, and then cannot expand the same iterator again for the table's
 // records, so retail's call to 0x20670 with the record constructor stays (a lone table member has the record loop
 // expanded instead). Retail reads g_55c15c again after the store through the new cache: the global lies in the block
-// 0x215690 clears by address (0x55c030..0x55c284), so a store through a pointer may change it. Here it is a
-// separate global, and binding it to a reference is what takes its address.
+// 0x215690 clears by address (g_55c030, 0x55c030..0x55c284), so a store through a pointer may change it.
 // @retail 0x215880
 void function_215880(void *reference)
 {

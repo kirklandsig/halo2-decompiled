@@ -18,48 +18,29 @@ void function_125d60(void);
 bool function_1368f0(s_type_acf665 *file);
 char *function_122810(char *string, const char *suffix);
 
-/* retail clears the subsystem's state from here to g_55c280 in one go; no
-   code reads these first 0x11c bytes */
-byte g_saved_game_storage_reserved[0x11c];
+/* the subsystem's state, cleared in one go by saved_game_storage_initialize */
+s_saved_game_storage_globals g_55c030;
 
-/* written only here and by the subsystem's dispose (0x215730), which clears it */
-struct s_51e9f8
-{
-    dword field_0;
-    bool field_4;
-};
 s_51e9f8 g_51e9f8;
 
 /* the subsystem's initialize (in the table in src/unknown_157450.cpp,
    with 0x215730 as its dispose): makes sure n:\sgf exists and resets the state */
-// score 61 (was 35): retail clears one contiguous block of globals with a single rep stosd and sets the flag byte first; here the globals are separate objects, so they are cleared with separate stores
-// b13K (11-17) walk against retail, fast build on r846 (with g_47ff38's file in the image): the 0x11c-byte memset, the
-// table, the lock and g_55c154 are retail's one 0x95-dword rep stosd (0x2156a9, 0x55c030..0x55c284); the stores after
-// it follow retail's order and values. Fixed: get_current_language() is inline in retail (0x2156cf..0x215713: the
-// g_47ff38 test, calls 0x215704 and 0x215709, store 0x47ff38), so the old #pragma inline_depth(0) pair went (35 -> 61;
-// with it kept the new forms score 38); the g_51e9f8 pair is cleared by one memset right after the big clear (two
-// dword stores, 0x2156ad and 0x2156b3) and its second member is a flag set by a byte store (0x2156c0), not a dword 1.
-// The g_55c14f/g_55c14e zero stores stay late (0x2156d7, 0x2156fb) as in retail. What remains is the second rep stosd
-// and the separate clears: a match needs these globals in one structure (other files). g_55c160_table's declared
-// 0x444 bytes overlap g_saved_game_file_lock and g_55c280; retail's block shows the table is count + 4 entries.
+// The state from 0x55c030 to 0x55c284 is one structure (g_55c030), cleared by retail's single 0x95-dword rep stosd
+// (0x2156a9); its table holds count + 4 entries, so the file lock and the language follow it. The g_51e9f8 pair is
+// cleared by its own memset (two dword stores, 0x2156ad and 0x2156b3) and its flag is then set by a byte store.
+// get_current_language() is inline (0x2156cf..0x215713).
 // @retail 0x215690
 void saved_game_storage_initialize(void)
 {
     saved_game_storage_ensure_directory("n:\\sgf");
-    // Retail clears g_55c030..g_55c284 with one memset; here the range is
-    // still separate globals, so this function does not match yet.
-    memset(g_saved_game_storage_reserved, 0, sizeof(g_saved_game_storage_reserved));
-    memset(&g_51e9f8, 0, sizeof(g_51e9f8));
-    g_55c154 = 0;
-    g_55c160_table.count = 0;
-    memset(g_55c160_table.entries, 0, 4 * sizeof(g_55c160_table.entries[0]));
-    g_saved_game_file_lock.file_index = 0;
-    g_saved_game_file_lock.thread = 0;
+    memset(&g_55c030, 0, sizeof(g_55c030));
+    // g_55c14f and g_55c14e are already zero after the memset; retail still stores them (0x2156d7, 0x2156fb).
+    g_55c14f = 0;
     g_55c14c = true;
+    memset(&g_51e9f8, 0, sizeof(g_51e9f8));
     g_51e9f8.field_4 = true;
     g_55c14d = true;
     g_saved_game_file_lock.free = true;
-    g_55c14f = 0;
     g_55c150 = 3;
     g_55c158 = NONE;
     g_55c15c = 123;

@@ -4,6 +4,7 @@
    changes, and queries over the slots (player_slots.h) */
 
 #include "player_slots.h"
+#include "saved_game_storage.h"
 #include <string.h>
 #include <new>
 
@@ -314,20 +315,6 @@ void function_190eb3(long index);
 void function_53810(long voice_mask, long controller_index);
 void function_54fc0(long controller_index, long voice_through_tv);
 
-struct s_55c164
-{
-	/* a profile file a slot was signed in with */
-	void *file_index;
-	byte unknown04[0x40];
-};
-/* one structure in retail (unknown_2157e0.cpp) */
-struct s_55c160
-{
-	long count;
-	s_55c164 entries[16];
-};
-extern s_55c160 g_55c160_table;
-
 /* signs the slot in with a profile (adding its session user on first sign
    in), then applies the profile's controller, name and voice settings */
 // @retail 0x18fb34
@@ -354,7 +341,7 @@ void __stdcall player_slot_set_profile(long index, s_player_profile_settings *se
 	if (changed && slot->profile_index != NONE)
 	{
 		g_55c160_table.count++;
-		g_55c160_table.entries[g_55c160_table.count - 1].file_index = (void *)slot->profile_index;
+		g_55c160_table.entries[g_55c160_table.count - 1].field0 = (void *)slot->profile_index;
 	}
 	function_53810(settings->voice_mask, index);
 	function_54fc0(index, settings->voice_through_tv);
@@ -364,7 +351,6 @@ void saved_game_storage_update();
 long function_2170e0(long file_index);
 void online_mutelist_reset(long controller_index);
 void function_190d4b(long index);
-extern byte g_55c14f;
 extern bool g_551ae4;
 
 /* updates the saved game storage, then the profile file each signed in

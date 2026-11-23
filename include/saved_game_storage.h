@@ -104,7 +104,8 @@ typedef char assert_saved_game_storage_cache_locations[(offsetof(s_saved_game_st
 typedef char assert_saved_game_storage_cache_generation[(offsetof(s_saved_game_storage_cache, generation) == 0x4befc) ? 1 : -1];
 typedef char assert_saved_game_storage_cache_copy_buffer[(offsetof(s_saved_game_storage_cache, copy_buffer) == 0x4bf00) ? 1 : -1];
 
-/* g_55c160_table: up to 16 files with an entry each */
+/* g_55c160_table: up to 4 files with an entry each (the lock follows the
+   fourth entry in the subsystem's state, 0x55c274) */
 struct s_55c164
 {
 	void *field0;
@@ -115,9 +116,9 @@ struct s_55c164
 struct s_55c160
 {
 	long count;
-	s_55c164 entries[16];
+	s_55c164 entries[4];
 };
-typedef char assert_55c160_size[(sizeof(s_55c160) == 0x444) ? 1 : -1];
+typedef char assert_55c160_size[(sizeof(s_55c160) == 0x114) ? 1 : -1];
 
 /* a saved-game file lock: free flag, the locked file's index and the owning
    thread (handed out by address in src/unknown_217370.cpp) */
@@ -131,24 +132,57 @@ typedef char assert_saved_game_file_lock_size[(sizeof(s_saved_game_file_lock) ==
 
 /* the cache, NULL until 0x215880 allocates it */
 extern void *g_51ea14;
-/* the flag the subsystem's dispose waits on */
-extern bool g_55c14c;
-/* set while the subsystem is initialized */
-extern bool g_55c14d;
-extern byte g_55c14e;
-extern byte g_55c14f;
-/* bit 0: the hard disk's files need listing again */
-extern long g_55c150;
-/* the last error */
-extern long g_55c154;
-/* the string list that holds the types' names, NONE when there is none */
-extern long g_55c158;
-/* the generation the next cache gets */
-extern long g_55c15c;
-extern s_55c160 g_55c160_table;
-extern s_saved_game_file_lock g_saved_game_file_lock;
-/* the language new files' names are in */
-extern long g_55c280;
+/* the subsystem's state (0x55c030..0x55c284): one structure, which
+   saved_game_storage_initialize clears in one go (0x2156a9) */
+struct s_saved_game_storage_globals
+{
+	/* no code reads these first 0x11c bytes */
+	byte reserved[0x11c];
+	/* g_55c14c: the flag the subsystem's dispose waits on */
+	bool unknown11c;
+	/* g_55c14d: set while the subsystem is initialized */
+	bool unknown11d;
+	byte unknown11e;
+	byte unknown11f;
+	/* g_55c150, bit 0: the hard disk's files need listing again */
+	long unknown120;
+	/* g_55c154: the last error */
+	long unknown124;
+	/* g_55c158: the string list that holds the types' names, NONE when there is none */
+	long unknown128;
+	/* g_55c15c: the generation the next cache gets */
+	long unknown12c;
+	s_55c160 table;
+	s_saved_game_file_lock file_lock;
+	/* g_55c280: the language new files' names are in */
+	long language;
+};
+typedef char assert_saved_game_storage_globals_size[(sizeof(s_saved_game_storage_globals) == 0x254) ? 1 : -1];
+typedef char assert_saved_game_storage_globals_table[(offsetof(s_saved_game_storage_globals, table) == 0x130) ? 1 : -1];
+typedef char assert_saved_game_storage_globals_file_lock[(offsetof(s_saved_game_storage_globals, file_lock) == 0x244) ? 1 : -1];
+extern s_saved_game_storage_globals g_55c030;
+
+/* the state's members by their retail addresses */
+#define g_55c14c g_55c030.unknown11c
+#define g_55c14d g_55c030.unknown11d
+#define g_55c14e g_55c030.unknown11e
+#define g_55c14f g_55c030.unknown11f
+#define g_55c150 g_55c030.unknown120
+#define g_55c154 g_55c030.unknown124
+#define g_55c158 g_55c030.unknown128
+#define g_55c15c g_55c030.unknown12c
+#define g_55c160_table g_55c030.table
+#define g_saved_game_file_lock g_55c030.file_lock
+#define g_55c280 g_55c030.language
+
+/* written only by the subsystem's initialize (0x215690) and dispose (0x215730),
+   which both clear it */
+struct s_51e9f8
+{
+	dword field_0;
+	bool field_4;
+};
+extern s_51e9f8 g_51e9f8;
 
 inline s_saved_game_storage_cache *saved_game_storage_get_cache(void)
 {
