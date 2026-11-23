@@ -316,6 +316,10 @@ union s_6ec80
 // pointers' EBX/EDI swap): the players pointer declared first 48, the machines pointer declared after players 48, the two
 // flags declared first 48, both block pointers declared at their NULL stores 48 (declaration order does not break the
 // EBX/EDI tie); the two flags declared first with the mask scoped on main's opening 225.
+// M3 lane 6 r236 (h2m fast, control 5; the mask scoped re-measured 225): with the mask zeroed before the guard, the guard
+// inverted (failure arm first) 5, the mask typed `long` 5, a typed session-player view of the players block for the loop 5
+// (the three the same code), the guard testing players first 89 (NONE EDI and zero ECX from the entry); mask and counter
+// declared before the guard and zeroed together inside it 227.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
