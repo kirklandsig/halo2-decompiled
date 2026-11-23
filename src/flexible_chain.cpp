@@ -1022,6 +1022,11 @@ void __stdcall function_1160c0(real dt)
 // velocity, position and previous stores 175 (1380 B); the axis declared ahead of the vertical 144 and `predicted`
 // declared ahead of `previous` 144 (same code each); the sine and cosine named ahead of the rotation call 169 (1373 B);
 // the blend weight `1.f - stiffness` named once for the three rows 262 (1355 B).
+// M3 lane 13 r147 (h2m fast with 0x116750 and 0x1160c0, MATCH each run; control 144, difflib-aligned 35 groups): the
+// velocity rows through the existing vector3d_from_points3d and vector3f_scale 195 (1399 B); the predicted point through
+// the existing vector3f_add 204 (1368 B, retail's length, aligned 46); the chain delta through vector3d_from_points3d in
+// place of its initializer 259 (1368 B); `previous = node->position = position;` 144 (same code); vector3f_add with the
+// helper delta 282 (1355 B). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

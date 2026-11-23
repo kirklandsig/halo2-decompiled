@@ -1324,6 +1324,21 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // returns a one-member record by value (a long handle copied from unit_index) matches this function and 0x151aa0 (43) in
 // the full check, 0 lost. The same one-member return-record device is held elsewhere for the user's ruling, so the body
 // stays as it was.
+// M3 lane 13 r145 (h2m fast with 0x152bf0, MATCH each time; control 5): `__assume(player->unit_index != NONE)` at the
+// head of the tested block on the plain-read form 17, ahead of the hand 17, on the getter-reload form 5 (folded each
+// time); the file's player getter with its data pointer in a local 5 (0x151ea0 then 13), with its result in a local 5;
+// a pool copy for the unit lookup declared first 5, after the result 5; the unit lookup ahead of the hand 13 (repeat);
+// on the getter-reload form the test and calls through a `long const &` to the field 11 (137 B), through a unit-index
+// local re-bound by `long const &` 45. Diagnostic (a compiler barrier, not keepable): a unit-index local for the test
+// and calls with a barrier ahead of the lookup's `player->unit_index` gives retail's whole entry (player address
+// `add eax, [edx + 0x44]; mov edx, eax`, unit index EDI, object data ESI) at 10 (137 B): the lookup's read stays a real
+// `mov edx, [edx + 0x2c]` ahead of the pool loads where retail has the late-merged `mov edx, edi` after them; barrier
+// ahead of the hand 12, with the local declared in the block 10. So retail's lookup read is a separate load at
+// allocation through the player local itself, not through a recomputed address. Recomputed second reads with
+// shallower trees all give the getter-reload code (5, the player address still `mov edx, [edx + 0x44] ... add edx,
+// eax`): a players-array local and a masked-index local shared by the player and the reload as `players[index]` 5, as
+// `players + index` 5; the index local alone with the global's array at both 5; the index local for the player with the
+// getter reload 5; the players local for the player with the getter reload 5.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

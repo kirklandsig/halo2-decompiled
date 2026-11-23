@@ -982,6 +982,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (aligned 128: frame 0x14 and the entry as retail, but `count` stays in EBX and the pass loop still rotates, the hull
 // count in EAX); both with `current` and the hull test reading the count through a const volatile view of the parameter
 // 216/216 (784 B, aligned 125). Body unchanged.
+// M3 lane 13 r147 (h2m fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, difflib-aligned 28 groups):
+// the compaction's search as `for (j = 0; j < i && indices[j] != indices[i]; j++) {}` with the copy under `if (j < i)`
+// 252 (frame 0x14, but the count then arrives in EAX with `ret 8` and 0x239d50 drops to 80); `if (j != i) break;` for
+// `if (j < i)` 144 (same code); `if (classifier != 2) return 0;` with the hull count declared after it, on main's body,
+// 261 (764 B, 0x239d50 80); the classifier result in a named short 144 (same code); the lowest scan bounded by a
+// `short const` copy of the count 144 (same code: the copy folds, no EDX bound). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

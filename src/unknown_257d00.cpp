@@ -2053,6 +2053,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 
 // score 429 (was 429; m3 lane 2 r139 unchanged, its lines just above the marker; m3 lane 5 r233 unchanged; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier header line, a stack merged here in m3 lane 2 r139: 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 429 (was 429; m3 lane 13 r147, m3 lane 5 r233, m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; two stacked header lines merged here, r147): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2819,6 +2820,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // (a `setne` store that still falls into the test), `(bool)d1` 477; `d1 != 0` alone 481. The flag returned as the result
 // (`if (!local_3) { tail } return local_3;`, case 2's exits setting the flag) 734 on main, 743 on the 494 base (2496 B),
 // as a short 670.
+// M3 lane 13 r147 (h2m fast with 0x110ab0 and 0x258a00; control 429, difflib-aligned 59 groups): the tail's turn copy
+// (`local_20`) member by member 500 (2432 B); the second publish's facing copy member by member 570 (2420 B); case 6's
+// second OR written through the global (`((byte *)g_5023fc)[0x22] |= 0x48`, the reload mix: match-only) 482 (2432 B,
+// aligned 57: case 6 then has retail's two stores and `mov cl, dl; or cl, 0x48`, only the first store's schedule and
+// the 0x502400 load left; the extra bytes are a loop alignment pad before case 20); that with the 0x29 OR ahead of the
+// two 1000.f stores 482 (same code); every case 6 store through the global read at each use 428 (still one `or 0x69`).
+// Body unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

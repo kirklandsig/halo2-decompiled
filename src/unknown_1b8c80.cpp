@@ -1029,6 +1029,10 @@ extern "C" void _ReadWriteBarrier(void);
 // point 44 each (dropped early). Reading: a statement that reads through the state between the actor lookup and the
 // busy test gives retail's entry and memory compare with no barrier, but every such read tried leaves its own load in
 // the entry block; retail's entry statement leaves only the slot load.
+// M3 lane 13 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state converted through `(void *)` 6;
+// the actor as an `s_actor_view &` with the barrier 6; the busy test held in a named bool after the barrier 6 (all three
+// the same code); a second barrier at the head of the NONE block 7; a second barrier ahead of the state and the lookup
+// 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

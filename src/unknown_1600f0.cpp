@@ -1718,6 +1718,11 @@ PRIVATE inline long score_string_list_1608e0()
 // conditional initialiser 719 (2888 B); the alternate-score flag set by an if/else on the call 682; the clamp test as
 // `screen_height > height` 679; the title edges read from the row position 679; the three 1.0f foreground channels
 // chained 679 (the last three the same code). Body unchanged.
+// M3 lane 13 r147 (h2m fast with 0x161420, MATCH; control 679, difflib-aligned 124 groups): the height's `volatile`
+// replaced by a `long const &` bound to a plain local 723 (2856 B, the same code as the plain height: the reference
+// folds); the fade count's `volatile` replaced the same way 707 (2856 B, the plain fade count's code); both 755 (2824 B);
+// a redundant `if (0 < display.team_count)` ahead of the team loop 691 (2888 B); one ahead of the player loop 679
+// (aligned 121: only the row counter's zero store and one scratch register move). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

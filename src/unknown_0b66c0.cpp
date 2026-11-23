@@ -675,6 +675,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // use, the form that matched 0x151b80) at both uses with both wrapped 22 [match], with the destination plain 52 [83], at
 // the source only 22 [match], at the scan only 22 [match] (each the same code as the plain member reads: copies of a
 // by-value parameter are merged, so the string still takes EBP in place of retail's two loads from its home).
+// M3 lane 13 r145 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time unless noted; control 21): on main's
+// body the length kept in the scan's `unsigned long` type with the cast at the compare 21 [match], with the compare made
+// unsigned 21 [match]; the length and the source declared bare ahead of their assignments 21 [match] (all three the same
+// code); the bound sum named after the early source 21 [match] (same code), named ahead of the scan 51 (92 B) [83].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

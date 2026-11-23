@@ -344,6 +344,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // loop only 26 (417 B, the 26 code); in the first three loops 26. On `long i = 0;` above the pane lookup (25): plain 25
 // re-measured, the accessor in the model loop 25, in the text loop 25 (same code each). The model loop's EAX copy and
 // its `and` reset stay in every form whose model loop keeps the model in EDI.
+// M3 lane 13 r145 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): one, two or three redundant
+// parenthesis pairs around the model call's definition argument 23/23/23, around the text call's 23/23/23 (no phase
+// effect on this integer code); 0x22fa5b returning the concrete model type, the model local typed so, 23; the text
+// helper's index typed `short` with `(short)i` at the call 23 (same code); the pane declared in the `if` condition with
+// `long i = 0;` above it 25 (the 25 form's code), with `long i = 0;` at the block's top 66. Diagnostic: the text loop
+// without its flag test 46 (411 B; its reset stays `mov`, so the flag test does not set it).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

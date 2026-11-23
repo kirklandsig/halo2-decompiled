@@ -1017,6 +1017,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // re-measured 46, session ESI, both callers lost): on the pair, the pair re-pointed at the two new buffers and passed to
 // the setter 46; the pair declared at the function top ahead of `result` 46, after it 46, that with the variant at the
 // top too 46; the variant declared inside the player loop's call block 49.
+// M3 lane 13 r146 (h2m fast with 0x6e500, 0x72700; control 22): an identity forceinline pointer view (no code of its own)
+// around one read at a time, aimed at the one-step scratch rotation: the member count's session read 133 (495 B), the mask
+// store's machine buffer 130 (495 B), the summary getter's session 165 (511 B, both callers lost), the variant's session
+// read 157 (506 B), the opening's flag read 150 (495 B), the copy loop's member read 132 (495 B); every placement grows the
+// body by 12 B or more, so it changes more than the rotation.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1572,6 +1577,13 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // pointers still swap); a walked destination in the true arm stepped ahead of the copy (`dest += 3; memcpy(dest - 3,
 // ...)`) 194; the step as `dest = &dest[3];` 9; the player-loop index declared at function scope ahead of the
 // destination 9 (same code).
+// M3 lane 13 r146 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): a new forced-inline
+// 12-byte copy helper (dest, source) called with a `dword (*)[3]` row pointer declared in the true arm and stepped in the
+// call's arguments (`copy(dest++, ...); count++;`) 216 (728 B), with `count++` ahead of the call 203 (704 B), with
+// `copy(*dest++, ...)` 216; a plain `static inline` copy helper with `identities[count++]` re-measured 195; the true arm
+// through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
+// 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
+// colouring (that needs memcpy's own argument order).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
