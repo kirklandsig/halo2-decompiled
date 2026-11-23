@@ -483,6 +483,11 @@ extern long g_55c154;
 // main's 0x238c69 order with the default arm's count named once 179 (580 B: a plain EBP frame, the zero in EBX, `this` in
 // ESI and spilled); with the selected arm first 178; that with the new flag clear 178; one named count for the copy and
 // both requests 179.
+// M3 lane 16 r180 (H2M_FAST with 0x13fac0, MATCH; control 61, aligned 40): two load arms re-measured 174 (595 B, aligned
+// 78). On the one-load body: the create-default flag `bool const` 61 (same code); the source index started from the entry's
+// variant and replaced by `saved` under `if (create_default)` 76 (577 B); the variant copy ahead of the index store 174
+// (581 B, first +0x7: the frame flips); the copy's count as the name array's element count 61 (same code); the load
+// result held in a named bool 61 (same code). Body unchanged.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

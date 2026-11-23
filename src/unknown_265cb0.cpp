@@ -2332,7 +2332,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 }
 
 // score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
-// score 158 (was 158; 168 earlier): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// Earlier stacked line, merged: 158 (was 158; 168 earlier): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // M3 lane 6 r223 (h2m fast with 0x26be00/0x26be30/0x25d690/0x25d740/0x25d810, all MATCH; control 158): 0x26be00 is now
 // this machine's and its file is open, so its lookup was respelled there: `(index & 0xffff) * size + data` 158, the
 // multiply by a signed 0x888 158 (both the same code here and 0x26be00 still matches), `(word)index * size` 697 (0x26be00
@@ -2343,7 +2343,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the decrement 158 (same code). Reading: the velocity dot after the velocity normalize folds the direction in both
 // builds; only after the relative normalize does retail load it into XMM1-XMM3, which earlier diagnostics reproduced
 // only with the direction escaped and that call opaque, so the lead is 0x30bf0's whole-program summary (BLOCKED-BY 0x30bf0).
-// score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// Earlier stacked line, merged: 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
 // base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
 // takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
@@ -3082,6 +3082,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 706 (2854 B); the relative vector written out from the two velocities (diagnostic) 172 (2883 B). Retail loads the
 // normalized direction's k and j into XMM1/XMM2 after the relative normalize and before its length test, and i into XMM3
 // on both edges, then reads all three from registers in the facing dot. Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and 0x25d810, all MATCH; control 158): the stacked
+// first lines merged into one note. Diagnostics for the head's `[eax + ecx + 0x58]`: 8, 16, 24 and 40 initialised dead long
+// locals at the top 158/158/164/158 (the order never flips, so it does not follow the symbol count); the count block cleared by
+// four long stores in place of the memset 688 (still `[eax + ecx]`). Forms: the head read as `actor_get(actor_index)`'s +0x58
+// field with no 0x26be00 call 158, as `g_4f55f0->data + (actor_index & 0xffff) * 0x888 + 0x58` 158, product first 158 (all the
+// same code: matched 0x1e23c0 forms the same CSE'd product and gets retail's data-first order, so the order is this body's
+// context, not a spelling); strongest/best declared ahead of the actor 170; all three dots through dot3f 158, the relative and
+// facing dots alone 158 (same code: the sum order is canonical and the direction still reads from memory). Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

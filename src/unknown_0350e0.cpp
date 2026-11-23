@@ -4484,6 +4484,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // M3 lane 1 r155 (H2M_FAST with 0x4b160, MATCH; control 317): pass 3's test as `created == current && removable` 317, pass
 // 4's elapsed store ahead of the initial store 317, pass 1's flags pointer const 317 (same code each); pass 1's test with
 // the bound check last 341; the limit clamp as `state->count < limit` 319.
+// M3 lane 5 r237 (H2M_FAST with 0x4b160, MATCH each time; control 317): pass 2's swap target as `&state->entries[first++]`
+// with its `++first` dropped 317, pass 1's swap target as `state->entries` 317, both 317 (same code each: `first` keeps
+// EBP, the base EDX); pass 2's test through a `byte *flags` as pass 1's 317; passes 1-2 in their own block with `found`
+// declared there 317; `found` declared beside `first` 355 (first +0xc). Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4957,6 +4961,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // `!= 0`) 486 (same code); scale_size declared ahead of cycle 486 (same code); the range computed ahead of the camera
 // copy 487; the range start read once into a local used for the range and each distance 494 (2028 B); the view pointer
 // declared const 486 (same code). Restored.
+// M3 lane 5 r237 (H2M_FAST with 0x36b50, control 486; retail multiplies the rate as `fmul st(2)` where this build
+// emits `fld st(2); fmulp st(1)`): in the random step, the sum written value-first 486 and `random * 2.0f - 1.0f` 486
+// (same code each), the clamp as two early returns 513 (2004 B), the offset named before the product 513 (2004 B), the
+// fraction kept as a double 486 (same code). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
