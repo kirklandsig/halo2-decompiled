@@ -143,7 +143,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
 // zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
 // in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
-// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// score 607 (was 607; m3 lane 13 r149 unchanged, its lines just above the marker): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
 // Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
 // EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
@@ -970,6 +970,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // field at each test (retail re-reads `[esi + 0x44]` there) 602 (3821 B); the scalar accumulate helper's weight and
 // remaining updates after its six channels 718 (3838 B, aligned 466); the merge helper's after its weighted block 705
 // (3841 B, aligned 367); both 732 (3847 B, aligned 346, masked 192); the `char` slot re-measured 700. Body unchanged.
+// M3 lane 13 r149 (H2M_FAST with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607). Retail's three
+// publications through function_12efb4 are strict load-multiply-store in field order (as the directly written field_4c
+// block is in both builds); ours hoists the intensity product whose operand the test already loaded. In the helper: the
+// intensity product written `local_0 * arg_0->intensity` 607, the weight and intensity read once into named locals 607,
+// the destination taken as `real (&)[6]` 607, both parameters as references 607 (all identical code). Diagnostic (the
+// helper's body written out at its three sites, reverted): 701 (3843 B), the three publications in retail's order
+// (aligned groups 123 -> 106) but an earlier mulss operand swapped. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

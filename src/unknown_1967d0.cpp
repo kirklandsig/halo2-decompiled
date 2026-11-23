@@ -1063,6 +1063,12 @@ static inline long team_score_195ed0(long team)
 // loop alone 205 (1242 B, a pointer walk); the counter initialised at its declaration 104 (its zero then serves the
 // ranking call's `push 0`, the guard still sign-extends where retail compares the word with the zeroed counter); the
 // ranking aggregate in the outer block 100 (same code).
+// M3 lane 11 r159 (h2m fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the team-rank
+// loop's bound as a named `short` or `long` local for its test 100/100 (same code: the copy folds, the entry test still
+// sign-extends where retail compares the word with BP); that loop as a `while` with the increment last 163 (the counter
+// moves to EDI, the entry test unchanged); as `if (0 < count) do ... while (++rank < count)` 156 (1210 B: the entry test
+// becomes a word test of AX but the count is spilled for the body); the team test reading the team mask into a named
+// local 100 (same code); re-measured the team read at each use (no `team` local) 216. Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
