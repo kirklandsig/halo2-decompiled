@@ -170,6 +170,14 @@ PRIVATE byte *update_object_0a6430(long index)
 // helper taking the object index 14, the object pointer 14 or the definition 14 (all same code), the index-taking
 // helper plain inline 124 (471 B, stays a call); the two words through a named `word const *` used three times 14;
 // the 0x100 state byte and pushed pointer through a named `state + 0x50` pointer 14 (same code).
+// M3 lane 4 r255 (h2m fast, 14): the 0x8 scale named 14, the 0x80 shield value named 14, the 0x80 flag named as a short
+// 14, the region count through a `long const &` 14, the region byte and pushed pointer through one `state + 0x50` pointer
+// 14, the 0x200 model index bound as a `long const &` 48 (551 B). Lane 14 r90's lead re-measured on this body (the 0x100
+// block written out with its object bound as `byte *const &object`): 12 at 548 B (0x200 head index-first with the pool
+// in EAX; left: the 0x100 quotient ECX / byte EDX for retail's EAX / ECX, the 0x200 head's index*3 ECX, data EAX, object
+// ECX for retail's EDX, ECX, EDX); on it the byte through `byte const &` 12, the 0x118 word through `short const &` 12,
+// `level = word; level /= 10;` 12, the quotient as a `long const &` 14 (549 B), the two-step quotient through `long &`
+// (0xba690's own shape) 14 (549 B, main's code).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
