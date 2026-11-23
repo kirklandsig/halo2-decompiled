@@ -1347,6 +1347,9 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // kept 12/13. A zero local or a split pair in 14/18 flips as well (6). Writing the 12/13 zeros as
 // `((real volatile *)out)[2]`/`[3]` matches that tail (2, left in 14/18) but costs 0x19ca0 its match (130), like the
 // `out + 2` copy: any non-direct access to out[] is out. Kept: the direct stores.
+// M3 lane 16 r181 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): case 10 written height first 6 (case 10
+// then stores descending); case 9 written height first 2 (same code); case 16's constant store written first 111 (688
+// bytes); case 11's chain reversed 2 (same code); cases 5-8 as one label group 2 (same code).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
