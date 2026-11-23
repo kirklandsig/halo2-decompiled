@@ -918,6 +918,13 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // [36/33/22], pbxnrdsig, pbxnrdsgi and rdspbxnig 220 [37/35/24] (739 B: no zero register, the instance index takes EBP);
 // pbxnisrdg 220 (744 B) [76/69/27]; range set to NULL at its declaration 240 (745 B) [94/96/40]. The zero register stays
 // exactly when the instance index is declared ahead of result; the range takes EBP in none of them.
+// M3 lane 1 r159 (H2M_FAST with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH; control 172): `bool result` for the
+// byte result 182 (726 B: the section still in EBX, the BSP in EBP); the definition cleared at its declaration with no
+// else arm re-measured 208 (726 B); on that, the count test as `!definition->surface_range_count` 208 and the section test
+// as `section != NULL` 208 (the same code); `bool result` with the vertex getter's result set only on a hit 212 (741 B).
+// Reading of the 208 form: a zero constant takes EBP (`xor ebp, ebp`) for the section's NULL store, the count test, the
+// section test and the unknown18 clear, where retail stores the section's NULL from the definition's EDI, tests with
+// `test eax, eax`, clears with an immediate and gives EBP to the range in the type-1 arm and the join. Body unchanged.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
