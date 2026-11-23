@@ -358,6 +358,9 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // Round 228 (m3 lane 6, fast): `constraint` initialised NULL at its declaration 22; `constraint = NULL;` ahead of
 // the default's `__assume(0)` 22; case 1's friction ternary as if/else 22; the rigid-body list getter as if/return 22
 // (same code each); the joint count test as its own `break` ahead of the element address 486 (1856 bytes).
+// Round 181 (m3 lane 16, h2m fast): the found test compared as integers 22; the joint lookup as `joint = NULL;` then an
+// `if` 22; the fixed body named ahead of the found test 22; the builder's result passed straight to 0x1d0150 22; the
+// first loop's two-part test as an early `continue` 22 (all the same code: the found block stays after the exit).
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

@@ -1219,6 +1219,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // through plane_distance_to_point 238, the record arm's 238 (same code each); the origin's members assigned z, y, x from a
 // position pointer 311 (movss copies into one contiguous home, frame 0x40); that with the instance arm through
 // plane_distance_to_point 311; the hit's members assigned y, x, z 323 (1262 B). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238, aligned 180, masked 104):
+// the kind test as `if ((data >> 29) - 1)` 238 at retail's 1243 B (masked 102: retail's `shr 0x1d; dec`, but the surface
+// index is still computed inside the instance arm where retail computes it ahead of the branch); the hit distance as
+// `first->shape->radius + contact->distance` 238; the normal test as `scale < contact->normal.k` 238; the entity test as
+// `root->entity == NULL` 238 (same code each); the fraction test as `results[key].fraction <= distance` 304 (1243 B).
+// Reading: retail copies the origin and the hit with float moves into separate cells (origin z +0x18, y +0x14, x +0x38;
+// hit +0x2c..+0x34), ours with dword moves into two 12-byte aggregates. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
