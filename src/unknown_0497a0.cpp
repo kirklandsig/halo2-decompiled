@@ -1583,6 +1583,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // homes); on the kept form, case 4's three offsets named the same way 437 (2592 B), the offsets declared x then y 285 (same
 // score), the half width computed after the u/v stores 292, case 1/2's z pair as `first.z = second.z = ...` 415 (2592 B),
 // case 1/2's x row ahead of the y row 284 (statement order, not kept).
+// M3 lane 15 r137 (H2M_FAST with 0x42c50/0x42b20/0x43740, all MATCH; control 285 at 2596 B): the pixel named and stored
+// to the first vertex then the outer one (retail's store order) 283; case 0's z rows first and then the chained x and y
+// pairs (`first.x = second.x = ...`) 285, the same with second's z first and y before x 285 (same code each); case 0's
+// chained y and x pairs ahead of the z rows 425 (2588 B), with the named pixel 425; case 0 with the whole second edge
+// first (y, x, z) 455 (2588 B); the endpoint fades through a `strip` pointer formed as `vertex - input->vertex_count`
+// 617. Half width still XMM3 (retail XMM4), frame 0xa0 (retail 0xac). Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
