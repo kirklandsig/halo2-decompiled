@@ -308,7 +308,8 @@ static __forceinline void apply_linear_spilled(float const &source, solver_linea
 // The first positive row retains its unshifted linear cursor while angular
 // axes use the coupled-pair cursor. Keep this update separate from the second
 // positive row so both existing cursor representations survive optimization.
-static __forceinline void apply_first_normal_positive_impulse(float const &source, solver_linear_row_31e7b0 const *row,__m128 const *angular_axes,
+static __forceinline void apply_first_normal_positive_impulse(float const &source,
+	__m128 linear_axis, __m128 const *angular_axes,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *const &b, float *result, float &simd_copy)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
@@ -321,8 +322,8 @@ static __forceinline void apply_first_normal_positive_impulse(float const &sourc
 	__m128 inverse_b = b->inverse_inertia;
 	solver_velocity_31c940 *linear_body_b = b;
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), linear_axis);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), linear_axis);
 	a->linear = _mm_add_ps(a->linear, linear_a);
 	linear_body_b->linear = _mm_sub_ps(linear_body_b->linear, linear_b);
 	// Reload the axes after both linear writes, then form both contributions
@@ -454,15 +455,45 @@ static __forceinline void apply_spin_linear(double impulse, solver_linear_row_31
 	*result += impulse;
 }
 
+// The first-row fallback borrows its axis from the projection, then captures
+// its vector value before the body update. The second row uses the row cursor.
+static __forceinline void apply_first_axis_fallback(float impulse,
+	solver_linear_row_31e7b0 const *row, __m128 linear_axis,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const &b, float *result, float &simd_scratch)
+{
+	// Keep accumulation wider than the float copy consumed by SIMD.
+	float &rounded_impulse = simd_scratch;
+	float &store = rounded_impulse;
+	store = impulse;
+	__m128 scalar = _mm_load_ss(&rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 inverse_b = b->inverse_inertia;
+	solver_velocity_31c940 *linear_body_b = b;
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), linear_axis);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), linear_axis);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_body_b->linear = _mm_sub_ps(linear_body_b->linear, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	solver_velocity_31c940 *angular_body_b = b;
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
+	*result += impulse;
+}
+
 // Retain the first row's unshifted cursor alongside the second row's B axis.
 // Their separate uses keep retail's cursor bias over the same row storage.
 static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, unsigned char *op,
 	__m128 *axis, __m128 *first_axis, solver_velocity_31c940 *a,
 	solver_velocity_31c940 *const &b, float *result, solver_scalar_work_31c940 &scalar_work, solver_scalar_arena_31c940 &projection_pool)
 {
+	__m128 const &first_linear = *first_axis;
 	solver_step_31c940 *parameters = step;
 	float target_a = axis[-5].m128_f32[3];
-	project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis, projection_pool.normal_first_projection_a);
+	project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, first_linear, projection_pool.normal_first_projection_a);
 	// Retail stores this error to float; subsequent coupled expressions borrow
 	// that stored value while the second error retains its x87 intermediate.
 	scalar_work.first_error = target_a * parameters->error_scale
@@ -484,7 +515,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 		{
 			if (scalar_work.pair_b > 0.0f)
 			{
-				apply_first_normal_positive_impulse(scalar_work.pair_a, ((solver_linear_row_31e7b0 *)first_axis),axis-4, a, b, result, projection_pool.normal_first_a_copy);
+				apply_first_normal_positive_impulse(scalar_work.pair_a, first_linear, axis - 4,
+					a, b, result, projection_pool.normal_first_a_copy);
 				apply_linear_spilled(scalar_work.pair_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, projection_pool.normal_first_b_copy);
 				return;
 			}
@@ -497,7 +529,9 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 		return;
 	} while (false);
 	float candidate_a = scalar_work.first_error * axis[-4].m128_f32[3];
-	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result, scalar_work.fallback_scalar);
+	if (candidate_a > 0.0f)
+		apply_first_axis_fallback(candidate_a, ((solver_linear_row_31e7b0 *)first_axis),
+			first_linear, a, b, result, scalar_work.fallback_scalar);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
@@ -1091,7 +1125,7 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Ordinary reduced-check score 2088 (2119 before the linear-error pointer home).
+// Ordinary reduced-check score 2085 (2119 before the linear-error pointer home).
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
