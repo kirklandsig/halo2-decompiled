@@ -3763,6 +3763,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // back for `next_state` (`mov byte ptr [ebp + 0xc], 0` / `mov al, [ebp + 0xc]`), which no spelling here reproduces.
 // The pieces alone: alternate inside the guard 615 (2500 B; 322 / 150), the short-counted clear 667 (361 / 162), both
 // 697. Body unchanged.
+// M3 lane 7 r221 (plain with 0x18a7b0, 0x21d630, 0x21bd00, 0x21aeb0, 0x21cf80 and 0x21d060, all MATCH; control 597).
+// Re-measured: `alternate` inside the availability block 596 (2518 B, aligned 336), inside the definition guard 615 (2500
+// B, aligned 322), lane 5 r238's replay of lane 2 r104's stack 586 (2478 B, aligned 219). New: on the guard form the pool
+// data named once for the sound lookup 615 (same code); the creation arm testing its own result (`if (index == NONE) {
+// result = false; goto done; }`, the join's test and its else dropped) 750 (2504 B), with the guard 711 (2518 B); the
+// four impulse-bit sets through the existing setter 0xbfe20 (link-time inlined) 597 on main and 586 on the replay (same
+// code each: the second test of each pair is still threaded). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

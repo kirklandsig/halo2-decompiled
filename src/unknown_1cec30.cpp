@@ -3436,6 +3436,12 @@ struct s_1cf531
 // M3 lane 12 r180 (h2m fast, 2): local_14 declared before local_13 2, on its own line first 2 (same code); the copy
 // into local_13 after the velocity call 62; the subtraction reading local_7 instead of the copy 57 (915 B, frame
 // 0x64); local_13 declared and copied ahead of the length test 8.
+// M3 lane 12 r181 (h2m fast, 2): the copy as an __m128 value with local_13 written only by the final product, with
+// the correction named 94, in place in that value 94, local_13 declared just before the final product 94 (all frame
+// 0x64: the value and local_13 never share a slot); local_13 corrected in place and read back into a named __m128
+// for the final product 29; in place with the factor through _mm_load_ss 28; the factor through _mm_load_ss alone
+// 23 (907 B). Diagnostic: the final product into local_7 and local_7 passed (local_13 no longer address-taken) 100
+// either way, the subtraction then moves after 0x183dc0 and the copy gets its own slot.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

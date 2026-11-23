@@ -707,6 +707,16 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // at function scope 848, the list local at function scope set before the entry test and used by it 848 (same code
 // each), the object type in a long local for both mask tests 843 (4226 B), one flags-word local for the four record bit
 // tests 884 (4230 B); on the body `if (!local_21) continue;` as a block around the rest 838 (same code). Body unchanged.
+// M3 lane 3 r302 (H2M_FAST, single address; control 838 at 4255 B, difflib-aligned exact/register-masked 386/299): the
+// list bound as `s_havok_array08 *const &` to the component's field 927 (4277 B); the element as `s_1d24a0 &` 838 (same
+// code); main's mix of `local_15` and direct `field_1` reads made uniform: the field at every use 934 (4271 B), the local at
+// every later use 862 (4253 B). One `real response_fraction;` declared inside each of the two blocks that share it (the
+// same name in both scopes; retail gives the four fraction outputs four homes) 836 (aligned 341/260: a structural gain of
+// 45 rows, 2 points positional, under the bar); with both angular coefficients read at each use 848 at 4225 B (aligned
+// 269/172, frame 0x1d4 = retail's, first difference `push ebx`), with only field_5c at each use 848 (4242 B, 332/246).
+// Lead (match-only, a moved declaration): those two plus lane 11 r141's list local at the removal (the head reading the
+// field) 775 at 4234 B, aligned 206/149, the same 775 as r152's remove_at form but with no header change. The loop head
+// stays BLOCKED-BY 0xbadc0's write summary (src/unknown_0bad50.cpp, on this round's avoid list). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
