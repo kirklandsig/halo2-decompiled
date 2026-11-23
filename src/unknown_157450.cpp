@@ -978,6 +978,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // mask read through a `word const &` bound to it at both post-loop uses 20 (same code); the update as one uncast store
 // `*team_mask = old_team_mask | present_teams;` 78; the dword local of the uncast OR 21; the mask compare first in the
 // change test 129 (374 B); the added teams computed after the playing store 20 (same code). Body unchanged.
+// M3 lane 5 r235 (h2m fast; control 23, aligned 17): the mask update as `old_team_mask |= present_teams;` then stored 77;
+// one store `*team_mask = old_team_mask | (word)present_teams;` 77; a word local of the uncast OR 77 (each 390 B: like
+// the uncast store, the OR then reloads the slot whole, but the compare still zero-extends it from memory and the loop
+// below loses its padding); only the first compare's operands swapped 24; only the second's 23 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6048,6 +6052,10 @@ void __stdcall function_d6bc0(long object_index);
 // schedule block (zero test to the delay store) in such a helper 182 (858 B); the index test as `if (entries[i].index !=
 // NONE) { schedule = false; switch ... } else schedule = true;` 172 (same code); the object declared ahead of the loop-top
 // index local 172 (same code). Body unchanged.
+// M3 lane 5 r235 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B, where the
+// `entries` load is shared across blocks in EDI from the loop top and the timer takes EBX). On the flag + field-test
+// form: the parameter renamed (three names) 172 each; the parameter spelled as an unsized array 172; the test spelled
+// `(entries + i)->index` 172; case 0 written ahead of case 1 172 (same code each). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

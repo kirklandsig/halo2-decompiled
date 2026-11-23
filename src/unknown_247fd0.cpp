@@ -1046,6 +1046,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // random pick in 0x247fd0's spelling 334; the allocated record indexed as 0x247fd0 does 334; on lane 1 r135's 317 lead
 // (re-measured 317, 1665 B) the velocity's effect record bound the same way under an if 322 (the prologue changes). Body
 // unchanged.
+// M3 lane 5 r235 (h2m fast with 0x247fd0 and 0x248cc0, both MATCH each time; control 334, aligned 246): the first draw into
+// its own scalar real with the workspace member kept 392 (the `fst` to the member goes, retail's draw, but the later
+// homes shift; aligned 248), with the member dropped 395; that scalar draw plus the cache test as `local_2 != arg_0->field_50`
+// 392; that cache test alone 333 (retail's `cmp ebp, [esi + 0x50]`, one point, under the bar); with the clear also written
+// `arg_0->field_44 = arg_0->field_44 & ~0xf80f` 333 (still the read-modify-write `and [esi + 0x44]`, where retail loads,
+// masks and stores). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

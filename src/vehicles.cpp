@@ -1319,6 +1319,15 @@ __forceinline long vehicle_round(real value)
 // (reverted at once): on the staged first cross one dead helper local anywhere from the else arm's top to just before
 // the side cross MATCHES (fast), and so does a byte accessor at one mode read (the axis test's first compare). No
 // existing cross helper in the tree has four locals.
+// M3 lane 5 r236 (H2M_FAST; S = cross3f_staged at the first cross, 4), at 4: S with the axis copy through the header's
+// vector3f_assign 199 (720 B), the plain cross with it 199; S with the clamp tests written rate-first 4 (same code); S with
+// a `real_bounds const *` to the definition's two rate bounds (+0x23c, the existing two-real bounds type) declared just
+// before or just after the rate 2 (left: the side cross's forward.j * up.i; the function-local plateau), declared at the
+// arm's top, after the strength, after the velocity call or beside `up` 4 each (the first cross's forward.i * up.j flips
+// instead), on the plain cross 11-15; a 48-form grid on it (real or bounds pointer, before or after the rate, the clamp as
+// the if-chain or PIN, `side` in its block or at the arm's top, the file's `real dt` idiom none/first/second) 2 without
+// dt, 12 with it; the clamp through the existing cross-file real_pin (0x2a0c90's file linked) 90, as the rate's
+// initialiser 92.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2474,6 +2483,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // in i, j, k order 9 and in k, j, i order 9 (same code). Diagnostic: through a forced-inline or plain inline dot helper
 // with its terms written k, j, i (either operand order) or i, j, k 11 each: every inline dot gives (j + k) + i, the
 // direct sum (i + j) + k, neither retail's (k + j) + i.
+// M3 lane 5 r236 (H2M_FAST), at 9: the forward speed started at `0.0f` and accumulated `+=` k, j, i terms 7 (the zero
+// add folds; the sum is then retail's (k + j) + i and only the i product's operand order is left, with the SIB pair and
+// the three reloads), the same with the i term written forward-first 7, with every term velocity-first 7 (not kept: 2
+// points without a match, the known += split result); the three terms named (k_term, j_term, i_term, declared k, j, i or
+// i, j, k) and summed k + j + i or i + j + k 17 each.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
