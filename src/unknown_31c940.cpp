@@ -12,6 +12,14 @@ struct solver_scoped_body_fields_31c940
 		solver_velocity_31c940 *const &value) : body(value) {}
 };
 
+// The residual pass carries the shared impulse cursor across row layouts.
+struct solver_impulse_cursor_31c940
+{
+	float *&value;
+	__forceinline explicit solver_impulse_cursor_31c940(float *&v) : value(v) {}
+	__forceinline void advance(unsigned n) { value += n; }
+};
+typedef char solver_impulse_cursor_size_31c940[sizeof(solver_impulse_cursor_31c940) == 4 ? 1 : -1];
 // Real scalar outputs and SIMD copies, ordered by their independently observed
 // retail stack homes. Every member is consumed by a solver operation.
 struct solver_scalar_arena_31c940
@@ -1010,8 +1018,18 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
 	*result += impulse;
 }
 
-static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,solver_velocity_31c940 *a,solver_velocity_31c940 *b, float &scalar_a, float &scalar_b)
+// Both reduced vectors are consumed by the subsequent residual writes.
+struct solver_residual_pair_value_31c940
 {
+	__m128 first;
+	__m128 second;
+	__forceinline solver_residual_pair_value_31c940(__m128 const &a, __m128 const &b)
+		: first(a), second(b) {}
+};
+typedef char solver_residual_pair_value_size_31c940[sizeof(solver_residual_pair_value_31c940) == 32 ? 1 : -1];
+static __forceinline solver_residual_pair_value_31c940 project_residual_pair_31c940(__m128 *cursor,solver_velocity_31c940 *a,solver_velocity_31c940 *b)
+{
+
 	solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)cursor;
 	// Retain both rows' inputs, reusing each vector after its last use.
 	__m128 work_a = row[0].a;
@@ -1036,12 +1054,16 @@ static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,so
 		_mm_add_ss(work_a, work_e));
 	// Keep the second reduced vector live until the first residual is written.
 
-	_mm_store_ss(&scalar_a, work_d);
+	return solver_residual_pair_value_31c940(work_d,work_b);
+}
+static __forceinline void update_residual_pair(__m128 *&cursor,solver_velocity_31c940 *a,solver_velocity_31c940 *b, float &scalar_a, float &scalar_b)
+{
+	solver_residual_pair_value_31c940 projected = project_residual_pair_31c940(cursor, a, b);
+	_mm_store_ss(&scalar_a, projected.first);
 	cursor[0].m128_f32[3] -= scalar_a;
 	cursor += 6;
-	result += 2;
 
-	_mm_store_ss(&scalar_b, work_b);
+	_mm_store_ss(&scalar_b, projected.second);
 	cursor[-3].m128_f32[3] -= scalar_b;
 }
 
@@ -1065,17 +1087,20 @@ static __forceinline void project_residual_linear_velocity(
 
 static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b, float &projected)
 {
-	__m128 angular_contribution[2] =
-	{
-		_mm_mul_ps(a->angular, row->a),
-		_mm_mul_ps(b->angular, _mm_load_ps((float const *)&row->b))
-	};
-	__m128 v = _mm_add_ps(angular_contribution[0], angular_contribution[1]);
-	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
-
-	_mm_store_ss(&projected, xyz);
+	__m128 work_b=row->a;
+	__m128 work_a=a->angular;
+	__m128 work_c=b->angular;
+	work_a=_mm_mul_ps(work_a,work_b);
+	work_b=row->b;
+	work_c=_mm_mul_ps(work_c,work_b);
+	work_a=_mm_add_ps(work_a,work_c);
+	work_b=_mm_shuffle_ps(work_a,work_a,0x55);
+	work_b=_mm_add_ss(work_b,work_a);
+	work_c=_mm_shuffle_ps(work_a,work_a,0xaa);
+	work_c=_mm_add_ss(work_c,work_b);
+	_mm_store_ss(&projected,work_c);
 	row->b.m128_f32[3]=row->b.m128_f32[3]-((float const &)projected);
+
 }
 
 
@@ -1121,7 +1146,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2053. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2052. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1619,84 +1644,91 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		}
 		// The third operation byte classifies the residual row layout.
 		{
-		// This pass keeps B in a register across consecutive residual rows.
-		solver_velocity_31c940 *b;
-		op = operations;
-		// Retail advances the impulse cursor with each residual row, while
-		// this pass writes the remaining errors back into the row stream.
-		result = impulses;
-		signed char residual_kind;
-		solver_header_31c940 *first_residual_header = (solver_header_31c940 *)op;
-		a = first_residual_header->a; b = first_residual_header->b;
-		terms = first_residual_header->terms; op += 24;
-		// Carry the class through grouped rows; class zero finishes this pass.
-		bool residual_done = false;
-		residual_kind = (signed char)op[2];
-		for (; !residual_done; residual_kind = (signed char)op[2])
-		{
-			switch (residual_kind)
+
+			// This pass keeps B in a register across consecutive residual rows.
+			solver_velocity_31c940 *b;
+			op = operations;
+			// Retail advances the impulse cursor with each residual row, while
+			// this pass writes the remaining errors back into the row stream.
+			result = impulses;
+			solver_impulse_cursor_31c940 result_cursor(result);
+			signed char residual_kind;
+			solver_header_31c940 *first_residual_header = (solver_header_31c940 *)op;
+			a = first_residual_header->a; b = first_residual_header->b;
+			terms = first_residual_header->terms; op += 24;
+			// Carry the class through grouped rows; class zero finishes this pass.
+
+			residual_kind = (signed char)op[2];
+			for (;; residual_kind = (signed char)op[2])
 			{
-			case 0: residual_done = true; break;
-			case 1:
-			{
-				solver_header_31c940 *header = (solver_header_31c940 *)op;
-				a = header->a; b = header->b; terms = header->terms; op += 24;
-				break;
-			}
-			case 5:
-			{
-				// Consume up to two paired records, then join the friction path.
-				update_residual_pair(terms, result, a, b, projection_pool.residual_normal_first, projection_pool.residual_normal_second); op += op[1];
-				// Redispatch the classification already read for this pair.
-				residual_kind = (signed char)op[2];
-				if (residual_kind != 5) continue;
-				update_residual_pair(terms, result, a, b, projection_pool.residual_bounded_first, projection_pool.residual_bounded_second); op += op[1];
-				if (op[2] != 6) break;
-			}
-			case 6:
-			{
+				switch (residual_kind)
 				{
-					update_residual_pair(terms, result, a, b, projection_pool.residual_circular_first, projection_pool.residual_circular_second);
-					solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)terms;
-					subtract_angular_residual(spin, a, b, projection_pool.residual_spin);
-					terms += 2;
-					++result;
-					op += op[1];
-				}
-				// The header opcode takes precedence over its classification byte.
-				if (*op == 1)
+				case 0: break;
+				case 1:
 				{
 					solver_header_31c940 *header = (solver_header_31c940 *)op;
 					a = header->a; b = header->b; terms = header->terms; op += 24;
+					continue;
+				}
+				case 5:
+				{
+					// Consume up to two paired records, then join the friction path.
+					update_residual_pair(terms, a, b, projection_pool.residual_normal_first, projection_pool.residual_normal_second); result_cursor.advance(2); op += op[1];
+					// Redispatch the classification already read for this pair.
+					residual_kind = (signed char)op[2];
+					if (residual_kind != 5) continue;
+					update_residual_pair(terms, a, b, projection_pool.residual_bounded_first, projection_pool.residual_bounded_second); result_cursor.advance(2); op += op[1];
+					if (op[2] != 6) continue;
+				}
+				case 6:
+				{
+					{
+						update_residual_pair(terms, a, b, projection_pool.residual_circular_first, projection_pool.residual_circular_second);
+						solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)terms;
+						subtract_angular_residual(spin, a, b, projection_pool.residual_spin);
+						terms += 2;
+						result_cursor.advance(3);
+						op += op[1];
+					}
+					// The header opcode takes precedence over its classification byte.
+					if (*op == 1)
+					{
+						solver_header_31c940 *header = (solver_header_31c940 *)op;
+						a = header->a; b = header->b; terms = header->terms; op += 24;
+					}
+					continue;
+				}
+				case 3:
+				{
+					solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+					do
+					{
+						project_residual_linear_velocity(row, a, b, row->linear, projection_pool.residual_linear);
+						row->linear.m128_f32[3] -= projection_pool.residual_linear;
+						++row; result_cursor.advance(1); op += op[1];
+					} while (op[2] == 3);
+					terms = (__m128 *)row;
+					continue;
+				}
+				case 4:
+				{
+					solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
+					do
+					{
+						subtract_angular_residual(row,a,b, projection_pool.residual_angular);
+						++row; result_cursor.advance(1); op += op[1];
+					} while (op[2] == 4);
+					terms = (__m128 *)row;
+					continue;
+				}
+				case 2: op += op[1]; continue;
+
+				default: continue;
 				}
 				break;
+
 			}
-			case 3:
-			{
-				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-				do
-				{
-					project_residual_linear_velocity(row, a, b, row->linear, projection_pool.residual_linear);
-					row->linear.m128_f32[3] -= projection_pool.residual_linear;
-					++row; ++result; op += op[1];
-				} while (op[2] == 3);
-				terms = (__m128 *)row;
-				break;
-			}
-			case 4:
-			{
-				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
-				do
-				{
-					subtract_angular_residual(row,a,b, projection_pool.residual_angular);
-					++row; ++result; op += op[1];
-				} while (op[2] == 4);
-				terms = (__m128 *)row;
-				break;
-			}
-			case 2: op += op[1]; break;
-			}
-		}
+
 		}
 	}
 
