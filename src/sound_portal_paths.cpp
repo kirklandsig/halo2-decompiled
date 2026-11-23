@@ -711,6 +711,14 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // distance as the 0x14b240 result then `+= travel` 295, the nearest test as `distance <= nearest_distance` 295, the
 // deep limit without the environment pointer 295 (same code each). Retail's 0x249d60 and 0x14b240 store nothing
 // outside their frames, so the per-entry portal-base reload is still the write-summary question. Body unchanged.
+// M3 lane 3 r302 (H2M_FAST with 0x18d730 (287) and 0x14b240 (MATCH); control 295, aligned exact/register-masked 194/155).
+// Diagnostics, restored at once: 0x14b240's reference-bound planar subtraction alone (the held lead's callee part) 372
+// at 1346 B here, 0x18d730 370, 0x18ae80 846 -> 911 (src/sound_looping_paths.cpp, on this round's avoid list); the same
+// kind of reference-bound step inside 0x249d60 (which 0x18ae80 does not call) also gives 372 here and 370 on 0x18d730,
+// but breaks 0x249d60 itself (24, 185 B), so either callee's write summary moves the walk's base reloads the same way.
+// Forms on main's body: the start cluster read through `bsp->clusters[cluster_index]` at each use (no cluster
+// local) 329 (1378 B); both bit sets through the shared bit_vector_set 295 (same code); the distance written
+// `travel + function_14b240(...)` 295 (same code). Still BLOCKED-BY 0x14b240's write summary. Body unchanged.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
