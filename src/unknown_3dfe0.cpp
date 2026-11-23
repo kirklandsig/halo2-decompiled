@@ -303,6 +303,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // from the object in the force arm and a fresh lookup after the hidden return 211 (the object then takes ESI), that on
 // the kept order 235; `if (!force && hidden) return;` then `if (force) update = true;` 216, the two statements the
 // other way round 216, the hidden return nested under `if (!force)` then `if (force) update = true;` 216 (no reload).
+// M3 lane 6 r233 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21): `bool const force` 21; the object as a
+// `byte *const` 21 (same code each); the update-time subtraction written inside its test (no update-elapsed local) 259
+// (802 B: the subtraction moves to the test), the same with `bool update = false;` right after the zero-elapsed return
+// 263; that update-first order with the object `byte *const` 216 (the update-first code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

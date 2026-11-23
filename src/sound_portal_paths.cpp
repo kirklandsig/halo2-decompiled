@@ -293,6 +293,12 @@ __forceinline long portal_path_gain(real distance, real range)
 // ... : maximum_range`) 287; both of those 287; the portal flag test as its own `continue` 287 (same code each: with
 // main's 0x14b240 the table bases stay hoisted and the cluster read is shared with the loop compare). Still BLOCKED-BY
 // 0x14b240's write summary, whose change raises 0x18ae80 (src/sound_looping_paths.cpp, another lane's file this round).
+// M3 lane 14 r148 (fast with 0x18dc90, 295 unchanged; control 287): diagnostic, 0x14b240's file built /GL- 361 (0x14b240
+// 137 at 219 B in the standard convention, 0x18dc90 325, 0x222150 49, 0x18ae80 913), so a non-LTCG 0x14b240 is not the
+// cause; the path count read into a local before the walk 359 (1368 B); the destination sound index named once for its
+// six uses 340 (1351 B); the portal flag test as its own `continue` 287 (same code); the starting cluster's sound index
+// named once at the top for the seed block and the loop 361; the cluster pointer declared after the arrays and the
+// nearest distance 287 (same code). Still BLOCKED-BY 0x14b240's write summary.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

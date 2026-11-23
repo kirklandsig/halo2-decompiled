@@ -998,6 +998,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // 506 (1766 B, first difference +0x2d); the found names read into three locals just before the request 390; the
 // request's urgent flag passed as `success != false` under the test 619 (first difference +0x5); the second lookup's
 // set stored after `success = true` 350. Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00 as above.
+// M3 lane 14 r148 (fast with 0x1cccd0, 0x1dc8c0, 0x1ddd00 MATCH throughout; control 348): `long success` 496 (1798 B,
+// first +0x2d); bool success with the request's names and a graph copy read into locals in retail's load order (class,
+// mode, graph, type) 479 (1809 B); the same locals with byte success 353; in the shared helper (0x1dc8c0, 0x1ddb90,
+// 0x1ddc70, 0x1ddd00 still MATCH, 0x1db170/0x1dbc80 812 unchanged): the type level's two resource loops with their own
+// loop-scoped indices 348 (same code); the request level without its outer `urgent || other` guard 348 (same code).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

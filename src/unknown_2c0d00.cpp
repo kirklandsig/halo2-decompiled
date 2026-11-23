@@ -1794,7 +1794,7 @@ long function_1fa7f0(void);
 // keeps the zero in EDX, the count in BX and the edge, the next and the step in stack homes, with the frame at 0x114
 // against retail's 0x10c; the declaration orders of the loop's locals (the step pointer last, the edge after the link and
 // the edge first) all compile to the same code.
-// score 400 (was 400): r130 unchanged. Frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// score 400 (was 400): r141 unchanged. Frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // M3 lane 3 r272 (fast with 0x270930/0x2c3030/0x26ccb0/0x2c2a70, matched throughout; control 400, aligned 350, masked
@@ -2464,6 +2464,14 @@ long function_1fa7f0(void);
 // 475 (1765 B); `found` declared inside the scan branch 481 (1769 B); the circle centre as `corners[side ? 0 : 1]` 484
 // (1700 B). Retail's count stays in SI only at the head and is read from [ebp+0xc] at every loop compare, leaving EBX to
 // the zero, the edge and then the output count.
+// M3 lane 2 r141 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): re-measured the side
+// flipped in place 440 (1727 B) and with `edge = 0xffff` at the scan hit 369 (1740 B, frame 0x10c; the hit store is
+// redundant, match-only). New: the candidate's distance test as `distance <= 0.0f` 433; the copied last step as
+// `result[used] = ...; ++used;` 400 (same code); the pathfinding pointer named once for both corner queries 461; a named
+// candidate step pointer for its point and node 400 (same code); `target.z = 0.0f` declared ahead of `start` 398 (its
+// zero store moves between start's x and y as retail's; -2, not kept). Retail's tail is 0x210850's own code (the
+// zero-extended index and `cmp ax, 0xffff` of its retail body) inlined twice through 0x210a30, both in an /Ob1 file:
+// BLOCKED-BY 0x210a30 and 0x210850. Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

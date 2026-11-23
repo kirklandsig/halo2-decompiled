@@ -1526,6 +1526,21 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // after a call) 76 (223 B; 0x126df0 77: the second lookup is not merged across the 0x12a810 call); the fade-in element
 // formed at 0x126df0's top ahead of its NONE test 24 (0x126df0 52); the element through the typed-pointer pool form
 // `(T *)pool->data + (index & 0xffff)` in the state test or in 0x126df0 24/24 (same code). Restored.
+// M3 lane 3 r300 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; control 24). On round 232's shared step S1
+// (`index = links->next; if (links->next == first) index = NONE;`: this MATCH, 0x21bd00 2, its count and first-index reloads
+// after the fade-out call swapped), this / 0x21bd00: the compare written `first == next` 1/3; the step as an if/else (`== first`
+// arm NONE) 24/MATCH; the stored field compared 47 (201 B)/71; a whole-sound pointer read twice 47 (208 B)/52; a copy of the
+// index returned ahead of the count step MATCH/2; the wrap test in a bool ahead of the store MATCH/2; an early return in the
+// stepped arm MATCH/2; `count++ > 0` 34/57; the index tested ahead of the count 4/6; the first field typed `dword` MATCH/2;
+// iterator set-up orders index-first-count 2, index-count-first 2, count-first-index 4, first-count-index 4, a chained
+// `index = first = ...` 2 (0x21bd00 each). 0x21bd00 bodies on S1: index declared first 2; the duration pointer inside the
+// guard 2; iterator and index at function scope 2; `short curve` 28; the playing lookup through iterator.index 2; the curve
+// test passed straight 28; the curve as `(flags & 0x400) == 0` 2; the call given `*reference` 2; `char` promotion index 10;
+// the header as an if-set local 43; the playing lookup folded into the definition lookup 2; the promotion read at the
+// curve 2; diagnostics 1-4 dead longs 2 each and 1-3 paren pairs on the curve 2 each (not a phase). 0x21b0e0 305 -> 418 on
+// S1. LEAD, HELD (twin form): S1's step written out by hand in this body (`for (;;)` with the step, then `break` on NONE),
+// the shared helper unchanged: this, 0x21bd00, 0x21b870, 0x126df0 and 0x12a810 all MATCH (check.py --fast too), 0x21b0e0
+// 305 unchanged; not kept, a per-site spelling of the shared step.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

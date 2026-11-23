@@ -1422,6 +1422,11 @@ bool __stdcall function_2399da(long controller_index)
 // the removal call 90; the requested rank bound to a `long const &` 90; both 90; a second named identity pointer for the
 // removal call 90; the rank read once through its parameter's address into a local 90; every rank use through a
 // parameter-address pointer 90 (all the same code). Identity ECX / rank EAX remain.
+// M3 lane 2 r141 (H2M_FAST with 0xac050, 0xac360, 0x2399da, all MATCH; control 90): a second identity pointer local
+// for the test and the removal call 90; the permission test held in a named bool 90; the removal call taking the
+// identity from the selection getter again 147 (465 B); one `1 << controller_index` mask local for the six dialogs 176
+// (418 B); the member's rank in a plain long local for the permission test 90. Re-measured: `long const rank` 90; the
+// identity test inverted 90; the identity declared first 90. Identity ECX / rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
