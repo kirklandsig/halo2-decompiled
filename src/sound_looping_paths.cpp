@@ -92,6 +92,8 @@ struct s_loop_path_override
 	real gain;
 };
 
+long looping_sound_new_attached(long tag_index, long object_index, short marker_index, long value);
+
 PRIVATE inline real loop_path_pin(real value, real lower, real upper)
 {
 	return lower > value ? lower : (value > upper ? upper : value);
@@ -134,20 +136,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	long index = NONE;
 	if (tag != NONE)
 	{
-		index = record_pool_allocate(pool);
-		if (index != NONE)
-		{
-			s_loop_path_datum *sound = loop_path_get(pool, index);
-			sound->tag = tag;
-			sound->state = 3;
-			sound->flags = 0;
-			sound->flags |= 0x100;
-			sound->field_6 = NONE;
-			sound->type = 0;
-			sound->decibels = 0;
-			sound->source = (char)0xff;
-			sound->cluster = NONE;
-		}
+		index = looping_sound_new_attached(tag, NONE, NONE, 0);
 		if (index != NONE)
 		{
 			loop_path_get(pool, index)->flags |= 1;
@@ -157,7 +146,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 846; m3 lane 16 r179 unchanged, its lines just above the marker): The 0x4e0 frame and 3327-byte extent agree. The entry zero uses EBP instead of ESI,
+// score 837 (was 846; m3 lane 2 r142 as cut at review, its lines just above the marker): The entry zero uses EBP instead of ESI,
 // and the target count, primary source and query arrays receive different homes. The retail query keeps its
 // full-width count through the walk and reloads a sound entry before testing its tag.
 // MiniMax E (11-19): score 846 (was 846): no new form, no lower score. Read from the listing again: retail zeroes
@@ -892,6 +881,48 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `continue` on NONE 948 (3289 B); the query loop's tag read once into a named local 846 (same code); the choice
 // distance defaulted to zero in a local and stored once 924 (3304 B); the target's fade-time definition through a named
 // element pointer 885. Body unchanged.
+// M3 review of lane 2 r142: the 820 form below moves the definitions initialiser into the fade body, a placement kept
+// only with a match, so the fade scan stays main's; kept: the first scan through the iterator and the new start (837).
+// M3 lane 2 r142 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730 and
+// 0x18dc90 in the image, all but the last two MATCH each time: without the file that defines g_44a0b4 in the image the
+// screen builds this function differently). Kept, 846 -> 820 (3327 B, frame 0x4dc): both pool scans through the existing
+// data_iterator_next_inlined (retail's layout: one bit search per scan, the scan bodies out of line, the fade body after
+// the listener tail's `ret`, the datum index formed ahead of the type test), the fade scan's definitions read in its body
+// (retail hoists only the g_4e0348 load and reads the +0xd8 field after the scan's tests), and loop_path_start allocating
+// through the existing looping_sound_new_attached (inlined: retail's `mov word [ecx+4], dx; or byte [ecx+5], 1` start
+// sequence at both sites). Each was listed above as a rise on its own (860, 909); measured again on main's body: the
+// first scan alone 837 with the new start (863 with the helpers below), the fade scan alone 839 (848 with the new start).
+// The fade scan's definitions spelled other ways on the kept form: read at each use with no local 808 (3310 B, not kept:
+// the build loop still reads them through its own local, a mix), through a local ahead of the scan as main had it 861,
+// one iterator for both scans 821. On the 808 spelling: the blend's square named 807; the fade's two pins through the
+// existing approach_126660 820; the used bit through the existing bit_vector_set 898; the choice scale read once into a
+// local 897; the build loop's definitions read at each use 885 (3298 B); the target loop's pins through approach_126660
+// 850 to 855.
+// Lead, not kept (build/r142/lead-18ae80.patch, 830 at retail's 3327 B and 0x4e0 frame; difflib-aligned 292 unmatched
+// against 640 for main's body and 648 for the kept one, 107 with registers and offsets masked against 282 and 214): the
+// form that reproduces retail's frame and statement shape. Its parts, each read off retail: (1) the choices, the targets
+// and the existing list as count-first records (count, then the items; retail's homes F+0x24/F+0x28, F+0x78/F+0x7c and
+// F+0xdc/F+0xe0, the existing record laid over the gains array), the count incremented first and the item addressed
+// `items[count - 1]` for choices and targets (`inc esi; mov [count], esi; lea esi, [esi + esi*4]; lea esi, [esp + esi*8
+// + 0x10]`: a count in memory is not strength-reduced), `items[count++]` for the existing list; (2) the query count read
+// from its home at every use (no short copy) and set to the choice count ahead of the build loop (`mov [esp + 0x10], esi`,
+// re-read at that loop's latch); (3) the matched sound's two overrides under `flags & 4 || flags & 2` with one pointer to
+// the other sound (listed above, 906 alone); (4) loop_path_linear and loop_path_decibels in the shape of the matched
+// 0x2195f0 and 0x2197f0 (a long-to-long pin with one result, so the pinned bits stay in a register and share the
+// argument's home); (5) the silence floor's address taken (a const reference in the pin helper: retail reloads g_44a0b4
+// after every call and store through a datum pointer, 14 loads; the reference gives them, 3240 -> 3312 B; 0x2197b0,
+// 0x18d730 and 0x18dc90 unchanged; no code in retail takes the address, so the real taker is not found); (6) the target
+// loop's and the fade's pins through approach_126660 and the used bit through bit_vector_set (retail's `0.0f - step` and
+// the `lea` to the used word); (7) the range test as `fabs(-range) >= 0.0001f` with the division arm first; (8) the
+// targets' count set ahead of `primary`. Steps on the way (fast, lead forms cumulative): records for choices and targets
+// 927 (3277 B, frame 0x4e8), plus the existing record 902, plus the first scan's iterator 998 (3207 B), plus (3) 1000,
+// plus the new start 953, or the helpers of (4) 985, both 960 (frame 0x4e0), plus (7), (8), the fade scan's iterator and
+// the audible and muted flags as conditional expressions 931 (3240 B), plus (5) 853 (3312 B), plus (6) 842 (3327 B), the
+// flags and the choice scale read into locals 830. On it: the flags through the existing word_flags_set 858 (3307 B);
+// the fraction computed in place from a distance local 847 (3339 B); a tag local in the query loop 842 (same code).
+// Left on the lead: the query loop's roles (retail: sound EBP, tag ECX, index i EDI; ours sound EAX, tag EDI, i EBP; a
+// use of the sound after the distance call does not give them), the pool in EDX where retail has EDI and keeps NONE in
+// EBX through the target loop, the `movsx` source test of the first scan, the fade-time address formed for its second read.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -1003,13 +1034,16 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 	long existing[64];
 	long existing_count = 0;
 	dword used[2] = { 0, 0 };
-	for (long i = data_next_absolute_index_inlined(pool, 0); i != NONE; i = data_next_absolute_index_inlined(pool, i + 1))
+	s_record_pool_iterator iterator;
+	s_loop_path_datum *existing_sound;
+	iterator.data = pool;
+	iterator.index = NONE;
+	while ((existing_sound = (s_loop_path_datum *)data_iterator_next_inlined(&iterator)) != NULL)
 	{
-		s_loop_path_datum *sound = (s_loop_path_datum *)(pool->data + pool->size * i);
-		if (sound->type == 0 && sound->source != NONE)
+		if (existing_sound->type == 0 && existing_sound->source != NONE)
 		{
-			sound->flags &= ~0x200;
-			existing[existing_count++] = (sound->salt << 16) | i;
+			existing_sound->flags &= ~0x200;
+			existing[existing_count++] = iterator.datum_index;
 		}
 	}
 	for (long i = 0; i < target_count; i++)
