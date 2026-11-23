@@ -360,6 +360,14 @@ static inline long bungienet_user_voice_setting(short kind)
 // `controller->voice_setting != setting` 5; the selector seeded `setting = 1` with `kind == 1 && available` and the
 // availability helper as one returned expression 15; the payload setting read into a local at the selector's top 10.
 // Diagnostic (a repeated test, not keepable): `kind == 1 ? selector(kind) : 1` at the call 4 (same code).
+// M3 lane 8 r226 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with a reference-bound plain kind
+// read (no volatile; 4 alone): the controller index read through a reference-bound copy of the request pointer 4; the
+// kind read through that copy with the index through the parameter 4; the controller index read into a reference-bound
+// local as well 4 (the three 4s the same code); the setting built through a reference (`selected = 1;` then the test
+// storing the block's setting) 15 (the 1 takes ECX ahead of the compare, kind DX). Diagnostic: the controller index
+// read from the message header global in place of the request 11 (101 B): the request still takes EAX and dies at the
+// kind's load, so the kind lands in AX only because EAX is free again; retail's ECX request means the kind was given
+// EAX before the request was placed, which here only the two late-merged compares of r104 reproduce.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
