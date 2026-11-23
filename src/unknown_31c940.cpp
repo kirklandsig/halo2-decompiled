@@ -134,22 +134,22 @@ static __forceinline void sum_three_to_arena_31c940(__m128 const &v, float &outp
 static __forceinline void project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, __m128 const &linear_axis, float &projection_output)
 {
-	// Reuse work values only after their final contribution is consumed.
-	__m128 work_0, work_1, work_2, work_3, work_4;
-	work_0 = b.body->linear;
-	work_3 = b.body->angular;
-	work_1 = a->linear;
-	work_2 = _mm_load_ps((float const *)&(row->a));
-	work_4 = _mm_load_ps((float const *)&(linear_axis));
-	work_1 = _mm_sub_ps(work_1, work_0);
-	work_0 = _mm_load_ps((float const *)&(a->angular));
-	work_0 = _mm_mul_ps(work_0, work_2);
-	work_2 = row->b;
-	work_3 = _mm_mul_ps(work_3, work_2);
-	work_1 = _mm_mul_ps(work_1, work_4);
-	work_0 = _mm_add_ps(work_0, work_3);
-	work_0 = _mm_add_ps(work_0, work_1);
-	sum_three_to_arena_31c940(work_0, projection_output);
+	// Keep each captured input until its final contribution, then reuse its vector.
+	__m128 work_0=b.body->linear;
+	__m128 work_1=b.body->angular;
+	__m128 work_2=a->linear;
+	__m128 work_3=linear_axis;
+	__m128 work_4=row->a;
+	work_2=_mm_sub_ps(work_2,work_0);
+	work_0=a->angular;
+	work_0=_mm_mul_ps(work_0,work_4);
+	work_4=row->b;
+	work_4=_mm_mul_ps(work_1,work_4);
+	work_2=_mm_mul_ps(work_2,work_3);
+	work_3=_mm_add_ps(work_0,work_4);
+	work_3=_mm_add_ps(work_3,work_2);
+	sum_three_to_arena_31c940(work_3,projection_output);
+
 }
 
 
@@ -1156,7 +1156,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2044. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2042. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
