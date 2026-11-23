@@ -2369,6 +2369,18 @@ void function_269250(long clump_index, long actor_index);
 // pool still read from its home at each use). Reading as before: one value is spilled round the bit scan and kept in
 // a callee-saved register outside it; retail gives that to the pool (EBX) and leaves the selection in memory, this
 // build gives it to the selection (EDI) whenever the selection is stored inside the walk.
+// M3 lane 8 r230 (h2m fast over all 54 markers of this file plus the callees; base 52 MATCH): the shared
+// clump_datum_walk_next with its datum step on the existing data_find_index, for every walk: 78 (0x268c90 MATCH -> 2);
+// with the score compared inside the team arm here: MATCH, but 0x268c90 2 (two reloads swapped at its actor loop's exit,
+// pool EDI before clump ECX); step spellings (pool read after the scan, pool at each use, clump from the datum local,
+// datum declared first, datum index or address operands swapped) 2 each on 0x268c90; through
+// data_datum_iterator_set_current 0x268510 142. Diagnostic: the walk's own do/while scan reading high_water_index and
+// bitmap from the pool at each use (no count or bits locals) matches this function and 0x268c90 together. Lead (full
+// check 12352, nothing lost, this function MATCH; build/r230/lead-2689d0.patch in the m3-lane8 worktree): data_find_index
+// without its count and bits locals, data_datum_iterator_next_inlined scanning through data_find_index, and the in-arm
+// compare here. NOT kept: 0x17bc40 (a data_find_index user) rises 4 -> 6, its `one` local no longer fixing its EBX/EDI
+// reload order. The count local decides it: with it (count alone, count and bits either order, count ahead of the
+// guard) 0x268c90 reads 2; without it (bits alone, neither, early returns) 0x17bc40 reads 6 (early returns 50). Body is main's.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

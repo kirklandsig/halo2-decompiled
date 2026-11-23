@@ -258,6 +258,11 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // 2 (made the same multiply); the maximum named and the products as `raw / maximum / 32767.0f` 20 (the compiler's
 // reciprocal then multiplies the coordinate from memory, registers move; 1.0 still first); the maximum as a local set
 // by an `if` 7. 1.0 still loads first in every form.
+// Round 230 (m3 lane 8, h2m fast, all on the fabs-at-each-use 2 form): products as `raw * scale / (s > c ? s : c)` with the
+// maximum written in place 541 (2020 bytes); the boosted products stored into the axes and clamped in place afterwards 525
+// (2028 bytes); the scale as `(real)(1.0 / 32767.0)` 2; the maximum as an if/else local 2; the trig magnitudes written in
+// place in the maximum 2 (all three the same code). 1.0 still loads first; retail reloads only the scale (xmm7) near the
+// loop's end, 1.0 stays in xmm6, so the two entry loads are the only difference left.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
