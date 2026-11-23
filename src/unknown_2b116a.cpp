@@ -3137,20 +3137,7 @@ void playlist_list_focus_playlist(c_playlist_saved_game_file_list *list)
         }
     }
 }
-// score 9 (was 9): the body is retail's byte for byte with ECX and EDX exchanged —
-// retail keeps the loop counter in ECX and the entry cursor in EDX, ours the
-// reverse (the xor, lea, inc, add, cmp, jb, imul and both loads). Declaration
-// order, a scoped counter, a do/while loop, commutative conditions, a named
-// index local, an explicit cursor pointer, a reference to the entry and a
-// direct return all measured 9 to 30 (the pointer and reference forms 30, 49
-// bytes). Permuter: 178 tries (seed 999) and 173 (seed 7), 300 s each, no form
-// below 9.
-// Array-size counter 9; sentinel loop bound 10; whole-entry result 24;
-// named match predicate 9; nullable-result bound 30; mismatch scan with
-// projection on success 11; separate match index 38; bounded while 10;
-// named array reference 24; nested comparisons 9; exhaustion exit 10.
-// NOT kept: the success projection restores retail registers but adds a
-// second bounds check and grows to 64 bytes.
+// The success offset bound to a const reference keeps it its own value, which gives retail's ECX counter / EDX cursor.
 // @retail 0x2b221d
 long *c_playlist_saved_game_file_list::find_playlist(byte type, long index)
 {
@@ -3161,7 +3148,11 @@ long *c_playlist_saved_game_file_list::find_playlist(byte type, long index)
 	{
 		if (playlists[i].type == type && playlists[i].index == index)
 		{
-			result = &playlists[i].unknown08;
+			dword const offset = i * sizeof(s_playlist_entry);
+			/* bound by reference so the offset stays its own value (retail's ECX/EDX order) */
+			dword const &entry_offset = offset;
+
+			result = (long *)((byte *)&playlists[0].unknown08 + entry_offset);
 			break;
 		}
 	}

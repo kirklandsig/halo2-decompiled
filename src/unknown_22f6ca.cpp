@@ -355,6 +355,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // the pane lookup with the text loop through that reference 25 (the 25 form's code); the block-18 inner counter declared
 // `long j = 0;` 23 (same code); the pane test as an early `if (!pane) return;` with `long i = 0;` declared after it 66 (every
 // reset then a `mov` from the one zero register).
+// M3 lane 13 r150 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the model count read once into a
+// `long` local for the model loop's test 156 (424 B), the text count so 62 (421 B), both 163 (429 B); the model array bound
+// to a `s_model_block *const &` ahead of its loop 23, the text array so 23 (both the same code). All callees are matched.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

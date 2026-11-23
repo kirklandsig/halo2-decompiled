@@ -543,6 +543,12 @@ long g_55e6c0;
 // M3 lane 15 r135 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp positive-first (`count > 0 ? (count <
 // 4 ? count : 4) : 0`) 32; `(void)&height;` at the top 29, `(void)&count;` 29, `(void)&kind;` 29 (all three the same code);
 // round 51's signed pitch/packed lead re-measured 29 (484 B), with `(void)&height;` 29 (484 B). All restored.
+// M3 lane 11 r160 (h2m fast with 0x1dc40/0x1db10, both MATCH; round 51's lead re-measured 29 at 484 B): on the lead the
+// clamp in a `levels` local right after the +0x8c clear, stored after the packing 29 or after the three zero stores 29
+// (both the lead's code); the direct clamp store after the packing 32 (483 B, zero in EDX); main's packing with that
+// local 29 (main's code); the clamp through a file-local forceinline helper taking the count 29 (the lead's code); 1..12
+// probe locals 29 each (no tie). Diagnostics: the call's count as `(long)(short)count` 54, as the stored field 130 (any
+// reference to the count at the call keeps the clamp value in EAX). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
