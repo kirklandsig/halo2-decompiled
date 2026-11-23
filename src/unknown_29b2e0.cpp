@@ -849,6 +849,24 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // rotation's sine and cosine as named locals ahead of the facing copy 164. Reading: retail gives both rotations' sines one
 // home (+0x10) and spills the first rotation's turned j into the facing's j home (+0x24), keeping the second axis in
 // registers; ours gives the second sine +0x14 and spills the second axis's k into +0x34.
+// M3 lane 3 r299 (H2M_FAST with 0x29b990 and 0x170d70, both MATCH; control 130, difflib-aligned 162). Reading of the
+// +0x101 pair: stores wait until their register is needed again and are then written in source order, so retail's planar
+// j store ahead of the copied depth says the planar pair is declared ahead of the second full copy: `vector2f local_6`
+// ahead of `vector3f local_5` 128 (first difference then +0x179, aligned 160; a moved declaration two below the control,
+// not kept). The depth clear ahead of the planar pair 130 (same code); the pair by member stores 130 (same code); the
+// pair as a planar view of the argument 346; the pair read from the copy 303; the second normalisation through the
+// file's own planar normaliser 271 (1724 B). Compare operands named ahead of their tests: the second length 383 (1709
+// B), the yaw product 295, the pitch product 222 (1695 B), both products 234, the yaw scale field 229 (1695 B); the gate
+// as nested tests with the fallback in both arms 321 (1714 B). Each moves the frame off 0x2c. Diagnostics (reverted):
+// the sign tests through a bool-returning forced-inline (yaw, pitch, both, the two depth signs, all four) 309/225/212/
+// 212/212; the second axis's product sides change with each, never to retail's six. Retail copies the zero for the yaw
+// lower bound ahead of the scale's branch (0x29b64a) and ours behind it.
+// M3 lane 8 r225 (h2m fast with 0x29b990 and 0x170d70, both MATCH; control 130): compare sides with the zero on the
+// other side for the field_38, arg_3->k, arg_2->k, field_30 and both turn tests 130 each (same code), for either
+// field_34 test 214 (1708 B, first +0x2); `0.0f == normalize3d(&local_5)` 131; the second axis computed ahead of the
+// first rotation or between the facing copy and it 202 (1737 B); the object's up as `&local_1->forward + 1` 130 (same
+// code); a forward pointer for the six cross products 151 (1696 B); the clamp bounds as `0.0f - limit` for the two
+// turn limits or all four 130 (same code).
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_vector_170d70 calls through include/axis_rotation.h's helper 151 (1696 B). Restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,

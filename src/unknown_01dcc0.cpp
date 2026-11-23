@@ -535,6 +535,11 @@ long g_55e6c0;
 // then the OR) 29 (484 B, the lead's code); the height term written first in the one-expression OR 29 (the lead's
 // code); the last column and last row named ahead of the pitch 29 (the lead's code); the three zero stores moved ahead
 // of the dimension stores 38 (484 B, aligned 32). The height/count EAX/EDX choice stays in all of them.
+// M3 lane 14 r147 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; round 51's signed pitch/packed lead re-measured 29 at 484 B,
+// only the top block's height/count swap left): on that lead the format call's count through a copy declared just before the
+// call 29 (propagated); the clamp's store after the pitch, ahead of the packed word, 71 (486 B); the height part named
+// inside the packing (`long rows = (height - 1) << 12;`) 29; the entry as `g_4b4b58 + index` 29; the busy test with the
+// flag first 32 (the 29s are the lead's code). All restored.
 // M3 lane 15 r135 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp positive-first (`count > 0 ? (count <
 // 4 ? count : 4) : 0`) 32; `(void)&height;` at the top 29, `(void)&count;` 29, `(void)&kind;` 29 (all three the same code);
 // round 51's signed pitch/packed lead re-measured 29 (484 B), with `(void)&height;` 29 (484 B). All restored.

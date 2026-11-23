@@ -1046,6 +1046,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // random pick in 0x247fd0's spelling 334; the allocated record indexed as 0x247fd0 does 334; on lane 1 r135's 317 lead
 // (re-measured 317, 1665 B) the velocity's effect record bound the same way under an if 322 (the prologue changes). Body
 // unchanged.
+// M3 lane 5 r235 (h2m fast with 0x247fd0 and 0x248cc0, both MATCH each time; control 334, aligned 246): the first draw into
+// its own scalar real with the workspace member kept 392 (the `fst` to the member goes, retail's draw, but the later
+// homes shift; aligned 248), with the member dropped 395; that scalar draw plus the cache test as `local_2 != arg_0->field_50`
+// 392; that cache test alone 333 (retail's `cmp ebp, [esi + 0x50]`, one point, under the bar); with the clear also written
+// `arg_0->field_44 = arg_0->field_44 & ~0xf80f` 333 (still the read-modify-write `and [esi + 0x44]`, where retail loads,
+// masks and stores). Body unchanged.
 // M3 lane 15 r136 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334): the three later draws each into
 // a block-scoped sample local 338; the allocation list linked through a `long *` to the list head 334 (same code); the gate
 // and the bit-4 test both through the bitfields (`flag3` of the effect, `flag4` of the definition) 361; the child link

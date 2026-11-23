@@ -1245,6 +1245,12 @@ struct s_record_collision_view
 // scope and assigned in the spoke body 26; the trace result declared at function scope 26; the direction copied through
 // a `vector3f const *` source local 26; `sine` and `cosine` declared at function scope 26 (all the same code); the sector
 // index read ahead of the radius 50 (the head reorders). All restored.
+// M3 lane 11 r155 (h2m fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each run; control 26; M = the collision record,
+// its marker store and the entry pointer between the endpoint and the lift, re-measured 20, with the offset x, z, y 6): the
+// entry's direction pair stored j then i 30, on M 24 (a later store pair does not rank the dot); the 0.1 offset as a
+// component loop counting down (z, y, x) 51, on M 45; on M the offset through real_point3d_set with the lift loop counting
+// down 42; no origin pointer (the record's point read at the trace call and in the endpoint) 28, on M 22, on M with the
+// offset x, z, y 8; that with the offset through real_point3d_set 28, on M 22. All restored.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 26 (same code; plain
 // check agrees). KEPT as the shared spelling.
 // M3 lane 15 r136 (h2m fast; control 26; 0x2551f0/0x1ff360 MATCH, 0x1e5bb0 111 at control): in the shared axis helper

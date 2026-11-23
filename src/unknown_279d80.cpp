@@ -2205,6 +2205,11 @@ void function_27dd10(void)
 // varied): best 2 / 2, best family 44 (mapping lookup with the macro mask test); no combination matches either function.
 // Diagnostics: 0..47 dead initialised locals at the wrapper's top, the pass helper's top or in the sampler's own body
 // never move the pair (they move method 3's float registers for 8..28).
+// M3 lane 14 r147 (H2M_FAST with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): node_destination_get storing the map entry into its out-parameter and testing that 2 (0x281b60 2, 0x28aaa0 20); the
+// interpolation's frame-state saves interleaved with the sets (save, set, save, set, save, set) 94 (1731 B; 0x281b60 47,
+// 0x285750 45, 0x288570 219); the group end's `arg_5 + 8` named and used twice in the ternary 2 (0x281b60 62, 0x288570 3,
+// 0x289580 78); the counter chain's last arm as `else if (arg_4 == 2)` 2 (same code). All restored.
 // M3 lane 15 r135 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): the
 // walk's mask and interpolation flags as long parameters of function_288571 and function_288572 2 (0x281b60 2, 0x288570
 // 120); the three counter resets in reverse order 2; the wrapper's count declared `register` 2; the in-place flag as long
@@ -2488,6 +2493,9 @@ void function_2818e0(void)
 // pointers as array members 2 / 2; bit-test spellings in either helper 2; each existing wrapper 4, 2, 31, 7, 32 and 46
 // (compute_orientations, function_288571, split, component count, split index last, inheritance mapping); the 3,888
 // generated walk combinations best 2. Nothing below 2.
+// M3 lane 14 r147 (measured with 0x27dff0, the walk forms listed above it; control 2): the out-parameter-first node lookup
+// 2; the interleaved frame-state saves 47; the named group-end sum 62; the explicit last counter arm 2; the kind-2 clamp in
+// function_288571 as `if (arg_1 == 2) local_2 = MIN(local_2, 1);` 2 (same code). All restored.
 // M3 lane 15 r135 (the shared-walk trials listed above 0x27dff0, control 2): mask and interpolation flags as long
 // parameters 2; counter resets reversed 2; `register` count 2; in-place flag as long 2; group end const 2; the method-2
 // scale product's operands swapped 2. All restored.
