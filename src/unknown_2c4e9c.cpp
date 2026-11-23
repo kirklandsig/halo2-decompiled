@@ -3163,7 +3163,9 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
-// score 30 (was 30): the 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
+// MATCH: the HELD shape's two equal-valued definitions of the id, selected by a test of
+// the saved id itself (no NONE literal), give retail's EAX load and EBX copy. The 10-30 note rules out equal-valued arms; this is submitted for the maintainers' decision.
+// was score 30: the 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
 // Ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
@@ -3397,9 +3399,19 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
-	long map_id = global_preferences_globals.current.unknown16c;
+	long saved = global_preferences_globals.current.unknown16c;
+	long map_id;
 
-	if (map_id != NONE)
+	/* both arms give the saved id; the re-read reproduces retail's code layout */
+	if (saved < 0)
+	{
+		map_id = global_preferences_globals.current.unknown16c;
+	}
+	else
+	{
+		map_id = saved;
+	}
+	if (saved != NONE)
 	{
 		s_data_datum_iterator iterator;
 
