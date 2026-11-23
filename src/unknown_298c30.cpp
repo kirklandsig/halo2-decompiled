@@ -798,6 +798,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // back with the code address, but the y difference is stored and reloaded and the normalization still differs); the far
 // arm through the existing normalize2d_fast (cast or a vector2f local) 249 (same code); the float distance copy declared
 // ahead of the double root 249 (same code). Body unchanged.
+// M3 lane 4 r254 (H2M_FAST with 0x29a190 and 0x298c30, MATCH throughout; control 305, aligned 212 with stack offsets
+// masked): the emitter facing dot written `arg_3->x * f.x + f.y * arg_3->y` 305 (same code); the side test against
+// `0.0f` 361 (1740 B); both clamps against float constants 398 (1685 B); the first clamp as `!(local_13 <= 1.0)` 317
+// (1727 B); the outer counter typed long 367; the endpoint pointer typed `point2f const *` 305 (same code); the radius
+// test `field_24 > local_9` re-measured 305. Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
