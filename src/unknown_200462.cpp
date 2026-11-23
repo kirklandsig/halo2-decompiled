@@ -350,6 +350,16 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // lower and upper corner points named and the four corners filled from their members 12; the half extents as one
 // two-member extent local used by both steps and the corners 12; the stepped y read into a local for the y corners 12
 // (all three the pointer form's code).
+// M3 lane 14 r147 (h2m fast with 0x2008fc 0x200891, control 14): the advance bound by `real const &` to the product and
+// used by both x steps 55; the four corner y values stored ahead of the first x step, the x values after it 37; the half
+// height grouped `span * (height * 0.5f)` 87 (846 B); the pulse query between the half width and the half height 28; on
+// the bounds-record pointer (re-measured 12, only the XMM3/XMM4 pair left) the advance bound by `real const &` 53. All
+// restored.
+// M3 lane 15 r135 (h2m fast with 0x2008fc 0x200891, control 14): on this body the four edges named (left, right, top,
+// bottom, each used twice) ahead of the corner stores 39 (first difference +0x119); the bitmap test as a positive arm
+// around the rest of the draw iteration 14; the half height declared bare ahead of the half width and assigned after it
+// 14; the corner array and the draw call in their own block 14; the corner array declared at function scope beside the
+// position 14 (the last four the same code). All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

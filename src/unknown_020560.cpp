@@ -1412,6 +1412,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // distance 416 (a declaration move under the bar, not kept). Retail's scan 2 runs four passes with a second index (i + 2)
 // in a stack cell and two record pointers, and sums both the projection and the distance from the offset registers.
 // Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x24550, 0x22750 and 0x22c30, all MATCH; control 418, aligned 273): scan 2 reading the
+// entries field at both uses 549 (2122 B, aligned 219); that with the distance as length_sq3f of a second difference vector
+// 544 (2122 B, aligned 194, masked 103: retail's (k + j) + i sum and both induction pointers, frame 0x20 against 0x2c,
+// `nearest` in memory); with length_sq3f(&offset) instead 628 (2057 B); the 544 form with `dot3f(&offset, &delta)` 544 and
+// with the offset declared ahead of scan 2 544 (same code each). Body unchanged.
 // M3 lane 7 r218 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418): scan 2's distance through a
 // file-local inline helper that forms the difference vector and takes its length_sq3f (the form several other files use)
 // 417 (2094 B; its distance then sums (k + j) + i as retail; a one-caller helper, one point, not kept); that with dot3f's

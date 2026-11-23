@@ -1208,6 +1208,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // compiled as ours), so no existing out-of-line helper carries it. The origin through a `point3f const *` to the transform's
 // position in both plane tests 381 (1208 B); the distance as `radius + contact->distance` 238 (same code); the root's type in
 // a `long` local 238 (same code); the hit copy after the distance 305 (1245 B); the origin copy after the hit copy 237.
+// M3 lane 6 r231 (h2m fast with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238): both plane-side tests as
+// `valid = side > 0.0f; if (valid) ...` 331 (1253 B); with the normal copy hoisted after both arms 345 (1218 B); the kind-9
+// key test with the next node's shape named for its null test and kind call 237 (1246 B, one point, under the bar), with the
+// key's data read through it too 307 (1245 B: retail re-reads the shape there); the root test in the positive sense around
+// the rest of the body 238 (same code). Body unchanged.
 // M3 lane 7 r218 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Reading: retail
 // gives the origin a 12-byte home at +0x38 of which only x is used (+0x3c/+0x40 are the two untouched dwords), y and z
 // moving to shared spill slots, the same first-member-only home as 0x22cf0's offset. Tried: the instance arm's side test

@@ -876,6 +876,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // (same code each); the first output as `local_4 / local_6 * 0.7f + 0.3f` 649 (2874 B). Lane 2 r113's lead patch
 // re-applied 331 (2896 B, aligned 183): beyond its crosses and the loop pad, both rotations differ by an xmm1/xmm2/xmm3 colour
 // rotation and the tail by schedule only. Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364, masked 160): the body after
+// the early return without its `else { }` wrapper, so the point array sits at function scope with no declaration moved (lane
+// 2 r113's alias rule: retail's per-point `0 - [ebp + 0x14]` reloads come back) 648 (2865 B, aligned 291, masked 126); that
+// with cross3f_staged at the four crosses 649 (2872 B, aligned 268, masked 96); with the range named where the test reads it
+// 640 (aligned 268); the positive range test around the body with `return local_0;` last 633 (2868 B, aligned 368); the
+// no-else form with the crosses, the range and the clamp input as `local_4 / local_6` 636 at retail's 2886 B (aligned 196,
+// masked 78: the inactive exit sits inline after the test where retail puts it after the main epilogue, which shifts every
+// later row). Body unchanged.
 // M3 lane 7 r218 (H2M_FAST; control 521; all on lane 2 r113's 331 lead, re-applied, 331 at 2896 B, not kept): the second
 // cross through cross3f 331, through the private helper 331 (same code as cross3f_staged there); with 1/2/3 redundant pairs
 // around the ray's first product 331/584/572 for each of the three spellings (the spelling never moves the cycle; no state

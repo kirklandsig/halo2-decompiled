@@ -67,6 +67,7 @@ struct s_ease_output
 };
 
 real function_30bf0(vector3f *v);
+real magnitude3d(vector3f const *v);
 
 struct s_direction_rotation_input
 {
@@ -183,7 +184,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 603 (was 603): r131 and m3 lane 1 r154 unchanged (delta helper forms below; r154 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
+// score 603 (was 603): r131, m3 lane 1 r154 and lane 16 r179 unchanged (delta helper forms below; r154 and r179 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
 // r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
 // MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
@@ -858,6 +859,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // through vector3d_from_points3d 672 (2874 B). Diagnostics, restored: the active pin's lower bound non-zero 685, both
 // normalise compares against a non-zero constant 712, both 668 (new constants, so they do not isolate the shared XMM6
 // zero). Body unchanged.
+// M3 lane 16 r177 (h2m fast with all 18 of the file's functions, which reproduces the full build's 603; with only
+// 0x1eb6f0 listed the image builds 597 under a builds-differently caveat): kept, the output block's target difference
+// through the existing vector3d_from_points3d(pos, &s->target, &dl) with the three qr rate rows grouped ahead of it, 603
+// (byte-identical code). Tried: d read at each use through its address (`vector3f *const *home = &d`) 675 (2885 B, d still
+// EBX: the reads are forwarded); the volatile sample count declared after w 603; qr declared at the active block's top
+// 603; w scaled by the rate in its initialiser 667 (2886 B). d keeps EBX in each.
 // M3 lane 1 r154 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603): the output position pointer declared at
 // the top of the function 710 (2886 B; 0x1eb6f0 drops to 11); `fail` typed long 603 (2891 B); the result returned by
 // re-reading `s->counter` 611 (2891 B); the closing flag test written as the failing condition first (`|= 4` arm first)
@@ -871,6 +878,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // code); the output stage's third computed right after e3 615; the first block's up declared ahead of third 603 (same
 // code); the second clamp's length as `real len3 = len2; if (limit != 0.f && len3 > limit) len3 = limit;` 688 (2882
 // B, aligned 637, register-masked 306). All restored.
+// M3 lane 16 r179 (H2M_FAST with the file's 17 other functions, all MATCH; control 603): kept, the output distance
+// through the existing magnitude3d(&dl) 603 (byte-identical, plain too). Tried: the settle length through magnitude3d
+// 605, both lengths 605; the tick counter declared at the active block's top 609 (2883 B); qr's rate rows through
+// vector3f_scale 691 (2861 B); the first settle arm's tick scaling through vector3f_scale 605; the output distance as
+// `sqrt(dot3f(&dl, &dl))` 603 (same code). d keeps EBX in each.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1042,14 +1054,12 @@ long function_1eb8a0(
 		real hi = (e3 - third3) * 3.f * 0.5f;
 		if (lo < 0.f)
 			lo = 0.f;
-		vector3f dl;
-		dl.i = s->target.x - pos->x;
 		qr.i = qr.i * globals->rate;
-		dl.j = s->target.y - pos->y;
 		qr.j = qr.j * globals->rate;
-		dl.k = s->target.z - pos->z;
 		qr.k = qr.k * globals->rate;
-		real dist = (real)sqrt(length_sq3f(&dl));
+		vector3f dl;
+		vector3d_from_points3d(pos, &s->target, &dl);
+		real dist = magnitude3d(&dl);
 
 		if (e3 > 0.001f)
 		{
