@@ -65,6 +65,28 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// score 376 (was 376; r239 unchanged; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// MiniMax G (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line for the session data where this
+// build expands it at the call site, and the second session state still sits in ESI where retail keeps it in EAX; the
+// 0x5b080 body lives in another file, so the two paths diverge from the first difference on. BLOCKED-BY 0x5b080.
+// MiniMax H (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line where this build expands get_data_4a00; the second session state sits in ESI against retail's EAX.
+// MiniMax E (11-20): no new form, no lower score (376): the secondary state still lives in esi where retail keeps it in eax, because 0x5b080 is expanded here and called out of line in retail; 0x5b080 lives in src/unknown_05b040.cpp, which this lane may not edit, so the difference is not reachable from this file.
+// Earlier at 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// MiniMax E (11-20): no new form, no lower score (376): the top block still reads the session state into ESI and compares ESI where retail loads it into EAX and compares EAX, and retail's out-of-line call to 0x5b080 for the session data is expanded at the call site in this build, so the two paths diverge from the first difference at 0x6b on.
+// Round 127 (m3 lane 10; fast, kept form confirmed plain with 0x706f0 and 0x5b080 matched): the property value cleared by
+// memset, as the members-ready arm already clears it, 387 -> 376 (kept: retail's seven zero stores are all `mov [..], ecx`
+// from one zero register, where `= {0}` stored the first member as an immediate; 1589 bytes, retail's length; aligned 115 ->
+// 113). On it: that clear declared ahead of the player-count test, where retail's stores sit, 376 (aligned 111; a declaration
+// move, not kept); `= {0}` there 402. On 387: the elapsed-time read before the data getter 397; the two missing-input tests as
+// one `||` 412 (again); on 376 the members-ready arm through the existing kind-4 setter (0x59ab0) 437 (1565 bytes: it
+// stays a call here, where retail expands its six zero stores and kind store). Left: 0x5b080 expanded at the top where retail calls it, the second live-state test called where
+// retail expands it, and the `(deadline - elapsed) / 1000` block placed after the members-ready test.
+// Round 199 (m3 lane 5, fast): the data getter called only when the surface lookup succeeded 428 (1573 bytes; the getter stays
+// inlined, so a natural test ahead of it is not enough); the getter called before 0x192e60 429 (diagnostic); the two
+// missing-input tests as one `||` 412 (re-measured); the deadline sum with the record's field first 387 and the transition
+// flag declared before the reset flag 387 (both the same code).
+// Earlier 387 (was 426).
+// MiniMax I (11-17): no new form, no lower score (387): retail calls 0x5b080 out of line where this build inlines it (that body lives in another file), keeps the second session state in EAX against our ESI, and writes the two dead state stores to +0x20 and +0x18 where this build shares one slot, so the second dispatch block's value store lands before the pops here and after them in retail and every later branch target differs; the frame is retail's 0x3e4 but the body is 8 bytes longer.
 // MiniMax B (11-03): no new form, no lower score. The frame stays 0x3e8 against retail's 0x3e4 and the
 // state and result bytes keep their homes; retail still calls 0x5b080 out of line at this site, so the
 // remaining gap needs a noinline on the existing getter, whose declaration is in a header this lane
@@ -287,7 +309,10 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 398: Final result produced by primary/secondary admission, bool/byte/short/long:
 // 470/484/468/469/475/477/469/447. NOT kept: result/admission coupling does not match; original
 // final result, method-call boundaries and complete body restored.
-// score 402 (was 426, fast build; 1589 bytes, retail length; first difference +0x6c). b6P walk of the
+// MiniMax D (11-17): no new form, no lower score (387, was 387); retail's out-of-line 0x5b080 data
+// getter, its second session state in EAX against our ESI, the two dead state stores at +0x20 and
+// +0x18 and the call at 0x71ac2 remain.
+// Earlier 402 (was 426, fast build; 1589 bytes, retail length; first difference +0x6c). b6P walk of the
 // whole body against retail, block by block, found one behaviour difference and four structure points:
 // - BEHAVIOUR (fixed, score 426 unchanged): the call to 0x71ff0 passed the ratings record plus 4. Retail
 //   passes the record itself (0x71cb6 lea ecx,[esp+0x94] after one push is the record base, the same base
@@ -315,6 +340,170 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // code); start time read into a local before the clock 420 (before these changes, unchanged); reset flag declared
 // after the ready flag 402; long reset flag 427 against bool 419 (before the helper); the 0x75870/0x75890 helpers (earlier rounds)
 // 468-512.
+// m3 lane 1 r115 (fast with 0x72140, 0x71ff0, 0x71e00, all MATCH; control 387, the fast check warns that callee 0x7e210
+// builds differently in its image): a `static __forceinline` redeclaration of the header's live-state test (retail expands
+// it at both sites, ours calls the copy twice) 426 (1602 B): both sites expand but 0x5b080 stays inlined at the top.
+// Diagnostic, not kept (a private copy of 0x75890): both elapsed times through an inline copy of 0x75890's body 419 (1597 B:
+// each start field is then read ahead of the clock as in retail), with the redeclaration too 427 (1602 B); 0x5b080 stays
+// inlined in every form, so its call in retail is not explained by the size of the other expansions. BLOCKED-BY 0x75890
+// for the two elapsed reads: its file is /Ob1, which LTCG never expands from.
+// Captured growth count/roster bound/growth timestamp join, seven nonempty subsets, then all with signed count: 387/402/432/402/432/433/433/433.
+// NOT kept: count capture ties. The shared roster bound reaches 1589 bytes at 402, and the timestamp join grows to 1605 bytes.
+// Original executable body restored.
+// m3 lane 14 r108 (fast with 0x72140, 0x71ff0, 0x71e00, 0x5b060, 0x5b080, all MATCH; control 387 at 1597 B, 191 aligned rows by sequence alignment
+// with addresses masked). Retail's block order: the mode-3 block whole right after the fourth test (0x71913, its own flag store and jmp); every failing
+// chain arm stores the ready byte and jumps to the not-ready block (0x71a8e, or 0x71a87 where EBP is restored first), which sits mid-function after the
+// members-ready arm; the balance-failure arm (0x71c69) falls into the timeout (0x71c7a); the identity loop and the 0x71ff0 call sit between the timeout's
+// two arms. Tried: the two label blocks moved into the arms where retail lays them out 387 (same code: the compiler sinks a block that ends in a goto to
+// the gap ahead of its target); the whole body as nested if/else with the timeout under `if (!transition)` 382 (1610 B, aligned 208: the not-ready
+// block stays mid-function, but the guard costs a run-time test retail lacks and pulls the timeout up after it; five points, longer and further by
+// alignment, not kept); nested chain, `if (!transition) {not ready} else {success}` and the timeout reached by fall-through with one goto past it to the
+// mode-12 call 416 (1599 B, aligned 182: retail's block order for all four points above, but arg_0 takes EBX and the owner EBP at entry, the reverse
+// of retail, and the kind-3 arm takes the place ahead of the not-ready block that retail gives the members-ready arm); that with the chain flat (jumps
+// to the not-ready test) 416 (same code); with the reject block as if/else 425 (1597 B, aligned 194); with the original goto tail 416 (same code);
+// with the mode-3 block back ahead of the timeout 416 (same code); with the split's arms swapped, success first 406 (1589 B, retail's length, registers
+// as retail, aligned 189: the not-ready block goes back to the end). The real 0x58d70 in place of the header's live-state copy at both sites, on this
+// body 387 (same code: both sites call it out of line; retail expands both and calls 0x5b080). Diagnostic, reverted: the third form with the live test
+// forced inline 439 (1613 B, aligned 172, entry registers still reversed). So retail's source has the structured not-ready/success split; what is
+// missing is the form that keeps arg_0 in EBP at entry with it (the swapped-arm form shows the arm order moves that choice).
+// Variant-gated getter 428, getter at first data test 426, after both elapsed reads 424,
+// between variant key and lookup 429, before both 426, after first elapsed read 397,
+// variant gate with merged missing-input arm 428, variant gate after first elapsed read 457.
+// NOT kept: the variant gate restores the getter call at a different position and raises the score.
+// M3 lane 9 r144 (fast with 0x5b080/0x72140/0x71ff0/0x71e00, control 387, aligned 191): one-object /GL screens give the
+// smallest inline threshold that expands the data getter 0x5b080 at each site: 0x6d380 9, 0x7e210 18, 0x6e720 23, here 50.
+// Retail expands the first three and calls it here, so any link threshold from 23 to 49 reproduces all four; ours expands
+// it here too (the link's threshold comes from the ballast object: /d2inlT40 or 20 on 0x5b080's file, or 40 on this file,
+// changes nothing, diagnostic). BLOCKED-BY the build's inline calibration, as for 0x25d740. Trials: the three opening
+// exits as `return local_3;` 449 (1578 bytes, the result byte folds); the getter through the owner's session pointer 400
+// (1589 bytes, aligned 215); the two missing-input tests as one `||` 412; the second and third exits as an else-if chain
+// around the body 387 (same code); the +0x3c pointer read before the clock 377 (1589 bytes but aligned 214, and retail
+// reads it after the clock: a positional gain only).
+// M3 lane 11 r128 (fast with 0x72140/0x71ff0/0x71e00/0x5b060/0x5b080, all MATCH; control 376 at 1589 B, aligned 190 by a
+// sequence-aligned diff, 113 with registers masked): the +0x3c pointer read ahead of the first elapsed time 419 (aligned
+// 213); the data pointer named and then read through a `byte *const &` 376 (same code); the surface description the same
+// way 376 (same code); the second missing-input test as an `else if` 376 (same code); the second session pointer declared
+// after the type test 437 (aligned 203); the +0x3c pointer declared at its first test 427 (aligned 209). Still BLOCKED-BY
+// the build's inline calibration for 0x5b080 (expanded here, called in retail) and by 0x75890 for the two elapsed reads.
+// M3 lane 13 r119 (fast with 0x706f0, 0x5b080 and 0x75890; control 376, aligned 190): retail expands 0x75890 for both
+// elapsed times (the field is loaded before the clock: `mov esi, [ebp + 0xa68]` ahead of the time read, as a call
+// argument is); its file is /Ob1, so it stays a call: through an `inline` or `__forceinline` declaration in this file 474
+// each (1551 B, still called). Diagnostic only, a file-local copy of 0x75890 expanded at both sites 413 (aligned 181, retail's
+// load order; a hand copy of an existing function, not kept). The existing kind-4 setter (0x59ab0, a contributor's /Ob1 file)
+// through an `inline` or `__forceinline` declaration 437/437 (still called; aligned 170). The kind-3 arm clearing the flag
+// after the setter call 444 (1557 B). Leads: `inline` on 0x75890's definition (its file was on another lane's list this
+// round); 0x5b080's expansion here is the link's inline calibration (BLOCKED-BY 0x5b080 calibration).
+// Round 438: The secondary state still takes ESI and the data getter still expands. Existing record layouts and the roster and progress views were tried.
+// Read candidate count and identities through the actual roster record 376.
+// Use the matchmaking state storage members for the count and timer 376.
+// Read the timeout base through the existing hopper record 376.
+// Use the existing session owner view for both sessions and the progress pointer 376.
+// Use the actual progress record for the stage and attempt count 376.
+// Read both components of the final deadline through their declared records 376.
+// Use the actual owner and progress record layouts together 376.
+// Use the roster, owner, progress, hopper and state record forms together 376.
+// NOT kept: All eight record forms tie at 376 and 1,589 bytes. The reduced preview agrees with the full score and extent and reports six unresolved global references. The secondary state stays in ESI and the data getter still expands.
+// M3 lane 14 r125 (fast with 0x706f0, 0x5b080 and 0x75890, all MATCH; control 376, aligned 190): round 119's lead tried,
+// `inline` on 0x75890's own definition (its /Ob1 file) with both elapsed times written as calls to it: it expands here as
+// retail (start field loaded ahead of the clock) 413 (1589 B, aligned 181); with the property-value clear ahead of the
+// player-count test as well 376 (aligned 184), the clear ahead of the first elapsed time instead 376 (aligned 202); only the
+// first elapsed time through it 376 (aligned 190, the base's code), only the second 376 (aligned 185). 0x5b080 stays
+// expanded in every form, so the secondary state keeps ESI and the zero register stays EAX (retail ECX, re-zeroed after
+// the clock for the two missing-input compares). Both files restored; still BLOCKED-BY 0x5b080's inline calibration.
+// M3 lane 12 r154 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH each time; control 376, aligned 331 equal):
+// the second session as a `const &` to the owner's field 473 (1616 B); the data getter's result and the surface lookup's
+// result each bound by `const &` 376/376 (same code); a second session local re-read from the owner for the data getter's
+// call 400 (the getter still expands); the first session as a `const &` 461 (1595 B).
+// M3 lane 3 r277 (fast with 0x5b080, 0x75890 and 0x192e60; control 376): `inline` on 0x75890's definition 376 here (the clock
+// read is written out) but matched 0x776a0 in 0x75890's own file then expands it (102, 680 B), so that lead is closed; with
+// both elapsed times through 0x75890 as well 413; the data getter called ahead of the 0x49c8 getter and 0x192e60 444
+// (1573 B); the two missing-input tests merged into one `||` 412 (1594 B); the data getter declared at its own test 425.
+// The state register follows 0x5b080's expansion: expanded, its state test is CSE'd with the earlier inlined state
+// tests across the 0x192e60 call (ESI); retail calls 0x5b080, so its state dies in EAX. BLOCKED-BY 0x5b080 calibration.
+// M3 lane 13 r130 (fast with 0x5b080/0x706f0/0x72140/0x71ff0/0x71e00, all MATCH; control 376). Kept: the three early
+// exits as if / else if / else in place of `goto finished` (the same code, 376; three gotos and the label gone). On it:
+// only the second-session exit as if/else 376 (same code); the property value cleared ahead of the player-count test
+// 376. The data getter's expansion follows the estimated frequency of its call site, not a per-caller count:
+// (diagnostic) 1, 2, 4 and 8 more expansions of the value getter ahead of it 464/504/629/808 and it still expands,
+// while one more conditional level keeps it a call: called only when the surface lookup succeeded 429 (1565 B), as a
+// ternary on the lookup 427 (1573 B), read inside the second missing-input test 425 (1589 B, retail's length);
+// (diagnostics) the last arm under a test of the still-false result, or under a repeat of the type test, 503 (1525 B:
+// other expansions in the arm become calls too), the getter alone under that folded result test 452 (1565 B);
+// (diagnostic, flags) the file without /Ob1 376 (same code). Retail calls the getter unconditionally right after
+// 0x192e60, so its source has one more two-way split ahead of that point than this body, and no form here supplies one
+// without emitting a test or repeating one. Still BLOCKED-BY 0x5b080's call-site calibration.
+// M3 lane 1 r138 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH; control 376): 0x5b080's own body respelled
+// (its file is machine 3's) to move its inline cost here, nested `if (state > 2) { if (state <= 8) ...` 376, a state local
+// with one three-part test 376 (both the same code; 0x5b080, 0x6d380 matched, 0x6e720 22 and 0x7e210 871 unchanged); the
+// members-ready live test as `!session_state_is_live(local_2) || !local_2->flag49e8` 376 (same code); the property value
+// as `= {0}` in place of the memset 387 (1597 B); the not-ready block's live test as two nested ifs 376 (same code). All
+// restored; still BLOCKED-BY 0x5b080 calibration.
+// M3 lane 13 r132 (fast with 0x5b080, MATCH each time; control 376). The data getter stays expanded in every form:
+// the whole last arm as a file-local forced-inline function taking the state, the owner and both sessions 495 (1629 B);
+// the last arm ending in its own `return` of the result 434 (1589 B); the type test as a one-case switch 376 (same
+// code); the value getter written at the lookup and again at the 0x71ff0 call, no local, 418 (1584 B); the data getter
+// read after the first elapsed time and the progress pointer 417 (1581 B).
+// Measured law for the getter's expansion (one-object link of this file with the getter's file, build/r132/cost717.py:
+// the smallest inline threshold that expands it, against the build's 81): 18 as the function's first statement, 22
+// under the type test, 31 in the first live-state arm, 50 in the second arm or in the last arm (this body), 86 under
+// one more `if`, about 13.5 + 4.5 * 2^depth. Depth is the count of enclosing `if`, `switch` and `?:` constructs as
+// written, also when the compiler folds their test (`if (true)`, `true ? x : NULL`, `switch (0)`, `if (local_2)` all
+// 86 with no code of their own); a bare block, `else { if` for `else if`, a `for (;;)` with a break and an `&&` leave
+// it at 50, removing or folding the type test or either live-state test leaves it at 50, statements before the call
+// in the same arm leave it at 50, and a `do ... while (false)` around the call lowers it to 15. So retail's source has
+// the getter call (or the whole last arm) under four conditional constructs where this body has three, and the fourth
+// one emits no test. No natural candidate found: a fourth test that is always true where it stands is the steering
+// form round 58 measured (`if (local_2)`, 440 then). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 1 r144 (single-address fast, control 376): a byte scan of retail finds one call of 0x5b080 in the whole
+// image, here at 0x717fa (its three other users expand it), so the getter is out of line in retail for this site only.
+// The data getter called through `local_0->session_b` 400; through a `c_class_58d20 *const &` binding of the second
+// session 376 (same code); the main arm under a positive live test with the mode-14 arm last 376 (same code); the
+// getter called after the elapsed time and the owner field reads 417 (1581 B); the type test as an early return 457
+// (1594 B). Diagnostic (reverted, a folded test): the getter call inside `true ? ... : NULL` keeps it out of line as
+// in retail but scores 452 (1565 B: the frame, the entry registers and the dead state stores all move), so the rest
+// of the body fits only the expanded getter. Reading: retail's [esp + 0xf] before `push edi` and [esp + 0x13] after it
+// are the same result byte, so there is no second, unset result.
+// M3 lane 2 r125 (H2M_FAST with 0x5b080/0x706f0, plus 0x6d380/0x6e720 for the getter trial; control 376): the data
+// getter's own body as one three-part test with an early return 409 here (0x5b080 itself 13 at 36 B, 0x6e720 126; restored);
+// diagnostic, reverted: the getter called through a file-local inline forwarding function 376 (the wrapper and the getter
+// both expand); the type test as an early `return` 457 (1594 B); the second live-state test written positively with the
+// main work in its arm and the mode-14 exit in the else 376 (same code); the two later live tests through the session's
+// own live-test member (`function_058d20()`) 376 (same code). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 15 r126 (h2m fast with 0x5b080, 0x72140, 0x71ff0 and 0x71e00, all MATCH; control 376): the property value
+// declared and zeroed ahead of the player-count block (retail stores its seven zero dwords there) 376 (same code); the
+// data getter as `local_2 ? local_2->get_data_4a00() : NULL` (a folded null test: the getter is then called as in
+// retail) 452 (1565 B: frame 0x3e0, the result byte in BL, the owner in ESI and the second session in EBP where retail
+// keeps the result at [esp + 0xf], the state in EBP and the owner in EBX), with the early zeroing as well 447; the data
+// getter read ahead of the surface lookup 435 (1573 B); the function's outer bare block removed 376 (same code).
+// M3 lane 12 r169 (h2m fast with 0x5b080, 0x706f0, 0x72140, 0x71ff0 and 0x71e00, all MATCH; control 376): the data getter
+// as `local_8 ? local_2->get_data_4a00() : NULL` (a real test) 427 (1573 B: the getter is then a call as in retail and the
+// state/value block is retail's, but the result byte takes BL and the owner ESI; retail calls the getter with no test
+// after the lookup); as `local_9 = NULL; if (local_8) local_9 = ...` 429 (1565 B); the ternary with the `!local_8` exit
+// dropped 479 (1533 B); the owner's +0x3c field read before the elapsed time 419; `local_3 = true` ahead of the mode-7
+// store in the surface-missing exit 375 (statement swap, 1 point). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 14 r141 (H2M_FAST with 0x5b080/0x706f0/0x72140/0x71ff0/0x71e00, all MATCH each run; control 376, aligned 190):
+// the live tests nested positively (`if (live a) { if (!live b) ... else main } else 0x71e00`) 376 (same code); the data
+// getter called through `arg_0->owner->session_b` 419; the mode-14 exit as `return true;` 455 (1578 B); the result
+// declared after the owner and session locals 379; the data local started NULL and then assigned 376 (same code). The
+// getter stays expanded in every form. Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 16 r170 (h2m fast with 0x5b080, 0x706f0, 0x72140, 0x71ff0, 0x71e00, all MATCH; control 376): the first elapsed
+// time's start field named ahead of the clock 376 (same code: the read sinks past the clock); both start fields named 413
+// (the second then loads ahead of its clock as in retail, as the 0x75890-inline forms do); the player count read once into a
+// named `dword` for the compare and the store 376 (same code); local_2 declared inside the type test 437 (first +0x16); the
+// owner-state test split into an outer state test and an inner timeout test 376 (same code). Still BLOCKED-BY 0x5b080.
+// M3 lane 4 r253 (h2m fast with 0x5b080, 0x72140, 0x71ff0, 0x71e00, 0x706f0, plus 0x72330, 0x6daa0 and 0x6dae0 for the
+// getter trials, all MATCH unless noted; control 376): the data getter's hand-written expansion in 0x72330 as a call to it
+// 376 (0x72330 stays matched); with 0x6daa0's expansion as a call as well 376 (0x6daa0 matched); with 0x6dae0's too 376
+// (0x6dae0 134, 268 B), so the number of the getter's call sites does not move its expansion here (all restored); the two
+// missing-input exits in the other order 372 (statement order by score, not kept); the surface and data locals declared
+// first and assigned after 376 (same code). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 5 r239 (H2M_FAST with 0x5b080, 0x72140, 0x71ff0, 0x71e00 and 0x706f0, all MATCH; control 376). Reading: our
+// build also calls the live-state test out of line at both of this body's live tests (session_state_is_live, folded
+// with another file's copy), where retail expands it. Diagnostics: a forced-inline file-local copy of the test at both
+// sites 431 (1602 B); with the data getter as `true ? ... : NULL` as well 438 (1555 B, stack-masked aligned 185 -> 165,
+// the second session state then in EAX as retail); the getter form alone 452 (1565 B). The two tests through the
+// existing inline function_058d70 376 (same code: called out of line too), with the getter form 452. Body unchanged;
+// still BLOCKED-BY 0x5b080's call-site depth.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
@@ -323,180 +512,182 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		s_session_owner *local_0 = arg_0->owner;
 		c_class_58d20 *local_1 = local_0->session_a;
 		c_class_58d20 *local_2 = local_0->session_b;
-		if (local_1->type != 11)
-			goto finished;
-		if (!local_1->function_058d20())
+		if (local_1->type == 11)
 		{
-			function_71e00(arg_0);
-			goto finished;
-		}
-		if (!local_2->function_058d20())
-		{
-			arg_0->mode = 14;
-			local_3 = true;
-			goto finished;
-		}
-		long local_7 = local_2->get_value_49c8();
-		s_surface_description *local_8 = function_192e60(local_7);
-		byte *local_9 = local_2->get_data_4a00();
-		long local_10 = time_now() - arg_0->unknowna68;
-		byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
-		bool local_12 = false;
-		bool transition = false;
-		long local_15[16];
-		s_71730 local_16;
-		if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
-		{
-			*(dword *)((byte *)arg_0 + 0xa6c) = local_2->player_count;
-			*(long *)((byte *)arg_0 + 0xa70) = time_now();
-		}
-		long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
-		s_session_property_value local_14 = {0};
-		if (!local_8)
-		{
-			arg_0->mode = 7;
-			local_3 = true;
-			goto local_28;
-		}
-		if (!local_9)
-		{
-			arg_0->mode = 7;
-			local_3 = true;
-			goto local_28;
-		}
-		if (!function_7e210(local_2, (s_matchmaking_ratings *)&local_16))
-			goto local_28;
-		if (local_16.field_358 > function_193400(local_8) &&
-			*(long *)(local_9 + 0x184) == network_session_get_maximum_players(local_2))
-			goto local_28;
-		if (*(long *)(local_11 + 8) == 0 &&
-			(local_10 > g_network_configuration.value1c0[9] * 1000 ||
-			 *(long *)(local_11 + 0x10) > g_network_configuration.value1c0[8]))
-			*(long *)(local_11 + 8) = 2;
-		transition = network_session_players_match(local_1, local_2);
-		if (!transition)
-			goto local_29;
-		if (local_16.field_360)
-		{
-			transition = false;
-			goto local_29;
-		}
-		if (local_2->player_count != *(long *)(local_9 + 0x184))
-		{
-			transition = false;
-			goto local_29;
-		}
-		{
-			long local_18 = *(long *)(local_9 + 0x184);
-			long local_19 = 0;
-			for (long local_20 = 0; local_20 < local_18; local_20++)
-				if (network_session_find_player(local_2, (const dword *)(local_9 + 0x188 + local_20 * 12)) != NONE)
-					local_19++;
-			if (local_19 != local_18)
+			if (!local_1->function_058d20())
 			{
-				transition = false;
-				goto local_29;
+				function_71e00(arg_0);
 			}
-			long local_21 = function_1931d0(local_8, local_2->player_count);
-			if (local_21 == 0x7fffffff || local_21 > local_17)
+			else if (!local_2->function_058d20())
 			{
-				transition = false;
-				session_property_value_set_kind3(&local_14, (local_21 - local_17) / 1000);
-				goto local_29;
+				arg_0->mode = 14;
+				local_3 = true;
 			}
-			if (function_1934b0(local_8) && local_16.field_358 > function_193400(local_8))
+			else
 			{
-				transition = false;
-				goto local_29;
-			}
-			dword local_22;
-			if (!network_session_members_ready(local_2, &local_22))
-			{
-				transition = false;
-				memset(&local_14, 0, sizeof(local_14));
-				local_14.kind = 4;
-				goto local_29;
-			}
-			if (!(session_state_is_live(local_2) && local_2->flag49e8))
-			{
-				s_session_id local_23;
-				function_73ae0((unsigned __int64 *)&local_23);
-				network_session_host_set_id49f0(local_2, &local_23);
-			}
-			if (*(long *)(local_11 + 8) != 1)
-				*(long *)(local_11 + 8) = 1;
-			transition = function_72140(arg_0);
-			if (!transition)
-				goto local_30;
-			if (function_1934b0(local_8))
-			{
-				long local_24;
-				bool local_25 = false;
-				if (balance_teams_by_count(local_16.field_c, local_16.field_194,
-					function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
-					function_1933d0(local_8), function_1933a0(local_8), true, &local_24) &&
-					local_24 <= function_193400(local_8))
-					local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
-						function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
-						true, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
-				if (!local_25 && !function_193470(local_8))
+				long local_7 = local_2->get_value_49c8();
+				s_surface_description *local_8 = function_192e60(local_7);
+				byte *local_9 = local_2->get_data_4a00();
+				long local_10 = time_now() - arg_0->unknowna68;
+				byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
+				bool local_12 = false;
+				bool transition = false;
+				long local_15[16];
+				s_71730 local_16;
+				if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
 				{
-					if (balance_teams_by_count(local_16.field_c, local_16.field_194,
-						function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
-						function_1933d0(local_8), function_1933a0(local_8), false, &local_24) &&
-						local_24 <= function_193400(local_8))
-						local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
-							function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
-							false, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
+					*(dword *)((byte *)arg_0 + 0xa6c) = local_2->player_count;
+					*(long *)((byte *)arg_0 + 0xa70) = time_now();
 				}
-				if (!local_25)
+				long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
+				s_session_property_value local_14;
+				memset(&local_14, 0, sizeof(local_14));
+				if (!local_8)
+				{
+					arg_0->mode = 7;
+					local_3 = true;
+					goto local_28;
+				}
+				if (!local_9)
+				{
+					arg_0->mode = 7;
+					local_3 = true;
+					goto local_28;
+				}
+				if (!function_7e210(local_2, (s_matchmaking_ratings *)&local_16))
+					goto local_28;
+				if (local_16.field_358 > function_193400(local_8) &&
+					*(long *)(local_9 + 0x184) == network_session_get_maximum_players(local_2))
+					goto local_28;
+				if (*(long *)(local_11 + 8) == 0 &&
+					(local_10 > g_network_configuration.value1c0[9] * 1000 ||
+					 *(long *)(local_11 + 0x10) > g_network_configuration.value1c0[8]))
+					*(long *)(local_11 + 8) = 2;
+				transition = network_session_players_match(local_1, local_2);
+				if (!transition)
+					goto local_29;
+				if (local_16.field_360)
 				{
 					transition = false;
+					goto local_29;
+				}
+				if (local_2->player_count != *(long *)(local_9 + 0x184))
+				{
+					transition = false;
+					goto local_29;
+				}
+				{
+					long local_18 = *(long *)(local_9 + 0x184);
+					long local_19 = 0;
+					for (long local_20 = 0; local_20 < local_18; local_20++)
+						if (network_session_find_player(local_2, (const dword *)(local_9 + 0x188 + local_20 * 12)) != NONE)
+							local_19++;
+					if (local_19 != local_18)
+					{
+						transition = false;
+						goto local_29;
+					}
+					long local_21 = function_1931d0(local_8, local_2->player_count);
+					if (local_21 == 0x7fffffff || local_21 > local_17)
+					{
+						transition = false;
+						session_property_value_set_kind3(&local_14, (local_21 - local_17) / 1000);
+						goto local_29;
+					}
+					if (function_1934b0(local_8) && local_16.field_358 > function_193400(local_8))
+					{
+						transition = false;
+						goto local_29;
+					}
+					dword local_22;
+					if (!network_session_members_ready(local_2, &local_22))
+					{
+						transition = false;
+						memset(&local_14, 0, sizeof(local_14));
+						local_14.kind = 4;
+						goto local_29;
+					}
+					if (!(session_state_is_live(local_2) && local_2->flag49e8))
+					{
+						s_session_id local_23;
+						function_73ae0((unsigned __int64 *)&local_23);
+						network_session_host_set_id49f0(local_2, &local_23);
+					}
+					if (*(long *)(local_11 + 8) != 1)
+						*(long *)(local_11 + 8) = 1;
+					transition = function_72140(arg_0);
+					if (!transition)
+						goto local_30;
+					if (function_1934b0(local_8))
+					{
+						long local_24;
+						bool local_25 = false;
+						if (balance_teams_by_count(local_16.field_c, local_16.field_194,
+							function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
+							function_1933d0(local_8), function_1933a0(local_8), true, &local_24) &&
+							local_24 <= function_193400(local_8))
+							local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
+								function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
+								true, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
+						if (!local_25 && !function_193470(local_8))
+						{
+							if (balance_teams_by_count(local_16.field_c, local_16.field_194,
+								function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
+								function_1933d0(local_8), function_1933a0(local_8), false, &local_24) &&
+								local_24 <= function_193400(local_8))
+								local_25 = balance_teams(function_193440(local_8), function_193370(local_8),
+									function_1934d0(local_8), function_1933d0(local_8), function_1933a0(local_8),
+									false, local_16.field_c, local_16.field_194, local_16.field_d4, true, local_15);
+						}
+						if (!local_25)
+						{
+							transition = false;
+							local_12 = true;
+							goto local_30;
+						}
+					}
+					else
+					{
+						for (long local_26 = 0; local_26 < local_16.field_c; local_26++)
+							local_15[local_26] = local_26;
+					}
+					function_71ff0(arg_0, local_7, (const s_match_player_list *)&local_16, local_15);
+					goto local_31;
+				}
+			local_29:
+				if (session_state_is_live(local_2) && local_2->flag49e8)
 					local_12 = true;
-					goto local_30;
+				goto local_30;
+			local_28:
+				if (arg_0->mode == 3)
+					local_12 = true;
+			local_30:
+				{
+					long local_27 = *(long *)((byte *)local_8 + 0x59c) + *(long *)((byte *)arg_0 + 0x974);
+					if (local_27 <= local_17)
+						local_12 = true;
+					else
+					{
+						if (!local_14.kind)
+							session_property_value_set_kind2(&local_14, (local_27 - local_17) / 1000);
+						network_session_host_set_data49cc(local_2, (const dword *)&local_14);
+					}
+				}
+				if (transition)
+				{
+			local_31:
+					network_session_set_mode(local_1, 12);
+					local_3 = true;
+				}
+				if (local_12)
+				{
+					if (*(long *)(local_11 + 8) != 1)
+						*(long *)(local_11 + 8) = 1;
+					network_session_set_mode(local_1, 6);
+					local_3 = true;
 				}
 			}
-			else
-			{
-				for (long local_26 = 0; local_26 < local_16.field_c; local_26++)
-					local_15[local_26] = local_26;
-			}
-			function_71ff0(arg_0, local_7, (const s_match_player_list *)&local_16, local_15);
-			goto local_31;
-		}
-	local_29:
-		if (session_state_is_live(local_2) && local_2->flag49e8)
-			local_12 = true;
-		goto local_30;
-	local_28:
-		if (arg_0->mode == 3)
-			local_12 = true;
-	local_30:
-		{
-			long local_27 = *(long *)((byte *)local_8 + 0x59c) + *(long *)((byte *)arg_0 + 0x974);
-			if (local_27 <= local_17)
-				local_12 = true;
-			else
-			{
-				if (!local_14.kind)
-					session_property_value_set_kind2(&local_14, (local_27 - local_17) / 1000);
-				network_session_host_set_data49cc(local_2, (const dword *)&local_14);
-			}
-		}
-		if (transition)
-		{
-	local_31:
-			network_session_set_mode(local_1, 12);
-			local_3 = true;
-		}
-		if (local_12)
-		{
-			if (*(long *)(local_11 + 8) != 1)
-				*(long *)(local_11 + 8) = 1;
-			network_session_set_mode(local_1, 6);
-			local_3 = true;
 		}
 	}
-finished:
 	return local_3;
 }

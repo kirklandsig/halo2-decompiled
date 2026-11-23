@@ -58,14 +58,20 @@ __forceinline void report_pair_2e2f70(class_2e1090 *sweep, pair_2e1090 &pair, lo
 	}
 }
 
-// score 122 (was 272): retail stores each overlap test's result although it
+// Matched (was 96): the y/z test accumulates in a result declared in each
+// loop, and the first loop reads the other box's id from the entry at both uses.
+// Before, 96 (was 122): both report loops pass the other box's owner read through the element
+// array again (the first names the entry's id for it), which puts ecx and edx the right way
+// round through the reports. Left: how the two tests form the other element's address, and
+// the second loop's result slot.
+// Before, 122 (was 272): retail stores each overlap test's result although it
 // never reads it again, which the one result declared before the loop gives;
 // the pair, its first box set once per box, gives retail's frame and slots;
 // the endpoint pointer stays in edi once it steps after the append, the walk
 // rereads the axis, the cell's search returns from inside its loop, and the
 // sort's last index is computed before its order is pushed.
-// Still: ecx and edx are taken the other way round through the reports, and
-// the first test loads the box's lower words first. A result per loop
+// Then: ecx and edx were taken the other way round through the reports, and
+// the first test loaded the box's lower words first. A result per loop
 // (50 placements), the owner as a plain local, the test's statements in six
 // orders, and an index loop over the endpoints measured no better.
 // @retail 0x2e2f70
@@ -80,7 +86,6 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 	}
 	longs_2e1ab0 open(0x100);
 	long cursor = 1;
-	unsigned long apart;
 	for (long remaining = count; remaining > 0; remaining--)
 	{
 		long const id = endpoints->id;
@@ -121,10 +126,11 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 			if (entry.value & 2)
 			{
 				element_2e1090 const &other = elements.data[entry.id];
-				apart = apart_yz_2e1090(box, other);
+				unsigned long apart;
+				apart_yz_2e1090(box, other, apart);
 				if (!apart)
 				{
-					report_pair_2e2f70(this, pair, other.owner, id, pairs, change);
+					report_pair_2e2f70(this, pair, elements.data[entry.id].owner, id, pairs, change);
 				}
 			}
 		}
@@ -135,10 +141,11 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 			if ((entry.value & 1) == 0)
 			{
 				element_2e1090 const &other = elements.data[entry.id];
-				apart = apart_yz_2e1090(box, other);
+				unsigned long apart;
+				apart_yz_2e1090(box, other, apart);
 				if (!apart)
 				{
-					report_pair_2e2f70(this, pair, other.owner, id, pairs, change);
+					report_pair_2e2f70(this, pair, elements.data[entry.id].owner, id, pairs, change);
 				}
 			}
 		}

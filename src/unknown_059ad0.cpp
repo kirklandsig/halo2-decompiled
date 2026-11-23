@@ -3542,202 +3542,12 @@ bool function_630f0(c_class_58d20 *session, long address,
  return result;
 }
 
-bool network_observer_channel_timed_out(s_network_observer *observer, long channel_index);
+bool network_observer_channel_timed_out(s_network_observer *observer, long owner, long channel_index);
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
-// MiniMax C (11-15): no new form, no lower score (101): the timeout call still takes its two values where retail
-// passes a third, the dead store of the session's second field, and that value needs an unread owner parameter on
-// 0x769a0, whose definition is in src/unknown_075870.cpp and not this lane's to change; the frame agrees (0x3c) and the
-// announcement's identifier loads still split around the push, so the body stands as found.
-// MiniMax A (11-14): no new form, no lower score (101). Putting the reply member-state pointer before the
-// reply identifier drops the listing to 94 (the reply block then matches row for row) but the keep-bar sends
-// that body back. Retail still loads session+0x10 into ecx, stores it to frame +0x04 and splits the
-// member-state lea into two steps before the timeout call, and it reaches the observer through edx; the
-// value10 spill needs an unread owner parameter on 0x769a0, whose definition is in another file, and the
-// announcement loads both identifier halves after the memset while this build splits them around the push.
-// MiniMax H (11-13): no new form, no lower score (101): still BLOCKED-BY 0x769a0, whose unread owner parameter
-// decides the call's register home and whose definition is in another file; the frame agrees (0x3c), the
-// announcement and identity loads still take other registers than retail's, and the permuter's 37 tries in 307 s found
-// nothing below its own baseline.
-// MiniMax B (11-13): no new form, no lower score (101); still BLOCKED-BY 0x769a0 in another file, whose unread owner parameter decides the call's register home.
-// score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
-// Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
-// Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
-// member-state lea, before the timeout call (BLOCKED-BY 0x769a0, held file; same spill in 0x5e7f0),
-// which shifts everything after it; announcement id/member scheduling also differs.
-// Round 55 (on top of each other): constant true/false returns 115 (retail's two exits); guarded
-// `if (state == 7 && flag) leave = true;` 120 (leave block exact); reply member pointer before the id
-// 121 (reply block exact; only the timeout setup and announcement differ once aligned); host state
-// pointer before the predicate 124; identity memcpy before the id 121. Keep these three for when the
-// timeout setup is solved. Earlier forms:
-// shared result 120, aggregate zero initialization 120, identifier memcpy 120,
-// reply pointer first 121, announcement outer lifetime 120.
-// Direct leave predicate 115; retained host-query result 137; narrower host-result
-// scope 125; flags before identifier 120; early nonpeer return 123.
-// State/host/both at uses 115/120/120; long host/leave/both 129/132/130;
-// host/leave initialized individually before lookup 119/120.
-// Native identity assignment 115; identity before identifier 115; announcement/reply/both named identifier stores 115/115/115;
-// entry result lifetimes 120; separate host initialization 118; host result before message 113.
-// actual peer-result return 101; unsigned member 115; unsigned host 115; both unsigned handles 115;
-// native workspace names 115; chained message flags 115; peer result with chained flags 101; host
-// result at send 113.
-// Deferred-leave/announcement/both Boolean home names 101/101/101; byte/word host result 101/137;
-// byte/word leave result 101/130; reverse protocol-byte stores 101.
-// Guarded/nested/state-gated/conditional leave with the retained peer result 131/131/132/126;
-// those forms with the actual host-query result 148/148/151/143. Opening body restored.
-// complete native announcement construction 132 fast;
-// native announcement flag-array initialization 129 fast;
-// direct owning-array reply fields 101 fast;
-// byte actual peer result 104 fast;
-// long actual peer result 101 fast;
-// native announcement with direct reply fields 129 fast;
-// native flag array with direct reply fields 132 fast;
-// native announcement and long peer result 128 fast;
-// Round 403: native protocol 101; native id fields 101; native identity 101; native zero 101; native
-// reply lifetime 101; native reply order 94; native host default 124; native chained flags 101.
-// Opening body restored.
-// Round 422: shared member-state base 101; shared identifier source 101; both native sources
-// 101; const reply id 101; state base/const reply 101; id source/const reply 101; both
-// sources/const reply 101; shared sources after lookup 101. Opening body restored.
-// Round 30: identity source pointer before the memset 101; `if (state == 7) leave = flag != 0;` 132;
-// `was_host = true` before the announcement 124; leave declared first 103; identity by structure
-// assignment 101. Diagnostic owner argument through a temporary wrapper: passed at the call 101 (no
-// spill), from a local read beside the state 124 (spill at the top, not before the call).
-// Round 32: in a scratch copy an unused owner parameter on 0x769a0 alone leaves 101 (one use: nothing keeps
-// the owner live across the call; 0x769a0 then keeps its observer on the stack without its `&observer` local);
-// the store needs a second owner consumer after the call, as 0x62640/0x627e0 have. Timed-out channel read
-// through `session->member_index` at the call 104; `result` declared unset at entry 101; state range without
-// the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
-// Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
-// the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
-// Y492: complete bool/long/short/byte admission results all 101;
-// each with reply-member-before-id production 94. Seven-point leads rejected;
-// all restored. Held timeout owner spill and message/reply allocation remain.
-// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
-// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
-// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
-// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
-// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
-// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
-// Round 47 (m3 lane 13, fast; aligned counts in brackets, baseline [30]): constant true/false exits 116 [29];
-// with the guarded leave 123 [29]; the guarded leave alone 131 [30]; identity source before the memset 101 [27];
-// constant exits with the reply member pointer before the id 116 [23]; those three together 123 [23];
-// `if (peer) {...; return true;} return false;` with the guarded leave and member pointer first 121 [15]: every
-// block but the timed-out call setup (retail's owner spill and split member-state lea, 3 instructions more)
-// and the announcement's member offset (retail scales it before the memset) is then retail's, but the 3-line
-// shift there keeps the positional count up. Keep that form for when the timed-out call is solved.
-// Round 22 (lane 18), fast (aligned difflib counts in brackets, start 101 [38]): an early `return false`
-// with the guarded leave and the reply pointer first 123 [31]; `result = false` ... `result = true` with both
-// 119 [19]; `if (is_peer) { ...; return true; } return false;` with both 121 [17] (exits, leave and reply
-// blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
-// address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
-// only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
-// Y492: complete bool/long/short/byte admission results all 101;
-// each with reply-member-before-id production 94. Seven-point leads rejected;
-// all restored. Held timeout owner spill and message/reply allocation remain.
-// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
-// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
-// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
-// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
-// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
-// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
-// Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
-// each with original reply order or member before id: 101/94/101/94/101/94/101/94.
-// Seven-point gain rejected; original executable source restored.
-// Round 516: Twice-used host index initialized before/after state read,
-// original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
-// message/reply allocation remain.
-// Scores 104/104/104/104/97/97/97/97; original executable body restored.
-// MiniMax H (11-04): no new form kept, no lower score: the reply member-state pointer before the id 94 (seven
-// under the bar, restored), the identity address named before the memset 94, the two-epilogue return 115, an
-// owner local read at the top and used in the reply 132, the timed-out call's member state taken through a
-// pointer 101; the thirteen bytes retail has more are exactly the timed-out call's value10 spill, its split
-// member-state lea and the extra load, and the owner spill is a dead store in retail too, so it is not
-// reachable from a live local here.
-// Round 139 (m3 lane 5, fast): reply member-state pointer before the id 94 (seven, under the bar); with the identity
-// address named before the memset 94; with an early not-peer `return false` and `return true` 116 (428 bytes); with the
-// announcement id field by field 94; with the identity as a structure assignment 94; with `leave` declared first 96.
-// Round 49 (m3 lane 15, fast): state range as `state >= 3` 102; the leave test with the flag byte first 101; the
-// value44 reset before the member index store 100 (one point, not kept); announcement flags stored 2, 1, 0 101; the
-// host index read from the session at each use (no assignment inside the condition) 104 (421 bytes).
-// Round 141 (KIMI1, fast): leave assigned from the host result under its guard 131 (413 bytes); shared defaults
-// original/reversed 101/103; chained defaults original/reversed 101/103; neutral defaults with the reply member
-// state before the id 94 (reply exact, seven under the bar), with a const member pointer 94 and a member reference
-// 94. Original executable body restored; held timeout owner spill and announcement/return layout remain.
-// Round 65 (m3 lane 13, plain; masked = my aligned count with registers and stack homes masked): BLOCKED-BY 0x769a0 (held file): that one
-// line is all this function still needs. A named `long owner = session->value10;` passed to an unread by-value `long owner` parameter of
-// 0x769a0 gives retail's dead store exactly; the same argument unnamed gives no store (101), so does `const dword &owner` (101). With that
-// parameter (0x769a0 stays matched, ret 4) this body is byte exact: one `bool take = false;` set by `if (state == 9) ... else if (state > 2 &&
-// state <= 8)` nested tests, `member == value44` and the timed-out test, with `s_network_session_member_state *host_state =
-// &session->member_states[host]; __assume(host_state != NULL); long owner = session->value10;` then
-// `if (!timed_out(session->observer, owner, host_state->unknown04)) take = true;`, `if (session->state == 7 && flag) leave = true;`, and
-// `if (is_peer) { ...; return true; } return false;`. Steps: take flag + exits masked 7 (430 bytes, score 115); reference or `+ host` state pointer 114;
-// `do { } while (false)` after the pointer 114; assume with owner/observer first 7 (433 bytes), with the pointer first 4 (registers rotated), owner
-// before a named observer 27, observer read in the call MATCH. Forceinline owner wrapper stays a call in this inline_depth(0) region. Body restored:
-// the flag is only worth keeping with the match.
-// R223 (lane 3): score 101. BLOCKED-BY 0x769a0 as round 65 found: its definition is in src/unknown_075870.cpp, still on
-// the avoid list this round, so the unread owner parameter could not be added.
-// R223, second pass (fast with 0x769a0, control 101; aligned count in brackets, control [30]): the announcement zeroed by an
-// `= { 0 }` initialiser 101 [32]; `was_host = session->function_058d20(); if (was_host)` 142 (414 bytes) [37]; the three flags
-// as one chained assignment 101 [32]; session->state read at each test with no state local 101 [30] (same code); the two
-// member tests swapped 103 [32]; `was_host = true` ahead of the send with the leave as `if (session->state == 7) leave = flag
-// != 0;` 135 (411 bytes) [42].
-// M3 lane 11 r89: still BLOCKED-BY 0x769a0 (src/unknown_075870.cpp, a held sort_4byte file on the avoid list): the dead
-// session->value10 store and split member-state lea ahead of the timed-out call (retail 0x5e466-0x5e477, the 13 bytes ours
-// lacks) come only from the unread owner parameter on 0x769a0 (round 65's byte match); the forms left on this side of the
-// call are all listed above, so no trial was run.
-// MiniMax B (11-11): no new form, no lower score (101); retail's call to 0x769a0 takes the session's second field
-// in ecx and its first field in edx before the stack argument, and reaches the member state through a pointer to
-// the field, while this build's callee takes the table in ecx and the owner on the stack; the callee is declared
-// in src/unknown_075870.cpp.
-// MiniMax B (11-14, later): no new form, no lower score (101): the permuter (240 s, --anneal, 15 tries) got one
-// instruction below the baseline (90 against 91) and the variant it reports needs a volatile cast, a constant-only
-// local and a reordered announcement struct, so the body stands.
-// MiniMax B (11-14): no new form, no lower score (101): retail's timeout call still takes three values - the
-// session's +0x10 in EDX, the observer in ECX and the member state's field in EAX - with the member state's
-// address formed by a lea of the row and a load at +4, where this build folds the +4 into one displacement and
-// passes two values; the third one is the owner parameter 0x769a0 would have to declare, and that definition is in
-// src/unknown_075870.cpp, so the call cannot be settled from this file. The body stands.
-// MiniMax G (11-12): no new form, no lower score (101); the timeout owner still has no home, because the
-// callee that would read it (0x769a0, src/unknown_075870.cpp:312) is in another file; the announcement
-// id and member scheduling behind it are in this file and still differ.
-// MiniMax G (11-12): what is left in this file, read off retail's code: retail takes the member state's
-// address in two steps (lea eax, [ebp + eax*4 + 0x72dc] then mov eax, [eax+4]) where here the field
-// offset is folded into one displacement (mov eax, [ebp + eax*4 + 0x72e0]); retail stores the session's
-// value10 ([ebp + 0x10]) into the frame slot +0x14 before the timeout call, a dead store into the slot
-// that later holds the session id, and that id's home is +0x14 here it is +0x1c, while the id is passed
-// by address (lea ecx, [esp + 0x14]) in both. The two-step address needs a pointer local for the
-// member-state element, which the once-used-pointer form does not allow.
-// MiniMax E (11-11): no new form, no lower score (101): the thirteen bytes retail has between the
-// member-state lea and the timeout call need an unread owner parameter on 0x769a0, whose definition
-// is in src/unknown_075870.cpp.
-// MiniMax D (11-11): no new form, no lower score (101): still BLOCKED-BY 0x769a0 in src/unknown_075870.cpp, where the call's register home is the callee's to decide.
-// MiniMax R (11-10): no new form, no lower score (101); the timed-out call's owner argument still has no home, because the callee that would take it is in another file.
-// MiniMax R (11-09): no new form, no lower score; the timed-out call's owner argument still has no home,
-// because the callee that would take it is in another file.
-// MiniMax S (11-06): no new form, no lower score (101): retail's call into the timed-out check passes one argument on the stack and keeps the channel index in a register, ours passes two; the callee's declaration and definition are in other files.
-// MiniMax B (11-06): no new form, no lower score (101).
-// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
-// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
-// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
-// epilogues (1 and 0) where ours keeps the peer result in EBX.
-// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
-// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
-// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
-// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
-// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
-// MiniMax C (11-08): no new form, no lower score.
-// MiniMax E (11-10): no new form, no lower score (101); the timeout owner comes from a parameter of 0x769a0
-// whose declaration is in another file, so the spill cannot be settled here.
-// M3 lane 12 r119: no trial. The first difference (+0x27) is still the 0x769a0 call setup: retail reads session+0x10
-// into ECX and spills it, then forms the member-state address with a separate lea; round 65's byte match needs the
-// unread owner parameter on 0x769a0, whose file (src/unknown_075870.cpp, held sort_4byte change) is avoid-listed
-// again. The forms on this side of the call are listed above (lane 11 r89). Still BLOCKED-BY 0x769a0.
-// m3 lane 2 r81: no trial. The listing still agrees up to the timed-out call (retail 0x5e466-0x5e477: the value10 load
-// stored to +0x14 and the split member-state lea), which round 65 matched only with an unread owner parameter on 0x769a0;
-// its definition is in src/unknown_075870.cpp, a held sort_4byte file this round too, and every form on this side is listed.
-// Still BLOCKED-BY 0x769a0.
+// Both callers of 0x769a0 load session+0x10 and store it dead ahead of the call (0x5e469/0x5e473; the same in 0x5e7f0),
+// so 0x769a0 takes an unread owner parameter ahead of the channel index (m3 lane 14 r108 from round 65's form).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3747,10 +3557,27 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
  if (member != NONE && member != session->current_member)
  {
   long state = session->state;
-  long host;
-  if (state == 9 || ((state > 2 && state <= 8) && member != (host = session->member_index) &&
-   (member == session->value44 || (!session->function_058d20() &&
-    !network_observer_channel_timed_out(session->observer, session->member_states[host].unknown04)))))
+  bool take = false;
+  if (state == 9)
+   take = true;
+  else if (state > 2 && state <= 8)
+  {
+   long host = session->member_index;
+   if (member != host)
+   {
+    if (member == session->value44)
+     take = true;
+    else if (!session->function_058d20())
+    {
+     s_network_session_member_state *host_state = &session->member_states[host];
+     __assume(host_state != NULL);
+     long owner = session->value10;
+     if (!network_observer_channel_timed_out(session->observer, owner, host_state->unknown04))
+      take = true;
+    }
+   }
+  }
+  if (take)
   {
    if (session->function_058d20())
    {
@@ -3768,7 +3595,8 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
     memcpy(&message.identity, session->members[member].words, sizeof(message.identity));
     network_session_send_to_members(session, 0, 0x13, sizeof(message), &message);
     was_host = true;
-    leave = session->state == 7 && *(byte *)&session->value7420;
+    if (session->state == 7 && *(byte *)&session->value7420)
+     leave = true;
    }
    session->member_index = member;
    session->value44 = NONE;
@@ -3778,8 +3606,7 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
     function_612c0(session);
   }
  }
- bool result = network_session_address_is_peer(session, address);
- if (result)
+ if (network_session_address_is_peer(session, address))
  {
   s_session_id id = *(s_session_id *)&session->unknown1c;
   s_network_session_member_state *member_state = &session->member_states[session->member_index];
@@ -3788,8 +3615,9 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
     false, 0x14, sizeof(id), &id);
   if (leave)
    session->leave(false);
+  return true;
  }
- return result;
+ return false;
 }
 #pragma inline_depth()
 
@@ -4416,7 +4244,39 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
+// score 295 (was 295; r239, r126, r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
+// is in the paragraph below (the two stacked score lines merged in r286).
+// earlier header line (merged in r126): 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
+// and acknowledgement is laid out early. Rounds 275 and 234 kept the round 208 score.
+// earlier header line (merged in r126): 295 (was 295; r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// MiniMax D (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it,
+// the acknowledgement block comes last in retail, and the three boolean homes stay rotated; the timeout spill needs 0x769a0's third
+// argument, whose declaration lives in another file: BLOCKED-BY 0x769a0.
+// earlier header line (merged in r126): 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
+// Earlier at 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
+// directly (1264 B). Left: retail reads the accepted byte back at every exit where ours folds it at the reason-1/2/9
+// exits, the acknowledgement block is laid out last in retail, the timeout call lacks retail's owner spill (the earlier
+// BLOCKED-BY 0x769a0 reading is superseded: see the round 208 paragraph at the end, which also records a match-only 96
+// form), and the end of the received block differs. The rounds' notes follow in the order they were written.
+// MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
+// MiniMax C (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean homes
+// stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and retail's call to the matched 0x769a0
+// passes three arguments - the observer on the stack (push eax), the session's value10 in EDX (dead at the callee) and
+// the channel index in EAX - where our declaration of that callee takes two, so the extra load and the spill it causes
+// are missing here too; that parameter list lives in include/unknown_075870.h and src/unknown_075870.cpp, which this
+// lane may not edit.
+// MiniMax E (11-15): no new form, no lower score (305): the call boundaries agree with retail's (twenty-one calls in the same order), so what is left is the rotation of the three boolean stack homes and the timeout spill, which needs 0x769a0's unread owner parameter in another file. BLOCKED-BY 0x769a0.
+// MiniMax E (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean
+// homes stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and the 0x769a0 call misses
+// retail's third argument for the same reason as in 0x5e3f0; that parameter list lives in
+// include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
+// MiniMax C (11-17): no new form, no lower score (305, was 305): the frame (0xd8) and the length agree, but the boolean homes are still a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail still reads the acceptance byte back where this build folds it to a constant, and the same timeout spill as 0x5e3f0 needs 0x769a0, whose definition is in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
+// MiniMax G (11-18): no new form, no lower score (305): the frame 0xd8 and the length agree, but the three boolean stack homes are still a
+// rotation from retail's (retail: better +9, same +0xa, result +0xb) and the timeout spill needs 0x769a0's unread owner parameter, whose
+// definition lives in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
+// Earlier 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
 // Earlier 305 (was 310): the invalid-state exits and the missing-sender exit return the result directly
@@ -4608,6 +4468,250 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // laid out after the body); the reason-3 test as one `&&` 305 (same code); the channel-state test as one `&&` 305 (same code);
 // the timed-out arm with one identity copy and `*reason = identity_equal ? 4 : 6` 320 (1234 B); the `state > 8` test inverted
 // with the exit as its else 367 (1269 B). Body unchanged.
+// MiniMax D (11-16): no new form, no lower score (305).
+// MiniMax S (11-16): no new form, no lower score (305): the frame and the body length agree with retail's, but
+// the boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the
+// identity byte at +0x9 against retail's +0xa) and the two peer bytes are zeroed at +0x11/+0x13 where retail
+// zeroes its pair at +0x11/+0x12.
+// Earlier 305 (was 305): MiniMax D (11-17): no new form, no lower score (305): the frame and the body length agree with
+// retail's, but the three boolean homes stay a rotation from retail's (this build's acceptance byte at +0xa against
+// retail's +0xb, its identity byte at +0x9 against retail's +0xa, and its third byte at +0xb against retail's +0x9),
+// retail reads the acceptance byte back where this build folds it to a constant, and this build zeroes its pair of peer
+// bytes at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12.
+// m3 lane 16 r132 (fast with 0x5e3f0; base 305): `return result;` in place of `goto done;` after the disconnect 301
+// (1264 B, retail's length; a four-point gain, not kept); `return result;` for the same/better exit 313 (1273 B); `result =
+// true;` set before the pending/failed bit block 337 (1232 B); `if (!same && !better) goto disconnected; ... goto done;`
+// 305; `bool better = false, same = false;` 305. The acknowledgement as a forceinline helper at both sites re-measured 506
+// (round 30's form: the inline_depth(0) region keeps it a call). Still BLOCKED-BY 0x769a0 for the timeout spill.
+// M3 lane 13 r110 (fast with 0x5e3f0, which matched in each; control 305): the three flags as members of one local
+// aggregate (better, same, accepted; the identity test reusing `same`) 305, with all three cleared at entry 305, with
+// the members in the other order 305; the three as one local array in either order 305 and 305 (all the same code:
+// members and constant-index elements are scalar-replaced). Reading: retail's flag bytes are contiguous (+9, +0xa,
+// +0xb) and are stored and read back from memory at every exit with no constant propagated, which no plain local,
+// aggregate member or array element gives here; their addresses must escape (out-parameters of a helper that retail
+// expands inline), and this body cannot expand a helper inside its inline_depth(0) region.
+// M3 lane 1 r124 (fast with 0x5e3f0/0x5f6a0/0x58d90/0x58d20/0x769a0/0x62c20/0x5f760/0x63ca0, all MATCH each run; control
+// 305, difflib-aligned 470, masked 462): the aligned count is almost all one block placed elsewhere: ours lays the
+// acknowledgement block straight after the host path's reason-5 exit (behind its unconditional `goto acknowledge`),
+// retail keeps it at its source place after the reason-9 exit; everything else is in retail's order. Forms: the host
+// path as `if (sender != NONE) goto acknowledge;` ahead of the reason-5 code (the state-8 test's own form) 317 (the
+// block is then laid inline after the test), with reason 5 ending `return result;` 317; the base with reason 5 ending
+// `return result;` 308 (1264 B); `result` declared first 310; `same` declared ahead of `better` 305 (same code); the
+// owner passed through a named `long owner = session->value10;` as 0x5e3f0 does 363 (the caller's dead owner store,
+// `mov edx, [ebx + 0x10]` / `mov [esp + 0x1c], edx`, still does not appear: 0x769a0 already declares the unread owner
+// parameter and this body passes it, so the earlier BLOCKED-BY note now reads: the link drops the unread argument).
+// M3 lane 1 r127 (fast with 0x5e3f0, MATCH each run; control 305): the peer flags in a block scope that ends before
+// `refused:` 305; `bool result;` then `result = false;` 305 (same code); a `member_state` pointer for the acknowledgement's
+// six member-state uses 317 (1264 B); the peer flags declared at function scope 305 (the byte homes do not move: they
+// follow liveness, not scope); `volatile` result (diagnostic, reverted at once) 319 (1280 B; it rotates the homes again,
+// result +9, identity +0xa, a peer flag +0xb). Re-measured: renamed result/better/same/identity flag (Round 87's form) 305
+// each, the host path as `if (sender != NONE) goto acknowledge;` 317. Reading: the three byte homes follow the reference
+// weights, and ours folds `result` to a constant at the reason-1/2/9 exits where retail reads its home, so the weights and
+// the homes' order differ. Body unchanged.
+// M3 lane 5 r208 (fast with 0x5e3f0, MATCH each run; kept forms confirmed plain with the 13 callees; control 305,
+// difflib-aligned 244). KEPT 305 -> 295 (plain, 1264 B, aligned 90): the tie-break as separate `better = true`
+// statements (the count, then the +0x50 field, then the selected index, each its own if; 299 alone, aligned 100: the
+// flag bytes take retail's homes, they follow how often each flag is referenced) and `return result;` in place of
+// `goto done;` after the disconnect (lane 16's 301 form; 295 with the tie-break). On that: the old mask read through
+// `map` 299; the kept-arms exit as `return result;` 307 (1273 B), with the mask read 298.
+// LEAD, match-only, 96 (plain, 1264 B, aligned 14: the first 284 and the last 65 lines are retail's;
+// build/r208/lead-0x5e7f0-96.patch in the m3-lane5 worktree). Its parts, found one cause at a time on the tie-break
+// form: the old mask read through `map` (retail's `[esi + 0xb8]`: the map then stays in ESI over the two count calls and
+// the pending-mask update is retail's `or [mem], eax`) 306 (1264 B, aligned 107); `remote` declared ahead of `local`
+// 310 (aligned 92) and `map` declared between the two update calls 310 (aligned 90: the received block is retail's from
+// the copy to the reply time; the copy ahead of the member pointers rotates the byte homes again, 314); one `return
+// result;` with the reasons as an else-if chain and two flags tested after it (`acknowledge`, set at the state-8 and
+// host sites, and `proceed`) 348 (1264 B, aligned 52: the acknowledgement block last, reason 1 laid behind the received
+// block's first unconditional jump, the three `result = true` exits one block, every exit reading the result byte);
+// main's nested range test in that chain 295 (1273 B, aligned 35; as `&&` with an else 348, as two else-if arms 356,
+// nested under `state != 9` 348); a named `long owner = session->value10;` ahead of the timeout check, the sibling
+// 0x5e3f0's form, 196 (1280 B, aligned 14: retail's dead owner store appears and the scratch rotation behind it agrees,
+// so the store never needed a change to 0x769a0, only the local on this graph); the range test held in a named bool
+// (`bool invalid = state <= 2 || state > 8;`) 96: one inline reason-2 block reached by `jle` and by fall-through. Flags
+// set in a test, a one-use local, a test held in a bool and moved declarations are match-only, so none of that is kept.
+// Left at 96, the end of the received block only: retail writes `mov al, 1; mov [result], al`, tests same/better
+// through CL and jumps both to a bare epilogue with AL = 1, and after the disconnect call reads the result back, tests
+// it and jumps to that same epilogue (`mov al, [esp + 0xb]; test al, al; jne`), falling into a second bare epilogue;
+// ours tests through AL, jumps to the shared `mov al, [result]` exit and has no test after the disconnect. That test is
+// the only one of its kind in the image (a byte scan finds no other flag read back, tested and returned on both arms).
+// Tried for it on the 96 form: an empty `if (!result) {}` or `if (result) {}` ahead of the return 196/196 on the 196
+// form (same code); the acknowledgement under `if (!result && acknowledge)` or nested under `if (!result)` 196/196
+// (same code); `if (result) return result;` ahead of the acknowledgement 208 (any extra reference to `result` moves its
+// byte down); `if (result) result = true;` after the block 229; a dead flag store under `if (!result)` or `if (result)`
+// 196/196 (same code); direct returns in the block: kept-arms and tail `return result;` 113, kept-arms `return true;`
+// 100, tail `return result;` alone 109, `if (!result) return false;` after the disconnect 48 (retail's read, test and
+// `jne`, but a stray `xor al, al`, the kept-arms still through AL and the byte homes rotated: register-masked 23), `if
+// (!result) return result;` 48 (same code: the false edge folds it to zero), `if (result) return result;` 119 (the
+// test folds away), with the acknowledgement under `!result` 119, `if (result) return true;` 56 (a `mov al, 1` arm),
+// `if (result) goto` a label at the final return 96 (same code), the kept-arms jumping to the failure return's test
+// 48; `if (!result) result = false;` 114 (the store stays); `__assume(result || *reason != 0)` at the end, after the
+// disconnect or ahead of the acknowledgement test, and `__assume(result || *reason == 7)` 96 each (same code); the
+// assumption nested as `if (!result) __assume(*reason != 0);` ahead of the return, and as `if (!result)
+// __assume(*reason == 7);` after the disconnect, with the kept-arms jumping past it or to it, 96 each (same code);
+// diagnostic, restored at once: an inlined empty function under the result test with one inlining level allowed 434
+// (no test left). Reading: both arms of retail's test return the byte just read, with nothing folded and nothing
+// merged, which no statement form tried here leaves behind. The source permuter on the 96 form (52 tries, 602 s): best 42, from swapped call arguments and a
+// volatile store, discarded; its plain parts alone (`better != 0`, the state read into a local, the two NONE stores
+// swapped, the owner declared then assigned) 96 each. Re-measured on the control: every exit through `done:` 320
+// (1280 B), with the tie-break 313.
+// M3 lane 3 r275 (fast with 0x5e3f0/0x769a0/0x58d90/0x58d20 MATCH): round 208's 96 lead rebuilt on the current body
+// (96, difflib-aligned 8). On it: `if (result) return result;` after the disconnect 119 (aligned 30, as before); `if
+// (result) goto received_done; return result;` there 48 (retail's length, but aligned 23: the read, test and `jne`
+// appear, the fall-through returns a folded `xor al, al` and the byte homes rotate, result +9); that with `(void)&result;`
+// 48 (same code: the address-taking is dropped); `if (!result) goto` a second `return result;` after the acknowledgement
+// 48 (same code); the result cleared by `memset(&result, 0, sizeof(result))` on that form 48 (same code: scalar-
+// replaced). Reading: retail's fall-through returns the byte it just tested without folding it to zero, and every
+// exit reads the byte back, which is what an escaped (address-taken) result gives; nothing in this inline_depth(0)
+// region takes its address.
+// M3 lane 14 r123 (fast with 0x5e3f0, MATCH): round 208's lead body re-measured 96 on current main (1264 B, first difference
+// +0x94). On it: the acknowledgement under `if (!result && acknowledge)` 96 (same code: the proceed path threads the whole test
+// away); the final return as `result ? true : false` 410 (1310 B), `result != false` 396 (1313 B), `result == true` 406
+// (1323 B); the kept arms `return result;` with the acknowledgement under `!result && acknowledge` 100 (the kept arms then
+// jump to their own `mov al, 1` return). Reading: retail's return at 0x5e891 (the state-8 exit's epilogue) gathers every path
+// on which the result is true (state 8, the kept arms with AL = 1, the post-disconnect `jne`) and the false edge has its own
+// epilogue, as if the final return were threaded on the result by a test whose other part is unknown on the proceed path.
+// Direct reason 3/5/8 returns 345/301/297, both timeout returns 299, all five policy returns 362.
+// Shared range rejection or admission 370/370, shared rejection with five direct returns 387.
+// The result byte at +0xb holds, but the first branch displacement and the return layout still differ.
+// M3 lane 11 r133 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-measured 96 (1264 B,
+// aligned 20: only the end of the received block differs). Reading of retail's end: the refused path (result still false)
+// and the accepted path with neither kept arm (result just set) meet at the disconnect, so the read, test and `jne` after
+// it is a real test of the result on merged paths; its true edge and the two kept arms all enter the state-8 exit's
+// epilogue behind its load with AL already holding the result (`mov al, 1; mov [result], al` ahead of the kept-arm tests,
+// which therefore go through CL), and its false edge returns the byte just read without `xor al, al`, so the false edge's
+// return is not a return that only that edge reaches. The acknowledgement block's two entries four bytes apart (one
+// reloads the sender) and this file's matched 0x5e3f0 (a `take` flag set in a chain and tested after it) fit the flag
+// form. Tried on the 96 body: the kept arms as `if (same) return result; if (better) return result;` with `if (result)
+// return result;` after the disconnect 150; the kept arms as one `return result;` with that test 123 (the kept arms get a
+// `mov al, 1` block of their own and the test folds away); `if (result) goto received_done; return result;` after the
+// disconnect 48 (retail's read, test and `jne`, but `xor al, al` on the false edge, the kept arms still through AL and
+// the result byte at +9: each added reference to the result moves its home); that with the kept arms returning 113; the
+// block as `for (; !result && proceed; proceed = false)` 389 or `while (!result && proceed)` 392 (1230 B: the layout
+// goes); the acknowledgement under `if (!result && acknowledge)` 96 (same code); `if (result) return result;` ahead of
+// the acknowledgement test 119; the block as an inline helper returning its own flag, called under `if` or assigned 908
+// to 921 (this file's inline depth of 0 keeps it out of line); a second flag `success` inside the block with `if
+// (success) result = true;` after it 239 (1273 B: the test is there but the two flags take two homes), `result =
+// success;` 227, `return success;` 243; the false edge and the reason-9 arm sharing a `return result;` inside the block
+// with the true edge jumping to a label after the block or at the final return 119 each (the two returns merge and the
+// test goes); `if (!result) goto` a second final `return result;` 48 (the 48 form again).
+// M3 lane 4 r234 (fast with 0x5e3f0, MATCH; main's body 295, unchanged): round 208's 96 lead rebuilt (96, first
+// difference +0x94). On it, after the disconnect: `bool const &accepted = result; if (accepted) goto received_done; return
+// result;` 48 (same code as the plain goto form: the false edge still folds to `xor al, al`, result byte +9); `if (result
+// == true) return result;` 102 (a `cmp byte, 1` and a `mov al, 1` arm); that with the kept arms returning `result` 114.
+// Diagnostics, reverted at once: every `result = true` through a forced-inline setter taking the result's address 338
+// (1273 B: the region's inline depth of 0 keeps it out of line); through a pointer local to the result 48 (the pointer
+// folds). Reading: retail's kept arms, the post-disconnect true edge and its false edge each act as a `return result;` of
+// their own in one extended block (the store's AL or the test's load reused, then the epilogues cross-jumped); any test
+// of `result` here lets our IL fold the false edge to zero.
+// M3 lane 14 r129 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-applied 96. Retail's
+// state-8 `result = true` block (store, reload, epilogue) is also the target of the channel-7 exit and of the
+// acknowledgement block's end when the state is not 7; the kept arms and the post-disconnect test enter its epilogue
+// behind the reload. On the 96 body: the result declared `volatile` (diagnostic) 96 (the same code: our result is already
+// re-read at every exit); the kept arms as `return true;` 100 or `return result;` 100 (both a `mov al, 1` return block of
+// their own at the end); `result = true` set with `acknowledge` at the two sender sites and the acknowledgement under
+// `if (result && acknowledge)` 325 (retail's acknowledgement block does end in `result = true`); after the disconnect,
+// a test through `bool const &kept = result;` as `if (kept) goto received_done; return result;`, `if (!kept) return
+// result;` or `if (!kept) return kept;` 48 each (retail's read, test and `jne`, but `xor al, al` on the false edge and
+// the result byte at +9); the same two tests through `bool *const result_address = &result;` 48 each (the address-taking
+// folds away).
+// MiniMax G (11-20): no new form, no lower score (295): the exits still sit at other offsets from the first
+// branch on, so every later branch differs as well, the invalid-type exit still returns the constant where retail
+// reads the result byte back, and the acknowledgement block is still placed before retail's: the byte homes of the
+// result, the identity and the better flag are not yet recovered.
+// M3 lane 3 r286 (single-address fast, control 295): the peer's reply time through the existing 0x75870 call 310
+// (1240 B: called out of line, where retail expands it at this one site); that time read as an if/else store 295 (same
+// code); the reason-9 test written `sender == session->current_member || sender == NONE` 295 (same code); the newer-version
+// arm as `better = selected != NONE;` 314 (1241 B); the two bit counts taken new first 295 (same code). All restored.
+// Four-way switch with shared reason-1 and reason-2 exits, varying inactive, state-nine, invalid and
+// active case order, scored 366/366/366/366/366/367/366/366. Retail still uses a comparison chain and reloads
+// the acceptance byte on the rejection paths. NOT kept: the dispatch table and earlier first difference.
+// M3 lane 1 r144 (single-address fast; main's body 295, round 208's 96 lead rebuilt from its patch 96). LEAD,
+// match-only, 44 (1264 B, first difference +0x94 as the 96 form; diff in build/r144/lead-0x5e7f0-44.diff of the
+// m3-lane1 worktree): on the 96 form, the kept arms `goto accept;` (after their `result = true;`), `if (result) goto
+// accept;` after the disconnect, the acknowledgement block ending in `goto accept;` in place of its `result = true;`,
+// and `accept: result = true; return result;` after the final return. Left: our accept is folded to `mov al, 1` in
+// its own epilogue, the post-disconnect false edge jumps to an earlier epilogue, and the kept arms store an immediate
+// where retail stores AL = 1 and enters the state-8 epilogue behind its reload. On the 96 form: after the disconnect
+// `if (result) return true; return false;` 110, `return result ? true : false;` 110, `return result != false;` 51;
+// the accept label reached by the kept arms and the post-disconnect test only, its own return 56; the acknowledgement
+// under `if (!result && acknowledge)` 96 (same code); the accept label ahead of a shared `done: return result;` with
+// the acknowledgement skipped by `if (!acknowledge) goto done;` 108 (1268 B: result's byte moves to +9, and the post-
+// disconnect true edge gets its own store/reload copy); that without the post-disconnect test 96; the accept label at
+// the acknowledgement block's own `result = true;` 108 (same two causes). On main's body: a shared `accept:` exit
+// for the state-8, channel-7, kept-arm, post-disconnect and acknowledgement exits 303 (1276 B: the state-8 store and
+// reload are then pulled up behind the state-8 test as in retail, but the reason exits fold to `xor al, al`), with
+// every exit through `done:` 309 (1284 B), with the post-disconnect return kept 318. Diagnostic (reverted at once):
+// the result declared volatile on the 44 and 108 forms 114/108 (its byte moves; a memory-resident result alone is
+// not retail's shape).
+// On the 44 form: the kept arms `return true;` or `return result;` in place of the jump 44/44, as two tests each
+// jumping 44, the accept block as `return true;` 44 (all the same code: the true return is folded to `mov al, 1` and
+// not merged into the state-8 epilogue); `if (result) return result;` after the disconnect 122 (1244 B).
+// M3 lane 2 r125 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; round 208's 96 lead rebuilt from its
+// patch, 96). On the 96 lead, after the disconnect: `if (result) goto accepted;` with the label on the acknowledgement's
+// final `result = true;` 107 (1264 B: retail's read, test, `jne` and bare false-edge epilogue appear with no `xor al, al`,
+// but the result byte moves to +9 and the better flag to +0xb); with the kept arms also jumping there 108 (1268 B); LEAD,
+// match-only, 94 (1264 B, build/r125/lead-0x5e7f0-94.patch): that test with the state-8 `result = true` written as `goto
+// accepted` (one result store fewer; the byte homes return to retail's), the same with the channel-7 store also a jump
+// 94, only the channel-7 store a jump 94. Left on it: the kept arms store the result as an immediate and jump to the
+// shared store-and-load block, where retail stores it through AL (`mov al, 1`) and enters the bare epilogue, and the
+// shared `result = true` block sits at the end instead of after the state-8 test. On the 94 lead: the kept arms jumping
+// to `accepted` with no store ahead of them 246 (1276 B), with the store kept ahead 95 (1268 B: the post-disconnect test
+// turns into `je`); the kept arms `return true;` or `return result;` 103/103 (1270 B, a return block of their own).
+// M3 lane 4 r242 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; lane 1 r144's 44 lead rebuilt, 44).
+// Reading of retail on the 44 lead: retail's state-8 block (store 1, reload, epilogue) is the shared accept exit: the
+// acknowledgement's state-not-7 edge jumps to its start, and the kept arms and the post-disconnect true edge jump past
+// its reload with AL already 1 (the kept arms test `same`/`better` in CL and store `result` through AL), so on those
+// edges the return value is the constant; ours folds the accept exit to `mov al, 1` in an epilogue of its own. On the
+// 44 lead: the kept arms `goto done` with `done:` on the shared `return result;` 44 (same code), with the
+// post-disconnect test also `goto done` 105 (1248 B), with the acknowledgement ending `result = true;` and falling
+// into `done` as well 96; the accept exit written inside the state-8 arm (`else { accept: result = true; return
+// result; }`) 328 (1247 B: VC still lays it out at the end); the kept arms `return result;` with the acknowledgement
+// still `goto accept` 44 (same code); on the 96 form the kept arms `return result;` 100, as `if (same) return true;
+// if (better) return true;` 129.
+// M3 lane 15 r126 (h2m fast; on m3 lane 5 r208's structured lead, 96 there with only the end of the received block
+// left): after the disconnect, an own `return result;` 109; `if (result) return true; return false;` 110; `return result ?
+// true : false;` 110; `if (result) return result; return false;` 109; `if (!result) return false; return true;` 110 (each
+// moves the first difference to +0x26; none gives retail's `mov al, [result]; test al, al; jne <bare epilogue>`). Body
+// unchanged; the stacked score header lines above merged into this one note.
+// M3 lane 8 r218 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged). Lane 1 r144's 44 lead rebuilt
+// from its diff, 44 (1264 B, +0x94). Reading: retail's kept arms store the result through AL (`mov al, 1` then the byte
+// store) and jump past the state-8 block's reload into its bare epilogue, so the result is a register value with a stack
+// home there, not a folded constant. On the 44 lead: the kept arms `goto done;` with the label on the final `return
+// result;` 44 (the arms then reach a reload block, the store stays an immediate); with the post-disconnect test also
+// jumping there 105 (1248 B); that with the acknowledgement block ending in `result = true;` and no accept label 96; the
+// three flags declared ahead of the sender lookup 50 (+0x10); the kept arms and the post-disconnect test as `return
+// result;` 122 (1244 B).
+// M3 lane 14 r141 (H2M_FAST with 0x5e3f0, MATCH each run; main's body 295, unchanged; lane 1 r144's 44 lead rebuilt, 44,
+// aligned 21). On the 44 lead: the acknowledgement ending `result = true;` and falling into the final return 56 (+0x26); the
+// kept arms `goto received_done;` 99 (aligned 21); that without the post-disconnect test 105 (1248 B, aligned 11); with the
+// acknowledgement also falling into the final return (no accept block) 96 (1264 B, aligned 17); the post-disconnect `if
+// (result) goto accepted;` with the label on the acknowledgement's final `result = true;` 107 (+0x26, the byte homes rotate);
+// that with the state-8 `result = true` also written `goto accepted;` 94 (1264 B, aligned 11: one block left, retail's
+// kept arms store the result through AL, test `same`/`better` in CL and jump into the state-8 copy's bare epilogue, and its
+// post-disconnect true edge does the same; ours stores an immediate, tests in AL and jumps to the acknowledgement's copy;
+// build/r141/lead-5e7f0-g7-94.patch in m3-lane14). On that 94 form: the kept arms `return result;` 103 (1270 B: a `mov al,
+// 1` return block of their own), `goto accepted;` 95 (1268 B, aligned 9); the accepted label inside the state-8 arm with the
+// acknowledgement jumping back to it 403 (frame 0xe0: the backward jump stops the flag threading). Also on the 94 form:
+// after the disconnect `if (result) return result;` 113 (+0x26: one more reference moves the result byte to +9), that with
+// the kept arms `return result;` 117, with the kept arms `goto accepted;` 113; that test with the channel-7 `result = true`
+// written `goto accepted;` 100 (homes back, but the test folds into the final return); the channel-7 jump alone 94 (same
+// code); the kept arms `return true;` 103 (1270 B), as two tests each `return true;` 131 (1269 B), as `if (same || better)
+// return result = true;` ahead of the plain store 237 (frame 0xe0).
+// M3 lane 16 r180 (H2M_FAST with 0x5e3f0, MATCH each run; main 295, aligned 149). Lane 1 r144's 44 lead rebuilt from its
+// L9 body, 44 (aligned 21). On it: the result as the element of a one-element array bound by reference 44 (same code:
+// scalar-replaced); diagnostic, reverted at once: the result's address held in a volatile pointer local 359 (every exit
+// then reads the result byte back as retail does, but the homes rotate (result +9) and the kept arms and the accept block
+// are unchanged, so an escaped result is not what retail has). On main's body: the result declared ahead of the state
+// read 295 (same code); the identity compare moved down to the timeout test 384 (1231 B); the timed-out arm with one
+// identity copy and `*reason = identity_equal ? 4 : 6` 323 (1229 B, as lane 3 r242 found); the acknowledgement block
+// through a named member-state pointer 309 (1246 B). Body unchanged.
+// M3 lane 5 r239 (H2M_FAST with 0x5e3f0, MATCH each run; main 295; lane 1 r144's 44 lead rebuilt from its diff, 44). On the
+// 44 lead: the kept arms `result = true; if (same || better) return true;` 44 (same code). On main: the kept arms `return
+// true;` 307 (1273 B); the state-8 exit `return true;` 339 (1266 B); the refused block written at its test, no label, 295
+// (same code); every exit through `done:` 313 (1280 B), with the post-disconnect `if (result) goto done; return result;`
+// 328 (1286 B). Reading: retail's final return is a join that holds the result in AL (the state-8 edge stores 1 and
+// reloads it, the kept arms and the post-disconnect true edge arrive with AL set, the reason exits reload the byte).
+// Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4661,7 +4765,7 @@ bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *addr
      }
      goto acknowledge;
     }
-    if (network_observer_channel_timed_out(session->observer, host_state->unknown04))
+    if (network_observer_channel_timed_out(session->observer, session->value10, host_state->unknown04))
     {
      if (identity_equal)
      {
@@ -4732,11 +4836,16 @@ bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *addr
    {
     long old_count = count_bits(*(dword *)(transition->map + 0xb8));
     long new_count = count_bits(*(dword *)(received + 0xb8));
-    if (new_count > old_count || (new_count == old_count &&
-     (*(long *)(received + 0x50) > *(long *)(transition->map + 0x50) ||
-      (*(long *)(received + 0x50) == *(long *)(transition->map + 0x50) &&
-       *(long *)(received + 0x4c) < *(long *)(transition->map + 0x4c)))))
+    if (new_count > old_count)
      better = true;
+    else if (new_count == old_count)
+    {
+     if (*(long *)(received + 0x50) > *(long *)(transition->map + 0x50))
+      better = true;
+     else if (*(long *)(received + 0x50) == *(long *)(transition->map + 0x50) &&
+      *(long *)(received + 0x4c) < *(long *)(transition->map + 0x4c))
+      better = true;
+    }
    }
   }
   {
@@ -4771,7 +4880,7 @@ bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *addr
  disconnected:
   if (session_peer_map_set_connected(map, remote, false))
    transition->selection_time = function_75870();
-  goto done;
+  return result;
  }
 acknowledge:
  {

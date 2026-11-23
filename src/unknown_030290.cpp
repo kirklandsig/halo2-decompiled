@@ -226,8 +226,44 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// score 195 (was 195): one note (the stacked score lines merged, r184, r116 and again r289); r155, r116, r286 unchanged; r289 found the cause (symbol-count state) and a HELD lead that matches, see the end of this note.
+// one note (the stacked score lines merged, r184, again r116 and r143); r155, r116, r286, r143 unchanged.
+// MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
+// defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
+// still take the opposite component order.
+// MiniMax S (11-20): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, so every local home sits four bytes higher; retail's caller 0x4f7e0 sets the arguments up as three pushed values, then ECX = camera, EDX = a, ESI = the displacement vector and EBX = the output point.
+// MiniMax D (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, retail keeps both inverse
+// defaults at [esp+4] and [esp+8] with the displaced point at +0xc/+0x10/+0x14 where this build keeps the inverses at +0xc and in
+// the dead scale slot and spills the second transform's scaled x and z; the written operand order of the three displaced sums is
+// ignored by the compiler, and a helper taking the three components as scalars (with the reversed point as three locals, as
+// retail's third transform reads) shrinks the frame to 0x24 but reorders the sums and the scale block (214), so the pointer form stands.
+// Earlier first line (merged into the one above, r289): 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
+// Earlier first line: one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
+// MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
+// MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
+// inverse defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the
+// transformed points still take the opposite component order. The shared point transform at the origin,
+// displaced, both and reversed sites was measured at 423/376/529/359/538/536/718 in an earlier round, all worse,
+// and the in-place displaced transform and the perspective-only inverse locals measure 263 and 261. No form
+// found this round.
+// Earlier findings. one note (the stacked score lines merged, r184).
+// Merged header (r184): 195 (was 195), one note.
+// Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
+// depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
+// defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
+// only z, into the scale slot. Also differ: the displaced point's load order and our camera-space
+// origin point above the displaced one. In-place displaced transform 263; later displaced input 270;
+// perspective-only inverse locals 261; zero-factor early exit 195; both
+// displaced transforms in place 263.
+// MiniMax S (11-17): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, the two inverse defaults sit at +0xc and in an argument slot where retail keeps them at +4 and +8, the displaced point takes y, x, z in that order where retail takes x, y, z, and the transformed points keep the opposite order.
 // MiniMax D (run 46): no new form, no lower score.
-// score 195 (was 195): Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
+// MiniMax C (11-17): 195, no lower score; the frame is still 0x30 against retail's 0x2c
+// because the second point transform spills both its scaled x and scaled z into two local slots, where
+// retail keeps them in xmm7 and xmm4 and spills only the scaled z into the scale parameter's home, so our
+// inverse defaults land in one local and in that dead parameter slot instead of the two fresh locals at
+// [esp+4] and [esp+8]. Tried: the three orders of the scaled components inside transform_point, a hoisted
+// scale local and the swapped multiply operands, all 195 with identical code.
+// Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
 // only z, into the scale slot. Also differ: the displaced point's load order and our camera-space
@@ -526,6 +562,223 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // not kept. transform_point (outside this edit) sums right, up, forward; retail sums x*[camera+4] + z*[camera+0x1c] first,
 // then y*[camera+0x10] (0x308cc-0x308f2); an earlier round measured that order as 195 with the same code. Frame is still
 // 0x30 vs retail 0x2c (retail packs inv_a, inv_b, b, ta, tb into 11 slots; its a - d point reuses b's y/z slots 0x30a49/0x30a4f).
+// m3 lane 11 r110 (fast): the helper's scale bound by const reference 195 (same code); the displaced point bound
+// by reference for its sums and the second transform 268 (1001 B); the two inverses bound by reference in the
+// perspective block 195 (same code); the helper's rows through a camera reference 267 (998 B); the displacement
+// bound as `vector3f const &displacement = *d;` for the sums 193 (the z row then loads d first as retail, like the
+// (d, a, ...) parameter order without touching the callers; x still loads a first), with retail's operand text
+// 193 (same code), with the rows z, y, x 211 (979 B). Restored.
+// M3 lane 6 r190 (fast with 0x30bf0; callers 0x4f7e0/0x4ff50 unmatched at 325/43 throughout), each 195 with the same
+// code: transform_point's rows summed forward*z + up*y + right*x + position (the order the file-local point transforms of
+// 0x1ee340/0x1689b0/0xa76b0 use); that helper returning its output pointer; the displaced sums written in retail's operand
+// order (d.i + a.x, a.y + d.j, d.k + a.z: the compiler picks the load order, ours stays a-first for x and z); the three
+// defaults as `a = a ? a : g_468788;` and likewise; the helper scaling with `x *= camera->scale`. Body unchanged.
+// Displacement seeded into the forward/reverse/both points by component stores 238/230/273,
+// or by the point setter 238/230/273. Initialized forward/both points 238/273.
+// NOT kept: all retain the larger frame and increase the difference count.
+// In-place scaling in transform output fields, point input copy, scalar snapshot before final row stores
+// 392; Branch-owned scaling in transform output fields, point input copy, scalar snapshot before final row
+// stores 371; In-place scaling in transform output fields, component input copy, scalar snapshot before
+// final row stores 230; Branch-owned scaling in transform output fields, component input copy, scalar
+// snapshot before final row stores 250; In-place scaling in transform output fields, point input copy,
+// complete transformed result 690; Branch-owned scaling in transform output fields, point input copy,
+// complete transformed result 690; In-place scaling in transform output fields, component input copy,
+// complete transformed result 338; Branch-owned scaling in transform output fields, component input copy,
+// complete transformed result 341; Stage only Z in the transform output before the scale test, snapshot Z
+// for all rows 197; Stage only Z in the transform output in the scale branches, snapshot Z for all rows
+// 225; Stage only Z in the transform output before the scale test, read Z per row 234; Stage only Z in the
+// transform output in the scale branches, read Z per row 281.
+// NOT kept: Whole-point/scalar and three Z-only forms recover frame 0x2c but still regress, including
+// unresolved inverse homes.
+// N405: Signed displacement selection inside the transform as component
+// branches, captured origin updates, a complete point or component conditionals
+// 255/307/263/307. Explicit expansion repeats those four scores.
+// NOT kept: the transform still needs the native X/Z and inverse allocation.
+// M3 lane 13 r108 (fast with 0x30bf0): transform_point as a plain static function (this /Ob1 file keeps it out of line)
+// 728 (465 B); the inverse defaults in one declaration 195 (same code); declared after the three parameter defaults 202
+// (974 B, frame 0x30), after the displaced sums 204 (974 B); the orthographic factors as `fa = fb = 1.f;` 195. Lead, not a
+// source form: retail's frame keeps ta and tb as memory points in name order (b, ta, tb, as address-taken locals sort),
+// which a link-time inline of an out-of-line point transform such as 0x142570 (the same row code) would give; its /Ob1
+// file keeps it a call in our build (a file-flag decision).
+// M3 lane 3 r257 (fast; control 195, aligned differences exact / stack-offset-masked / fully masked 80 / 61 / 34). The
+// positional 195 hides two separate causes. (1) The tail: with the factor copies after the perspective test (the
+// orthographic arm setting the inverses to 1, then `fa = inv_a; fb = inv_b;`, the listed direct-inverse form) the tail is
+// retail's: the second inverse as a register value with its default reloaded on its own edge, and the orthographic block
+// laid out between them: 207 (974 B, aligned 57 / 33 / 21); only fb deferred 209 (977 B, 76 / 52 / 22), only fa 225
+// (992 B, 62 / 38 / 26). (2) What is left on that form is the second transform alone: retail keeps the displaced x and y
+// in the registers their sums were built in (XMM7, XMM6) and brings z back through XMM0 into XMM4 with one spill, ours
+// moves x to XMM4 and y to XMM6 and spills x and z (the extra frame slot). On the 207 form the displaced sums written
+// xzy 205, yxz 206, yzx 201, zxy 204, zyx 201 (968-971 B, aligned 54-56). On this body: the displaced depth named
+// first and stored last 195 (same code); the helper scaling the depth from the point's field 238 (974 B); the helper's
+// scale read once into a local 252 (983 B); the displaced point built after the origin transform 270 (re-measure); the
+// helper's depth snapshot first 197 (973 B). Diagnostics, reverted: the reverse retransform removed 480 (704 B: the
+// second transform then keeps x in the sum's register but moves y); a twin copy of the helper for the second, the
+// third, or both later transforms 195 each (same code: the three inline copies do not share register choices).
+// Round 416: The displaced-point transform spills X and Z and reserves 0x30 bytes, compared with one spill
+// and a 0x2c frame in retail. That extra stack word displaces both inverse defaults. matched vector
+// transform with direct translation into its output 211; matched vector transform with shared addition into
+// its output 211; matched vector transform to a rotation local and direct translation 212; matched vector
+// transform to a rotation local and shared translation 218; matched vector transform with direct translation
+// into its output with deferred factor copies 234; matched vector transform with shared addition into its
+// output with deferred factor copies 234; matched vector transform to a rotation local and direct
+// translation with deferred factor copies 235; matched vector transform to a rotation local and shared
+// translation with deferred factor copies 235. NOT kept: Reusing the existing vector transform and applying
+// the translation separately shortens the body to 958 or 959 bytes but leaves an incorrect frame and raises
+// the score. Deferring the factor copies raises it further. The opening transform and body are restored.
+// m3 lane 1 r120 (fast with 0x30bf0 and 0x30710, both MATCH; control 195). Reading: in the second transform retail keeps the
+// displaced x and y in the registers their sums were built in (XMM7, XMM6) as the transform's own x and y, loads z through
+// XMM0 into XMM4 and gives only z a memory home (the dead scale slot) although XMM5 is free there; ours gives the transform's
+// x, y, z XMM4, XMM6, XMM7, so x is moved and both x and z get homes (the extra frame word). A sum's register follows its
+// first operand's base (the displacement's XMM7, the origin's XMM6), hence round 63's parameter-order lead. Tried: no-code
+// mentions `(void)ta.z;` or `(void)tb.z;` after the two transforms 195/195 (same code); `(void)tb.x; (void)tb.y;` 263 (991 B);
+// `(void)ta.x; (void)ta.y;` 251 (988 B); the direct-inverse form re-measured 207 (974 B), with `(void)tb.z;` 207, with the
+// displacement reference for the sums 205. Compile-only (the stream agrees with the real build but two lines): mentions of the
+// displaced point's or the retransform point's components, before or after their sums, in every ordered subset, change nothing.
+// M3 lane 7 r184 (fast; control 195): lead: the three transforms read like inlined copies of the out-of-line point
+// transform 0x142570, which this /Ob1 file cannot inline from another file (a flag lead, not a source form).
+// transform_point with 0x142570's body (address-taken camera, rows forward*z + up*y + right*x) 234 (971 B,
+// frame 0x2c as retail, the scaled values and products move); its original rows with only the address-taken camera
+// 234; its body without the address-taken camera 195 (same code); the calls as 0x142570 itself with `inline` added to
+// its definition (cross-file, diagnostic) 234 (same code as the helper) and 0x1396c7 48, 0x24e59f 42 lost; 1..16 dead
+// locals on the 234 form 234-235 (symbol count moves nothing); parameters (d, a, camera, ...) with every
+// declaration and call (callers are contributor code, so held) 193, with the 234 form 232.
+// Origin reciprocal before the displaced transform, before displaced-point creation,
+// before the perspective block, or before fallback: zero default 246/228/211/211;
+// direct factor 240/253/232/232. The native extent alone leaves the larger frame.
+// M3 lane 2 r102 (fast; control 195 at 985 B): the point helper given 0x142570's own parameter-address read (a named
+// `s_camera const *const *` to the camera, the scale tested through it) 234 at 971 B: the frame becomes retail's 0x2c and
+// the second transform spills one value into the scale parameter's home as retail does, but the first transform's x, y, z
+// rotate to XMM0, XMM1, XMM4 (retail XMM4, XMM0, XMM1) and the second gives the spill to y; with the rows in 0x142570's
+// order 234; the reference declared after the coordinates 234; the helper as 0x142570 written out (separate coordinate
+// declarations, returning the output) 234; the scale read through a cast of the parameter's address instead 195 (same
+// code: no new symbol); on the named-pointer form, zero to seven dead initialised long locals and zero to three real ones
+// at the top 234 each (diagnostic: the rotation is not a symbol-count state). Body unchanged.
+// m3 lane 5 r202 (fast with 0x30bf0 and the callers 0x4f7e0/0x4ff50, unchanged at 325/43; control 195, aligned 80): the point
+// helper testing the scale through a const pointer to its camera parameter (0x142570's shape) 234 (971 B: the frame becomes
+// 0x2c, but the defaults land at +8 and in an argument slot); the helper's x row summed term by term (forward*z, up*y,
+// right*x, then position) with the y/z rows in that order 228 (972 B, frame 0x2c); both 216 (966 B); that product order as
+// single expressions 195 (same code); the existing out-of-line 0x142570 called for the three transforms 718 (475 B: a call
+// from this /Ob1 file).
+// Round 140 (m3 lane 9, fast with 0x30bf0 and 0x30710): retail sums z = d.k + a.z (XMM0, stored first), x = d.i + a.x
+// (XMM7), y = a.y + d.j (XMM6). The written operand order is ignored, but statement order and a new origin local move
+// it; the compile-only harness reproduces the sum code exactly (96 combinations of order, per-sum spelling and the
+// local): the last statement always takes XMM0 and the second is always d-first, so retail's last-and-d-first z never
+// appears. Orders xzy 217, yxz 218, yzx 213, zxy 216, zyx 213; the defaulted origin in a new local `a ? a : g_468788`
+// 195 (only the x sum turns d-first); that with order y, x, z 218 (retail's x/y sums and XMM7/XMM6, z still a-first).
+// A two-argument inline point-plus-vector helper, ternary defaults and the default statement order change nothing.
+// M3 lane 12 r149 (fast with 0x30bf0/0x30710; control 195): retail expands the existing 0x142570 three times here.
+// Diagnostic (file flag, not kept): this file without /Ob1 and the helper calling 0x142570 still leaves three
+// calls, 718 (475 B), with the direct inverses 724, so the file flag is not what keeps it out of line: only
+// `inline` on 0x142570 (another lane's file) expands it. The helper written as 0x142570's text with its parameter-
+// address read plus the direct inverses 220 (960 B); the helper's scaled coordinates bound by reference 236
+// (974 B), with the direct inverses 222 (963 B); the displaced point bound by reference 268 (repeat of r110);
+// rows summed position first 195 (same code); `b` declared at the top 195 (same code).
+// M3 lane 15 r106 (fast with 0x142570/0x30bf0/0x30710; control 195, aligned 95, stack- and register-masked 49): the existing
+// transform4x3f_apply_point (0x142570) marked `inline` and called for the three transforms (camera viewed as the
+// transform4x3f it begins with) 234 (971 B, frame 0x2c); the factor copies dropped, the inverses set to 1 in the
+// orthographic arm and tested and used directly, 207 (974 B, aligned 68, masked 32); both together 175 at retail's 955 B
+// (frame 0x2c, defaults at +4/+8 as retail; left: the displaced sums' operand order and the transforms' x/y registers),
+// but `inline` on 0x142570 loses 0x1396c7 and 0x24e59f and takes 0x2907d0 19 -> 333 in the full check: not kept. The
+// same 175 comes from transform_point reading the scale through a `s_camera const *const *` to its own parameter (with
+// one or three coordinate declarations, either row text order: same code), a parameter-address read, match-only;
+// 0x142570's rows written forward, left, up: it still matches and 0x30830 stays 175.
+// An `inline` or `__forceinline` declaration of 0x142570 in this file only leaves it a call: 724 (469 B). 0x142570 is unchanged.
+// On the 175 parameter-address form: the displaced sums written d-first for x and z, a-first for y (retail's load
+// sides) 175 (same code: ours loads the other side in all three); the origin transform ahead of the displaced point 236 (944 B).
+// M3 lane 14 r121 (fast with 0x30bf0, 0x30710, 0x142570 and the callers 0x4f7e0/0x4ff50, which stay 325/43; control
+// 195). HELD lead, build/r121/held-0x30830.patch (needs the owners' OK: the call lines in 0x4f7e0 and 0x4ff50 change):
+// the parameter-address helper with the inverses used directly (re-measured 175, 955 B, first difference +0x40), plus
+// the parameters as (d, a, camera, scale, ...), the order retail's calls set them up in, with every declaration and
+// call, 173 (+0x4a: the three displaced sums then load retail's sides), plus the helper's coordinates declared y, x, z
+// 150 at 955 bytes (+0xa0: x, y, z then sit in XMM4, XMM0, XMM1 and the displaced x, y in XMM7, XMM6 as retail).
+// On 173: the displaced sums in statement order yxz/zxy/zyx 173, xzy/yzx 175. On 150: coordinates yzx 241, zyx 239,
+// zxy 240, xzy 182 (985 to 988 B but for xzy); the sums yxz 156, zxy 152; the helper's row terms written in any of
+// the six orders 150 (same code); a compile-only screen of all 216 coordinate, scale-statement and row-statement
+// orders ranks this form first. Left on 150: each row's term order (retail right*x, then z*forward, then y*up; ours
+// forward*z and up*y, then right*x) and which side of each product is loaded. Body unchanged (195).
+// Y643: project origin in place 197; project displaced point in place 196; project both in place 197; direct inverses
+// and origin in place 207; direct inverses and displaced point in place 207; direct inverses and both in place 207;
+// both in place with point2f difference 197; direct inverses and both in place with point2f difference 207.
+// NOT kept: The in-place point forms retain the extra frame word. Resolving inverse depth independently shortens the
+// function to 974 bytes but raises the score to 207.
+// Returned depth with planar point or separate planar scalars 195/195, depth computed
+// first 195/195, direct inverse factors 207/207, reversed input reusing displacement
+// 195/195. NOT kept: the depth return folds to the existing transform. Direct use of
+// the inverse factors shortens the body to 974 bytes and shrinks the frame to 0x1c.
+// M3 lane 12 r155 (fast with 0x30bf0/0x30710; control 195). The displaced sums' load sides follow the parameters' index
+// (the held reorder above moves them), so non-reorder probes: the displaced point as a copy of `*a` plus `+=` per
+// component 315 (1029 B); `d` through a `vector3f const *const &` alias in the sums 257 (981 B); `a` through such an alias
+// 231 (976 B); the displaced point transformed before the origin 250 (924 B); the two inverse defaults as one point2f
+// 195 (same code). 0x142570's file (src/unknown_141590.cpp) was on another lane's list this round. All restored.
+// The second displaced transform still spills X and Z in a 0x30 frame. Orthographic bypass
+// 223; perspective-only early invalid-factor exit 210, or inside the perspective arm 210.
+// Direct inverse factors with the bypass 217, early exit 208, or in-arm test 204.
+// View-owned admission result with factor copies 210 or direct inverses 204.
+// NOT kept: all forms retain the extra spill word and raise the score.
+// M3 lane 2 r116 (fast with 0x30bf0 and 0x30710, both MATCH; control 195): the point helper's scale test written
+// `1.f != camera->scale` 263 (995 B); the factor test written `0.f != fa && 0.f != fb` 211 (978 B); the factors defaulted
+// to 1 at their declaration with the else arm dropped 261 (906 B); the zero outputs as one chained assignment 195 (same
+// code); the displaced and transformed points renamed point/origin/displaced (name order reversed) 195 (same code: the
+// frame does not follow these names). All restored.
+// M3 lane 6 r212 (fast with 0x30bf0/0x30710; control 195): the displacement copied into a value local for the six sums
+// 324 (1032 B); the origin copied into a value local 336 (1039 B); both 341 (1046 B); the helper's scale tested through a
+// `s_camera const *const *` to its own parameter with the inverses set to 1 in the orthographic arm and copied to fa/fb
+// after the block 220 (960 B), with the displacement bound by const reference 253 (990 B). On the match-only
+// parameter-address and direct-inverse lead (re-measured 175 at 955 B): the displacement by const reference 200; a
+// `vector3f const *` copy of d for the sums 200 (the z sum then loads d first as retail, the first transform's x/z swap);
+// a `point3f const *` copy of a 175; the sums in statement order y, x, z 175.
+// M3 lane 3 r286 (single-address fast, control 195): both inverse tests as `fabs(z) >= k_real_epsilon` 225 (989 B);
+// the orthographic arm first under `if (!perspective)` 215 (980 B); the nonzero arm returning `dx != 0.f || dy != 0.f`
+// 195 (same code); the scale default moved into the negate block 222 (972 B); the factors as ternaries over the
+// defaults 301 (890 B: the defaults fold). Reading: ours homes inv_b in the dead scale argument slot and stores the
+// computed inverse there, retail keeps both defaults at frame +0/+4 and spills transform components into the scale and
+// perspective slots. All restored.
+// M3 lane 6 r214 (fast with 0x30bf0/0x30710, both MATCH; control 195, aligned 95, masked 38): the orthographic factors as
+// `fa = fb = 1.f;`, the transformed points declared ahead of the displaced point, `fa`/`fb` declared with the inverse
+// defaults, the displaced point as an aggregate initialiser, the transformed points declared `tb, ta` (retail's ta.z
+// slot sits below tb.z, ours above) and as two declarations: 195 each, identical code. The 0x4f7e0/0x4ff50 call-line
+// reorder stays held (both still contributor code). Body unchanged.
+// Array views of transform input, output, camera basis and translation, separately and together 195 each.
+// Input and output as bounded array references with camera array access 195. The X/Z spills and inverse homes persist.
+// M3 lane 3 r289 (fast, single-address image; control 195; the lead below confirmed MATCH in a plain check with the rest of
+// this file still matching and the callers 0x4f7e0/0x4ff50 unchanged at 325/43). Cause: the x/z register roles of the second
+// and third inlined transforms, the frame and the tail follow the function's symbol count modulo 32, not the body's shape.
+// With n unused initialised locals anywhere among the function's own locals the unchanged body is 195 at n = 0..15 and
+// 21..31, 202 (971 B) at 16..19 and 131 at n = 20 with retail's 955 bytes and frame 0x2c (52 and 84 the same); with the
+// held (d, a, camera) parameter order 193/200/125; the direct-inverse form two later: 190 (960 B) at 18..21, 138 (941 B) at
+// 22, held order 132 at +0x127. Such locals inside the helper shift the three inline copies one, two and three times, so
+// the copies are numbered in call order and a copy's roles flip when a 32-entry boundary falls inside it. Retail has the
+// second copy flipped and the third not, which needs the reverse transform's copy numbered ahead of the forward one's.
+// Diagnostic, reverted at once (gotos placing the reverse call first in the text): 90 (966 B) at 17..19, with the direct
+// inverses 6 at 955 B at 19..21. The same numbering without gotos: the forward transform through one nested inline
+// wrapper (the inliner numbers one call level at a time) with the direct inverses and the held order, 6 at 955 B at n = 19
+// and 20 (left: the two view points' homes, ours tb below ta); without the held order 12 (the six displaced-sum rows).
+// View points declared tb, ta, as two declarations, renamed three ways or moved across a boundary: 6/12 each (same
+// code); as one two-element point3f array: MATCH at n = 22 and 23 with the held order, 6 at 22..24 without it; with the
+// reverse point also written into `b` (no second point) MATCH at n = 28..30. Recipe: held (d, a, camera) order + direct
+// inverses + the forward transform through one nested inline wrapper + the view points as a two-element array + the
+// reverse point in `b` + 28..30 more symbols (or two to four fewer). No natural source of those symbols found; shifts
+// measured (matching n): helper returning its output 22..24 (none); origin as a ternary local 21..23 (and it turns the
+// sums' sides: 4 and 6 left); scale as a ternary local 237 at best (other code); a point2f delta 26..28 on the 28..30
+// form; an inverse array 27..29 on it; the forward sums through an inline helper 26..28 while the reverse point is its
+// own local, still ..30 once it is `b`; the reverse sums through a helper, alone or with the forward ones, or both
+// through one scaled helper: no matching state at any n; a pair wrapper transforming origin and displaced point 27 only
+// (21 with a separate reverse point); wrappers on the first and second transforms 28 only; the forward transform two
+// levels deep 17 at 25..30, with the reverse one level deep MATCH at 25..27; the first one level and the forward two
+// levels deep 17 at 25..28. Other states seen: the helper's parameters in the five other orders on the 175 and 150
+// leads 175/150 (same code); 1..7 unused locals at the top of the 150 lead 150 each, inside its helper 150/150/150/174/
+// 178/178/178; the helper's coordinates in the five other orders x 32 states with the held order: best 155 (y, x, z at
+// 20) and 174 (z, x, y at 20); the displaced sums inside the forward wrapper 237..265; sum statement orders xzy/yxz/
+// yzx/zxy/zyx 217/218/213/216/213 again. The displaced sums' operand sides are not text: for parameters they are fixed
+// by the parameters' positions (ours a-first/a-first/d-first for z/x/y, retail and the held order d/d/a), local aliases
+// move them (origin as a ternary local turns x, an origin copy y, a displacement pointer or reference z; the ternary
+// origin with a displacement pointer used in the y and z sums only gives retail's three sides on the unchanged body),
+// and with aliases the x side then moves with the symbol count, period 8. HELD (needs the owners' OK for the call
+// lines in 0x4f7e0 and 0x4ff50, both contributor code): build/r289/held-0x30830.patch is the matching form with 28
+// placeholder locals standing in for the unknown symbols. Body unchanged (195).
+// M3 lane 1 r143 (fast; control 195): the point helper's coordinates declared y, x, z 230 (982 B), as three declarations
+// 230, z, x, y 225 (974 B), x, z, y 227 (982 B) (the y, x, z order was measured before only on the held reorder); the
+// helper returning the point by value 308 (875 B); the point passed by const reference 195 (same code).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

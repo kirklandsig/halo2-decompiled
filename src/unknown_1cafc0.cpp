@@ -512,6 +512,14 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax H (11-18): no new form, no lower score (348): the bytes agree with retail's through +0x1de, and the first
+// difference is still inside the expansion of the existing graph_resources_request, where retail forms the request's
+// graph with `add ebx, 0x34` and reloads the graph into EBP lazily while this build keeps the graph in EBX and
+// graph+0x34 in EBP; that helper's body is in src/unknown_1dacb0.cpp, so its register roles are not this file's to
+// make.
+// MiniMax R (11-17): no new form, no lower score (348): the first difference is still inside the inlined
+// request expansion, whose helper is src/unknown_1dacb0.cpp's and not this file's, so no form of this body
+// moves the score; the body stands.
 // MiniMax H (11-12): no new form, no lower score (348): the first difference is still the expansion of the
 // existing graph_resources_request (src/unknown_1dacb0.cpp), where retail does `add ebx, 0x34` for the
 // request's graph and reloads it into EBP lazily while ours keeps graph+0x34 in EBP, and that helper's body
@@ -531,11 +539,25 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // change register between the two loops and retail's final success byte stays unnormalised, while the
 // request expansion is the inlined graph_resources_request from another lane's file; the permuter's 34 tries
 // over the reduced image found nothing below the 332 baseline.
+// MiniMax B (11-18): no new form, no lower score (348): the remaining differences all sit inside the inlined graph_resources_request, whose body is in another lane's file, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload into EBP are not ours to move from here.
+// MiniMax B (11-19): no new form, no lower score (348): the first difference is still at +0x1de, inside the request
+// expansion whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload
+// into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
+// MiniMax G (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the request expansion in src/unknown_1dacb0.cpp, so the graph's ebx/ebp roles, the add of 0x34 and the lazy reload into ebp cannot be moved from this file; the frame and both query temporaries' homes still agree.
+// MiniMax D (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the inlined
+// graph_resources_request, whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy
+// reload into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
 // the graph in EBX and graph+0x34 in EBP; the inheritance loop then keeps the graph in EBP (ours reloads it per use) and
 // retail's final `mov al` is not normalised (ours `test al, al` / `setne al`).
+// M3 lane 11 r123 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1dc8c0/0x1cccd0, all MATCH): bool success 478 (1809 B, aligned
+// 53 -> 102, masked 42 -> 59: the return is retail's and the graph moves to EBP, but the found names' copies change homes
+// and graph+0x34 is formed per group); that with success declared ahead of the graph 478; char success 348 (same code);
+// the request under `if (success != false)` 348; that with bool success 478. The roles in the request (graph+0x34 kept
+// in EBX, the graph reloaded per loop) come from the shared request helper (BLOCKED-BY 0x1dc8c0's file, whose matched
+// contributor function uses the same helper).
 // Round 8 (lane 17, on the call): bool success 478; byte return type 478; `success != false` as the urgent argument
 // with no test 645; `return success != false;` 351; found-name locals type/class/mode 348 (same code).
 // Earlier 399: Frame eight versus twelve and independent hidden-result homes remain; request graph/name allocation still differs.
@@ -782,6 +804,212 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
 // then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
 // destructive graph/base or lazy-reload repair; original complete body and declarations restored.
+// P545: Standard typed name forward/backward copies, primary/alternate hidden-result
+// forward/backward copies and name representation forward/backward copies:
+// 586/587/611/612/591/592/586/587. NOT kept: native graph/base reloads and byte
+// return remain; query copies disturb the agreeing prefix. Original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (348): retail's destructive graph-base reloads and its final
+// return-byte normalization are still the whole difference, and this body only calls the graph lookup that owns the
+// name record (src/unknown_1dacb0.cpp), which this lane may not edit, so the local spellings cannot move them.
+// P558: Deep fallback negative-continuation masks 8..14, then all five query predicates at mask 31:
+// 362/433/396/533/375/431/394/532. NOT kept: no native graph/base or return equality; original complete
+// fallback chain, query snapshots, byte status, request producer and full body restored.
+// P570: Provisional fallback truth before ordered queries, terminal failure clears it,
+// original success merges afterward; byte/char/signed-char/bool/word/short/long/dword:
+// 643/643/643/643/643/643/643/643. NOT kept: matching lookup prefix and request graph/base
+// homes regress; original success stores, shared request call and complete body restored.
+// P587: Eight independent original graph-pointer identities on the recovered twelve-byte
+// query frame: eight 348 at 1782 bytes. NOT kept: no native destructive graph-base,
+// lazy graph reload or byte-return repair; original complete body restored.
+// P594: Primary-failure-only false default with original success publications, byte/char/
+// signed-char/bool/word/short/long/dword: 400/400/400/528/575/575/528/528. NOT kept: no exact graph/base or
+// byte-return repair; original entry default, all queries and complete body restored.
+// M3 lane 12 r141 (fast with the callers, callees and 0x1ddb90/0x1ddc70/0x1ddd00; that image reproduces 348): the
+// tail differs in one decision. Retail loads the graph for `&graph->mode_count` before the last found-name read, while
+// EBP still holds &found->weapon_type, so the sum is formed in place (`mov ebx, [graph]; add ebx, 0x34`), keeps EBX
+// for the five groups, and the graph is then loaded lazily into EBP (loop 1 and 2 preheaders, the join after group 2).
+// Ours reads the three found names first, so both registers are free: graph in EBX, `lea ebp, [ebx+0x34]`.
+// Helper-side diagnostics (src/unknown_1dacb0.cpp, another lane's file this round, restored): const formals on the
+// grouping helper, and the five direct groups called from the request without the grouping layer: 348 each (same
+// code); `inline` on the definitions of 0x1ddb90/0x1ddc70/0x1ddd00 with the real 0x1ddd00 called here in place of
+// the forced copy: 348, the same code, and the three still match (their file's /Ob1 is why the link keeps the real
+// one out of line here: with `inline` on 0x1ddd00 alone 1788). The real 0x1ddd00 with `success` as its urgent
+// argument and no test 1955 (not expanded), with `success != false` 1955, bool success 1964; the forced copy the
+// same way 645/655. The request's outer level written here (the grouping helper called for the graph and for each
+// inherited graph) 674, with the found names in locals 390. Found names read into locals in the six orders (m mode,
+// c weapon_class, t weapon_type): m-c-t 390, m-t-c 390, c-m-t 353 (graph in EBP, the sum in EBX by lea), c-t-m 352,
+// t-m-c 350, t-c-m 348: the graph load always follows the three reads.
+// One-object screen of the same shape (build/r141/probe25..28.py): a spilled graph local, an out-parameter getter, a
+// reference, a const local, a second copy, by-reference or const formals at any level, the lookup helper taking the
+// mode array, and even macros in place of every helper all keep the graph in a register with the sum by lea; only a
+// resources local read before each loop gives retail's in-place add (but not retail's in-loop read).
+// The complete found-name record at request entry, initialized, const-initialized, assigned or
+// field-initialized: 504/504/504/407. The same forms with Boolean success: 497/497/497/503.
+// NOT kept: the snapshots disturb the agreeing prefix and leave the graph/base reloads unresolved.
+// M3 lane 1 r122 (fast with the callers and callees, 0x1cd070 unchanged at 210; aligned 36 on the kept body, which
+// is far closer than its 348 by position: 21 extra bytes shift the tail). Diagnostic, reverted: the three request
+// helpers copied here in member form on a type derived from the graph (`this` for the graph at all three levels,
+// the inherited graph as the object of the inner call) 348, the same bytes: `this` is copied into EBX exactly as
+// the first formal is, so the member form does not give retail's in-memory graph. bool success re-measured 478
+// (1809 bytes, aligned 80): retail's un-normalised return and the graph in EBP, but `lea eax, [ebp+0x34]` at each
+// group and the zero in EBX (retail: the sum in EBX, `xor ecx, ecx` for the inheritance loop's two stores and its
+// `cmp eax, ecx`); the member form with bool success 478 (same bytes as bool alone). The member form taking the
+// found-name record by pointer at the request level 674 (1830 bytes; the names are then read at each group); that
+// with an urgent-only request (the constant false dropped) 637 (1798 bytes); the graph passed as the state's tag
+// lookup at the call instead of the local 633 (re-measure of round 12's fresh graph: 0x1cd070 213).
+// M3 lane 15 r104 (fast with 0x1cd070 210, 0x1cccd0 and 0x1dc8c0 MATCH throughout; control 348, all restored): the graph
+// read through its address at the request (diagnostic) 348 (folds, same code); the graph fetched through graph_get() at
+// the request 633 (0x1cccd0 lost); `success` declared ahead of the graph 348 (same code); in the request helper (src/
+// unknown_1dacb0.cpp) the inherited graph named before its group request 348 (same code; 0x1dc8c0 stays MATCH: that
+// matched user of the helper also keeps the graph in EBX and graph+0x34 in EBP, so the swap here comes from this caller);
+// the found names copied into an aggregate for the request 504 (1766 B, the frame changes).
+// Separate fallback with an identifier or byte gate 608/615. Byte formed after alternate
+// lookup with byte or identifier gate 662/589. Byte set in each lookup outcome with byte
+// or identifier gate 566/547. Separate failure return 612, Boolean phase result 664.
+// NOT kept: the split phases lose the matching lookup prefix. The Boolean form offsets EBX
+// in place with a different frame and different graph reloads.
+// M3 lane 10 r125 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1cccd0/0x1dc8c0, all MATCH unless noted, 0x1cd070 210 and
+// 0x1db170 828 unchanged; control 348, aligned 53). The three request helpers copied into this file under other names
+// (a private copy of the shared request) 348 (same code); on that copy: the urgent loop's resource table read into a local
+// before the loop 404; the inherited graph named in the inheritance loop 348 (same code); the found record read through a
+// `request` pointer at the call (shared helper) 348; the inheritance index declared `long i = 0;` with the loop's own
+// initialiser dropped 269 (aligned 11: the graph is loaded before the last found name, the sum formed in place with `add
+// ebx, 0x34` and the graph reloaded into EBP per preheader, as retail; left: our early `i = 0` store after the parameter
+// homes, retail's `xor ecx, ecx` zero for the loop entry's compare and two stores, and the final normalization); the same
+// edit in the shared helper itself 269 here but 0x1dc8c0 474 (lost); that copy with `bool success` 256 (aligned 9, the
+// return unnormalised as retail; 1777 B); the index initialised again in the loop 348 (the early store is dropped and
+// the roles go back); the index zeroed above the urgent test, or the loop as a while, 256 each; the copy's original loop
+// with `bool success` 478 (aligned 102), with the index declared above the urgent test 478. With `bool success` and the
+// shared helper, the found names read into locals in the six orders m-c-t 487, m-t-c 486, c-m-t 479, c-t-m 479, t-m-c
+// 478, t-c-m 478. Lead: something live from the request's start to the inheritance loop gives retail's graph roles;
+// retail's own index is set at the loop (zero in ECX). Body unchanged.
+// M3 lane 16 r150 (fast with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1cccd0/0x1dc8c0, all MATCH, 0x1cd070 210 unchanged;
+// control 348, aligned 53). On a private copy of the three request helpers in this file (diagnostic only: a helper's
+// body written out stands only with a match): the copy alone 348 (same code); one graph variable for the request
+// reassigned to each inherited graph 348 (same code); with `bool success`, the copy without its outer `urgent || other`
+// guard 478 (1809 bytes, as bool alone). Re-measured: the index set to zero at its declaration with the loop's own
+// initialiser dropped 269, with `bool success` 256 (1777 bytes, aligned 9). On that 256 form, the guard dropped 256,
+// the graph variable above 256, the loop written as a test-and-break loop 256 (all the same code). Its three
+// differences: the early zero store into the index's home (the mode parameter's slot) ahead of the first sorted
+// lookup, the alignment jump that its 8 bytes cost the first urgent loop, and the loop entry, where retail compares
+// the count against a zero in ECX and stores that ECX into both the index and the offset homes while this build folds
+// the compare to `test eax, eax` and stores immediates. Without the early store (the index set again at the loop) the
+// graph roles go back to this body's, so the early store, which retail does not have, is what moves them.
+// M3 lane 13 r120 (fast with 0x1cd070 210, 0x1cccd0/0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1dc8c0 MATCH throughout; control 348,
+// aligned 53; body unchanged). bool success re-measured 478 (1809 B, aligned 102) and read against retail: with bool the
+// graph is loaded into EBP at the request start, so graph+0x34 is re-formed per group (`lea eax, [ebp + 0x34]`), the mode
+// name takes EBX for groups 2-4, and from group 5 EBX holds the inheritance index's zero (`xor ebx, ebx`, then `cmp eax, ebx`
+// for that group's tests and both loop-entry stores). Retail is that form with one decision changed: the graph is not in a
+// register at the request start, so the sum takes EBX for all five groups, the mode stays in its home and the zero only
+// gets ECX at the loop entry (`xor ecx, ecx` / `cmp eax, ecx` / two stores). With byte success the closing `!= 0` keeps a
+// zero use at the function's end, so no zero register is made at all (immediates) and both the graph and the sum get
+// registers. The `lea esp, [esp]` / `jmp` differences after +0x1de are padding only: a loop top and the label after a
+// loop are each aligned when 7 bytes or fewer are needed, so they follow the 3-byte shift of the first block.
+// Retail's own 0x1ddd00 keeps its index in EBP (`xor ebp, ebp` after the first group call, `cmp eax, ebp`, the offset
+// stored from EBP), the same shape as this function's loop entry with ECX.
+// Private copies of the three request helpers in this file (diagnostics, all restored; byte / bool success): the copy
+// alone 348 / 478 (same code); the mode array taken once as a `modes` pointer by the group level and passed to each
+// lookup 348 / 478 (same code); a `resources` local read before each urgent loop 404 / 457 (first +0x2); with bool: the
+// index started from a `first = 0` local 478; the inherited graph declared at the request's scope 478, with a NULL
+// initialiser 478; the inheritance count read into a local above the five groups 513; a short index zeroed at its
+// declaration 483; the index zeroed at its declaration with the loop as a while 256 (aligned 9: re-measure of lane 10's
+// form: retail's roles, left the early zero store and retail's ECX zero at the loop entry). Only an index live from the
+// request's start moves the graph out of its register, and that form stores its zero early, which retail does not.
+// M3 lane 2 r114 (fast with 0x1ddd00/0x1dc8c0, both MATCH; control 348): bool success re-measured 478 (1809 B: the graph
+// is loaded into EBP as retail, but graph+0x34 is re-formed with `lea eax` per group and EBX holds a found name, whose
+// copies take the other dead parameter slots); the graph read through a `s_graph_tag *const &` for every use after its
+// declaration 348 (same code; for the request alone it is DL240's first form, 348 again); the three fallback name locals
+// declared mode, class, type 549 (first difference +0xf9); the graph local as a const pointer 348 (same code); bool success
+// with the request's graph through the const reference 478; the request's graph fetched again from graph_get() 633
+// (`this` stays live and the head changes).
+// M3 lane 14 r126 (fast with 0x1cd070 210, 0x1cccd0, 0x1ddd00, 0x1ddc70, 0x1ddb90, 0x1db120 and 0x1dc8c0 MATCH unless noted;
+// control 348 at 1782 B, aligned 53, 42 with registers masked; body unchanged). Diagnostic (the one compiler-setting
+// trial): the real 0x1ddd00 called here with its file built without /Ob1 is expanded by the compiler itself, 348 and the
+// same code as the forced-inline copy, with 0x1ddd00, 0x1ddc70, 0x1ddb90 and 0x1dc8c0 still MATCH: so retail's expansion
+// is the plain function, and the copy is not what holds the graph in a register. Forms: the real 0x1ddd00 called under
+// the real flags 1896 (469 B: it stays a call; 0x1cccd0 68 and 0x1cd070 337), with bool success 1902; the request on
+// `graph_tag_get(result->graph_index)` 502 at 1766 B (first difference +0x1e, aligned 113); the found record read
+// through one const pointer for the request 348 (same code); the mode read through a pointer to the found field 348
+// (same code); `if (!success) return false;` ahead of the request with `return true` after it 671 (1695 B); the
+// request's graph from graph_get() again 633 (re-measure: 0x1cccd0 lost at 59, and 0x1cd070 27 at retail's 1133 B with
+// it, a lead for that function only). What is left is unchanged: retail loads the graph for `graph + 0x34` before the
+// last found-name read and adds in place (EBX), then reloads the graph into EBP at each loop, as a value that has no
+// register of its own across the request; this build gives the graph one register for the whole request.
+// M3 lane 3 r280 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1dc8c0/0x1cccd0, all MATCH unless noted; control 348, 1782 B,
+// aligned differing rows 53 of 614). Reading: in the request's first (own-graph) group retail keeps the graph in its
+// stack home and loads it into EBP at each loop preheader, with graph+0x34 in EBX, while its inherited-graph group has
+// the inherited graph in EBX and `lea ebp, [ebx + 0x34]` as ours has in both; retail's status byte is stored at each
+// success site ([esp+0x13]) and returned unnormalised. bool success re-measured 478 (1809 B, aligned 102: a zero
+// register takes EBX, the graph EBP for the whole request, graph+0x34 formed per group). The request helper's two
+// levels written at the call (the kinds request, then the inheritance loop over it; a helper body written out,
+// diagnostic) 674 (1830 B, 0x1cccd0 10), with bool success 611 (1777 B). The failure path as an early
+// `if (!success) return success;` ahead of the request: byte success 546 (1787 B), bool success 317 at retail's
+// 1761 B, not kept: the count is positional (first difference moves up to +0x8e, aligned 460), the request is then
+// duplicated per success site with its default names as immediates, where retail has one request after the status
+// test. bool success passed as the request's urgent argument with `!success` as the other 1398 (2473 B). The cause
+// sits inside the shared inline request (src/unknown_1dacb0.cpp, held by another lane this round, and used by the
+// contributor's matched 0x1dc8c0).
+// M3 lane 5 r219 (H2M_FAST with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1cccd0/0x1dc8c0/0x1cd070, all MATCH each run;
+// control 348): the request's names from an aggregate copy of the found record 504 (1766 B, first difference +0x2); the
+// request given its own graph pointer local 348 (same code: the copy folds into the graph); `byte success` declared
+// ahead of the graph 348 (same code); bool success with that graph pointer 478 (as bool alone); the graph bound as
+// `s_graph_tag *const &` to the getter's result 348 (same code). The residual is the expansion of the request helper
+// (the inheritance index's zero and the graph's register), in another lane's held file this round: BLOCKED-BY 0x1ddd00.
+// Body unchanged.
+// M3 lane 11 r141 (fast with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1dc8c0/0x1cccd0/0x1cd070, all as before; control 348 at
+// 1782 B, aligned differing rows [exact/stack-masked/register-masked] 36/36/25; body unchanged). The graph held in a
+// one-member aggregate local 348 (same code: the aggregate is scalar-replaced), with bool success 478 (bool's code); the
+// graph returned by value in that aggregate from an inline getter 348 and 478 (same code again). Diagnostic, reverted at
+// once: the graph local kept in memory by an unreachable address-taking call, byte success 451 (first difference +0x2:
+// the frame grows to 0x10, but aligned 47/19/15), bool success 464 at 1777 B (49/22/18): with bool the request is then
+// retail's but for four places: the graph is reloaded into EBP at the first two loop preheaders and at the join after
+// the second loop exactly as retail does, the zero for the inheritance loop is made in ECX at the loop entry (`xor ecx,
+// ecx`, `cmp eax, ecx`, both stores) and the return is unnormalised; left there are the sum formed by `lea ebx, [eax +
+// 0x34]` from a scratch load where retail adds in place, the inheritance loop's graph read per use where retail keeps
+// EBP, the fallback chain reloading the graph for each call where retail holds it in ESI (the escaped address makes
+// every call kill it), and the fourth frame dword. So retail's request reads the graph as a value that lives in memory
+// but is not killed by calls, and its status is a bool; the natural source for a graph that stays in memory without
+// its address escaping is still to find (a one-member aggregate is not it).
+// M3 lane 7 r205 (H2M fast with 0x1cccd0, 0x1cb970 and 0x1ddd00, all MATCH but where noted; control 348 at 1782 B): the
+// first lookup as `success = result->index != NONE; if (!success) { ... }` 506 (1766 B); the second lookup's arm as
+// `success = result->index != NONE; if (success) found->set = ...;` 616 (1766 B); the fallback chain guarded by
+// `!success` in place of the index test 615 (1702 B); each fallback arm storing the found names before `success = true`
+// 579 (1734 B); the request given a fresh graph_get() 633 (and 0x1cccd0 59, 0x1cb970 17). Body unchanged: from +0x1de
+// the graph / graph+0x34 register roles belong to the inlined request helper in src/unknown_1dacb0.cpp (another lane's
+// file this round).
+// M3 lane 16 r167 (H2M fast with 0x1cccd0/0x1ddd00/0x1dc8c0, all matched unless noted; control 348; body unchanged): the
+// request's names read into locals in retail's load order (class, mode, the graph, type) 353; bool success with the
+// request under `if (success == true)` 507 (1809 B, first difference +0x96); bool success returned as `success != false`
+// 351 (1784 B, the byte form's code but for the return); bool success with the request's graph from a fresh graph_get()
+// in a local 626 (0x1cccd0 59); the request's names through a `s_animation_names const &` to the found record, byte
+// success 348 (same code), bool success 478 (bool's code). The graph keeps a register for the whole inlined request in
+// every form; retail's graph has none there (BLOCKED-BY 0x1ddd00's inline copy in another lane's file, as above).
+// M3 lane 12 r171 (H2M fast with 0x1dc8c0/0x1db170/0x1dbc80/0x1ddd00/0x1cccd0/0x1cd070; control 348, aligned 53, register-
+// masked 42): the request helper's inheritance index declared in its for 348 (same code everywhere; 0x1dc8c0 MATCH). Lead,
+// not kept (declarations moved past calls, 618/611): the three fallback name locals read right after names_resolve give the
+// request retail's roles exactly (the graph loaded for `add ebx, 0x34`, reloaded into EBP per loop, the inheritance loop's
+// zero in ECX) at aligned 30 / masked 17, and with `bool success` aligned 28 / masked 15 at 1777 B (the return then retail's
+// unnormalised byte); left there: the head's early loads and the chain's registers (the graph in ESI and the names in homes,
+// where retail keeps the mode in ESI and reloads the graph per call). So the request's graph role follows the name locals'
+// live ranges, not the shared helper. The name locals read at the top of the failure arm 587 and just ahead of the chain's
+// test 613 (1766 B each, the frame moves). Diagnostic (reverted): the graph kept live past the request 602. Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1db120/0x1cccd0/0x1cd070, all MATCH each run; control 348): success declared ahead of
+// the graph 348 (same code); success assigned from the first lookup's test (`success = index != NONE; if (!success)`)
+// 506 (1766 B, first difference +0x2d); the found names read into three locals just before the request 390; the
+// request's urgent flag passed as `success != false` under the test 619 (first difference +0x5); the second lookup's
+// set stored after `success = true` 350. Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00 as above.
+// M3 lane 14 r148 (fast with 0x1cccd0, 0x1dc8c0, 0x1ddd00 MATCH throughout; control 348): `long success` 496 (1798 B,
+// first +0x2d); bool success with the request's names and a graph copy read into locals in retail's load order (class,
+// mode, graph, type) 479 (1809 B); the same locals with byte success 353; in the shared helper (0x1dc8c0, 0x1ddb90,
+// 0x1ddc70, 0x1ddd00 still MATCH, 0x1db170/0x1dbc80 812 unchanged): the type level's two resource loops with their own
+// loop-scoped indices 348 (same code); the request level without its outer `urgent || other` guard 348 (same code).
+// M3 lane 12 r181 (h2m fast with 0x1cccd0/0x1cd070; control 348): the three fallback name locals read once after
+// names_resolve and used by the chain only 618 (r171's lead re-measured); read after the found copy, chain only 557; read
+// after names_resolve and used by both lookups and the chain 620 (1750 B; 0x1cccd0 and 0x1cd070 then 10 each); read after
+// the found copy and used everywhere 568 (1734 B), with bool success 571 (1729 B). Reading: the matched 0x1dc8c0 expands
+// the same request helper with `lea ebp, [ebx + 0x34]` from a graph in EBX, exactly ours, so the helper's form agrees;
+// what differs is this caller's graph, which has its stack home in both builds but gets EBX for the request's outer
+// region only in ours (retail: graph+0x34 formed in place in EBX, the graph loaded into EBP per loop).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1028,14 +1256,30 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax H (11-19): no new form, no lower score (210): the two id slots are still the other way round (retail keeps the transition id at frame+0x14 and the animation id at frame+0x18) and the blend-query byte is still computed after the 0xe6800 call where retail computes it before; the forms that align more instructions all raise the positional score.
+// MiniMax H (11-18): no new form, no lower score (210): the two id slots are still the other way round (retail keeps
+// the transition id at frame+0x14/0x16 with its stores in the block and the animation id at frame+0x18/0x1a with its
+// stores at the entry), the blend-query byte is still computed after the 0xe6800 call where retail computes it before,
+// and the set() call's fourth argument still differs; the 0xe6800 call's body is in another file.
+// MiniMax E (11-17): no new form, no lower score (210): the two id slots are still swapped (retail keeps the animation id at frame+0x18/0x1a with its -1 stores at the entry and the transition id at frame+0x14/0x16 with its stores in the block); four declaration and scope orderings measured at 210 or 211, and moving the transition id to function scope gives retail's slots but leaves its constructor at the entry (353).
+// MiniMax E (11-15): no form kept. The permuter's best variant (195, same in both images) swaps the first and
+// fourth arguments of the transition channel's set() call, which would put the animation set name into the
+// channel's graph tag index instead of the state's graph tag index that retail loads from [edi+0x68] at
+// 0x1cd312 and passes at 0x1cd324, and it adds a local that holds only a constant; both are on the reverted
+// list, so the original call stands. Still differs: the two id slots are swapped (retail keeps the transition id
+// at frame+0x04/0x06 with its -1 stores in the block and the animation id at frame+0x08/0x0a with its -1 stores
+// at the entry), the blend-query byte's residency, and the set() call's fourth argument (retail keeps the set
+// name in ebp, ours reloads it from a stack slot).
 // MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
+// MiniMax S (11-16): no new form, no lower score (210); the permuter's only lower form swaps the first and fourth arguments of the channels[2].set call, which retail does not do (retail passes the state's graph tag in ecx and the set name in ebp), so it is not kept; passing the set parameter instead of names.set measures 223, the third parameter 221, and naming the third and fourth parameters the other way round 214.
+// MiniMax B (11-18): no new form, no lower score (210): the transition id still sits at frame+0x08 where retail keeps it at frame+0x04 with its stores in the block; hoisting it to function scope in either order (357 and 359), an aggregate of the two ids (368) and a two-element array (361) all score worse because the hoist changes the register allocation, and the blend byte's residency across the 0xe6800 call follows that callee's file.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives
 // retail's slots but leaves its constructor at the entry (353); re-initialising it in the block adds the
 // block-entry stores but the entry constructor stays (353); no C++ scoping gives both. Blend-query lifetime
 // (retail keeps the blend byte in memory across 0xe6800) and the result/loop byte homes also differ.
-// score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
+// Earlier 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
 // Round 15: inline channel query 210; early success with separate name comparisons 256; separate comparisons
 // with late success 265; bitwise separate comparisons 256; inline transition-find 210 (callee still matched);
 // fraction clamp workspace 287; signed-byte result 210; primary-ID lexical rename 210. Original body restored.
@@ -1180,10 +1424,101 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // unknown80 = 0 (0x1cd3e2-0x1cd3ee); flags &= ~1 (0x1cd3f6); name compare before the store, request guard and
 // the three loop clears (0x1cd3fa-0x1cd4b9); state_flags & 4 fallback (0x1cd4ce). No hand-expanded helper bodies
 // (channel_loop_clear, channel_valid, PIN are used), no in-body pragma, no new include, helper or double local.
+// MiniMax D (11-17): no new form, no lower score (210): the frame of 0x38 still agrees, but retail keeps the
+// transition id at [esp+0x14] and the animation id at [esp+0x18] while ours has the two the other way round
+// (declaring the transition id first at the top was screened before and gave 342-344), and retail keeps the
+// blend byte in memory across the 0xe6800 call while ours keeps it in a register, because the build knows
+// that callee's clobbers; that callee's file is not this lane's to edit.
+// MiniMax I (11-17): no new form, no lower score (210): the only difference left is the order of the two ids in
+// the frame - this build puts the animation id at esp+0x14 and the transition id at esp+0x18, retail puts the
+// transition id at esp+0x14 and the animation id at esp+0x18 - while both ids' -1 stores, the lookup's out-parameter
+// and the blend id's home agree; declaring the transition id at the function scope measures 357 (the fraction then
+// takes esp+0x14), with the same re-init 250, and the transition id declared after the animation id measures 250.
+// M3 lane 8 r183 (fast with the nine callers, 0x1ccda0 and 0x1cc3f0, control 210): transition_find's blend output as `bool &`
+// (declaration, definition and call; 0x1ccda0 still matched) 210; the transition id read through a const reference at the
+// channel test 210; the 0x200 test with its arms swapped 214 (1133 B); the fraction declared where first set 210; the
+// transition set declared at its initialisation 210. Diagnostic: the channel test's id use dropped 337 (1116 B): the id
+// then stays in memory, but the id slots stay swapped and the set still does not take EBP. All restored.
+// Completed transition ID copied at admission, before clear or after start 210/210/210.
+// Completed primary ID copied at lookup return alone or with those transition
+// copies 210/210/210/210. Primary copy before clear with transition copy at
+// admission 210. All leave the ID slots and blend lifetime where they were.
+// Lookup inputs from the set, mode, weapon fields or all name fields 210/210/210/210;
+// resolved set or resolved mode and set at lookup return 210/210; complete record lookup with
+// early resolved set 210; early set under split lookup admission 210. NOT kept: all forms
+// tie with the primary and transition ID homes exchanged.
+// M3 lane 1 r122 (fast with 0x1ccda0, 0x1cccd0, 0x1ccae0, 0x10f430, 0x1cb410; aligned counts in brackets, the kept body
+// [103]; nothing kept: every form below is closer when aligned and further by position). The set parameter refreshed
+// from names.set in the block and used at the three later places 210 (same code); the channel byte held in the blend
+// variable 210 (same code); both 210; the set parameter at the three later uses re-measured 277 [99] (1133 bytes;
+// callers 0x10f430 80, 0x10fd40 13, 0x119650 8, 0x118510 2, 0x1ccae0 2). Lead A (round 64's form rebuilt): bool
+// result, `result = true;` as the first statement after channel_start, `if (!result && (state_flags & 4)) result =
+// true; if (result) {...}` and three name-change bools joined with `||` after the store 249 [51] (1140 bytes, first
+// +0xb1: the two id homes, the memory transition id and the set in EBP are then retail's); A with the request's three
+// arguments read through stored_names (retail reads `[eax]`, `[edi+0x78]`, `[edi+0x74]`) 249 [47]; A2 with the
+// transition channel in a pointer local declared between the id test and the graph test (`if (id != NONE) { channel =
+// &channels[2]; if (graph != NONE && channel->set(...))`, three uses) 282 [35] (1142 bytes: the channel byte is then
+// memory-resident with retail's `and byte ptr [esp+0x50], al` and `lea ebx, [edi+0x40]` sits where retail has it); the
+// pointer declared inside the two-test block instead 282 [48] with the frame position local; the frame position in a
+// local declared after the frame count 261 [59] (retail's single load and in-place pin, but position and count
+// exchange XMM0/XMM1), declared before it 269 [62] (1153 bytes, loaded ahead of the call), with the pointer 206 [50]
+// (1155 bytes; positional accident, not kept). The store through a forced inline helper called on the success path and
+// on the flag-4 path 560/547 (two copies, not merged); the same helper not forced 442/448 (out of line); the flag-4
+// block written after the return and reached by goto (diagnostic) 249 [47], the same code as A2: the build lays that
+// block ahead of the store whatever the text order, where retail has it after the epilogue jumping back; an early
+// `return result` form without gotos 272 [112]. Diagnostics, reverted at once: the blend query's callee swapped for an
+// undefined extern 253 [33]: the blend byte then goes through memory around that call but in EBX, not retail's
+// load/store at every `&=`; the blend byte's address also passed to an undefined extern 331 [96] (frame 0x3c). Left on
+// A2 [35]: the blend byte is never register-resident in retail (stored before the 0xe6800 call, reloaded after it and
+// at the join, state_flags reloaded into EBX right after that call, one shared `and byte ptr [edi+0x6e], 0xfe`), the
+// frame position's single load, the flag-4 block's place, and a scratch-register rotation at the 0x1cccd0 and 0x1cb410
+// calls. BLOCKED-BY 0xe6800 for the blend byte only if retail built that callee as opaque; not shown.
+// M3 lane 15 r104 (fast with 0x1ccda0, which stays MATCH, and 0x1cc3f0 348; control 210, all restored): the animation id
+// renamed to sort after the transition id 210 (same code; a re-measure of lane 10 r13's form); the blend flag reused for
+// the unflagged state (retail's [esp+0x50] holds both) 210 (same code: ours still keeps it in DL); `result = true;` first
+// in the channel_start success block (retail's `mov byte ptr [esp + 0x54], 1` there) 274 (1139 B); a named pointer to
+// channels[2] declared after the unflagged state and used for its set, frame and unflagged calls 237 (1133 B as retail,
+// first +0xa9: both id slots and the transition id's memory compares as retail; left: names.set not cached in EBP and
+// the blend flag kept in DL across 0xe6800); on that, a resolved-set local for the three later set uses 237 (same code);
+// on that, transition_find's blend parameter read through its address (diagnostic) 285 (1136 B; the transition id
+// moves to [esp+0x4c]).
+// M3 lane 13 r120 (fast with 0x1ccda0/0x1cccd0/0x1ccae0/0x1cb410, plus 0x10ee20 and 0xe6800 where the definition of
+// 0xe6800 was touched; control 210, body unchanged): HELD (needs the owner's OK), build/r120/held-1cd070.patch: MATCH
+// in the plain check and in a full check (12233 matched, nothing lost; 0xe6800, 0x10ee20 and the callers 0x10f430,
+// 0x10fd40, 0x119650, 0x118510, 0x1ccae0 still match) with `inline` on the definition of 0xe6800 (a contributor's
+// function: retail expands that body once inside 0x10ee20 and calls it there and here, so it is a header inline in
+// retail; with it this caller no longer keeps the blend byte in EDX across that call) and this body: bool result with
+// `result = true;` first in the channel_start block; the unknown6e update written once after the 0x200 block (`if
+// (blend) |= 1; else &= ~1;`, which keeps the blend byte in memory with retail's load/and/store at each `&=`);
+// `real frame_position = channels[0].frame_position;` declared after the frame count and pinned in place
+// (`frame_position = PIN(frame_position, 0.0f, frame_count); fraction = frame_position / frame_count;`: position in
+// XMM0, count in XMM1); the transition channel and the blend channel started through the existing channel_start
+// (flags 0x15 and 0x3c0) in place of its body written out (retail's `lea ebx, [edi + 0x40]` before the graph test and
+// the id copied without a rotation step); the tail as `if (!result) { if (state_flags & 4) result = true; } else {
+// flags &= ~1; } if (result) {...} return result;` (the flag block then sits after the return and jumps back to the
+// store); the store as three bools (`mode_changed`, `class_changed`, `type_changed`) around `stored_names = names;`
+// joined with `||`, the request reading stored_names. Without the 0xe6800 change that body is 305 (1118 B, first
+// +0xb1: the blend byte stays in DL with no stores), so it is not kept here.
+// Steps on the way, each with the 0xe6800 change unless noted: lead A rebuilt without it 249 (1140 B); with it 253;
+// + shared unknown6e update 244 (without it 276); + the channel pointer between the id and graph tests 248; + frame
+// position local declared after the count 106 (after a short count 243); tail as `result = result || (state_flags &
+// 4)` or an early `return result` 260 (the frame changes), `if (!result) result = (state_flags & 4) != 0;` 346,
+// `if (result || (state_flags & 4)) { result = true; ...}` 202, nested `if (!result) { if (state_flags & 4) ...}`
+// with the flag clear left in the block 106, a second flag for the store 106; the flag clear in the else-arm 19; arms
+// the other way round (`if (result) flags &= ~1; else if (state_flags & 4) ...`) 87; a two-use last-frame helper
+// 261/276; the position pinned in place 2; second frame-count read through an animation pointer local, a count
+// local or with the product swapped 19 each (same code); a named `state_flags & 0x20` local 4; a named variant id
+// 168; `state_flags & 0x60` at the second test 360; the fraction test first 10; channel_start for the transition
+// channel alone MATCH, for the blend channel alone 2, both MATCH; on the match: one changed bool with `||` 301, byte
+// result 21, the frame count through an animation pointer local MATCH (not needed).
+// In-tree forms without the 0xe6800 change (64 subsets of the six changes on main's body, then 16 result/tail/store
+// combinations): every subset is above 210 except bool result + the else-arm tail + three bools 168 (1139 B) and
+// the same with byte result 184; those two need the flag clear moved to the else-arm and three one-use bools (with
+// the clear left in the block 249/256, with one bool 272-279), so neither is kept without the match.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
-	byte result = false;
+	bool result = false;
 	s_animation_names names;
 	s_animation_names found;
 	c_type_709360 animation_id;
@@ -1215,14 +1550,10 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			transition_id = transition_find(names.mode, names.set, &blend);
 			blend &= !(flags & 1);
 			blend &= (((dword)state_flags >> 10) & (channel_valid(&channels[0]) && !function_0e6800(&channels[0]))) & 1;
-			if (blend)
-			{
-				unknown6e |= 1;
-			}
-			else
-			{
-				unknown6e &= ~1;
-			}
+		}
+		if (blend)
+		{
+			unknown6e |= 1;
 		}
 		else
 		{
@@ -1234,10 +1565,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			if (((state_flags & 0x20) || (state_flags & 0x40)) && channel_valid(&channels[0]))
 			{
 				real frame_count = (real)channels[0].function_1c6440()->frame_count - 0.0001f;
+				real frame_position = channels[0].frame_position;
 
 				if (frame_count > 0.0f)
 				{
-					fraction = PIN(channels[0].frame_position, 0.0f, frame_count) / frame_count;
+					frame_position = PIN(frame_position, 0.0f, frame_count);
+					fraction = frame_position / frame_count;
 					if (state_flags & 0x40)
 					{
 						fraction = 1.0f - fraction;
@@ -1256,12 +1589,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			{
 				bool unflagged;
 
+				result = true;
 				unflagged = channels[0].is_unflagged0() & loops;
-				if (transition_id.index != NONE && graph_tag_index != NONE)
+				if (transition_id.index != NONE)
 				{
-					if (channels[2].set(graph_tag_index, 0x15, variant_get(transition_id), names.set, NONE, NONE, 3))
+					if (channel_start(&channels[2], transition_id, names.set, NONE, NONE, 3, 0x15))
 					{
-						channels[2].set_frame_position(0.0f);
 						if (channels[0].flags & 1)
 						{
 							channels[0].unknown11 |= 1;
@@ -1288,36 +1621,39 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 				{
 					flags &= ~0x10;
 				}
-				if (blend_id.index != NONE && graph_tag_index != NONE)
+				if (blend_id.index != NONE)
 				{
-					if (channels[1].set(graph_tag_index, 0x3c0, blend_id, transition_set, NONE, NONE, 0))
+					if (channel_start(&channels[1], blend_id, transition_set, NONE, NONE, 0, 0x3c0))
 					{
 						unknown80 = 0.0f;
 					}
 				}
-				flags &= ~1;
-				result = true;
-				goto names_store;
 			}
 		}
 	}
-	if (!(state_flags & 4))
+	if (!result)
 	{
-		goto animation_done;
+		if (state_flags & 4)
+		{
+			result = true;
+		}
 	}
-	result = true;
-
-names_store:
+	else
 	{
-		s_animation_names *names_out = &stored_names;
-		bool changed = (names_out->mode != names.mode) | (names_out->weapon_class != names.weapon_class) | (names_out->weapon_type != names.weapon_type);
+		flags &= ~1;
+	}
+	if (result)
+	{
+		bool mode_changed = stored_names.mode != names.mode;
+		bool class_changed = stored_names.weapon_class != names.weapon_class;
+		bool type_changed = stored_names.weapon_type != names.weapon_type;
 
-		*names_out = names;
-		if (changed)
+		stored_names = names;
+		if (mode_changed || class_changed || type_changed)
 		{
 			if (graph_tag_index != NONE && !(flags & 1))
 			{
-				resources_request(names_out->mode, names_out->weapon_class, names_out->weapon_type, true, true);
+				resources_request(stored_names.mode, stored_names.weapon_class, stored_names.weapon_type, true, true);
 			}
 			if (!channel_valid(&channels[2]))
 			{
@@ -1330,7 +1666,6 @@ names_store:
 			}
 		}
 	}
-animation_done:
 	return result;
 }
 

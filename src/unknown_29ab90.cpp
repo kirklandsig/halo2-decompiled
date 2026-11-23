@@ -39,6 +39,51 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// score 286 (was 286): r130, r275 and r164 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// M3 lane 13 r148 (plain checks; the fast screen builds 0x29b2e0 at 1309 bytes here): local_20 built from local_4 ahead of
+// the 0x29b2e0 call with no local_27 copy 378 (1816 bytes); each local_5 component computed and clamped in one PIN 338;
+// local_6 copied from local_5 (the 0x4687a4 vector read once) 286 (same code); the 0x30bf0 fallback copying +0x290 directly
+// 286 (same code); *arg_5 written from the +0x66c copy 320. Frame reading (one-object LTCG kit with the callees' objects
+// and the ballast reproduces this build's homes exactly): homes follow compiled reference counts, local_4 18 against
+// local_5 15, and the shared local_12/local_27 slot 10 against local_6 7; retail has local_5 below local_4 and local_6
+// below that shared slot, and keeps local_27.i in ESI across the 0x29b2e0 call where this build stores all three.
+// MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
+// 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
+// view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
+// actor's direction into [esp+0x38] and the global vector into [esp+0x44], retail the reverse), so declaring the two
+// vectors the other way round measures 290 (their copies then come out in the other order) and is reverted; site 1's
+// planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper (BLOCKED-BY 0x2b400),
+// so the body stands.
+// MiniMax S (11-19): no new form, no lower score (286): site 1 planar normalize written out with its own zero path measures 309, because retail reloads the second component after storing the first while ours folds that multiply into the memory operand; the frame homes still take each other slots and the working-vector group is still a rotation off retail, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
+// where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
+// magnitude), the working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has
+// [esp+0x48]..[esp+0x38], and site 1's planar normalize still keeps its own zero path where retail uses the
+// shared helper in include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
+// MiniMax B (11-18): no new form, no lower score (286): the magnitude and the settings pointer still take each other's frame homes (ours [esp+0x10] and [esp+0x14] against retail [esp+0x14] and [esp+0x10]), the unit pointer still sits at [esp+0x24] where retail has [esp+0x1c], the three working vectors are still a rotation off retail's, and site 1's planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper in include/unknown_11cc90.h: BLOCKED-BY 0x2b400.
+// MiniMax G (11-19): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24] where
+// retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the magnitude), the
+// working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
+// planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
+// include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
+// MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
+// [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
+// magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
+// zero path where retail uses the shared 0x2b400 helper in include/unknown_11cc90.h, a file this lane may not edit
+// (BLOCKED-BY 0x2b400), and a permuter over 23 tries on this body found nothing below 286, so the body stands;
+// MiniMax D (11-17): no new form, no lower score (286): the frame's homes are still permuted the way the notes
+// below describe (ours [esp+0x24] against retail [esp+0x1c] for the unit pointer, ours [esp+0x14] against
+// retail [esp+0x10] for the magnitude, and the working-vector group at [esp+0x3c]..[esp+0x64] where retail has
+// [esp+0x38]..[esp+0x58]), and site 1's planar normalize still keeps its own zero path, which needs the shape of
+// the shared 0x2b400 helper in include/unknown_11cc90.h, a file this lane may not edit. BLOCKED-BY 0x2b400.
+// MiniMax E (11-15): no new form, no lower score (286): the magnitude and the settings pointer still take each
+// other's frame homes (ours [esp+0x10] and [esp+0x14], retail [esp+0x14] and [esp+0x10]), the two copies of the
+// global still take each other's homes (ours [esp+0x38]..[esp+0x40] for the position copy and [esp+0x44]..
+// [esp+0x4c] for the global's, retail the other way round), and the planar operand order and the xmm numbers of
+// the floors still differ; site 1's planar normalize still keeps the zero path as the fall-through with a result
+// home of its own where retail stores the zero into the magnitude's own home, which needs the 0x2b400 shape of
+// the shared helper (include/unknown_11cc90.h, another file): BLOCKED-BY 0x2b400. A 35-try permuter run found no
+// better form (best 284 differing instructions = the baseline).
 // MiniMax R (11-14): no new form, no lower score (286): the frame slots still differ (ours reads [esp+0x24] and
 // [esp+0x14] where retail reads [esp+0x1c] and [esp+0x10]), the saved-direction homes differ and the planar
 // operand order differs; the fast check prints caveats that the callees 0x26c180 and 0x1f9e70 build differently in
@@ -55,7 +100,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // MiniMax A (11-13): no new form, no lower score (286): the saved-direction homes, the planar operand order and the
 // xmm numbers of the floors differ; the callee that held this one back now matches, so what is left is the homes, the
 // operand order and the frame.
-// score 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// Earlier 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
 // actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
 // normalizations (j,i sum), 2922b0 call, 30bf0 == 0 fallback, 0x47c branch, floor/ceiling clamps, 29b2e0 call
@@ -443,6 +488,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // whole copies are all listed above).
 // MiniMax C (11-14): no new form, no lower score (286); the stack homes still sit 8 and 4 bytes above
 // retail's (ours at +0x24 against retail's +0x1c, ours at +0x14 against retail's +0x10).
+// MiniMax G (11-20): no new form, no lower score (286): the magnitude and the query output still take the frame's earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working vectors is still stored in a different order; the two scaling sites are 0x2b400's shape, which is not matched yet.
 // MiniMax I (11-14): no new form, no lower score (286): the magnitude and the query output still take the frame's
 // earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working
 // vectors is still stored in a different order than retail's.
@@ -453,6 +499,136 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // through the existing normalize2d 407 (1786 B: a call, its noinline declaration keeps 0x2c2a70's call). The history weight in a
 // local for the three rows with the complement still read from the field (retail loads it once into xmm6 and re-reads it for
 // 1 - weight) 321 (1867 B); the current sum through the existing vector3f_add 316 (1863 B, aligned 255).
+// Branch-owned direction/query adjustment/weighted motion, seven nonempty subsets, then all with aggregate clamping: 388/519/411/466/401/503/566/566.
+// NOT kept: every form regressed and moved the frame away from 0x64.
+// Original executable body restored.
+// Object record reference 286. Native tag result viewed as settings pointer or record reference
+// in its branch 286/286. With the object reference 286/286. Combined forms with named object,
+// settings and magnitude, then named working/output/adjustment roles 286/286/286.
+// NOT kept: object and settings spills retain their original stack homes.
+// Object/settings spills and the initial vector homes remain. Separate vector declarations in all six
+// orders with original assignments, call-scoped query outputs, and scoped outputs with the
+// published vector declared first: eight at 286.
+// M3 lane 6 r191 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286, of which 37 flagged lines differ only in a
+// stack offset): what orders the 12-byte homes is the order of first assignment, not the declarations or the names. The
+// output vector (the first copy of the global) initialised ahead of the working vector puts both in retail's homes (+0x38 and
+// +0x44) but emits its copy first, 290; the second copy of the global initialised ahead of the first 286 (its home does not
+// move); the output vector declared bare ahead of the working vector 286, and at the top of the function 286 (same code);
+// the four vectors renamed in ascending and in descending alphabetical order of retail's homes 286/286 (same code).
+// Diagnostics: two more whole reads of the output vector at the end 301, three more settings-field reads 349 (1898 bytes):
+// neither moves a home, so reference counts do not order them either. Retail therefore refers to the output vector before
+// the working vector's copy without storing to it there; no natural form found. Site 1's planar normalize is still the
+// inlined 0x2b400 (`x = x * inv; y = inv * y`, the zero written into the magnitude's own home, scaling path first), and
+// 0x2b400 is pinned out of line in machine 1's src/unknown_02b400.cpp: BLOCKED-BY 0x2b400.
+// M3 lane 9 r138 (fast; base 286, aligned 234, register-masked 73): 1-7 dead initialised locals (diagnostic) 286
+// each, masked 71/71/73/75/73/73/75 (no frame home moves); the forward correction written into the output vector
+// instead of its own local 286 (aligned 235, homes unmoved), into the working vector 329 (1875 bytes), into the
+// output vector with the sum formed there too 286, into the secondary vector 286. Slot map (pending pushes taken
+// off): retail settings +0x10, magnitude +0x14, object +0x18, second planar vector +0x1c/+0x20, first +0x24/+0x28;
+// ours magnitude +0x10, settings +0x14, a planar pair +0x18/+0x1c, object +0x20, a planar pair +0x24/+0x28: the three
+// scalar homes and the two planar pairs trade places together, and retail's first planar vector is normalised in
+// place in its home (the 0x2b400 shape). Still BLOCKED-BY 0x2b400.
+// Round 145 (m3 lane 16, fast, control 286): site 1 is 0x2b400's shape in retail (normalizing path first, the magnitude
+// kept in the dead arg_8 home [esp+0x94], the zero stored there out of line at 0x29ae10), which this build cannot inline
+// (0x2b400 is declared noinline for 0x2c2a70's call): BLOCKED-BY 0x2b400. Homes: retail's 12-byte order from ESP is the
+// first global copy, the +0x290 copy, the second global copy, local_12, with local_15/local_13 at 0x1c/0x24; ours puts the
+// +0x290 copy first and local_12 below the second global copy. local_4/local_5/local_6/local_7 each renamed to sort first
+// 286 each (same code); local_12 declared at function scope 286; local_7 declared first 286; local_15 initialised before
+// local_13 289 (1869 bytes).
+// M3 lane 6 r201 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286; aligned-equal of retail's 454
+// with addresses / also registers and stack offsets masked, base 270 / 413; all restored). New finding: retail does not
+// fold the gain's constants. Its last product is `(1 - floor) * 0.5`, times the gain, times 4.0 (mulss by the 0.5
+// register, by the gain, by the 4.0 literal at 0x45dc10); main's one expression `(1.0f - local_26) * 0.5f * local_20 *
+// 4.0f` compiles to two multiplies with the 2.0 literal. Any split restores retail's three: a named half-complement
+// local 326 (1869 B, 272 / 415); `local_18 = (1.0f - local_26) * 0.5f; local_18 = local_18 * local_20 * 4.0f;` 326
+// (same code); `local_18 = (1.0f - local_26) * 0.5f * local_20; local_18 *= 4.0f;` 326 (259 / 415); the gain factor
+// grouped as `(local_20 * 4.0f)` 326 (259 / 414). None is kept: the body is then six bytes longer than retail's and
+// every later line shifts (the count rises by 40). Diagnostic (a file-local copy of 0x2b400's body for site 1, not
+// keepable): 286 (270 / 420: site 1's branch order and in-place scaling are then retail's, the zero still has its own
+// home), with the split product 326 (272 / 422). Still BLOCKED-BY 0x2b400 for site 1; the frame homes and the turn
+// dot's operand order remain as the earlier notes describe.
+// M3 lane 14 r122 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286): the output vector declared
+// bare, bound to a `vector3f &` and assigned through it after the working vector's copy 286; the output vector copied
+// from the second global copy 286; both global copies by one chained assignment 286; the forward correction as an
+// aggregate initializer 286; the second global copy initialised from the output vector 286 (same code each: no home moves).
+// M3 lane 5 r209 (fast with 0x29b2e0 at 176, 0x1f9760 at 1, 0x1e5450/0x30bf0/0xb9dd0 MATCH; control 286, aligned 234,
+// register-masked 191): the turn factor's half width named (`half_width`, squared into the numerator) instead of
+// reusing local_20, with the gain as one expression 325 (1868 B), the gain then halved 326 (1871 B), with the named
+// numerator kept 286 (aligned 233, masked 186: not kept, no gain); the blend rows with the history product written
+// first 286 (same code); the complement computed ahead of the sums 316. Retail loads the history weight once into
+// XMM6 ahead of the sums and re-reads the field for the complement; site 1 is still BLOCKED-BY 0x2b400.
+// M3 lane 3 r275 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the zero-length test after
+// 0x2922b0 as `0.0f == function_30bf0(...)` 286 (same score); the override test as `0.0f != field` 288 (1869 B); site 1
+// through the existing planar_normalize (include/vector2f_normalize.h) 286; the velocity dot through local_1->velocity
+// at each use instead of its pointer local 286; the magnitude helper returning a ternary 393 (1877 B). Site 1 stays
+// BLOCKED-BY 0x2b400 (its noinline declaration sits in another lane's file this round).
+// M3 lane 3 r277 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the 0x1f9760 out-parameters declared
+// at function scope 286; local_6 copied from local_5 286; local_27, local_31 or local_22 declared at the top of the
+// `if (local_2)` block 286/286/286 (same code each). Site 1 still needs 0x2b400's parked zero path inline (BLOCKED-BY 0x2b400).
+// M3 lane 14 r128 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286): the history weight named
+// once (`real local_33 = local_2->field_64;`) for the three blend rows and the complement 320 (1866 B), the same
+// weight read ahead of the sums 320; the sums written into the blend rows without local_31 288; the two planar
+// copies as `*(vector2f const *)` reads 286 (same code), with the third planar copy too 310 (1864 B). Retail loads
+// the weight once into XMM6 for the rows and re-reads it for the complement; ours folds it from memory in every
+// row. Site 1 is still BLOCKED-BY 0x2b400.
+// M3 lane 16 r157 (fast with 0x29b2e0, 0x1f9760 and 0x2922b0 unchanged; control 286 at 1865 B, aligned / register- and
+// offset-masked 184 / 41; body unchanged). The history weight in a named local: declared ahead of the sums with the
+// complement read from the field and the history product first 320 (1866 B, 191 / 43); the same with the complement taken
+// from the local 320 (196 / 43); declared after the sums, the rows in the existing order 320 (184 / 43); ahead of the
+// sums, the rows in the existing order 320 (191 / 43): retail's one load of the weight into XMM6 does not come from a
+// named local. The 0x1f9e70 product's factor read into a named local ahead of the call (retail reads +0x50 into a stack
+// temporary before the call and multiplies the result by it) 334 (1889 B, 174 / 41); declared ahead of the third planar
+// normalize 339 (173 / 39); lane 4 r180's planar copy of the saved direction re-measured 310 (1864 B, 170 / 35); the
+// two together 294 and 298 (1882 B, 161 / 35 and 161 / 31: between the two late calls only five masked lines then
+// differ, the third normalize's in-place scaling among them). None kept: a one-use local ahead of a call, and the
+// count rises. Sites 1 and 3 are both 0x2b400's shape in retail (scaling in place in the vector's own home), so the
+// function stays BLOCKED-BY 0x2b400 (machine 1's file this round).
+// M3 lane 15 r119 (H2M fast; control 286): the blend rows through the existing vector3f_scale and vector3f_add_scaled
+// 325 (1870 B); local_19 as one ternary where its if stands 275 (1865 B), at its declaration 323 (1866 B). Not kept:
+// retail loads the 0.05 into XMM5 ahead of the 0x47c test and tests `comiss xmm0, xmm5; movaps xmm5, xmm0`, which is
+// main's declaration-plus-if form (ours colours local_19 XMM6 and local_24 XMM5, where retail gives local_24 XMM1), so
+// the 275 only drops the early load and re-aligns later rows. The forward-gain clamp as `local_16 < local_30` 286; the
+// sign test as `0.0f > local_25` 286; local_18 declared ahead of local_19 286.
+// Typed actor reset and target, direction and request flag, and turn status, alone and combined, all
+// at 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
+// The object/settings spills still differ with the 0x64 frame in place.
+// M3 lane 2 r127 (fast; control 286 at 1865 B, aligned / register-masked / offset-masked 234 / 191 / 73): LEAD for site 1:
+// the matched 0xedff0's file-local planar normalize in src/unknown_0a76b0.cpp (one length local, scaling path falling
+// through, `m = 0` in the else, scale-first products through a separate out pointer) compiles to retail's site-1 and
+// site-3 code here (the zero stored into the length's own home, y reloaded after the x store). Screened through a copy of
+// it at site 1 306 (1863 B, retail's length; first difference +0x42 -> +0x54; 185 / 134 / 62: the length shares its
+// home, which frees one 4-byte slot, and the object pointer and both planar vectors take retail's homes); at sites 1
+// and 3 306 (same code); plus lane 4 r180's planar copy of local_27 309 (1856 B, 155 / 102 / 41); plus local_2 named
+// `settings` 309 (same code); plus the +0x50 scale read into a local ahead of the third planar step 302 (1868 B, first
+// +0xbb, 138 / 89 / 36: the definition and magnitude homes are then retail's); plus the correction written into
+// local_5 302 (141 / 89 / 36). Left on that form: local_4 and local_5 swap homes (retail's local_5 slot also holds the
+// correction's i, from the x87 result), site 2's loads in another order, the floors' xmm numbers and the dot's operand
+// order, the blend rows. Not kept: the count rises, and keeping the helper needs it moved from that file to a shared
+// header (the existing 2-D helpers there are the zero-first shape). Patch in build/r127/lead-29ab90-302.patch.
+// M3 lane 16 r164 (fast; control 286, aligned 184/107/41): ours gives the dead magnitude copy's slot (+0x2c) to the first
+// planar vector (local_13), retail to the saved direction's planar copy (local_20), which moves the object pointer to +0x20
+// and the two planar pairs one slot round. local_20 as the planar idiom `*(vector2f const *)&local_27` 310 (1864 B,
+// aligned 170); the 0.05 floor declared at its first use 275 (aligned 196: it drops retail's early 0.05 load, a moved
+// declaration); local_20, the 0x668 store and the 0x1f9e70 product in their own block 286 (same code); the forward
+// correction stored in the output vector through a renaming reference 285 (1863 B, aligned 189), with the output vector
+// initialised first 289; the correction written into local_5 directly 286, with the planar idiom 309. Site 1 is still
+// BLOCKED-BY 0x2b400.
+// M3 lane 2 r130 (plain checks: the reduced image builds 0x29b2e0 at 1309 B and this function at 343, so it misleads):
+// local_2 and local_9 renamed into each other's names 286 and actor/object/properties/speed names 286 (same code
+// each: these slots do not follow names); the sum through the existing vector3f_add 316 (retail's 1863 B); the forward
+// correction as vector3f_scale of a `{ 1, 0, 0 }` constant 326 (1843 B); the saved direction's planar copy taken from
+// local_4 before the 0x29b2e0 call with local_27 dropped 378 (1816 B). Site 1 still BLOCKED-BY 0x2b400 (machine 1's file).
+// M3 lane 16 r170 (plain checks: h2m fast now builds this body at 343, 1871 B, with any callee set, 0x29b2e0 there at 1309 B
+// against 1707 B in the full build; control 286): the third planar step through the existing planar_normalize 286; the
+// first and third through it 286; local_1, local_2 and local_9 renamed object, settings, magnitude 286 (names do not move
+// these homes); local_4 read straight from the actor field with local_3 declared after it 286; local_15 as the planar idiom
+// `*(vector2f const *)local_3` 286 (all the same code). Still BLOCKED-BY 0x2b400.
+// M3 lane 16 r173 (plain checks; control 286, aligned 234, register-masked 191): one redundant pair around the turn dot's
+// first product, `(local_13.i * local_15.i) + ...`, 286 (both dot products' operand orders flip, and one history-blend
+// product with them; aligned 238); `local_22.j = local_22.k = local_30 * 0.0f;` 308 (retail's 1863 B, aligned 240); one
+// pair around the first blend row's first product 286 (aligned 233, masked 186); the speed floor as `local_18 =
+// local_18 > local_17 ? local_18 : local_17;` 286 (same code); the dot and blend pairs together 286 (aligned 234, masked
+// 188). Site 1 still BLOCKED-BY 0x2b400 (its noinline declaration sits in machine 1's file). Body unchanged.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

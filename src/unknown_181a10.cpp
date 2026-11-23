@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "unknown_1cec30.h"
 #include <float.h>
 #include <xmmintrin.h>
 
@@ -501,29 +502,11 @@ struct s_batch_contact
 	s_batch_contact_node *first;
 	s_batch_contact_node *second;
 };
-struct s_batch_entity_property
-{
-	long key;
-	long value;
-};
-struct s_batch_entity_view
-{
-	byte field_0[0x30];
-	s_batch_entity_property *properties;
-	long count;
-};
 
 PRIVATE __forceinline s_batch_contact_node *batch_contact_root(s_batch_contact_node *node)
 {
 	while (node->next) node = node->next;
 	return node;
-}
-PRIVATE __forceinline long batch_contact_component(hkEntity *entity)
-{
-	s_batch_entity_view *view = (s_batch_entity_view *)entity;
-	for (long i = 0; i < view->count; ++i)
-		if (view->properties[i].key == 0x2001) return view->properties[i].value;
-	return 0;
 }
 PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shape)
 {
@@ -532,10 +515,51 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax B (11-20): no new form, no lower score (238): the frame is 0x40 where retail has 0x44, the node pointer's home is frame+0x14 where retail keeps frame+0x20, the 1..16 classifier folds its first compare where retail loads the word into ECX and compares the register, and the classifier's data is loaded once where retail reloads it; the form that reaches retail's frame needs the material output declared at function scope, a declaration move that is not keepable.
+// MiniMax H (11-20): no new form, no lower score (238): the frame is still 0x40 where retail has 0x44, the second
+// node is stored at frame+0x14 where retail keeps frame+0x20, and the node's type is still compared in memory
+// where retail loads it into ECX and compares the register; a named local for the type measures the same 238, as
+// the earlier rounds record.
+// MiniMax S (11-20): no new form, no lower score (238): the frame is still 0x40 where retail has 0x44 and the second node's
+// home is frame+0x14 where retail keeps frame+0x20; retail's 1..16 classifier holds the constant in the result register and
+// compares it against the value register and re-reads the shape's data word three times, while ours folds the range check
+// into immediate compares and loads the data once.
+// MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
+// node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
+// entity's property list for the key 0x2001; our body reads the root's type straight from the node and compares it
+// with one, so the type's home and the compare's width differ. The frame stays 0x40 against retail's 0x44, the second
+// node stays at frame+0x08 against retail's frame+0x14, and the shape's data pointer is still read twice where retail
+// reads it three times and ends its test in a setne and a test pair. This round split the node-type guard five ways (the
+// two tests apart, the type in a named local, the entity test first, and both named) and every one of them compiles to
+// the same 238, so the load before the compare is not reached from the guard's spelling.
+// frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
+// Retail keeps origin y/z in reused slots and has two unused dwords below the plane.
+// Earlier at 238 in round 95. See the m3 lane 11, lane 2 r79 and lane 8 r164 forms below.
+// frame 0x40 versus 0x44, with a different second-node slot.
+// Retail reuses the origin y/z slots and leaves two dwords below the plane unused.
+// Earlier score 238 in lane 11 round 95, lane 2 round 79 and lane 8 round 164.
+// MiniMax E (11-17): no form kept; the score is unchanged at 238. New readings: the 1..16 classifier keeps retail's
+// `mov ecx, 1; cmp ecx, edx; jg` form out of reach (an unsigned word, a signed long, the constant written first, two
+// separate ifs and an if/else chain all compile to a compare with an immediate, 238 each, as in the earlier rounds);
+// the plane-normal sum is evaluated right to left rather than in the written order, so writing the three products
+// forward, left, up instead of up, left, forward flips the compiled tree to retail's (up + left) + forward and matches
+// retail's rounding, but the score stays 238 since the load schedule and the register allocation still differ, so
+// that edit was reverted; the origin and hit snapshot forms re-measured are 308 for three scalar origin coordinates
+// with the aggregate hit, 309 for the descending z, y, x member assignment, and 362 when both are copied member by
+// member, all above the aggregate form. The permuter's 35 tries in 240 s found nothing below the 235 differing
+// instructions of the full image. Still differs: the frame is 0x40 against retail's 0x44, the second node's home is
+// +0x14 against retail's +0x20, and retail reads the shape's data word three times in the classifier where ours
+// reads it once.
+// MiniMax E (11-15): no form kept; the permuter's 68 tries on the reduced image found no variant below the 235
+// differing instructions of the full image (the reduced image agrees with the full one here). Still differs: the
+// frame is 0x40 against retail's 0x44 (retail keeps the origin's y and z in reused slots and has two unused
+// dwords below the plane), the second node's home is +0x14 against retail's +0x20, and retail reads the shape's
+// data word three times in the 1..16 classifier (0x18237a-0x18239c) where ours reads it once.
 // MiniMax R (11-14): no lower score (238): retail reads the origin and the contact position with float moves into separate
 // slots, ours copies the two aggregates with dword moves; the origin as three real coordinate snapshots scores 308 in either
 // read order, member-wise origin copies 309, a member-wise hit copy 325 and both 362.
-// score 238 (was 238; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax A (11-13): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, the second
 // node's home is still +0x14 against retail's +0x20, retail still reads the shape's data word three times where
 // ours reads it once, and the plane index still leaves the frame as a short.
@@ -920,6 +944,288 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // of `origin` 235 (all the same code), `second` declared before `first` 237; on main `second` before `first` 245 (1247 B).
 // Retail's homes from its listing: hit +0x1c..+0x24 (set by movss, published by dword copy), origin.x +0x28 with +0x2c/+0x30
 // untouched, origin.y/z in +4/+8, and 0x182b90's outputs in +8 (friction) and second's +0x14. Original body restored.
+// M3 lane 1 r113 (fast with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238, aligned with offsets masked 148, registers
+// too 94): first->next and its shape named before the kind-9 test (`next`, `next_shape`) 307 (1245 B); the second shape named for the
+// material guard inside a `component != NONE && kind != 24` block 318 (1245 B); the plane declared at the top of the kind-24 block 238
+// (same code); the distance written `radius + distance` 238 (same code); `short material` declared with valid/index at the top 230
+// (frame 0x44 as retail, first difference +0x1a: first/second homes +8/+0xc against retail's +4/+0x14; a declaration moved by score,
+// match-only). A scan of retail finds the `mov ecx, 1; cmp ecx, edx; jg; mov ecx, 0x10` clamp only here (both sites); matched
+// 0x182b90 compiles the same PIN guard as ours (`cmp eax, 1; jge`, one load), so retail's three data loads come from another shape.
+// M3 lane 12 r132 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the root's type in a named
+// local before the test 238 (same code: still compared in memory, where retail loads it into ECX); the next node and its shape
+// in locals declared ahead of nested tests 307 (1245 B); the origin as a const reference to the transform's position 381 (1208
+// B); the hit as a const reference to the contact position 335 (1243 B); the contact normal published by aggregate assignment
+// 271 (1243 B). Reading: in the key adjustment retail clamps with the constants in ECX and still compares ECX with EDX after
+// `mov ecx, edx` on the unclamped path (the self-compare is not folded), so the compare's second operand was a separate read
+// of the data word when the clamp was folded. Original body restored.
+// Round 189 (m3 lane 6, fast with the file and 0x183da0/0x1cf280/0x182b90; control 238, masked 109): the root entity
+// through `switch (root->type)` with case 1 and a NULL default 301 (a register load, but `dec ecx` for retail's `cmp
+// ecx, 1`); the entity as a ternary with the type tested again (`root->type != 1 || !entity`) 346 (1255 B); one
+// function-scope local for second's shape at all ten uses 350 (1251 B); the data test ahead of the kind call in the
+// exclusion test 257 (1249 B); the first node's kind-4 test ahead of the root walk 342 (1243 B). Reading: retail's `mov
+// ecx, [eax+0x18]; cmp ecx, 1` is the code matched 0x1388e0 shows for a field compared twice (one CSE'd load).
+// Earlier context (238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end).
+// Shared plane-side distance with aggregate normal or setter, plane/collector scope 337/349 each;
+// shared side predicate with the same publications and scopes 316/328 each. The shared publication
+// shortens the body and keeps the 0x40 frame. The second node still needs retail's +0x20 slot.
+// m3 lane 10 r115 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH throughout; control 238). KEPT, a
+// behaviour fix at the same count (238, 1247 B): the three plane-normal rows written forward, left, up. VC orders a
+// float sum's terms by its own ranking, not by the source: the old rows (up, left, forward) compiled to (forward +
+// left) + up, where retail adds (up * n.k + left * n.j) + forward * n.i (0x182556-0x1825b4), a different rounding; the
+// rows as written now compile to retail's association (checked on the listing's expression trees). Still different,
+// not kept (it raises the positional count by one): the plane distance compiles to ((z + y) + x) + scale * d, where
+// retail adds ((position.z * k + position.y * j) + scale * d) + position.x * i (0x1825bd-0x182608); written `((z + y)
+// + scale * d) + x` (or `x + (z + y + scale * d)`, or with the x term in its own `+=` statement: all the same code)
+// it compiles to retail's association at 239 (one positional line shifts; aligned 180 either way). The second arm's
+// side test already adds as retail does (0x18267b-0x1826a7). New classifier forms, all worse: the 1..16 clamp through
+// an inline pin taking const references and returning a const reference (the three reads then go through real stack
+// temporaries), on a cast temporary 374 (1287 B), with the arms written value-first 374 (same code), bound to the data
+// field 370 (1282 B), on a named local compared with itself 396 (1285 B), on a named local compared with the field 374
+// (1287 B, other code); the same pin returning by value 238 (same code as the body). Reading: retail's `mov edx,
+// [eax+8]` after the zero test, its constants in the result register and the unfolded `mov ecx, edx; cmp ecx, edx`
+// say the clamp read the data through a form the first test's read was not merged with; a reference return is not it.
+// Shifted upper value, split words, packed fields into longs and direct packed fields:
+// 238/311/238/316; with material declared before plane processing 238/311/238/316.
+// NOT kept: ties or regressions; the frame, second-node home and classifier reads still differ.
+// AC564: Component property scan with end pointers < and !=, counted cursor,
+// and indexed element pointer 327/327/339/341. Break with one result in the same
+// forms 347/347/325/326. NOT kept: all raise the score and retain frame 0x40.
+// The second-node spill, repeated classifier reads and plane homes remain.
+// One material output with branch stores 250 or one later store 316, at
+// either scope. Separate body material before/after the index lookups 261/258,
+// also from branch entry 261/258. NOT kept: the shared output restores frame
+// 0x44 but raises the score and grows the body; separate outputs also regress.
+// DH393: Branch-owned plane with instance/level/both immutable returns 317/297/310.
+// Both returned planes with shared pointer 310, branch-owned buffers with local/shared
+// pointers 310/310, immutable returns 310, both with existing normal setter 305.
+// NOT kept: frame 0x44 and 1243 bytes recover in several forms but every score regresses.
+// Root classifier and output homes remain. Original collector restored.
+// AC572: Full key selected by conditional or assigned in its two arms 238/238,
+// optional unsigned adjustment set by branch or conditional 328/315. Same
+// forms indexing with the validated clamp result 339/339/353/342.
+// NOT kept: the frame and second-node spill remain. The distinct forms grow the body.
+// Chained entity-index defaults 237; role names for entity indices/coefficients/both
+// 238/238/238, with chained defaults 237/237/237. Separate named coefficients 238.
+// NOT kept: the one-point gain leaves frame 0x40 and the second-node slot unchanged.
+// Packed-contact shape reference 327. Material before shape or after data 327/327.
+// Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
+// Separate material-arm shape references 327. Shared receiver and early short material 328.
+// NOT kept: the 0x44 frame form still spills the nodes to different slots and raises the score.
+// Named signed distance in the instance/world/both plane arms 238/238/238;
+// named projection in the same arms 238/238/238; all three products or both
+// projection and distance stages 238/238. The frame and origin homes are unchanged.
+// M3 lane 10 r119 (fast with the file; control 238), all in the 1..16 classifier: the data read through a `long const *`
+// view 238 (same code: the loads still merge); `1 > value ? 1 : (16 < value ? 16 : value)` 238 (same code); `value > 16
+// ? 16 : value` then `if (limited < 1) limited = 1;` 238; `1 > value ? 1 : value` then `16 < limited ? 16 : limited`
+// 238; `limited = 1; if (!(limited > value)) { limited = 16; if (!(limited < value)) limited = value; }` 320 at retail's
+// 1243 B (the bounds then sit in ECX as retail's `mov ecx, 1` / `mov ecx, 0x10`, but the compare is `cmp eax, ecx` on a
+// copy of the zero test's load where retail reloads the data into EDX and compares `cmp ecx, edx`). Reading: matched
+// 0x1c5400 and 0x1d4880 compile the same test with immediate compares and one load, so retail's three loads here go with
+// the bounds-in-register form (the zero test's ECX is taken by the bound, so the data is reloaded, not copied).
+// M3 lane 7 r179 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH each time; control 238, aligned 188, addresses
+// masked 138). Reading: retail's three `cmp ecx, edx` in the 1..16 test have the same operands, the bound in the result register
+// and the data in EDX, so the 1 and 16 arms were threaded past the final compare after the code was laid out (their `mov ecx`
+// loads are dead), and the data is a memory operand loaded once per `&&` operand, not a copy of the zero test's load. Tried:
+// the exclusion test through a helper that writes a bool through a pointer (stores between the reads) 333 (1255 bytes, one
+// load); `limited = 1;` declared ahead of a `value` local with `!(limited > value)` tests 326; the same tests reading
+// `shape->data` at each use, no value local 321 (`mov ecx, 1; mov eax, edx; cmp eax, ecx; jl`: the bounds are in ECX but the
+// data is a copy of the zero test's load and the operands are swapped); those through a `long const &` to the field 320 (1244
+// bytes); the at-each-use tests inside a multi-return bool helper on the node 263 (1247 bytes: retail's `setne al; test al, al`
+// as well, still one load). Left as before: the zero test's load is shared with the classifier's in every form.
+// Second node first 245, scoped root and entity 238, nested data guards 238,
+// bound-specific classifier returns 336, validated result key 331,
+// entity arm first 310 at 1243 bytes, named coefficient outputs 238,
+// first-node scope ending at input capture 245. NOT kept: frame 0x40 and
+// the second-node spill remain in all eight forms.
+// M3 lane 3 r263 (fast; base 238; compile-only snippet harness for the classifier): every ternary, MIN/MAX nesting and if chain
+// compares against an immediate; only the preset form (`limited = 1; if (limited <= value) { limited = 16; if (limited >= value)
+// limited = value; }`, or a pin helper with that body) keeps the constants in the result register, and it compares
+// `cmp value, limited` where retail has `cmp limited, value`. In the build: the preset clamp 320 (1243 B); the clamp compared
+// with its own `value` 320 (1243 B); the classifier written inline on `second->shape->data` 320 (1243 B); the three early
+// rejections after the component scan as one `||` chain 238 (same code); the component scan with a result local and `break`
+// 333 (1257 B).
+// M3 lane 4 r217 (fast with the file's other seven functions, all MATCH; control 238, aligned 138, masked 63). Kept: the 0x2001
+// property scan through include/unknown_1cec30.h's existing havok_entity_property_get in place of the hand-written private
+// copy (same code, 238; the copy and its two view types removed; the root walk stays written out, as 0x183da0's file is
+// built /GL- and cannot be inlined). Tried: the exclusion's data test through a `dword const *` to the field 318 (still one
+// data load: retail reads it three times, as three LTCG-inlined helpers would); the kind-24 shape in a local declared after
+// the kind test and used for the material call 327 (the shape then takes EBX and its spill like retail's, but the second
+// node moves to ESI where retail keeps both in EBX and one slot); that with the non-24 arm written first 330; the root's
+// entity named once (`root->type == 1 ? root->entity : 0`) 238 (same code).
+// Shared clamp with direct field reads, named or direct result and unsigned or signed
+// data member: four at 238. Each with the short material output beside the input
+// snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
+// node out of its retail slot and does not recover the second-node and origin reuse.
+// M3 lane 7 r187 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Reading: the byte test at
+// +0x1e with `setne al; test al, al` occurs in retail only inline (here, 0x1c5400 and 0x1d4880; no standalone copy), and
+// matched 0x1c5400 loads the data word once for its zero test, clamp and byte test, where this body loads it three times.
+// Tried: the byte test through a file-local inline bool helper on the shape 238 (same code), the same helper `static`
+// without forceinline 238 (same code); the clamp's data bound to a `dword const &` 294 (1249 B, still one data load);
+// the exclusion's last three tests nested under `if (component != NONE && kind != 24)` 238 (same code); the clamp's
+// ternary written upper bound first 238 (same code).
+// M3 lane 10 r126 (fast with the file's seven matched functions, all MATCH; control 238, aligned 180). Compile-only
+// frame screen (the asm lists each local's home): ours puts origin (9 references) below hit (6), retail hit below a
+// 12-byte home that keeps only origin x, with y and z in shared 4-byte cells; origin by components (x, y, z or z, y, x),
+// with the hit by components and published by assignment, three real snapshots, a setter, and the hit declared first
+// all leave origin whole. Tried: origin from a forceinline accessor returning the point by value 355 (1284 B); both
+// plane-side tests through a forceinline helper taking the point by value 391 (1298 B); the snapshot distance as
+// radius + distance 238 (same code); the property scan on `root->type == 1 ? root->entity : NULL` 238 (same code);
+// `valid` declared after the indices 238 (aligned 182).
+// Classifier outside result from successive tests, positive inline-index result, upper test on
+// the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
+// origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
+// NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
+// Packed-branch material receiver before data 238; before both snapshots 230;
+// admitted upper result index 238; separate signed key guards 306;
+// named radius contribution 248; immutable origin component view 238;
+// plane-arm signed distances 238; material receiver between snapshots 230;
+// exclusive result-count bound 307. NOT kept: The 230 form restores the frame size but shifts
+// both saved node homes and remains four bytes long.
+// M3 lane 5 r210 (fast with the file's seven other functions; control 238, register-masked 89): the dead second root walk
+// ahead of the property get 341 (1243 B); the key read ahead of the kind-4 test 251; the key adjust as `(data - 1) * 8`
+// 238 (same code); friction and restitution declared at function scope 238 (same code); the material output declared at
+// function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
+// +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
+// 238 (inlined at compile time, same code), with the material at function scope 230.
+// M3 lane 15 r114 (fast with the file's other seven functions, all MATCH; control 238): the 1..16 classifier given the node
+// and reading `node->shape->data` at each use (the sibling helper's accessor shape) 320 (1243 B; still one data load); the
+// byte test as a bool helper on the shape 238 (same code: no setne); the classifier as a preset result compared with the
+// value (`limited = 1; if (limited <= value) { limited = 16; if (limited >= value) limited = value; }`) 320 (1243 B: retail's
+// `mov ecx, 1` / `mov ecx, 0x10` preloads and the `mov ecx, value; cmp ecx, value` end, but `cmp eax, ecx; jl` for retail's
+// `cmp ecx, edx; jg` and the data copied from the first read instead of loaded again; aligned 179 against the control's 181),
+// that spelled `!(limited > value)` / `!(limited < value)` 320 (same code), with the field read at each use 321. The
+// positional count rises only because the block's rows shift; the data field is still loaded once.
+// M3 lane 5 r213 (fast with the file's eight other functions, matched throughout; control 238, aligned 138): the origin
+// copied member-wise z, y, x through a source pointer (retail's float copies, z first) 311 (aligned 127, frame still
+// 0x40); the hit copied member-wise 323 (aligned 166); both 361 (1260 B); the distance sum written radius first 238 (same
+// code); the valid flag and the two indices declared ahead of the fraction test 328 (1243 B, aligned 222); the hit copy
+// after the distance 305 (1245 B, aligned 137).
+// Independent hit coordinates with setter XYZ/YXZ 322/322, YXZ aggregate 355 and YXZ
+// member stores 325. With material beside the defaults 324/324/357/321.
+// NOT kept: the wider-scope material recovers 0x44 but the hit transport grows the body.
+// The second-node home and classifier loads still differ.
+// Scalar transformed plane offset 240; instance projection or signed distance 238 each; scalar offset plus signed
+// distance 240; direct projection, both projections or both signed distances 238 each; scalar-coefficient side
+// test before the normal stores 240. NOT kept: all retain frame 0x40 and the original length.
+// Late result bindings for found/position, normal/fraction, entity indices (subsets 1 through 7):
+// 270/268/279/236/277/275/378. One final result binding 396. NOT kept: the entity-index binding
+// gains two at 1244 bytes and retains frame 0x40. The second-node slot and frame still differ.
+// M3 lane 16 r158 (fast with 0x1829b0, 0x1821d0, 0x182800, all MATCH; control 238), the 1..16 classifier helper's
+// body only: `limited = 1; if (limited <= value) { limited = 16; if (limited >= value) limited = value; }` 320 (1243 B:
+// retail's `mov ecx, 1` / `mov ecx, 0x10` preloads, but `cmp value, limited` where retail compares `limited, value`, and
+// still one data load); the same reading the data field at each compare 321; as early returns of the comparison 336
+// (1228 B); the tests as `!(limited > value)` / `!(limited < value)` 320, as empty-then arms 320 (the compare operands
+// stay value-first in every spelling).
+// M3 lane 8 r204 (fast with the file's 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the hit distance
+// accumulated (`distance = contact->distance; distance += radius;`) 248; both plane-side tests with the zero on the left 238
+// (same code); the fraction test as `!(distance < fraction)` 238 (same code); the final test as `!(normal.k <= scale)` 240;
+// the position published by aggregate assignment alone 340 (1227 B), with the hit snapshot by components 310 (1249 B).
+// M3 lane 3 r282 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): 1 to 7 dead
+// longs at the top 238/238/238/238/239/238/238 (the symbol-count phase does not reach these integer compares or
+// the frame); the preset 1..16 clamp with 0 to 7 dead longs 320 x7, 321 at 5 (the compare stays value-first);
+// origin copied member-wise x, y, z from the transform 308 (1245 B), with the hit member-wise too 361 (1258 B);
+// the decode's top bits in a named `kind` 238 (same code, the shift still folds into the mask compare).
+// M3 lane 16 r162 (fast with 0x1829b0, 0x1821d0, 0x182800, all MATCH; control 238). Diagnostic (reverted, a compiler
+// memory barrier is not a source form): the exclusion as a bool helper on the shape (zero test, barrier, preset clamp read
+// from the field, barrier, byte test) 295 (1253 B) gives retail's three data loads, the `mov ecx, 1` / `mov ecx, 0x10`
+// preloads and `setne al; test al, al`, but still compares value-first (`cmp eax, ecx; jl` for retail's `cmp ecx, edx;
+// jg`); on it 1..8 initialised dead longs at the top of the helper or of the body 295 (one 296): the compare operand order
+// is no symbol-phase effect; the clamp as a const-left ternary 331, through a pin(value, lower, upper) helper written
+// `lower > value ? ...` 331 (both canonicalised to immediates); the preset on a named value declared after or before
+// `limited` 258/258 (the equality keeps the source operand order, the two relational tests stay value-first). Real forms:
+// the same two named-value helpers without the barrier 320/320; the body nested under `if (root->type == 1 &&
+// root->entity)` as matched 0x1c5400 writes it 238 (same code); the entity through `entity = NULL; if (type == 1) entity
+// = root->entity; if (!entity) return;` 238 (same code). Matched 0x1c5400 compiles the root test as `cmp dword ptr
+// [eax + 0x18], 1` and immediate clamps, so this body's register load of the type, kept dead walk and unpropagated
+// clamp bounds all point to one shape no natural form here reproduces.
+// M3 lane 11 r144 (h2m fast with the file's seven other functions, 0x1c5400 and 0x1d4880, all MATCH unless said; control
+// 238, aligned 180, masked 126). The 1..16 classifier only, new forms: a pin taking const references and returning by
+// value (bound-first, value-first, upper-less-than spellings, a named result) 238 (same code); returning a const
+// reference 374 (1287 B: the bounds become stack cells and the result an address); a template of that 386; pointer
+// bounds to const locals (0x182800's shape) 238; a by-value one-member aggregate pin 238, with a converting
+// constructor 382, returning long 248; a class-typed index with comparison operators 362-396; reference-returning
+// minimum and maximum helpers over the field's address 365 (the field is then read three times, but the bounds stay in
+// stack cells), returning by value 322; the data member overlaid as dword, long and byte pointer and read by role 238, with
+// the preset pin 321, with a multi-return bool helper for the three tests 318-322 (still one data load: differently
+// typed reads of one address are merged); the bounds as const objects (file-static or extern, by value or by
+// reference, defined here or in src/unknown_1c25a0.cpp) 238 (folded to immediates). Calls to the existing helpers of
+// src/unknown_1c25a0.cpp across files: its exclusion predicate contact_shape_has_material for the whole component
+// test 252 (aligned 183, masked 123: retail's setne/test, still one load and immediates); its pin by value 238 (same
+// code); that pin changed to const references 322 and 0x1c5400 then differs. Diagnostics (reverted): the bounds read
+// from non-const objects (file-static, or globals defined in another file) 324 at 1246 B give retail's compare shape
+// exactly (`mov ecx, <lower>; cmp ecx, value; jg; mov ecx, <upper>; cmp ecx, value; jl; mov ecx, value`, aligned 173,
+// masked 114) with memory loads where retail has `mov ecx, 1` / `mov ecx, 0x10`: retail's bounds were operands the
+// compiler could not fold when it shaped the compare and knew as constants afterwards; a pin as a plain function in
+// another file stays a call (334); 64-512 dead locals 238/238/238/249 (no change of the classifier); an inline asm
+// block 332 (no change of it); global optimization off for the function (the one compiler-setting diagnostic) 1266.
+// M3 lane 6 r219 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the head written as
+// the entity getter's ternary (`entity = root->type == 1 ? root->entity : NULL; if (!entity) return;`) 238; the type and the
+// entity tested in two early returns through an entity local 238; the entity preset NULL and set under `if (root->type ==
+// 1)` 238; the dead second walk's result assigned back to `root` 238 (all the same code: the type is still compared in
+// memory); `switch (root->type)` with `case 1: break; default: return;` 301 (register load, `dec ecx`). Body unchanged.
+// After distance rejection, defer origin only/hit only/both origin first/both hit first
+// 237/306/306/306. Scope under the accepted distance test in the same order
+// 237/306/306/306. NOT kept: deferred origin gains one at frame 0x40, and retail
+// reads it before distance rejection. The second-node home still differs.
+// M3 lane 7 r207 (h2m fast with 0x1829b0, 0x1821d0, 0x182800, 0x183670, all MATCH; control 238): diagnostic (never
+// kept) global optimisation off around the body 1266 (1997 B, an EBP frame), so the head's register-held clamp bounds
+// and data reloads are not that; the second node's shape in a local in the kind-24 arm 327 (1249 B); one shape local
+// for the whole body 259 (1253 B); friction and restitution at function scope 238 (same code); the 1..16 helper
+// comparing the clamp with the value it read 320 (1243 B), as `value < 1 || value > 16` 355 (1210 B).
+// M3 lane 15 r129 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800, 0x183670, all MATCH; control 238): a shape local formed
+// at the kind-24 test and used by both arms' material calls and the data read 362 (1206 B); the root's type through a
+// `long const &` 238 (same code: still compared in memory); the 1..16 classifier as a preset result bound by reference
+// (`limited = 1; long &result = limited; if (!(result > data)) { result = 16; if (!(result < data)) result = data; }`,
+// the field read at each use) 321 (preloads as retail, compares still value-first, one data load); the classifier's
+// bounds read from a file-static const two-member bounds aggregate 238 (folded to immediates); both plane side tests
+// through the existing plane_distance_to_point 238.
+// M3 lane 7 r209 (h2m fast with 0x183670, MATCH; control 238). Reading: retail's kind-24 arm loads the second node's
+// shape into EBX and spills it into the second node's own home (+0x24 after the fourth push), passing it to 0x1ee410 in
+// EDX; ours keeps the second node there. Tried: the 1..16 helper's bounds from a two-element local array set to 1 and 16
+// (diagnostic) 238 (folded to immediates, same code); the helper's result through an if/else bool 238; the exclusion's
+// data word named inside `if (component != NONE && kind != 24)` 238; the material buffer declared at the kind-24 arm's
+// top 238 (all the same code); the arm-local shape for the decode and the 0x1ee410 call (re-measured for the slot
+// reading above) 327 (1249 B).
+// M3 lane 1 r152 (h2m fast, control 238): the kind decode named (`long kind = data >> 29;` then `if (kind != 1)`) 238
+// (same code); `short material` declared at the top of the kind-24 block (ahead of `data`) 238 (frame stays 0x40); the
+// two NONE outputs declared bare and set by one chained `index = other_index = NONE;` 237 (one point, under the bar);
+// the hit read through real_point3d_set and published by aggregate assignment (retail's dword copy-out) 309 (1249 B);
+// origin and hit declared `point3f const` 238 (same code).
+// M3 lane 5 r230 (h2m fast with 0x183670, MATCH; control 238). Lead, not kept (a declaration moved, kept only with a
+// match): `short material;` declared at the top of the body 230 (frame 0x44 as retail; first and second then sit at +8 and
+// +0xc of the frame where retail has +4 and +0x14). On that lead: a kind-24 shape local for the data read and the material
+// call 328 (1249 B); origin by components z, y, x from a position pointer 312; the hit through real_point3d_set with
+// aggregate publication 311 (1249 B); friction and restitution declared beside the material 230 (same code). On the kept
+// body: the plane declared at the top of the body 238; the entity declared at the top 238; `valid` declared after the two
+// indices 238; the instance arm's side test written x, y, z 238 (same code each).
+// M3 lane 12 r176 (h2m fast, control 238): origin as a brace initialiser through a position pointer 312 (1248 B);
+// origin as three reals read z, y, x through a position pointer 310 (retail's load order, homes still packed in a 0x40
+// frame); that with the hit through real_point3d_set and aggregate publication 348, with only the aggregate publication
+// 350 (1243 B), with the hit read member-wise y, x, z and aggregate publication 346; origin through real_point3d_set from
+// the position pointer re-measured 251 (1260 B: x, y, z loads into the one 12-byte home, no member leaves it). Body unchanged.
+// M3 lane 16 r175 (H2M_FAST with 0x1829b0/0x1821d0/0x182800, all MATCH; control 238): retail's register-preset 1..16
+// classifier occurs nowhere else in the retail text, and the 0x1e byte test only here and in matched 0x1c5400/0x1d4880 (both
+// compiled as ours), so no existing out-of-line helper carries it. The origin through a `point3f const *` to the transform's
+// position in both plane tests 381 (1208 B); the distance as `radius + contact->distance` 238 (same code); the root's type in
+// a `long` local 238 (same code); the hit copy after the distance 305 (1245 B); the origin copy after the hit copy 237.
+// M3 lane 6 r231 (h2m fast with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238): both plane-side tests as
+// `valid = side > 0.0f; if (valid) ...` 331 (1253 B); with the normal copy hoisted after both arms 345 (1218 B); the kind-9
+// key test with the next node's shape named for its null test and kind call 237 (1246 B, one point, under the bar), with the
+// key's data read through it too 307 (1245 B: retail re-reads the shape there); the root test in the positive sense around
+// the rest of the body 238 (same code). Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Reading: retail
+// gives the origin a 12-byte home at +0x38 of which only x is used (+0x3c/+0x40 are the two untouched dwords), y and z
+// moving to shared spill slots, the same first-member-only home as 0x22cf0's offset. Tried: the instance arm's side test
+// through plane_distance_to_point 238, the record arm's 238 (same code each); the origin's members assigned z, y, x from a
+// position pointer 311 (movss copies into one contiguous home, frame 0x40); that with the instance arm through
+// plane_distance_to_point 311; the hit's members assigned y, x, z 323 (1262 B). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238, aligned 180, masked 104):
+// the kind test as `if ((data >> 29) - 1)` 238 at retail's 1243 B (masked 102: retail's `shr 0x1d; dec`, but the surface
+// index is still computed inside the instance arm where retail computes it ahead of the branch); the hit distance as
+// `first->shape->radius + contact->distance` 238; the normal test as `scale < contact->normal.k` 238; the entity test as
+// `root->entity == NULL` 238 (same code each); the fraction test as `results[key].fraction <= distance` 304 (1243 B).
+// Reading: retail copies the origin and the hit with float moves into separate cells (origin z +0x18, y +0x14, x +0x38;
+// hit +0x2c..+0x34), ours with dword moves into two 12-byte aggregates. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
@@ -927,7 +1233,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 	s_batch_contact_node *second = contact->second;
 	s_batch_contact_node *root = batch_contact_root(second);
 	if (root->type != 1 || !root->entity) return;
-	long component = batch_contact_component(root->entity);
+	long component = havok_entity_property_get(root->entity, HAVOK_PROPERTY_COMPONENT_INDEX);
 	batch_contact_root(second);
 	if (component != NONE && second->shape->shape_kind() != 24 && second->shape->data &&
 		batch_shape_pointer(second->shape) && ((byte *)second->shape->data)[0x1e] != 0xff) return;
@@ -960,9 +1266,11 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 				short plane_index = *(short *)(*(byte **)(definition + 0x9c) + surface * 8);
 				bsp3d_get_plane((s_bsp3d *)(definition + 0x70), plane_index, &plane);
 				transform4x3f *matrix = (transform4x3f *)instance;
-				real normal_i = matrix->up.i * plane.n.k + matrix->left.i * plane.n.j + matrix->forward.i * plane.n.i;
-				real normal_j = matrix->up.j * plane.n.k + matrix->left.j * plane.n.j + matrix->forward.j * plane.n.i;
-				real normal_k = matrix->up.k * plane.n.k + matrix->left.k * plane.n.j + matrix->forward.k * plane.n.i;
+				/* VC sums these three products last term first: written forward, left, up it adds (up + left) + forward,
+				   retail's order (0x182556-0x1825b4) */
+				real normal_i = matrix->forward.i * plane.n.i + matrix->left.i * plane.n.j + matrix->up.i * plane.n.k;
+				real normal_j = matrix->forward.j * plane.n.i + matrix->left.j * plane.n.j + matrix->up.j * plane.n.k;
+				real normal_k = matrix->forward.k * plane.n.i + matrix->left.k * plane.n.j + matrix->up.k * plane.n.k;
 				plane.d = matrix->position.z * normal_k + matrix->position.y * normal_j + matrix->scale * plane.d + matrix->position.x * normal_i;
 				plane.n.i = normal_i;
 				plane.n.j = normal_j;

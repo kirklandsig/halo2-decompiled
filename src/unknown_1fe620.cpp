@@ -12,6 +12,27 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// MiniMax I (11-20): no new form, no lower score (373): the frame is 0x4c against retail's 0x48; retail holds the third settings pointer in ESI and the random state in ECX, this build keeps the random state in ESI and reloads the third input from its stack slot; the +0x7a word is passed in ECX against our EDX.
+// MiniMax B (11-19): no new form, no lower score (373): reading the random state through the global instead of
+// through the named local gives 423 (the same form MiniMax G measured on 11-18), so the body is back as it was. What
+// still differs is the 0x4c frame against retail's 0x48, retail holding the third settings pointer in ESI from the
+// entry where this build keeps the random-state pointer in ESI and reloads the third input from its stack slot, and
+// retail's word at +0x7a passed in ECX where this build passes it in EDX. The argument's transport is set by the
+// caller at 0x1fc7e0 and the resolver's copy order belongs to 0x210850, so both are in other files.
+// MiniMax S (11-17): no new form, no lower score (373): the frame is 0x4c against retail's 0x48, retail holds the third settings pointer in esi from the entry and the random-state pointer in ecx where this build caches the random state in esi and reloads the third input from its stack slot, the flag byte is stored at +0xf where ours is at +0xb, and retail passes the third input's word at +0x7a in ecx where ours passes it in edx; the argument's transport is set by the caller at 0x1fc7e0, in another file.
+// MiniMax G (11-18): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this
+// build still keeps the random-state pointer in ESI from the first draw where retail holds the third settings
+// pointer in ESI and the random state in ECX, so the third input is still reloaded from its stack slot; the
+// random-state pointer read through the global instead of through the named local scores 423 and was restored.
+// MiniMax D (11-16), at 373: nothing kept: retail's frame is 0x48 and it takes the third settings
+// pointer in esi from the entry, this build has a 0x4c frame and takes the random-state pointer in esi instead,
+// so the third input is reloaded from its stack slot and the state pointer is kept in a register across the
+// draws; retail also forwards the seed from the sign test through the three range draws in eax and stores it
+// once, this build stores and reloads it per draw, and retail's sign test is `test eax, 0x80000000` where this
+// build tests eax whole. The state pointer read through the global instead of through a named local scores 423
+// and was restored; a permutation search over this body (300 s, annealed, one job) found nothing below the
+// baseline.
 // MiniMax R (11-14, run 65): no new form, no lower score (373): the first difference is at +0x2, the frame, which
 // is 0x4c here against retail's 0x48, and the entry differs with it - this build pushes edi and keeps the random
 // state in esi from the first draw where retail pushes esi and holds the third settings pointer there - so every
@@ -32,13 +53,22 @@ static __forceinline long real_to_long(real value);
 // is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where
 // ours caches the random state there, and the two flag bytes are still stored before the random state is
 // loaded.
+// MiniMax H (11-18): no new form, no lower score (373): the frame stays 0x4c against retail's 0x48 (both use the
+// same total below the entry, retail saving three registers against this build's two) and retail still holds the
+// third settings input in ESI from the entry where this build reloads it from its stack slot and keeps the random
+// state pointer in ESI instead; dropping the random-globals pointer local and using the global directly gives 423
+// (the state pointer then stays live across the vector work), and the reduced image cannot search this function
+// (464 differing instructions there against the full image's 373), so the permuter is of no use here; the body stands.
 // MiniMax G (11-12): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes are still stored before the random state is loaded.
 // MiniMax D (11-14): no new form, no lower score (373): retail keeps the third settings pointer in ESI from
 // the entry and the random-state pointer in ECX, ours keeps the random state in ESI and reloads the third
 // input from the stack; a local for the settings pointer scores 378 and was reverted, and the permuter's 21
 // tries over the reduced image (with --allow-mismatch, since the reduced score 464 differs from the full 373)
 // found nothing below the baseline.
-// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// MiniMax I (11-17): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this build
+// still keeps the random state pointer in ESI and reloads the third input from its stack slot where retail holds
+// that input in ESI from the entry, and the seed is still stored and reloaded per draw where retail forwards it in
+// EAX and stores it once.
 // MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps
 // the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes
 // are still stored before the random state is loaded where retail loads the state pointer first.
@@ -236,6 +266,180 @@ static __forceinline long real_to_long(real value);
 // the 0x1fdce0 result inside `if (flag)` 456 (1856 bytes). Retail forwards the seed from the sign test through all
 // three range draws in EAX and stores it once (so the bound loads are scheduled ahead of the draws, holding +0x14/+0x18
 // on the x87 stack); ours stores and reloads it per draw. All restored.
+// M3 lane 6 r191 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373): retail's own listing fixes three
+// facts for the next round. (1) Before the first range draw it loads +0x10, +0x14, +0x18, +0x1c, +0xc and +0x38 in that order
+// (0x1fe93f-0x1fe95e; +0x14/+0x18 stay on the x87 stack) and reads +0x3c at each use, so the six values are locals read
+// in that order and the seed is then forwarded through the three draws with one store (0x1fe9f2). (2) The third input is
+// in ESI only from the entry to the +0x1c test (0x1fe775): ESI then holds the prop pool, then the +0x744 point for the
+// inlined 0x210850, and the 0x1fe410 argument re-reads the input from its stack slot (0x1fe807). (3) The random state is
+// never kept in a saved register: ECX is loaded at 0x1fe7f6 and again at 0x1fe810 after the 0x1fe410 call. Forms that
+// are acceptable without a match, all worse: the limits in retail's load order with +0x38 named for its two uses 375;
+// that with the sign test as `(seed & 0x80000000) > 0` 375 (1862 bytes); that with draws one and three through the
+// random-state local 418; +0x3c read at each use 447 (1846 bytes); that with the ordered limits and the named +0x38 448
+// (1845 bytes). The +0x14/+0x18 locals are one-use and the resolver is 0x210850's body, so the composite of rounds
+// 63/110/112 still needs an exact match, and 0x210850 is inlined only here: BLOCKED-BY 0x210850.
+// M3 lane 9 r138 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0; base 373): `inline` on 0x210850's definition
+// with a call here 466 (1889 bytes), and 25 of its 43 matched callers expand it too (diagnostic); its file built
+// without /Ob1 (diagnostic) 466 with the same callers lost: neither gives retail's single expanded site (retail's
+// other 52 sites call it under a test or in an arm, this one is unconditional). Round 112's composite re-measured 347
+// at 1855 bytes (aligned 127, register-masked 16); on it: the resolver as a forced-inline file-local function taking
+// the output pointer 347 (same code, the failed-lookup copy stays load/store interleaved); 1-7 dead initialised
+// locals (diagnostic) masked 18/18/16/16/16/16/16; the side vector through cross3f or cross3f_staged with a constant
+// {0, 0, 1} vector, static or automatic, 347 (aligned 131, masked 16), with the output rows' 0 and 1 factors read
+// from that constant too 347 (aligned 131), the written cross with only the output rows through the constant 347
+// (same code as the composite). Left on the composite: the resolver's copy order, a copy of the k*0 product ahead of
+// its two uses in the side vector, and the output rows' register copies. BLOCKED-BY 0x210850 (single-site expansion).
+// M3 lane 6 r202 (fast with 0x1fe410/0x2104b0 unless noted; control 373, register-masked aligned 193). Diagnostics: the
+// random-state global named by a native (non-LTCG) object (a stub-file function reading it; plain check) gives retail's
+// head through +0x50 (frame 0x48, the third input in ESI from the entry) but 472 at 1829 B, and a full check with it loses
+// 83 matched functions, so retail's global is clean and the reload after the resolver is not a poisoned global; 1 to 4
+// and 6 dead initialised longs at the top 373 each (masked 193); the side vector normalised without taking its address
+// 378 (the five seed reloads stay). Forms: the sign step and draws one and three through a named `dword *seed` 423; that
+// with the second draw through function_259d0 on the same pointer too 438 (1856 B, masked 175: closer in shape).
+// M3 lane 9 r144 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373): the head's cause is the
+// random-state pointer. Ours loads it into ESI at the timer draw and carries it across the 0x2104b0 call to the
+// sign draw. Retail reloads it into ECX after the resolver (0x1fe7f6), so retail's link treats that call as
+// possibly writing the global. A diagnostic call to an opaque extern inside 0x2104b0 (reverted) gives retail's
+// whole head up to the resolver at +0x1ab: ESI loaded with the third input at entry, ECX loaded with the state
+// before the flag stores. Only the frame (0x4c) and the resolver's shape differ there, 359 (1852 bytes). The
+// existing 0x210850 called out of line does the same for the head, 445 (1807 bytes). A probe in 0x210d60 437 (it
+// changes 0x2104b0's code); 0x210d60 without `inline` 414 (0x2104b0 loses its match). Real trials: the 0x210850
+// call 445; draws one and three through the state local 423; that with the third draw's bounds read early 437;
+// the state local declared before the 0x1fe410 test 428; the 0x210850 call with all three draws through
+// function_259d0 on the state local 452. Next lead: what makes retail's 0x2104b0 call clobber the random-state
+// global (its callees 0x210d60 and 0x142570 are matched leaves).
+// M3 lane 1 r131 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373, register-masked aligned 64): the
+// final state copy as `= *local_3` 380; the timer count read into a long 427 (1855 B); the timer draw through
+// slot_random_range 395; the timer count read from its field at each of its four uses (no short local) 378 (masked
+// 63); the +0x84 scale product written `scale * value` 373. The largest masked block left is the three range draws
+// (retail forwards the seed through them with one store; ours reloads and stores it per draw).
+// M3 lane 6 r204 (fast with 0x2104b0, 0x210850, 0x1fdce0, 0x1fe410, 0x259d0, all MATCH each run; control 373, difflib counts as
+// [exact, stack offsets masked, registers masked] [237, 193, 64]; body unchanged, the best form saved as
+// build/r204/lead-1fe620-composite-body.cpp in worktree m3-lane6). The lead above is answered: retail's 0x2104b0 call does not
+// clobber the random-state global. Retail keeps that pointer in ECX, a scratch register, for the whole body and simply loads
+// it again after each call that uses ECX (0x1fe7f6 after 0x2104b0, 0x1fe818 after 0x1fe410); the path with no output index
+// (0x1feab7) jumps past the reload at 0x1fe7f6 with the first load still in ECX. This build gives the pointer ESI and reads the
+// third input from the stack because the pointer has more reads here: the seed is loaded and stored at every draw, where retail
+// forwards it from the sign step through the three range draws and stores it once, which it can only do with every bound read
+// ahead of the first range draw (a bound read between two seed stores may alias the seed). Diagnostic, reverted: a store
+// through a pointer or a reference variable in 0x2104b0 (still matched) 373, same code here, so the callee's summary is not
+// the lever. Round 63's composite re-measured 266 (1873 B) [147, 113, 23], the first 113 rows retail's; on it the sign test
+// as `(seed & 0x80000000) > 0` 269 [145, 111, 21]; the limits read in retail's order (+0x10, +0x14, +0x18, +0x1c, +0xc) with
+// +0x38 named for its two uses 296 [144, 110, 19]; +0x3c read at each use 342 at retail's 1861 bytes [120, 111, 19]; all
+// three 341 (1861 B) [115, 106, 13]; plus the final sums read through a named pointer to the stored offset vector (retail's
+// `[eax]`, `[eax + 4]`, `[eax + 8]` and its vector-first operand order) 347 (1855 B) [111, 102, 9], the same with a pointer
+// for the target point too. On that: the zero product of k named for its two rows 347 [116, 104, 11]; the side vector
+// declared ahead of the displacement 347 [9]; the displacement written out k, j, i 347 [9]; the side vector through
+// vector3f_assign 347 [9]; the up vector as a local {0, 0, 1} with the full cross written against it 347 [9]; the cross rows
+// k, j, i 339 (1864 B) [19]. Left on the 9: the failed-lookup copy's order (follows the pointer's register: three scratch
+// registers free after the call in retail), one copy of the k zero product, and the side vector's XMM homes (retail keeps its
+// i and j in XMM1 and XMM2 from the cross to the output rows and copies each for the cosine products; this build puts the
+// displacement in XMM1 to XMM3 and the side vector after it). Nothing kept: the composite needs the +0x14/+0x18 locals (one
+// use each) and the resolver's two-arm body, so it is match-only, and each part alone raises the count.
+// MiniMax C (11-19): no gain (373, baseline; body restored). The head differs in the pool load (retail reloads the random-state global after the calls to 0x2104b0 and 0x1fe410, ours keeps the pointer in ESI across them, an LTCG modref decision in another file compilation) and in the transport of the 0x7a argument (ECX against EDX), which the caller in another file decides. Binding the second parameter to one settings local for its five uses measures 415.
+// M3 lane 13 r124 (fast with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373, difflib
+// [exact, stack masked, registers masked] 324/258/116): the third draw's range read before the first draw as one
+// `real_bounds` value (two member uses) 417 (1869 B); the second draw through function_259d0 like the other two 413
+// (1861 B, but aligned 298/227/89: closer in shape); both 439 (1865 B); with all limits read in retail's load order
+// (+0x10, the +0x14 range, +0x1c, +0xc, +0x38 named for its two uses) 437 (1864 B, 352/255/84); the negated limits
+// written in the draw calls in place of their one-use locals 389. The head still needs the seed forwarded through
+// the draws (retail's single store), which only the match-only composite gives.
+// M3 lane 14 r126 (fast with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373, aligned [exact,
+// stack masked, registers masked] 324/255/112; body unchanged): the prop flag as `!(count >= 1 && state != 0)` 373 (same
+// code); the held test as `!= false` on both bytes 373 (same code); the third draw through slot_random_range 378; all
+// three range draws through slot_random_range 391 (first difference +0x4); the prop block testing the state word before
+// the +0x1c limit 373 (other code, 328/259/116); the held byte read into a bool with 0x70e cleared before 0x70d is set
+// 465 (1865 B). Re-measured in this tree: lane 8 r110's form (the third draw's bounds as one early bounds copy, the three
+// draws through the state local with function_259d0, the lower bounds as call arguments) 334 at 1856 B, first difference
+// +0x1ab, 231/152/54: retail's head, frame 0x48, the third input in ESI and the single seed store; still not kept, since
+// the copy's two members are read once each (two one-use locals in one) and exists only to read them ahead of the draws.
+// Reading for the next round: retail expands 0x210850 only at this call, and this build expands a plain function from
+// another file only when that file allows it (lane 9 r138: without /Ob1 on its file it is expanded here and in 25 matched
+// callers), so the match stays BLOCKED-BY 0x210850.
+// M3 lane 7 r200 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH throughout; control 373): the sign
+// step through the existing random_next on the state local (`random_next(&local_10->unknown0) & 0x8000`) 378; the same
+// on the global with no state local 417; the third input bound by a const reference for its five uses 409 (1852 B);
+// `(local_11 & 0x80000000) > 0` with +0x38 named for its two uses 375 (1862 B); random_next on the global with +0x38
+// named 412. BLOCKED-BY 0x210850 as above.
+// M3 lane 6 r212 (fast; control 373; aligned [exact, stack masked, registers masked]): round 204's composite re-measured
+// 347 (1855 B) [127, 118, 16]; on it the two resolver copies as memcpy 347 (same code: the failed-lookup copy stays
+// load/store interleaved, where retail loads all three words first, as an aliasing-safe copy through an expanded 0x210850's
+// pointers does); the side-vector rows j, i, k 215 at 1861 B [157, 128, 31], i, k, j 268 [132, 121, 25]; on the body,
+// the k zero product named for its two rows 373 [320, 255, 112]. Retail keeps the side vector's i, j, k in XMM1, XMM2,
+// XMM3 from the cross product to the output rows. BLOCKED-BY 0x210850 (expanded only at this call).
+// M3 lane 9 r147 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH each run; control 373): on the body
+// alone, the sign test as `(local_11 & 0x80000000) > 0` 375 (1863 B); the side-vector rows j, i, k (diagnostic) 425
+// (1863 B), with that sign test 428 (1866 B); the second draw through function_259d0 on the state local (draws one and
+// three left on the global) 377; the sign step through a `dword *` to the seed field, as slot_random spells it, 373
+// (same code). BLOCKED-BY 0x210850 as above.
+// M3 lane 8 r214 (h2m fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH; control 373): the two lower bounds
+// as unary negations 373 (same code); the sign flip through the existing vector3f_negate_ab 373; the +0x38 spread named
+// at its block for its test and product 374; both angle tests on `(real)atan2(...)` 373 (same code); the doubled cap as
+// `local_16 + local_16` 373. Re-measured (already listed): the state local read before the 0x1fe410 test 428; the third
+// input bound by a const reference 409. Retail evidence restated: it reads +0x10, +0x14, +0x18, +0x1c, +0xc and +0x38
+// right after the sign step and before draw one's multiply (0x1fe94c), so every bound is read ahead of the first seed
+// store; only a source that reads them first (named bounds, one use each) lets the seed stay in EAX. BLOCKED-BY 0x210850.
+// M3 lane 16 r164 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, all MATCH; control 373): the side vector through
+// unknown_0259d0.h's normalize_inline 378; the sign step tested on the stored seed field with no seed local 373 (same code);
+// the +0xc limit read after the two angular limits 373 (same code); the prop flag cleared in an else arm instead of at its
+// declaration 398; the sign flip through vector_products.h's vector3f_negate_ab in place 373 (same code). Retail's expanded
+// 0x210850 keeps its point in ESI and its output in EDI and lays the NONE path's copy out at the end, jumping past the
+// random-state reload: BLOCKED-BY 0x210850.
+// M3 lane 16 r167 (H2M fast with 0x2104b0/0x210850, both matched; control 373; body unchanged): the head timer stored as
+// `(short)real_to_long(value)` with no result local 373 (same code); the inner timer stores written the same way 373
+// (same code, frame still 0x4c); the inner blocks assigning the head's timer value and result locals instead of their
+// own 402 (frame 0x50); the angular limit (+0x3c) read from its field at each of its four uses 447 (1846 B); the
+// magnitude stored by a chained assignment into its field and local 373 (same code). Retail reads +0x10, +0x14/+0x18
+// (onto the x87 stack), +0x1c, +0xc and +0x38 right after the sign step, which is what lets it forward the seed
+// through the three draws; BLOCKED-BY 0x210850 as above.
+// M3 lane 3 r292 (H2M_FAST with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373): the
+// resolver written in 0x210850's own two-arm shape on the target point 466 (1889 B); the same through a `point3f *`
+// output pointer 466 (same code); the final three sums from the offset local instead of the stored fields 429; the k
+// row's negation written `0.0f - (...)` like the i and j rows 373 (same code). BLOCKED-BY 0x210850 as above. Body
+// unchanged.
+// M3 lane 1 r148 (H2M fast with 0x210850, MATCH each run; control 373): the early-bounds form (third draw's bounds read
+// into locals with the limits, all three draws through function_259d0 on the random-state local, lower bounds as
+// `0.0f - limit` arguments) re-measured 340 (1844 B). On it, the existing 0x210850 called for the point (its
+// definition marked `inline` in its own file; the out-of-line copy still matches) 266 (1873 B, first +0x1ad: the same
+// code as the hand-written two-copy resolver, so the inline definition is how retail's resolver shape can be written);
+// with the final sums read back through a named first-output vector pointer (retail's [eax]/[eax+4]/[eax+8]) 251
+// (1867 B); the sign test as `> 0` 269; the cross vector declared ahead of the difference vector, and ahead of the
+// point, 251 each (same code). What is left at 251: retail's inlined resolver hoists the point loads above the stores
+// (its own out-of-line copy keeps them in order, so retail knew the point and the output did not overlap), the
+// up-cross block numbers the cross result xmm1/xmm2/xmm3 where ours uses xmm4/xmm3/xmm1, and the NONE path's copy.
+// All of it rests on the one-use early bound locals, so nothing is kept. Body unchanged.
+// M3 lane 3 r297 (H2M_FAST with 0x210850, 0x2104b0, 0x1fdce0, 0x1fe410 and 0x259d0, all MATCH unless noted; control 373,
+// aligned [exact, stack masked, registers masked] 324/255/112; body unchanged). Re-measured: the existing 0x210850 called
+// with `inline` on its definition, on this body 466 (1889 B), with the final sums through a named output pointer 460;
+// lane 1 r148's early-bounds lead 266, with that pointer 251 [184/134/32]; lane 6 r204's composite 347 (1855 B)
+// [127/118/16], the same code with the resolver written out or through the inline 0x210850. New on the composite:
+// (1) Retail's failed-lookup copy loads all three words before the stores; ours interleaves because the resolved point
+// counts as captured, and the path is 0x1fe410 handing it to 0x1697c0 as its point argument: with that call's point cut
+// (diagnostic NULL in 0x1fe620's or 0x1fe410's call, or a copy passed instead) the copy is retail's [120/111/10]. A callee
+// that takes the address of its own pointer parameter reproduces the capture (0x1fe410 given a `point3f **` to its
+// parameter, with the 0x1697c0 argument still cut: the copy interleaves again), and 0x1697c0 reads its point and vector
+// through such parameter addresses: BLOCKED-BY 0x1697c0 (its file is on this round's avoid list; next: measure this
+// function with those two parameter-address locals removed, and with each onward callee's point cut).
+// (2) Evaluation order: retail computes the rescaled timer as (limit / cap) * count (0x1feb7c `movaps xmm6, xmm4; divss
+// xmm6, [cap]; mulss xmm6, xmm3`); this body's `local_12 / local_19 * (real)local_17` compiles to (count / cap) * limit.
+// The quotient named, cast to real, written second, or scaled in a second statement all give retail's order: 427 on this
+// body (1863 B, aligned 323/254/110; not kept, the count rises), 340 on the composite at retail's 1861 B [132/123/20].
+// (3) On composite + quotient: the side vector through cross3f or cross3f_staged against a local up vector 340
+// [134/121/18], against a static const up vector 340 [136/123/20], the k zero product named 340 [138/123/20], the three
+// rows held in scalars and then stored 340 [130/121/18]: the side vector's homes stay XMM4/XMM3/XMM1 (retail XMM1/2/3,
+// with one extra copy of the k zero product).
+// M3 lane 3 r298 (H2M_FAST with 0x1697c0, 0x1fe410, 0x16a040, 0x16a7c0 and six other 0x1697c0 callers; control 373): r297's
+// lead measured on main's body: 0x1697c0 with both parameter-address locals removed (point and vector read directly)
+// 373 here, 0x1697c0 itself 155 (2188 B; its match is lost); with only the point's address local removed 373 here,
+// 0x1697c0 122 (2175 B). 0x1fe410 and the other callers stay matched in both. 0x1697c0 needs both locals for its own
+// match, so the capture cannot be removed there; restored.
+// M3 lane 1 r159 (H2M_FAST with 0x210850 MATCH each run; control 373): the existing 0x210850 called out of line for the
+// point (no `inline` on its definition) 445 (1807 B, it stays a call); the random-state local declared at the top for the
+// head draw and both function_259d0 draws 413 (1866 B); +0x38 named early with the other limits for its two uses 375; that
+// with the second draw through function_259d0 (retail's second draw is the x87 one) 412; the first output named as a
+// vector pointer for its store and the three sums, on this body, 376 (1854 B). Retail reads +0x10, +0x14/+0x18, +0x1c,
+// +0xc and +0x38 after the sign step and stores the seed once after the three draws. BLOCKED-BY 0x210850 as above. Body
+// unchanged.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

@@ -478,11 +478,6 @@ void player_action_initialize(s_player_action *action)
 	target->unknown08 = NONE;
 }
 
-static inline bool function_x41b793(real value)
-{
-	return (*(long *)&value & 0x7f800000) != 0x7f800000;
-}
-
 static inline bool player_action_target_valid(s_player_action_target const *target)
 {
 	short type;
@@ -786,13 +781,37 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-20): no new form, no lower score (43): the datum iterator's data pointer takes EBX where retail takes EDI; its register use comes from include/data_iterator.h and src/unknown_0bad50.cpp.
+// MiniMax S (11-20): no new form, no lower score (43): the unit and its parent stay in EAX and ECX where retail keeps the unit in EBX and the parent in EAX, and the walk's step object is copied twice where retail reloads it; the pinned 0xbaf80 in another file decides the register choice.
+// score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
+// walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
+// place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
+// MiniMax C (11-19): no new form, no lower score (43): every difference is the one carrier swap (the datum pointer in
+// EBX for EDI, the unit index in EDI for EBX); the root walk's shape is what decides it and that walk is the out-of-line
+// 0xbaf80 in another file, which this lane may not edit.
+// MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
+// EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
+// the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
+// walk with the step object taken from the root index instead also gives 109, so the walk stays as it is; the datum
+// iterator's register use comes from include/data_iterator.h, which this lane may not edit.
+// MiniMax R run 92 (11-17): no new form, no lower score (43): the permuter cannot search this body over the reduced
+// image (it reads 44 there against 43 in the full one), and the carriers still come from the out-of-line 0xbaf80 walk
+// in src/unknown_0bad50.cpp and from the iterator's registers in include/data_iterator.h, both outside this lane's
+// queue.
+// MiniMax C (11-16): no new form, no lower score (43): the datum pointer still takes ebx where retail takes edi and
+// the player datum takes edi where retail takes ebx; the colouring comes from the shared iterator step in
+// include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
+// MiniMax E (11-16): no new form, no lower score (43): the datum iterator's data pointer still takes ebx where retail takes edi, and that register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
+// MiniMax I (11-16): no new form, no lower score (43): the difference still opens inside the root walk, whose
+// body is the out-of-line 0xbaf40 in src/unknown_0bad50.cpp - the datum iterator's data pointer takes EBX here
+// where retail takes EDI - and that file and include/data_iterator.h are outside this lane's queue.
 // MiniMax C (11-15): the parent walk as a NONE-rooted do-while and as a current-rooted while: 109 each
 // (was 43), no lower score; the walk's shape only moves the allocator's choice (the datum pointer lands in
 // EBX, then in EBP), while retail keeps it in EDI and the unit index in EBX.
 // MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
 // region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
 // walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
-// score 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
+// Earlier at 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
 // and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
 // record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
 // whose body is in another file.
@@ -938,11 +957,97 @@ bool function_e4050(long object_index);
 // in edi and has no entry test; writing retail's shape makes the compiler peel the first iteration (109) and the same
 // walk with the record loaded after it gives 102, so both were restored. The remaining rotation comes from the datum
 // iterator's helper (include/data_iterator.h and src/unknown_0bad50.cpp), which this lane may not edit.
-// score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
+// Earlier at 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
 // include/data_iterator.h and src/unknown_0bad50.cpp.
-// score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
+// MiniMax E (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
+// Earlier at 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
+// MiniMax I (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where
+// retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp,
+// which this lane may not edit.
+// b12C (11-17) walk against retail, fast build on r846: every statement checked against the listing - iterator
+// 0x14df50-0x14dfb1, unit 0x14dfb3, root walk 0x14dfc4-0x14e00c, unit-object tests 0x14e012-0x14e061, vehicle arm
+// 0x14e07c-0x14e0c5, exits 0x14e03c/0x14e067/0x14e0c5/0x14e0da. Fields, offsets, jcc senses (jbe at 0x14e061/0x14e0bf
+// is the unsigned byte > 0), callee arguments (eax at 0x14e024, 2 pushed before 0xbaf40) and the player->unit_index
+// re-read at each exit agree: no behaviour difference found. Retail's walk is the inlined 0xbaf80 from the unit (root
+// NONE at 0x14dfd5, entry test 0x14dfd8, step object in EAX at 0x14dfeb) and the parent is re-read at 0x14e012; ours
+// reads it once, same result. Fast score 44 (full 43). New: NONE-root walk with a long unit as do-while / for / next-
+// temp 109; with `dword current` 171 (405 bytes: entry test back and datum in EDI as retail, but the unit takes EAX
+// and the iterator index EBX, because the step object reuses ECX where retail's takes EAX). Grid of three walk shapes x
+// long/dword unit x inline/named parent x unit object before/after the walk: long unit 171/162/113, dword unit
+// 109/102/107/98; none under 43. Best match-only recipe: none reached a match.
+// M3 lane 1 r118 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43,
+// aligned 27 including two padding lines, register-masked 8): re-measured the NONE-root walk from a long unit 109
+// (431 B, aligned 40: no entry test; player EBP, unit EDI, unit object EBX, table EDX) and from a dword unit or with
+// a dword walk variable 171/171 (405 B, aligned 43: the entry test is back with the table in ESI, the unit object in
+// EBP and the player in EDI as retail, but the unit stays in EAX, the step object reuses ECX and the iterator index
+// takes EBX, so the frame goes). New: the continue test compared as unsigned on a long unit (`(dword)unit ==
+// (dword)NONE`) with the long NONE-root walk 171 (405 B, the same code as the dword unit), the same test read from
+// the field ahead of the unit local 171 (same code), the dword unit with 0xe4050 passed the field 171 (same code);
+// the unsigned continue test on the kept parent-first walk 43 (same code). Any signed/unsigned mismatch between the
+// continue test and the walk keeps the entry test and gives that one 405-byte allocation. Body unchanged.
+// M3 lane 9 r142 (fast; 0xbaf80's file is off limits this round): in the 405-byte family the unit keeps EAX because
+// no call falls in its range and the walk's step object takes ECX; retail's step object takes EAX, which pushes the
+// unit to EBX. New: object_get_unchecked returning through a named result local, on the kept body 44 (same code),
+// on the `dword current` walk 171, on the long NONE-root walk 109; the `dword current` walk in its own `{}` block
+// 171; re-measured the `dword current` walk 171 (405 B). Diagnostic: 1 to 7 dead initialised locals on the kept
+// body 44 each (the EBX/EDI swap of the player datum and the unit is not a symbol-count tie).
+// M3 lane 1 r128 (fast with 0xbadc0/0xbaf40/0xe4050/0x14deb0/0xbaf80/0x226190, all matched throughout; control 43): in the
+// 405-byte family (the `dword current` walk from the unit with a NONE root, re-measured 171) retail's walk keeps three
+// scratch values (current ECX, root EDX, step object EAX), so the unit, live across it to the 0xe4050 call, is pushed to
+// EBX; ours reuses ECX for the step object, so the unit stays in EAX. New on that family: the step object named before
+// or after the root store 171/171; the unit bound by const reference to the player field 171; the unit object bound by
+// const reference 171; 0xe4050 passed the root (equal to the unit on that path) 181 (391 B). BLOCKED-BY 0xbaf80 stands.
+// M3 lane 5 r211 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): BLOCKED-BY 0xbaf80
+// stands (pinned out of line in src/unknown_0bad50.cpp, an avoid file this round). On the kept body: the unit read through a
+// `long const &` after its NONE test (lookup, walk start, 0xe4050) 43, the player datum through a `s_player *const &` for
+// the unit read and the three exits 43 (both the same code). On the `dword current` NONE-root walk (re-measured 171 at
+// 405 B: the walk's step object reuses ECX because the unit holds EAX for 0xe4050): 0xe4050 passed `root_index` (equal to
+// the unit on that path, so the unit dies at the walk) 181 (391 B); a redundant `if (unit != NONE)` around the walk 171
+// (same code); the unit object's parent named after the walk for the test, the 0xbaf40 argument and the exit store 174
+// (402 B).
+// M3 lane 1 r133 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43): a grid
+// of 48 forms of the NONE-root walk from the unit (the order of the walk variable, the root and the unit-object lookup x
+// long unit with a dword walk variable or the reverse x the unit object looked up through the unit or the walk variable x
+// the unit object's parent at each use or named after the walk x the step object named or not): the walk variable and
+// the root both ahead of the unit-object lookup 81 each (433 B, 32 forms: the frame is back and the entry test stays, but
+// the unit keeps EAX, the root takes ESI and the step object EDX), the lookup ahead of either 171 each (405 B, 16 forms).
+// Reading of the 405-byte family: retail gives EAX to the unit object's parent (0xbaf40's argument, read after the walk)
+// and to the 0xaa byte, so its unit goes to EBX and the walk's step object is free to take EAX; ours gives EAX to the
+// unit first and puts the parent and the byte in ECX. BLOCKED-BY 0xbaf80 stands (its pin is in an avoid file this round).
+// M3 lane 2 r117 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43). On
+// the `dword current` NONE-root walk (re-measured 171 at 405 B): the step object named and read through a const
+// reference ahead of the root store 82 (435 B: the frame and the entry test are back, but the step object takes EDI,
+// the unit keeps EAX and the unit object EBX), after the root store 171 (same code as the walk); the same two with a
+// long walk variable 87 (442 B) and 108 (431 B). Diagnostics (reverted at once): a call to an unresolved function in
+// the loop on the dword walk, at the loop top or in the vehicle arm, 145/147 (431 B with the call: the frame returns,
+// the unit keeps EAX and the iterator index EBX), on the kept body 97 (436 B). `inline` on 0xbaf40 and 0xbaf80's
+// definitions (diagnostic, full check) leaves this function unchanged and loses eight matched callers (0x4baf0,
+// 0x3d7f0, 0xc0c80, 0xc3ad0, 0x133790, 0x159690, 0x1ac610, 0x1ced00); `inline` on 0xe4050's loses 0xdd8e0 and 0xe3700
+// and leaves it unchanged: the link-time summaries of those callees are already retail's, so BLOCKED-BY 0xbaf80
+// concerns only its expansion here.
+// m3 lane 4 r235 (fast, control 43; aligned by difflib 25, 6 with registers masked): BLOCKED-BY 0xbaf80 still (its pin
+// is in src/unknown_0bad50.cpp, off limits this round too). The root walk in retail's shape with the walk index carried
+// in a one-member aggregate 109 (same code as the scalar walk, re-measured 109: the aggregate is folded and the first
+// step is still peeled); that shape as a `for` loop from the unit 109 (same code); the root started at the unit with
+// the walk from the unit 109 (same code); the walk started from the player record's field re-measured 171 (405 B).
+// m3 lane 6 r221 (H2M fast, control 44 alone, plain 43): BLOCKED-BY 0xbaf80 still (pinned in an avoid file this round).
+// A redundant NONE initialiser for the root 43 (with the callees in the image); the root's object named for the bit-18
+// test 44; the player datum as a const pointer 44; the walk's parent in its own block 44; the parent declared ahead of
+// the root 44 (all the same code).
+// M3 lane 4 r244 (h2m fast, control 44 there, 43 full; body unchanged): BLOCKED-BY 0xbaf80 still (pinned out of line in an
+// avoid file). Use-count forms for the EDI/EBX swap, each the same code (44): 0xe4050 passed the player's field; the unit
+// object looked up from the field; the walk's root started from the field; the continue test on the field with the unit
+// read after it. A single exit (`result = true; break;` at the four exits) 144 (450 B).
+// M3 lane 16 r176 (H2M_FAST with 0xbaf80 and 0x226190, both MATCH; control 43): the parent walk as a for loop 43; the
+// walk stepping through the parent rather than the root 43; no player local (the datum read through the iterator at
+// the unit read and the three exits) 43; the walk under a redundant `if (parent != NONE)` 43 (all the same code); the
+// vehicle arm first (`!= NONE`) 114 (408 B). Still BLOCKED-BY 0xbaf80.
+// M3 lane 8 r228 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): the
+// iterator set-up as `iterator.datum_index = iterator.index = NONE;` 43; the kind byte named once for its two tests 43;
+// `player` declared at function scope 43; the vehicle arm's 0xbaf40 result named before 0xbadc0 43; the root object
+// named as a const pointer for the bit-18 test 43 (all the same code). Still BLOCKED-BY 0xbaf80.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1163,94 +1268,15 @@ bool function_14ed80(void)
 }
 
 
-// score 8 (was 8): the global is kept in EDX here and in ESI in retail, which
-// also moves the push of ESI in front of the add. Also tried: one declaration
-// for both outputs 8, the outputs declared between the player and the
-// globals 8 or after the index 8, the globals declared first and assigned
-// after the player 8, the outputs assigned after their declarations 8 (third
-// first 9), the representation pointer declared at the top 8, const views 8,
-// dword outputs 8. The globals pointer always takes the register the player
-// lookup frees. Round 41: the clamp through the file's PIN macro 19 (166 bytes); maximum at
-// function scope 8; globals declared after the index 8; player declared first 8; the bound
-// read from the globals at each use without the maximum local 21.
-// Round 43: all 23 other orders of the first/third/player/globals declarations: globals before the
-// player 49-50, the rest 8-9; no globals local (the global read at each use) 53 (first then takes
-// EDX, the globals EDI); index declared first 8, after the outputs 8; the third-person field assigned
-// first 9; renaming the globals or first local 8 (names do not steer it).
-// Round 135: no globals local with the player declared first 10 (first takes EDX as retail, the
-// globals EDI, their load after the NONE stores); third first 52; 30 orders x reads through a local
-// or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
-// 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
-// index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
-// Round 126: the existing shared remap helper 8, with inline or force-inline declarations 8;
-// primary/third output-parameter locals 8/8; const output parameters 8; const globals/player
-// pointers 8/8; one count snapshot 58 (169 bytes, caller convention changes); appearance <= NONE 10;
-// lower bound > NONE 13 (166 bytes). Original body restored; globals/first ESI/EDX remain.
-// Round 53: no globals local, player first 10 (the load sinks to the block end); globals first 50; `long first =
-// third = NONE` 9; `long third = first = NONE` 8; chained outputs declared after the globals 9; pointer to the two
-// representation fields 17 (170 bytes); third output assigned first in the block 9. Retail's colour order reads
-// first, globals, third; a named local ranks above both outputs and a read at each use below both.
-// Round 94 (fast): the representation index read once into a `char` local 48; the clamp's count read from the global
-// 53; NONE defaults in an else arm of the bound test 61 (152 bytes); the upper clamp as a ternary 19 (166 bytes); an
-// appearance pointer for both reads 13 (167 bytes); index initialised from the byte before the sign test 52.
-// Round 85 (fast): NONE assigned in an else arm instead of at the declarations 61 (152 bytes), the same without
-// the representation local 60 (153 bytes); the fields read through the globals without the representation local
-// 10 (the dead `add` stays); the representation index read into a char local 51, with the player getter folded
-// into it 48. Retail's 0x14f0f0/0x14f2e0 calls set up EBX then EAX after the push: the declared order already.
-// Round 173 (m3 lane 4, fast): the bound test's count read through the global, the local serving the clamp and the array
-// 53 (first takes EDX as retail, but third ESI and the globals EDI, and the player base folds into the add); the array read
-// through the global 53; one globals local scoped in the clamp arm and a second before the bound test 54; the outputs
-// declared and set to NONE after the remap 63 (151 bytes, 0x14f0f0 lost); the bound-test form with `globals` declared
-// between first and third and assigned after the player 53 (declaration order does not break the first/third tie).
-// Retail's two callers (0x14f0f0, 0x14f2e0) never read EAX after the call, so the void return stands.
-// Round 142 (m3 lane 8, fast; direct global reads mixed with the local): clamp direct, local declared before the bound
-// test 54; element through the global, clamp and bound test through the local 53; local before the bound test used there
-// only 53; local in the clamp arm only 53; bound test direct with the outputs declared after the local 10 (first EDX as
-// retail, third ESI, globals EDI).
-// Round 75 (m3 lane 14, fast): 1-8 unused initialised locals at the top (diagnostic) 8 each, so the tie is not symbol
-// numbering; re-measured round 142's element through the global 53 and round 135's index zeroed first 45; the remap as one
-// nested ternary 8; a named array pointer for the element 8; the element as `representations + index` 8; the remap as two
-// separate ifs 8; the remap as a two-case switch 34 (166 bytes).
-// Round 152 (m3 lane 7, fast; a one-file harness of this file is exact at 8): a 600 s permuter run (51 tries) best 8; the
-// representation as a reference 8; the outputs tested `!= NULL` 8; the game state named before its test 8; an appearance
-// pointer for the sign test and the read 13 (167 bytes). Harness: the representation as `representations + index` with third
-// read first 9; the outputs written third first 10; the clamp as `>= count` 44; the index declared first 8. Diagnostics: a dead
-// load at any of seven points never moves globals out of EDX (not a rotation step); an extra use of first leaves it in ESI.
-// M3 lane 12 r118 (fast; a one-file harness exact at 8): the globals bound as a reference 8; the globals local and its readers in an
-// inner block 8; the sign test and clamp as a force-inline helper taking the globals and the player 8; the whole body as a
-// force-inline helper taking the player and the globals 10 (first EDX as retail, globals EDI); the bound test and element through a
-// pointer to the count/elements pair 53. Harness: no player local 51; `register` on the outputs or the globals 8; an inline globals
-// getter 8; the clamp helper plain inline 8; the element read as a helper with output pointers 8. Harness diagnostics: the named
-// globals local keeps EDX against 1-3 extra uses of first, volatile-sourced outputs or an extra use of itself; as a CSE temp or an
-// inlined parameter it ranks last (EDI); without the clamp it ranks last; retail ranks it between first and third.
-// M3 lane 10 r100 (fast, with 0x14f0f0, 0x14f2e0, 0x14f190, 0x14f270 and 0x14f820): a return value the callers ignore
-// stays in the code (LTCG does not drop it): returning first 54 (0x14f0f0 1), `first != NONE` as bool 23 (173 bytes),
-// third 54, index 45. Declared player, first, globals, third 8 (same code); `long first;` then player, globals and
-// `long third = first = NONE;` 8 (same code), the chain ahead of the player 8 (same code); the NONE defaults repeated
-// in an else arm of the range test 61 (152 bytes; 0x14f2e0 272, 0x14f0f0 48), the same with globals declared between
-// the outputs 61. Diagnostic: without the clamp the function changes length and convention (140-142 bytes, 0x14f0f0
-// 40), so it does not isolate the ranking.
-// Round 197 (m3 lane 4, fast): the globals local assigned a second time before the bound test 54 (first EDX as retail,
-// third ESI, globals EDI, the player base folded into the add); the remap as `if (index == 0 || index == 1) index += 2;`
-// 42 (154 bytes); `short index` 52 (176 bytes); the outputs declared bare and set to NONE between the clamp and the remap 59
-// (155 bytes, 0x14f0f0 40); the sign test, clamp and remap as a force-inline helper taking only the player and reading the
-// global itself, a second globals local in the body for the bound test 54 (globals last, as the second assignment).
-// Round 106 (m3 lane 1, fast): the index read first and the clamp as an if/else-if against the count read at each use 53;
-// no player local (the getter at both reads) 51 in the full build (as the harness). Diagnostics: without the remap 73,
-// without the bound test 81, the outputs stored without their NULL tests 24: the named globals local takes EDX in each.
-// Round 185 (m3 lane 6, fast): the globals local declared before the outputs and the player 50 (still EDX, loaded at the
-// top); the two representation fields as a two-field aggregate copied whole 22 (retail's dead `add` goes); with the globals
-// read at each use, `third` declared just before the bound test 68 (149 bytes: first EDX and the global ESI as retail,
-// third in ECX and the third-person output moved to a register; 0x14f0f0 40), after the player 52 (third ESI, global EDI),
-// before the remap 64 (153 bytes).
+/* two tags of the player's representation (its +0xb4 one and its third-person one), from the clamped,
+   multiplayer-remapped representation index; NONE when the index is out of range */
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
+	long index;
+	s_player *player = player_get(player_index);
 	long first = NONE;
 	long third = NONE;
-	s_player *player = player_get(player_index);
-	s_globals_representations_view *globals = (s_globals_representations_view *)g_4e034c;
-	long index;
 
 	if (player->appearance.representation_index < 0)
 	{
@@ -1259,10 +1285,9 @@ void player_get_representation(long player_index, long *field_b4, long *third_pe
 	else
 	{
 		index = player->appearance.representation_index;
-		long maximum = globals->representation_count - 1;
-		if (index > maximum)
+		if (index > ((s_globals_representations_view *)g_4e034c)->representation_count - 1)
 		{
-			index = maximum;
+			index = ((s_globals_representations_view *)g_4e034c)->representation_count - 1;
 		}
 	}
 
@@ -1278,9 +1303,9 @@ void player_get_representation(long player_index, long *field_b4, long *third_pe
 		}
 	}
 
-	if (index >= 0 && index < globals->representation_count)
+	if (index >= 0 && index < ((s_globals_representations_view *)g_4e034c)->representation_count)
 	{
-		s_player_representation *representation = &globals->representations[index];
+		s_player_representation *representation = &((s_globals_representations_view *)g_4e034c)->representations[index];
 
 		first = representation->field_b4;
 		third = representation->third_person;
@@ -1465,201 +1490,6 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
-// score 5 (was 5): the NONE outputs are materialised with `or eax, 0xffffffff` as retail has,
-// the 0x198 field is cleared with a memset and the flag clear follows the zero store as in retail.
-// What still differs: retail tests the mode before the outputs are materialised, ours materialises
-// them first (the body reached 5 from 46 in MiniMax C's 11-11 round, below).
-// MiniMax E (11-11): no new form, no lower score (46): the timer-memset form reaches 43, under the
-// bar to keep, and the two NONE outputs are still written with a five-byte move where retail's
-// materialisation is three bytes long.
-// MiniMax H (11-11): the only real difference is the -1 constant's form (`or eax,0xffffffff` in retail,
-// `mov eax,0xffffffff` in ours), which MSVC only shortens where the flags are dead, and the two bytes this
-// costs shift every later address; the permuter (87 variants in 913 s) found no variant below the baseline in
-// either the reduced or the full image; no lower score.
-// Earlier at 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
-// uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
-// zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
-// outputs declared and assigned separately and the timers cleared with a memset the score is 43,
-// but the constant stays a mov in every form tried (a struct of the two outputs, one and two
-// declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
-// keep threshold and the original body is restored.
-// MiniMax C (11-11): the two output locals are declared in the enclosing block (their stack homes
-// are unchanged) and the mode test is a nested if, so the sentinel is materialised with
-// `or eax, 0xffffffff` as in retail, and the 0x198 field is cleared with a memset, which puts the
-// flag clear after the zero store. What still differs: the order of the mode test and the output
-// materialisation (four instructions) and nothing else. Moving the two declarations into the mode
-// block puts the materialisation where retail has it, but the build then emits the five-byte
-// `mov eax, 0xffffffff` (43 at 1031 bytes), and the same happens with unsigned outputs, `~0`, a
-// copy from the first output, a goto restructure and a spelled-out constant; this round also tried
-// the two tests merged into one condition, the outputs declared at function scope (275), the outputs
-// declared without an initialiser and assigned inside the mode block, the sentinel as a long literal
-// and as 0xffffffff, and the outputs typed int with the address cast at the call - every one of them
-// gives the same five-byte `mov eax, 0xffffffff` (43); a permuter run over
-// the function was stopped by the harness's time limit before it reported a candidate.
-// MiniMax R (11-10): no new form, no lower score (46); the sentinel is still materialised with the five-byte
-// `mov eax, 0xffffffff`, the two outputs take the opposite stack slots and their stores the opposite order; the
-// outputs declared in the other order give 48, a named sentinel local and the second output copied from the first 46.
-// MiniMax S (11-09): no new form, no lower score (46); the NONE outputs are still materialised with
-// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the zero/flag store schedule
-// still differs.
-// MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
-// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
-// scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts
-// these two sites as the only differences from retail (the two bytes of the constant form are the whole
-// length difference), and one-file models show that both are this context's scheduler choice: in
-// isolation the sentinel comes out as `or eax, 0xffffffff` and the byte clear comes first whatever order
-// the statements are written in. Fixing one site alone is a three-point gain, under the keep threshold.
-// MiniMax C (11-04): no new form, no lower score; 0xffffffff literals, int outputs, a chained second output and reordered or chained tail clears all stay at 46 (the outputs declared outside the branch give 268).
-// Earlier: NONE materialization and the zero/flag store schedule differ; success BL agrees.
-// Round 39: joint/dependent output initialization 75/75; chained word/flag clears 75/75;
-// result before/after the final reset 60/75; after field_198/before the user tests 46/46;
-// early result with chained NONE 48; with chained words/flags or flags first 46/46/46;
-// shared field zero 46; word clears from field_198 58. Kept before the user tests; plain 46.
-// Shared direction helper for reuse/create/both 251/201/276; creation/colors/both entry scopes
-// 152/114/152; native/byte success 174/177; sentinel clears 114;
-// representation inline/out-of-line declarations 114/114.
-// Earlier: BLOCKED-BY 0x152bf0, whose retail body takes the loadout in eax and the unit in
-// esi (ours ecx/eax): without that call the unit takes retail's esi (diagnostic). `result = true`
-// before the user-index calls gives retail's bl result but 147 (one-line shift); at the tail start
-// 147; globals and reuse flag declared before the guard 114; chained NONE outputs 116; unit index
-// initialised NONE 114.
-// Round 199: actual reusable-unit query pointer through admission/fallback; conditional/guarded
-// acquisition, direct global observations and early final success:
-// 170/163/203/232/198/191/206/235. All restored; the pointer lifetime changes the frame and does
-// not fix the protected spawned-unit convention.
-// Round 22 (lane 10): only two real differences are left. The 0x198 field is the player's two
-// short timers (src/unknown_152000.cpp's view); clearing them with memset gives retail's tail
-// order exactly (43; not kept, a 3-point gain). The other is the NONE outputs' constant: ours
-// `mov eax, 0xffffffff`, retail `or eax, -1` (2 bytes, so every later address is flagged). One-file
-// LTCG screens: our build compares the mode byte through AL, and a partial AL write makes the
-// constant a mov (a dword compare or no mode test gives `or`). With the memset: globals read at the
-// top 290, chained outputs 45, outputs swapped 45, result declared first 43, kept-unit result before
-// its call 43. Screened, all `mov`: one-declaration/separate/chained outputs, nested result test,
-// mode-first or negated tests, long/char mode locals, byte-typed mode, a mode predicate, unit
-// initialised NONE, reused flag first, location declared first, long location, swapped bit arms.
-// Round 47: with the timers' memset the only real difference left is that `mov eax, -1` (masked
-// diff one line, 43). Ours loads the mode byte into AL at the join before folding it into
-// `cmp byte [edx+0xc], 4`, so the next -1 is a mov; any word/dword compare, or no mode test,
-// gives `or`. Real trials: outputs declared and set at the top 275; set just before the test
-// 268; declared at the top, set in the block 46; timers' memset 43; nested result and mode tests
-// 46. Diagnostics: 0xb8540 (a stub) replaced by a matched call 244 / removed 259, both still mov.
-// Compile-only screens, all mov: byte cast, nested, negated, De Morgan, named bool, long cast,
-// swapped operands, mode local, `result == false`, unit/result declaration order, unit NONE,
-// options pointer local, kept index cleared after its test, hidden-bit local, result set before
-// 0x14cad0; bitfield/unsigned/char mode fields in a small model.
-// Round 34 (m3 lane 2, fast with 0x14cdd0 and its callees in the image): timers cleared by memset 43; with
-// the two NONE outputs in one declaration 43; outputs declared the other way round 45; `if (result) goto
-// done;` before a separate mode test 192 (1041 bytes); `!(mode == 4)` 43. Compile-only: the mode read as a
-// masked word or dword, or as an unsigned byte against `(byte)4`, still narrows to the byte compare and mov.
-// 0xb8540 is still an empty stub here (its retail body makes calls).
-// Round 254: Provider-owned representation defaults: caller tag/third/both initializer elision
-// 241/241/251; with complete timer clear 241/241/251; both elisions with native result byte,
-// without/with timer clear 241/241. Original sentinel initializers, bool result, clears and body
-// restored; NONE materialization and timer/flag scheduling remain.
-// Round 59 (m3 lane 10; fast, then compile-only, which also gives the mov): two real causes only, the mov and the
-// tail store order; everything else in the 46 is the 2-byte address shift. The kept-unit flag as long / NONE-based /
-// dword / a second bool 46 each (the flag's test is not the partial write); no flag, a goto past the block 182 (1035
-// bytes, still mov); `long result` 108 (1030); mode test first 270. Diagnostics: two mode tests show `mov al, [edx+0xc]`
-// 255; a dword compare 4 at retail's length (`or`, only the compare and the tail differ); word 44. Compile-only, all
-// `cmp byte` + mov: masked dword/word, byte cast, byte index, `!(==)`, short and long casts, char constant, dword shift,
-// `(== 4) == false`, ternary, inline predicates, empty if with else-if or else, options local, mode local, named bool,
-// outputs declared outside or swapped or chained, const local, pointer or reference to the field, unsigned against 4u.
-// A test on the same pointer ahead of the mode test (another field, or the state) keeps the pointer live: `cmp [eax+0xc], 4`
-// then `or eax, -1` compile-only, but retail's pointer is EDX with no such test, so the byte temp avoids AL for another reason.
-// Round 93: separate output library fills 46; fills/existing positive/negated mode predicates/NONE|result outputs,
-// each with the timer memset, 43/43/43/43; unified output fill with the timer memset 71; XOR/subtraction mode
-// predicates with the timer memset 244/244 (subtraction reaches `or` but adds full-width work). NOT kept: the
-// 3-point timer-only gain and the grouped output workspace. Original body restored.
-// Round 46 (m3 lane 2, fast; control 46): reused flag declared before the outputs 59; `!(result || mode == 4)` 46;
-// result declared after unit_index 46; one options pointer local for the state/mode/state tests 228 (1046 bytes);
-// the two word clears before the flag clears 46 (the flag `and` still leads). The constant stays `mov eax, -1`.
-// Round 53: forward goto and label ahead of the NONE outputs 46 (mov stays, so a block label is not the cause);
-// the spawn block as do/while(false) 382 (1146 bytes, mov stays); `unit_index = NONE` after 0xb8540 46; that with the
-// unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
-// {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
-// byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
-// Y571: Separate native word library clears, alias-safe up copy and color transfer, seven
-// subsets 46/94/149/94/149/169/169; complete graph with field_198 library clear 169.
-// Original copies, clears and full body restored; NONE materialization and final zero/flag order remain.
-// F369: Complete kept-unit failure ownership at all edges/state phase/admitted unit/full state
-// admission: 69/46/46/46; each with complete timer clear 66/43/43/43. NOT kept: no
-// byte match; the three-point clear is below the bar. Original body and observations restored.
-// B413: Kept-unit existence/admission result predicates, then the native two-short timer
-// model in all combinations, and the complete timer memset: 278/258/280/91/287/267/287/280.
-// Exact-only result-then-test forms and the timer model restored; NONE and tail scheduling remain.
-// P316: Final-success byte/signed-byte/short/unsigned-short domains on the retained
-// success graph: 108 each; with complete timer clear 105 each, frame 0x11c versus 0x118.
-// NOT kept: all regress and enlarge the frame. Original Boolean full body restored;
-// NONE materialization and timer/flag scheduling remain.
-// N355: Actual reuse admission result producers, original/complete timer clear:
-// 86/231/231/227/83/232/232/228. NOT kept: no exact match from the tested structural forms.
-// Complete original executable source restored; NONE materialization and timer/flag scheduling remain.
-// F375: Loaded byte/signed-byte/short/long, then fallback-needed bool/byte/short/long:
-// 46/46/105/103/110/110/108/109. NOT kept: no match; original body restored.
-// NONE materialization and native timer/flag scheduling still differ.
-// N364: All three user-notification indices held through their own guards/calls,
-// short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
-// NOT kept: no equality; original observations, timer stores and complete body restored.
-// NONE materialization and tail zero/flag scheduling remain.
-// P349: Complete representation/spawn/player/global same-size lexical home orders:
-// 46/46/46/46/46/46/46/46. NOT kept: no byte equality; original executable source restored.
-// AC548: Separate retained/spawned handles, mutable/immutable and entry/phase declaration, then complete timer clear
-// 46/46/46/46/43/43/43/43. NOT kept: no qualifying supported gain or byte match.
-// Native NONE producer and timer/flag schedule remain. Original complete body restored.
-// Round 78 (m3 lane 1, fast; control 46): on the timer memset (the 0x198 field typed as two short timers, 43):
-// `tag_index == NONE` tested first 47; `return result` at the two failure exits in place of the gotos 273 (1018
-// bytes); one `facing` for both arms 54; const location index 43; one scenario pointer for the spawn block 216
-// (1036 bytes); full builds of earlier compile-only screens: swapped bit arms 122 (1035), result before 0x14cad0
-// 43. Permuter on the memset form (600 s): 905 s opening build, 14 tries, nothing below its own baseline.
-// Round 70 (m3 lane 13, fast): with the timers' memset (43 this round), the kept-unit NONE test merged into the state
-// test 48; the kept unit in its own block-scope local 43 (46 without the memset); that with the spawned unit declared in
-// the spawn block 43; that with the reuse flag declared beside the result 81. Diagnostics: in one-file models the -1
-// after a folded byte compare is `or` only when the byte temp avoids AL, and any call on a path into the mode test's
-// block gives AL and `mov`; a dword or word compare, or a second test on the same pointer, gives `or`; /G5 and /G7
-// change nothing. The real 0xb8540 body in place of its stub still gives `mov` (1029 bytes, 219); 0xb8540's call
-// replaced by 0xb8b70 puts the reloaded options pointer in EAX and gives `or eax, -1` (234), by 0xb7290 EDX and `mov` (244).
-// Round 65 (m3 lane 15, fast; control 46): the tail clears in five other source orders: the two words ahead of the
-// flags 46; the words first, then the 0x198 field and the flags 48; the two flags exchanged 46; the flags ahead of
-// the 0x198 field 46; flag 10 after the words 46. Our build emits the flags' `and` ahead of the zero register in
-// every order (retail: zero, the 0x198 store, then the `and`), so the order of the plain stores is not the cause.
-// Round 71 (m3 lane 15, fast on the effect-timers base: the 0x198 field as `short effect_timers[2]` cleared by memset,
-// re-measured 43 with only the `mov eax, -1` left): the bit-2 test's arms the other way round 122 (1035 bytes); one
-// options pointer local for the state-1 and mode tests 278 (1033; it gives `or eax, -1`, because the pointer is kept on
-// the stack and reloaded into EAX for the compare, where retail loads it fresh into EDX); `if (unit != NONE && bit2)
-// 0xb8540 else if (unit != NONE) {...}` 43 (same code); `result == false` 43 (same code; its first fast measurement,
-// earlier only compile-only); an options pointer for the mode
-// test and the later state-2 test 284 (1061). Diagnostics (reverted): an opaque store, or a direct write of g_4e8c20, in
-// the 0xb8540 stub leaves this at 46. Compile-only (/GL-) gives `mov` for every form that keeps the byte compare, even
-// with the state-1 block compiled out, so it cannot screen this. Hypothesis: the choice follows the byte temp's
-// register (matched 0xc5eb0 has `mov` after the same folded compare though its last EAX write is a full `shr eax`).
-// Round 116 (m3 lane 12, fast; control 5): re-measured the outputs declared in the mode block 43 (1031 bytes; `mov eax,
-// 0xffffffff` after the folded `cmp byte [edx+0xc], 4`); an inline helper that sets both outputs to NONE and then calls
-// player_get_representation, called in the mode block, 43 (same code as that form). A scan of every game function in
-// retail for a folded byte cmp/test, a jump, then a -1 finds seven sites (this one, 0x84f30 and 0x850c0 `mov`, 0x1070d0
-// `or`, 0x165f16 `or ecx`, 0x226a60 `or`, 0x2413c0 `mov ecx`); the two matched `or` sites (0x1070d0, 0x226a60) follow
-// loop or arithmetic code with no call into the test, so no matched function shows this one's idiom. 0xb8540 (the call on that path) stays a stub: enabling its draft loses 23 matched
-// functions (src/unknown_0b8540.cpp). No untried natural form found that changes this code.
-// M3 lane 11 r97 (fast; control 5 with the outputs ahead of the mode test, 43 at 1031 bytes with them inside the mode
-// block): a scan of every game function in retail finds 2875 `or reg, -1` against 100 `mov reg, 0xffffffff`; the mov
-// form appears only where an 8- or 16-bit value was last written to that register (a byte or word load, `setcc`, or the
-// temp of a byte compare folded into `cmp byte [mem], imm`). Of the 18 `or` sites that follow a byte compare, every one
-// but this has the register visibly in use across the compare or compares against a register, so retail has EAX
-// occupied at this mode test by something that leaves no instruction. On the inside-the-block form: the mode through a
-// bit-field view (long, dword, char or byte, 8 bits wide) 43 each; through a forceinline getter returning long, with no
-// argument or a pointer argument 43/43; compared as an enum value 43; `mode - 4` 244 (1032 bytes); the mode tested ahead
-// of the result in one condition 270 (1049 bytes), as the outer `if` 270. All `mov`. Output addresses evaluated ahead
-// of the test: a forceinline helper taking both output pointers that holds the mode test, the NONE stores and the
-// 0x14f040 call 43; a pointer local to the third-person output taken ahead of the test and used for its store and the
-// call 43 (both fold to the inside-the-block code, `mov`).
-// M3 lane 8 r167 (fast; control 5, the outputs moved into the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
-// that form the kept unit in its own state-block local with the spawned unit declared in the mode block 43; the reuse flag
-// declared ahead of the outputs at the top of the mode block 56; `long unit_index` declared ahead of the result 43; the
-// reuse flag declared beside the result at the function top 81; on the current body the kept unit in its own state-block
-// local 5 (same code). The two failure exits as `return false` 273 (1018 bytes, the round 78 form again).
-// Round 122 (m3 lane 16, fast; control: the outputs declared in the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
-// that control the mode test held in a named bool 43, a game-options pointer local for the mode test only 43, `(byte)` on
-// the mode 43, `(long)mode != 4L` 43 (each the same code), the outputs declared third_person first 45. A 1800 s fast
-// annealing permuter run on the current body (seed 122): 77 tries, none below 5. Body unchanged.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -1698,128 +1528,131 @@ bool __stdcall function_14f2e0(long player_index)
 
 	if (!result)
 	{
-		long tag_index = NONE;
-		long third_person = NONE;
-
-		if (g_4e6948->mode != 4)
+		if (g_4e6948->mode == 4)
 		{
+			result = true;
+		}
+		else
+		{
+			long tag_index = NONE;
+			long third_person = NONE;
+
 			player_get_representation(player_index, &tag_index, &third_person);
 			short location_index = (short)function_14ef00(player_index, tag_index, true, false);
-			if (location_index == NONE || tag_index == NONE)
+			if (location_index != NONE && tag_index != NONE)
 			{
-				goto done;
-			}
+				s_players_globals *globals = players_globals_14f2e0();
+				bool reused = false;
 
-			s_players_globals *globals = players_globals_14f2e0();
-			bool reused = false;
-
-			if (globals->unknownac != NONE && function_badc0(globals->unknownac, 3))
-			{
-				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-				s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
-				point3f position;
-				real facing;
-				vector3f forward;
-
-				marker_record_get_position_and_angle(location, &position, &facing);
-				forward.i = (real)cos(facing);
-				forward.j = (real)sin(facing);
-				forward.k = 0.0f;
-				function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
-				globals = players_globals_14f2e0();
-				function_b9c60(globals->unknownac, false);
-				function_b7290(globals->unknownac);
-				unit_index = players_globals_14f2e0()->unknownac;
-				players_globals_14f2e0()->unknownac = NONE;
-				reused = true;
-			}
-			else
-			{
-				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-				s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
-				s_object_creation_14f2e0 creation;
-				real facing;
-				color3f colors[4];
-
-				function_b7930(&creation, tag_index, NONE, NULL);
-				creation.field_0c = third_person;
-				marker_record_get_position_and_angle(location, &creation.position, &facing);
-				creation.forward.i = (real)cos(facing);
-				creation.forward.j = (real)sin(facing);
-				creation.forward.k = 0.0f;
-				creation.up = *g_4687b0;
-				creation.player_index = player_index;
-				creation.team_index = player->team_index;
-				creation.field_a8 = *(dword *)((byte *)player + 0x89);
-				if (function_15f330(&player->appearance, player->team_index, colors))
+				if (globals->unknownac != NONE && function_badc0(globals->unknownac, 3))
 				{
-					creation.change_color_mask |= 0xf;
-					memcpy(creation.colors, colors, sizeof(colors));
+					s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+					s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
+					point3f position;
+					real facing;
+					vector3f forward;
+
+					marker_record_get_position_and_angle(location, &position, &facing);
+					forward.i = (real)cos(facing);
+					forward.j = (real)sin(facing);
+					forward.k = 0.0f;
+					function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
+					globals = players_globals_14f2e0();
+					function_b9c60(globals->unknownac, false);
+					function_b7290(globals->unknownac);
+					unit_index = players_globals_14f2e0()->unknownac;
+					players_globals_14f2e0()->unknownac = NONE;
+					reused = true;
 				}
-				unit_index = function_b7b40(&creation);
-			}
-
-			if (unit_index == NONE)
-			{
-				goto done;
-			}
-			function_14cad0(player_index, unit_index);
-			function_a7870(unit_index);
-			function_a7a30(unit_index, 0x400);
-			if (g_4e6948->state == 2)
-			{
-				function_15e970(unit_index);
-			}
-			else if (!reused)
-			{
-				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-				bool initial = !TEST_FIELD_BIT(player->flag3);
-				long profile_index = initial ? 1 : 0;
-				bool loaded = false;
-
-				if (profile_index > scenario->starting_profile_count - 1)
+				else
 				{
-					profile_index = scenario->starting_profile_count - 1;
-				}
-				if (!initial && (scenario->flags12 & 0x20))
-				{
-					s_tail_traits *loadout = function_1529a0(player_index);
-					if (loadout)
+					s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+					s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
+					s_object_creation_14f2e0 creation;
+					real facing;
+					color3f colors[4];
+
+					function_b7930(&creation, tag_index, NONE, NULL);
+					creation.field_0c = third_person;
+					marker_record_get_position_and_angle(location, &creation.position, &facing);
+					creation.forward.i = (real)cos(facing);
+					creation.forward.j = (real)sin(facing);
+					creation.forward.k = 0.0f;
+					creation.up = *g_4687b0;
+					creation.player_index = player_index;
+					creation.team_index = player->team_index;
+					creation.field_a8 = *(dword *)((byte *)player + 0x89);
+					if (function_15f330(&player->appearance, player->team_index, colors))
 					{
-						loaded = function_152bf0((byte const *)loadout, unit_index);
+						creation.change_color_mask |= 0xf;
+						memcpy(creation.colors, colors, sizeof(colors));
 					}
+					unit_index = function_b7b40(&creation);
 				}
-				if (!loaded && profile_index >= 0 && profile_index < scenario->starting_profile_count)
+
+				if (unit_index != NONE)
 				{
-					function_cce00(unit_index, (short)profile_index, true, initial);
+					function_14cad0(player_index, unit_index);
+					function_a7870(unit_index);
+					function_a7a30(unit_index, 0x400);
+					if (g_4e6948->state == 2)
+					{
+						function_15e970(unit_index);
+					}
+					else if (!reused)
+					{
+						s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+						bool initial = !TEST_FIELD_BIT(player->flag3);
+						long profile_index = initial ? 1 : 0;
+						bool loaded = false;
+
+						if (profile_index > scenario->starting_profile_count - 1)
+						{
+							profile_index = scenario->starting_profile_count - 1;
+						}
+						if (!initial && (scenario->flags12 & 0x20))
+						{
+							s_tail_traits *loadout = function_1529a0(player_index);
+							if (loadout)
+							{
+								loaded = function_152bf0((byte const *)loadout, unit_index);
+							}
+						}
+						if (!loaded && profile_index >= 0 && profile_index < scenario->starting_profile_count)
+						{
+							function_cce00(unit_index, (short)profile_index, true, initial);
+						}
+					}
+					result = true;
 				}
 			}
 		}
 	}
 
-	memset(&player->field_198, 0, sizeof(player->field_198));
-	player->flag9 = false;
-	player->flag10 = false;
-	player->field_17c = 0;
-	player->field_17e = 0;
-	result = true;
-	if (player->user_index != NONE)
+	if (result)
 	{
-		motion_sensor_reset(player->user_index);
+		memset(&player->field_198, 0, sizeof(player->field_198));
+		player->flag9 = false;
+		player->flag10 = false;
+		player->field_17c = 0;
+		player->field_17e = 0;
+		if (player->user_index != NONE)
+		{
+			motion_sensor_reset(player->user_index);
+		}
+		player->field_194 = g_510c54->field_2_3;
+		if (player->user_index != NONE)
+		{
+			function_153b80(player->user_index);
+		}
+		if (player->user_index != NONE)
+		{
+			function_16f4b0(&g_4e9bd4[player->user_index]);
+		}
+		function_152340();
+		player->flag3 = false;
 	}
-	player->field_194 = g_510c54->field_2_3;
-	if (player->user_index != NONE)
-	{
-		function_153b80(player->user_index);
-	}
-	if (player->user_index != NONE)
-	{
-		function_16f4b0(&g_4e9bd4[player->user_index]);
-	}
-	function_152340();
-	player->flag3 = false;
 
-done:
 	return result;
 }
 
@@ -2547,6 +2380,25 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax E (11-20): no new form, no lower score (703): retail holds two separate request homes (the 0x1b request at esp+0x44 and the 0x16 request at esp+0x64) where this build shares one, so retail's frame is 0x74 against our 0x4c; giving the 0x16 request its own local reproduces retail's request setup but leaves the frame 8 bytes short and scores 806.
+// MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
+// MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
+// score 703 (was 703; 701 before round 218): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
+// MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
+// still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
+// files this lane may not edit, so the body stands.
+// MiniMax A (11-19): no new form, no lower score (701): retail still calls 0x151b80 where this build inlines it, the frame is still 0x4c against retail's 0x74, and the loop's index scratch is still in EBX where retail keeps it in ESI; the body is unchanged. BLOCKED-BY 0x151b80's inlining decision in src/unknown_1502e0.cpp.
+// MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
+// this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
+// live in files this lane may not edit.
+// MiniMax C (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the 0xccd20
+// call and the first 0x151b80 call are still expanded here where retail calls them, and both callees live in other
+// files that this lane may not edit.
+// MiniMax E (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this build inlines 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
+// MiniMax I (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 - retail
+// holds two request homes and eight bytes more of small homes than this build's one request home - and the
+// 0xccd20 and 0x151b80 calls this build expands are still expanded here; giving the 0x16 request its own
+// workspace measures 804 at 2842 bytes, so the single workspace stands.
 // MiniMax C (11-15): no new form, no lower score (701): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (701): retail's locals run from +0x10 to +0x83, with the
 // two request homes at +0x44..+0x83 and the small homes at +0x14..+0x43, so retail holds two request
@@ -2560,7 +2412,12 @@ static __forceinline long player_round_ticks(real value)
 // still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
 // it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
 // MiniMax G (11-12): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail makes out of line, and retail's two request homes are still one here.
-// score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// MiniMax G (11-18): no new form, no lower score (701): the length agrees (2740 bytes) but the frame is still 0x4c against retail's 0x74, our
+// link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out of line, and retail's two request homes are still one
+// here; the definitions of those callees sit in files this lane may not edit.
+// MiniMax H (11-18): no new form, no lower score (701): the length agrees (2740 bytes), but the frame is still 0x4c
+// against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out
+// of line, and retail's two separate request homes are still one here; those callees sit in other files.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
 // its first 0x151b80 stays a call, while ours has one request home and LTCG expands that call into the body;
@@ -2704,10 +2561,95 @@ static __forceinline long player_round_ticks(real value)
 // still inlines 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files. The
 // activity tail spelled as a clamp gives 700 (retail's exact compare and cmovg, a gain of one), the clamp alone gives
 // 702 at 2741 bytes, and the activity words as `|` of shifted bools give 714 at 2743 bytes, so none of them is kept.
-// score 701 (was 701): unchanged this round: the frame is still 0x4c against retail's 0x74, and this build inlines
+// Earlier at 701 (was 701): unchanged that round: the frame is still 0x4c against retail's 0x74, and this build inlines
 // 0xccd20 and the first 0x151b80 call where retail calls them.
-// score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
+// MiniMax E (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the permuter's best variant (700) used a flag set by one test and read by the next, a comparison written as `!= 0` and an argument swap, all ruled out.
+// Earlier at 701 (was 701): unchanged that round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
+// MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
+// build still expands 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
+// M3 lane 4 r215 (fast, control 701; aligned/masked = difflib-aligned exact/register-masked counts, control 450/166): BLOCKED-BY
+// 0x151b80 (unmatched, 17; its file is another lane's this round). Retail passes constants at both 0x151b80 calls (`xor cl, cl`,
+// `mov cl, 1`) and expands neither; ours expands the first. Diagnostic, not kept (a local holding a constant): the first call's
+// false through a named bool with each request declared in its own block gives 676 at 2735 B, frame 0x6c (retail 0x74), aligned
+// 421, masked 151, and exactly retail's 33 calls; what is left there: the candidate `input + 0x28` held in ESI where retail
+// recomputes it at each call and keeps the 0xfffd mask in ESI, EBX pushed late, the scaled unit index not kept in EBX.
+// A noinline redeclaration of 0x151b80/0xccd20 in this file changes nothing (701: LTCG ignores it). Trials: each request
+// in its own block 804 (2842 B; listed); with the 0x80 test as its own block around the `||` 804 (still expanded); with the
+// candidate written as `input + 0x28` at each of its four uses 810; the 0x80 block's `a || b` in a named bool 701 (same
+// code, still expanded), with the block requests 804.
+// M3 lane 5 r211 (fast with 0x151b80, 0x151aa0, 0x151940; control 701). Lead for the flag decision (diagnostic, not kept):
+// 0x151b80's file built /Ob1 keeps both 0x151b80 calls out of line, and 0xccd20 then stays a call too (our 33 calls are
+// retail's 33): 775 at 2636 B; with each request in its own block 676 (2735 B, frame 0x6c), with the candidate written
+// as `input + 0x28` at each call as well 698 (2742 B). 0x151b80 itself differs from retail only by an ESI/EDI swap, so
+// its own form is not what keeps retail from expanding it. Source trials on main: the `0x151aa0 || 0x151b80` pair
+// through a forceinline wrapper taking `primary` 701 (same code: the constant still reaches the inliner); the six flag
+// sets through the file's SET_FLAG(..., true) 701 (same code); only the 0x16 request in its own block 804 (2842 B); the
+// flag sets through the `player` pointer fetched at entry 807 (2643 B).
+// M3 lane 11 r124 (fast, control 701): the last request site (zero the request, type 0x16, send) is the existing no-argument
+// request function 0xe68c0 written out, and retail's second request home (+0x64) is that function's own local expanded here; the
+// function already calls 0xe68c0 at three other places. `function_e68c0(0x16, unit_index)` there 727 at 2696 B (frame 0x4c): this
+// build keeps it a call where retail expands it, BLOCKED-BY 0xe68c0 (a contributor's /Ob1 file, a build-flag question, with
+// 0x151b80 and 0xccd20 as before). With that call: the 0x1b request declared in its own block 727 (same code); the decay read
+// from the settings at each use 735 (2703 B, frame 0x54: eight more bytes, so retail's 0x74 is this frame plus the expanded
+// request); the tick scale read at each use as well 736 (2702 B). Diagnostic, reverted at once: a file-local inline copy of 0xe68c0
+// at the last site 804 at 2842 B, frame 0x6c, the same instructions as two function-scope requests (the listed 804), and the first
+// 0x151b80 call is still expanded, so that expansion does not follow from the caller's size.
+// M3 lane 1 r133 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 701; aligned = difflib count of equal
+// rows with registers masked, 552 at the control). Retail evidence at the six flag sets: `or byte ptr [eax + edi + 2], N`
+// is followed by `add eax, edi` (the player pointer formed, unused at the four 0x10 sets), and at the two 0x20 sets the
+// expanded 0x1520f0 body reads the user index through that pointer (`mov ax, [eax + 0x28]`) with no second load of the
+// pool's data. Ours forms a dead `lea eax, [.. + edi + 2]` and reloads the data for the view clear. Not kept (no gain in
+// the count while the frame and the expansions stand): each flag set through a named player pointer in its own block
+// (`s_player *flagged = player_get(player_index); flagged->flags_word |= N;`) 702 (2732 B; retail's `or`/`add` pairs at
+// the four 0x10 sets; aligned 552); that with the view-clear helper taking the pointer at the 0x20 sets 701 (2720 B: no
+// reload, as retail, but the view lookup then reads +0xa2 ahead of forming the view address as 0x1520f0 itself does;
+// aligned 531); that with the candidate written `input + 0x28` at each call 705 (2722 B, aligned 556, the closest
+// opening so far); the function-scope `player` reassigned at each set 725 (2746 B); the candidate at each call alone
+// 708 (2742 B, re-measure, aligned 554). With those forms ours is 18 to 20 bytes short of retail, so the present equal
+// length hides that many bytes owed to the blockers (0x151b80 and 0xccd20 expanded here, 0xe68c0 not). Left in the
+// opening on the 705 form: retail keeps the unit's scaled index in EBX (pushed at entry, stored to its own home) and the
+// 0xfffd mask in ESI; ours keeps the mask in EBX. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
+// M3 lane 2 r117 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 701, aligned 708,
+// register-masked 270): `idle = rest = 0;` in the negative arm 701 (same code); one function-scope `weapon` for the
+// 0x60 block and the read after it 701 (same code); the parent and the seat tested on the fields with both locals read
+// inside the block 701 (aligned 694); the +0x214 read of the two-slot arm through `current` 703 (2736 B); the latch's
+// node stored ahead of its target 702 (2741 B). `inline` on 0xe4050's definition (diagnostic, full check) leaves this
+// function unchanged. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
+// M3 lane 6 r218 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 703 at 2742 B, 34 calls against
+// retail's 33). The link-time inliner compares a callee's size with a limit that follows how often it estimates the call
+// site runs, and a test in front of a site lowers that estimate even when the test itself folds away (0xd6c80 in round
+// 218's report). Diagnostics on that, none kept (a test that repeats the one before it, and the function does not match):
+// `(actions & 0x80) && (actions & 0x80) &&` at the 0x80 site 775 at 2636 B with retail's 33 calls (the first 0x151b80 and
+// 0xccd20 both stay calls: the state earlier rounds reached only with the callee's file flags or a pragma); two repeats
+// 775 (same code); `if (buttons & 0x10)` again inside the 0x10 block 720 (2714 B, 34 calls: 0xccd20 a call, the first
+// 0x151b80 still expanded); both 858 (2573 B, 33 calls); the 0x80 repeat with each request declared in its own block 676
+// (2735 B, frame 0x6c: round 215's lead without a constant-holding local); that with the candidate written `input +
+// 0x28` at each call 698 (2742 B); the 0x80 repeat with the last request through the existing 0xe68c0 819 (2592 B). So
+// both wrong expansions follow from the 0x80 site's estimate; what retail's source has in front of that site is not
+// known. On the 676 form: the six flag sets through a named player pointer in its own block 726 (2713 B), with the
+// candidate at each call as well 683 (2730 B); the 0x10 block reading the unit through a fresh lookup 677 (2736 B); the
+// parent and seat read through fresh lookups 696 (2732 B); both 688 (2740 B, retail's length). BLOCKED-BY 0xe68c0
+// (expanded at the last site in retail) as before.
+// M3 lane 4 r244 (h2m fast; control 703; body unchanged). Inline-cost reading (one-object link-time build of this file with
+// the objects of 0x151b80, 0xccd20 and 0xe68c0, threshold search; the build uses 81): 0xe68c0 is never expanded, even at 400,
+// because its file is built /Ob1 (a contributor file), so retail's expansion of it at the last site (its second request home,
+// frame 0x74) cannot happen in this build: BLOCKED-BY 0xe68c0's file flags. The first 0x151b80 site expands from 56 (the
+// second from 100) and 0xccd20 from 64; there the 0x80 test nested or repeated changes neither at 81. Trials: the 0x80 site
+// as `if (actions & 0x80) { bool dropped = ... || ...; if (dropped) ... }` 703; the 0xccd20 site nested under
+// `if (buttons & 0x10)` 703; both 703 (34 calls still); the last request through the existing 0xe68c0 725 (2698 B, a call).
+// M3 lane 16 r176 (H2M_FAST with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970, unchanged each run; control 703):
+// the attack target as `long target = NONE; if (function_bae20(input[+0x30], 3)) target = input[+0x30];` 699 (2740 B:
+// retail's `or edi, -1; call; test eax, eax; cmovne edi, esi`, a gain of four, under the bar), with the input word in a
+// named local 699, as one conditional initialiser 707 (2746 B), with the activity clamp and `cmovg` forms of round 101
+// 699; the lunge count as `(short)(lunge + 1)` 699 (2740 B), with the target form 700; `1.0f > progress` written
+// `progress < 1.0f` 703; the lunge distance summed x, y, z 703; the first 4-bit clear as a word mask 704. Still
+// BLOCKED-BY 0xe68c0 (its /Ob1 file keeps the last request out of line), 0x151b80 and 0xccd20.
+// M3 lane 8 r228 (H2M_FAST with 0x151b80 (5), 0x151aa0 (43), 0x151940, 0x14f2e0 and 0x14e970; control 703): the
+// 0x212/0x213 slot test through the entry `unit` pointer 702 (2736 B); `player` and `unit` initialised at their
+// declarations 703 (same code); the idle block's parent test on `parent_index` 704 (2744 B); the +0x238 object named
+// once for its test and the 0x151ea0 argument 703 (same code); the activity tests on `buttons` with no copy 721
+// (2714 B). Still BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3104,15 +3046,36 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax E (11-20): no new form, no lower score (103): the whole gap is the players-globals pointer, which our build keeps in EDI across both loops where retail keeps it in ESI and reloads it late; that choice follows from what the loop's callees write to g_4e8c20, and those callees live in other files.
+// MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
+// MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
+// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
+// function where retail loads it into ESI and reloads it after the busy check and again before the
+// final store, and the two loops swap the datum and unit registers with it; the reduced image
+// overstates this body, the full build gives the same 103 at retail's 611 bytes.
+// MiniMax A (11-19): no new form, no lower score (103): the players globals are still kept in one web across both loops in EDI, where retail reloads g_4e8c20 into ESI, ECX and EAX; the body is unchanged. BLOCKED-BY the 0xb8540/0xb7b40 drafts in other files.
+// MiniMax R run 92 (11-17): no new form, no lower score (103): the players-globals pointer still stays in edi where
+// retail keeps it in esi, and the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may
+// not edit.
+// MiniMax C (11-16): no new form, no lower score (103): the players-globals pointer is still kept in edi across both
+// loops where retail keeps it in esi, and the 0x16bc00 call is still expanded here where retail calls it out of line;
+// the stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue.
+// MiniMax E (11-16): no new form, no lower score (103): our build keeps the players-globals pointer in edi across both loops where retail keeps it in esi and reloads it late, and retail inlines the status test that this build calls out of line; that callee lives in src/unknown_13bf00.cpp, and the stubs 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20.
+// MiniMax I (11-16): no new form, no lower score (103 on the full build, 193 on the reduced one): the globals
+// pointer still ends up in EDI where retail keeps it in ESI, and the two loops still swap the datum and unit
+// registers with it; the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may not
+// edit.
 // MiniMax C (11-15): no new form, no lower score (103): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (103): retail's listing loads the flag's global
 // (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
 // while this build loads the globals pointer first and takes the field's address with a lea, so the
 // two loads come in the other order from the first instruction on; the body is unchanged.
-// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
-// function where retail loads it into ESI and reloads it after the busy check and again before the
-// final store, and the two loops swap the datum and unit registers with it; the reduced image
-// overstates this body, the full build gives the same 103 at retail's 611 bytes.
+// MiniMax G (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail loads it into ESI and
+// reloads it after the busy check and again before the final store, and the two loops still swap the datum and unit registers with it; the
+// stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue, and the reduced image overstates this body.
+// MiniMax H (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail
+// loads it into ESI and reloads it late, and retail inlines the status test that this build calls out of line; that
+// callee is in src/unknown_13bf00.cpp, which this lane may not edit, and the reduced image overstates this body.
 // MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
 // reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
 // (173), writing the status after the countdown (181) and giving the second loop its own iterator
@@ -3323,11 +3286,101 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20: BLOCKED-BY 0xb8540, 0xb7b40 and
 // 0xe4050. The loop 1 busy test with the vehicle arm first, the busy test as two conditional expressions, the busy
 // test set by `&&` and loop 2's flags word in a named local all leave the same code.
-// score 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
+// Earlier 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
 // where retail has ESI and late reloads; the same source scores 103 on its own.
-// score 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
+// Earlier 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
 // where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
 // out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
+// MiniMax I (11-17): no new form, no lower score (plain 103, fast 193 - the fast build of this function is not
+// faithful): our build still keeps the players-globals pointer in EDI across both loops where retail keeps it in
+// ESI and reloads it late, and retail still inlines the status test this build calls out of line.
+// m3 lane 10 r115 (fast in round 34's widened image with 0x14d3a0 listed, every listed callee as in the baseline;
+// control 103 = the full build's 103; body unchanged; the two stacked score lines above are relabelled `Earlier`). Same
+// code as the body (not trials): the busy test in a forced-inline bool helper with early returns; both iterator set-ups
+// through one forced-inline begin helper; the prologue's globals as a reference instead of a pointer; the loop-1 player
+// through a reference; `value` and `last_position` declared at the function's top; the countdown read into a local for
+// its test and its decrement. New, both worse: the last position copied by components through a position pointer 117
+// (625 B); the pause test called once into a bool used for the countdown and the status 177 (611 B; retail re-reads
+// the byte at both tests). Every other code-changing natural form I found is listed above. BLOCKED-BY 0xb8540 and
+// 0xb7b40 stands (both still disabled stubs, so nothing on loop 2's call tree is seen to write g_4e8c20 and our build
+// carries it in EDI to the final store); 0xe4050 now matches and the web is unchanged. What follows from the web, as
+// before: loop 1's datum and unit swap ESI/EDI, NONE is an immediate where retail keeps -1 in EDX, the last unit sits
+// in EBP where retail keeps it in memory for loop 2.
+// M3 lane 4 r215 (fast with round 34's widened image + 0x14d3a0 and 0x13cb40, control 103; aligned/masked = difflib-aligned
+// exact/register-masked counts, control 75/18): loop 2's two player tests through the `flags` bitfields 103, `globals` as a
+// const pointer 103, loop 2's datum as `s_player const *` 103, its index local renamed player_index 103 (all the same code); the
+// failures counted in a `long` (`++failures`, `if (failures) return;`) 150 (588 B; aligned 53, masked 13). Re-measured as a
+// base only: round 46's split failure test 91 (608 B, aligned 55, masked 13; flag form, not keepable without a match); left on
+// it is loop 1's inlined iterator step (retail keeps NONE in EDX and datum/unit in EDI/ESI, and stores no iterator.data before
+// loop 1). BLOCKED-BY 0xb8540/0xb7b40 stands (both still disabled stubs: nothing on loop 2's call tree is seen to write g_4e8c20).
+// M3 lane 1 r128 (fast in round 34's widened image, control 103): 0xb7b40's disabled draft enabled with its stub removed
+// (its type callbacks are indirect calls that could reach the players init/dispose entries) 103 in the fast and the full
+// check (nothing lost there any more; 0xb7b40 607), so the indirect calls do not release the EDI globals pointer; the
+// root walk through the existing 0xbaf80 172 (578 B, a call); `busy` declared ahead of the root walk 103; loop 2 set up
+// from the pool global again 141; the pool local bound by const reference 154 (624 B). BLOCKED-BY 0xb8540 stands.
+// M3 lane 5 r211 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103; 0x14f2e0 5 there as in the full
+// build): retail materialises NONE in EDX right after loop 1's 0x16bc00 call and reuses it for the exhausted iterator's
+// datum index, the last-unit test (against memory) and loop 2's set-up; ours uses immediates and loads the last unit into
+// EBP, which follows from the globals web. The prologue's globals pointer bound through a `s_players_globals *const &` 178
+// (the countdown becomes a memory decrement); the last unit through a `long const &` for its test and the 0x14e970 call
+// 103, the busy flag through a `bool const &` 103, loop 1's player pointer through a `s_player *const &` 103 (each the
+// same code); a second globals pointer taken at entry for the busy store and the final store 182 (606 B).
+// MiniMax C (11-19): no new form, no lower score (103): retail's loop 1 steps the pool itself, with the pool in EBX, the
+// index in EBP and no store of the iterator's data field before it, while ours keeps the shared iterator; writing that
+// step into the loop does not reach retail's shape either (the reduced image 214 against 193, the plain check 103).
+// M3 lane 1 r133 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40, every listed callee as in the baseline; control
+// 103): retail stores the iterator's data field once, in loop 2's set-up; ours stores it ahead of loop 1 and again there.
+// Diagnostic, not kept: loop 1 stepping the pool local with an index local of its own through a second inline step
+// helper (pool, index, iterator), storing only the datum and the datum index, 141 (611 B: the store ahead of loop 1 goes
+// and the last unit's NONE store takes its place as in retail, but the globals pointer keeps EDI and the rows shift).
+// Same code as the body: the final store under `if (!failed)`; the iterator declared ahead of the last unit and its
+// position; `globals->unknown9e == false`; loop 2's set-up with the data field stored last. BLOCKED-BY 0xb8540 stands.
+// M3 lane 2 r117 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103, aligned 79, register-masked
+// 26). Diagnostics (reverted at once): a call to an unresolved function after loop 2 gives 94 at 613 B with retail's
+// ESI prologue and the final store's own reload (first difference +0x3e, aligned 60), the same call inside loop 2 109
+// (616 B), inside loop 1 137 (617 B): what retail's link saw and ours does not is a write of g_4e8c20 on every path
+// into the final store. `inline` on 0x6b380's definition, alone or with a pin, 103 (same code; a full check with it
+// moves no function at all), on 0x16bc00's 210 (661 B: it expands into loop 1), on 0xe4050's and on 0xbaf40/0xbaf80's
+// 103 (full checks; they lose matched callers elsewhere). Source forms: the final store through a local read after
+// loop 2 103, that local bound by const reference 103, the `= 6` store through such a local 103, both 103, the final
+// store under `if (!failed)` through a local 103, the `= 6` store through the prologue's pointer 103 (all the same
+// code); the final store through the prologue's pointer 176 (618 B). BLOCKED-BY 0xb8540 stands.
+// M3 lane 6 r218 (fast with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00, 0x6b380; control
+// 103). Checked in retail: only 0x14b4b0 and 0x14b560 write g_4e8c20, nothing calls either directly (both sit in the
+// subsystem table), and the global's address is never taken, so no direct call from loop 2 reaches a write; indirect
+// calls are already on loop 2's call tree through matched functions here (0xa7870 -> 0x8a400, 0xb75a0 -> 0x109290,
+// 0xe68c0 -> 0xe6900) and do not release the pointer. What is left as the cause is the object code's call cycle: retail's
+// loop 2 calls into it (through 0xb75a0, 0xb7b40, 0xb8540), where a caller has no finished summary of its callee and
+// reloads; our cycle is cut at the stubs. BLOCKED-BY 0xb8540 and 0xb7b40 stands. Forms that add an implied or repeated
+// test to change the estimated weights of the blocks (the estimate that decides link-time expansions and, in 0xd5de0,
+// float register priorities), all 103 with the same code: `else if (busy)` on the `= 6` store; the rest of the function
+// under `if (globals->unknown9c == 0)` in place of the early return; the final store under `if (!failed && last_unit !=
+// NONE)`; `if (root != NONE)` ahead of the busy test; `!busy && unit != NONE`; `last_unit != NONE &&` ahead of loop 2's
+// player tests.
+// M3 lane 4 r242 (H2M_FAST with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00 and 0x6b380,
+// all MATCH but 0x14f2e0 (5, as in the full build); control 103; with only 0x14d3a0 and 0x13cb40 listed the same body is
+// 193 at 592 B, so that list is needed for a faithful screen): loop 1 stepped by include/data_iterator.h's existing
+// data_datum_iterator_next_called in place of the file's copy 155 (597 B), loop 2 through it as well 173 (566 B, first
+// difference +0x3e: the prologue then takes ESI as retail, but loop 2's out-of-line step is gone); loop 2's datum index
+// passed as `iterator.datum_index` at both calls 103; both set-ups as `iterator.datum_index = iterator.index = NONE;`
+// 103; loop 1's body nested under `if (unit != NONE)` in place of the `continue` 103 (all three the same code).
+// BLOCKED-BY 0xb8540 stands.
+// M3 lane 4 r244 (h2m fast with r242's list: 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00,
+// 0x6b380; control 103; body unchanged): the root walk from a NONE root as `while (current != NONE) { root = current; ... }`
+// 103 (same code); the position copied member by member through a point pointer 117 (625 B); `busy = badc0(..) && e4050(..)`
+// 105; the busy test with its arms swapped 120; the vehicle arm as `if (vehicle && vehicle[0x34c] > 0) busy = true;` 117.
+// Reading: ours loads the globals pointer into EDI at loop 1's head each pass and uses it for the busy store; retail reloads
+// it at the store itself. BLOCKED-BY 0xb8540 (its draft still loses 23 functions when enabled, see its file).
+// M3 lane 16 r176 (H2M_FAST with lane 4 r242's list, all MATCH, 0x14f2e0 included; control 103): the position copied
+// before `last_unit` is assigned (retail stores the unit after forming the position address) 101 (a statement order
+// worth two, under the bar); that copy as a memcpy 101, memcpy with the unit assigned first 103 (same code as the
+// assignments); `failed` declared after loop 2's set-up 108 (612 B); loop 2's unit test first 107; `if (last_unit ==
+// NONE) return;` 103; the final store under `if (!failed)` 103 (same code). Retail loads the three position words
+// before storing them (x ECX, y EDX, z EAX); ours interleaves. Still BLOCKED-BY 0xb8540/0xb7b40.
+// M3 lane 8 r228 (H2M_FAST with lane 4 r242's list, all MATCH; control 103): the body after the 0x9e test nested under
+// `if (globals->unknown9e)` 103 (same code); loop 2's player as a const pointer 103 (same code); loop 2 on its own
+// iterator local 155 (597 B); loop 1 testing the player's field before naming `unit` 103 (same code); the root walk and
+// the vehicle test through the file's typed unit/vehicle view 103 (same code). Still BLOCKED-BY 0xb8540/0xb7b40.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

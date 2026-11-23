@@ -152,7 +152,7 @@ struct s_contrail_structure_bsp
 
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 void function_11bed0(s_location *location, point3f const *point);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 
 /* the leaf and cluster of the structure bsp a point is in */
 static inline void contrail_location_from_point(s_location *location, point3f *point)
@@ -382,10 +382,23 @@ void contrail_update(long contrail_index, bool detach, real dt)
 	contrail->unknown2c += dt;
 }
 
-// score 4 (was 6): a shared `one` local for the three literal 1s (the
+// score 6 (was 4; 2026-11-23: rose with data_find_index reading its two fields directly for 0x2689d0's match, lane 8 r230;
+// the text below describes the 4): a shared `one` local for the three literal 1s (the
 // 0x17c0e0 count, the flags03 bit and the index step) fixes the two locals'
 // EBX/EDI load order. The remaining differences are the two `frame_time`
 // updates' remaining/elapsed XMM registers.
+// b14G (11-17) walk against retail, fast build on r847: every statement matches retail, and so do the registers, the
+// compares and their NaN directions. The only difference is the layout of the two out-of-line `frame_time` blocks that
+// share the store at 0x17bdde: retail puts the no-rate block (`frame_time += elapsed`, xmm5 at 0x17bdca) first and
+// the loop-break block (`frame_time += remaining`, xmm2 at 0x17bdd5) second, so the `jbe` at 0x17bd82 and the `jb` at
+// 0x17bdad point the other way round; ours emits break first, no-rate second. The addss register operands differ
+// only because of that order. Tried (fast build): `remaining` declared inside the `rate > 0` branch (6), `if (!(rate
+// > 0)) {no-rate} else {loop}` (118), `if (rate <= 0)` first (119), while(true) with a bottom break (138), a
+// for(;;) with continue (275), `while (remaining > 0)` and a hoisted `step` (4, same layout), else using `remaining`.
+// M3 lane 8 r230 (h2m fast over this file, with data_find_index rewritten without its count and bits locals, the
+// 0x2689d0 lead): 6 with or without `one` (EBX/EDI reloads swapped again); there, literal 1s 6; the definition read
+// ahead of the elapsed time 6; a named next index 6; the definition declared ahead of the elapsed time 6; the step through
+// data_next_absolute_index_inlined 6 (with `one` 6); `flag0 = active` 168; the two `active` tests merged 105.
 // @retail 0x17bc40
 void function_17bc40(real dt)
 {
@@ -556,6 +569,9 @@ static inline real contrail_scale_if_17c0e0(word flags, word mask, real scale, r
 	return value;
 }
 
+// Tried (full build with stand-in SDK headers, where this function starts at 54, not the SDK build's 96): the test
+// that the marker has not moved evaluated into a bool first (`bool same_place = false; if (previous) same_place =
+// !memcmp(...) && !force; if (same_place)`) 28; not kept, a test-and-set flag stays only in a byte match.
 // @retail 0x17c0e0
 void function_17c0e0(long contrail_index, short count, bool force)
 {
@@ -608,7 +624,7 @@ void function_17c0e0(long contrail_index, short count, bool force)
 						point->state_time = 0.0f;
 						point->state_rate = 0.0f;
 						point->scale = contrail->scale;
-						random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, cone_angle);
+						random_vector_in_cone(&g_4e7408->seed, &marker->matrix.forward, &direction, 0.0f, cone_angle);
 						point->position = marker->matrix.position;
 						contrail_location_from_point(&point->location, &point->position);
 						function_ba1d0(contrail->object_index, &velocity, 0);

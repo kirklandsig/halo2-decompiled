@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "axis_rotation.h"
 #include "reciprocal_normalize.h"
 
 struct s_shape_contact;
@@ -680,7 +681,6 @@ struct s_physics_initial_state
  long material;
 };
 
-void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* src/unknown_1eb8a0.cpp */
 
 PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f *result)
 {
@@ -689,7 +689,34 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
-// score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// MiniMax S (11-20): no new form, no lower score (114): the first difference is inside the inlined rotation helper, whose body lives in src/unknown_1eb8a0.cpp, a file this lane may not edit; the block copies, the side crosses and the snap exit's copy follow from it.
+// MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
+// MiniMax B (11-19): no new form, no lower score (114): the first difference is still inside the shared rotation
+// helper, whose source is in src/unknown_1eb8a0.cpp, so the block copies, the side crosses and the small-turn exit are
+// not this file's to change; the reduced image omits that file, so the fast score also carries that caveat.
+// MiniMax G (11-19): no new form, no lower score (114), body unchanged. The score depends on the reduced image: alone the
+// function reads 409 (1167 B against retail's 1382) because the rotation helper is not inlined; with an address from the
+// helper's own file (0x1eb640) in the same check it reads 114 (1389 B) with the helper inlined. The first difference is
+// inside that inlined helper (its source is in src/unknown_1eb8a0.cpp, which this lane may not edit): retail copies the
+// vector's component with `movaps` and multiplies the axis from memory, ours loads the axis and multiplies by the vector's
+// register, and that swap moves the whole rotation block's register roles.
+// MiniMax I (11-20): no new form, no lower score (114): the first difference is still inside the shared rotation helper, whose source lives in another file, so the block copies and the side crosses are not this file's to change.
+// score 111 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
+// axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated
+// vector's or the axis's components before the call, all 64 subsets: the axis reads change nothing, any vector read
+// turns more products load-first; 0-7 extra referenced locals: never copy-first; the rotated copy built field by field,
+// through vector3f_assign or assigned after its declaration, or declared at the function top: same or worse; the seven
+// input copies in 60 random orders: identical rotation; four helper bodies (crosses first, an input copy, a cross
+// aggregate, a staged result): none gives retail's sides. So the sides follow the helper body (BLOCKED-BY 0x1ecf50's file,
+// which holds the helper), not this caller. Fast: the rotated copy taken from the forward parameter 194.
+// Earlier header detail: 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// Earlier copy of the first line (114, was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// MiniMax D (11-16): no new form, no lower score (114): the permuter searched this file for 303 s (31 tries, 5 worse
+// variants taken, 1 restart; the reduced image's baseline 108 equals the full image's 108) and found no improvement; the
+// first difference is still the inlined rotation's dot, where retail copies the vector's component into the destination
+// with `movaps` and multiplies the axis from memory while ours loads the axis and multiplies by the vector's register -
+// that body sits in src/unknown_1eb8a0.cpp, which this lane may not edit, and every other form measured above 114.
 // MiniMax A (11-12): no new form, no lower score (114, the reduced image and the full build agree): naming the
 // sine and the cosine before the rotation call scores 150 (1382 bytes) against 114, so the call keeps its
 // expressions; the first difference is still the inlined rotation's dot and cross products, whose body is in
@@ -1136,6 +1163,231 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 0xd0080 59; the (j + k) + i code).
 // P542: Standard contiguous sampled-velocity transforms, real/double and both binders, direct/consumed-sample publication: 216/216/255/255/230/230/268/268.
 // NOT kept: all regress, with nonnative extent or enlarged frame. Original whole body and includes restored; rotation j/k, side-dot and eager exit loads remain.
+// M3 lane 3 r249 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH unless noted; base 114): the turning exit's flag set before
+// the forward copy 107 (1384 B: `or [edi+0x14], 0x20` in memory where retail loads, ors and stores in EBX between the copy's
+// loads and stores; a statement order by score, under the keep bar); the existing cross3f in place of the file's identical
+// initial_cross 114 (same code); both exits through the existing vector3f_assign 171 (1383 B: SSE loads where retail copies
+// through ESI/EDX/EAX). rotate_direction (src/unknown_1eb8a0.cpp, ours): its dot folded into the projection,
+// `projected = dot3f(vector, axis) * (1.0f - cosine)`, 94 at retail's 1382 B (first difference still +0x1f3; 0xd0080 58 -> 36)
+// but 0x1ecf50 loses its match (91) and 0xe3910 rises 79 -> 144: lead, not kept; the projection after the cross rows 154
+// (0x1ecf50 160, as the listed crosses-first form). Both files restored.
+// P563: Individual six initial flag fields, then first-five/all-six masked conditional publications:
+// 340/351/320/312/304/139/349/363. NOT kept: native rotation j/k products, side-dot residence and eager exit copies remain; original flags and complete body restored.
+// P578: Scalar memcpy at movement scale/tick rate/animation graph/animation handle/
+// signed animation index/support flags/first and second physics dwords: 205/194/215/213/146/140/114/114.
+// NOT kept: no native rotation j/k or eager-output equality; original complete body,
+// shared rotation, observations and flag publications restored.
+// M3 lane 1 r112 (fast with 0x24590/0x1cd6c0/0x1ecf50/0xe3910/0xd0080/0x1ff360, none moved): lead, kept only with a
+// match: `bool moved_away = false; if (alignment > 0.99f && alignment > dot3f(facing_goal, &rotated)) moved_away =
+// true;` 94 (plain too, 1387 B: retail's `xor dl, dl` ahead of the 0.99 test); with the up-dots' arguments swapped
+// as well 108. Other forms: the second comparison written `dot3f(...) < alignment` 114 (same code); both exit copies
+// through memcpy 114 (same code); `dot3f(&old_cross, &state->up) * dot3f(&new_cross, &state->up)` 111 (1393 B, under
+// the bar); the alignment as `dot3f(&state->forward, facing_goal)` 116; the moved-away dot as `dot3f(&rotated,
+// facing_goal)` 114.
+// M3 lane 1 r114 (fast with 0xdc5c0/0x118700 at their baseline): the flags update written before the goal copy at the
+// early exit 107 (1384 B: the exits share one tail and the flag becomes a memory `or`, not retail's EBX read-modify-write;
+// a statement order by score, under the keep bar); the turn test as nested ifs 114, the crosses declared new first 114,
+// `rotated` declared at the movement block's top 114, the moved-away dot's arguments swapped 114 (all same code). The
+// first difference is still inside the shared forceinline rotation helper, whose file is held by another lane this round.
+// M3 lane 2 r95 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114; rotate_direction's file is an Avoid file
+// again): the forward copy made ahead of the angle guard 137 (1389 B); the angle as `rotation = angle; rotation *= rate;`
+// 114 (same code); the state's scale bound as `real const &` for the velocity rows 201 (1373 B); the crosses declared
+// new, old 114 (same code); the side product named before the test 140 (1382 B, retail's length). Re-measured (listed):
+// the rotation angle computed before the forward copy 125. Retail inlines the same rotate-about-axis helper here as in
+// 0xd0080, 0xe3910, 0x1ff360 and 0x297d30, but not in 0x1ecf50, which shares rotate_direction with them in this build.
+// M3 lane 3 r256 (fast with 0x1cd6c0, 0x1ecf50, 0x1e5af0, all MATCH; control 114): the rotation through the existing
+// rotate_vector_170d70 (0x170d70 listed, inlined) 119 (1389 B: its dot sums k first, the j/k products stay axis-loaded);
+// the up input copied per component 320 (1439 B: direct [edi+N] stores, no ECX copy), the facing-goal input per component
+// 236 (1382 B), both 394 (1423 B); a `vector3f const *axis = &state->up;` for the rotation only 144 (1397 B). Reading of
+// the listing: in the rotation, retail keeps every product with axis.j or axis.k text-ordered (vector copy, axis from
+// memory) while ours loads axis.j/axis.k first; the axis.i products and those with vector.i agree in both.
+// DH397: Each cross consumed with its side dot, shared or separate storage and three alignment-test placements, then the staged shared cross 229/234/220/229/216/228/236/219.
+// NOT kept: Sequentially consuming each cross changes the matching frame and shortens the body well past retail. The separate workspace with the alignment result after both sides is closest at 216. Rotation products, side dots and output scheduling remain. The original body is restored.
+// Turned-vector forward and backward range output with initialized, block, forward-range or
+// backward-range input scored 110/110/193/193 each. NOT kept: 110 gains four points and
+// calls a copy routine where retail loads and stores the three components directly.
+// Deep round 410: shared forward sample 226; rotation input point setter 205; rotation input
+// memcpy 114; rotation input aggregate 192; angle before forward sample 125; shared axis copy
+// 246; small-turn exit 114; rotated heading memcpy 114. NOT kept: the block copies and
+// small-turn exit tie at 114. The shared forward and axis values, point setter, aggregate input
+// and angle-first setup all regress. The axis-memory rotation products, oriented side products
+// and forward-copy scheduling still differ.
+// m3 lane 5 r196 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114): the rotation through the existing header
+// rotate function_x84d9e8 (include/axis_rotation.h: the vector's k read into a local first, the dot written out) 111 (1393 B:
+// the rotation's four axis-first products are unchanged, the turn block's first cross lines move; 3 points, under the bar);
+// on it lane 1's single-store lead 111, the moved-away flag preset false and set in its test 108 (1391 B, a flag form), the
+// side crosses through cross3f_staged 112 (1389 B). A private rotate reading only the vector's j and k into locals first
+// (diagnostic, to test whether those two ranking ahead of the axis gives retail's copy-first products) 118 (1393 B: the four
+// products stay axis-first, v.j/v.k swap XMM5/XMM6). Body unchanged.
+// Scale the sampled angle in place with sine only, cosine only, sine then cosine,
+// or cosine then sine staged. After the forward copy 186/190/187/191, before it
+// 199/202/198/201. NOT kept: frame 0x18 stays, the trig sequence moves away from
+// retail and every form shortens to 1364–1366 bytes against 1382.
+// Shared up-field pointer 148, shared forward-field pointer 165, both field pointers
+// or references 150/150, both at sampling or entry 150/376, pointer or reference
+// fields with staged crosses 148/148. NOT kept: native rotation multiplicands
+// and final direction copies remain different.
+// m3 lane 1 r120 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114). A compile-only copy with the rotation helper's
+// text pasted in reproduces the real floating-point stream but three lines. In it, no-code mentions (`(void)rotated.j;` and
+// the like) of the rotated copy's or either cross's components, before the rotation, after it or inside the turn block, turn
+// every rotation product (masked count 129 to 210 against 66); mentions of the state's up or forward fields change nothing.
+// A 450-form combination screen (exit form, the eight side-dot argument orders, test order, five moved-away spellings,
+// float trig, alignment order, cross helper per cross, cross order) is lowest with the old cross through cross3f_staged and
+// the side dots as (up, old) * (new, up) or (new, up) * (old, up); in the real build those give: staged old cross with
+// (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
+// (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
+// 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
+// Named side projections before moved-away 170, with one direction store 171, or after
+// moved-away with one direction store 133. Shared axis rotate with projections after each cross 216,
+// before moved-away 170, after moved-away 150, with one direction store 111, or with named projections
+// and one direction store 133. NOT kept: the 111 form gains three and grows to 1393 bytes.
+// The axis-memory products and side/exit schedules still differ.
+// Round 187 (m3 lane 8, fast with 0x1ecf50, MATCH each time; control 114): a dead-local count scan extended past round
+// 178's 0-7 (diagnostic): 8-30 dead locals give 112 (8), 116, 139, 139, 150, 163, 139 (1393 B), 145 (1397 B), 112 (16), 194,
+// 150, 139, 150, 166, 140, 145, 114 (24), 139 (26), 150 (28), 140 (30): period 8, never below 112, and the first difference
+// stays at the rotation's first product in every state, so the rotation is not a symbol-count state here. Forms: the
+// rotated copy from the `forward` parameter 194 (1395 B); the snap exit copying the stored goal (`state->facing_goal`)
+// 172 (1399 B); the side dots over the `up` parameter 201 (1369 B); the alignment dot and the old cross over the
+// `forward` parameter 257 (1395 B); the velocity scale read from `speed_scale` 366 (1365 B).
+// M3 lane 15 r102 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114): the velocity rows as `scale * movement.x`
+// 114 (same code); the rotation angle computed before the forward copy 125 (1388 B); the angle product written into both
+// trig calls 144 (1382 B: every rotation product turns load-first); the snap exit with `flags |= 32` ahead of the goal
+// copy 107 (1384 B: the gain is the shorter `or [mem], 0x20`, not retail's register update; an order picked by score, not
+// kept); the goal copied through a named local first 140 (1382 B: the copy folds back to the interleaved form, but the
+// extra local turns the rotation). Retail's exits load all three dwords (ESI/EDX/EAX) and the flags (EBX) before storing,
+// in both exits; no spelling here gives the three-register copy.
+// M3 lane 16 r140 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114). Dead-local scans (diagnostic, removed),
+// K unused `long` locals at the top, K = 0..31: 114 140 150 150 139 163 166 144 | 112 116 139 139 150 163 139 145 | 112 194 150
+// 139 150 166 140 145 | 114 114 139 150 150 166 140 145 (period 8; the first difference stays at +0x1f3 for every K but 17);
+// with the rotation through include/axis_rotation.h's helper (111 at K = 0, as listed), K = 1..15: 151 150 150 150 163 166
+// 147 112 113 150 139 150 163 139 145. No symbol count gives retail's copy-the-vector, axis-from-memory products, so they are
+// not a numbering state here. The axis passed as the `up` parameter instead of the state's copy: rotate_direction 277
+// (1396 B), the header helper 292 (1398 B). Body unchanged.
+// M3 lane 16 r142 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114): the velocity rows through the
+// existing vector3f_scale (normalize3d.h) 166 at retail's 1382 B (the velocity block stays retail's; the rotation's
+// products change order: the inlined parameters move the product canonicalisation), with the `scale` local kept 166;
+// diagnostic, K = 1..16 dead initialised locals on that form: 150 145 122 149 139 150 139 163 166 144 112 116 139 150 150
+// 163 (first difference +0x1f3 for every K, never retail's copy-first products); that form with include/axis_rotation.h's
+// helper for the rotation 163; that form with round 112's preset-false moved-away flag 162 (1375 B).
+// M3 lane 16 r150 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114, aligned 89, register-masked 75).
+// Diagnostics on a private copy of the rotate (the shared one sits in an Avoid file this round; a copy stands only with
+// a match): the axis read into three locals first 253 (1437 B: the axis then lives in registers, so retail's per-use
+// [ebp+N] reads are not locals); the vector read into three locals first 192 (1397 B); the three crosses ahead of the
+// dot 187 (1373 B); the rows stored k and j through locals after i 178 (1392 B); every product written axis first (and
+// cosine, axis and sine first in the rows) 112 (1389 B, aligned 88: the rotation lines unchanged, one turn-block cross
+// line moves; two points from a copy, not kept). Reading of the listing: by product, retail loads v.i first only
+// against a.i, and the axis first against v.i, while it loads v.j and v.k first against every axis component; ours
+// lets v.j and v.k outrank a.j and a.k (the axis is then loaded first against them).
+// M3 lane 2 r110 (fast with 0x1ecf50/0x24590/0x1cd6c0, all MATCH; control 114): `moved_away` as `(a && b) ? true : false` 114
+// and as `alignment > 0.99f ? alignment > dot : false` 114 (same code); named `sine` then `cosine` float locals for the
+// rotation 150 at retail's 1382 B (every rotation product turns axis-loaded-first, the dot's i term too), `cosine` then `sine`
+// 154, with the nested ternary 150; the rotated copy's alignment dot in a named local ahead of the test 140 (1382 B). Reading of
+// the nine rotation products: retail multiplies the copied vector component by the axis from memory everywhere except the
+// vector's i against the axis' j and k, where it loads the axis; ours loads the axis first whenever its component is j or k.
+// Body unchanged.
+// M3 lane 2 r114 (fast with 0x1eb640; control 114): a same-file copy of the rotation helper, so it is inlined at compile
+// time instead of at link time (diagnostic) 114 (same code: the inlining stage does not place the rotation products);
+// the rotated vector renamed turned / direction / new_forward / a_rotated 114 each (same code); one vector for the
+// sampled movement and the rotated forward (on the rotate_direction body) 176 (1385 B: the axis loads are hoisted even
+// further, so retail's memory operands do not come from the vector being address-exposed); no `animation` cast local
+// (cast at each use, a symbol-count diagnostic in the direction the dead-local scan never took) 145 (1397 B); no
+// `state` cast local 145 (1397 B).
+// M3 lane 14 r126 (fast with 0x24590, 0x1cd6c0, 0x1ecf50 and 0x1e5af0, all MATCH; control 114 at 1389 B, aligned [exact,
+// stack masked, registers masked] 89/88/55; body unchanged; rotate_direction's file is held again this round). Reading
+// of the two exits: the copies at the function's entry are interleaved in retail too (`state->control = *control` and
+// the rest), so the exits' load-all-then-store through ESI/EDX/EAX is another source form, and it is the same three
+// registers at both exits: one vector local set in each path and stored once, which the compiler then duplicates into
+// both. Forms: a direction local set from the rotated vector after the rotation, overwritten with the goal in the snap
+// path (no early return), one store at the end 180 (1388 B, 152/149/115: the snap exit loads all three before storing,
+// with the flag update between, but the copy from the rotated vector is read early and stays live across the turn test);
+// that with the flag update ahead of the goal copy 166 (1383 B); the direction set in the snap path with a `snapped`
+// flag and from the rotated vector under `if (!snapped)` 145 at retail's 1382 B (153/155/115: both exits are then
+// retail's but for the i and j registers, ESI and EDX the other way round, yet the two new locals turn every rotation
+// product); the snap exit through a goal copy with the flag update between the copy and the store 134 at 1382 B
+// (142/143/111); both exits through an inline setter taking the vector by value, by const value and by const reference
+// 114 each (same code: the parameter folds away); the whole turn test in an inline helper returning the vector by value
+// 580 (it stays out of line, 988 B here), forced inline 199 at 1382 B (first difference +0x2). With lane 1's preset
+// moved-away flag: on the by-value setter 94 (the lead's own code), on the direction local 176, on the goal copy 244
+// (1431 B). 1 to 7 unused (never referenced) locals on the flag form 145 each (dropped before they count). Nothing kept.
+// M3 lane 12 r160 (fast with 0x1eb640; control 114): 0-7 initialised unused locals 114/140/150/150/139/163/166/144
+// (1-6 give 1382 bytes; unlike never-referenced ones they count), but the four axis-by-vector products of the inlined
+// rotation keep this build's operand sides at every count; the angle scaled in place without the rotation local 186
+// (1365 bytes); the velocity scale read at each use 206 (1395 bytes); the axis copied into a local vector 230 (1406
+// bytes); `angle` declared before `movement` 114 (same code). Still BLOCKED-BY the rotation helper in src/unknown_1eb8a0.cpp.
+// Calculate sine, cosine, sine then cosine, or cosine then sine before copying
+// forward: 125/136/163/166. The same with the shared axis-rotation helper:
+// 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
+// M3 lane 2 r118 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114; the first difference is still in the
+// rotation helper, whose file is another lane's this round): initial_cross's j row as `b->i * a->k - a->i * b->k`,
+// `b->i * a->k - b->k * a->i` and `a->k * b->i - b->k * a->i` 114 each (same code: the product operands are
+// canonicalised); both crosses through the existing cross3f 114 (same code); a second pointer name for the facing goal
+// used by the snap copy 140 at retail's 1382 B (the snap exit shortens, every rotation product turns); `rotated`
+// declared as the function's first local and assigned in place 114; the movement, angle and rotated locals all
+// declared at the function top 114 (same code).
+// Calculate sine, cosine, sine then cosine, or cosine then sine before copying
+// forward: 125/136/163/166. The same with the shared axis-rotation helper:
+// 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
+// M3 lane 6 r217 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114 at 1389 B, aligned 61, masked 36):
+// the side dots from the `up` parameter 201 (1369 B); the alignment dot and old cross from the `forward` parameter 257 (1395 B,
+// masked 33); a named pointer to the state's forward for the copy, both turn reads and both exits 165 (1382 B); the velocity
+// scale from the `speed_scale` parameter 366 (1365 B); the velocity copied from the movement and scaled in place 213 (1390 B).
+// Body unchanged.
+// M3 lane 11 r141 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114 at 1389 B, aligned [exact, stack
+// masked, registers masked] 61/59/35; body unchanged; the rotation helper's file is another lane's again). Re-measured on
+// today's tree: the goal copied into the rotated local with one store at the end (no early return) 114 (47/47/29: both
+// exits are then retail's load-all-then-store form; a tie); that with the moved-away flag preset false and set in its
+// test 77 at 1387 B (45/45/27); the preset flag alone 94 (59/57/33). New: the flag preset false and assigned the second
+// comparison under `if (alignment > 0.99f)` 117 at 1391 B with or without the single store (the false arm keeps its own
+// `xor dl, dl`, so it is not retail's preset). Reading of the 77 form by product: in the rotation retail loads the vector's
+// j and k first against every axis component and the axis' j and k first against the vector's i; in the old cross it
+// loads the state's forward i first against both goal components where this build loads the goal first (the forward's k
+// and j agree); the new cross and the side dots then differ only in the registers that follow. The same component of
+// the state's forward is the odd one in both places, so the order is a ranking of the operands, not of the helpers'
+// written sides (which earlier rounds swapped without effect).
+// M3 lane 7 r205 (H2M fast with 0x1eb640 and 0x1e5af0, 0x1e5af0 MATCH each time; control 114 at 1389 B): the component
+// pointer computed just before the 64 flag test, after the five flag statements 398 (1415 B); the turn block reading the
+// state's copy of the goal for the alignment dot, both crosses, the moved-away dot and the snap copy 293 (1435 B); the
+// rotation done in place on the state's forward with the turn block reading the old forward from the `forward` parameter
+// (no rotated copy, no final store) 256 (1351 B), the same through include/axis_rotation.h's helper 253 (1354 B); the
+// rotated forward stored right after the rotation, the turn block reading the old forward from the parameter and the snap
+// overwriting it with no early return 268 (1383 B). Re-measured (listed): the 64 flag as `!(word & 2)` 367 (1356 B); the
+// velocity scale read at each use 206 (1395 B). Body unchanged; the rotation products still follow the helper in
+// src/unknown_1eb8a0.cpp (another lane's file this round).
+// M3 lane 7 r207 (h2m fast with 0x1eb640, MATCH; control 114): re-measured on this tree the moved-away flag preset
+// false and set in its test 94 (1387 B), the two cross calls swapped 124 (1382 B), lane 1 r83's combination 75 (1387
+// B) and the turned copy from the forward parameter 194; new: the flag form with the crosses swapped 111 (1382 B); lane
+// 1 r83's combination with the crosses swapped 78 (1382 B: left are the movement vector's home, which retail shares
+// with the turned copy, and the rotation helper's product sides); the rotation axis from the up parameter 277 (1396
+// B). The first difference is still inside the rotation helper (src/unknown_1eb8a0.cpp, locked this round).
+// M3 lane 11 r149 (H2M_FAST with 0x1eb640 and 0x1e5af0, both MATCH; control 114): the snap exit through a goal copy
+// (`vector3f goal = *facing_goal;` then the store and the flag) 140 (1382 B); the flag update ahead of the snap copy
+// 107 (1384 B: our flag update is then `or [edi+0x14], 0x20`, retail loads, ors and stores it between the goal's loads
+// and stores; a statement order picked by score, under the bar); the moved-away dot as `dot3f(&rotated, facing_goal)`
+// 114 (same code); a named pointer to the state's forward for the alignment dot and the old cross 165 (1382 B); the old
+// side dot named ahead of the test 140 (1382 B); the snap exit through the existing vector3f_assign 122 (1397 B), both
+// exits through it 171 (1383 B). Body unchanged; the first difference is still inside rotate_direction
+// (src/unknown_1eb8a0.cpp, another lane's file this round).
+// M3 lane 15 r128 (plain checks with 0x1ecf50/0x26e090 MATCH and 0xe3910 79, 0xd0080 58, 0x1eb8a0 603 unchanged; control 114):
+// ours already sums the rotation's dot j, k, then i as retail; only the operand side of the four products of the vector's
+// j/k with the axis's j/k differs. The shared rotation helper's dot written out `v.j*a.j + v.k*a.k + v.i*a.i` 111 (1393 B,
+// products unchanged), written axis-first 111 (same code); its cross terms computed j, k, i 114 and its rows projection
+// term first 114 (same code); the rotated copy renamed 114 (same code). Helper and body restored.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 111 (1393 B; plain
+// check agrees, every matched function of the file unchanged). KEPT as the shared spelling (count lowered).
+// M3 lane 14 r148 (fast; control 111): one redundant paren pair around a float expression (a velocity row, the rotation
+// angle product, the small-angle test) 109/110 at retail's 1382 B, two pairs 122/123 (1389 B), three 189/190 (1362 B);
+// around a bare identifier or the trig arguments 111 (no change): a period-4 shift of the later code, the rotation's
+// four products never move (steering, under the bar, not kept); the velocity rows reading `state->scale` at each use
+// 194 (1391 B), with one paren pair 197 (1382 B); the axis through a `vector3f const &` to `state->up` 111 (same code).
+// M3 lane 3 r302 (H2M_FAST with 0x1e5af0 and 0x1eb640, MATCH each run; control 111 at 1393 B, aligned exact/register-
+// masked 73/57). Same code (111 each): the rotation angle written `g_510c54->rate * angle`; `angle` declared ahead of
+// `movement`; the two cross vectors declared new-first. Lane 11 r141's single store re-measured on this base (the goal
+// copied into `rotated` under the side test, the flag set there, no early return, the one `state->forward = rotated;`
+// store) 111 at 1393 B but aligned 52/45 (both exits retail's load-all-then-store; a positional tie, not kept); with the
+// moved-away flag preset false and set by its `if` 108 at 1391 B, aligned 49/42 (match-only flag form); on that, the
+// side-dot product's operands swapped 108 (same code), the two cross calls swapped 94 at 1382 B but aligned 99/76
+// (positional only). Left on the 108 form: the rotation helper's four products (axis component loaded first where
+// retail copies the vector's register), the old cross's two products and the side dots' evaluation order. Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
@@ -1190,7 +1442,7 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
   {
    vector3f rotated = state->forward;
    real rotation = angle * g_510c54->rate;
-   rotate_direction(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
+   function_x84d9e8(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
    if (c && turning)
    {
     real alignment = dot3f(facing_goal, &state->forward);
@@ -1214,8 +1466,9 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
 }
 
 struct s_shape_state;
+struct s_shape_carrier_contact;
 struct s_direction_rotation_input;
-void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, byte const *state);
+void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, s_shape_carrier_contact const *state);
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks);
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input);
 
@@ -1227,7 +1480,7 @@ void function_1e5af0(void *physics, vector3f const *forward, vector3f const *up,
 {
  switch (*(byte *)physics)
  {
- case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (byte *)output); break;
+ case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (s_shape_carrier_contact *)output); break;
  case 2: function_1faa20((vector3f *)up, (byte *)output, (vector3f *)forward, (long *)((byte *)physics + 0x10)); break;
  case 3: function_1ecf50((vector3f *)forward, (vector3f *)up, (s_direction_rotation_input *)output); break;
  case 4: break;

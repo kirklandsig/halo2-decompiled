@@ -1527,6 +1527,9 @@ void function_2422d0(long slot)
 	}
 }
 
+// Matched in a full build with stand-in SDK headers (was 7): the free-slot assignment sits in its own else-if arm
+// with `continue`, and both failure arms set the result.
+// Before:
 // score 7 (was 7): the object index is kept in EDI and the object in EBP, retail keeps them the other
 // way round. Native index/eligibility/object reference 7; team-index/team-object/
 // other-count names 7; second-loop element address/nested accept 7; native slot table/
@@ -1603,6 +1606,55 @@ void function_2422d0(long slot)
 // the accepted store indexed by a second getter lookup 141 (331 bytes); the rejected store reading the team entry again
 // 50 (the pair flips to retail's, but the entry reloads after the call); a team entry pointer for the index and the
 // getter 7; the object as a reference 7 (same code).
+// Round 128 (m3 lane 9, fast): the reject store and the increment as two statements 7; a `short` loop counter 92 (288
+// bytes); a `short` count 80 (284 bytes; the swap stays); result and count assigned after the memset 7 (same code); the
+// arrays declared slot table first, count before result 9. Re-measured: no slot local 79 (count then takes EBX and the
+// team walker a stack slot). The index/object pair stays EDI/EBP against retail's EBP/EDI in every form.
+// Round 129 (m3 lane 9, fast): a per-iteration team array base (`teams = ...->teams`, then `teams[i]`) 7; the reject arm
+// in retail's store order (`others[count] = index; result = false; count++;`) 7; a `byte` result 18 (289 bytes); a
+// `register` object pointer 7; the object looked up from the team entry first and the index read from the entry after
+// the slot read 7 (all the 7s the same code).
+// Round 94 (m3 lane 2, fast): a redundant `if (0 < team_count)` around the first loop 9 (the guard's jle moves ahead
+// of the i store, the pair stays); `if (0 < count)` around the second loop 71 (the NONE fill takes ECX), around both
+// 71; the slot passed to 0x243a80 through an inline `object_slot(*object)` with no slot local 79; the getter called
+// through an inline wrapper taking the index by const reference 7 (same code).
+// Round 116 (m3 lane 10, fast): the object pointer bound by const reference to the object header's field 64 (it is
+// reloaded after the call); the team entry bound by reference for the index read 7; the third loop's two tests
+// nested 7; the team view through an inline accessor 7; the team view read through a const view 7 (all the 7s the
+// same code). Re-measured by mistake (listed): object declared bare first 7, `NONE ==` 7, a named second-loop
+// element 7, `short slot` 7.
+// Round 110 (m3 lane 14, fast with 0x243a80, 0x2422d0, 0x15e130 and the caller 0x2447f0, all matched each time). The pair is
+// a weight contest, not a symbol-order tie: 0-30 dead initialised locals at the top 7 each, and 16 of them between the index
+// and the object with 0-30 more at the top 7 each. Diagnostics (value-wrong, reverted), registers as index / object / team
+// walker / rejected count: main's body EDI / EBP / EBX / stack; retail EBP / EDI / EBX / stack; one more object read in the
+// block after the 0x243a80 call (a third condition) EBP / EDI / EBX / stack, retail's whole assignment (54 with the extra
+// compare); the same read in the reject arm EBP / EDI / stack / EBX (77), in the accept arm EBP / EDI / stack / stack (98,
+// 295 bytes); no slot local EDI / EBP / stack / EBX (79). So retail's object carries one more reference than ours inside
+// the two blocks around the call, or its index one fewer, and the walker keeps EBX only while the object's range ends at the
+// table test. Tried: the slot through a `short const &` to the object's field for the call, the test and the store 60 at 284
+// bytes (retail's four registers, but the field address is formed, `add edi, 0x17e`, and the re-read is `[edi]`); a
+// `short *` to the field 60 (the same code); a second pointer local copied from the object, before or after the slot read,
+// 7/7 (copies fold); a named header pointer with the object read from it 7; a pointer or a reference to a zero-offset first
+// member of a view of the object 7/7, a derived view converted to its base 7 (all fold to the object); the slot local at
+// function scope and reused as the third loop's counter 7.
+// Round 211 (m3 lane 4, fast): the reference bindings that matched 0x2c5897's mask: the object pointer as
+// `s_slot_object *const &` 7; the slot as `long const &` 7; both 7 (all the same code); the index as a `long const &`
+// to a cast copy of the team entry 104 (267 bytes: the cast folds and the reference reads the entry again after the
+// call); the bound object with no slot local 79.
+// M3 lane 9 r139 (fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): `__assume(object != NULL);` at the end of the
+// first loop's body 7, `__assume(object->slot >= NONE);` there 7 (diagnostics of reference weight at the join,
+// reverted); the accept test split with a `long *entry` to the table slot under the 0x243a80 test, `continue` after
+// the accept and the reject code after it 7 (all the same code); the team array base read into a local before the
+// first loop 82, at the function top 65.
+// M3 lane 9 r141 (fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): the table test nested under the 0x243a80
+// test with the reject code written in both failing arms 79 (284 bytes); the lookup through a new inline getter with an
+// unused type-mask parameter 7; the object and slot in an inner block with an accept flag (reject under `if (!accepted)`
+// via an empty accept arm) 7; a `register` index 7; the three loop locals declared bare, then assigned 7 (all the 7s
+// the same code). Redundant parens, 1-3 deep, around the getter call, the table test or the stored index 7 each (9 forms).
+// Round 116 (m3 lane 13, fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): the slot as a `short const &` bound to the
+// object's field and passed as `(long)slot` 79; the team entry copied whole into a local for the index 117 (316 bytes);
+// the accept test and store through one `long &` to the table element 79 (268 bytes); the first loop's body in its own
+// block 7; a `dword` index with a `short` slot 7 (both the same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {
@@ -1621,15 +1673,16 @@ bool function_2423f0()
 		long slot = object->slot;
 
 		/* the table test reads the slot again after the call */
-		if (function_243a80(slot) && slot_objects[object->slot] == NONE)
+		if (!function_243a80(slot))
+			result = false;
+		else if (slot_objects[object->slot] == NONE)
 		{
 			slot_objects[object->slot] = object_index;
+			continue;
 		}
 		else
-		{
 			result = false;
-			others[count++] = object_index;
-		}
+		others[count++] = object_index;
 	}
 
 	for (i = 0; i < count; i++)
@@ -2561,11 +2614,11 @@ bool function_241900(long player_index)
 // defaulted type with if, ternary reassignment or +=7 33 each; Boolean/arithmetic type 54 each.
 // The defaulted type reaches retail's early ECX data load but keeps its type branch and late stores.
 // Original body restored.
+// Matched in a full build with stand-in SDK headers (was 13): the event is declared in a bare block around the event code
+// after the first test, with the statement order of 0x19ebe0 (cause player, cause team through event_player_get, effect team).
 // @retail 0x242e00
 void function_242e00(long player_index, long team)
 {
-	s_event event;
-
 	if (function_15b7c0(1, player_index))
 	{
 		long local_0 = ctf_options()->engine_type == 9 ? 0x12 : 0xe;
@@ -2574,12 +2627,15 @@ void function_242e00(long player_index, long team)
 		function_1967d0(local_1, local_2, local_0, 1);
 	}
 
-	game_engine_event_initialize_inline(&event, ctf_options()->engine_type == 9 ? 10 : 3, 5);
-	event.cause_player_index = player_index;
-	long cause_team = ctf_player_get(player_index)->team;
-	event.effect_team = team;
-	event.cause_team = cause_team;
-	game_engine_event_send_inline(&event);
+	{
+		s_event event;
+
+		game_engine_event_initialize_inline(&event, ctf_options()->engine_type == 9 ? 10 : 3, 5);
+		event.cause_player_index = player_index;
+		event.cause_team = event_player_get(player_index)->team;
+		event.effect_team = team;
+		game_engine_event_send_inline(&event);
+	}
 }
 #pragma inline_depth(255)
 
@@ -2725,6 +2781,8 @@ void function_15e360(point3f const *point, long object_index);
 // cause-player setter 12, the existing out-of-line setter called 178 (565 B, not inlined), a chained
 // inline initializer returning the event with the inline setter 12, the event at function scope 12,
 // typed player-array indexing for the cause team 12.
+// Matched in a full build with stand-in SDK headers (was 12): the event is declared in a bare block around its five
+// statements instead of with the block's other declarations.
 // @retail 0x242ba0
 void function_242ba0(long marker_index, long object_index, long player_index)
 {
@@ -2746,7 +2804,6 @@ void function_242ba0(long marker_index, long object_index, long player_index)
 		{
 			point3f point;
 			s_slot_table *g;
-			s_event event;
 			s_slot_object *object;
 
 			function_2417a1(g_4e0350->marker_entries, marker_index, &point);
@@ -2764,11 +2821,15 @@ void function_242ba0(long marker_index, long object_index, long player_index)
 			g->flags[slot] |= 2;
 			ctf_globals_changed(0x200);
 
-			game_engine_event_initialize_inline(&event, 10, 13);
-			event.cause_player_index = player_index;
-			event.cause_team = event_player_get(player_index)->team;
-			event.effect_team = marker_team;
-			game_engine_event_send_inline(&event);
+			{
+				s_event event;
+
+				game_engine_event_initialize_inline(&event, 10, 13);
+				event.cause_player_index = player_index;
+				event.cause_team = event_player_get(player_index)->team;
+				event.effect_team = marker_team;
+				game_engine_event_send_inline(&event);
+			}
 
 			object = slot_object_get(object_index);
 			object->lc8 = NONE;
@@ -2780,7 +2841,7 @@ void function_242ba0(long marker_index, long object_index, long player_index)
 
 #include "flexible_surface_calls.h"
 
-void function_19f680(long tag, long group, long pass, long variant, void *context,
+void function_19f680(long tag, long group, long variant, long pass, void *context,
 	point2f const *vertices, long count, point3f const *center, real radius,
 	real perimeter, point3f const *color, real height);
 struct s_sort_record;
@@ -2832,7 +2893,7 @@ void __stdcall function_244470(long arg_0, long arg_1, long arg_2, long arg_3,
 	}
 	real local_9 = local_4[1].x - local_4[0].x;
 	real local_10 = local_4[1].y - local_4[0].y;
-	function_19f680(arg_0, arg_2, arg_4, arg_3, arg_6, local_4, 32, &local_3,
+	function_19f680(arg_0, arg_2, arg_3, arg_4, arg_6, local_4, 32, &local_3,
 		local_2, (real)sqrt(local_9 * local_9 + local_10 * local_10) * 32.f, g_468710, 0.4f);
 }
 

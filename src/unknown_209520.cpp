@@ -908,6 +908,10 @@ struct s_object_list_208070
     long unknown8;
 };
 
+// Matched in a full build with stand-in SDK headers (was 21): the value pointer is passed to 0x2099f0 through a
+// reference-bound local (`kept`), as in 0x2090a0; 0x2099f0 is unchanged, so the BLOCKED-BY 0x2099f0 reading does
+// not hold here either.
+// Before:
 // score 21 (was 47): the two record pools are loaded in the opposite order, so the pointer of the
 // second pool is read before the first one's. In the initialize arm retail forms the global value
 // pointer (ebx) before reading the expression; in the retain arm it masks the list index before
@@ -946,7 +950,8 @@ void __stdcall function_208070(short function_index, long thread_index, bool ini
         long index = variable->value;
         long slot = (index & 0x8000) ? (index & 0x7fff) : (index & 0x7fff) + 0x41d;
         long *value = (long *)&((s_hs_global_value *)g_4f9380->data)[slot].value;
-        function_2099f0(thread_index, value, *(long *)((byte *)hs_expression_get(variable_index) + 8));
+        long *const &kept = value;
+        function_2099f0(thread_index, kept, *(long *)((byte *)hs_expression_get(variable_index) + 8));
     }
     else
     {
@@ -973,6 +978,10 @@ s_type_f4462a const g_44b0d8 = { _hs_type_passthrough, 2, function_208070, "<var
 extern long g_4686c0;
 long function_16b990(s_record_pool *data, long index);
 
+// Matched in a full build with stand-in SDK headers (was 4): the result pointer is taken after the frame size is
+// cleared and passed through a reference-bound local; 0x2099f0 is unchanged (this replaces the BLOCKED-BY 0x2099f0
+// parameter-order reading for this function).
+// Before:
 // score 5 (was 5): retail forms the value pointer (ebx) before it reads and pushes
 // the initialization expression; ours reads the expression first. BLOCKED-BY 0x2099f0:
 // with its parameters in the order (thread, expression, result) at the definition and
@@ -1004,9 +1013,10 @@ void function_2090a0(void)
             long value_index = function_16b990(g_4f9380, slot);
             s_hs_global_value *value = &((s_hs_global_value *)g_4f9380->data)[value_index & 0xffff];
             thread->script_index = NONE;
-            long expression_index = *(long *)(global + 0x24);
             thread->frame->size = 0;
-            function_2099f0(thread_index, (long *)&value->value, expression_index);
+            long *result = (long *)&value->value;
+            long *const &kept = result;
+            function_2099f0(thread_index, kept, *(long *)(global + 0x24));
             if (thread->flags & 1)
             {
                 function_209850(thread_index);

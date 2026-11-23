@@ -74,6 +74,9 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// Tried (full build with stand-in SDK headers, where this function starts at 124, not the SDK build's 273): the
+// test of the old entry and its data pointer evaluated into a bool first (`bool has_data = false; if (old)
+// has_data = *(byte **)(state + 0x20); if (has_data)`) 51; not kept, a test-and-set flag stays only in a byte match.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
@@ -286,6 +289,221 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the function as a __stdcall member of a state type (state as `this`, the 0x1bbf0 call through a cast of g_485b48) 5 on either
 // entry form (same code), 178 / 176 with a `byte *state = (byte *)this;` copy; the tables published in a chained assignment 5;
 // the first block's two index sums written parameter first 5. Body unchanged.
+// Round 188 (m3 lane 5, fast; the reference form 5 at +0x19e, the direct store 5 at +0x1a7 with `second` loading into ESI
+// right after the entry lea): the entry reference typed `word *&` with the packed word read through it 5 (+0x19e, same code);
+// the tables and entry fields written through one two-field `byte **` view of the state 178 (+0x148); the direct store with
+// the chain index named where it is computed 5 (+0x1a7); the entry reference bound at function scope 5 (+0x19e, same code);
+// the direct store written `first * 10 + base` 5 (+0x1a7). Body unchanged.
+// Round 102 (m3 lane 14, fast, control 5): the restore block's entry from the `tables` local through a chained store
+// into the existing entry local 210 (974 B); the entry stored directly from the `tables` local and read back from its
+// field 210; the four restore fields through a `byte **` view of the state 289 (977 B); the parameters store chained
+// with the lookup 5; the tables store chained with its read 5 (same code).
+// Round 192 (m3 lane 5, fast with 0x16f60-0x1b0a0, control 5 at +0x19e): the direct entry store re-measured 5 (+0x1a7, `second`
+// into ESI right after the entry lea); the direct store with the packed word read back through a `byte *const &` bound after it 292
+// (979 B) or through `**(word *const *)(state + 0x14)` on the reference form 293 (980 B); `state` read through its address
+// (`byte *const *state_reference = &state;`) for the restore block's publications on the direct or the reference form 296/296 (983 B);
+// `third` read through its address on the direct form 5 (same code); the chain lookup folded into the pass expression on the
+// reference form 5 (same code); a named chain index 5 (same code); `different_tag || changed` re-measured 7; `first` read through
+// its address on the direct form 5 (same code); round 64's tables reference re-measured with a non-const binding 5 (same code).
+// Body unchanged.
+// M3 lane 4 r209 (fast, control 5 at +0x19e), all on the direct entry store (re-measured 5 at +0x1a7: the reload of
+// `second` into ESI lands right after the entry lea, where retail fills that slot with the entry store and loads `second`
+// after the two table loads): the chain index built in two steps through a `long &` binding 5; the chain table base bound
+// to a `word *const &` before the entry word is read 5; the entry/chain/pass statements in a bare block scope 5; the chain
+// index as `second + (**(word **)(state + 0x14) & 0x1ff)` with no packed carrier 5 (all +0x1a7, same code).
+// Round 137 (m3 lane 9, fast with 0x16f60, 0x17000, 0x17170, 0x174d0 and 0x17420, control 5 at +0x19e; aligned = rows that differ once
+// the listings are aligned, 2 on the control): the tables published through a reference, the entries read from the `tables` local, the
+// tables field re-read into a local before the reference entry store and used for the chain and pass bases 29 (972 bytes, aligned 2:
+// every instruction in retail's place, but the re-read is forwarded, `mov ecx, eax` for retail's `mov ecx, [ebp + 0x10]`, so the code is
+// a byte short until the padding); the same with a direct entry store 178; the tables published through a reference with the entry from
+// the local and the kept field reads 178, with a direct entry store as well 176; a direct tables store with the re-read local and the
+// reference entry store 279 (the forwarded value takes ECX from the top). The re-read through an inline accessor method of a state view
+// (diagnostic; the read is still forwarded): into a local before a direct entry store 210 (974 bytes), before the reference entry
+// store 279, after it 178, at each later use with the reference entry store 5 (same code), with direct stores 210. Reading: a field
+// read after a reference store to another field is a real load, after a store to the same field it is forwarded, so no spelling
+// here turns the early re-read into retail's load; retail's reload sits where the allocator starts the second piece of the tables
+// value (as the direct entry store gives), while its `second` load stays at its use (as the reference entry store gives).
+// M3 lane 2 r99 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7, where its listing differs from
+// main's only in that window): the entry stored by a chained assignment into the existing `entry` local, the word read
+// through it, 5 (+0x1a7, the direct form's code); a named `entry_offset = first * 10` shared by both blocks 5 (+0x19e), with
+// the direct store 5 (+0x1a7); the restore block's definition looked up through the just-published parameters field and the
+// tables published straight from the definition 5 (+0x19e), with the direct store 5 (+0x1a7) (all the same code).
+// M3 lane 1 r121 (fast with the file's 30 functions; 0x1b2c0 stays at its baseline 2): the restore block's tables re-reads
+// for the chain and pass bases through a dword view of the field (`(byte *)*(dword *)(state + 0x10)`), on the reference
+// form 5 (+0x19e) and on the direct entry store 5 (+0x1a7) (both the same code as their bases); on the direct store the
+// entry word read from a fresh `tables` lookup instead of the stored field 289 (978 bytes); the entry computed into the
+// `entry` local, its word read, then stored 184 (976 bytes); the direct store and its read back through `((byte **)state)[5]`
+// 5 (+0x1a7). Reading (direct form, re-measured 5): the field reload is already retail's there; `second` reloads into ESI
+// as soon as the entry lea frees it, where retail (and the reference form) load it after the two table loads, as if the
+// entry store sat on the chain's critical path in retail but not in our direct form.
+// M3 lane 10 r122 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the chain and pass bases read through a `byte *const &` bound to the tables field right after its store, on the
+// direct entry store 6 (the reload then waits for the word load and `second` still loads early: the worst of both), on
+// the reference form 5 (same code); both bases from the `tables` local, direct store 210 (974 bytes), reference form 279.
+// Diagnostic, not keepable (an invented layout aggregate): the tables and entry fields through a two-field view of the
+// state 176 (first +0x148; `second` still loads right after the entry lea).
+// M3 lane 8 r193 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// direct entry store with the word read back from the field re-measured 5 (+0x1a7: only `second` loads into ESI right after
+// the entry lea, before the entry store, where retail loads it after the chain and pass bases; `third` is loaded before the
+// lea in both, so only `second`'s load is held behind the store in retail). On the direct store: the pass base named after
+// the store and ahead of the chain lookup 5, the chain and pass bases both named there 5, both index sums written with the
+// parameter first 5 (all three the direct form's code); on the reference form the chain and pass bases named after the entry
+// store 5 (+0x19e, main's code).
+// M3 lane 10 r124 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the entry reference bound as `((byte **)(state + 0x10))[1]` 5, as `((byte **)state)[5]` 5 (both +0x19e, same code); the
+// tables published through a `byte *&` with the entry reference bound as the next slot of it 290 (978 bytes); round 137's
+// form (tables published through a reference, entries from the `tables` local, a `bases` local re-read from the field before
+// the reference entry store) re-measured 29 at +0x148, its only difference the forwarded `mov ecx, eax` for retail's
+// `mov ecx, [ebp + 0x10]` (the rest is the byte shift): with the re-read through a dword view 29, through the entry
+// reference's previous slot (`(&restored_entry)[-1]`) 29 with either publication (both still forwarded); the tables
+// published directly with the dword re-read 279, published through a dword view 279; on the direct entry store (re-measured
+// 5 at +0x1a7) `(void)&second` 5, `(void)&third` 5, the restore block's `second` read once through its address 5, and on
+// the reference form `(void)&second` 5 (all the same code: the address folds and `second` still loads early on the
+// direct form). On round 137's form the `bases` local initialised from a chained publication (`= (field = tables)`),
+// direct or through the reference, 279/279; `bases` as a `byte *const &` bound to the published field 5 (+0x19e, main's code).
+// M3 lane 13 r122 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the chain and pass bases read from the definition's table pointer (`*(byte **)(definition + 0x5c)`) on the reference
+// form 5 (+0x19e: the re-read becomes `mov ecx, [ecx + 0x5c]` after the entry store, `second` still late as retail), on
+// the direct entry store 6 (both the definition re-read and the early `second`); all three bases from the definition on
+// the reference form 189 (976 bytes); the entry base from the `tables` local 178 (listed form, re-measured). Diagnostic:
+// 1-12 dead initialised locals at the top on the direct store 5 each (flat, only the `second` load placement differs).
+// M3 lane 16 r147 (fast, control 5 at +0x19e), on the direct entry store (5 at +0x1a7, `second` loading into ESI right
+// after the entry lea), testing whether retail holds that load behind the store because the parameter's address is
+// exposed: `long const *const second_address = &second;` read in the restore block 5, in both blocks 5; the chain
+// lookup as a forceinline helper taking its offset by `long const &` in both blocks 5, with the pass lookup the same way
+// 5 (all +0x1a7, same code); the restore block publishing the entry (from the `tables` local) before the tables field
+// 287 (976 bytes). Body unchanged.
+// M3 lane 12 r154 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// restore block's entry/chain/pass/range lookup as a forced-inline helper taking the state and the four indices and returning
+// the range 177; the same with a direct entry store and the word read back from the field 176; the helper void, the range
+// reference bound after its call, 5 (same code); one forced-inline pass lookup shared by the first lookup and the restore
+// block (the tables and the entry output by pointer) 294 (981 B), with the entry output bound by reference inside it 295
+// (982 B). Re-measured (diagnostic): the direct entry store 5 at +0x1a7, its only difference `second` loading into ESI
+// right after the entry lea, ahead of the entry store, where retail loads it after the chain and pass bases.
+// M3 lane 3 r276 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the direct entry store re-measured 5 (+0x1a7; its listing: the tables reload already in retail's place, only `second`
+// loads into ESI between the lea and the entry store); on it the restore block's packed and next as fresh `long` locals 5
+// (+0x1a7), the pass stored straight to its field and read back for the range 5 (+0x1a7); on main's body the top block's
+// entry word read without the `entry` local 5 (+0x19e) (all the same code as their bases). Diagnostic (not kept): on the
+// direct form `&second` passed to an out-of-line call at the end of the function 46 (992 B), and `second` still loads
+// ahead of the entry store, so retail's late load is not the store aliasing an exposed parameter. A /GL- compile-only
+// build does not reproduce this block (word loads through `xor edx, edx; mov dx`, other registers).
+// M3 lane 1 r135 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, control 5 at +0x19e): the direct entry
+// store re-measured 5 (+0x1a7: `third` loads into EBX and `fourth` into EDX as soon as each register frees, in both builds,
+// but retail holds `second` behind the entry store and both base loads where ours loads it as soon as the lea frees ESI);
+// on it the three restore bases through a file-scope typed tables header 5 (+0x1a7), the chain and pass bases named after
+// the packed read 5 (+0x1a7); on the reference form the typed header 5 (+0x19e) and the pass published through a
+// reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
+// address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
+// on the reference form 179 (974 B, first difference +0x148).
+// M3 lane 15 r118 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// tail's shader record read from the field at each of its five uses (no reference) 5 (same code; on main's body 5 at
+// +0x19e); the two mask words written as two statements 163 (977 bytes); the range published without its reference and
+// read back from the field for the two calls 162 (977 bytes); both 176; the pass definition folded into the records
+// expression 5, with the top block's entry folded into the packed read as well 5 (same code). Diagnostics (reverted at
+// once), all on the direct store: with the five shader-record calls of the tail removed the restore block is exactly
+// retail's (`second` then loads after the chain and pass bases, 905 bytes otherwise); with only 0x18a90's call removed
+// 62, only 0x19be0's 63, the other four 114, the 0x17420 call 56, the four argument-free calls 49, all still loading
+// `second` early. So the late load depends on the whole group of shader-record calls (a threshold, not one callee's
+// summary); 0x18a90 (a contributor's, 146 at 715 bytes against 736) saves the same registers as retail's.
+// M3 lane 2 r119 (fast; control 5 at +0x19e): the restore block's entry computed into the existing `entry` local, stored,
+// and its word read through the local 181 (975 B); the direct entry store with the entry word read inside the chain index
+// (no `packed` assignment) 5 (+0x1a7, the direct form's code); the tables stored and the three bases read through one
+// `byte *&` to the tables field, entry stored directly, 6 (the reload waits for the entry store and `second` loads early,
+// both differences at once); the entry reference typed `word *&` (the store as a word pointer) 5 (+0x19e, main's code);
+// on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
+// reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
+// and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
+// M3 lane 16 r163 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the reference form, the
+// entry, chain base and pass base all read into locals ahead of the reference entry store 181 (the bases are then
+// forwarded from the stored tables, no reload); the entry field through a `byte **` pointer local in place of the
+// reference 5 (+0x19e, same code). On the direct store: the chain and pass bases named after the store, ahead of the
+// word read, 5 (+0x1a7, same code); the range stored directly and read back into a local 178; the pass published through
+// a `byte *&` and read back 5 (+0x1a7, same code).
+// M3 lane 11 r140 (H2M_FAST; control 5 at +0x19e; the direct entry store, `**(word **)(state + 0x14)` read back, re-measured
+// 5 at +0x1a7). On the direct store: the chain and pass bases named after the packed read 5 (+0x1a7), named ahead of the
+// entry store 183 (+0x148); the chain index's packed word read again from the stored entry with `second` first 5 (+0x1a7);
+// `second` bound by `long const &` for the chain index 5 (+0x1a7); the tables field bound by `byte *const &` for the chain
+// and pass bases 6 (+0x19e: the reload moves back under the entry store and `second` stays early). The entry computed into
+// a local, stored, and the word read through the local 181 (975 B, the listed form).
+// M3 lane 12 r161 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e; the
+// direct entry store re-measured 5 at +0x1a7): the direct store typed as a long field with a long cast 5 (+0x1a7), as a
+// dword 5 (+0x1a7); the reference typed `long &` with a long cast 5 (+0x19e); on the direct store the chain and pass
+// bases read as pointer-array elements of the tables (`((word **)tables)[3]`, `((byte **)tables)[5]`) 5 (+0x1a7); the
+// direct store with the packed word read inside the chain index (no packed assignment) 5 (+0x1a7). All the same code as
+// their bases: the store's type does not hold `second` behind it.
+// M3 lane 3 r288 (h2m fast; control 5 at +0x19e; the direct entry store with the word read back re-measured 5 at +0x1a7,
+// its one difference `second` loading into ESI right after the entry lea where retail loads it after the pass base): the
+// tail's shader record as a plain pointer local (no reference) 60 on main's body (+0x19e) and 60 on the direct store
+// (+0x1a7: the restore block unchanged, the tail worse); on the direct store the five shader-record calls in a new
+// forceinline helper taking the state 5 (+0x1a7), in their own block 5 (+0x1a7) (both the direct form's code); the
+// restore block's word read from a recomputed entry address instead of the stored field 294 (981 bytes).
+// M3 lane 1 r145 (h2m fast; control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// word read through `*(word const *)*(byte *const *)` of the field 5, the chain lookup as byte arithmetic on the chain base
+// 5, the tail's shader-record reference bound at the function's top 5, the shader record re-read into `record` before each
+// of the five tail calls 5 (all +0x1a7, the direct form's code); on the reference form the chain index reading the word
+// straight from the stored field with no packed reassignment 293 (980 bytes). The tail's 0x18a90 (a contributor's, 146 at
+// 715 bytes against 736) is in the group of calls whose removal gives retail's restore block (round 118).
+// M3 lane 8 r216 (h2m fast; control 5 at +0x19e, the direct entry store re-measured 5 at +0x1a7): `first * 10` named once
+// as an entry offset used by both blocks, with the direct store 5 (+0x1a7), with the reference 5 (+0x19e); `second` copied
+// into a block-scoped local at the top of the restore block for its chain index, with the direct store 5 (+0x1a7), with
+// the reference 5 (+0x19e) (all four their base form's code); the direct store with the entry base from the `tables` local
+// 210 (974 B). Diagnostic (reverted at once): the 0x18a90 call (a contributor's, unmatched) replaced by a call of matched
+// 0x19ca0 12 on either form, the restore block unchanged, so that callee's summary does not hold `second` back.
+// M3 lane 16 r169 (h2m fast; control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7, its one difference
+// `second` loading into ESI right after the entry lea): on the direct store, the chain index named (`long chain_index =
+// (packed & 0x1ff) + second;`) 5 (+0x1a7); `first * 10` in one, two and three extra parenthesis pairs 5/5/5 (+0x1a7); the
+// restore block's word, chain value and pass in fresh block locals 5 (+0x1a7), the same on the reference form 5 (+0x19e);
+// the entry written in two steps (base, then `+= first * 10`) through the reference 5 (+0x19e), through the field 5
+// (+0x1a7). Each is its base form's code.
+// M3 lane 16 r171 (h2m fast; control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// chain index written `second + (packed & 0x1ff)` 5 (+0x1a7); `second` read there through a volatile read of its own address
+// 286 (975 B, the whole convention moves; reverted at once); the entry list base named (`byte *entries = ...`) ahead of the
+// entry store 5 (+0x1a7); the packed word read from the entry store's own value (`packed = *(word *)(field = ...)`) 5
+// (+0x1a7); on the reference form, the entry reference bound at the top of the restore block 5 (+0x19e). Each is its base
+// form's code.
+// M3 lane 1 r151 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0; control 5 at +0x19e, the direct entry
+// store re-measured 5 at +0x1a7), each on both forms: the restore block's pass index written `third + (next & 0x1ff)` 5/5;
+// the pass table named in a block local before the chain lookup 5/5; the chain and pass tables both named 5/5; the chain
+// lookup as pointer arithmetic `*(chain + (packed & 0x1ff) + second)` 5/5; the chain and pass indices through the file's
+// packed-range view `index()` 5/5, on the direct store reading the view straight from the stored field 5 (+0x1a7). Each
+// is its base form's code: on the direct store `second` still loads right after the entry lea.
+// M3 lane 6 r227 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e; the direct
+// entry store re-measured 5 at +0x1a7): `packed`, `next` and both typed `long` in place of `word`, on the direct store 5/5/5
+// (+0x1a7) and on the reference form 5/5/5 (+0x19e); on the direct store a new `__forceinline` identity inline around
+// `second` in the chain index, `third` in the pass index, the chain base, the pass base, `packed` and `first` 5 each (+0x1a7,
+// the direct form's code: `second` still loads into ESI right after the entry lea); the reference bound but the store
+// written directly and the word read through the reference 292 (979 B), the store through the reference and the word read
+// from the field 293 (980 B).
+// M3 lane 7 r214 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e, the
+// direct entry store re-measured 5 at +0x1a7): the one-dword clear of +0x58 written as a plain store in place of the
+// memset 15 (+0x111, the clears' schedule moves: the memset is retail's spelling); the inverse scale as a ternary 5
+// (+0x19e, same code); the two-pass mask loop written out as two statements 163 (977 B); the first mask pair (v6c) as a
+// two-pass loop like the second 5 (+0x19e, same code); the logarithm as `logf(inverse)` 5 (+0x19e, same code).
+// Re-measured on the direct store after the tail fix (listed in the 47 era): the chain lookup folded into the pass
+// expression 5 (+0x1a7); `second` read once through its address 5 (+0x1a7); the parameters store chained with the lookup
+// 5 (+0x19e).
+// M3 lane 8 r224 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e): the
+// table field bound as a `byte *&` with every restore-block read through it 5, with the `tables` local stored through it 5,
+// that reference bound at the top of the restore block 5 (all main's code); the chain table named from the field ahead of
+// the entry store 174 (+0x148), with the entry base from the `tables` local 178. All restored.
+// M3 lane 6 r232 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e): the direct
+// entry store re-measured 5 (+0x1a7, `second` loading into ESI right after the entry lea); the reference store with the word read
+// back from the field 293 (980 B); the direct store as `((byte **)state)[5]` with the word read back the same way 5 (+0x1a7); a
+// `byte **` view of the state's pointer fields for the entry, its table base and the word 176 (+0x148); the direct store with the
+// first block's index as `second + (packed & 0x1ff)` 5 (+0x1a7); the direct store with the restore block's chain base read as
+// `*(word **)` 5 (+0x1a7). Restored.
+// M3 lane 11 r155 (h2m fast with 0x16f60/0x17000/0x189a0, all MATCH; control 5 at +0x19e, the direct entry store
+// re-measured 5 at +0x1a7): permuter (`--fast --anneal --jobs 1`, 600 s, 59 tries, 17 failed builds) none below 5; the
+// restore block's entry stored and kept in the existing `entry` local by one chained assignment, the word read through
+// the local, from the direct store 5 (+0x1a7), from the reference 5 (+0x19e); the tables stored to the field and the
+// `tables` local by one chained assignment on main's body 5 (+0x19e), on the direct store 5 (+0x1a7) (each its base
+// form's code). All restored.
+// M3 lane 3 r300 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e, the
+// direct entry store re-measured 5 at +0x1a7): fresh block locals for the restore block's word, chain word and pass on the
+// direct store 5 (+0x1a7) and on the reference 5 (+0x19e); the direct store with the table field bound as a `byte *const &`
+// for the chain, pass and range bases 293 (980 B); the range stored directly and read back for the calls 178 (+0x148); the
+// pass stored directly and read back for the range index 5 (+0x1a7). Restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1118,6 +1336,24 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // New: existing clamp helper 257; standard fill in pair/width/zero-only/
 // height ranges 94/68/119/68; pair plus width 97; all ranges 137;
 // standard color copy 141. NOT kept: all regress; range forms also lose a caller.
+// b14A (11-17) walk against retail, fast build on r847 with 0x19be0/0x19ca0 (both MATCH except where stated):
+// still score 2. The [8]/[c] stores follow source evaluation order, but the compiler flips every such pair at once
+// (case 10 at 0x1b46e, the 12/13 tail at 0x1b49c, the 14/18 block at 0x1b4e3) whenever the 12/13 zero pair is
+// stored in the same order as the LAST TWO zeros of 14/18: 12/13 ascending (`out[3] = out[2]` or two statements) with
+// 14/18 as `out[3] = out[2] = out[1]` scores 6, and so does descending 12/13 with 14/18's last two as
+// `out[3] = out[2]`.
+// Retail has both blocks ascending, which is that configuration. Any other 14/18 order moves the 2 into 14/18
+// (0x1b4de..0x1b4e8), eval orders 123/132/213/231/312/321: 6/2/2/3/3/2 with 12/13 ascending, 2/6/4/5/7/4 with the
+// kept 12/13. A zero local or a split pair in 14/18 flips as well (6). Writing the 12/13 zeros as
+// `((real volatile *)out)[2]`/`[3]` matches that tail (2, left in 14/18) but costs 0x19ca0 its match (130), like the
+// `out + 2` copy: any non-direct access to out[] is out. Kept: the direct stores.
+// M3 lane 16 r181 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): case 10 written height first 6 (case 10
+// then stores descending); case 9 written height first 2 (same code); case 16's constant store written first 111 (688
+// bytes); case 11's chain reversed 2 (same code); cases 5-8 as one label group 2 (same code).
+// M3 lane 11 r160 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): 1..8 dead probe locals here, or 1/2/3/5 in the
+// preceding 0x176a0, 2 each (not a symbol-count tie); the 12/13 zeros as `out[3] = 0.0f; out[2] = out[3];` 2 (same
+// code), as integer 0 2 (same code); the switch on `output_component` with cases 0..15 6; only case 12's chain ascending
+// 6, only case 13's 6.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

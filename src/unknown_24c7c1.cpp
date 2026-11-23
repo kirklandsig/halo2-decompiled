@@ -556,6 +556,18 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// score 115 (was 115): earlier 114 (was 114), 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
+// The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
+// M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
+// `short const &` for the bounds store 191 (1888 bytes; the reference folds away and `left` is still stored as a dword);
+// the text height clamped as `height = bottom - top; if (height < 0) height = 0;` 452 (1888 bytes); the timed colour as
+// `alpha *= fraction > 1.0f ? 1.0f : fraction` 115 (same code); the scripted test as two nested ifs 115 (same code); a long
+// loop index 420 (1877 bytes); a long count 197 (1883 bytes). Diagnostic, reverted at once: with `left`'s address taken
+// the store is still a dword (395): this build widens a short store into its four-byte home whenever the upper half is
+// free, so retail's word store means the two bytes above `left` belong to something it never touches (the two-short
+// aggregate the earlier rounds found).
+// MiniMax R (11-17): no new form, no lower score (114; 115 in the batch of all fourteen, whose reduced image is wider): retail's timer message, left coordinate and view pointer still sit in byte and word homes where this build gives them dwords, and the difference still rests on the text buffer's call convention in 0x15f120: BLOCKED-BY 0x15f120.
 // MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
 // keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
 // packs the predicates at -0x14/-0xd/-2 and spills `left` as a dword at -0x50; the only spelling that produces
@@ -579,7 +591,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and
 // retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
 // MiniMax G (11-12): no new form, no lower score (114); the three message predicates are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
-// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// Earlier score line (114, was 115): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (114); the three message predicates are still packed in different
 // homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at
 // -0x3c where ours spills it as a dword at -0x50; the text buffer is still pushed where retail passes it in esi,
@@ -770,6 +783,177 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // inside the loop block 114 (same code).
 // MiniMax S (11-15): no new form, no lower score (114): retail keeps the timer message as a byte at -0xf and the left
 // coordinate as a word at -0x3c where ours stores a dword, and the frame homes of the row counter and the flash scalar differ.
+// MiniMax D (11-16): no new form, no lower score (115 in the fast check): retail keeps the view pointer at [ebp-0x44]
+// where this build keeps it at [ebp-0x3c], and retail's three message flags are bytes at -0xf, -0xe and -0xd while this
+// build gives the timer flag a long and the others bytes at -0x14, -0xd and -2; making the timer flag a bool so the
+// three pack measures 191 (as the round above it found), so the frame is left as it is.
+// b9E (11-17) walk against retail, fast build on r839: 114 fast, 1889 bytes both; 0x24cf66 starts exactly where
+// 0x24cedf ends (0x24cf63 ret 8), no padding or fall-through. Every field offset, jcc sense (NaN included: 0x24d130,
+// 0x24d3ce, 0x24d3ec, 0x24d3f8), callee argument, loop/qsort shape and constant agrees with the code; 0x45de40 and
+// 0x45e570 hold 1.9f and 0.4f promoted to double, 0x45dbc0 1.0f, 0x45dbbc 0.5f. No behaviour difference found.
+// Retail-only details that compile the same: the scripted path stores alpha 1.0 at 0x24d0c2 and 0x24d0ec overwrites it;
+// the timer path's pack_color4f call at 0x24d189 keeps its result unused. `top += (short)height` lost its cast (retail
+// adds the dword at 0x24d32d): 114 fast, 115 in the r841 full build. Left: homes (timer byte 0x24d03b, left word
+// 0x24cffc, view 0x24cf76, font 0x24cfc9), the tutorial colour's block order (retail falls into the a4 load at
+// 0x24d1a2, ours puts it last), and 0x24ce9d's setup (retail pushes the text between the left and top loads at
+// 0x24d2d6-0x24d2dd; ours loads top first through edx; 0x1fa30's ecx/eax loads at 0x24d2eb swap likewise).
+// M3 lane 7 r176 (fast, control 115): all on the byte timer flag (191, 1888 B, re-measure): the origin in a block of its own
+// with the top and left computed inside it 191; the origin declared after top and left 191; the text rectangle declared
+// after the flags 191 (all the same code: scope and declaration order move no home); the scripted flag as a test-set 453
+// (1886 B); the scripted test written out at its second use 375 (1891 B; the flag then lives in DL and the timer and
+// tutorial bytes take -0xd/-0xe). On the byte-timer form the three flags already sit in retail's relative order (scripted
+// above tutorial above timer); the one home out of place is the origin/text-rectangle slot: retail allocates it straight
+// after the split flag (-0xc, flags at -0xd/-0xe/-0xf), ours after the scripted flag (-2, then the slot, then -0xd/-0xe).
+// 463: text measurer left/top/both as short 184/181/182; with byte timer 206/203/205.
+// View scoped to the end of the message rows, mutable/read-only 115/115. NOT kept: shorter
+// coordinate forms and tied scoped forms leave the view, predicate and coordinate homes different.
+// Status rectangle 115; row draw/measurement/both 172/115/172; banner draw/measurement 115/115.
+// All phase-owned rectangles 162; with byte timer 208. NOT kept: ties or regressions against the 115 preview control; no native view or left-coordinate repair.
+// MiniMax A (11-18): no new form, no lower score (114; 115 on this build's reduced image); the tutorial colour's condition in
+// De Morgan form (`!flag_1384 && (flags_b6 & 1) ? color_a8 : color_a4`) compiles exactly as before (115), and holding the
+// colour in a local so that it is loaded first and only then overwritten (retail's order) scores 398; what still differs is
+// the stack homes (the timer byte, the left word, the view and the font), the tutorial colour's block order and 0x24ce9d's
+// argument setup; reordering 0x24ce9d's parameters reaches 103 to 110 but changes a function's parameter order, so it is not
+// applied.
+// M3 lane 15 r99 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 in the full
+// build): the three message flags as one three-bool array (timer, tutorial, scripted; retail's -0xf/-0xe/-0xd are consecutive
+// bytes in that order) 241 (1888 B): the array homes above the origin slot at -8/-7/-6 where retail's bytes sit below it; the
+// three flags declared ahead of the origin with the byte timer 191 (the byte-timer code unchanged: scripted still back-fills
+// -2); the tutorial colour as an if / else-if / else of three unpack calls (a4, a8, a4) 214 (1890 B); left and the first top
+// as the two elements of a `short position[2]` (the sibling 0x13954b's integer origin) with top a copy of the second and the
+// byte timer 109 (1889 B, the two-short lead's code; a locals-grouping form, not kept), the same without the byte timer 194
+// (1890 B); a second view pointer copied after the sort for the row loop's three reads 115 (same code); the split-screen flag
+// as a long with the byte timer 496 (1893 B). In every form retail's split-screen byte keeps -1 to itself (-2..-4 unused)
+// while ours packs the scripted flag at -2; declaration order, an array and the other flags' widths do not change that.
+// The full build reads 115 once src/unknown_1ee340.cpp's constructor stores its vertices through the component accessor
+// (this round's 0x1edd00 match) and 114 with that file as before (plain checks of both trees): the reload pair before the
+// flag setup (`mov edi, [ebp - 0x64]` against retail's `mov ecx, [ebp - 0x40]`) follows the whole-image link, as in round 97.
+// M3 lane 4 r222 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115): the tutorial colour as
+// `if (flag_1384) unpack(a4) else unpack(bit ? a8 : a4)` 214 (1890 B: the a4 load then comes first as in retail, but the shared
+// call follows it where retail's follows the a8 load); that with g_510c94 read at each use 446 (1903 B); negated with the arms
+// swapped 214 (1890 B); the first on the bool timer 151 (1889 B); the timed message colour read through g_510c94 at each use
+// (no `timed` local) 416 (1890 B). Same code: `left` as `short const` on the bool timer (191); 0 to 5 dead locals ahead of the
+// bool-timer body (homes unchanged, so not a symbol-count state). A one-object LTCG screen names the homes: retail shares the
+// flash scalar with the row counter and the row fade with the total height, and gives the row height a cell of its own; on the
+// bool timer ours shares the row height with the total height and the flash scalar with the row fade, and the row counter has
+// its own cell. A scan of every matched retail function finds no other lone word-sized frame local like `left` (only an /Od one).
+// M3 lane 1 r124 (fast with the file's other 21 functions, all MATCH each run; control 115, difflib-aligned 113): nearly
+// every difference is a frame home. 0x24ce9d (same file, matched, no longer held) taking `left` and `top` as `short`
+// 182 (1883 B; 0x24ce9d stays matched); `left` as a `short const` initialised where it is computed 115 (same code); the
+// timer flag as a bool 191 (1888 B: timer -0xe, tutorial -0xd, scripted still packed at -2 beside the split-screen byte,
+// where retail has -0xf/-0xe/-0xd below `origin`), with `origin` declared ahead of the split-screen flag 191 (same
+// code); `origin` scoped to its own block around the top/left computation 115, with the bool timer 191 (same code each).
+// M3 lane 16 r150 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, all MATCH each run; control 115, 31 lines
+// with the frame offsets masked): the flash scalar passed by value to an inline setter of the vertex procedure and its
+// parameter 383 (1892 bytes); the tutorial colour from an inline function with three returns (a4, a8, a4) 442 at 1859
+// bytes when the compiler leaves it out of line, forced inline 115 (same code); the tutorial colour as an if/else of two
+// unpack calls, the second holding the bit ternary 214 (1890 bytes; the 1.0 loads move); the nested ternary with its first
+// arm read through the global and the others through the local 115 (same code); the player taken from the HUD state
+// local declared ahead of it 246 (1891 bytes). With the offsets masked the body differs from retail only in the left word
+// store, the timer byte, the tutorial colour's block order (retail: flag test, the a4 load, the bit test jumping back
+// to it, the a8 load) and the argument order at the 0x24ce9d and 0x1fa30 calls; every other line is a home. Retail's
+// homes from EBP down: split flag, origin and bounds, scripted, tutorial, timer, line height, flash with the row counter,
+// total height, text bounds, colour, top, left, player, view, count, row height, font; ours: split flag, scripted, origin
+// and bounds, tutorial, timer with flash and the row height, line height, total height, colour, view, text bounds,
+// player, top, row counter, count, font, left.
+// MiniMax A (11-19): no new form, no lower score (114; 115 on this build's reduced image): what is left is the
+// frame homes and two widths - retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd
+// where this build writes the scripted flag as a dword at -0x14, the tutorial flag as a byte at -0xd and the
+// split-screen flag as a byte at -2; retail writes the left coordinate as a word at -0x3c where this build writes
+// a dword at -0x50 (the spelling that narrows it groups the two coordinates into one array, a banned
+// locals-grouping form); the view pointer sits at -0x44 against -0x30 here and the font at -0x50 against -0x4c.
+// The tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
+// m3 lane 11 r130 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 full):
+// text_bounds renamed to sort first 115 (identical code); the three message flags and the message block in an inner
+// block of their own, with the bool timer 463 (1883 B: the flags leave memory) and with the long timer 128; the view
+// pointer typed const 115 (same code); the timer flag as `char` 191 (1888 B, the byte timer's code). The sibling
+// 0x13954b converts its origin into a `short origin[2]` it passes to a call; here no call takes the pair, so that
+// spelling stays the locals-grouping form listed above.
+// M3 lane 5 r215 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 in the
+// baseline full check): the bool timer re-measured 191 (1888 bytes, aligned 111 against the control's 113: the flags
+// then sit at -0xe, -0xd and -2 for retail's -0xf, -0xe, -0xd). Retail's word store means another two-byte local shares
+// `left`'s cell, so with the bool timer the function's other short locals were declared beside it: the fade tick count
+// declared after `left` (assigned where it was) 191; between `top` and `left` 191; the row index declared after `left`
+// 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
+// all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
+// follow where the shorts are declared).
+// M3 lane 12 r160 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, all MATCH; control 114): use-count forms to move
+// the spill homes: the fade time read once into a local used twice 293 (1892 bytes); the elapsed fade time named 114
+// (same code); the status player taken from `player` 535 (1861 bytes); the timer flag read through the global 114 (same
+// code); the tutorial colour as three arms each calling the unpack 215 (1890 bytes).
+// M3 lane 7 r197 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
+// 102). On the bool timer (191, 1888 B): the four flags renamed so that their names sort in each of four orders 191 each
+// (same code: the byte homes do not follow names); the three message flags declared without initialisers after the
+// split flag, after `origin`, after `text`, at the top of the block, and in reverse order after the split flag and at the
+// top 191 each (same code). On the kept body: the message height declared ahead of the message loop 114, the row counter
+// declared ahead of it 114, both 114, the flash value declared at the top of the timer arm 114 (same code each). Retail
+// shares the flash value's home with the row counter (-0x18) and gives the message height its own (-0x4c); ours shares
+// the timer, flash and message height (-0x14): the packing follows the lifetimes, not the declarations.
+// MiniMax C (11-20): no lower score (114): the frame homes and the left coordinate word store differ; a word for left scores 482.
+// M3 lane 6 r217 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 114): one local for
+// g_510c94 across the timed, tutorial and default colour arms 480 (1868 B); the row loop's active test in the for
+// condition 316 (1892 B); the split-screen test as `count >= 2` 116, with the bool timer 193 (flags still -0xe/-0xd/-2);
+// the status block reusing `player` for its second lookup 535 (1861 B). Diagnostic: an extra read of origin.x 491, the
+// scripted byte stays at -2 (the packing does not follow origin's reference count). Body unchanged.
+// M3 lane 11 r141 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
+// differing rows 102, 18 with the frame offsets masked, 12 with registers masked too; body unchanged). LEAD for the
+// tutorial colour, the first spelling that gives retail's block (flag test, the a4 load, the bit test jumping back to
+// it, the a8 load): the selection nested with the inner test negated, `flag ? a4 : (!(bit) ? a4 : a8)`, 108 (masked 15
+// and 9; six points, under the keep bar by itself). Same code as the body: the inner arm's a4 read through the global
+// 114, the whole selection inverted (`!flag ? (bit ? a8 : a4) : a4`) 114. Other instructions: the flag folded into a
+// bool selection first, `(flag ? true : !(bit)) ? a4 : a8` 406 (1898 B), `(flag ? false : (bit) != 0) ? a8 : a4` 403
+// (1896 B). On the 108 form: `left` as a `short const` initialised where it is computed 108 (same code); the bool timer
+// 185 (1888 B, masked 13 and 6); the bool timer with left and the first top as the two elements of a `short
+// position[2]` (round 99's locals-grouping lead) 103 at retail's 1889 B (masked 12 and 5: what is left with the offsets
+// masked is the argument order at the three 0x24ce9d and four 0x1fa30 calls); that lead without the nested selection
+// 109 (re-measure). The frame homes are still the open part: retail allocates split flag, origin, then the scripted,
+// tutorial and timer bytes, where this build puts the scripted byte between the split flag and the origin.
+// M3 lane 7 r205 (H2M fast; control 114): round 141's lead re-measured, the bool timer, `left` and the first top as the
+// two elements of `short position[2]` (x written first, top a copy of y) and the nested tutorial selection 103 (1889 B; with
+// y written first 516 at 1899 B); with it 0x1fa30 as (bounds, text) and 0x24ce9d as (left, top, bounds, result, text)
+// (round 112's orders, both callees still matched) 92 at 1889 B, the lowest so far. With the frame offsets masked only six
+// rows differ on the 92 form (the player/offset reload pair, which follows the whole image, and the third 0x24ce9d
+// call's setup); everything else is homes: ours scripted -2, tutorial -0xd, timer -0xe, total height with the row height
+// -0x18, colour -0x28, flash with the row fade -0x2c, text bounds -0x34, player -0x38, view -0x3c, font -0x40, row counter
+// -0x44, the point -0x4c, top -0x50; retail scripted -0xd, tutorial -0xe, timer -0xf, flash with the row counter -0x18,
+// total height with the row fade -0x1c, text bounds -0x24, colour -0x34, top -0x38, the point -0x3c, player -0x40, view
+// -0x44, row height -0x4c, font -0x50. On the 92 form: a long row counter 419 (1877 B); the loop's game time read ahead of
+// the active test 326 (1880 B); the HUD state read through the global at each use 92 (same code); the count as
+// `split_screen ? 3 : 4` 479 (1886 B); one colour pair declared at the block top for all three draws 109 (1889 B). Not
+// kept (steering forms without a match); the 92 form is saved as build/r205/lead-24cf66-92.patch.
+// M3 lane 11 r145 (H2M fast with 0x24ce9d/0x24c80b/0x24cedf/0x1fa30/0x15f120, all MATCH each run; control 114): the
+// tutorial colour as `flag ? a4 : (bit ? a8 : a4)` 114 (same code as the body); as `(bit) && !flag ? a8 : a4` 116; as
+// `!flag && (bit) ? a8 : a4` 114 (same code); the timer fraction clamp as `fraction < 1.0f ? fraction : 1.0f` 116; the
+// fade test as `fade_ticks > ticks` 116. Reading of lane 7 r205's 92 lead (re-applied, 92, no difference left but homes):
+// retail, from EBP down: split -1, origin/bounds -0xc, scripted -0xd, tutorial -0xe, timer -0xf, line height -0x14, flash
+// sharing with the row counter -0x18, total height sharing with the row fade -0x1c, text bounds -0x24, colour -0x34, top
+// -0x38, left -0x3c, player -0x40, view -0x44, count -0x48, row height -0x4c, font -0x50, colour pair -0x60, player offset
+// -0x64; the lead: split -1, scripted -2, origin/bounds -0xc, tutorial -0xd, timer -0xe, line height -0x14, total height
+// sharing with the row height -0x18, colour -0x28, flash sharing with the row fade -0x2c, text bounds -0x34, player -0x38,
+// view -0x3c, font -0x40, row counter -0x44, count -0x48, left -0x4c, top -0x50 (the rest as retail). So the open part is
+// which loop scalar shares with flash and with the total height. Body unchanged.
+// M3 lane 1 r149 (H2M fast; control 114): the timer as a bool 191 (1888 B: its byte lands at -0xe, the tutorial byte at
+// -0xd and the scripted byte at -2, retail -0xf/-0xe/-0xd: the three keep retail's relative order but the scripted byte
+// is placed ahead of origin, in the split flag's padding); that with the three flags declared scripted, tutorial, timer
+// and assigned after 191 (same code); origin declared first of the locals 114 (same code); the three flags computed
+// after `height` 463 (1883 B); the late scripted test as `!player->value_440 && scripted_message` 117; the count as
+// `split_screen ? 3 : 4` 479 (1886 B, re-measured on main's body).
+// M3 lane 13 r137 (h2m fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30, 0x15f120, all MATCH; control 114): the row's
+// message height as a short 261 (1903 B); the status duration defaulted by `if (!duration) duration = 1;` 115; the
+// row fade clamped by if/else on a copy of the remainder 121; the status bounds' top stored before the bottom 114 (same
+// code); the text height tested and assigned without its local 114 (same code). Homes and predicate packing remain.
+// M3 lane 7 r215 (H2M_FAST with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 114). The bool timer re-measured:
+// 191 at 1888 B, `left` still a dword store. On it, going after the two bytes above retail's word `left` with a second
+// short local that never needs memory: the right edge named in a short local declared after `left` 191, declared
+// ahead of `left` 191, declared at its assignment 191, the bottom edge named the same way 191 (the same code each:
+// a short that stays in a register reserves no home, so it cannot be what shares `left`'s cell); the scripted flag
+// computed ahead of the tutorial flag 460 (1883 B). In both builds the byte flags keep one order from EBP down
+// (split screen, scripted, tutorial, timer); retail's bounds/origin home sorts above the scripted flag where ours
+// sorts below it, which is why ours back-fills the byte beside the split-screen flag. Body unchanged.
+// M3 lane 8 r228 (H2M_FAST with 0x24ce9d/0x24c80b/0x24cedf/0x1fa30/0x15f120, all MATCH; control 114, 115 in the full
+// baseline): the messages sorted ahead of `top += height` 122; the total height as a short 114 (same code); the row
+// count as `4 - split_screen` 479 (1886 B); `keep = 1.0f - flash` named for all six colour rows 396 (1885 B); the fade
+// tick count as a short 437 (1896 B). Body unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
@@ -885,7 +1069,7 @@ void function_24cf66(long local_player_index)
 				count--;
 		}
 
-		top += (short)height;
+		top += height;
 		qsort(player->messages, 4, sizeof(s_hud_message), hud_message_compare);
 		for (short i = 0; i < count; i++)
 		{

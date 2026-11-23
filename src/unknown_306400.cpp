@@ -3,6 +3,18 @@
 // the first box, and the first box's centre seen from the second.
 #include <xmmintrin.h>
 
+// Havok (third-party physics library): comparing a vector with a value per
+// component.
+// @retail 0x305900
+// which of x, y and z exceed the value, as bits
+void __cdecl function_305900(const __m128 *vector, const float *value, int *mask)
+{
+	__m128 limit = _mm_set_ss(*value);
+	limit = _mm_shuffle_ps(limit, limit, 0);
+	*mask = _mm_movemask_ps(_mm_cmpgt_ps(*vector, limit)) & 7;
+}
+
+
 struct transform_306400
 {
 	__m128 columns[4];
@@ -30,9 +42,23 @@ __forceinline void __cdecl inverse_vectors_306400(transform_306400 const *transf
 struct vector_306400
 {
 	__m128 value;
+	// takes `other` away from this vector
+	__forceinline void subtract(vector_306400 const &other)
+	{
+		value = _mm_sub_ps(value, other.value);
+	}
 	__forceinline void set_inverse_rotated(transform_306400 const *transform, __m128 const *direction)
 	{
-		inverse_vectors_306400(transform, direction, &value, 1);
+		__m128 c0 = transform->columns[0];
+		__m128 c1 = transform->columns[1];
+		__m128 c2 = transform->columns[2];
+		__m128 c3 = c2;
+		_MM_TRANSPOSE4_PS(c0, c1, c2, c3);
+		__m128 const d = *direction;
+		__m128 const x = _mm_mul_ps(c0, _mm_shuffle_ps(d, d, 0x00));
+		__m128 const y = _mm_mul_ps(c1, _mm_shuffle_ps(d, d, 0x55));
+		__m128 const z = _mm_mul_ps(c2, _mm_shuffle_ps(d, d, 0xaa));
+		value = _mm_add_ps(_mm_add_ps(x, y), z);
 	}
 };
 
@@ -50,7 +76,15 @@ public:
 	void function_306400();
 };
 
-// score 67 (was 67): the offset vector stores and single-vector registers still differ.
+// Matched: the first position and the relative offset are each used through a
+// reference, and the offset is stored back with a plain assignment. That keeps the
+// offset's copy late and its last load after the store, as retail has them, and
+// gives the loop's cursors retail's registers.
+// Before, 36 (was 67): one direction is turned by its own helper (the direction
+// read after the columns are transposed), the offset is copied after the first
+// position is found, subtracted by a vector member, and stored back through a
+// reload, as retail reloads it. The run's cursor registers now differ.
+// Before: the offset vector stores and single-vector registers still differ.
 // Reference/pointer results 67; transform reference 67; count-first helper 67;
 // indexed run 87; whole copies with changed result 136; consumed SSE/reference results 67.
 // New: explicit vector copy assignment 68; SSE assignment 75;
@@ -65,12 +99,14 @@ public:
 void box_pair_306400::function_306400()
 {
 	inverse_vectors_306400(first_transform, second_transform->columns, &relative[0].value, 4);
-	relative_offset.value = relative[3].value;
 	vector_306400 first_position;
 	first_position.set_inverse_rotated(first_transform, &first_transform->columns[3]);
-	relative_offset.value = _mm_sub_ps(relative_offset.value, first_position.value);
+	relative_offset.value = relative[3].value;
+	vector_306400 const &position = first_position;
+	relative_offset.subtract(position);
 	relative[3].value = relative_offset.value;
-	first_centre.set_inverse_rotated((transform_306400 const *)relative, &relative_offset.value);
+	vector_306400 const &offset = relative_offset;
+	first_centre.set_inverse_rotated((transform_306400 const *)relative, &offset.value);
 }
 
 static __declspec(align(16)) const unsigned long g_455940[4] = {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
@@ -80,6 +116,7 @@ class answer_306580
 {
 public:
 	answer_306580() {}
+	answer_306580(bool value_) : value(value_) {}
 
 	char value;
 };
@@ -99,8 +136,6 @@ struct vector_306580
 	}
 };
 
-// which of x, y and z exceed the value, as bits (src/unknown_305900.cpp)
-void __cdecl function_305900(const __m128 *vector, const float *value, int *mask);
 // replaces x, y and z with the reciprocals of their square roots
 // (src/unknown_305940.cpp)
 void __cdecl function_305940(float *vector);
@@ -116,12 +151,12 @@ public:
 	void function_305b30(__m128 *out, long i, long j) const;
 };
 
-// the same comparison as function_305900, written in place
-inline void exceeds_306580(const __m128 *vector, const float *value, int *mask)
+// the first three components of a vector, stored
+__forceinline void store3_306580(__m128 const *vector, float *out)
 {
-	__m128 limit = _mm_set_ss(*value);
-	limit = _mm_shuffle_ps(limit, limit, 0);
-	*mask = _mm_movemask_ps(_mm_cmpgt_ps(*vector, limit)) & 7;
+	out[0] = vector->m128_f32[0];
+	out[1] = vector->m128_f32[1];
+	out[2] = vector->m128_f32[2];
 }
 
 // two boxes, the second seen from the first, and how far apart they are
@@ -149,9 +184,63 @@ public:
 	answer_306580 function_306580();
 };
 
+// the part of the box pair from the second box's extents to the first
+// box's face separations
+struct face_view_306580
+{
+	__m128 second_extents;
+	char unknown10[0x80];
+	__m128 first_centre;
+	float first_faces[3];
+};
+
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
-// score 295 (was 295): frame 0xb8 agrees; the initial mask load, vector
+// Matched: function_305900 is defined in this file (retail places it in this unit),
+// so the compiler treats the remaining call to it as retail's compiler did and group 3
+// loads its reach before its edge; group 1's sum of the squares is named once and
+// used through a constant reference, so its lengths are stored where retail has them.
+// Before, 4 (was 34): the edge sums are single expressions, three extents are named once.
+// Before, 34 (was 56): the second face test reads the second box's extents and
+// the first box's centre, and stores the first face separations, through one view
+// of the box pair (retail keeps those stores ordered after the first box's
+// extents only); the three squared rows are all set before they are squared;
+// in the second edge group the lengths are summed after the separations and
+// the first two products of the first separation are one sum. Left: in the
+// first edge group retail sums the lengths early but stores them after the three
+// separations, and the edge groups' sums are single expressions in retail
+// (the scheduler's 81-instruction windows end where retail's do only then).
+// Before, 56 (was 91): each face test and each edge group has its own `reach`
+// vector (the second face test's and the edge groups' declared in their blocks).
+// They still share one stack slot, but as five variables the slot is created
+// after the edges' slot, and the frame's slots now sit where retail has them.
+// Left: scheduling only (second extents loaded before the first face stores,
+// the lengths and zero stores in each edge group, the second group's edge store).
+// Before, 91 (was 101): the three sums of each edge group are accumulated by
+// statements, product by product, instead of being written as arguments of
+// `reach.set`: a sum written as one expression is reordered by the compiler, a sum
+// built by `+=` keeps the source order, and all nine sums now add their products
+// in retail's order. The lengths statement moves in front of the sums. Left: two
+// vector homes are exchanged (0x20/0x30), and the lengths and zero stores sit at
+// other places in their groups.
+// Before, 101 (was 149): each of the three edge groups is a block with its own `edge`
+// and `lengths` (retail keeps the third group's edge in a different slot from the
+// first two, so they are separate variables), and the first group's last sum has
+// its terms in retail's order. Left: the 0x20/0x30 slots are swapped, the two
+// constants sit in each other's slots, and the term order of the other eight sums
+// (a single-expression sum is reordered by the compiler whatever the source order).
+// Before, 149 (was 250): the tolerance is copied once into a constant and both
+// face tests take its address (the compiler then reuses the vector as retail
+// does), the absolute axes are filled in index order, and the parallel
+// separation is declared before its limit. Stack homes of the axes and two
+// spills remain.
+// Before, 250 (was 295): the absolute axes are an array filled in retail's order,
+// each answer is returned where it is known (retail writes the byte directly and
+// shares one failure block), the face separations use the vector the edge reach
+// later uses (retail shares the slot) and are stored through a pointer, so the
+// extents are reloaded as in retail. The tolerance vector's slot and the squares'
+// slots still differ.
+// Before: frame 0xb8 agrees; the initial mask load, vector
 // homes, row reuse and later scalar scheduling differ. Return-mask or
 // reference inputs 295; forced comparison or vector setter 295; four-lane
 // construction 448; face memcpy 417; result from mask 413; broadcast load
@@ -164,41 +253,43 @@ public:
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {
-	answer_306580 result;
 	__m128 const parallel_limit = _mm_set_ss(999.99994f);
 	__m128 const parallel_separation = _mm_set_ss(-1e17f);
 	int separated;
 	__m128 const mask = *(__m128 const *)g_455940;
-	__m128 const a0 = _mm_and_ps(axes[0], mask);
-	__m128 const a1 = _mm_and_ps(axes[1], mask);
-	__m128 const a2 = _mm_and_ps(axes[2], mask);
+	__m128 a[3];
+	a[0] = _mm_and_ps(axes[0], mask);
+	a[1] = _mm_and_ps(axes[1], mask);
+	a[2] = _mm_and_ps(axes[2], mask);
 
 	// the first box's faces
-	__m128 separation;
+	vector_306580 first_reach;
 	{
 		__m128 const second = second_extents;
-		__m128 const z = _mm_mul_ps(a2, _mm_shuffle_ps(second, second, 0xaa));
-		__m128 const y = _mm_mul_ps(a1, _mm_shuffle_ps(second, second, 0x55));
-		__m128 const x = _mm_mul_ps(a0, _mm_shuffle_ps(second, second, 0x00));
-		__m128 const reach = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), first_extents);
-		separation = _mm_sub_ps(_mm_and_ps(second_centre, *(__m128 const *)g_455940), reach);
+		__m128 const z = _mm_mul_ps(a[2], _mm_shuffle_ps(second, second, 0xaa));
+		__m128 const y = _mm_mul_ps(a[1], _mm_shuffle_ps(second, second, 0x55));
+		__m128 const x = _mm_mul_ps(a[0], _mm_shuffle_ps(second, second, 0x00));
+		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), first_extents);
+		first_reach.value = _mm_sub_ps(_mm_and_ps(second_centre, *(__m128 const *)g_455940), span);
 	}
-	exceeds_306580(&separation, &tolerance, &separated);
+	float const limit = tolerance;
+	function_305900(&first_reach.value, &limit, &separated);
 	if (separated)
 	{
-		result.value = 0;
-		goto done;
+		return answer_306580(false);
 	}
-	first_faces[0] = separation.m128_f32[0];
-	first_faces[1] = separation.m128_f32[1];
-	first_faces[2] = separation.m128_f32[2];
+	face_view_306580 *const view = (face_view_306580 *)&second_extents;
+	view->first_faces[0] = first_reach.value.m128_f32[0];
+	view->first_faces[1] = first_reach.value.m128_f32[1];
+	view->first_faces[2] = first_reach.value.m128_f32[2];
 
 	// the second box's faces
 	{
-		__m128 const t0 = _mm_shuffle_ps(a0, a1, 0x44);
-		__m128 const t2 = _mm_shuffle_ps(a0, a1, 0xee);
-		__m128 const t1 = _mm_shuffle_ps(a2, a2, 0x44);
-		__m128 const t3 = _mm_shuffle_ps(a2, a2, 0xee);
+		vector_306580 reach;
+		__m128 const t0 = _mm_shuffle_ps(a[0], a[1], 0x44);
+		__m128 const t2 = _mm_shuffle_ps(a[0], a[1], 0xee);
+		__m128 const t1 = _mm_shuffle_ps(a[2], a[2], 0x44);
+		__m128 const t3 = _mm_shuffle_ps(a[2], a[2], 0xee);
 		__m128 const row_0 = _mm_shuffle_ps(t0, t1, 0x88);
 		__m128 const row_1 = _mm_shuffle_ps(t0, t1, 0xdd);
 		__m128 const row_2 = _mm_shuffle_ps(t2, t3, 0x88);
@@ -206,93 +297,105 @@ answer_306580 class_306580::function_306580()
 		__m128 const z = _mm_mul_ps(row_2, _mm_shuffle_ps(first, first, 0xaa));
 		__m128 const y = _mm_mul_ps(row_1, _mm_shuffle_ps(first, first, 0x55));
 		__m128 const x = _mm_mul_ps(row_0, _mm_shuffle_ps(first, first, 0x00));
-		__m128 const reach = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), second_extents);
-		separation = _mm_sub_ps(_mm_and_ps(first_centre, *(__m128 const *)g_455940), reach);
+		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), view->second_extents);
+		reach.value = _mm_sub_ps(_mm_and_ps(view->first_centre, *(__m128 const *)g_455940), span);
+		function_305900(&reach.value, &limit, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		store3_306580(&reach.value, second_faces);
 	}
-	exceeds_306580(&separation, &tolerance, &separated);
-	if (separated)
-	{
-		result.value = 0;
-		goto done;
-	}
-	second_faces[0] = separation.m128_f32[0];
-	second_faces[1] = separation.m128_f32[1];
-	second_faces[2] = separation.m128_f32[2];
 
 	// the edges: the squares of each row of the axes, for the lengths of
 	// the cross products
+	float const &first0 = first_extents.m128_f32[0];
 	vector_306580 squares_x;
 	squares_x.set(axes[2].m128_f32[0], axes[1].m128_f32[0], axes[0].m128_f32[0]);
-	squares_x.value = _mm_mul_ps(squares_x.value, squares_x.value);
 	vector_306580 squares_y;
 	squares_y.set(axes[2].m128_f32[1], axes[1].m128_f32[1], axes[0].m128_f32[1]);
-	squares_y.value = _mm_mul_ps(squares_y.value, squares_y.value);
 	vector_306580 squares_z;
+	float const &second2 = second_extents.m128_f32[2];
 	squares_z.set(axes[2].m128_f32[2], axes[1].m128_f32[2], axes[0].m128_f32[2]);
+	float const &second1 = second_extents.m128_f32[1];
+	squares_x.value = _mm_mul_ps(squares_x.value, squares_x.value);
+	squares_y.value = _mm_mul_ps(squares_y.value, squares_y.value);
 	squares_z.value = _mm_mul_ps(squares_z.value, squares_z.value);
-	vector_306580 reach;
-	__m128 lengths;
-	__m128 edge;
 
 	// the first box's x axis across each of the second's
-	((box_305b30 const *)this)->function_305b30(&edge, 1, 2);
-	reach.set(a2.m128_f32[2] * first_extents.m128_f32[1] + a2.m128_f32[1] * first_extents.m128_f32[2] + a1.m128_f32[0] * second_extents.m128_f32[0] + a0.m128_f32[0] * second_extents.m128_f32[1],
-		a1.m128_f32[2] * first_extents.m128_f32[1] + a1.m128_f32[1] * first_extents.m128_f32[2] + a2.m128_f32[0] * second_extents.m128_f32[0] + a0.m128_f32[0] * second_extents.m128_f32[2],
-		a0.m128_f32[2] * first_extents.m128_f32[1] + a0.m128_f32[1] * first_extents.m128_f32[2] + a1.m128_f32[0] * second_extents.m128_f32[2] + a2.m128_f32[0] * second_extents.m128_f32[1]);
-	lengths = _mm_add_ps(squares_z.value, squares_y.value);
-	function_305940((float *)&lengths);
-	edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
-	exceeds_306580(&edge, &tolerance, &separated);
-	if (separated)
 	{
-		result.value = 0;
-		goto done;
+		__m128 edge;
+		__m128 lengths;
+		vector_306580 reach;
+		((box_305b30 const *)this)->function_305b30(&edge, 1, 2);
+		__m128 const sum = _mm_add_ps(squares_z.value, squares_y.value);
+		__m128 const &total = sum;
+		float y = a[0].m128_f32[0] * second2 + a[2].m128_f32[0] * second_extents.m128_f32[0] + a[1].m128_f32[1] * first_extents.m128_f32[2] + a[1].m128_f32[2] * first_extents.m128_f32[1];
+		float z = a[1].m128_f32[0] * second_extents.m128_f32[0] + a[2].m128_f32[1] * first_extents.m128_f32[2] + a[2].m128_f32[2] * first_extents.m128_f32[1] + a[0].m128_f32[0] * second1;
+		float x = a[0].m128_f32[1] * first_extents.m128_f32[2] + a[0].m128_f32[2] * first_extents.m128_f32[1] + a[1].m128_f32[0] * second2 + a[2].m128_f32[0] * second1;
+		reach.set(z, y, x);
+		lengths = total;
+		function_305940((float *)&lengths);
+		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
+		function_305900(&edge, &tolerance, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
+		edges[0][0] = edge.m128_f32[0];
+		edges[1][0] = edge.m128_f32[1];
+		edges[2][0] = edge.m128_f32[2];
 	}
-	function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
-	edges[0][0] = edge.m128_f32[0];
-	edges[1][0] = edge.m128_f32[1];
-	edges[2][0] = edge.m128_f32[2];
 
 	// the first box's y axis across each of the second's
-	((box_305b30 const *)this)->function_305b30(&edge, 2, 0);
-	reach.set(a1.m128_f32[1] * second_extents.m128_f32[0] + a2.m128_f32[0] * first_extents.m128_f32[2] + a0.m128_f32[1] * second_extents.m128_f32[1] + a2.m128_f32[2] * first_extents.m128_f32[0],
-		a0.m128_f32[1] * second_extents.m128_f32[2] + a2.m128_f32[1] * second_extents.m128_f32[0] + a1.m128_f32[0] * first_extents.m128_f32[2] + a1.m128_f32[2] * first_extents.m128_f32[0],
-		a1.m128_f32[1] * second_extents.m128_f32[2] + a0.m128_f32[0] * first_extents.m128_f32[2] + a0.m128_f32[2] * first_extents.m128_f32[0] + a2.m128_f32[1] * second_extents.m128_f32[1]);
-	lengths = _mm_add_ps(squares_z.value, squares_x.value);
-	function_305940((float *)&lengths);
-	edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
-	exceeds_306580(&edge, &tolerance, &separated);
-	if (separated)
 	{
-		result.value = 0;
-		goto done;
+		__m128 edge;
+		__m128 lengths;
+		vector_306580 reach;
+		((box_305b30 const *)this)->function_305b30(&edge, 2, 0);
+		float x = a[1].m128_f32[1] * second2 + a[0].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[2] * first0 + a[2].m128_f32[1] * second1;
+		float y = a[0].m128_f32[1] * second2 + a[2].m128_f32[1] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[2] + a[1].m128_f32[2] * first0;
+		float z = a[1].m128_f32[1] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[1] * second1 + a[2].m128_f32[2] * first0;
+		reach.set(z, y, x);
+		lengths = _mm_add_ps(squares_z.value, squares_x.value);
+		function_305940((float *)&lengths);
+		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
+		function_305900(&edge, &tolerance, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
+		edges[0][1] = edge.m128_f32[0];
+		edges[1][1] = edge.m128_f32[1];
+		edges[2][1] = edge.m128_f32[2];
 	}
-	function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
-	edges[0][1] = edge.m128_f32[0];
-	edges[1][1] = edge.m128_f32[1];
-	edges[2][1] = edge.m128_f32[2];
 
 	// the first box's z axis across each of the second's
-	((box_305b30 const *)this)->function_305b30(&edge, 0, 1);
-	reach.set(a1.m128_f32[2] * second_extents.m128_f32[0] + a2.m128_f32[0] * first_extents.m128_f32[1] + a0.m128_f32[2] * second_extents.m128_f32[1] + a2.m128_f32[1] * first_extents.m128_f32[0],
-		a0.m128_f32[2] * second_extents.m128_f32[2] + a2.m128_f32[2] * second_extents.m128_f32[0] + a1.m128_f32[0] * first_extents.m128_f32[1] + a1.m128_f32[1] * first_extents.m128_f32[0],
-		a1.m128_f32[2] * second_extents.m128_f32[2] + a0.m128_f32[0] * first_extents.m128_f32[1] + a0.m128_f32[1] * first_extents.m128_f32[0] + a2.m128_f32[2] * second_extents.m128_f32[1]);
-	lengths = _mm_add_ps(squares_y.value, squares_x.value);
-	function_305940((float *)&lengths);
-	edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
-	function_305900(&edge, &tolerance, &separated);
-	if (separated)
 	{
-		result.value = 0;
-		goto done;
+		__m128 edge;
+		__m128 lengths;
+		vector_306580 reach;
+		((box_305b30 const *)this)->function_305b30(&edge, 0, 1);
+		float x = a[1].m128_f32[2] * second2 + a[0].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[1] * first0 + a[2].m128_f32[2] * second1;
+		float y = a[0].m128_f32[2] * second2 + a[2].m128_f32[2] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[1] + a[1].m128_f32[1] * first0;
+		float z = a[1].m128_f32[2] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[2] * second1 + a[2].m128_f32[1] * first0;
+		reach.set(z, y, x);
+		lengths = _mm_add_ps(squares_y.value, squares_x.value);
+		function_305940((float *)&lengths);
+		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
+		function_305900(&edge, &tolerance, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
+		edges[0][2] = edge.m128_f32[0];
+		edges[1][2] = edge.m128_f32[1];
+		edges[2][2] = edge.m128_f32[2];
 	}
-	function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
-	edges[0][2] = edge.m128_f32[0];
-	edges[1][2] = edge.m128_f32[1];
-	edges[2][2] = edge.m128_f32[2];
-	result.value = 1;
-done:
-	return result;
+	return answer_306580(true);
 }
 
 // the rest of a box pair's query: the contact manifold kept up to date, and
@@ -432,25 +535,11 @@ class query_2ef260
 {
 public:
 	void function_3080a0(class_308180 *manifold);
-	void function_307f90(answer_307f90 *found, contact_307f90 *contact);
+	answer_307f90 *function_307f90(answer_307f90 *found, contact_307f90 *contact);
+	char deepest_contact_307f90(contact_307f90 *contact);
 };
 
-// the deepest contact between the boxes, when they overlap; here, in the file
-// that compiles 0x306400 first, so the call to 0x306580 reuses this in ecx as
-// retail's does
-// score 9 (was 11): the point's fourth component is a named `w_component`
-// local (lane 3). Output stores and the fresh failure zero still differ.
-// score 11 (was 69): retail stores the contact's normal before its point, and
-// writes the not-found answer from a fresh zero in cl instead of bl.
-// Output stores and fresh failure zero still differ.
-// Overlap outcome 74; lookup outcome 62; both 84; common failures 102/69/106;
-// both outcomes as bool 84; bool with common failure 106.
-// Pointer return 28; pointer return with class assignment 28; pointer return
-// with aligned stores 26; empty destructor 28; destructor and mutable-source
-// copy 28; destructor and aligned stores 26; mutable-source copy 28;
-// class local with empty destructor 11. NOT kept: no improvement.
-// @retail 0x307f90
-void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
+__forceinline char query_2ef260::deepest_contact_307f90(contact_307f90 *contact)
 {
 	char result = 0;
 	long w_component = 3;
@@ -491,11 +580,34 @@ void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact
 		}
 		else
 		{
-			found->value = 0;
-			return;
+			return 0;
 		}
 	}
-	found->value = result;
+	return result;
+}
+
+// the deepest contact between the boxes, when they overlap; here, in the file
+// that compiles 0x306400 first, so the call to 0x306580 reuses this in ecx as
+// retail's does
+// Matched: the search is an inlined member returning the outcome (its not-found
+// exit returns a literal, which gives retail's fresh zero), and the function
+// returns the answer it was given, which keeps it in eax.
+// Before, 9 (was 11): the point's fourth component is a named `w_component`
+// local (lane 3). Output stores and the fresh failure zero still differ.
+// score 11 (was 69): retail stores the contact's normal before its point, and
+// writes the not-found answer from a fresh zero in cl instead of bl.
+// Output stores and fresh failure zero still differ.
+// Overlap outcome 74; lookup outcome 62; both 84; common failures 102/69/106;
+// both outcomes as bool 84; bool with common failure 106.
+// Pointer return 28; pointer return with class assignment 28; pointer return
+// with aligned stores 26; empty destructor 28; destructor and mutable-source
+// copy 28; destructor and aligned stores 26; mutable-source copy 28;
+// class local with empty destructor 11. NOT kept: no improvement.
+// @retail 0x307f90
+answer_307f90 *query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
+{
+	found->value = deepest_contact_307f90(contact);
+	return found;
 }
 
 // the manifold of contacts between the boxes brought up to date

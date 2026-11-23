@@ -94,6 +94,36 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// MiniMax G (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the near arm's y row written as one
+// expression (arg_3->x * local_12 + arg_3->y * local_11) takes the y row in SSE as retail does, but the cosine goes into
+// the register and the facing y into the memory operand (retail the other way round), the y*cos product moves after the
+// sine branch (retail hoists it before) and the two field_c stores come out reversed: 365 (1745 bytes), the same code with
+// the sum staged or written with the y term first. Copying the facing vector into two locals keeps the products on x87 at
+// 374 and 375, and holding the trig pair in a local point2f measures 382; the staged x*sin first form measures 365. The
+// first difference is still the constant 1.0f in XMM1 where retail keeps it in XMM2, and the candidate count is still a
+// byte against a short.
+// MiniMax R (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the first difference is still the
+// register that carries the constant 1.0f, which this build loads into XMM1 where retail loads it into XMM2, and the
+// reciprocal copy and the two product registers follow that one choice, so the float register assignment of the whole
+// function turns on it; the near arm also keeps the cosine on the x87 stack where retail spills it to a float slot and
+// takes the y row in SSE, and the candidate count is a byte here against a short in retail. A permutation search over
+// the body (four tries in 399 s) reached 301 only by naming the constant and the index, a form not kept.
+// MiniMax D (11-20): no new form, no lower score (305, 1732 bytes, retail 1732). The first difference is still the constant
+// 1.0f, which this build loads into XMM1 where retail loads it into XMM2; the reciprocal copy and the radius load then swap
+// with it, so the whole float register assignment of the function turns on that one constant. Four source-order trials moved
+// the negation of the radius ahead of the normalization (342, the negation materialised early), moved the endpoint block ahead
+// of it (368, the frame restructures and the first difference moves to +0x3), swapped the y row's addend order (305, identical
+// code, MSVC canonicalises the commutative add) and copied the facing vector's two components into locals (387, the frame
+// grows to 0x70). Swapping the two multiplications in the normalizing helper measures 307.
+// The near arm still differs in kind: this build keeps the cosine on the x87 stack and computes y*cos on x87 into a float
+// slot, while retail spills the cosine to a float slot and computes y*cos with mulss (the y row in SSE) and keeps the x row
+// on x87; the cosine's float rounding is what decides which of the two rows is evaluated in SSE.
+// The candidate count is a byte here (the count in BL, the endpoint index in BP) where retail has the count in BP and the
+// index in BX; as a short the count measures 469 at 1686 bytes (the length no longer matches retail and the caller
+// 0x29a190 regresses), as earlier rounds recorded. Body restored to the kept form.
+// Earlier header (305, was 305), merged into the note's first line: the 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// Earlier score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
@@ -113,8 +143,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // what is left in the near arm is that retail keeps the loop distance on the x87 stack for its compare (`fst` of the magnitude,
 // then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
 // float, and the body is still 40 bytes shorter than retail's.
-// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
-// frame 0x64 as retail's, 1692 bytes against retail's 1732.
+// MiniMax R (11-16): no new form, no lower score (382): the first sum still lands in xmm3 where retail keeps it in xmm0, retail keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4, and the inner cursor, the wrapped angle and the candidate width still take other homes.
+// 1732 bytes, frame 0x64 and `ret 0x1c` as retail. First +0x57
+// loads unity into XMM1 instead of XMM2. Near cosine precision, inner cursor,
+// wrapped-angle homes and candidate width differ.
+// Earlier 382 (1692 bytes), after 393, 408, and 395 before the two fixes below.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
 // MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
@@ -473,6 +506,303 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // sine through a forceinline helper with two output pointers 382 (same code: the outputs are scalar-replaced and stay on
 // x87, no float slots); field_8 stored right after field_4 in both entries 382; side/facing flags stored before the
 // direction 381; the x rows written point first (`x * c - y * s`) 382; the second entry with its own cosine/sine locals 382.
+// Endpoint-side sine test and unit-turn coefficients 382/382. Shared planar
+// products 350, NOT kept: both rows stay on x87 and add sine negation.
+// Reused cosine 406; one signed sine 390; captured direction 393. Staged y
+// 305; widened x 305; staged y with cosf/sinf/both 305/360/360; y scaled
+// in place 305. Staged y keeps the angle store and first product before the
+// sine and rounds the sine contribution into SSE. Cosine still stays on x87.
+// Round 615: unity still lands in XMM1, and retail spills the cosine before its y product.
+// Signed candidate count with staged y 469 (caller 684); scored calls postincrement 305;
+// separate fixed-turn scopes 305; captured x inputs 379; selected entry pointer 342;
+// upper angle published after wrap 309; two-arm endpoint side 355; role names 305.
+// Endpoint root compared wide with an immediate real distance 352; explicit wide numerator 305; wide
+// radius quotient through the upper bound 348; wide tangent dot through both bounds 350; float outer
+// bounds 398; wide near comparison with distant-arm rounding 384, with wide numerator 384; wide
+// quotient and dot with bounded real results 353. Near cosine still stays on x87 and the candidate
+// ordinal is still a byte.
+// Table-driven fixed turns, real paired angles with component/point stores 481/505,
+// real separate tables 491/510, double paired angles 592/610, double separate tables
+// 578/591. NOT kept: length shrinks by at least 98 bytes and the unity register still differs.
+// Complete central-angle selection using the endpoint ordinal or its existing
+// positive-endpoint Boolean: four-way assignments 305/314, initial angle with
+// quadrant adjustments 307/322, endpoint-first conditional initializer 305/314,
+// facing-first conditional initializer 322/319. Unity remains in XMM1.
+// Lane N round 411 (fast control 305).
+// Shared displacement input 396.
+// Sum from displacement copy 438.
+// Componentwise displacement use 419.
+// Shared input before object 368 (NOT kept: matched caller rose to 2 in the reduced image).
+// Named facing projection 305.
+// Projections before endpoints 379 (NOT kept: entry repaired through +0x9e but body score and extent regressed).
+// Angle pair then wrap 304 (NOT kept: one-point gain without a match).
+// Far endpoint workspace 368.
+// Facing before endpoints 333.
+// Facing between endpoints 336.
+// Facing after first coordinate 332.
+// Unity and radius still exchange XMM1/XMM2. Endpoint writes interleaved x first 309.
+// y first 318.
+// all endpoint products staged 305.
+// products staged per axis 313.
+// indexed signed-radius pair, short with component or point stores 396/416.
+// indexed signed-radius pair, long with component or point stores 393/463.
+// M3 lane 5 r197 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; aligned exact / register-masked counts in
+// brackets, base [257/123]): the candidate count `short` re-measured 469 (1686 B; ours then saves no EBX, takes the facing
+// pointer in EBX, `ret 0x18`, and keeps the outer counter in EDI; 0x29a190 684). Near arm: both trig values as locals with
+// the y row as one expression ahead of the x row (`turned_y = y * cos + x * sin;` after the sine) 365 (1745 B) [249/126]:
+// the cosine and sine are then rounded to float slots, the y row is SSE and the x row x87 from the slots as retail, but
+// `y * cos` and the load of x come after the sine where retail has them before the sine argument's branch (`movss xmm1,
+// [y]; movss xmm0, [x]; fstp [cos]; mulss xmm1, [cos]; jne`), and ours multiplies the loaded cosine by [y]; the same with
+// the y row written x term first 365 (same code); the rotated point through a new inline setter taking the two rows by
+// value 365 (1745 B) [221/125]; the y term loaded and then scaled (`turned_y = y; turned_y *= cos;`) 305 (same code as the
+// staged form). Compile-only (the screen reproduces this arm; 55 spellings): the sine written out in both rows is
+// recomputed with a second branch and puts the y row on x87; an embedded sine assignment in the y row is evaluated before
+// the row; rows passed by value to an inline setter (either parameter order), or the vector, cosine and sine passed to an
+// inline rotation (either parameter order, four row orders, with none, one or both trig locals): none starts the y row
+// before the sine's branch. Left as before: the short count (blocked by the EBX convention above), the constant's
+// XMM1/XMM2 and the near arm's order.
+// The cosine and unity still use different homes, and the candidate ordinal and far cursor keep their
+// opening widths.
+// Tried fixed turns retain their y input between both products 413, fixed turns snapshot their headings
+// after angle publication 386, fixed turns name the wide cosine contribution to x 349, fixed turns select
+// the sine result after the staged y product 405, distant arm first with a complementary distance test
+// 354, distant arm exits the endpoint before fixed turns 354, distant arm first with retail candidate
+// width 480, orientation tests reuse the shared endpoint side 364.
+// NOT kept: The wide cosine term grows the body and leaves the first unity load different. The distant-
+// first form with a signed candidate also changes the matched caller convention.
+// Real radial upper bound 365, tangent upper/lower 366/361, lower-first
+// tangent clamp 342. One real quarter turn 360, separate y products 305,
+// near continue 305, complete signed endpoint initializer 305.
+// NOT kept: the real radial bound restores the first unity load but shortens
+// the body by 15 bytes. Near cosine and candidate ordinal homes remain.
+// Signed candidate total with earlier projections (both, velocity, facing, facing between
+// endpoints, velocity between, both between, both before radius sign) 471/469/468/469/469/469/471.
+// Earlier projections with a cached positive radius 384. NOT kept: signed total shortens
+// the body and changes the caller convention. The unity register remains on the cached-radius form.
+// Unity still uses XMM1, and the near cosine still lacks the retail spill. Conditional radial cap 305, in-place
+// radial quotient 305, conditional tangent cap 305, separate tangent bound tests 330, branch-specific radial angle
+// call 331, shared signed endpoint writer 305, normalization before translated sum 359, unit score first 313.
+// NOT kept: the clamp and normalization forms leave the unity allocation unresolved.
+// Shared signed sine argument at admission or first use 329/323. Shared turn sign 316.
+// Endpoint-address sine choice 332. Byte slots consumed separately or reserved together 355/370.
+// Signed consumed slots 313. Shared sine argument with separately consumed byte slots 420.
+// Unity, cosine spill and persistent candidate ordinal still differ.
+// M3 lane 1 r122 (fast with 0x29a190 and 0x298c30; base 305, aligned 171; nothing kept). Lead: retail's count is the
+// global itself. `g_504938 = 0;` with `g_504938` indexed, stored and incremented directly (no local) gives retail's
+// `xor bp, bp`, a 16-bit `inc bp` at every increment (a short local gives `inc ebp`) and the store back between the
+// exit pops: 468 (1688 bytes, aligned 234), because the facing pointer then arrives in EBX (`ret 0x18`, 0x29a190 684).
+// On the global count: the emitter taking the direction by value 355 (frame 0x74, 0x29a190 MATCH); the emitter's
+// stores in retail's order 469; both 373 (0x29a190 MATCH); the emitter's body written out at both calls with the
+// rotated point read directly 468 (same bytes, diagnostic); the direction as two reals 469 (1634 bytes); field by
+// field copies 469; the direction stored first 486; the direction copied to the facing point first and negated in
+// place 390 (1673 bytes, frame 0x64, first +0x2e, aligned 179, 0x29a190 MATCH; by value the same bytes): that one has
+// retail's registers (outer counter in EBX with its +0x28 spill and the `lea ebx, [ebx]` pad, facing pointer in EDI
+// reloaded at the inner loop's bottom, the direction's x bits in EBX, `ret 0x1c`) but copies in both arms; the
+// wrapped angle as `>= 0.0f ? x - 2pi : x + 2pi` 468; the far y row sine term first 468; the angle element passed to
+// the first emission 470; those three 470, and with retail's store order 470 (0x29a190 684 in all five). The facing
+// pointer leaves EBX only when the direction's x bits get a callee-saved register; here that needs an unconditional
+// aggregate read of the direction at the top of each emission, and retail has the register (`mov ebx, [esp+0x44]`
+// right after the x row) with the copy still in the non-negative arm only. The short count re-measured 469. An
+// aggregate copy of the rotated point into the shared facing point in the caller, once per inner iteration ahead of
+// both emissions, 468 (removed as a dead store: same bytes); the same with the angle element 470.
+// Near arm, compile-only (the screen reproduces it; 30 shapes, none with retail's order): a product is SSE only when
+// its vector component already sits in an XMM register, and x87 when its operands are memory and x87 values. The sine
+// as an if/else of two calls on the staged y: cosine in a float slot, `y * cos` still x87, x row SSE; the y row as
+// one expression after both locals, either operand order, or with the sine assigned inside it: cosine in a float
+// slot and the y row SSE, but the sine's branch first; the sine argument in a float or double variable with sin and
+// cos written in both rows: the repeated calls merge into float temps (y row SSE, x row x87 as retail), branch
+// first; the sine with its ternary written in both rows: computed twice; cos written twice with a sine local;
+// scaled by cos and then the perpendicular added, through a point or two scalars: all x87; x and y copied to locals:
+// `y * cos` SSE with the cosine spilled as retail, the rest x87 from stack copies; x and y by value to an inline
+// rotation, two parameter orders: all SSE; a by-value scale helper: same code as now; x and y scaled in place: x87.
+// MiniMax E (11-19): score 305 (was 305): this round's function was 0x299460, so nothing was changed here; the body stands
+// as the earlier rounds left it (the count is still a byte local where retail uses the global itself, and the facing pointer
+// still leaves EBX in one arm only), and 0x298c30 and 0x29a190 still match.
+// M3 lane 15 r104 (fast with 0x29a190 and 0x298c30, both matched throughout, and 0x29cbb0 378; control 305, all restored):
+// the candidate count `short` (retail's 16-bit BP) 469 (1686 B, `ret 0x18`: arg_3 then arrives in a register and lives in
+// EBX, the outer counter takes EDI; 0x29a190 684); that with arg_3 read once through its address into a local used at
+// every arg_3 use 411 (1704 B, `ret 0x1c`; the magnitude then takes arg_3's dead home; 0x29a190 127); that with the outer
+// counter `long` 483 (1675 B, `ret 0x18`); one shared inline rotation of the facing direction (cos x - sin y, cos y + sin x)
+// for both near-arm emissions and the far arm 382 (1692 B); the existing normalize2d_fast for both normalizations (their
+// results are unused) 305 (same code).
+// Cosine from published angles 305, with shared direction components 387. Shared direction
+// components before both turns / after each angle 387/426. Y stored before x 346.
+// Named wide distance components 316. Planar normalizer at entry / tangent 391/305.
+// NOT kept: entry normalization recovers unity in XMM2 through +0x9e, then schedules
+// the y projection ahead of x and shortens the body to 1722 bytes.
+// Round 436. Planar entry normalizer with named double or real projection products
+// 319/316; accumulated double or real projection 320/315; products before endpoints
+// 319/316; complete double or original predicate before endpoints 382/333.
+// NOT kept: the six product forms retain 1732 bytes but keep unity in XMM1. The
+// early predicates disrupt the entry. Original body restored.
+// Staged near-turn y rows previously lowered the score from 382 to 305.
+// Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
+// Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
+// NOT kept: every signed-count form shortens the body and changes the matched caller.
+// M3 lane 8 r199 (fast with 0x29a190 and 0x298c30, both MATCH throughout): lane 1 r129's lead rebuilt (global count, near rows in
+// per-side arms, emitter storing angle and side first) 310 (1716 B, first difference +0x163, aligned 127, masked 89 against this
+// body's 260 / 159). On it: the wrapped angle as `x >= 0.0f ? x - 2pi : x + 2pi` 311 (aligned 117, masked 84); the angle element
+// read at each use 315 (1714 B, aligned 116, masked 79); both 314 (1717 B, aligned 104, masked 71); the near y row as
+// `local_11 * arg_3->y` or y term first 310 (same code); the loop root summed y-first 310, on both 314 (same code); no `(real)` on
+// the root 310 / 314 (same code). Diagnostic dead locals 1..7 on both: 314/316/314/314/314/314/313 (the loop head never moves).
+// Our loop head stores the root and reloads it for the radius compare (`fstp`, two pops, `fld`) where retail keeps it on the x87
+// stack (`fstp st(2); fstp st(0); fst`): one instruction more, shifting the near arm by a line.
+// Near direction point per candidate 372, at near-arm scope 372, at endpoint scope 372, or shared
+// with the far arm 370. Facing-copy point per candidate, per near arm, or shared 410/449/437.
+// Separate pre-sine and completed y values 305. NOT kept: The point workspaces grow the body and
+// some grow the frame. The separate y values tie and leave the cosine spill unchanged.
+// M3 lane 1 r129 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; base 305, aligned 171/167 = unmatched instructions
+// ours/retail in an LCS-aligned diff; plain where said; nothing kept). Four retail-evidenced forms that work only together:
+// (a) the emitter's stores in retail's order (angle, side, facing test, direction) 314 (aligned 140/136; plain 314);
+// (b) the near arm's side as an if/else with one sine local assigned in each arm and the two rows written in both arms
+// (retail forms `y * cos` in SSE and loads x ahead of the sine's branch, which only the rows inside the arms give; the
+// cosine then goes to a float slot and unity to XMM2 as retail) 353 alone (1745 B, first difference +0x147);
+// (c) r122's global count used directly; (d) the distance compared unrounded through a double local with a float copy
+// for the later uses (retail's `fst` and compare on the x87 value) 352 alone (frame 0x68).
+// (a)+(b)+(c) 310 fast and 310 plain (1716 B, first difference +0x163, aligned 72/76; count in BP, outer counter in
+// EBX with its spill, x bits in EBX, `ret 0x1c`, caller MATCH: with the rows in the arms the count no longer sends the
+// facing pointer to EBX); (a)+(b)+(c)+(d) 284 fast (aligned 70/75) but 334 plain: the plain build's frame is 0x68 (one
+// unused dword at the bottom) wherever the double local is present (plain: (d) alone 352, (a)+(b)+(d) 351, (b)+(c)+(d)
+// 334, (a)+(c)+(d) 473 with the caller 684). Saved as build/r129/lead-298d90-plain310.patch and
+// lead-298d90-fast284-plain334.patch. Other sums (fast): (b)+(c) 315; (b)+(d) 327; (a)+(b) 342; (b)+(c)+(d) 283;
+// (a)+(b)+(d) 310 (1741 B).
+// On the four together (284 fast): wrapped angle as `>= 0.0f ? x - 2pi : x + 2pi` 284 (aligned 64/69); the emitter's
+// angle through a pointer 291, the array element by value 286, the element read at each use with `>=` and no copy 284
+// (aligned 56/60), that through a pointer 288 (aligned 53/57), the element with `<` 283; emitter dot x first 284; the
+// second side's ternary negated 283 (aligned 52/56); six operand orders of the arm rows 284 (same code); the cosine
+// assigned inside both arms 284 (same code); the angle store inside the arms 455 (caller 684); the second normalizer's
+// dot, the root's sum or the velocity dot in the other order 284 (same code); the sine argument selected by an if/else
+// into a double 284; float negation of the sine argument 310 (frame 0x68).
+// Float dx/dy locals for the distance on (a)+(b)+(c) 426 (1746 B, frame differs, caller 362), alone 432.
+// On the old body: the emitter's angle through a pointer or reference 325 (1736 B; first emission then reads the
+// element from memory at each use as retail does, but the wrapped angle loses XMM7), the element by value with
+// retail's store order 321; pointer forms without the `(double)` sine casts 373 (frame 0x68, SSE negation);
+// y and x read into locals after the angle store with the x row through the pointer 378 (frame 0x6c, all x87), all
+// through the locals 445; arms calling a two-real setter with `sin()`/`cos()` written in the rows 411 (1789 B, arms
+// not merged), with temporaries 360, with the ternary in both rows 411 (frame 0x68); sine by if/else or ternary and one
+// setter call 360; staged y with `cos()` written twice and the sine's angle in a double or float 306/360.
+// Left on the 310 plain form: the unrounded distance compare without a double local, the near arm's `y * cos`
+// (retail loads y and multiplies by the cosine's slot, ours loads the cosine), the first emission's angle read from
+// the element at each use, the wrapped angle's slot (+0x14 in retail) and its per-arm x87 loads.
+// Unity still uses XMM1 instead of XMM2. The fixed-turn cosine spill and candidate register still differ.
+// Fixed x accumulator 306, separate products 306, wide fixed x 306.
+// Distant x accumulator 305, distant y 320, both distant rows 320, all x rows 306, all rows 321.
+// NOT kept: The distant x form ties. The other forms raise the score or leave the fixed-turn spill unchanged.
+// M3 lane 16 r154 (fast with 0x29a190 and 0x298c30, both MATCH throughout; control 305; plain where said; nothing kept):
+// the near arm's y row staged as `turned_y = arg_3->y; turned_y *= local_11;` 305 (same code); the side flag declared
+// ahead of the distance 305 (same code); the facing x and y read into two locals at the near arm's top 387 (+0x2, 1740 B).
+// Why unity takes XMM1: retail keeps 1.0f in XMM2 from the entry normalizer through the near arm's field_8 stores to the
+// far arm's ratio clamp, because retail's near arm forms `y * cos` in XMM1; ours forms it on x87, so XMM1 is free for
+// unity. On lane 1 r129's 310 lead (re-measured 310 fast): the loop distance with named `double dx, dy` (each used twice)
+// 300 fast but 346 plain (frame padded: a double local); the same through a file-local inline helper with double locals
+// 300 fast; through an inline helper taking the two differences as double parameters 310 (dy computed first), with the
+// parameters (dy, dx) so that dx is computed first as retail 300 fast and 300 plain (1716 B, frame 0x64: a double
+// parameter does not pad the frame). Left on that form: the root is still stored and reloaded at the loop head (retail
+// `fstp st(2); fstp st(0); fst`), the near arm's cosine/sine slots (+0x18/+0x14 against retail's +0x28/+0x1c) and its
+// `cos * y` operand order, and the far arm's normalizer, dot order, wrapped-angle compare and per-arm loads; the helper
+// and the lead's forms need a match, so nothing is kept (build/r154/lead-298d90-plain300.patch in m3-lane16). On main's
+// body the named double differences measure 316 (1740 B), as the note already records.
+// shared scale with native admission 305, reciprocal at shared scale call 305, shared magnitude with native
+// admission 305, shared magnitude and scale 305, shared facing dot 396, shared tangent dot 305, typed
+// velocity projection 305, shared planar projections 396.
+// The unity register, near cosine spill and candidate ordinal remain. All eight previews retain retail
+// length.
+// M3 lane 5 r216 (fast screen, plain where noted; 0x29a190 MATCH unless noted): the 2-D normalize helper with an early
+// `return 0.0f` 305, in 0x2b400's shape (`x = x * inv; y = inv * y;`) 305, with the reciprocal first in both products 305,
+// with both components divided by the length 305 (all the same code); the arg_0 read through its address removed 316
+// (1726 B; plain agrees, 0x29a190 MATCH -> 345).
+// M3 lane 15 r122 (fast with 0x29a190 and 0x298c30, both MATCH; control 305): lane 16 r154's lead rebuilt 300 (1716 B,
+// first difference +0x194; left: the loop head stores the root and reloads it for the radius compare where retail keeps
+// it on the x87 stack with `fst`, the near arm's cosine slot (+0x18 against retail's +0x28, the outer counter's spill
+// slot) with `cos * y` where retail loads y and multiplies by the cosine's slot, and the second emitter's argument setup).
+// On that lead: the near y row written `y * cos + x * sin` or `sin * x + cos * y` 300/300; the distance helper returning
+// double with the cast at the call 300; the side flag computed ahead of the distance 300; the radius test written
+// `field_24 > distance` 300 (all the same code). Body unchanged.
+// M3 lane 4 r236 (fast with 0x298c30/0x29a190; control 305; the return is `ret 0x1c` in both builds): the negated radius
+// written at its two uses instead of the named local 418 (1708 B); the distance's two differences named as double locals
+// 316 (1740 B); the distance's y term ahead of its x term 305 (same code: retail subtracts x first, ours y first); the
+// differences as a point2f local then sqrt of their squares 431 (1775 B); that through magnitude2d 431. The first
+// difference is still the 1.0f/radius pair (ours 1.0f XMM1 and the radius XMM2, retail the reverse).
+// M3 lane 9 r146 (fast with 0x29a190/0x298c30, both MATCH unless noted; base 305): the facing x and y read into two
+// locals in each near emission 423 (1772 B); the facing point copied once at entry and read everywhere 435 (1728 B,
+// 0x29a190 351); the near rotated point built in a named point2f and stored as one aggregate 375 (1725 B); the near side
+// and hit flags stored right after the angle, ahead of the rows, 313; only the facing y named in each near emission 413
+// (1772 B). All restored.
+// M3 lane 12 r165 (fast screen with 0x29a190 and 0x298c30, both MATCH throughout; control 305, aligned 171/167 = unmatched
+// instructions ours/retail in an LCS-aligned diff; "lead" = lane 1 r129's 310 form rebuilt on today's file, 310 at 1716 B,
+// aligned 72/76; body unchanged, nothing kept). The far arm's difference vector declared at function scope, at the loop
+// body's top, or declared in place and assigned by member 305 each (same code), on the lead at function or loop scope 310
+// (same code): retail's second normalization stores x before it loads y (`movss [x], xmm2; movss xmm2, [y]; mulss xmm2,
+// xmm0`), ours forms both products first at either scope. The distance assigned inside its own test (`if ((d = (real)sqrt(
+// ...)) < field_24)`, with and without the cast; a diagnostic) 305 each, on the lead 310 each (same code: the root is
+// still popped to its home ahead of the two dead differences and reloaded, where retail drops the differences with
+// `fstp st(2); fstp st(0)` and keeps the root on the x87 stack behind one `fst`). On the lead, the distance through a
+// file-local inline taking the differences as double parameters (dy, dx) with a real result, with a double result, or
+// taking the two points with double locals, each as its own statement and assigned inside the test: 300 each (six forms,
+// one code; aligned 67/71, lane 16 r154's count): the store and reload at the loop head stay in all of them. 1 to 8
+// initialised unused locals (diagnostic): on this body 305 each (same code), on the lead 310/312/310/310/310/315/315/315
+// (aligned 72/74/72/72/72/70/70/70; 6 to 8 locals shorten it to 1714 B). The lead's remaining blocks by the aligned
+// diff: the loop head's subtraction order and root store, the near rows' `y * cos` operand sides and cosine/sine slots
+// (+0x18/+0x14 for retail's +0x28/+0x1c), the second normalization's store order, the tangent dot's term order, the
+// second side's arm order, the wrapped angle's compare and slot, and the emitter reading the angle element at each use.
+// M3 lane 4 r241 (H2M_FAST with 0x298c30/0x29a190; control 305, aligned 175): retail's emission counter is a 16-bit BP
+// (`movsx eax, bp`, the word store from BP), the outer counter BX and arg_3 EDI loaded after `push edi`. `short local_6` 469
+// (1686 B, `ret 0x18`, arg_3 in EBX; 0x29a190 684); with a dead read of arg_3 through its address (the arg_0 idiom) after the
+// arg_0 read 410 (1706 B, `ret 0x1c`, `movsx eax, bp` as retail, but arg_3 EBX and the outer counter DI; 0x29a190 127), ahead
+// of the arg_0 read 410, the address read used in the side test 410. Body unchanged.
+// Facing products staged across negative x, the negative endpoint or positive x, with real
+// or double products, 316 in all six forms. Full facing test after negative x or after the
+// negative endpoint 332/336. The 0x64 frame agrees and unity still uses XMM1 in the staged forms.
+// M3 lane 15 r128 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH; control 305, `ret 0x1c` in both): the radius test on a
+// second unrounded `sqrt` of the same sum 411 (1756 B, the roots are not merged); the squared sum named as a `double` local
+// 305 (same code); the near rows' y staged in the output element (`field_c.y = y * cos; field_c.y += x * sin;`) 392 (1745 B);
+// separate cosine/sine/turned-y locals for the second near emission 305 (same code); the root summed y-first with
+// `field_24 > distance` 305 (same code). Body unchanged.
+// M3 lane 14 r141 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; control 305, aligned 257; aligned = LCS-aligned
+// differing instructions). Lane 16 r154's 300 lead rebuilt 300 (1716 B, aligned 98). LEAD, match-only, 229 (1732 B, aligned 59;
+// build/r141/lead-298d90-229.patch in m3-lane14): on that lead the second side's ternary as `!local_4 ? 2pi - x : x`, the wrapped
+// angle as `x >= 0.0f ? x - 2pi : x + 2pi` with the array element read at each use (no element local) 247 (1732 B, aligned 65);
+// the emitter's angle taken by `real const &` 251 (1728 B, aligned 61: the first emission then reads the element from memory at
+// each use and copies it through ECX as retail); the sine argument as `(double)-x : (double)x` 229 (aligned 59: retail's `fld`
+// in each arm, where `-(double)x` hoists one load ahead of the branch). Also on 251: the sine as `-x : x` in float 309 (+0x2,
+// 1747 B), an if/else with a sine call in each arm 251 (same code), the rotated y row's terms swapped 251 (same code). On 229:
+// the far arm's trig pair renamed (sine/cosine) or the names swapped 229 (same code); cosine declared ahead of the sine 229;
+// the rotated y row stored ahead of the x row 166 (positional only: aligned 70, retail stores x first); the rows' products
+// written point-first 229; the sine, the cosine or both kept as double 242/240/246; the tangent dot, the emitter's facing dot or
+// both through the existing dot_product2d 229 (same code). Left on 229: the loop head stores the root and reloads it (retail
+// `fstp st(2); fstp st(0); fst`), the near arm's `cos * y` (retail `y * cos`, the cosine in +0x28 and the sine in +0x1c; ours
+// +0x18/+0x14), the distance slot (+0x14 against +0x1c) and the wrapped angle's (+0x1c against +0x14), the second
+// normalization (retail stores x before it forms `y * inv`), the tangent dot and the rotated y row taking the x product first
+// where retail takes the y product first (every source order gives the same code), the emitter copy's x/y registers and its
+// field_c stores after the first push.
+// M3 lane 4 r247 (fast, 0x29a190 listed): the candidate count as short re-measured 469 (1686 B, 0x29a190 684), with the inner
+// endpoint counter short 469, long 492; the read of arg_0 through its address removed 316 (0x29a190 345); `-arg_6` written at
+// both uses 418 (1708 B); the count as the global itself with that read removed 476 (0x29a190 702); the near arm's two
+// quarter-turn candidates through one forced-inline helper called twice 313 (1732 B, y times cosine still on x87), with a short
+// count 469. Body unchanged.
+// M3 lane 2 r134 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; main 305): lane 14 r141's 229 lead rebuilt
+// 229 (1734 B, first +0x194). On it, match-only: the distance helper returning double, held in a double local that the
+// radius test compares, with local_9 its float copy, 249 fast (1722 B): the loop head is then retail's (`fstp st(2); fstp
+// st(0); fst`, the root compared on the x87 stack) and the code is retail's length through +0x320, but the far arm's
+// second normalization is 4 bytes short (retail stores x before it forms `y * inv`) and the inner loop's alignment pad
+// goes; the double result cast at the call with no double local 229 (same code); on the 249 form one to three redundant
+// paren pairs around the near rows' `y * cos` 249 each. Body unchanged.
+// M3 lane 14 r147 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; control 305): the normalizer as two
+// divisions by the length 305 (same code: one reciprocal); its products as `x * inv` and `inv * y` 305; its reciprocal
+// declared bare at the helper's top 305; the far arm's difference point set member by member 305 (all four the same
+// code); that point copied from the sum and decremented in place 368 (1745 B). All restored.
+// M3 lane 16 r180 (H2M_FAST with 0x29a190, MATCH throughout; main 305; all on lane 2 r134's p1 lead rebuilt, 249 at 1722 B,
+// aligned 59): the shared normalizer's products as `y = inv * y`, both `inv *` or both `* inv` 249 each (same code: the far
+// arm still forms both products before its stores); the near rows' `cos * y` or y term first in all four arms 249 (same
+// code); the far difference through the existing vector2d_from_points2d 160 (1734 B, aligned 61: the inner loop's pad comes
+// back with the code address, but the y difference is stored and reloaded and the normalization still differs); the far
+// arm through the existing normalize2d_fast (cast or a vector2f local) 249 (same code); the float distance copy declared
+// ahead of the double root 249 (same code). Body unchanged.
+// M3 lane 4 r254 (H2M_FAST with 0x29a190 and 0x298c30, MATCH throughout; control 305, aligned 212 with stack offsets
+// masked): the emitter facing dot written `arg_3->x * f.x + f.y * arg_3->y` 305 (same code); the side test against
+// `0.0f` 361 (1740 B); both clamps against float constants 398 (1685 B); the first clamp as `!(local_13 <= 1.0)` 317
+// (1727 B); the outer counter typed long 367; the endpoint pointer typed `point2f const *` 305 (same code); the radius
+// test `field_24 > local_9` re-measured 305. Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -503,20 +833,24 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 		if (local_9 < arg_2->field_24)
 		{
 			real local_11 = (real)cos(1.5707963705062866);
-			real local_12 = (real)sin(local_7 == 0 ? -1.5707963705062866 : 1.5707963705062866);
 			g_5047f8[local_6].field_4 = 1.5707963705062866f;
+			real turned_y = arg_3->y * local_11;
+			real local_12 = (real)sin(local_7 == 0 ? -1.5707963705062866 : 1.5707963705062866);
+			turned_y += arg_3->x * local_12;
 			g_5047f8[local_6].field_c.x = local_11 * arg_3->x - local_12 * arg_3->y;
-			g_5047f8[local_6].field_c.y = arg_3->y * local_11 + arg_3->x * local_12;
+			g_5047f8[local_6].field_c.y = turned_y;
 			g_5047f8[local_6].field_0 = local_10;
 			g_5047f8[local_6].field_1 = false;
 			g_5047f8[local_6].field_8 = 1.0f;
 			g_5047f8[local_6].field_18 = local_6;
 			local_6++;
 			local_11 = (real)cos(-1.5707963705062866);
-			local_12 = (real)sin(local_7 == 0 ? 1.5707963705062866 : -1.5707963705062866);
 			g_5047f8[local_6].field_4 = -1.5707963705062866f;
+			turned_y = arg_3->y * local_11;
+			local_12 = (real)sin(local_7 == 0 ? 1.5707963705062866 : -1.5707963705062866);
+			turned_y += arg_3->x * local_12;
 			g_5047f8[local_6].field_c.x = local_11 * arg_3->x - local_12 * arg_3->y;
-			g_5047f8[local_6].field_c.y = arg_3->y * local_11 + arg_3->x * local_12;
+			g_5047f8[local_6].field_c.y = turned_y;
 			g_5047f8[local_6].field_0 = local_10;
 			g_5047f8[local_6].field_1 = false;
 			g_5047f8[local_6].field_8 = 1.0f;
@@ -631,7 +965,25 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
+// score 569 (was 569): BLOCKED-BY 0x2108a0 (the radius is held in XMM5 from the entry because this build's link-time
+// summary of 0x2108a0 says it keeps the XMM registers; retail reloads the radius in each block; the lead below needs
+// `inline` on that callee's definition). M3 lane 7 r208 (H2M_FAST with 0x29a190, MATCH throughout; control 569; all
+// restored): the first pivot offset as one call with `arg_1->field_0 ? arg_6 : -arg_6` 886 (3286 B); the negated
+// radius named in the first pivot offset's false arm 569 (same code); the radius parameter declared `real const` 569
+// (same code); the negated radius named in the second pivot offset's false arm 732 (3349 B), in both false arms 732.
+// MiniMax R (11-20), NOT kept (coordinator review: an unread output buffer and a moved statement are match-only): 561
+// (was 569): the forward trace writes to its own vector, which gives the pivot retail's
+// +0x94 home, and the sector reads moved after both trace calls, which gives the trace results retail's homes. Still
+// open: the radius is promoted into XMM5 at the entry where retail reloads it from its home in each block.
+// MiniMax G (11-19): no new form, no lower score (569): the radius is still promoted into XMM5 at the entry and kept
+// for the whole body where retail loads it from its home in each block, and that follows from this build's link-time
+// register summary of 0x2108a0 and 0x210770, whose definitions are in another lane's file, so the radius, the pivot
+// home (+0xa0 against retail's +0x94) and the sweep arms' XMM registers stay open: BLOCKED-BY. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (569): the pivot offset's negative arm, the pivot home, the sweep
+// arms' XMM registers and the three rotations in the loop are still open, and the forms tried on the scale
+// expressions, the direction's components and the named scales all score the same or worse. Body unchanged.
+// MiniMax R (11-16): no new form, no lower score (569): the body is still 39 bytes shorter than retail's, the three trace results still take the homes +0xf4 and +0xd0 against retail's +0xd0 and +0xf4, and the radius still comes from one read where retail re-reads the parameter nine times.
+// Earlier 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
 // at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
 // +0xf4/+0xd0 homes stay swapped against retail's +0xd0/+0xf4). Diagnostic, reverted at once: the radius read through a
 // volatile view at all 14 uses (retail reloads it from its argument slot 9 times) 786 at 3349 B, so the XMM5 radius is not
@@ -1053,6 +1405,244 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // dword`); that sum written into the sin/cos arguments 808 (3402 B). Lead: retail reloads the radius after 0x2108a0/0x210770 though
 // neither of them nor their callees 0x1427f0/0x210d10 touches XMM5 in either build, so retail's link-time compile treated one of
 // them as clobbering the XMM registers; no source form here reproduces that.
+// M3 lane 15 r92 (fast with 0x29a190 MATCH, control 569): each sweep scale declared just before its two products
+// (retail computes scale, products, scale, products) 729 (3317 B); the two trace distances named before the sweep arms
+// (retail holds them in XMM6/XMM7 from there) 569 (same code); the first offset point through one call with
+// `field_0 ? arg_6 : -arg_6` 886 (3286 B); the early exit as `return local_0;` 569 (same code; retail places that exit
+// after the main epilogue); the names local_12 and local_13 swapped 569 (same code: the +0xd0/+0xf4 homes do not follow
+// the names); diagnostic, the radius read once through its own address 569 (same code). Retail loads the radius inside
+// the first arm where ours hoists it into XMM5 at entry (+0x14).
+// M3 lane 16 r129 (fast; control 569, aligned 254, register-masked 215): the obstacle loop under `if (arg_7->field_2 >
+// 0)` 638 (3349 B); the sweep loop under `if (local_23 >= 1)` 569 (different code); `arg_7 && local_0` 657; the
+// result test `local_51 > local_36 || local_35 == NONE` 574; the final bound as `1.0f` 608 (3326 B; retail compares
+// against a double, `fld qword`). The three-term sums here (the obstacle bounds, both distance helpers, the sweep
+// rotation rows) already round as retail's.
+// Typed actor location fields 569; shared location receiver 766; explicit
+// zero-minus sweep scales, with or without the reverse endpoint, 569 each;
+// separate setup and sweep traces 571; one sweep receiver 651; typed sector
+// results 569; shared sector variable across both reads 569.
+// Radius still loads at entry, and the side trace and pivot homes differ.
+// MiniMax D (11-17): no new form, no lower score (569): this build still allocates the radius to XMM5 at the entry and
+// keeps it for the whole body, where retail loads it from its home in each block; the earlier rounds' forms (a named
+// radius copy, the negated radius, the helper as plain inline, the sweep scales named before their products, the swapped
+// trace names, the radius read through its own address) all rebuild the same code, and the reload follows from retail's
+// link-time compile treating 0x2108a0/0x210770 as clobbering the XMM registers, which no source form here reproduces.
+// The frame is still 0xa0 against retail's 0x94, so the three trace results' homes (+0xd0 and +0xf4) sit 12 bytes off.
+// Round 615: radius remains in XMM5 from entry; the pivot and side trace homes still differ.
+// Radius local at initial offsets 569, pivot offsets 569, trace scales 569, obstacle range 569;
+// wide obstacle displacement 574; upper range before root 642; explicit clearance arms 569;
+// scoped transform output with pivot height copy 562 (NOT kept: seven-point gain above 30).
+// Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
+// sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
+// bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
+// Planar offset helper with staged products per row/pair 850/850, staged final
+// scalar coordinates 569, paired accumulation 850. Planar displacement 830,
+// planar result copy 851, accumulated planar result copy 901 or member stores 830.
+// NOT kept: eager radius remains in XMM5, with larger differences or a tie.
+// Round 620: radius remains live from entry in XMM5; pivot and side trace homes are displaced.
+// Typed pivot 569; shared facing dot 617, arc dot 569, both 718, both with planar vector 718;
+// wide arc dot 616, guarded wide clamp 616, and wide arc with shared facing dot 626.
+// Lateral distance z/y/x sum 569, y/z and z/y subtotals 569/569, named real
+// subtotals 569/569, named squares 569, wide subtotal 573, wide differences 573.
+// NOT kept: no exact x87 or radius-load recovery; pivot and trace homes still differ.
+// DH398: One point or vector for the reverse trace direction and sweep point,
+// each alone, with forward direction reuse, with local cosine, and with both 719/777/719/777, 719/777/719/777.
+// NOT kept: All forms regress. The radius still loads before actor indexing and the side trace homes still differ. The separate geometry workspaces are restored.
+// Early radius retention and pivot/trace homes remain. Center formed around the two transforms in shared scope 574/569/575/750.
+// center formed around the two transforms with the sector block-scoped 574/569/575/750.
+// M3 lane 5 r197 (fast with 0x29a190 and 0x298c30, both MATCH throughout; aligned exact / register-masked counts in
+// brackets, base [254/172]; all restored). Scope check: 0x2108a0 has one retail call site (here), and none of 0x210770's 18
+// retail call sites keeps an XMM value live across it. Diagnostic, reverted at once: the 0x2108a0 call replaced by an
+// undefined `__stdcall` extern with the same argument (so the link knows nothing about what it clobbers) 727 at 3349 B
+// [247/169]: the entry is then retail's to +0xc2 (no XMM5; `movss xmm1, [radius]` loaded inside each offset arm, both
+// blocks), so retail compiled this function without 0x2108a0's register summary: BLOCKED-BY 0x2108a0 (its definition is in
+// src/unknown_20fe20.cpp, another lane's file this round; `inline` on it now expands it here, 897 above). With that
+// diagnostic, the body under `if (local_11 != NONE) { ... return local_0; } return true;` 766 at 3348 B [230/152]; that
+// nesting alone 790 [239/157]. Left after the diagnostic: the pivot offset's negative arm (retail loads each component and
+// multiplies by the negated radius, with no shared tail; ours copies the radius and shares the tail), the sweep arms
+// (retail keeps the two arms whole, 32 instructions more), the pivot home (+0x94, ours +0xa0). Also: the offset helper's
+// products written component first 569 (same code); the reversed direction formed ahead of the pivot offset 784.
+// MiniMax E (11-19): no new form, no lower score (569): the frame is mapped instruction by instruction.  Retail's pivot (the
+// first 0x210770 output) is at F+0x84 and its first sweep point at F+0x90; here the two are the other way round (pivot
+// F+0x90, first sweep point F+0x84) while the second sweep point (F+0x9c), the third (F+0x48), the two trace results (F+0xa8
+// and F+0xcc) and the result byte (F+0x03) agree; this build puts the forward trace result at F+0xcc and the reverse at
+// F+0xa8, retail the other way round.  Tried and restored: the trace results' names swapped 569 (same code); the rotation
+// helper's products with their operands swapped 569 (same code: MSVC canonicalises the commutative product); the y row
+// before the x row 569 (same code); the pivot typed as a vector3f 569 (same code); the rotation's four products through
+// four one-use temporaries 716 (worse).  Lead: retail reloads the radius from its argument home at each of its nine uses
+// and reloads the obstacle loop's arguments as well, and that is where its 39 extra bytes are; ours keeps the radius in
+// xmm5 from the entry because this build's link-time summary of 0x2108a0 and 0x210770 says they preserve the XMM
+// registers, so no source form here reproduces it.
+// MiniMax A (11-18): no new form, no lower score (569): the radius is still promoted into xmm5 at the entry and kept for the
+// whole body, where retail loads it from its home in each block, and that follows from this build's link-time summary of
+// 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
+// sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
+// retail's +0x94.
+// Round 436. Planar vector input in the offset helper 569. Native origin,
+// destination or direction templates 972 each; native origin/destination,
+// origin/direction, destination/direction or all three 972 each. NOT kept:
+// the templates delay radius acquisition but outline the first offsets and
+// shorten the body to 3194 bytes. Original helper and body restored.
+// M3 lane 6 r201 (fast with 0x2108a0, 0x29a190, 0x298d90, 0x298c30; the lead also plain-checked with 0x29cbb0, 0x210770,
+// 0x210d10; aligned = instructions equal after alignment out of retail's 810, base 595; all restored). LEAD, not kept:
+// three pieces together give retail's exact length and 490 (3372 B, aligned 625; plain check 490 with 0x2108a0,
+// 0x210770, 0x210d10, 0x298c30 and 0x29a190 MATCH, 0x298d90 305 and 0x29cbb0 378 as before): (1) `inline` on the
+// definition of 0x2108a0 in src/unknown_20fe20.cpp (its one call here stays out of line in the present tree and 0x2108a0
+// still matches; the caller then has no register summary for it, as lane 5 r197's diagnostic showed for retail, and the
+// radius is loaded in each block instead of sitting in XMM5); (2) each sweep scale assigned to one `scale` local right
+// before its two products, in both arms (retail's order: scale, x and y products, three times; the side trace homes
+// +0xd0/+0xf4 then agree); (3) the body after the sector read under `if (local_11 != NONE) { ... return local_0; }
+// return true;` (retail's last block is that `mov al, 1` exit). Not kept: (2) is a statement order and (3) an if with
+// its arms exchanged, both kept only with a match, and (1) alone raises the count. Steps: (1) alone 726 (3349 B, first
+// difference +0xd0, aligned 602); (1)+(2) 769 (3351 B, aligned 617); (1)+(2)+(3) 490. On (1)+(2): the offset helper's
+// products written component first 769 (same code); a direction pointer local for the pivot offset calls 769 (aligned
+// 612). On the 490 form: the scale expressions written in each product 672 (3380 B); the direction's i and j named
+// before the arms 781 (3333 B); three named scales each declared before its products 770 (3348 B); one `scale` declared
+// ahead of the arms 676 (3372 B, aligned 625). With one `return local_0;` after the nested body: 566 (3348 B) with (2),
+// 786 (3332 B) without. Left on the 490 form: the pivot offset's negative arm (retail loads each component and multiplies
+// it by the negated radius, storing x before it loads y, with no shared tail), the pivot home (+0x94, ours +0xa0, the
+// first sweep point's home), the sweep arms' XMM registers (retail: scale XMM2, i XMM0, j XMM1; the false arm copies
+// each component and keeps the first y product in XMM3 until the arm's end), the endpoint block after the arms, and the
+// three rotations in the loop. The patch is build/r201/lead-299460.patch in the lane 6 worktree.
+// M3 lane 1 r129 (fast with 0x29a190, 0x298c30, 0x2108a0 and 0x210770, all MATCH throughout; control 569, aligned 208/215 =
+// unmatched instructions ours/retail, masked 95/102; body unchanged). `inline` on 0x2108a0's definition re-measured 726
+// (3349 B, first difference +0xd0, aligned 203/208): the head then agrees up to the second pivot offset, where our two
+// arms share the y sum and store (the negative arm copies the negated radius and multiplies it by the stack component,
+// then scales y in place) and retail's arms each load the component and store y themselves.
+// The obstacle angle as float sums (`field_4 + pi : -field_4`, no double casts; retail's `fadd dword`) 601 (3353 B,
+// aligned 367/371), with the keyword 739 (3372 B, first difference +0x2e); the obstacle rotation's rows without the
+// double casts on the direction (retail's `fld st(0); fmul dword [mem]`) 625 (3349 B, aligned 266/275), with the keyword
+// 671 (3372 B, first difference +0xd0, aligned 268/268); both 643 (3372 B, aligned 344/349), with the keyword 744
+// (3387 B). The normalizer's squares as `j*j + (k*k + i*i)` 569 (same code; retail stores k and then takes i*i, k*k,
+// j*j from memory, ours keeps k on the x87 stack and squares it first); the distance's squares as `x + (y + z)`,
+// `z + y + x`, `(z + y) + x`, `x + (z + y)` 569 each (same code; retail squares z, then y, then x).
+// M3 lane 6 r207 (fast with 0x29a190, which stays MATCH; al = aligned differing lines out of retail's 810; the 108 lead also
+// plain-checked with 0x2108a0, 0x210770, 0x210d10, 0x26c590, 0x298c30 and 0x29a190 MATCH, 0x298d90 305 and 0x29cbb0 378 as
+// before; all restored, body unchanged). LEAD, not kept: 108 at 3374 B (al 30), and 236 at retail's 3372 B (al 32) without
+// its last step. It still needs the match-only pieces below (the nested body, two one-use locals, an arm order, the new
+// rotation helper, the helper's added parameter); the natural pieces alone on this body, with the early NONE return, score
+// 715 to 729. Built on the r201 lead (`inline` on 0x2108a0's definition, the body under `if (local_11 != NONE)
+// { ... return local_0; } return true;`, 490), each step on the one before:
+// - sweep arms: the true arm with one `scale` local assigned before each `planar_scale(&local_6, scale, &local_17)` call
+//   (then local_18, local_19), the false arm with the three named scales first and then the three planar_scale calls: 761
+//   (3349 B, al 204; the false arm is then retail's: scales in XMM0/1/2, each product's destination a copy of the component);
+// - the pivot offset's false arm with the negated radius in a named local ahead of the function_2994a1 call: 435 (3380 B;
+//   both pivot arms retail's, no shared tail);
+// - both side endpoints through function_2994a1 (the forward one with local_12.distance, the reverse one with the named
+//   negated distance), each followed by its own `.z = local_5->z`: 355 (3372 B, al 130; both sweep arms and the endpoint
+//   block exact, the components now in XMM0/XMM1 ahead of the scale);
+// - one `point2f rotated` declared in the caller and passed to function_29991b at all three sweep rotations (the helper
+//   writes the rotated pair there, then adds the pivot): 298 (al 71; the rotations exact, sine and cosine in XMM2/XMM3);
+// - the first 0x210770 output in a `vector3f` of its own instead of the pivot: 280 (al 55; the pivot's home +0x94);
+// - both obstacle dots through dot_product2d: 279 (al 52; normalizer and facing-dot registers retail's, y preloaded);
+// - the obstacle owner's actor in a named pointer (retail's dead `add eax, edx`), the second side written
+//   `!local_47 ? 2pi - a : a`, the angle `field_0 ? (double)(field_4 + pi) : (double)-field_4` (retail's `fadd dword`): 246
+//   (al 38; alone 190, 219 and 279);
+// - one offset pair for both obstacle differences, through vector2d_from_points2d and magnitude2d: 236 (3372 B, al 32);
+// - the obstacle rotation through an inline helper with the rows `v->x * (double)cosine - v->y * (double)sine` and
+//   `v->y * (double)cosine + v->x * (double)sine`, called with `(real)sin(a)`, `(real)cos(a)`: 108 (3374 B, al 30).
+// Left on the 108 form: the two sine products (retail copies the sine and multiplies it by the memory component, ours
+// loads the component first; the products of the component at offset 0 take retail's form and those at offset 4 do not,
+// whichever of sine and cosine they multiply), the homes of the rotated side and the obstacle offset (+0x44 and +0x18 in
+// retail, exchanged here) and two x87 sum orders that flip with unrelated edits (the first side distance, the first
+// obstacle distance). What moved things: a product's destination is the operand read through a helper's pointer and its
+// source the scalar assigned in its own statement; an expression argument of an inline helper becomes the destination;
+// named scalars take XMM registers in declaration order unless a value's later in-place use gives it more references.
+// Other forms, on the step named (lockstep counts). On 490: the sweep scales as expression arguments of planar_scale 786;
+// the false arm's sum operands exchanged, scale-first products or the expression in each product 490 (same code);
+// `-(-r - d)` 760 (not folded); three named scales interleaved 496; the true arm as `d + -r` or with a named `-r` 785
+// (folds to `d - r`); the false arm's named scales first with direct products 501; both arms that way 765; the arms
+// exchanged (diagnostic: the first arm always gets the component as destination) 766; named i/j per arm 782, after the
+// named scales in the false arm 715; named scales first with planar_scale in both arms 761; one `scale` with planar_scale
+// in both arms 758; planar_scale in the false arm only 502. On 761: the false arm's two scale declarations exchanged 763
+// (the registers follow the declarations); the true arm's scales as expression arguments or as negated named positives
+// 782; three named scales interleaved in the true arm 761 (same code), with direct products 771; named x/y locals inside
+// function_29991b 761 (same code). On 298: the pivot typed as a pair 683; the rotation outputs or the pivot declared
+// earlier 298 (same code). On 280: the distance sum as `x*x + (y*y + z*z)` or `(z*z + y*y) + x*x` 277 (both distance sites
+// exact, the obstacle bounds sum flips), `z*z + y*y + x*x` 280; the endpoint declarations exchanged 280; the end copies
+// reordered 310. On 277: the 2-D normalizer's rows through planar_scale or as `scale * x` 277 (same code); one dot alone
+// through dot_product2d 286 (facing) or 277 (angle). On 279: the rotation rows without the double casts 329, a float
+// angle 392, both 418; the rotation through a helper with float rows and `(real)sin(a)`, `(real)cos(a)` arguments 333
+// (421 with a float angle); with double parameters 320 (331); the trig calls inside float rows 329, through a helper
+// taking the angle 338 (469 with a float angle); double trig calls inside the rows 273 (394; cosine first, the angle
+// stored); double sine/cosine locals 273 (392); the casts on the sine/cosine, on both, component-first rows or the Y row
+// sine-first 279 (same code). On 246: role names for the rotated side and the offset 246 (same code: names do not order
+// these homes); the offset written into local_6 254 (local_3 and local_18 homes move). On 236: the first difference as
+// two scalars with the pair declared ahead of them 246; the rotation helper with named sine/cosine 245. On 108: the
+// helper with a by-value vector 380; its parameters reordered 108, cosine first 111; the components copied into locals
+// 116 (254 with named sine/cosine); named sine/cosine passed to it 245; sine named and cosine an expression 191; sine
+// named with the cosine call written in direct rows, or the reverse 236; each product's operands exchanged (six
+// spellings) 108 (same code); the Y row first 110; the rotated side written into local_17/18/19 137/125/131; the
+// components exchanged in the rows (diagnostic) 110; sine and cosine as the members of one pair (caller local with
+// direct rows 240, passed to the helper 236, helper local 111 or 108, by value 529, array 245); the rotated side in the
+// shared `rotated` 108 (same code); the offset in local_6 with the rotated side separate or in local_18 117 / 125 (128 /
+// 136 with the first difference as scalars); one or two unused real parameters ahead of the sine, or the output first
+// (diagnostic) 108 (same code); a helper taking the angle as a double 418 (frame grows) or 117 from a named angle; component-first rows
+// with the float trig calls written in them 245 (direct) or 116 (through a helper taking the angle). Main's
+// body with planar_scale in both arms, the false arm or the true arm 708 / 574 / 780; the same with `inline` on 0x2108a0
+// 737 / 726 / 751 (726 control). The patches are build/r207/lead-299460-w10.patch (108) and
+// build/r207/lead-299460-w9.patch (236) in the lane 6 worktree.
+// M3 lane 4 r234 (fast with 0x29a190, 0x298c30, 0x2108a0 and 0x210770, all MATCH; main's body 569, unchanged): lane 6
+// r207's 108 lead re-applied on current main 108 (the full image 106). The permuter (--fast, annealing) cannot search it:
+// its reduced image scores the lead 409. On the lead: the first obstacle difference in a pair of its own, the offset pair
+// declared after or before the rotation output 187 / 187 (3372 B; the 2-D normaliser after it loses retail's order); one
+// function-scope offset pair for the sweep rotations' output and both obstacle differences 108 (same code: the rotation
+// output keeps +0x18 and the offset +0x44 whichever variable holds them); the 3-D distance sum as `(z*z + y*y) + x*x`,
+// `x*x + (z*z + y*y)` and `z*z + y*y + x*x` 108 each (same code: the first side distance's square order is not the
+// source's).
+// M3 lane 14 r129 (fast; control 569; all restored, body unchanged). The w10 lead re-applied 108 (3374 B, aligned 30): left
+// are the first distance site's squares (ours y then z, retail z then y), the obstacle offset's 2-D squares, the two sine
+// products and the exchanged +0x18/+0x44 homes. On it: 0 to 7 unused `long` locals at the top 108 / 188 / 188 / 188 / 178
+// / 178 / 236 / 240 (the obstacle offset's squares are retail's from 4 to 7, but two other x87 sums after it flip; the
+// first distance site and the sine products never move); the distance helper's sum spelled `(z*z + y*y) + x*x`,
+// `x*x + (z*z + y*y)`, `z*z + y*y + x*x` or `x*x + y*y + z*z` 108 each (same code: the sum is canonicalised); both
+// distances through the existing inline distance3d (0x3ea30) 247 (3372 B: its vector local squares destructively, with
+// fmulp); the first or the second distance passed straight into its trace call (no named local) 640 / 657 (the whole
+// allocation moves), with 1 to 7 unused locals 640 to 738. The exchanged homes: the rotated side's and the offset's names
+// swapped 108, the rotated side declared ahead of the offset 108, or at the top of the function 108 (all the same code).
+// M3 lane 3 r282 (H2M_FAST; on lane 6 r207's w10 lead re-applied, 108 at 3374 B; all restored, body unchanged).
+// Sites: A first loop distance squares, O obstacle offset squares, N obstacle normaliser squares, D facing dot,
+// S obstacle rotation sine products, H rotated/offset homes. Control wrong A O S H. Reading: the x87 operand order
+// at A, O, N and D follows the count of inlined-helper symbols before the site (dead longs inside a helper move them
+// like the top-of-function scan); S never moves. Forms: local_24..26 or local_21/22 declared in reverse, or apart
+// 108 each (same code); the first loop distance written at its site 232 (3372 B, A O right, N D S H wrong); the
+// normalised-difference helper's scale written as rows 104 (A right; an existing helper written out); the distance
+// helper with one vector3f local 232 (3372 B, A O right, N D wrong, the cosine products then component-first too);
+// dead longs in the distance helper 1..7 188/174/232 x5 (174: A O right, N D wrong), in the rotation helper 108 x7,
+// in the normalised-difference helper 1..11 188/188/188/178/178/236/240/236/236/236/232; unused dot products before
+// the rotation 108 x7; rotation rows with the casts on the components, on all four operands or the sine product
+// trig-first 108 each; double helper parameters 169; parameter orders (sin, cos, v, out) / (v, cos, sin, out) /
+// (cos, sin, v, out) / (out, v, sin, cos) 108/111/111/108 (the sine products stay component-first whichever value is
+// computed first); the y row sine-first 108; sine and cosine as double locals 190 (then the x products are
+// trig-first and the y products component-first), with double parameters 297, the sine alone a double 190.
+// Also on the lead: the rotation helper returning its output pointer, passed straight to the offset call 108 (same
+// code); float rows without casts 183; the components read into locals first 116 (re-measure); the helper's
+// parameters renamed four ways 108 each (same code: operand order does not follow names).
+// M3 lane 12 r163 (H2M_FAST with 0x29a190 MATCH; control 569): the facing dot through dot_product2d 617 (3329 B, either
+// argument order); the angle dot through it 569 (same code, either order); both 718 (3332 B); the obstacle difference
+// normalised through normalize2d_fast (its result unused there) in place of the file's 0x298df3 copy 569 (same code);
+// the two side lengths through distance3d with the arguments reversed (same a - b deltas) 587, with the normaliser too
+// 587. Body unchanged.
+// M3 lane 6 r224 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 569; all restored): `inline` on this file's
+// declaration of 0x2108a0 569 (a caller-side declaration leaves the summary; XMM5 kept); the radius read once through its own
+// address at its first use 569 (folded); the first 0x210770 output into its own unread vector 562 (the pivot's home; an unread
+// buffer, match-only); on that, both sector reads after both trace calls 561, both trace distances named before the arms 562,
+// the in-loop trace result declared in the loop 562; on this body both distances named 569 (same code); the body after the
+// sector read nested under `if (local_11 != NONE)` with `return true;` last 790 (3348 B). Still BLOCKED-BY 0x2108a0 (its
+// file is on this round's Avoid list).
+// M3 lane 16 r180 (H2M_FAST; main 569, unchanged; on lane 6 r207's w10 lead re-applied, 108 at 3374 B, aligned 30): the
+// first sweep distance site follows the tree of the distance helper's sum: one redundant pair around its z square
+// (`x*x + (y*y + (z*z))`) 104 (aligned 26, that site exact; the pair around x*x as well 104; around y*y, or y*y and x*x,
+// 112; around both inner squares or around x*x alone 108). One to three pairs on the sweep angle's products move only the
+// obstacle bounds' SSE sum (odd counts 124, even 104). The obstacle offset's squares follow the shared magnitude helper's
+// tree: a pair around its j square (diagnostic, shared header) 115 (3373 B, aligned 22: both magnitude sites take retail's
+// y-first order; the bounds sum flips), with one sweep pair 95 (3374 B, aligned 16). Left on 95: the two obstacle sine
+// products (retail copies the sine and multiplies it by the memory component) and the rotated/offset homes (+0x18/+0x44
+// exchanged). On 95: pairs around the sine products in one row, the other or both, with 0 to 3 sweep pairs, 95 or 108
+// (aligned 16 to 33, never the sine form); the helper reading the vector3f's i/j directly 95 (same code); trig-first
+// products 95 (same code); the sine held in a double local 154; the second difference in its own local 174 (3372 B,
+// aligned 26: homes still exchanged, two other sums flip); the rotation output declared at the loop top 95 (same code).
+// Patch: build/r180/lead-299460-95.patch (m3-lane16; needs the held `inline` on 0x2108a0 and the header pair).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

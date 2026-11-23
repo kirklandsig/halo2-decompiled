@@ -215,6 +215,54 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // both magnitudes, second offset by SSE), but the pair takes an 8-byte slot after the double angle, so every home
 // below the axes moves down 4 and the axes and the double 8 (the pair named to sort first or last: 90/90). The two
 // magnitudes as a point2f pair 51 (the offset is still forwarded to its use).
+// Round 128 (m3 lane 9, fast, all on the fabs-at-each-use 2 form): fabsf for the offsets 2; the clamp as a single-exit
+// if/else-if 577 (2048 bytes); the products written constant first (`scale * coordinate * boost`) 2 (reassociated, 1.0
+// still first); a separate first/second boost local 2; the absolute angles written at each use 537 (1996 bytes).
+// Diagnostic (plain, reverted): the scale literal used in a function added to the stub file (built without LTCG) 2: the
+// link keeps the LTCG module's copy of the constant (our link map: src/unknown_157450.cpp's object), not the stub's. Retail's pool matches
+// ours (1/255, 2^32, 0.5, 1.0, -0.5 at 0x45dbb4-0x45dbc4); only the scale lies outside it, in the library's data.
+// Round 189 (m3 lane 5): on the fabs-at-each-use 2 form, the scale as `(1.0f / 32767.0f)` 2 (same code); the scale as a
+// file-private named constant fast MATCH, plain 2 (re-measured with the map: the reduced image links no non-LTCG object ahead
+// of the D3D state member, while the full link's 63rd object, a /GL- Havok file, already defines 1.0 in the first pass and no
+// non-LTCG object defines the scale; the entry loads follow that symbol order, and retail's scale is a library's data defined
+// ahead of 1.0). BLOCKED-BY the link's object order, not this source. On the kept 25 body: both absolute offsets declared
+// after the magnitudes 530 (2000 bytes); offset and fabs through a two-use inline helper 405 (1996 bytes); the magnitudes
+// first in the snap block 47. All restored.
+// Round 116 (m3 lane 10, fast, on the kept 25 body): why retail computes the first offset ahead of the magnitudes: the
+// offset must have two uses for VC not to forward it into its single `fabs`, which the at-each-use 2 form gives (its
+// two fabs are CSE'd into the one stored absolute, as retail's `fabs; fst`); so that form is retail's source shape and
+// only the link-order block keeps it from matching. Tried: the first absolute offset taken straight from
+// `first_angle - table` with no offset local 25, both 405; the first absolute offset ahead of the magnitudes 342, both
+// 531; the two angles renamed so they sort the other way (move/look) 25 (their homes stay swapped).
+// Round 212 (m3 lane 4, fast unless marked): the fabs-at-each-use form re-measured plain 2 (only the two hoisted loads:
+// ours 1.0 at 0x862fc8 then the scale at 0x8632bc, retail the scale at 0x43ba70 then 1.0 at 0x45dbc0, so in both builds
+// the lower address loads first); on the kept body: each stick prepared in turn (quadrant, offset, magnitude) 415 (2028
+// bytes); the second offset ahead of the first 25; each stick's snap step in its own block scope 25; both angles declared
+// at the top of the controller block and assigned at the atan2 25 (all three the same code). All restored.
+// Round 173 (m3 lane 12; fast unless marked): the two hoisted loads follow the first reference to each constant in the
+// loop body, in the full link as well, so the link-order reading above does not hold: a probe store of `raw x * scale`
+// into the output block at the loop top gives retail's load order plain and fast (482, the store is extra code), one
+// between the trig and the maximum too (552), one at the end of the body does not (496). Retail's source reaches the
+// scale before the first `1.0f /` without emitting code there; a one-use value is forwarded behind the reciprocal, so
+// the reference has to survive forwarding. On the fabs-at-each-use 2 form: both sticks' axes stored as `raw * scale`
+// ahead of the angle, then boosted and clamped 562 (1988 bytes, products ahead of the trig). On the kept body: the first
+// offset read through a `real const &` before its fabs 2 (the offset block and angle homes become retail's, as the
+// at-each-use form; a steering form, kept only with a match); on the 2 form, an unused `raw x * scale` local ahead of
+// the angle 550 (1996 bytes, no flip: a dead reference does not count). Body unchanged.
+// Round 228 (m3 lane 6, fast, all on the fabs-at-each-use 2 form): products as `raw / 32767.0f / maximum` (reciprocal
+// made by the compiler) 20; the clamp testing the upper bound first 45; products as `boost * scale * raw` 2 (same
+// code); the first stick's raw coordinates named as float locals for atan2 and the products 535; products as
+// `raw / maximum * scale` 20. 1.0 still loads first in every form.
+// Round 181 (m3 lane 16, h2m fast, all on the fabs-at-each-use 2 form): a `real` scale local at the function top (ahead of
+// the loop) 2 (folded); products as `raw * scale * reciprocal` with the named reciprocal 2; products ending `/ 32767.0f`
+// 2 (made the same multiply); the maximum named and the products as `raw / maximum / 32767.0f` 20 (the compiler's
+// reciprocal then multiplies the coordinate from memory, registers move; 1.0 still first); the maximum as a local set
+// by an `if` 7. 1.0 still loads first in every form.
+// Round 230 (m3 lane 8, h2m fast, all on the fabs-at-each-use 2 form): products as `raw * scale / (s > c ? s : c)` with the
+// maximum written in place 541 (2020 bytes); the boosted products stored into the axes and clamped in place afterwards 525
+// (2028 bytes); the scale as `(real)(1.0 / 32767.0)` 2; the maximum as an if/else local 2; the trig magnitudes written in
+// place in the maximum 2 (all three the same code). 1.0 still loads first; retail reloads only the scale (xmm7) near the
+// loop's end, 1.0 stays in xmm6, so the two entry loads are the only difference left.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 #include "globals.h"
+#include "scenario_skies.h"
 #include <math.h>
 
 // @flags /O2 /arch:SSE /Gr
@@ -297,21 +298,6 @@ struct s_structure_bsp_clusters_view
 	s_cluster_view *clusters;
 };
 
-struct s_scenario_sky_reference
-{
-	byte unknown00[4];
-	long sky_index;
-};
-
-struct s_scenario_skies_view
-{
-	byte unknown00[8];
-	long sky_count;
-	s_scenario_sky_reference *skies;
-	byte unknown10[2];
-	byte flags;
-};
-
 struct s_sky_view
 {
 	byte unknown00[4];
@@ -371,14 +357,11 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 	return result;
 }
 
-// score 44 (was 44): retail loads the sky count into ebp for the range test
-// (cmp edx, ebp) where ours compares with [esi + 8]; retail's ebp then stays
-// saved up to the tag-index test, so its NONE preset (or ecx, -1) and that
-// test are not jump-threaded as ours are. Tried: a ternary 44, the count in
-// a local 44, count > index 44, an inline helper returning NONE early 44,
-// (long)index 44, the index lookup moved out of the cluster test 49, a copy
-// of the scenario view 101, (short)*sky_index at each use 44, tag_index
-// declared first 44, a long copy of the index for the compare 44.
+// Matched once the sky lookup went through sky_surface_data (scenario_skies.h,
+// shared with 0xd1a30): written out in the body (flat or nested range test,
+// count local, NULL-preset sky pointer, tag test outside the cluster block, an
+// accessor for the count) the NONE preset was jump-threaded and the count
+// folded into a memory compare, 44 every time.
 // @retail 0x14b360
 bool cluster_get_sky(long cluster_index, long *sky_index, vector3f *vector, bool *found)
 {
@@ -396,26 +379,15 @@ bool cluster_get_sky(long cluster_index, long *sky_index, vector3f *vector, bool
 			*sky_index = 0;
 		}
 
-		short index = (short)*sky_index;
-		long tag_index = NONE;
+		s_sky_view *sky = (s_sky_view *)sky_surface_data((short)*sky_index);
 
-		if (index >= 0 && index < scenario->sky_count)
+		if (sky && sky->unknown04 != NONE)
 		{
-			tag_index = scenario->skies[index].sky_index;
-		}
-
-		if (tag_index != NONE)
-		{
-			s_sky_view *sky = (s_sky_view *)g_4e3b44[tag_index & 0xffff].bytes;
-
-			if (sky && sky->unknown04 != NONE)
+			result = true;
+			if (sky->flags & 0x20)
 			{
-				result = true;
-				if (sky->flags & 0x20)
-				{
-					*vector = sky->vector;
-					*found = result;
-				}
+				*vector = sky->vector;
+				*found = result;
 			}
 		}
 	}

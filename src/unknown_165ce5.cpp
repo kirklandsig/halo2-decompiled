@@ -311,7 +311,7 @@ long function_baf80(long object_index);
 long function_cbd50(long unit_index, short weapon_index);
 bool function_cd660(long unit_index);
 long function_1469f0(real seconds);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 void function_1d9240(s_1d9240 *p, char flag, real x);
 long function_16658d(long group_index, long key);
 real function_1d9430(s_1d9240 const *p);
@@ -608,7 +608,7 @@ void first_person_weapon_sound_event(long user_index, long field_x11c898, s_firs
 		{
 			s_first_person_weapon *weapon = &user->weapons[field_x11c898];
 
-			weapon->sound_index = function_189060(weapon->weapon_index, NONE, 1.0f, g_468788, g_4687a8, sound_tag_index);
+			weapon->sound_index = function_189060(weapon->weapon_index, NONE, g_468788, g_4687a8, 1.0f, sound_tag_index);
 			weapon->sound_animation = (short)weapon->animation.animation_name;
 		}
 	}
@@ -1379,9 +1379,23 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// score 188 (was 188): frame 0x30 versus 0x2c (the look values have retail's homes and divisions since 11-18); the unit and
+// mode homes, the weapon-active and zoom homes, the active preset, the movzx flag test and the ESI/EDI save placement remain.
+// Earlier first line (220, was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// frame 0x30 versus 0x2c, exchanged unit and
+// mode homes and earlier ESI/EDI saves. Both look divisions and output homes agree.
+// Earlier 220: frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier noted 218 (was 218). The full check gave 220 in m3 lane 16 r130.
+// MiniMax C (11-17): score 220 (was 220): no new form, no lower score. The look clamps still share one 1/rate
+// reciprocal where retail divides x / rate and -1.0f / rate and reloads g_510c54 after the yaw store, and retail's
+// look homes are -0x2c/-0x28 in a 0x2c frame against ours' -0xc/-0x8 in a 0x28 frame; the s_view_angles aggregate
+// (216), the rate hoisted into a local (541) and the cast-spelled divisor (220) were measured and dropped.
+// MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
+// retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
+// Earlier 220 (was 220), merged from a second score line: frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier at 220 (was 220). Frame 0x28 versus 0x2c. Unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
-// score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
 // start): all four spring defaults and overrides (0x166dbb-0x166e87), the five-term idle-motion test, the idle
 // counters (0x1674b3-0x167597), the overlay logic (0x1671d8-0x167307), the fmod frame (0x167353-0x1673ab), the tail
@@ -1800,6 +1814,295 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // M398: Original clamped-yaw/clamped-pitch/late-magnitude zero defaults, masks
 // 1/2/3/4/5/6/7, then complete activity/zoom/scope defaults: eight at 220 fast (control 220, full 218).
 // NOT kept: no frame/look-home gain; original producers, all five smoothing tuples and body restored.
+// M3 lane 7 r167 (plain where noted; the reduced image misbuilds caller 0x16760c, 142 with no change, MATCH in plain):
+// `inline` on 0xb6760's definition (now ours; round 30's lead) 217 plain, channelb8 then kept in ESI as retail, but
+// 0x106790 250->254 and 0x1cd070 210->269, not kept; diagnostic (a file-local copy of 0xb6760's body for this
+// function's three calls, not keepable) 215 fast: retail's callers disagree about 0xb6760's register summary, as with
+// 0x24590 at 0xe3380. Dead-local phase scan 1-7 at the top 220 each; `long const mode` 220; the overlay channel read
+// in place (no `channel` local) 220.
+// P569: Idle draw real/const-real/double/const-double receivers 220/220/220/220;
+// complete chance decision bool/byte/short/long 220/220/220/220.
+// NOT kept: no equality or frame/home recovery; original call/test/body restored.
+// Frame 0x28 versus native 0x2c, unit/mode and independent look homes remain.
+// M3 lane 1 r113 (fast with 0x165dc1, MATCH; control 220, aligned with offsets masked 86, registers too 88): the two look values
+// as one `real look_angles[2]` 216 (frame 0x30: they take retail's -0x2c/-0x28 homes, but 1/rate is still shared and a dword at
+// -0x30 is left unused; a grouping array, under the bar), the same array in its own block around the look springs 216, at function
+// scope 216, with the callback written `index == 0 ? right : left` (retail's arm order) 216 (masked 82/75); `active` cleared, then
+// set from the animation test under the three-term guard 416 (2188 B). On the array forms retail's unit, mode and weapon-active
+// homes are -0x1c/-0x18/-0x14 where ours are -0x14/-0x1c/-0x18. Still BLOCKED by the stand-in (round 98) for ESI/EDI.
+// M3 lane 12 r132 (fast with 0x165dc1, 0x166561 and 0x11eed0, MATCH; control 220; 0x16760c 142 in the reduced image as noted):
+// the four spring overrides as ternaries 220 (same code); the aiming velocity copied into a local vector for the two spring
+// calls 512 (2194 B); the look angles copied once into a local point 465 (2214 B); the orientation block index written
+// user-major 220 (same code); the unit index in a named local for the test and the lookup 220 (same code). Still BLOCKED by
+// the stand-in (round 98) for the ESI/EDI save after the unit test.
+// m3 lane 16 r130 (fast with 0x165dc1 and 0x166561, both MATCH; control 220): the weapon loop under a redundant
+// `if (0 < MAXIMUM_FIRST_PERSON_WEAPONS)` 220; the two look inputs as `real &` references 220; `active` declared at the
+// unit-block scope 220; the animation-finished test as a nested if 220 (all same code). A game-time pointer copy taken
+// after the yaw clamp and used for the pitch's rate and the third spring call's rate 208 (2197 B: the reciprocal is
+// no longer shared, the pitch reloads the global as retail), but the other rate reads stay direct, a mixed
+// local/global read, so not kept; the same pointer local for all eight rate reads 555 (2183 B).
+// M3 lane 9 r131 (fast; base 220): a redundant `if (0 < MAXIMUM_FIRST_PERSON_WEAPONS)` guard around the weapon loop 220
+// (same code); the two look rates as `real &` references to the user fields, used for the clamps and the smoothed stores
+// 225; each look value divided in one statement and clamped in the next 223; the look values declared and clamped in a
+// scoped block around their two smoothing calls 220 (same code: they still share the spring slots); guard and block
+// together 220. Retail's g_510c54 reload after each look store still says those stores go through something that may
+// alias the global; the ESI/EDI save region stays BLOCKED-BY the build's stand-in caller (round 98).
+// M3 lane 8 r181 (fast; base 220): kept: the `goto overlay` dropped, the animation test folded into the 0.267 save's
+// condition (`no_zoom && no_scope && name == 0x400000c`; the same code, 220: the compiler threads the mismatch to the
+// overlay block as retail does). Tried: the clamped look values through a force-inline helper writing them through
+// two out pointers 220; the look values as const references bound to the clamps in a block with their two spring
+// calls 220; the user flags read and set in place without the flags local 220 (same code); zoom, no_zoom and no_scope
+// declared where computed 220 (same code). The reciprocal stays shared and the look values keep the spring_a/b slots.
+// Round 563. The frame is 0x28 against 0x2c, and the two look divisions still share a reciprocal. in-place
+// lower then upper saturation 222, in-place upper then lower saturation 223, upper default with ordered lower
+// and interior assignments 223, lower default with ordered upper and interior assignments 223, lower default
+// and a conditional upper selection 487, upper default and a conditional lower selection 487, lower-limited
+// rates followed by upper selections 486, upper-limited rates followed by lower selections 487.
+// Round 401 tested paired look clamps with lower-first/upper-first branch defaults and upper/lower preset bounds, strict then inclusive: 219/220/223/223/221/222/224/224.
+// The one-point lead is below the threshold. The 0x28 frame, shared reciprocal and reused spring homes remain.
+// m3 lane 14 r108 (fast with 0x165dc1, MATCH; control 220, as plain). Retail's slot map: the yaw value has -0x2c to itself (3 stores, 1 load) and
+// the pitch value shares -0x28 with the temporary that carries the channel duration to fmod; neither shares with the aiming springs or the unit,
+// which are dead by then, while the flags, the loop index and the weapon pointer do reuse those slots. Tried: the look values as const references
+// bound to the clamps 220 (same code); one point2f initialised with both clamps 216 (frame 0x30, homes -0x2c/-0x28, reciprocal shared; a grouping,
+// under the bar); one inline two-axis spring helper for the aiming pair and the look pair, the look pair passed by address 588 (2163 B: the
+// time global then lives in EBX across the calls and the user goes to the stack); the look values as an inlined helper's locals 220, as its
+// by-value parameters 221; the clamp through an inline function with three returns, value by value 220, by const reference 220, returning a
+// const reference 499 (2225 B); an empty inline function taking both look addresses after the fourth spring call 220 (same code: the link
+// drops the address-taken state with the call). Diagnostics, reverted at once: both look addresses passed to a fifth 0x11eed0 call 220 (same
+// code: that call is inlined and deleted whole, so round 120's escape to the second aiming call proved nothing); passed to an opaque external
+// call 454 (2208 B, frame 0x30, look homes -0x14/-0x10): the yaw block is then retail's instruction for instruction (rate pointer reloaded, x
+// divided by the rate, the 1.0 load between comiss and jbe) and the pitch divides again after a reload, as (y / rate) * -1 where retail has
+// (-1 / rate) * y. So a store to an address-exposed look value is what ends the shared reciprocal, but retail's two homes sit at the frame's
+// bottom with the compiler's late temporaries, not where an address-exposed local goes, and no code-free form found gives either.
+// AC572: Captured entry unit index 220. Add guarded primary index, conditional
+// NONE or branch-set NONE 220/529/529. The primary-index forms alone
+// 220/529/529. Both captures with a terminal unit guard 220.
+// NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
+// the two clamped look values as one `real look_angles[2]` take retail's
+// The frame and independent look homes still differ. Separate suppression defaults 253/401/227/404.
+// chained suppression defaults 253/401/227/404.
+// MiniMax A (11-18): score 188 (was 220): the two clamped look values as one `real look_angles[2]` take retail's
+// [ebp - 0x2c]/[ebp - 0x28] homes, the pitch read through a reference to the game-time globals keeps retail's two
+// separate divisions (no shared reciprocal) with the multiply's operands in retail's order, and both look springs'
+// rates through the same reference; still open: the frame is 0x30 against retail's 0x2c, the unit and mode
+// homes are swapped and the ESI/EDI saves sit before the unit test.
+// m3 lane 1 r120 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188 on the 11-18 body, so the older leads
+// were re-measured on it): `active` cleared, then assigned `!busy && animating` under the unit and weapon guard 345 (2200 B);
+// the callback as `index == 0 ? right : left` 188 (same code); the two channel flag bits tested on a long copy of the byte
+// under the update test 375 (2198 B); `active` cleared, then assigned the animation test under the three-term guard 378
+// (2191 B); the first three together 322 (2202 B); the preset pair with the callback 345; the look array in its own block
+// around the clamps and the two look springs 188 (same code, frame still 0x30); the look array declared last or first in
+// the unit block 188/188; `unit` and `mode` declared bare and assigned in the next statements 188 (same code).
+// Direct look-spring rate reads 188, all six direct reads 219, named
+// raw look rates 188, initialized look pair 482, separate mutable/const
+// look outputs 196/196, shared aim-velocity pointer 206, unit reference 188.
+// NOT kept: independent look locals reduce the frame to 0x28 and raise
+// the score. The paired outputs keep both retail clamp homes at frame 0x30.
+// Round 187 (m3 lane 8, fast with 0x165dc1 and 0x166561, both MATCH; control 188, aligned counts by sequence alignment in
+// brackets, control [85]): 0-7 dead locals at the top 188 each (not a symbol-count state); the channel test as
+// `& 2 || & 8` 188, as `& 8 || & 2` 188, through a byte local under the update test 188, with a `(dword)` widening 188 (all
+// fold to `test byte ptr [edi + 0x19], 0xa` where retail loads the byte first; a bitfield view, diagnostic only, folds
+// too); `active = false;`
+// then set true under the whole four-term test 180 [86] (a preset flag, and no aligned gain: not kept); `active = false;`
+// then `active = !busy && animating;` under the unit and weapon guard 345 at 2200 bytes [81]: that block is then retail's
+// byte for byte, active at -0x14, but the instruction it adds shifts everything after it; the callback as an if/else on
+// `index == 0` 188 [84], with the preceding active form 345 [80]; the user flags stored before the look history 195 [92];
+// the look pointer declared const at its use 188 (same code). The `fmod` is the x87 intrinsic, so no double slot pads
+// the frame. ESI/EDI placement: still BLOCKED-BY the build's stand-in caller (round 98).
+// M3 lane 12 r145 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): retail keeps unit (later the zoom
+// value) at -0x1c, mode at -0x18 and spring_d with the active byte at -0x14; ours unit and the active byte at -0x18, mode at
+// -0x1c, spring_d and zoom at -0x14 (every other slot agrees; ours leaves a dword at -0x30 unreferenced). Renames for the
+// name-order tip: mode as weapon_mode or animation_mode, unit as aiming_unit, zoom as aim_speed, active as weapon_active,
+// 188 each (same code: these spill slots do not follow names); the active test passed straight to the set-active call 378
+// (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 15 r102 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the frame reference dropped, every
+// rate read through g_510c54 219 (2193 B: the yaw/pitch division and reload change); the weapon-active value passed
+// straight to first_person_weapon_set_active without its local 378 (2192 B); the sound callback written into the update
+// call 188 and the channel pointer spelled `&weapon->channelb8` at its uses 188 (same code each); the look pair as two
+// scalars with the frame reference kept 196 (their homes move to -0xc/-0x8). Slot map against retail: every EBP offset
+// used is the same; ours has one unreferenced dword below the look pair (frame 0x30), and packs the weapon-active byte
+// with the unit/flags home (-0x18) and the zoom, indices pointer and idle globals with the spring_d home (-0x14), where
+// retail packs the active byte with spring_d (-0x14) and the zoom group with unit/flags (-0x1c), mode at -0x18.
+// M3 lane 14 r116 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the saved 40-point set (preset
+// active flag, `== 0 ? right : left` callback, channel byte in a long tested bit by bit, positive zoomed/scoped, per-arm
+// overlay play under `else if (zoomed)`) re-measured 40 at 2199 B on current main, still match-only and BLOCKED by the
+// stand-in (round 98). Its keepable part alone (positive zoomed/scoped with `scoped = zoomed && ...`, rate arms in the
+// positive order, the clear test without the implied zoom term, the overlay set read once, one shared overlay call) 386
+// (2189 B); positive zoomed/scoped alone 205 (2203 B); the set without the four match-only forms (per-arm play under a
+// plain `else`) 379 (2187 B); only the clear test's implied zoom term dropped 368 (2186 B).
+// M3 lane 15 r105 (fast, plain where marked; aligned/masked = difflib counts with addresses / also registers masked, 60/57
+// at 188): retail's zoom logic as positive bools (zoomed = speed > 0.1f, scoped = zoomed && the 0xc8a10 query, both cleared
+// on the 0xd03b0 query, scoped cleared when the overlay lookup fails; rate `if (zoomed) { scoped ? 1 : pin } else if
+// (scoped) 1`; clear test `!zoomed && !scoped || scoped && set != 0x60000d8 || !scoped && set == 0x60000d8`) with the play
+// as a shared flags/set if/else 375 (2182 B, aligned 43); the play written per arm under `if (scoped) ... else if (zoomed)`
+// 365 (2186 B, aligned 31); with `scoped = zoomed && function_c8a10(...)` 371 (2197 B, aligned 26); with the callback as
+// `field_x11c898 == 0 ? right : left`, the channel byte in a `long` local tested `& 0xa`, the overlay set read once into a
+// local and the active preset (`active = false; if (...) active = true;`) 368 (2193 B, aligned 24); that with a plain
+// `else` for the play 371; the active flag as `active = false; if (unit && weapon) active = !0x155760 && 0xb6780;` (retail's
+// preset store and branch shape) 338 (2197 B, aligned 12, masked 9: every frame slot is then retail's); the channel byte
+// tested as `(flags & 2) || (flags & 8)` 40, plain 40 (2199 B, retail's length, aligned 10, masked 7; lead, saved as
+// build/r105/lead-0x166d75-40.diff in the m3-lane15 worktree); on it the clear test as a ternary 278. Not kept: the lead
+// needs the implied `else if (zoomed)`, the swapped callback ternary, the one-use channel-byte local and the active preset,
+// all match-only, and the function stays BLOCKED by the stand-in (ESI/EDI saved at entry). Left on the lead: those saves,
+// frame 0x30 against 0x2c, the weapon reload into EDI one statement late, the overlay set loaded ahead of the scoped test
+// and the +0xb8 channel pointer in ECX (retail ESI).
+// M3 lane 15 r107 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188), declarations joined to their first
+// assignment: the +0xb8 channel pointer initialised where declared 188, `real zoom = magnitude3d(...)` 188, `point2f *look
+// = ...` 188, the weapon index declared in the for header 188, `bool active = ...` 188 (same code each). The lead's steps
+// stay match-only and the stand-in block stands.
+// m3 lane 8 r198 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Frame arithmetic: retail has 11
+// dword slots (0x2c), the yaw alone at -0x2c and the pitch at -0x28 shared with the duration temporary; ours has the same
+// 11 slots and the same sharing, plus 4 bytes of padding: with the look pair as a three-element array (diagnostic) the
+// frame is 0x38 (13 slots rounded up to 8, the array kept whole at -0x34 and the duration temporary in a slot of its own),
+// so a local aggregate of 8 bytes or more rounds the frame to a multiple of 8, and retail's 0x2c says its two look values
+// are no such aggregate. Tried: the look values as two one-element arrays 196 (frame 0x28: scalarised, they take the
+// spring slots again); as two scalars in an inner block written through pointer locals 477 (2186 B, frame 0x28; the
+// pointers fold away); the reference to the game-time globals as a const pointer local 188 (same code); the function
+// with internal linkage 188 and without its explicit convention 188 (same code each: the argument stays on the stack and
+// ESI/EDI are still saved ahead of the unit test). Re-measured: every rate read through g_510c54 219. Other matched
+// functions of this file save a register after an early exit with the build's extra caller present (0x168896), so the
+// extra caller does not forbid a late save in general; what makes this function's unit test wait for both saves is open.
+// M3 lane 15 r108 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): every 0xb000067-arm use of the
+// +0xb8 channel through the channel pointer (the overlay call, the frame position, the duration and the set) 202 (2189 B);
+// the look pointer typed `point2f const *` 188 (same code). On round 105's 40-point lead (re-measured 40 at 2199 B on
+// current main; still match-only and BLOCKED by the stand-in): the channel pointer at every channel use 81 (2192 B); the
+// callback selected ahead of the orientation pointer 45; the weapon object looked up after the orientation pointer and
+// the callback 97 (2200 B). Left on the lead: frame 0x30/0x2c, the ESI/EDI saves, the weapon reloaded into EDI ahead
+// of the object lookup (ours after the callback select), the overlay set load order and the channel pointer register.
+// M3 lane 14 r123 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): kept, the look pointer typed as the
+// existing view-angles record (`&entries[user_index].angles`, yaw/pitch fields) in place of the point2f cast, and the look pair
+// as one such record in place of a two-element array, 188 (same code each, plain). Tried: the weapon-active value as an
+// if/else on the unit and weapon guard 188 (same code); the look pair as two scalars clamped by if/else-if chains 204 (frame
+// 0x28); the weapon-active flag typed byte 387 (2197 B). Slot map (masked listing): retail packs zoom with unit (-0x1c) and the
+// active byte with spring_d (-0x14), ours the other way round; the ESI/EDI saves stay BLOCKED by the build's stand-in caller.
+// M3 lane 13 r127 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Slot references counted on both
+// listings: every EBP offset from -1 to -0x2c is used in both builds and ours leaves -0x30 unreferenced; retail's -0x10
+// (spring_c) is never reused, its -0x14 holds spring_d and then the active byte, its -0x1c the unit, the user flags and then
+// the zoom group; ours puts the active byte with the unit and flags (-0x18) and the zoom group with spring_d (-0x14). The
+// homes follow lifetimes, not scopes: `bool active` declared at the unit block's top 188, `real zoom` there 188, both in
+// either order 188 / 188, the weapon object pointer declared there and assigned in the loop 188, `flags` declared ahead of
+// the look pair 188 (same code each). Retail pops EDI and ESI right after the weapon loop, ahead of the two flag tests
+// that close the unit block, and pushes each just ahead of its first use after the unit test; ours saves both ahead of
+// the test and restores them at the end (the round 98 block). Body unchanged.
+// M3 lane 14 r125 (fast; control 188): slot sharing against retail: retail packs unit, the user-flags copy and zoom in
+// -0x1c, mode in -0x18, spring_d and the active byte in -0x14; ours packs unit, flags and active in -0x18, mode in -0x1c,
+// spring_d and zoom in -0x14. Tried: `bool active` declared in the unit block 188, `real zoom` declared in the unit block
+// 188, the look record declared at function scope 188, `flags` declared after the weapon index 188 (same code each).
+// Diagnostic (reverted at once): the look pair as two scalars plus one probe local 537 (2203 B, frame 0x28, ten cells),
+// so the frame's odd cell count cannot tell whether the record alone rounds the frame. Retail's epilogue confirms the
+// shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
+// MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
+// the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
+// Round 611. previous angle field view 193, previous angle record store 193, delta angle field view 193, delta
+// record with reset 193, both typed angle records 193, scoped angle and flag publication 193, separate clamped
+// scalars with angle views 201, current angle snapshot for both consumers 422. NOT kept: the record views leave the
+// frame at 0x30 and the scalar form takes it past retail to 0x28. The unit and mode allocation remains unresolved.
+// M3 lane 11 r136 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the look pair as two scalars
+// declared at the function's top 196, declared at their clamps 196 (frame 0x28 both: they share the spring slots); the
+// end-of-loop flag test reading the first weapon through `first_weapon` 188; the weapon counter declared at the function's
+// top 188; `unit` declared bare at the function's top and assigned in place 188 (same code each). Still BLOCKED by the
+// stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 4 r237 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `bool active` in its own block with the
+// set-active call 188; zoom, no_zoom and no_scope declared at the loop body's top 188; both together 188 (same code each); the
+// sound callback selected ahead of the orientation pointer 185 (a statement order, under the bar), with the active block 185;
+// `unit` as a const pointer 188. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 8 r208 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the overlay lookup tested
+// without the named class-type result 197 (frame 0x2c, but the result temporary then lives at -0x28 and the weapon-object
+// and frame homes move; retail's named result at -0x10 is right); the look record in its own block around the four
+// spring statements 188; the look pointer and the flags copy declared at their assignments 188; the weapon counter
+// declared in the for statement 188; no channel pointer (the +0xb8 channel written out at its test and clear) 188 (same
+// code each).
+// MiniMax R (11-20): score 188 (was 188): no new form; the frame stays 0x30 against retail's 0x2c (the look pair still
+// needs an aggregate slot of its own), the unit and mode still take each other's slot against retail, and esi and edi are
+// still saved ahead of the unit test where retail saves them after it, so the body stays BLOCKED by the stand-in.
+// M3 lane 12 r166 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the channel byte tested as
+// `(byte & 2) || (byte & 8)` on this body 188 (same code: folded to one `test byte ptr, 0xa`); the view angles read at each
+// use with no look pointer 415 (2208 B); the 0x98 overlay play written in each arm with constant arguments 339 (2194 B); the
+// weapon object looked up after the orientations pointer 188 (2197 B); `no_scope = no_zoom = true;` 188 (same code). Still
+// BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// M3 lane 2 r126 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): values re-bound by a const
+// reference at their later uses: the mode at both overlay calls 188, the zoom speed at its test and clamp 188, the
+// weapon-active flag at the set-active call 188, the user-flags copy at its test and store 188 (same code each); the mode
+// lookup after the four spring defaults 204. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 6 r219 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the mode lookup after the four
+// spring defaults 204; the game-time reference taken ahead of the first smoothing call and used for every rate read 224
+// (2193 B); the reference taken ahead of the yaw only 219 (2193 B); the look entry bound as a const reference instead of
+// the look pointer 188 (same code); the first weapon's object named before its definition lookup 188 (same code). Still
+// BLOCKED by the stand-in (round 98) for the ESI/EDI saves; unit/mode slots swapped and frame 0x30/0x2c unchanged.
+// NOT kept (M3 review 11-21, MiniMax C 11-20): the round-105 lead (score 40) applied again; as lane 15's r105 note says,
+// it rests on the swapped callback ternary, the one-use channel-byte local, the active preset and the implied
+// else-if, all match-only, so it is kept only with a byte match. The body is main's again.
+// M3 lane 4 r241 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the rate read from the global at
+// each use instead of the frame-settings reference 219 (2193 B); the +0xb8 channel pointer used for the play, the frame read
+// and the frame store as well 202 (2189 B); the look angles read from the global's entry at each use with no look pointer
+// 415 (2208 B); `first_weapon = user->weapons` 188 (same code); the set-active flag passed straight to the call with no named
+// bool 378 (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// Round 627. Direct scope result from named or const overlay ID 220/220,
+// weapon-scope ID with branch or direct result 362/373, signed overlay index
+// with direct result or sentinel branch 213/197, direct result with scoped
+// look pair 220, renamed overlay ID with direct result 220. NOT kept: the
+// 0x30 frame and swapped unit/mode slots remain, and all forms regress.
+// M3 lane 3 r291 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `active` renamed weapon_active
+// 188 (same code: the active byte still shares the unit slot, so the slot packing does not follow the names); `bool active
+// = false;` as a dead initialiser 188 (same code, no early store); the overlay flags and set passed as two `no_scope ?`
+// conditionals 350 (2203 B); the four definition overrides tested as `0.0f != field` 539 (2193 B); the zoom test as
+// `0.1f < zoom` with the blend test as `1.0f == ...` 191. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 16 r168 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the weapon object looked up
+// inside the 0xb000067 arm, its only use, 245 (2197 B); the sound callback selected in the update call's argument with no
+// callback local 188 (same code); the aiming speed computed ahead of the update call 388 (2204 B); the 0x98 overlay's
+// channel flags and set as two conditional expressions on `no_scope` 350 (2203 B); the busy test as `== 0` and the
+// countdown as `-= 1` 188 (same code). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// Existing object getter at unit/primary weapon/iterated weapon, singly, paired,
+// and together 188 each. Existing header getter and object member at all three
+// 188. The 0x30 frame, unit/mode slots and early ESI/EDI saves persist.
+// Round 666. The 0x30 frame and early register saves persist.
+// Unit handle 188, early unit guard 188, guard with reused handle 188, named mutable
+// or immutable clamp targets with the look record 188/188, separate scalar inputs
+// 196/196, unit handle with immutable weapon flag 188, shared raw clamp target 188,
+// and separate clamp-target scopes 188. Scalar spring inputs reserve 0x28 instead of 0x2c.
+// M3 lane 2 r135 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): a named const pointer to the
+// unit's aiming velocity for both smoothing calls and the zoom magnitude (three uses) 206 (2193 B); the sound callback
+// chosen by an if/else statement 188 (same code); the update test and the channel-byte test as two nested ifs 188 (same
+// code); the zoom logic in retail's positive sense (`zoomed = zoom > 0.1f; scoped = zoomed && query;`, both cleared on the
+// 0xd03b0 query, every later test rewritten directly) 205 (2203 B; the older rounds' 385 is out of date); that with the
+// 0x98 overlay play written per arm with constant arguments 352 (2201 B). Still BLOCKED by the stand-in (round 98) for the
+// ESI/EDI saves. Body unchanged.
+// M3 lane 3 r294 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the four spring defaults declared
+// d, c, b, a 192; `no_scope` set by an if/else on `no_zoom` 376 (2197 B); the sound callback chosen by an if/else on the
+// nonzero index 188; the idle counter incremented in its own statement ahead of the test 188; the busy and animating
+// tests spelled `== 0` / `!= false` 188 (same code each). Re-measured by mistake: zoom computed at its declaration ahead
+// of the update call 388 (listed). From the look values to the weapon loop the rows now differ only in the unit and mode
+// slot numbers. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 8 r223 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `mode` declared ahead of `unit`
+// and assigned in place 188; `zoom` declared at the function's top 188; `active` declared at the function's top 188;
+// the channel frame declared at its assignment 188; the orientation index written `user_index * 2 + weapon` 188 (same
+// code each). Retail's -0x1c slot is shared by the unit, the zoom and two later spills, ours by the unit and the active
+// byte. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 12 r176 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): our 0x30 frame never
+// touches its lowest cell (both builds use -0x2c..-0x4), so the extra four bytes are an unused home; the active byte declared at
+// function scope 188, zoom at function scope 188, the two zoom flags at function scope 188, the weapon-slot index declared in
+// the for statement 188, the active byte declared at its assignment 188 (same code each: scopes move no home). Still BLOCKED
+// by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): the zoom block in
+// retail's positive sense as read from its listing (zoomed = zoom > 0.1, scoped = zoomed && the 0xc8a10 query, both cleared on
+// 0xd03b0, scoped cleared when the overlay is missing, rate `zoomed && !scoped` pinned else `scoped` 1.0, clear on `!zoomed &&
+// !scoped || scoped && current != set || !scoped && current == set`, play and save per arm with constant arguments) with a
+// plain `else` 364 (2191 B, aligned 36); with retail's `else if (zoomed)` (implied test, match-only) 371 (2197 B, aligned 31,
+// masked 28); positive sense with the shared flags/set play 381 (2193 B); the else-if form with the channel's current set read
+// once into a named local for both compares 376 (2193 B, aligned 30: retail's hoisted `mov eax, [edi + 0xa0]`), the plain-else
+// form with it 379 (2187 B). The last six bytes are the active preset and the movzx channel-byte test (both match-only), the
+// rest the stand-in's ESI/EDI rows. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): a named indices pointer for the
+// three indices uses 188 (same code); a named pointer to the +0x98 overlay channel at all ten uses 194 (2187 B), only in the
+// first overlay block (where retail holds it in ESI) 194 (2187 B); the zoomed arm's rate as one conditional expression 188
+// (same code); the overlay play's flags/set arms in the no-scope-first order 189. Still BLOCKED by the stand-in (round 98)
+// for the ESI/EDI saves. Body unchanged.
+// M3 lane 1 r161 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the scope overlay's index
+// tested on the call's returned value with no named local, in the `!no_scope` test 197 or nested under it 197 (frame
+// still 0x30: the named animation local is not the unused cell); the channel frame expression passed straight to
+// set_frame_position 335 (2189 B); the user flags read and set in place with no `flags` local 188 (same code); the idle
+// globals pointer read in place at its three uses 225 (2205 B). Frame 0x30 in all five. Still BLOCKED by the stand-in
+// (round 98) for the ESI/EDI saves. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1814,9 +2117,8 @@ void __stdcall function_166d75(long user_index)
 		real spring_c = 27.0f;
 		real spring_d = 6.0f;
 		s_first_person_weapon *first_weapon = &user->weapons[0];
-		real look_yaw;
-		real look_pitch;
-		point2f *look;
+		s_view_angles look_angles;
+		s_view_angles const *look;
 		dword flags;
 		long field_x11c898;
 
@@ -1844,24 +2146,25 @@ void __stdcall function_166d75(long user_index)
 		}
 		function_11eed0((real *)&user->unknown2030[0x0], (real *)&user->unknown2030[0x8], unit->aiming_velocity.i, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
 		function_11eed0((real *)&user->unknown2030[0x4], (real *)&user->unknown2030[0xc], unit->aiming_velocity.j, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
-		look_yaw = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
-		look_pitch = PIN(-1.0f / g_510c54->rate * *(real *)&user->unknown2030[0x2c], -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_yaw, g_510c54->rate, spring_d, spring_c, false, -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_pitch, g_510c54->rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		look_angles.yaw = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
+		s_game_time_globals &frame_settings = *g_510c54;
+		look_angles.pitch = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles.yaw, frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles.pitch, frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
 
-		look = (point2f *)&g_4ed284->entries[user_index].yaw;
+		look = &g_4ed284->entries[user_index].angles;
 		flags = user->flags;
 		if (TEST_FLAG(flags, _first_person_user_active_bit))
 		{
-			*(real *)&user->unknown2030[0x28] = function_0bff60(look->x, *(real *)&user->unknown2030[0x20]);
-			*(real *)&user->unknown2030[0x2c] = function_0bff60(look->y, *(real *)&user->unknown2030[0x24]);
+			*(real *)&user->unknown2030[0x28] = function_0bff60(look->yaw, *(real *)&user->unknown2030[0x20]);
+			*(real *)&user->unknown2030[0x2c] = function_0bff60(look->pitch, *(real *)&user->unknown2030[0x24]);
 		}
 		else
 		{
 			*(point2f *)&user->unknown2030[0x28] = *g_4687c4;
 		}
-		*(real *)&user->unknown2030[0x20] = look->x;
-		*(real *)&user->unknown2030[0x24] = look->y;
+		*(real *)&user->unknown2030[0x20] = look->yaw;
+		*(real *)&user->unknown2030[0x24] = look->pitch;
 		user->flags = flags | FLAG(_first_person_user_active_bit);
 
 		for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
@@ -1934,12 +2237,8 @@ void __stdcall function_166d75(long user_index)
 						!no_zoom && no_scope && weapon->channel98.unknown08 == 0x60000d8)
 					{
 						weapon->channel98.clear();
-						if (no_zoom && no_scope)
+						if (no_zoom && no_scope && weapon->animation.animation_name == 0x400000c)
 						{
-							if (weapon->animation.animation_name != 0x400000c)
-							{
-								goto overlay;
-							}
 							first_person_weapon_save_orientations(user_index, field_x11c898, 0.267f);
 						}
 					}
@@ -1962,7 +2261,6 @@ void __stdcall function_166d75(long user_index)
 					weapon->animation.overlay_play_for_class(&weapon->channel98, channel_flags, mode, 0x7000101, set);
 					first_person_weapon_save_orientations(user_index, field_x11c898, 0.1335f);
 				}
-overlay:
 				channel = &weapon->channelb8;
 				if (function_0b6760((s_index_pair *)channel))
 				{
@@ -2466,6 +2764,9 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // reuses al. Tried before: the flag as a separate bool global with bool active = false (23); the
 // reused local as char/byte, with `: 0`, with a (long) cast (all 236); `!= 0` of a long ternary
 // (249); a nodes local in the second loop (20).
+// Matched in a full build with stand-in SDK headers (was 9): the test is two nested ifs with the globals pointer
+// declared between them (retail loads it before the jl), and the node map argument is formed from the nodes pointer
+// (`nodes - (offset of nodes - offset of weapon_node_map)`), which gives retail's lea from the first lea's register.
 // @retail 0x165f16
 long __stdcall first_person_weapons_get_models(long user_index, long unit_index, long maximum_count,
 	s_first_person_model *models)
@@ -2486,92 +2787,97 @@ long __stdcall first_person_weapons_get_models(long user_index, long unit_index,
 			active |= TEST_FLAG(weapon->flags, _first_person_weapon_active_bit);
 			armed |= weapon->weapon_index != NONE;
 		}
-		if (active && armed && user->unit_index == unit_index && user->unit_index != NONE && user->character_index >= 0 &&
-			user->character_index < ((s_first_person_globals_view *)g_4e034c)->representation_count)
+		if (active && armed && user->unit_index == unit_index && user->unit_index != NONE)
 		{
-			s_player_representation *representation =
-				&((s_first_person_globals_view *)g_4e034c)->representations[user->character_index];
-			long arms_render_model_index = representation->arms_render_model_index;
-			long body_render_model_index = representation->arms_animation_graph_index;
-			long unit_node_count = 0;
-			transform4x3f *unit_nodes = NULL;
-			long unit_render_model_index = NONE;
-			transform4x3f base;
-			transform4x3f adjustment;
-			s_first_person_model *model;
+			s_first_person_globals_view *globals = (s_first_person_globals_view *)g_4e034c;
 
-			if (unit_index != NONE)
+			if (user->character_index >= 0 && user->character_index < globals->representation_count)
 			{
-				long model_index = *(long *)((byte *)first_person_object_definition_get(first_person_object_get(unit_index)) + 0x38);
+				s_player_representation *representation = &globals->representations[user->character_index];
+				long arms_render_model_index = representation->arms_render_model_index;
+				long body_render_model_index = representation->arms_animation_graph_index;
+				long unit_node_count = 0;
+				transform4x3f *unit_nodes = NULL;
+				long unit_render_model_index = NONE;
+				transform4x3f base;
+				transform4x3f adjustment;
+				s_first_person_model *model;
 
-				if (model_index != NONE)
+				if (unit_index != NONE)
 				{
-					long render_model_index = *(long *)(g_4e3b44[model_index & 0xffff].bytes + 4);
+					long model_index = *(long *)((byte *)first_person_object_definition_get(first_person_object_get(unit_index)) + 0x38);
 
-					if (render_model_index != NONE)
+					if (model_index != NONE)
 					{
-						unit_render_model_index = render_model_index;
-						unit_nodes = function_b8c00(unit_index, &unit_node_count);
+						long render_model_index = *(long *)(g_4e3b44[model_index & 0xffff].bytes + 4);
+
+						if (render_model_index != NONE)
+						{
+							unit_render_model_index = render_model_index;
+							unit_nodes = function_b8c00(unit_index, &unit_node_count);
+						}
 					}
 				}
-			}
-			function_1420f0(&base, &g_4b9da0, &g_4b9dac, &g_4b9db8);
-			if (TEST_FLAG(user->flags, _first_person_user_adjusted_bit))
-			{
-				function_141590(&user->adjustment, &adjustment);
-				function_142a60(&base, &adjustment, &base);
-			}
-			user->matrix = base;
-			count = 1;
-			for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
-			{
-				s_first_person_weapon *weapon = &user->weapons[field_x11c898];
-
-				if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE &&
-					maximum_count > 1 && TEST_FLAG(weapon->flags, _first_person_weapon_arms_animated_bit) &&
-					arms_render_model_index != NONE)
+				function_1420f0(&base, &g_4b9da0, &g_4b9dac, &g_4b9db8);
+				if (TEST_FLAG(user->flags, _first_person_user_adjusted_bit))
 				{
-					first_person_model_build(arms_render_model_index, weapon->node_count, weapon->nodes, unit_index, 1, &base,
-						weapon->arms_node_map, models);
+					function_141590(&user->adjustment, &adjustment);
+					function_142a60(&base, &adjustment, &base);
 				}
-			}
-			model = &models[1];
-			for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
-			{
-				s_first_person_weapon *weapon = &user->weapons[field_x11c898];
-
-				if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE)
+				user->matrix = base;
+				count = 1;
+				for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
 				{
-					long interface_index = first_person_character_to_interface(user->character_index);
-					long render_model_index = first_person_object_definition_get(first_person_object_get(weapon->weapon_index))->
-						interfaces[interface_index].render_model_index;
+					s_first_person_weapon *weapon = &user->weapons[field_x11c898];
 
-					if (count < maximum_count && TEST_FLAG(weapon->flags, _first_person_weapon_animated_bit) &&
-						render_model_index != NONE)
+					if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE &&
+						maximum_count > 1 && TEST_FLAG(weapon->flags, _first_person_weapon_arms_animated_bit) &&
+						arms_render_model_index != NONE)
 					{
-						first_person_model_build(render_model_index, NONE, weapon->nodes, weapon->weapon_index, 1, &base,
-							weapon->weapon_node_map, model);
+						first_person_model_build(arms_render_model_index, weapon->node_count, weapon->nodes, unit_index, 1, &base,
+							weapon->arms_node_map, models);
+					}
+				}
+				model = &models[1];
+				for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
+				{
+					s_first_person_weapon *weapon = &user->weapons[field_x11c898];
+
+					if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE)
+					{
+						long interface_index = first_person_character_to_interface(user->character_index);
+						long render_model_index = first_person_object_definition_get(first_person_object_get(weapon->weapon_index))->
+							interfaces[interface_index].render_model_index;
+
+						if (count < maximum_count && TEST_FLAG(weapon->flags, _first_person_weapon_animated_bit) &&
+							render_model_index != NONE)
+						{
+							transform4x3f *nodes = weapon->nodes;
+
+							first_person_model_build(render_model_index, NONE, nodes, weapon->weapon_index, 1, &base,
+								(long *)((byte *)nodes - ((byte *)weapon->nodes - (byte *)weapon->weapon_node_map)), model);
+							count++;
+							model++;
+						}
+					}
+				}
+				if (count < maximum_count && body_render_model_index != NONE && unit_render_model_index != NONE && unit_nodes)
+				{
+					s_first_person_render_model *unit_model =
+						(s_first_person_render_model *)g_4e3b44[unit_render_model_index & 0xffff].bytes;
+					s_first_person_render_model *body = (s_first_person_render_model *)g_4e3b44[body_render_model_index & 0xffff].bytes;
+
+					if (body->node_count == unit_model->node_count &&
+						*(long *)((byte *)body + 0x44) == *(long *)((byte *)unit_model + 0x44) &&
+						(*(real *)((byte *)body + 0x70) == 0.0f || *(real *)((byte *)body + 0x70) > g_4b9db4))
+					{
+						first_person_model_build(body_render_model_index, unit_node_count, unit_nodes, unit_index, 0, NULL, NULL,
+							&models[count]);
 						count++;
-						model++;
 					}
 				}
+				function_168644(user_index, models, &models[1]);
 			}
-			if (count < maximum_count && body_render_model_index != NONE && unit_render_model_index != NONE && unit_nodes)
-			{
-				s_first_person_render_model *unit_model =
-					(s_first_person_render_model *)g_4e3b44[unit_render_model_index & 0xffff].bytes;
-				s_first_person_render_model *body = (s_first_person_render_model *)g_4e3b44[body_render_model_index & 0xffff].bytes;
-
-				if (body->node_count == unit_model->node_count &&
-					*(long *)((byte *)body + 0x44) == *(long *)((byte *)unit_model + 0x44) &&
-					(*(real *)((byte *)body + 0x70) == 0.0f || *(real *)((byte *)body + 0x70) > g_4b9db4))
-				{
-					first_person_model_build(body_render_model_index, unit_node_count, unit_nodes, unit_index, 0, NULL, NULL,
-						&models[count]);
-					count++;
-				}
-			}
-			function_168644(user_index, models, &models[1]);
 		}
 	}
 	return count;

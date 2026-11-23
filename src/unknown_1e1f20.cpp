@@ -128,7 +128,7 @@ void __stdcall function_1e1250(long actor_index)
 	}
 }
 
-void __stdcall function_1e1a00(long actor_index, long value);
+void __stdcall function_1e1a00(long actor_index, bool value);
 long function_1e4990(long character_index);
 
 // @retail 0x1e0d50
@@ -592,6 +592,21 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// score 59 (was 59): r143 and m3 lane 8 r221 unchanged (r221's line just above the marker). Earlier 59 (was 236): m3 lane 11 r141 kept the memory walk as a plain loop testing through the cached actor with the release steps as retail expands them, the prop walk through 0x26be00/0x26be30 with the node re-read after the callback, the iterator compared against the cached actor and `value` as a bool (see the end of this note). Left: the slot loop forms the slot address ahead of the handler loads where retail forms it after the test, the definition bit is tested in place where retail stores it in a byte first, and the compare's operand order. Earlier 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
+// MiniMax G (11-20): no new form, no lower score (236): the raw value turned into a bool before the 0x203ed0 call rises to 289, the prop walk through prop_node_get rises to 280 and to 274 with the cached-actor iterator compare, and calling the real 0x26ed40 instead of expanding it rises to 348 (910 bytes); the offset-first head form compiles to the same bytes as the kept body and was dropped; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp), and the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX.
+// MiniMax B (11-20): no new form, no lower score (236): the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX, and the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp); the known 216 form holds the definition bit in a byte flag set by one test and read by the next, which is kept only with a byte match; this round's permuter (2 tries, 339.9 s) reaches 205 differing instructions against its baseline of 219 only through a constant-only local and a bool flag set by one test, both banned.
+// MiniMax G (11-20): no new form, no lower score (236): the head still loads the actor pool global into eax where retail keeps it in ecx and holds the scaled actor index in ebx where retail keeps it in eax, and the tail still keeps the pool in edi where retail keeps it in ebp; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it.
+// (fast with 0xf0fd0, 0x1fb360 and the eleven matched callers/neighbours, all MATCH): the prop walk through 0x26be00/
+// 0x26be30 with the view index read through a prop_node_get pointer after the callback 285 (948 bytes); the
+// actor-iterator test as `actor != other` against the cached actor 308 (942 bytes); the participant slot read at each of
+// the two stores 282 (974 bytes); the slot loop through a handler pointer (`handler->stop` tested and called) 236 (same
+// code); the prop walk and the cached compare together 299. Without the expanded 0x26ed40 (its file keeps it a call)
+// and the bool parameter (one declaration sits in src/unknown_1e3920.cpp, avoided this round) every form here rises:
+// BLOCKED-BY 0x26ed40.
+// MiniMax G (11-18): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
+// loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and the body is still 22
+// bytes short of retail's 980 because retail expands 0x26ed40 into it; that expansion is settled in
+// src/unknown_26e370.cpp, which this lane may not edit, so the body stands.
 // MiniMax E (11-14): no new form, no lower score (236): the first difference is still at +0x3, where the actor
 // pool goes into EAX and retail puts it in ECX; the slot loop is still rotated by a jump with an alignment pad
 // retail has not, retail's memory walk still indexes the record as actor base + 12*i in EDX and re-reads the slot
@@ -616,13 +631,28 @@ void swarm_leader_detach(long actor_index);
 // in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte offset in
 // EDX and the countdown in a stack slot); and the body is 22 bytes short of retail's 980 because retail
 // expands 0x26ed40 into it (src/unknown_26e370.cpp).
-// score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
+// MiniMax I (11-17): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
+// loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and this build still spills
+// the actor pointer to [esp+0x14] where retail holds it in EBP; the definition-bit test written as a nested if
+// compiles to the same bytes as the && form, and the permuter's best variant (300 s, two tries, 205 differing
+// instructions on the reduced image against a baseline of 219) only reaches it through a constant local and a bool
+// flag set by one test, both banned, so the body stands.
+// MiniMax A (11-18): no new form tried this round, no lower score (236): the head still loads the actor pool into
+// EAX where retail loads it into ECX and keeps the scaled index in EBX where retail keeps it in EAX, and this build
+// still spills the actor pointer to a stack slot retail holds in EBP; the body is also still 22 bytes short of
+// retail's 980 because retail expands 0x26ed40 into it, and that helper's body lives in src/unknown_26e370.cpp,
+// which this lane may not edit: BLOCKED-BY 0x26ed40.
+// Earlier 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
+// Earlier: no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
+// MiniMax E (11-16): no new form, no lower score (236); the body is still 22 bytes short of retail's 980 because
+// retail expands 0x26ed40 into it (src/unknown_26e370.cpp, BLOCKED-BY), and the prologue still loads the actor pool
+// into EAX where retail loads it into ECX.
 // MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
 // setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
 // actor through the pool; a permuter run was stopped at its time limit without reporting a variant.
-// score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
+// Earlier at 236 from 281, frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
 // at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
 // slot) and the iterator compare against the cached actor differ.
 // MiniMax I (11-09): no new form, no lower score; the body has retail's shape but the allocation differs from the first instruction: retail loads the actor table into EAX and keeps the scaled actor index in EBX with the actor pointer in EBP, ours loads the table into ECX and keeps the index in EAX; the memory walk's helper 0x26ed40 is another lane's file: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
@@ -875,8 +905,236 @@ void swarm_leader_detach(long actor_index);
 // NOT kept (coordinator review, MiniMax D 11-15): 236 -> 216 rested on a bool flag set by one test and read by the
 // next (definition_bit = false; if (definition) definition_bit = ...; if (definition_bit)), a form kept only with
 // a byte match.
+// Round 454: successor captured before unlink, while, byte address, same tracking receiver 237, successor
+// captured before unlink, while, typed helper, same tracking receiver 237, successor captured before
+// unlink, for, byte address, same tracking receiver 237, successor captured before unlink, for, typed
+// helper, same tracking receiver 237, successor captured before unlink, while, byte address, refreshed
+// tracking lookup 278, successor captured before unlink, while, typed helper, refreshed tracking lookup
+// 278, successor captured before unlink, for, byte address, refreshed tracking lookup 278, successor
+// captured before unlink, for, typed helper, refreshed tracking lookup 278. Capturing the successor
+// separately scores 237 with the existing tracking receiver. Refreshing the receiver after the callback
+// follows the retail load but scores 278. The original walk and body are restored. The two opening score
+// headings are merged into one.
+// MiniMax D (11-17): no new form, no lower score (236): the first difference is still at +0x3, where retail
+// loads the record pool pointer into ECX and this build loads it into EAX, and the body is still 22 bytes
+// short of retail's 980 because retail expands 0x26ed40 into it; BLOCKED-BY 0x26ed40
+// (src/unknown_26e370.cpp), which this lane may not edit.
+// M3 lane 5 r197 (fast with 0x1e0160, 0x26ed40, both MATCH throughout; aligned exact / register-masked counts in
+// brackets, base [106/69]; all restored). Diagnostic, reverted at once (a hand copy of an existing helper is not keepable):
+// a file-local forceinline twin of joint_decline (actor re-derived, participant index read at each store) called from
+// `for (short i = 0; i < 4; i++) if (actor->memory[i].type != NONE)` 301 at 1006 B [75/48]: the head then takes retail's
+// registers (pool ECX, offset EAX and spilled to +0x10) and the memory walk is retail's (cursor EBX, byte offset EDX,
+// countdown in a stack slot); left with it: frame 0x24 against 0x20 with the actor pointer spilled (ours uses EBP inside
+// the prop walk), the raw `value` push, retail's prop walk (pool re-read after the 0x1e2150 callback, its two record
+// lookups) and the definition bit's byte in the dead index slot. On the twin: the prop record re-derived from the pool at
+// both reads 325 (1022 B) [84/72], that with the iterator compared against the cached actor 284 (990 B) [77/64]; those
+// two without the twin 274. The 0x258600 call replaced by an undefined extern (no register summary) 240: not the cause
+// (the opaque call takes no argument, so the index leaves EDI). The definition-bit test through a new forceinline helper
+// with a false-then-set result 216 (966 B; the byte lands in the dead index slot as retail, the same code as the flag
+// form reverted on 11-15, a match-only form), through a helper returning the direct expression 236 (same code). Still
+// BLOCKED-BY 0x26ed40: retail expands it here and its file's inline setting keeps it a call in this build.
+// M3 lane 4 r222 (fast with 0x26ed40, 0x1e2150, 0x258600, 0x1e4990 and 0x1e0160, all matched; control 236, aligned 108): the
+// iterator compared against the cached actor alone 308 (942 B); the memory walk as the existing joint_decline call under the
+// type test 348 (910 B, a call where retail expands it); the definition bit as a byte test `*definition & 8` 236 (same code);
+// `(bool)value` for the 0x203ed0 argument 236 (same code); the counts loop index as short 236 (same code). Still
+// BLOCKED-BY 0x26ed40 (expanded in retail, kept out of line by its file's inline setting).
+// M3 lane 13 r115 (plain unless marked fast; each step on the one before; lead saved as build/r115/lead-1e1a00.patch
+// in the m3-lane13 worktree; all restored): memory walk as `for (short i...) if (actor->memory[i].type != NONE)` calling
+// a file-local forceinline copy of joint_decline 301 (1006 B, fast); prop walk through 0x26be00/0x26be30 as matched
+// 0x1e23c0 writes it, the view index re-read through prop_node_get after the 0x1e2150 callback 303; the iterator
+// compared against the cached actor 223 (974 B); written `actor != other` (retail's cmp order) 223; the post-callback
+// prop node as a named pointer for the test and the release 196 (prop walk exact); the definition bit as a bool flag
+// (false, set when the definition exists) 218 (980 B, tail exact); `value` as bool at the definition and all eight
+// declarations, passed to 0x203ed0 unconverted, 4 plain and fast: only the slot loop's `lea` of the slot address
+// sits before the handler-table loads where retail has it after the `test`. Slot-loop spellings on that 4: a slot
+// pointer local 4 / passed as the argument 6; the type named first 4; a handler pointer with a stop local 4; the table
+// expression at the test and the call 4; type and handler and stop locals 4; a handler pointer with `handler->stop`
+// tested and called, also const, also with a stop local tested: MATCH on the fast image but 297 plain (996 B, frame
+// 0x24: actor_index leaves EDI in the head and the byte offset takes EBX); the type named with the table read at the
+// test and the call 297. The fast image flips to 297 too once it holds both 0xf0fd0's closure and the file of
+// 0x1fb360/0x1fb510 (each alone keeps the match; their path into 0xcbf60 changes where LTCG enters the cycle
+// 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
+// path decides it); 0x1e1a00's definition moved to the end of its file 297.
+// Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
+// M3 lane 5 r212 (fast on round 189's full-image list: 0xf0fd0, 0x1fb360, the callers and callees, all as before; control 236
+// [masked 41, exact 82]): `(bool)value` at the 0x203ed0 call 236 (same code); `actor_get(actor_index) != other` 236 (same
+// code); `!unit[0xaa]` 236 (same code); the memory walk through the cached actor pointer 308 (942 B), with a short index 308.
+// Diagnostic (reverted): the memory walk removed 397 (862 B): the head then loads the pool into ECX and the offset into EAX
+// as retail (actor_index moves to EBX), so the walk's shape is what sets the head. Still BLOCKED-BY 0x26ed40 (retail expands
+// it here) and the bool parameter's declaration in src/unknown_1e3920.cpp (avoided this round).
+// M3 lane 7 r189 (fast with 0xf0fd0, 0x1fb360, the ten callers, 0x26be00, 0x26be30, 0x203ed0, 0x1e22d0, 0x26ed40: this list
+// reproduces the full image's allocation; control 236, nothing kept). Re-built lane 13's lead on today's body (file-local
+// forceinline copy of joint_decline called from a `for (short ...)` memory walk with the test through the entry actor, the
+// prop walk through 0x26be00/0x26be30 with a two-use node pointer, `actor != other`, the definition bit as a false-then-set
+// bool, `value` as bool at the definition and in all eight declarations): 4 at 980 bytes, the only difference being the slot
+// loop, where ours forms the slot address right after the type read and loads the handler into EDX, retail loads handler and
+// stop through ECX and forms the address after the test. On that lead, same code (4 each): the stop read twice with no
+// local; the type in a short or long local; `slot_index >= 4 ? NULL : &slot`; `stop != NULL` with `(*stop)(...)` and
+// `actor->slots + slot_index`; the handler held as a dword or an untyped pointer and cast for the stop read; a handler
+// pointer read once into the stop local; the stop local with the test re-reading the table; one more named local in the tail
+// (the game time). Flips the whole allocation (frame 0x24, the byte offset in EBX, the actor index read from the stack and
+// EDI pushed only before 0x258600): the handler pointer with `handler->stop` tested and called 297 (996 bytes); that with one
+// to seven unused locals 297 each; with the handler const, at function scope, with `other != actor`, with the slot index
+// declared ahead of its loop, with a slot pointer in the call's block or ahead of the loop, with the counts pointer dropped
+// or one more local 297 each; with the direct definition test 289 (990); with a long memory index 494 (1172); the slot
+// pointer named in the call's block 297, between the stop read and its test 297, as the selected argument 298; a pointer to
+// the stop field tested and called 299; the handler pointer with a stop local and the test on the field 297. So any pointer
+// local the loop reads twice, or a named slot address, flips it; integers and once-read pointers are propagated away.
+// The handler-pointer form is byte-exact (MATCH) in a reduced image without src/unknown_1fb350.cpp, and the permuter's
+// baseline shows the flip in the full image too (285 by its count, `sub esp, 0x24`); its 600 s annealed run with 0xf0fd0
+// and 0x1fb360 as context (21 tries) found nothing below that. Diagnostic: this whole file's contents placed in
+// src/actors.cpp (same flags, earlier in source order) 297, so the file's position does not choose the state. Built only
+// from existing functions (joint_decline called, direct definition test, the prop walk, the cached compare, bool value) 397
+// (862 bytes), so no part of the lead is a gain without the expanded helper. Still BLOCKED-BY 0x26ed40 for a natural form
+// (marked inline it also expands in 0x1bead0 and 0x26ef70), and on the link-time state for the handler pointer.
+// MiniMax C (11-19): no gain (236, baseline; body restored). The known 216 form holds the definition bit in a byte flag set by the tests and read by the next test, which is kept only with a byte match. What is left is the head: ours loads the pool global and the slot table into other registers than retail (the pool into EAX against retail ECX) and keeps the actor index in EBX against retail EAX.
+// M3 lane 2 r114 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40; control 236), tail forms the
+// list above lacks: the definition test held in a bool from the `&&` expression (retail stores the bit into the dead
+// [esp+0x34] slot before branching, the shape of a named phi) 236 (same code: no store); the definition read from the
+// cached actor instead of a fresh lookup 298 (946 B); the last block through the cached actor 296 (990 B); the last
+// block re-deriving the actor at each of its three uses 251 (980 B, retail's length, aligned 161 / masked 114 against
+// 106 / 65); the bit test spelled `!= NULL` / `!= 0` 236 (same code). In the tail retail keeps NONE in EDI and the pool in
+// EBP after the 0xcbf60 call and reloads the scaled index from +0x10 at each lookup; ours puts the pool in EDI, the index
+// in EBP and compares with -1 immediates. Still BLOCKED-BY 0x26ed40.
+// M3 lane 8 r202 (fast with the nine callers, all MATCH each time; control 236, aligned 110, register-masked 69): every caller is
+// machine 3's, so `value` as bool at the definition and all eight declarations (retail's raw push to 0x203ed0 and low-byte
+// tests) 288 (aligned 108, masked 66); that with the view index re-read after the 0x1e2150 callback and the iterator compared
+// against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
+// region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
+// re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// M3 lane 12 r160 (fast with 0x26ed40's nine callers and the matched functions of its file; control 236): the memory
+// walk calling 0x26ed40 under the type test through the cached actor 364 as a short for loop or a long do loop (a call);
+// with `inline` on 0x26ed40 301/319 (1006 bytes), 0x1bead0 and 0x26ef70 then expanding it too and losing their match;
+// its file without the inline-depth flag (diagnostic, flags unchanged) the same three expansions; `value != 0` 236 and
+// `memory + memory_index` 236 (same code). Retail keeps the call at all eight other sites. Still BLOCKED-BY 0x26ed40.
+// Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
+// fresh entry from byte distance, element distance, short index or advanced byte
+// displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
+// M3 lane 2 r118 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236): the
+// memory walk's entry through the existing element_502424_get 236 (same code); the prop walk's node through the existing
+// prop_node_get view (next_index, view_index) 236 (same code); both 236; the slot loop with a slot pointer local as
+// matched 0x1e23c0 writes it 236 (same code); the prop walk through the 0x26be00/0x26be30 iterator with the node
+// re-derived through prop_node_get after the 0x1e2150 callback (retail's re-read) 285 (948 B). Still BLOCKED-BY
+// 0x26ed40 (expanded in retail, kept a call by its file's inline setting) and by `value` as bool, whose declaration in
+// src/unknown_1e3920.cpp sits in a file another lane holds this round.
+// Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
+// fresh entry from byte distance, element distance, short index or advanced byte
+// displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
+// M3 lane 6 r217 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236, aligned
+// 82, masked 41): the invitation test through the entry actor with the body through the re-derived entry 319 (1006 B), that
+// as a `for (short ...)` walk 339 (1022 B); the first prop index read through the cached actor 309 (942 B); the invitation
+// index as short in the do-while 236 (same code); the invitation walk as a plain `for (long ...)` 526 (1182 B). Still
+// BLOCKED-BY 0x26ed40.
+// M3 lane 11 r141 (fast with 0xf0fd0, 0x1fb360, the ten callers, 0x26be00, 0x26be30, 0x203ed0, 0x1e22d0, 0x26ed40, 0x1e2150,
+// 0x258600 and 0x1e4990, all as before in every run; control 236, aligned differing rows 82, 43 with registers masked):
+// kept, 236 -> 59 at 974 B (aligned 9), plain check 59. No copy of a helper function is needed for round 115's lead: the
+// memory walk written in place as `for (short ...)` testing `actor->memory[i].type` through the cached actor, with the
+// release steps as retail expands them (the owner looked up again, the entry's short read at each of its two uses, the
+// final store through `owner->memory[i]`), together with the prop walk through 0x26be00/0x26be30 (the node re-read
+// through prop_node_get after the 0x1e2150 callback) and the iterator compared against the cached actor, is 196 (aligned
+// 9, first difference +0x40); each alone or in pairs raises the count (walk 301, prop walk 285, compare 308, walk and
+// prop walk 303, prop walk and compare 299). On 196: `value` as bool at the definition and its eight declarations
+// (retail pushes the parameter's dword to 0x203ed0 unconverted and tests its low byte) 58 with `actor != other`, 59 with
+// `other != actor` (kept: the operand order main had); with the definition bit as a false-then-set bool 4 at retail's
+// 980 B (the flag form, match-only: only the slot loop's `lea` then sits ahead of the handler loads) and on 196 alone
+// 218. Spellings of the walk on the 58 form: the final store through the entry pointer (`memory->type = NONE`) 294, also
+// without the owner local 294; the entry's short in a named local 107; a long counter 486 (1166 B); the real
+// joint_decline called in place of the steps 397 at 862 B (retail expands it here and calls it from its six other
+// callers, all matched). Slot loop on the 4 form: the slot address in a pointer local between the stop read and its
+// test 4 (on 196: 198, the select then masks the other way round), ahead of the stop read 4 (same code); the type in a
+// short local or bound to a `short const &` 4 (same code); the stop bound to a const reference 4 (same code); the
+// argument through a new inline accessor returning the slot or NULL 4 (same code); the handler pointer with its stop
+// tested and called 297 (996 B, frame 0x24: the listed whole-allocation flip), with the accessor 297. Still open for the
+// match: the handler loads staying in ECX with the `lea` after the test, and the stored definition bit.
+// M3 lane 3 r289 (fast with 0x1e23c0, 0x1e22d0, 0x1e2150 and 0x1e17d0, all MATCH throughout; control 59; plain where noted).
+// Retail's sibling slot loops fall in two groups: 0x1e23c0, 0x1e2150 and 0x1e17d0 keep the actor index on the stack in the
+// loop and form the slot address right after the type load (their slot-pointer-first source matches), while 0x1e22d0 and
+// this function keep it in a callee-saved register and form the address after the stop test, the handler chain staying
+// in ECX. On the listed 4 form (flag bool + `actor != other`; 4 in the plain check too): address spellings for the call's
+// slot pointer or the type read (byte arithmetic in either association, `actor->slots + slot_index`, a `slots` pointer
+// for both) 4 each (same code); a `slots` pointer for only one of the two 264 (980 B, the flipped allocation); a
+// file-local inline accessor for the handler, the type, the stop pointer or two of them 4 each; handler and type in
+// named locals 4; the stop read twice through the type 297; the selected slot pointer in a local before or after the
+// stop read 298; references or an entry pointer for the handler, the stop field or the type 4 each; a memcpy read of
+// the stop field or of the type 4 each; 1..13 unused locals at the top 4, 14..64 8 (no matching state). Diagnostic
+// (reverted at once): the handler read through a pointer-to-volatile, as 0x1e22d0 has it, gives MATCH in the fast image;
+// so does the handler read as a four-byte memcpy of its table entry (const or plain pointer, `&table[type]` or
+// `table + type`; check.py --fast agreed, 19 of 19 in this file; without the flag 53, without the compare order 1). The
+// plain check gives 297 at 996 B for every one of them (the volatile read, the memcpy in three spellings and with a type
+// local, with 1, 2, 4 or 8 unused locals; 289 at 990 B without the flag): in the full image they push EDI only after the
+// loop, keep the actor index on the stack inside it and form the address early, the other group's shape. The fast image
+// is not faithful for this function once the loop holds such a read: trust only the plain check. Body unchanged (59).
+// Open: what keeps the actor index in EDI through the loop in the full image while the address is formed late.
+// M3 lane 1 r143 (fast with 0xf0fd0 and 0x1fb360, the image that reproduces the plain result): the definition bit as a
+// named bool in its own `if` nested under `if (definition)` 54 (976 B; the byte store is still dropped); the false-then-set
+// bool 5, with `actor != other` 4 (B: only the slot loop's `lea` left; ours gives the handler EDX once the `lea` frees it,
+// retail reuses ECX and forms the `lea` after the test). On B: the handler and stop read again at the call 4; a handler
+// pointer local 4; a short type local plus the handler local (0x1e22d0's text without its volatile) 4; the handler bound
+// by `s_slot_handler *const &` 4, with the type local 4, through a slot pointer 297 (996 B); the type bound by
+// `short const &` 4; the argument as `actor->slots + slot_index` 4, as `slot_index >= 4 ? NULL : ...` 4.
+// M3 lane 3 r291 (H2M_FAST with 0xf0fd0 and 0x1fb360, the image that reproduces the plain result; on the listed 4 form,
+// the false-then-set definition flag plus `actor != other`, rebuilt: 4 at 980 B, only the slot loop's `lea` ahead of the
+// handler loads): the slot loop under a guard `actor->current >= 0` 272 (first difference +0x23); the stop pointer
+// declared in the `if` condition 4; the slot index declared ahead of the loop 4; the argument as a slot pointer
+// local set to NULL and assigned under `slot_index < 4` 281 (964 B: a branch, not the setge select); the loop as a
+// `while` with the increment at the end 4; diagnostic, reverted at once: a compiler read/write barrier between the
+// stop read and its test 4 (the barrier does not keep the `lea` after the loads; only a volatile or copied handler
+// read does, and those flip the full image to 297). Body unchanged (59).
+// M3 lane 7 r211 (h2m fast with 0xf0fd0 and 0x1fb360; on the listed 4 form, rebuilt: 4 at 980 B): the type in a `long`
+// local 4; `if (!stop) continue;` then the call 4; the call as `(*stop)(...)` with a typed null arm 4; the handler table
+// bound to a `s_slot_handler *const *` local before the loop 4 (all the same code); the argument's slot through a second
+// actor_get(actor_index) 273. Body unchanged (59).
+// M3 lane 16 r174 (h2m fast with 0xf0fd0 and 0x1fb360; control 59, aligned 13): the false-then-set flag rebuilt as
+// `bool counted = false; if (definition) counted = (*(dword *)definition >> 3) & 1; if (counted)` with `actor != other`
+// 4 at 980 B (plain check 4 too); the same flag set by `if (definition && bit) counted = true;` 57 (974 B, the byte store
+// dropped) and nested under `if (definition)` 57. On the 4 form: the stop assigned inside the `if` condition 4; the
+// stop declared ahead of the loop 4; the selected slot in a local inside the call's block 4; the table read twice (test
+// and call) 4; `slot_index >= 4 ? NULL : ...` 4 (all the same code). Diagnostic, reverted: the handler read as a
+// four-byte memcpy now gives 297 in the reduced image too (996 B, frame 0x24, actor index on the stack in the loop), so
+// the reduced image agrees with the plain check on that form. Reading of the last 4: retail's handler reuses the type's
+// ECX while the slot offset is still live (the `lea` comes after the stop test); ours forms the `lea` first, the offset's
+// EDX is then free and the handler takes it, which pins the `lea` ahead of the handler load. Body unchanged (59).
+// M3 lane 8 r221 (h2m fast with 0xf0fd0 and 0x1fb360; control 59): the listed 4 form rebuilt (false-then-set definition
+// flag plus `actor != other`; 4 at 980 B, only the slot loop's `lea` ahead of the handler loads). On it: the slot loop's
+// condition as `actor->current >= slot_index` 6; `if (stop != NULL) (*stop)(..., slot_index > 3 ? NULL : &slot)` 6; the
+// flag computed as `(... & 8) != 0` 4 (same code). On main's body with `actor != other`: the bit held by a conditional
+// initialiser (`bool counted = definition ? bit : false;`) 52 (976 B, no byte store). Body unchanged.
+// M3 lane 7 r215 (h2m fast with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B). Retail's own
+// 0x1e22d0 loop keeps the slot offset in EAX and forms the address in place after the stop test, 0x1e23c0's forms it
+// right after the type load: the placement follows from whether the type load and the argument share one address
+// temporary. On the 4 form: the slot loop, the `current` store and the 0x258600 call as a force-inlined routine that
+// looks the actor up itself 275 (980 B), the loop alone in such a routine 275: the loop then forms the address after
+// the test as retail does (offset in EAX, address in place, the handler still through EDX), but two actor pointers
+// are live, the outer one is spilled to a stack home and the memory countdown takes EBP (aligned 19). The same
+// routines declared plain `static inline` stay out of line: 366 (894 B), 347 (910 B), and 328 (932 B) for the one
+// that receives the actor pointer; force-inlined, the one that receives the actor pointer 4 (same code); a per-slot
+// routine taking the actor pointer and the index 4 (same code); a per-slot routine taking the slot pointer 297
+// (996 B, the listed whole-allocation flip). A second actor pointer local for the loop, declared after or ahead of
+// the main one 275/275, also with the `current` store through it 275; a slots pointer taken from a second lookup
+// 275; only a loop-local actor pointer, the main one looked up after the 0x258600 call 282 (pool reloaded there).
+// Diagnostic, restored at once: 0x1e22d0's text (short type local, handler through a pointer-to-volatile) in this
+// image 297 (996 B, frame 0x24), as the plain check gave in r289. The loop's pointer as a plain copy of the main
+// one 4, the main one copied from the loop's after the 0x258600 call 4 (same code: copies coalesce, so the late
+// address needs two looked-up pointers live at once). Body unchanged (59).
+// M3 lane 15 r137 (H2M_FAST with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B, only the
+// slot loop's `lea` ahead of the handler loads). Retail's own 0x1e2150 and 0x1e23c0 (slot pointer named, type read
+// through it) form the address right after the type load as ours does; 0x1e22d0 and this function form it after the
+// stop test, where the handler reuses the type's ECX. On the 4 form: the type in a `short` local and the handler in a
+// plain `s_slot_handler const *` local 4; the type read by a raw offset associated the other way
+// (`actor + slot_index * 0x40 + 0x90`) 4; the argument as `(s_slot *)((byte *)actor + 0x90) + slot_index` 4 and as
+// `actor->slots + slot_index` 4 (all the same code: the address is shared whatever its spelling). On main's body with
+// `actor != other`: the bit held as `bool counted = definition && bit;` 57 (974 B, no byte store). Body unchanged (59).
+// M3 lane 3 r302 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at
+// 980 B). Reading of the definition block: retail computes the bit into AL (`shr eax, 3; and al, 1`), stores it to the
+// dead actor-index home [esp+0x34] and branches on the flags, which is exactly the false-then-set flag form; so that form
+// is retail's there and only the slot loop's `lea` stays (ours forms it after the type load, the handler then takes EDX;
+// retail's handler reuses the type's ECX and the `lea` sits between the stop test and its jump). On the 4 form, each a
+// no-code file-local inline accessor: for the loop bound (`actor->current`) 4, for the `slot_index < 4` test 4, for the
+// type read 4, all three together 4 (same code each). Diagnostic, restored at once: the handler read as a four-byte
+// memcpy of its table entry 297 (996 B, frame 0x24, EDI pushed after the loop: the listed whole-allocation flip, now in the reduced image too).
+// Body unchanged (59).
 // @retail 0x1e1a00
-void __stdcall function_1e1a00(long actor_index, long value)
+void __stdcall function_1e1a00(long actor_index, bool value)
 {
 	s_actor_view *actor = actor_get(actor_index);
 	for (short slot_index = 0; slot_index <= actor->current; ++slot_index)
@@ -887,36 +1145,33 @@ void __stdcall function_1e1a00(long actor_index, long value)
 	}
 	actor->current = NONE;
 	function_258600(actor_index);
-	long memory_index = 0;
-	do
+	for (short memory_index = 0; memory_index < 4; memory_index++)
 	{
-		s_slot_memory_entry *memory = &actor_get(actor_index)->memory[memory_index];
-		if (memory->type != NONE)
+		if (actor->memory[memory_index].type != NONE)
 		{
+			s_actor_view *owner = actor_get(actor_index);
+			s_slot_memory_entry *memory = &owner->memory[memory_index];
 			byte *entry = g_502424->data + (memory->unknown4 & 0xffff) * 0xbc;
-			long slot = *(short *)((byte *)memory + 2);
-			*(long *)(entry + slot * 12 + 4) = NONE;
-			*(short *)(entry + slot * 12 + 8) = 1;
-			memory->type = NONE;
+			*(long *)(entry + *(short *)((byte *)memory + 2) * 12 + 4) = NONE;
+			*(short *)(entry + *(short *)((byte *)memory + 2) * 12 + 8) = 1;
+			owner->memory[memory_index].type = NONE;
 		}
-	} while (++memory_index < 4);
+	}
 	if (actor->unknown00a[0])
 		function_203fb0(actor_index);
 	else
-		function_203ed0(actor_index, (byte)value != 0);
+		function_203ed0(actor_index, value);
 	if (actor->unknown07c != NONE)
 		function_2694d0(actor->unknown07c, actor_index);
-	long prop_index = actor_get(actor_index)->first_prop_index;
-	while (prop_index != NONE)
+	s_iterator prop_walk;
+	function_26be00(actor_index, &prop_walk);
+	while (function_26be30(&prop_walk))
 	{
-		long current = prop_index;
-		byte *prop_entry = g_502418->data + (current & 0xffff) * 0x3c;
-		prop_index = *(long *)(prop_entry + 0x2c);
-		function_1e2150(actor_index, current);
-		long view_index = *(long *)(prop_entry + 0x14);
-		if (view_index != NONE)
-			record_pool_release(g_502414, view_index);
-		record_pool_release(g_502418, current);
+		function_1e2150(actor_index, prop_walk.index);
+		s_prop_node_view *node = prop_node_get(prop_walk.index);
+		if (node->view_index != NONE)
+			record_pool_release(g_502414, node->view_index);
+		record_pool_release(g_502418, prop_walk.index);
 	}
 	actor->first_prop_index = NONE;
 	s_record_pool_iterator prop_iterator;
@@ -933,7 +1188,7 @@ void __stdcall function_1e1a00(long actor_index, long value)
 	s_actor_view *other;
 	while ((other = (s_actor_view *)function_1e46c0(&iterator)) != NULL)
 	{
-		if (other != actor_get(actor_index))
+		if (other != actor)
 			function_1e1740(iterator.actor_index, actor_index);
 	}
 	function_2628f0(actor_index, g_470fa0);
@@ -959,7 +1214,7 @@ void __stdcall function_1e1a00(long actor_index, long value)
 	{
 		byte *counts = (byte *)g_5047f4;
 		--*(short *)(counts + 6);
-		if ((byte)value)
+		if (value)
 		{
 			++*(short *)(counts + 8);
 			*(long *)(counts + 0xc) = g_510c54->game_time;
@@ -1117,7 +1372,6 @@ bool function_1df5d0(short first, short second);
 bool function_1e11b0(long actor_index, bool active);
 bool function_114b60(short entry_index, short fallback_index, long unit_index, long priority, void const *extra);
 
-extern bool g_4f55e5;
 bool g_4f55e0;
 real function_259a0(dword *seed);
 long function_1469f0(real seconds);

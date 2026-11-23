@@ -221,9 +221,24 @@ void __cdecl function_2ea640(void const *a_, void const *b_, void const *input_,
 	}
 	timer_add_2ea940("lt");
 }
+// the agent entries and their count, as an array
+struct entries_2ea830
+{
+	agent_entry_2ea410 *data;
+	long size;
+};
+
+// one past the last entry
+inline agent_entry_2ea410 *end_of_2ea830(entries_2ea830 &array)
+{
+	return array.data + array.size;
+}
+
 // the agents of the tree's parts brought up to date, then each runs its
 // query against its part
-// score 23 (was 23): Frame 0x114 and extent agree; entry/end, parent/placement
+// score 0 (was 23): matched as 0x2ea410: cursor before the end, end from the entry array as a
+// list, parent stored before placement, shape and key stored together.
+// Before, 23 (was 23): Frame 0x114 and extent agree; entry/end, parent/placement
 // and virtual-call carriers differ. Early iterator 23; existing body 23; paired
 // geometry 27; shape/key captures 27; parent first 24; child constructor 94,
 // with paired geometry 93; late end 30; count capture 23; early container 75,
@@ -245,17 +260,19 @@ void class_2ea830::function_2ea830(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("LtBvTree");
 	((class_2e96a0 *)this)->function_2e96a0(a, b, input, function_2e90f0);
 	timer_add_2ebc80("StNarrowPhase");
-	agent_entry_2ea410 const *const end = entries + entry_count;
-	part_body_2ea830 const *container_body = (part_body_2ea830 const *)b;
-	part_body_2ea830 part;
-	part.placement = container_body->placement;
+	agent_entry_2ea410 const *entry = entries;
+	agent_entry_2ea410 const *const end = end_of_2ea830(*(entries_2ea830 *)&entries);
+	body_2ea940 const *container_body = (body_2ea940 const *)b;
+	body_2ea940 part;
 	part.parent = container_body;
+	part.placement = container_body->placement;
 	tree_part_2ea830 const *container = (tree_part_2ea830 const *)((tree_shape_2ea940 const *)container_body->shape)->container;
 	__declspec(align(16)) char buffer[0x100];
-	for (agent_entry_2ea410 const *entry = entries; entry != end; entry++)
+	for (; entry != end; entry++)
 	{
-		part.shape = container->part(entry->key, buffer);
-		part.key = entry->key;
+		tree_part_2ea830 const *shape = container->part(entry->key, buffer);
+		geometry_2ea640 const geometry = { shape, entry->key };
+		static_cast<geometry_2ea640 &>(part) = geometry;
 		entry->agent->slot_2(a, &part, input, collector);
 	}
 	timer_add_2ebc80("lt");

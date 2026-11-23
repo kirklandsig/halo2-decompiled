@@ -502,6 +502,18 @@ struct s_text_line_measurement
 	long index;
 };
 
+/* measures one line: walks the iterator until the next character would pass the bounds' right edge
+   (wrapping at the last break point when the draw flags ask for it) and returns the line's width
+   and the index it stops at. Retail computes the advance product once and copies it into a
+   second register (movaps) for the width update: the edge test and the update each name it */
+// score 77 (was 77): frame 0x1c and 415-byte length agree, but the width load is late and the scaled advance lacks retail’s independent update register.
+// frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
+// Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// MiniMax S (11-16): no new form, no lower score (77): retail reloads the width into xmm4 right after the scale and copies the advance product with movaps, so the sum lands in xmm5 and the bound in xmm0, where this build sinks the width's reload past the three products and sums into xmm4 with the bound in xmm5; copying the width into a local right after the kerning call is the same code, the sum in a local before the can_break test 75, the can_break block before the products 85, and a permuter run found nothing below 77.
+// Earlier (77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// XMM0 and XMM3 colouring (retail moves the width into xmm4 early and copies xmm0 into xmm3, ours accumulates the
+// advance in xmm0 and moves the width late) and the one-use width local the rules drop. Body unchanged.
+// MiniMax S (11-16): no new form, no lower score (77): the remaining differences are still the XMM0/XMM3 colouring (this build gives XMM0 to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps inside the update arm while ours run ahead of the test; the summed-width spelling that reached 65 is not kept, a one-use local being kept only with a byte match.
 // MiniMax C (11-15): score 65 (was 77): the new running width is summed once after the can_break block and before the
 // test (`real next_width = advance + offset + kerning + width;`) and stored in the update arm ahead of the count's
 // increment, which is the order retail stores them in. The advance is still live across that sum, so the update
@@ -510,7 +522,7 @@ struct s_text_line_measurement
 // named inside the update arm never produces the copy (77). Still open: the XMM0/XMM3 colouring (ours gives XMM0
 // to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps in
 // the update arm while ours run ahead of the test. The new width is read once, in the update arm.
-// score 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
+// Earlier header detail: 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
 // advance += kerning; advance += width; width = advance;`) 77; `advance += offset + kerning; width += advance; count++;`
 // 77; with the test reading the advance product written out again (diagnostic) 77, still no copy; 1-7 dead long locals at
 // the top 77 each (no phase effect); 0x13f700's `real x = position->x + advance + offset + kerning;` named before the
@@ -631,6 +643,97 @@ struct s_text_line_measurement
 // NOT kept (coordinator review, MiniMax C 11-15): 77 -> 65 rested on a one-use local computed ahead of the test
 // (real next_width = advance + offset + kerning + width; then width = next_width in the else arm), a form kept
 // only with a byte match.
+// P566: Existing token/kerning/cache-entry/cache-ready ordinary inline declarations,
+// four isolated, token-kerning/cache-pair/token-cache-entry/all:
+// 42/77/77/77/42/77/42/42. NOT kept: token forms grow 415 to 418 bytes,
+// add a width reload and still lack native advance copy/early width. All declarations restored.
+// P580: Scalar memcpy at advance pixels/offset pixels/both/token/break byte/right bound/
+// start coordinate/reused running width: 77/77/77/77/77/79/79/79. NOT kept: native independent advance
+// copy and early width load remain; original observations, arithmetic and full body restored.
+// M3 lane 8 r175 (fast with 0x13f700/0x13f0e0, both MATCH; control 77): `count &&` ahead of the bound test 76 (416 B); the new
+// width named before the test with `count++` ahead of `width = next_width;` 71 (one-use local, not kept); the test's first pair
+// commuted (`advance + position->x`, exact) 77 and the update's (`offset + advance`) 77 (both re-sorted); the whole test sum named
+// before the can_break block 75 (one-use local). Diagnostics re-measured: 0x13f5a0 declared `inline` 42 at 418 B (the width
+// is then re-read in the can_break arm and at the test; only the alignment of the tail improves); the listed next-width forms
+// before the test 65 and before the can_break block 68 (the second gives retail's copy right after the products, but the
+// adds stay ahead of the branch, where retail runs them in the update arm). Body unchanged.
+// P591: Original incoming iterator/position/bounds fixed-binding subsets 1/2/4/3/5/6/7,
+// then immutable returned measurement: eight 77s. NOT kept: no independent advance web
+// or early-width recovery; original complete input/output bindings and body restored.
+// Round 179 (m3 lane 8, fast with 0x13f700/0x13f0e0, both MATCH; control 77): the update as `width = width + advance +
+// offset + kerning;` 77 (same code); the break point as a measurement aggregate (`break_point.index/.width`) 81 (frame
+// order moves, first +0x2); the running width/index and the break point both as measurement aggregates, the result
+// returned directly 83 (398 bytes); the update through `real &running = width;` 77 (same code); the scale read once
+// into a `real const` local before the loop 77 (same code: propagated away). Still the advance copy and early width load.
+// M3 lane 9 r133 (fast with the file's other 17 functions; control 77): reference-bound forms meant to keep a second advance
+// range (a bound reference is not folded back into its expression): the update through `real &running = width;` 77; the
+// update reading the advance through `real &step = advance;` 77; the test reading it through that reference 77; the update
+// accumulated in the advance through the reference (`step += offset; step += kerning; width += step;`) 77 (all four identical
+// code: the reference is folded here); the bound read through `real const &right = bounds->x1;` 77, and the caller 0x13f0e0
+// then falls from MATCH to 144 (936 B). Body unchanged.
+// Bound accumulator 77.
+// Fitting-branch width accumulator 77.
+// Iteration-entry width 77.
+// Bound accumulator, fitting-branch width accumulator 77.
+// Iteration-entry width, bound accumulator 77.
+// Iteration-entry width, fitting-branch width accumulator 77.
+// Iteration-entry width, bound accumulator, fitting-branch width accumulator 77.
+// Iteration-entry width, bound accumulator, fitting-branch width accumulator, advance starts that accumulator alone 77.
+// NOT kept: width snapshots and separate accumulators all compile to the baseline comparison. Original metric and update expressions restored.
+// Early origin and right edge 42; early right edge alone 77; early origin
+// alone 41; both between offset and advance 33; both with break admission
+// 42; projected origin before offset 31; early pair with width first 42;
+// early pair with running-width snapshot and accumulation 33. Comparison
+// accumulation from early origin 32, with early pair 35, with independent
+// accepted-width accumulator 30, with width first 30; pair between offset
+// and advance with comparison accumulation 33; origin after offset with
+// comparison accumulation and width first 28. Read offset before advance,
+// then scale after projected origin 31, with raw kerning first 31.
+// NOT kept: the lower scores move one-use field reads or the projected
+// origin earlier; the native independent advance register is still absent.
+// N404: Signed pixel loads before the break snapshot with later scaling of kerning/offset/advance
+// 80/38/38, paired metrics 53/56/76, and all three 76. In-place late scaling of all metrics 78,
+// kerning/offset/advance 73/72/71. NOT kept: the two 38 forms use one-use pixel locals and
+// leave a product after the break branch, where retail completes all three first. The advance
+// copy still differs. In-place forms miss the gain threshold.
+// Two-use glyph sum for offset/kerning/width, offset/kerning, kerning/width, and staged
+// offset/kerning/width, each inline/forceinline 77/77/77/77/77/77/77/77. The independent advance
+// copy and early width load still differ.
+// M3 lane 12 r139 (fast with 0x13f700/0x13f0e0, control 77): the width update before `count++` 77 (the stores then follow
+// retail, width first; no score change); the header pointer const 77; can_break read into a bool before its test 77 (both
+// same code); the advance defined before the kerning call 82; the update summed a+k+o+w, o+a+k+w, o+k+a+w, k+a+o+w 77 each.
+// Scalar SSE advance/offset/kerning/all products 121/129/129/153. Scalar SSE comparison
+// sum/accepted width/both sums/both sums with all products 143/126/134/179.
+// All introduce 16-byte stack alignment and regress at the entry. The separate advance
+// register and early width load remain unresolved in the restored body.
+// Saved-break early return or loop break 122/123; terminal-token return 57;
+// positive continuation and cursor permissions 83; common measured-width publication
+// 127; saved-break publication at loop tail 77; cursor selection at loop tail 77;
+// token-owned completion 111. NOT kept: the terminal return grows to 417 bytes
+// and reloads width twice. The separate advance copy and early width load remain.
+// Conditional overflow count 80; separate wrap first 77 or accepted glyph first 77;
+// conditional width 77, count 77, or both 77; wrap before the separate width or count
+// update 77/77. NOT kept: the ties still lack the independent advance register and early width load.
+// M3 lane 6 r194 (fast with 0x13f0e0, MATCH in each; control 77): the break-point block (`if (iterator->can_break)`)
+// placed ahead of the kerning call, the offset and the advance 85; between the kerning and the offset 111; between the
+// offset and the advance 111; the metrics in offset, kerning, advance order ahead of the break block 82; offset, advance,
+// kerning 133 (393 B). Retail's early width load does not come from the width's first use moving up.
+// M3 lane 3 r262 (fast with 0x13f700/0x13f0e0, both MATCH; control 77): the comparison accumulated in a named right edge
+// at the test (`right = position->x; right += advance; ... right += width;`) 77 (same code); `real right = position->x +
+// advance + offset + kerning;` after the break-point block with the test `right + width` 77; a width snapshot after the
+// three products used by the break store, the test and the update 77 (same code: propagated); that snapshot updated in
+// place and copied back 77; the accumulated right edge started from the origin read between the offset and the advance
+// 30 (first difference +0xa8; the origin's early load takes the XMM4 slot where retail loads the width, and the advance
+// still has no copy; a one-use field read moved early, not retail's late origin read, not kept).
+// The advance copy and early width load still differ. Separate saved-break
+// selection, index before/after the width branch 68/76, width before/after
+// the index branch 117/124, both fields index/width first 124/117, shared
+// predicate index/width first 117/117. One-branch effective break index,
+// previous-index default and joined index publication 77/72/77.
+// NOT kept: 68 emits a second break test. The single-test 72 gains five.
+// Running width read after the raw kerning, offset, advance or all three pixel loads. Direct update
+// 77/77/77/77; fitting-path accumulator 77/77/77/77. NOT kept: every form ties at 415 bytes and retains the
+// late width load and single advance register.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
@@ -653,12 +756,13 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 				real kerning = function_122570(iterator->field_4_3, iterator->previous_character, iterator->character) * scale;
 				real offset = *(short *)header->unknown08 * scale;
 				real advance = (short)header->unknown00 * scale;
+				real edge_advance = (short)header->unknown00 * scale;
 				if (iterator->can_break)
 				{
 					break_index = index;
 					break_width = width;
 				}
-				if (!(bounds->x1 > position->x + advance + offset + kerning + width) && count)
+				if (!(bounds->x1 > position->x + edge_advance + offset + kerning + width) && count)
 				{
 					if (g_4e73a0.flags & 1)
 					{
@@ -673,8 +777,8 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 				}
 				else
 				{
-					count++;
 					width = advance + offset + kerning + width;
+					count++;
 				}
 			}
 		}

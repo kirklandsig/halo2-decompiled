@@ -32,7 +32,7 @@ struct s_ai_capsule_view
 };
 
 // @retail 0x1c8940
-void function_1c8940(s_ai_capsule_view *capsule, long object_index, long value)
+inline void function_1c8940(long value, long object_index, s_ai_capsule_view *capsule)
 {
 	real height;
 	real radius;
@@ -40,7 +40,8 @@ void function_1c8940(s_ai_capsule_view *capsule, long object_index, long value)
 	*(volatile byte *)&capsule->active = height == 0.0f ? 1 : 0;
 	*(volatile real *)&capsule->value10 = 0.0f;
 	*(volatile real *)&capsule->value14 = 0.0f;
-	capsule->height = height;
+	real *capsule_height = &capsule->height;
+	*capsule_height = height;
 	capsule->radius = radius + 0.15f;
 	capsule->value1c = value;
 	capsule->object_index = object_index;
@@ -983,6 +984,33 @@ void function_1ca290(long tag_index, long ticks, long object_index, long node_in
 	}
 }
 
+/* data_datum_iterator_next (data_iterator.cpp), which retail inlines here */
+static inline bool data_datum_iterator_next_inlined(s_data_datum_iterator *iterator)
+{
+	s_record_pool *data = iterator->data;
+	long index = data_next_absolute_index_inlined(data, iterator->index + 1);
+	byte *datum;
+
+	if (index != NONE)
+	{
+		datum = data->data + data->size * index;
+		iterator->index = index;
+		iterator->datum_index = (*(short *)datum << 16) | index;
+	}
+	else
+	{
+		iterator->index = data->maximum_count;
+		iterator->datum_index = NONE;
+		datum = 0;
+	}
+	iterator->datum = datum;
+	return datum != 0;
+}
+
+// Matched in a full build with stand-in SDK headers (was 243): the prop nodes are walked through a 16-byte datum
+// iterator and a file-local inline next(), and the two prop tests read iterator.datum_index (no node_index local).
+// The earlier note said this form cost 0x54590 and 0xc2d00 in the full build; in this gate neither moved.
+// Before:
 // b5H (11-06) walk against retail, statement by statement: the tests, constants (15.0, 12.0, 5.0, 4.0, 3.0 seconds) and the
 // three returns of the actor index agree. Fixed (precision): the distance adds z, y, x as retail does ((dz^2 + dy^2) + dx^2,
 // 0x1ca499-0x1ca4c7, rounded once at 0x1ca4d1). Found: retail walks the prop nodes with a 16-byte datum iterator at +0x38
@@ -993,12 +1021,14 @@ void function_1ca290(long tag_index, long ticks, long object_index, long node_in
 long function_1ca2d0(bool unknown)
 {
 	long game_time = g_510c54->game_time;
-	long node_index = NONE;
-	long index = NONE;
+	s_data_datum_iterator iterator;
 
-	while ((index = data_next_absolute_index_inlined(g_502418, index + 1)) != NONE)
+	iterator.data = g_502418;
+	iterator.datum_index = NONE;
+	iterator.index = NONE;
+	while (data_datum_iterator_next_inlined(&iterator))
 	{
-		s_prop_node_view *node = (s_prop_node_view *)(g_502418->data + g_502418->size * index);
+		s_prop_node_view *node = (s_prop_node_view *)iterator.datum;
 		s_ai_prop_target *target;
 		long actor_index;
 		s_ai_conversation_actor *actor;
@@ -1008,7 +1038,6 @@ long function_1ca2d0(bool unknown)
 		real distance;
 		real range;
 
-		node_index = (*(short *)node << 16) | index;
 		target = &((s_ai_prop_target *)g_50241c->data)[node->unknown08 & 0xffff];
 		if (!target->unknown25 || !target->unknown23 ||
 			ai_conversation_object_get(target->object_index)->player_index == NONE)
@@ -1028,7 +1057,7 @@ long function_1ca2d0(bool unknown)
 		{
 			ignore = true;
 		}
-		if (unknown && node->unknown28 > 15.0f && (actor->unknown6fe == 0 || actor->prop_index != node_index))
+		if (unknown && node->unknown28 > 15.0f && (actor->unknown6fe == 0 || actor->prop_index != iterator.datum_index))
 		{
 			continue;
 		}
@@ -1050,7 +1079,7 @@ long function_1ca2d0(bool unknown)
 		{
 			return actor_index;
 		}
-		if (actor->prop_index != node_index)
+		if (actor->prop_index != iterator.datum_index)
 		{
 			continue;
 		}
@@ -1206,12 +1235,13 @@ long function_25d810(long object_index, long actor_index, bool create);
 // header workspace, its native-player pairing, complete player/header role names, native player
 // with role names and direct table with role names: 18 each on reduced control 18 (plain 17).
 // Original complete executable body restored; prop-call setup and player/header register split remain.
+// Matched in a full build with stand-in SDK headers (was 17), without the volatile read: retail's player loop tail
+// (0x1c8cb2..0x1c8d0d) is function_1c8940's body inlined. function_1c8940 is declared inline and called at all three
+// sites; the link expands it at the player loop's site only and calls it at the other two, as retail does. It stores
+// the height through a one-use pointer and takes (value, object_index, capsule).
 // @retail 0x1c89b0
 short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_capsule_view *capsules)
 {
- (void)&actor_index;
- (void)&maximum_count;
- (void)&capsules;
  s_actor_view *actor = actor_get(actor_index);
  long count = 0;
  if (actor->unknown07c != NONE)
@@ -1226,7 +1256,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
    {
     long object_index = other->unknown018;
     if (((s_ai_object_header *)g_4e0300->data)[object_index & 0xffff].type == 0)
-     function_1c8940(&capsules[(short)count++], object_index, NONE);
+     function_1c8940(NONE, object_index, &capsules[(short)count++]);
    }
   }
  }
@@ -1243,7 +1273,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
    if (((1 << object_get(object_index)->type) & 1) && (short)count < maximum_count)
    {
     /* retail keeps the current prop index in memory across prop_node_state */
-    function_1c8940(&capsules[(short)count], object_index, *(long const volatile *)&prop_iterator.index);
+    function_1c8940(prop_iterator.index, object_index, &capsules[(short)count]);
     ++count;
    }
   }
@@ -1274,18 +1304,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
      continue;
    }
    long prop_index = function_25d810(object_index, actor_index, false);
-   object_index = player->unit_index;
-   s_ai_capsule_view *capsule = &capsules[(short)count];
-   real height;
-   real radius;
-   function_df5f0(object_index, &capsule->center, &height, &radius);
-   capsule->active = height == 0.0f ? 1 : 0;
-   capsule->value10 = 0.0f;
-   capsule->value14 = 0.0f;
-   capsule->height = height;
-   capsule->radius = radius + 0.15f;
-   capsule->value1c = prop_index;
-   capsule->object_index = object_index;
+   function_1c8940(prop_index, player->unit_index, &capsules[(short)count]);
    ++count;
   }
  }
@@ -1548,12 +1567,21 @@ long __stdcall function_1dfb90(long definition_index)
 
 long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v, real radius);
 
-// score 62 (was 62): frame 0x508 and exact length agree; origin/callee argument registers and stack cleanup differ.
+// score MATCH (was 62): fast build on r841; frame 0x508 and exact length agree.
 // Round 530: result initialized at scan, blocker initialized at scan, native long ordinal,
 // both producers, result/ordinal, blocker/ordinal, all three and complete scan role names: 67/62/64/67/64/64/64/64.
 // Original executable body restored; the geometry-call register contracts remain.
+// b10J (11-17) walk against retail, fast build on r841: fields, offsets, jcc senses, loop guard (0x1c8d51-0x1c8d54)
+// and the 0x1c9290-style segment call agree with retail. Differences found: (1) the 0x11ea30 call took (center, axis,
+// origin, direction); retail loads ecx=&center (0x1c8d9b), edx=&value10 (0x1c8d97), esi=direction (0x1c8d31) and
+// edi=origin (0x1c8d2a, reloaded 0x1c8da4), as matched 0x1c9290 does (0x1c9451-0x1c9463): the ray comes first, so the
+// call is now (origin, direction, center, axis, radius) (swapped segments, behaviour unverified: 0x11ea30 is todo).
+// (2) retail's statement order: the result is cleared (0x1c8de3) before the blocker is stored (0x1c8de5).
+// (3) parameter order: the actor is in ecx, the direction in eax, the object to ignore is the first stack slot
+// (0x1c8d60) and the origin the second (0x1c8d2a); the caller pushes blocker, origin, ignore (0x1fd969-0x1fd980,
+// in disabled src/unknown_1fc7e0.cpp, updated). Fast scores: old order with (1)+(2) 3; (1)+(3) without (2) 15.
 // @retail 0x1c8d20
-bool function_1c8d20(long actor_index, point3f const *origin, long excluded_object,
+bool function_1c8d20(long actor_index, long excluded_object, point3f const *origin,
     vector3f const *direction, long *blocking_index)
 {
     bool result = true;
@@ -1568,12 +1596,12 @@ bool function_1c8d20(long actor_index, point3f const *origin, long excluded_obje
         if (capsules[i].active)
             intersects = function_11e5e0(origin, direction, &capsules[i].center, capsules[i].radius);
         else
-            intersects = (char)function_11ea30(&capsules[i].center,
-                (vector3f *)&capsules[i].value10, origin, direction, capsules[i].radius);
+            intersects = (char)function_11ea30(origin, direction,
+                &capsules[i].center, (vector3f *)&capsules[i].value10, capsules[i].radius);
         if (intersects)
         {
-            blocker = capsules[i].value1c;
             result = false;
+            blocker = capsules[i].value1c;
             break;
         }
     }

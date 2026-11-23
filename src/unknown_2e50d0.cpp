@@ -160,7 +160,14 @@ void sweep_batches_2e50d0::function_2e50d0(owners_2e50d0 const *owners, bounds_a
 // the boxes of the owners taken out together: the pairs they ended are
 // reported, the last boxes move into their places, each axis drops their
 // endpoints and renumbers the rest, and the grid cells follow
-// score 162 (was 169): this/count now use retail's ESI/EDI; scalar
+// score 0 (was 22): matched with the first loop guarded by its own entry test
+// (`if (0 < count)`, no code of its own; it gives `this` and the count retail's
+// registers) and the cell renumbering reading each box index once.
+// Before, 22 (was 162): the slot step is in the loop header, the tail's owner is
+// tested directly, the moved box's owner is read from its new place, the cell is
+// addressed once, and the final renumbering reads the cell's list once per box.
+// The last loop still reads the element array through a kept address.
+// Before, 162 (was 169): this/count now use retail's ESI/EDI; scalar
 // frame homes, cached tail-owner handling, the cell-address store and the
 // cell remap still differ. an explicit kind flag 265; the flag with a cell snapshot 284;
 // memcpy 284; an end-pointer loop with and without memcpy 193/193; single-use tail
@@ -190,11 +197,14 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 	{
 		longs_2e1ab0 lower_ends(count);
 		lower_ends.size = count;
-		for (int i = 0; i < count; i++)
+		if (0 < count)
 		{
-			long *owner = owners->data[i];
-			((endpoint_2e0f80 *)lower_ends.data)[i].id = *(unsigned short *)owner;
-			((endpoint_2e0f80 *)lower_ends.data)[i].value = elements.data[*owner].slots[4];
+			for (int i = 0; i < count; i++)
+			{
+				long *owner = owners->data[i];
+				((endpoint_2e0f80 *)lower_ends.data)[i].id = *(unsigned short *)owner;
+				((endpoint_2e0f80 *)lower_ends.data)[i].value = elements.data[*owner].slots[4];
+			}
 		}
 		function_2e2f70((endpoint_2e0f80 *)lower_ends.data, count, pairs, 0);
 	}
@@ -207,7 +217,7 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 	z_slots.size = removed;
 	long removed_owner = 0;
 	{
-		for (int i = 0, j = 0; i < count; i++)
+		for (int i = 0, j = 0; i < count; i++, j += 2)
 		{
 			int const index = *owners->data[i];
 			element_2e1090 &box = elements.data[index];
@@ -219,7 +229,6 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 			z_slots.data[j + 1] = box.slots[3];
 			box.owner = (long)&removed_owner;
 			*owners->data[i] = 0;
-			j += 2;
 		}
 	}
 	shorts_2e1850 new_index(box_count);
@@ -228,8 +237,7 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 		int last = box_count - 1;
 		for (int i = 0; i <= last;)
 		{
-			long const tail_owner = elements.data[last].owner;
-			if (tail_owner == (long)&removed_owner)
+			if (elements.data[last].owner == (long)&removed_owner)
 			{
 				last--;
 				continue;
@@ -239,14 +247,15 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 			{
 				box = elements.data[last];
 				new_index.data[last] = (unsigned short)i;
-				long const owner = tail_owner;
+				long const owner = box.owner;
 				if ((owner & 1) == 0)
 				{
 					*(long *)owner = i;
 				}
 				else
 				{
-					((cell_2e1090 *)((char *)cells + (owner & ~1)))->box = (unsigned short)i;
+					cell_2e1090 *cell = (cell_2e1090 *)((char *)cells + (owner & ~1));
+					cell->box = (unsigned short)i;
 				}
 				last--;
 			}
@@ -272,7 +281,9 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 			cell_box.slots[3] -= removed;
 			for (int i = 0; i < cell.boxes.size; i++)
 			{
-				cell.boxes.data[i] = new_index.data[cell.boxes.data[i]];
+				unsigned short *data = cell.boxes.data + i;
+				unsigned short const old_index = *data;
+				*data = new_index.data[old_index];
 			}
 		}
 	}

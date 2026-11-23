@@ -9,6 +9,7 @@
 #include <math.h>
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 real g_47ffd0 = 0.5f;
 
@@ -58,10 +59,54 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
+// score 489 (was 489; m3 lane 2 r139, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
+// Earlier header line, a stack merged here in m3 lane 2 r139: 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// M3 lane 8 r220 unchanged, its line just above the marker.
+// Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// M3 lane 4 r230 (fast; control 489, difflib-aligned 224, register/offset-masked 77). With local_6.i/.j set before the k
+// test (retail's order: its `movaps xmm7, xmm5` / `movaps xmm6, xmm1` copies sit ahead of the branch, the zero is made once
+// before `cmp di, 2` and the field_68 test compares against it) the whole mode-2 block is retail's but for the MIN operand
+// order: 677 (3474 B, aligned 165, masked 64); that with both clamps as MIN(1.0f, ratio) (retail tests `1.0 > ratio` at
+// both) 676 (aligned 158, masked 59), the second only 677. The 25-byte shortfall is retail's per-arm y of the side point
+// (+4 instructions: local_8.y read in each arm, which may also be what gives local_8 the lower home), the flip's
+// `test al, al; setne al` (+2) and the 0x47c block (-1). The side ternary written in each coordinate, with the defaults
+// first 384, with MIN(1.0f, ...) too 373 (3483 B at retail's 844 instructions, but the arms become an x87 temporary and
+// the frame moves, masked 69: positional only); the y coordinate assigned before x 708 (frame moves); local_25 copied as
+// a planar vector 706 (frame moves); vector3f_add's operands swapped 489 and local_13 declared before local_11 489 (both
+// the same code); the side distance as an if/else assignment 489 and the flip as `local_21 = local_22 ? local_21 :
+// !local_21` 489 (both the same code). All match-only or worse; body unchanged.
+// MiniMax C (11-20): no new form, no lower score (489): the position and the sum still take each other's homes (the
+// position at +0x8c where retail has +0x80), and the normaliser still squares k, j, i where retail squares i, k, j;
+// that order is fixed in include/vector_products.h, which this lane may not edit.
+// MiniMax C (11-19): no new form, no lower score (489): the position and the sum still take each other's homes (the
+// position at +0x8c where retail has +0x80); neither declaring the position ahead of the sum nor hoisting the sum's
+// declaration to the top of the body moves that slot, and the normaliser still squares k, j, i where retail squares i, k, j.
+// M3 lane 8 r189 (fast; control 489): local_8 renamed `position` 489, local_14 renamed `destination` 489, both 489
+// (same code: names do not order these 12-byte homes); local_9 filled through vector3f_assign 665 (3499 B), through a
+// brace initializer of the three fields 765 (3486 B). Compile-only reading: the squares follow local_9's field ranks;
+// the aggregate copy, vector3f_assign, the three field stores and the initializer all give k, j, i and
+// normalize_inline k, i, j, against retail's i, k, j.
+// Earlier score history (679 before m3 lane 4 r203).
+// M3 lane 10 r119 (fast; control 489): local_13/local_14 renamed to sort after local_8 489 (same code: names do not order
+// these homes); the input copy as `memcpy` 489 (same code); the input copy defined j, k, i (diagnostic) 767 (the squares then
+// run i, k, j as retail, but the loads follow and 3481 B); the add's point through the position query's returned pointer
+// 804 (3468 B); the blend bound as `real const &` for the three rows 572 (3502 B). Body unchanged.
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
-// score 679 (was 702): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// MiniMax I (11-17): no new form, no lower score (489): the body is 3503 bytes against retail's 3499 and the slot homes still differ (local_8 at +0x8c against retail's +0x80, with local_14 the other way round), which needs the declarations moved; the normaliser still squares k, j, i where retail has i, k, j, and the retail grouping through normalize_inline for local_9 scores 775; the body is unchanged.
+// Earlier: Frame 0x88 agrees. Position is at +0x8c for retail's +0x80,
+// and the normalization squares and steering allocation differ. At 679, the target was
+// changed to a vector3f from the existing
+// Earlier at 489: m3 lane 4 r203 (plain, starting at 679) kept the target point local_14 as a vector3f from the existing
+// Earlier score history (679 before m3 lane 4 r203).
+// Earlier at 489: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// Earlier: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// Earlier: The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
 // local_14 the other way round, local_2 at +0x30 for retail's +0x1c between local_5 and local_6, local_6/local_7/local_15
@@ -523,6 +568,327 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P534: Immutable complete planar target/side-point/radial-displacement producers, seven subsets,
 // then all with immutable pre-blend snapshot: eight 702 at 3473 bytes. NOT kept: frame remains
 // 0x8c versus 0x88; native query/target home sharing does not recover. Original full body restored.
+// P548: Independent configuration, normalized-input/magnitude, heading/default, planar-input,
+// scalar-control, radial-workspace, pre-blend and velocity-residual declaration phases:
+// eight 679 at 3479 bytes. NOT kept: no native spill/home recovery on the shared query/target
+// storage graph. Every initializer and complete original executable source restored.
+// P550: Complete final latch outcome in bool/byte/short/long 679/679/679/679; backward transfers
+// at heading/paired defaults/normalized input/pre-blend snapshot 779/818/726/770. NOT kept:
+// no qualifying native spill/home repair; original full body and headers restored.
+// Configuration, query/position/target homes and normalization/steering allocation remain.
+// P552: Uninitialized component transfers at heading, paired defaults, normalized input, history,
+// working directions, saved steering, final outputs and the complete graph.
+// Fast scores 779/759/726/810/724/770/743/833. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Scalar correction in-place pointer/reference, separate pointer/reference,
+// returned output pointer/reference and wider already-rounded return: seven 679s;
+// complete residual vector with a plain correction loop 795. NOT kept: no native
+// spill/home repair; original helper, all three correction calls and full body restored.
+// Round 129 (m3 lane 9, plain each; aligned/masked = difflib counts on the listing, masked = registers and esp offsets
+// masked). Kept, 679 -> 489 at 3503 bytes, frame 0x88: the 0x1f9e70 planar copy as `*(vector2f const *)&local_25`
+// (retail's integer moves) with the scale read from field_50 into local_27 before the call and `local_27 *= ...` (retail
+// loads field_50 ahead of the call) 637; the first steering arm as the direct expression (no initial true; retail's
+// false paths share one `xor al, al`) 615 (3499 B); the three velocity dots as one vector3f frame_velocity ahead of the
+// reciprocal (retail divides after the dots) 540; the speed floor as MAX, the half span squared then divided in two
+// statements and the turn factor as `(1 - dot) * 0.5f`, `*= local_26 * 0.5f`, `*= 4.0f` (one expression folds 0.5 * 4.0
+// into 2.0 and divides first) 527; field_64 read once into `blend` for the three rows plus float squares in the radial
+// root (retail's `fld [x]; fmul [x]`; either alone 623/662) 496; the first arm's dot without the double casts 488.
+// Self-review: both clamps as MIN(1.0f, ratio) (retail compares 1.0 > ratio) gives 488 against 489 for MIN(ratio, 1.0f),
+// restored to the latter; the field_50 read placed before the planar normalize 489 (same as after it, so after it).
+// Tried, not kept: MIN(1.0f, ratio) alone 679 (aligned 463 -> 458); with both floors as MAX 723; with the speed floor as
+// MAX 681; the halves as `/ 2.0f` 538 (same code as `* 0.5f`); the square/divide split without the turn-factor statements
+// 669; the dot floor as MAX (retail keeps the if form); the first arm's dot through dot_product2d 660; the three dots as
+// one-use named locals 589; the up vector (object +0x7c) at each use in place of local_28, a field lead: 622 on 527, 498
+// on 496 (first difference +0x60 -> +0xf9, local_6 then register-allocated as retail); slot locals renamed to forced-order
+// names (same code: names do not order these slots). Leads, only keepable with a match (each a reverted form): the side
+// offset ternary written in each coordinate gives retail's per-arm y 550 on 615 (561 on 488, frame moves); the flip through
+// `byte side` with `local_21 = side != 0` (retail's `test al, al; setne al`) 669; local_6.i/.j assigned before the k branch
+// (retail's order; aligned 213 -> 156, masked 57) 676; flip + order 673; all three 708. Left: local_8 at +0x7c with the
+// 0x1f9760 output/local_14/local_25 slot at +0x70 (retail the other way round); the normaliser's squares k, j, i (retail
+// i, k, j); the post-0x1f8510 block's order; the per-arm y and the flip conversion (ours 6 lines short in the steering block).
+// P556: Actual object/configuration/input/query-output/position/response/radial/final-output
+// lvalue receivers 679/679/683/679/682/704/693/766. NOT kept: no native spill/home equality;
+// original executable body, all producer helpers and both final publications restored.
+// P558: Actual collision-query output workspace, six complete flag/flag/vector field orders then both
+// flag-pair orders with the vector independent: 730/730/730/730/730/730/713/713. NOT kept: unmatched
+// output grouping; original independent outputs, all helpers and entire body restored.
+// P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
+// shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
+// NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
+// M3 lane 11 r109 (fast, control 489 as the full build): local_8 renamed body_position (a name sorting ahead of the
+// shared 12-byte home's names) 489 (same code: names do not order these two homes either); the side point written in both
+// arms of `if (local_22)` (the negated distance named in the else arm) 751 (3538 B, frame 0x8c; the arms are not
+// tail-merged, the point gets a stack home); the k clamp as one ternary assignment 489 (same code); the three blend rows
+// reading field_64 at each use with the complement product first 663 (3499 B); the velocity-frame cross through the
+// existing cross3f_staged 489 (same code). Re-measured: the side ternary written in each coordinate 573 (3500 B: two
+// separate ternaries, not retail's per-arm y with the x part after the join); the flip as `== local_22` 658. Body unchanged.
+// M3 lane 14 r105 (fast = full 489 here): the normaliser's input copied component by component 765 (3486 B); that copy
+// made before the 0xb9dd0 call 500; local_13 declared before local_11 489, local_8 or local_9 declared first in the
+// function 489/489, local_10 declared then assigned 489 (all the same code: local_8 stays at +0x8c, the squares k, j, i);
+// the 0.99 test's dot through the existing dot_product2d 661 (3499 B). Kept: the output scale as the existing
+// vector3f_scale(&local_6, local_27, &local_6) 489 (identical code).
+// M3 lane 13 r105 (fast with 0x1f38c0/0x29b990 matched, 0x2922b0/0x29b2e0 unchanged; control 489, register-masked aligned 79).
+// The normaliser's square order follows when each component of local_9 is first named: a no-code read names it early, and a
+// component named early also takes the scale-copy-first product (retail: squares i, k, j; products copy, load, load). Forms:
+// `(void)local_9.j; (void)local_9.k;` before normalize3d 756 (3486 B: the squares become retail's i, k, j but j and k turn
+// copy-first and the frame moves); a private normaliser summing `s = i*i; s += k*k; s += j*j` through a squared-length
+// helper 646 (3499 B, masked 85: squares and products as retail, other products elsewhere flip); the 0.99 test's dot
+// written `local_17.i * local_15.i + local_17.j * local_15.j` 491 (3506 B, masked 74: its i term loads local_15 first as
+// retail), only its i term swapped 491 (same code); local_28 declared after local_4 at the top 493.
+// Round 614: one query/target vector 489; position as a full vector 489; planar position copied
+// at the position call 660, after query failure 602, after target addition 602, and after addition
+// with the shared path vector 602; earlier query vector declaration 489; position and both path
+// vectors renamed together 489. NOT kept: planar copies reach 3499 bytes in the later forms but
+// move the position call away from retail's +0x80. Sharing the path vector leaves it at +0x8c.
+// Deep round 410: world position/candidate direction/target names 489; sampled position/trace
+// direction/translated target names 489; position before motion outputs 489; query output
+// scoped to fallback test 665; target-position name 489; returned position pointer 795; query
+// flag at motion-mode test 563; target declared with query direction 489. NOT kept: lexical and
+// declaration forms tie at 489. Ending the query workspace at its result reaches the 3499-byte
+// retail extent but regresses to 665. The returned point and later query flag also regress. The
+// position and target stack homes and the order of the normalizer squares still differ.
+// Query/target/pre-turn shared vector 487; target/pre-turn shared vector 489; position
+// result copy 679; typed heading and index fields 489; typed actor predicates 489;
+// y-first side point 708; signed side branch 489; typed radial difference 665 at retail length.
+// NOT kept: two-point gain below threshold, ties or regressions. Position and query homes still differ.
+// Round 455: Common fallback with path admission and fallback arm first 753, Common fallback with path
+// admission and fallback arm first, query outputs declared before admission 753, Common fallback with path
+// admission and movement arm first 753, Common fallback with path admission and movement arm first, query
+// outputs declared before admission 753, Common fallback with path bypass and fallback arm first 753,
+// Common fallback with path bypass and fallback arm first, query outputs declared before admission 753,
+// Common fallback with path bypass and movement arm first 753, Common fallback with path bypass and
+// movement arm first, query outputs declared before admission 753. The common fallback reaches 3499 bytes
+// with frame 0x8c and shifts the position to +0x90. All scores rise. Restored the original path check and
+// fallback branches.
+// Planar target with point-difference helper 699; target from the planar
+// input 729, with the point-difference helper 745; shared three-component
+// input for target and planar copy 729; planar pre-turn snapshot 706;
+// snapshot normalized directly 752, with planar target 785, with shared
+// planar input and point difference 776. The position and alternate
+// vector homes remain interchanged in the retained body.
+// The position and query homes are exchanged before the translated target reuses the query slot.
+// Pre-turn snapshot as fallback/weighted/both inputs 674/674/682; separate turn result with
+// delayed publication 716; planar snapshot before separate turns with immediate/late publication
+// 673/714; planar aggregate/component capture before in-place turns 752/765.
+// NOT kept: all scores rise. The separate-result forms reach retail length but lose the native alias.
+// Translated target through the point setter 489, point aggregate 669, position
+// copy plus coordinate updates 718, immutable vector aggregate 669, point
+// destination of the vector addition 489, coordinate loop after copying position
+// 733, direct coordinate loop 615, and target scoped to side selection 771. The
+// aggregates reach retail length while the position still uses the other stack
+// home. Original body retained.
+// Collision vector supplies the query direction, initialized on the miss before
+// location, after location, at collision processing or before the result branch
+// 577/589/790/786. Response vector supplies it with fresh/saved defaults
+// 848/834. Collision reuse with a late target or the response default 827/786.
+// Restore the original collision default into the expired query vector 641.
+// The first forms recover the position slot but regress the opening copies.
+// Working heading as the ignored query output, with the initial copy at entry, after
+// position lookup, after normalization, or on the no-settings path 487/771/790/804.
+// With a named query result 487/771/790/804. NOT kept: the entry form restores the
+// position's +0x80 home, but changes the separate query destination and gains only two.
+// The position and path workspaces remain exchanged. The normalizer's squares also run in a different order.
+// Tried position and normalized input scoped before the final latch 489;
+// spatial inputs scoped through the final latch 489; position and correction scoped before the final latch 489;
+// normalized input scoped through the final latch 489;
+// path query as a direct alternative to the bypass branch 489;
+// direct path branch with position scoped before the final latch 489;
+// direct path branch with correction scoped through the final latch 489;
+// direct path branch with normalized input scoped before the final latch 489.
+// NOT kept: All eight tie at the original length, with the same first differing stack slot.
+// M3 lane 16 r137 (fast; control 489): the input copy written member by member 765 (3486 B); local_7 copied from local_6
+// 489 (same code); local_9 declared ahead of local_8 and assigned after the 0xb9dd0 call 489 (same code); local_10
+// declared ahead of local_9 489 (same code); local_3 declared just before the input copy 538.
+// Input capture before position, or complete normalization before position 500/762.
+// Admitted position only, both producers, normalization only, input and
+// normalization only, position between input and normalization, or position after
+// normalization 750/998/874/890/998/998. NOT kept: the position home remains
+// unresolved. Moving both producers under admission also raises the caller score.
+// Round 431: planar position pointer/reference before query or after translation 497 each; planar target
+// pointer/reference 497 each; radial-only translation before side selection or before radial difference
+// 764/771. The position and alternate vector homes remain exchanged. Original body restored.
+// Split saved planar components 766, all components 766, point-shaped planar save 762,
+// and split capture with member stores 766. Reuse query lateral/both tail components
+// 746/729, or translated-target lateral/both 734/734.
+// The translated-target forms put the position at +0x80 with frame 0x88, then differ at +0x4e.
+// NOT kept: every form regresses and shortens the body.
+// M3 lane 5 r200 (fast; control 489, aligned 178, register-masked 79, frame-blind 45): the velocity-frame cross through the
+// existing cross3f_staged 489 (same code: its operand sides do not follow the helper's spelling); a `velocity` pointer local
+// for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
+// steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
+// reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
+// M3 lane 6 r203 (fast with 0x30bf0; control 489, aligned 178/178): dead-local scan K = 0..31 at the top (diagnostic,
+// removed): K = 1-5, 9-13, 17-21, 25-29 move the frame homes (3499 B, 658-669), K = 6-8, 14-16, 30-31 493-500, K = 22-23
+// 574 (3509 B), K = 24 484 (aligned 176); the normaliser's squares stay k, j, i at every K, so that order is not a
+// symbol-count state. A matched-function scan of retail for the x87 square sums finds i, k, j only in 0x195070 (a vector
+// filled by a callee, then normalize_inline); k, j, i (ours) in 0x195370, 0x1b81c0, 0x1f1ee0, 0x23cbb0, 0x25dd50.
+// Tried: the input copy normalised through the existing function_30bf0 (retail calls it out of line three times
+// here) 874 (3398 B: stays a call); local_26 through the existing vector2d_from_points2d 665 (3499 B, frame moves);
+// local_25's components written y first (diagnostic: retail computes y in the select's arms) 708; the vector add's
+// operands as (arg_2, local_8) 489 (same code).
+// The frame still agrees with the position at +0x8c for retail's +0x80.
+// Point-typed target, query and shared query/target 489/489/489. Shared point
+// setter 487. Closing alignment products in j-k-i, k-i-j, j-i-k and i-k-j
+// order 741/750/747/747. NOT kept: the shared setter's gain is two. The named
+// products reach retail's length and one recovers the normalizer square
+// order, but the position slot stays different and the scores rise.
+// M3 lane 5 r204 (fast with 0x1f9e70 and 0x110ab0; control 489; all restored): the input normalised through a
+// file-local inline with the sum written j, k, i and the scale sides inverse * i, j * inverse, k * inverse 763 (3501 B:
+// the squares still run k, j, i, so the written order is not what sets them); LEAD: the closing dot written with the
+// copy's fields mentioned j, k, i (`local_9.j * local_7.j + local_9.k * local_7.k + local_9.i * local_7.i`) gives
+// retail's normaliser squares exactly (copy stores and squares i, k, j) but 756 overall (3486 B, homes move from +0x60,
+// the j/k scale sides flip); with local_7's fields first in each product 756; mentioned k, j, i 762; the j, k, i
+// mentions with normalize_inline 758 (3508 B). Retail's squares need local_9's fields ranked j, k, i by a direct
+// mention, not by the sum's spelling.
+// Independent collision vector seeded from the existing response default before/after location,
+// after planar normalization or at the collision split, scoped/entry declaration:
+// 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
+// 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
+// M3 lane 2 r113 (fast with 0x1f9e70/0x110ab0/0x29b990/0x2922b0/0x29b2e0, each at its baseline; control 489, aligned/masked
+// 178/43): declarations of the locals whose addresses reach calls moved to function scope (the lever that gives 0x2922b0
+// retail's per-point reloads): local_11 and local_13 489; local_15 and local_17 (assigned where they were) 489; local_14
+// 489; all five 489; local_20 and the outer local_23 489; all seven 489 (all the same code: here no store is followed by
+// a read through a pointer that the scope decides, so the position/target homes and the squares stay as they are).
+// Shared heading fallback, with the no-settings arm or the settings-present arm first. Direct
+// fallback test 753/764, named fallback result 762/762, direct steering test 753/764, named steering
+// result 753/769. NOT kept: Every shared-call form grows the frame and raises the score.
+// The position query still uses ESP+0x8c for retail's ESP+0x80.
+// Planar snapshot after position 775, after normalization 751, at query admission 745.
+// Planar snapshot before or after the actor update 725/723, after the translated target 723,
+// after both planar normalizations 725, and before side selection 720.
+// NOT kept: The planar snapshots move the position to +0x68 or +0x58 and disturb the entry spills.
+// Shared query and steering direction-validity byte, separate target, direct/named arrival test 489/489.
+// same byte with shared query vector and 3D target 487/489.
+// same byte with shared query vector and XY target 669/669.
+// same byte with the target calculated in the lateral test 773/771.
+// Written-differs at 489. NOT kept: Sharing the query vector for the full translated target gains two
+// and leaves the position at +0x8c. The two-component target reaches 3499 bytes at 669 and moves the
+// first difference earlier. The opening body is restored.
+// M3 lane 13 r128 (screened, control 489): local_8 declared first in the function 489; local_14 declared ahead of the
+// 0x26c180 call 489; local_9 declared bare and assigned from the input 489; local_9 declared ahead of local_8 and
+// assigned after the position query 489 (all the same code: neither moves the position's +0x8c home); local_7
+// declared ahead of local_6 495.
+// Position remains at +0x8c for retail's +0x80. Both path vectors declared together before
+// the heading, before the position, before or after its query, or after normalization 489 each;
+// one path vector before the position or before or after its query 489 each.
+// Translated target as two scalars, query-vector coordinates, explicit planar writes, or shared setter into the query vector before planar normalization 702/669/546/487.
+// The same forms inside side selection 775/775/763/764. NOT kept: the setter gains two and retains the wrong position home.
+// Shared planar radial and heading vector with direct/helper subtraction
+// and copied/assigned heading 671/727/503/727. The same workspace as a
+// point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
+// NOT kept: the initial position still goes to +0x8c and every score rises.
+// Per-arm Y with common X, positive/negative first: point field 718/718,
+// scalar forming point 703/703, scalar consumed by radial difference 720/720,
+// radial Y in each arm 694/686. NOT kept: the scalar Y forming a point reaches
+// position +0x80 and frame 0x88 but shortens the function to 3483 bytes and raises the score.
+// M3 lane 5 r219 (H2M_FAST; control 489): the closing test as dot3f(&local_7, &local_9) 489 (same code: retail's
+// local_7-first products there come from operand ranks, not argument order); the side flip held in a byte and converted
+// at the join (`local_21 = side != 0`, diagnostic for retail's `test al, al; setne al` after the flip: that pair then
+// appears, but the new byte takes a home and every slot below moves) 663 at 3499 B; local_25 assigned y first 708
+// (3488 B, frame moves); that with the byte flip 718 (3481 B); y first with local_26 through the existing
+// vector2d_from_points2d 721 (3476 B). Body unchanged.
+// Branch-owned side Y 720, advancing the planar base 718, selecting full Y 693 or its
+// displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
+// and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
+// position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
+// M3 lane 12 r166 (fast screen; control 489, aligned 156, register-masked 43): the 0x47c arm's dot with its operands
+// swapped 489 (same code); `local_24 *= (local_26 * 0.5f);` 503 (3506 B, masked 47: the half product is then formed apart
+// as retail, but the 0x47c arm stores its own result and the zero register stays XMM4); the byte side flag re-measured
+// 663 (3499 B, slot homes move); the dot and its floor ahead of the speed floor 498 (3500 B); local_25 folded into
+// local_26's initializer 711 (3484 B). Body unchanged.
+// M3 lane 8 r213 (H2M_FAST with 0x1f9e70/0x110ab0/0x29b990; control 489): the side flip through a `long side` (set from
+// the cross test, negated when the side flag is clear, then `local_21 = side != 0`) 627 (3501 B: retail's `test al, al;
+// setne al` conversion appears but in 32-bit form, and the new symbol moves the homes below, first difference +0x60),
+// with `local_21 = (bool)side` 627 (same code); the side point's y as a second ternary on the side flag (arms written with
+// local_23 and -local_23) ahead of x 746 (3524 B, frame moves); local_24 and y set in each arm of an `if (local_22)`, x
+// after it 718 (3501 B: the arms tail-merge, frame 0x90); the flip as one ternary `local_22 ? cross > 0 : !(cross > 0)`
+// 693 (3525 B). Reading: retail's flip value is a byte converted to bool at the join (byte ops, then `test al, al; setne
+// al`), and local_8 sits below the shared local_13/local_14/local_25 home, the order a second local_8.y mention gives.
+// Shared i/k/j normalizer with setter, aggregate, coordinate walk, or explicit assignment 772/764/755/761.
+// Working-heading query destination on the i/k/j graph, with copy, setter, aggregate, or named
+// outcome 755/767/760/755.
+// NOT kept: Setter and aggregate with the working-heading query output recover the +0x80 position
+// and postpone the first mismatch to +0x123. All eight forms raise the score.
+// M3 lane 4 r241 (plain check: the reduced image scores this body 654; control 489, aligned 178): retail squares i, k, j and
+// scales `inv * i`, `j * inv`, `k * inv`, the shape of src/projectiles.cpp's file-local normalize (`j*j + k*k + i*i`). Compile-
+// only grid of three normalizers by eight ways to fill local_9: only the aggregate copy gives retail's scale, and with it every
+// square-sum spelling starts at k (field ranks k > j > i); a field-by-field fill in the order j, k, i gives retail's squares
+// but `inv * j` and an in-place `inv * k`. Plain: normalize_inline 761 (3502 B); squares written j, k, i through
+// vector3f_scale (diagnostic) 741 (3499 B, aligned 174); a file-local copy of the projectiles normalize 763 (3501 B), with
+// local_9 filled j, k, i 585; local_11/local_13 declared at the top 489 (same code). Body unchanged.
+// M3 lane 12 r170 (plain each; control 489): the side distance as `local_24 = local_23; if (!local_22) local_24 =
+// -local_24;` 648 (3501 B); the side point as a planar copy of local_8 with `+=` of each offset 701 (3504 B, the frame
+// moves); the side distance read from field_20 at each use with no local_23 727 (3480 B); the flip as `local_21 = (cross >
+// 0.0f) == local_22;` 658; `bool local_21 = false;` at its declaration 489 (same code). Body unchanged.
+// Low-priority position name 654, target as radial difference by fields/helper
+// 718/718, and shared query-target overwritten by fields/helper 714/714.
+// Side point as radial difference by fields/helper, or with shared query target,
+// 656 each. NOT kept: the reduced control scores 654 against 489 full, and the
+// 3499-byte forms change the frame or early stack stores.
+// Returned position for path query, side coordinates, or steering query 752/789/773.
+// Path query with target translation, side coordinates, or steering query 818/767/784.
+// Side coordinates and steering 782, or all fallback geometry 695. NOT kept: the last
+// form shortens to 3479 bytes and grows the frame to 0x8c. The frame-preserving forms
+// move the first difference into the entry stores and raise the score.
+// Scaled side translation with aggregate axis, vector or point output, with direct or shared
+// planar difference 656/656/656/656. Axis through setter at the same uses 654/654/654/654.
+// Reduced control 654; full score 489. NOT kept: the length-exact forms move the first difference
+// earlier, and the setter forms leave the position slot displaced.
+// M3 lane 8 r220 (plain each: the reduced image still builds this body differently, 654 with or without 0x30bf0,
+// 0x1f38c0 and 0x29b990 listed; control 489): the side distance as `if (local_22) local_24 = local_23; else local_24 =
+// -local_23;` 489 (retail duplicates the y row's product and add into both arms of that select, ours computes it after
+// the join); the sum point written into the 0x1f9760 output vector (one 12-byte local for both, local_14 dropped) 489
+// (same homes: local_8 stays at +0x8c); local_9 filled field by field i, k, j 765 (3486 B: squares j, k, i), j, k, i 767
+// (3481 B: retail's i, k, j squares but its loads and the frame move); `perpendicular` declared after local_18-local_20
+// 501. Body unchanged.
+// M3 lane 11 r151 (plain each; the reduced image still gives 654 with 0x30bf0, 0x1f38c0, 0x29b990 and 0x2922b0 listed;
+// control 489): local_14's add with arg_2 first 489 (same code); local_19 with the compare sense flipped (`field_14 > 0.0f
+// ? field_14 : unknown03c`) 701 (3499 B, first difference +0x4e); the 0.99 test as `>= 0.99` 679 (3505 B); the side
+// test's products written vector first 489 (same code); local_25 assigned member by member 489 (same code). Body unchanged.
+// Complete/planar target after planar input normalization 669/701, after heading
+// normalization 744/744, at the steering test 730/730, and after the side point with
+// shared planar difference 781/781 (reduced control 654). NOT kept: the forms
+// that restore position at +0x80 shorten the body and leave the initial square order.
+// Frame 0x88 agrees; the position at +0x8c and path-output home are still exchanged.
+// Separate last unit velocity, steering motion, and rotated motion, singly and together:
+// velocity 672, steering 738, both 752, rotated 715, velocity/rotated 722, steering/rotated 749,
+// all 740, all with shared collision addition 764. Reduced control 654, full score 489.
+// NOT kept: the length-exact velocity form moves the first difference earlier; the rest grow.
+// M3 lane 14 r145 (plain check each, with 0x30bf0, 0x1f9760, 0x29b990 matched and 0x2922b0 521 throughout; control 489; body
+// unchanged). With general registers, XMM registers and ESP offsets masked the aligned difference is 77 of 844 rows (125 with the
+// offsets kept): the structure is close and most of the 489 is the exchanged position/path-output homes. What the 77 rows are: the
+// side point's y computed inside both arms of the side select in retail (ours once after it) with the planar difference's i squared
+// first; a `test al, al; setne al` after the first 0x2922b0 call; the half-angle block's 0.5 products; the stopping block's zero
+// kept in XMM1 (ours compares with the pooled zero). Tried: the call's result compared `!= false` 667 (3508 B, masked 109: the
+// conversion appears and the homes move); the side select as an assignment and an `if` 648 (masked 105); the side point as two
+// scalars with y first 688 (3499 B, masked 103); diagnostics, removed: one dead initialised local at the top 665 (3499 B, masked
+// 103), one after the position query 665 (masked 101), two at the top 665 (masked 99). Every added symbol moves the frame homes
+// and the float product sides together (masked 99 to 109), so a form has to be judged over the count phases, which costs a plain
+// check per phase here (the reduced image gives another body).
+// M3 lane 15 r132 (plain each; the reduced image still reads 654; control 489): retail 0x29be20-0x29be5f selects the side
+// distance into XMM1 with `0.0 - d` in the else arm and computes the y row (`* local_17.i + local_8.y`) inside each arm,
+// the x row after the join; ours computes both rows after the join. Forms: the select written in each coordinate (no
+// local_24) 589 (3512 B, first +0x4e; the 384 measured on an older base no longer holds); local_14 declared beside local_9
+// 489 (same code); both 589; the else arm as `0.0f - local_23` 489 (same code); local_14 typed point3f 489 (same code).
+// Body unchanged.
+// M3 lane 2 r139 (plain each; control 489, aligned 178, slot-masked 155): the side point built as two statements with the
+// y row first (retail's order) 708 (3488 B, first +0x4e), with the select written into each row 722 (3514 B), with the
+// select as an if/else 708; local_26 formed straight from the rows (no local_25) 711 (3484 B); the perpendicular as a
+// 2-D vector `{ 0.0f - local_17.j, local_17.i }` with both side tests through dot_product2d 661 (3499 B, aligned 235).
+// Body unchanged.
+// M3 lane 6 r234 (plain each; control 489, aligned-equal 799 of 844 masked rows): the blend rows reading field_64 at
+// each use with no `blend` local (retail's complement reads the field from memory while XMM6 holds it) 572 (3502 B);
+// that with both clamps as `MIN(1.0f, ratio)` 571; the side point with the y row inside each arm of an if/else select
+// and the x row after the join (retail 0x29be20-0x29be5f's shape) 718 (3501 B, first +0x2); the 0x47c override read
+// into a named local used for the test and the store 665 (3499 B, first +0x60); the turn factor's dot as
+// `dot_product2d(&local_17, &local_15)` 489 (same code). Body unchanged.
+// M3 lane 15 r139: the h2m fast screen reproduces the full check (489 at 3503 B, 0x29b2e0 130, 0x29b990 MATCH) once
+// 0x29b2e0, 0x29b990, 0x170d70 (the file of the rotation 0x29b2e0 expands), 0x11ce20, 0x11cc90 and 0x1e5450 are listed with
+// 0x1f9e70, 0x110ab0 and 0x2922b0; without 0x170d70 it builds 0x29b2e0 at 1309 B and this body at 654. Call list and order
+// agree with retail (23 calls). Control 489, aligned 224. Forms: the first 0x2922b0 result read through a `bool const &`
+// 665 (3499 B, aligned 305: the new symbol moves the homes from +0x60); the side decision cleared to false at the top of
+// the steering arm 489 and initialised false at its declaration 489 (same code each); the planar distance read through
+// a `real const &` at the field_44 test 665 (3499 B); the blend field read at each of its six uses (no local) 572
+// (3502 B). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -580,13 +946,11 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			real local_18 = (real)((double)local_2->field_1c * 0.5);
 			real local_19 = 0.0f >= local_2->field_14 ? local_1->unknown03c : local_2->field_14;
 			real local_20 = 1.0f;
-			bool local_21 = true;
+			bool local_21;
 			if (*(bool *)(local_0 + 0x654))
 			{
-				if ((double)local_15.i * local_17.i + (double)local_15.j * local_17.j < 0.99)
-					local_21 = false;
-				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
-					local_21 = false;
+				local_21 = !(local_15.i * local_17.i + local_15.j * local_17.j < 0.99) &&
+					(*(bool *)(local_0 + 0x4ae) || !(local_18 > local_16));
 			}
 			else
 			{
@@ -595,7 +959,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				real local_24 = local_22 ? local_23 : -local_23;
 				point2f local_25 = { local_8.x + perpendicular * local_24, local_8.y + local_17.i * local_24 };
 				vector2f local_26 = { local_14.i - local_25.x, local_14.j - local_25.y };
-				if (local_23 > sqrt((double)local_26.i * local_26.i + (double)local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
+				if (local_23 > sqrt(local_26.i * local_26.i + local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
 					local_21 = false;
 				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
@@ -655,13 +1019,15 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_24 = *(real *)(local_0 + 0x47c);
 				else
 				{
-					real local_25 = local_16 * local_16;
-					if (!(local_25 > 0.001f)) local_25 = 0.001f;
+					real local_25 = MAX(local_16 * local_16, 0.001f);
 					real local_26 = local_2->field_1c * 0.5f;
-					local_26 = local_26 * local_26 / local_25;
+					local_26 *= local_26;
+					local_26 /= local_25;
 					real local_27 = dot_product2d(&local_15, &local_17);
 					if (!(local_27 > 0.0f)) local_27 = 0.0f;
-					local_24 = (1.0f - local_27) * 0.5f * (local_26 * 0.5f) * 4.0f;
+					local_24 = (1.0f - local_27) * 0.5f;
+					local_24 *= local_26 * 0.5f;
+					local_24 *= 4.0f;
 				}
 				local_24 = function_29bab2(local_24, 0.05f, 1.0f);
 				if (!(local_24 > local_23)) local_24 = local_23;
@@ -680,10 +1046,11 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			}
 			else
 			{
-				vector2f local_26 = { local_25.i, local_25.j };
+				vector2f local_26 = *(vector2f const *)&local_25;
 				normalize2d((point2f *)&local_26);
-				real local_27 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_8, &local_15, &local_26,
-					&local_17, NULL, local_10, local_22 != 2) * local_2->field_50;
+				real local_27 = local_2->field_50;
+				local_27 *= function_1f9e70(arg_0, arg_1, (point2f const *)&local_8, &local_15, &local_26,
+					&local_17, NULL, local_10, local_22 != 2);
 				function_1f8510(true, &local_9, local_4, &local_6);
 				if (local_22 == 2)
 				{
@@ -698,18 +1065,19 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					*arg_6 = false;
 				}
 				if (local_27 > local_20) local_27 = local_20;
-				local_6.i *= local_27;
-				local_6.j *= local_27;
-				local_6.k *= local_27;
+				vector3f_scale(&local_6, local_27, &local_6);
 				if (local_2->field_68 > 0.0f)
 				{
 					vector3f const *local_28 = (vector3f const *)((byte *)local_1 + 0x7c);
 					vector3f local_29;
 					cross3f(local_28, local_4, &local_29);
+					/* the velocity along the forward, side and up axes */
+					vector3f frame_velocity = { dot3f(&local_1->velocity, local_4), dot3f(&local_1->velocity, &local_29),
+						dot3f(&local_1->velocity, local_28) };
 					real local_30 = 1.0f / local_2->field_68;
-					real local_31 = local_6.i - local_30 * dot3f(&local_1->velocity, local_4);
-					real local_32 = local_6.j - local_30 * dot3f(&local_1->velocity, &local_29);
-					real local_33 = local_6.k - local_30 * dot3f(&local_1->velocity, local_28);
+					real local_31 = local_6.i - local_30 * frame_velocity.i;
+					real local_32 = local_6.j - local_30 * frame_velocity.j;
+					real local_33 = local_6.k - local_30 * frame_velocity.k;
 					local_6.i = function_29bab3(local_6.i, local_31, local_2);
 					local_6.j = function_29bab3(local_6.j, local_32, local_2);
 					local_6.k = function_29bab3(local_6.k, local_33, local_2);
@@ -718,9 +1086,10 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				local_6.j += local_7.j;
 				local_6.k += local_7.k;
 				function_1f3e40(arg_1, &local_5, &local_6);
-				local_6.i = *(real *)(local_0 + 0x678) * local_2->field_64 + local_6.i * (1.0f - local_2->field_64);
-				local_6.j = *(real *)(local_0 + 0x67c) * local_2->field_64 + local_6.j * (1.0f - local_2->field_64);
-				local_6.k = *(real *)(local_0 + 0x680) * local_2->field_64 + local_6.k * (1.0f - local_2->field_64);
+				real blend = local_2->field_64;
+				local_6.i = *(real *)(local_0 + 0x678) * blend + local_6.i * (1.0f - blend);
+				local_6.j = *(real *)(local_0 + 0x67c) * blend + local_6.j * (1.0f - blend);
+				local_6.k = *(real *)(local_0 + 0x680) * blend + local_6.k * (1.0f - blend);
 				local_6.i = function_29bab2(local_6.i, -1.0f, 1.0f);
 				local_6.j = function_29bab2(local_6.j, -1.0f, 1.0f);
 				local_6.k = function_29bab2(local_6.k, -1.0f, 1.0f);

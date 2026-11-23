@@ -428,36 +428,10 @@ s_surface_description *function_192e60(long index);
 long function_193300(s_surface_description *variant);
 long network_session_get_maximum_players(c_class_58d20 *session);
 
-// score 33 (was 33): frame agrees; final helper calls reverse and retain the variant in EBP,
-// adding four bytes. Earlier named call result and reversed comparison both 33.
-// Complete final result 35; admitted comparison result 33; outer default-return guard 11
-// (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
-// result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
-// index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
-// P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
-// Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
-// NOT kept: full score regresses; original body and all callee interfaces restored.
-// P432: source observation, peer/primary field reads, primary type admission, joined peer gate,
-// decision through admissions, validity result, pointer-first validity;
-// plain scores 42/71/33/49/71/118/41/33.
-// NOT kept: no permitted confirmed gain; original executable body restored.
-// P434: signed-byte/byte/short/word/long/dword result storage 50/50/56/56/54/54;
-// every failed admission producing the bool/full-width result 58/54. NOT kept: all regress;
-// original bool body restored. Unchanged reduced match is a context difference (full 33).
-// P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
-// outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
-// native extent; original success-only result and complete call graph restored.
-// Round 240 (m3 lane 3, plain checks): the comparison reversed 33 (the full image still calls 0x5b180 first, jl in
-// place of jg, so the order of the two pure calls is the compiler's, not the source's); the comparison nested in its
-// own if under the index/variant test, reversed, 33; the 0x193300 result named there 33; the peer re-read from
-// `source->other_game` for the 0x5b180 call 71; the variant tested before the index 33.
-// P464: Incoming readiness observation bool/byte/short/long, actual byte/char/signed-char
-// readiness field and read-only source field all reproduce reduced 0. Byte field plain 33
-// at 138 bytes; all file/provider controls unchanged. NOT kept: reduced-only equality;
-// original field declarations, observations and complete body restored.
-// P466: Index/variant/peer/primary identities and their independent read-only
-// bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
-// NOT kept: unchanged full-image helper order and EBP save; original body restored.
+// Matches in the full image since 0x64d70, which also calls 0x5b180, moved out of src/unknown_054fe0.cpp into
+// src/unknown_064d70.cpp; this body is unchanged. Before the move the full image called 0x5b180 ahead of 0x193300 and
+// kept the variant in EBP (33, 138 bytes against 134) while the reduced image matched. The move alone does it: a full
+// check with 0x64d70's old body and flags in the new file already matched this function.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1240,7 +1214,8 @@ long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
 // MiniMax B (11-05): no new form, no lower score (6); the elapsed-store forms (a named local for the difference, the start read inlined, a named local for the clock read) match on the reduced image and stay at 6 in the full build; all six differences follow from 0x7e210's full-image convention (ours reads the session from the stack, retail passes it in EAX), which also orders the elapsed store after the stack cleanup and shifts the later calls; 0x7e210 has three call sites and sits in src/unknown_07a9a0.cpp, which is not this lane's file.
-// score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
+// Matches retail (coordinator 11-16, lane 5 r188's lead): with 0x7e210's group-highest scan through 0x631f0 the session
+// reaches 0x7e210 in EAX. Earlier 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differed: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
 // field and leaves one more pad byte. Earlier: the group-identity copy matches retail's
@@ -1326,6 +1301,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // Round 123 (m3 lane 16, fast control 8 / plain 6): five new 0x7e210 forms (its note, round 123: the conditional balance
 // clear, the single-exit form with it, with the player value through 0x63220, with grouped capacity labels, with a long
 // histogram) leave this at 8 each; the top 0x192e60 call inlines in all of them. Still BLOCKED-BY 0x7e210.
+// Round 188 (m3 lane 5, fast control 8 / plain 6, 0x7e210 766; trials in 0x7e210, all restored): its machine-id copy declared
+// in the group loop 8 (766); its group-highest scan through the existing 0x631f0 MATCH here (0x7e210 964 at 2684 bytes: the
+// session arrives in EAX with nothing else changed; not kept by the lane: a rise there; build/r188/lead-0x73530-631f0-call.patch; applied by the coordinator 11-16: MATCH in the full check); that
+// with `long histogram[16]` MATCH (984, frame 0xb4); that with the loop's variant through 0x192e60 MATCH (1011); the group
+// named before the written-out scan 8 (766). Still BLOCKED-BY 0x7e210.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1644,20 +1624,44 @@ static __forceinline void query_restore_pending()
         }
 }
 
-static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *arg_0)
-{
-    s_player_slot_flags *local_0 = NULL;
-    if (arg_0) local_0 = arg_0;
-    return local_0;
-}
+bool function_1900a5(long index);
+
+// score 643 (was 643): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// Earlier at 663 (was 703): the same differences at 2878 bytes.
+// Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
+// The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Earlier measurement 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
+// Earlier at 703: the frame agreed. The logon branch, user cursor and slot selection differed.
+// MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
+// (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
+// at +0x18, while ours takes the property bytes as the cursor and keeps it at +0x14, so the flag, the identity and the
+// count are all read 0x14, 0x13 and 4 bytes before the cursor. Retail's logon test is a dec against 1 where ours is a
+// cmp, and retail sets the two bases and jumps to the loop head while ours runs the loop in place.
+// MiniMax G (11-19): no new form, no lower score (703), body unchanged. Binding the user record in a local so that the
+// cursor is the record base (the valid flag at +0, the XUID at +1, the unknown10 at +0x10 and the properties at +0x14, as
+// retail has them) instead of the XUID pointer with negative displacements scores 777 (the compiler then keeps the base in
+// EBX and the frame grows), so it is not kept. The first difference is still at the top: retail tests the logon status with
+// `dec eax` (the status minus one, then a jump) where we compare against the immediate 1, and retail keeps the users base at
+// [esp+0x18] where we keep it at [esp+0x14]; the users loop's own body (the valid test, the XUID copy, the properties copy
+// and the slot test) matches retail's shape apart from those homes.
+// Earlier at 663 (was 703). The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Earlier detail: The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
+// SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
+// variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
+// M3 lane 11 r113 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703):
+// lane 16's lead re-measured (`inline` on 0x647d0's definition, the users loop reading the slot index and properties
+// through it) 720 at 2862 B; on it the request builder's free space named (record_space / property_space, tested > 0 and
+// passed to 0x80940) 710, the delay as `> 3 ? 300000 : 2000` 720, both 710, the space names with the rolled record loop
+// (`j < record->count`, `properties_used += record->count`) 753 (2830 B), with the delay too 753. Left on the 710 form: the
+// logon test's `dec eax`, the users cursor's slot (+0x14 against +0x18) and loop-head jump, and the slot test's cmovne
+// (a file-flag question) that shifts every later line.
 // MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
 // the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
 // the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
 // changes nothing.
-// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
-// instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
-// SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
-// variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
+// MiniMax R (11-16): no new form, no lower score (703): the frame agrees at 0xc0, but the slot helper's null test is still a branch where retail uses a conditional move, and the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18.
 // Earlier 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax S (11-15): no new form, no lower score (703).
 // Earlier 703 (was 703), merged from a second score line: earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
@@ -2018,6 +2022,323 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // as `properties > 0 && records > 0` 721; the first variant loop's player pointer 703 (re-measure, same code); the
 // request delay test as `delay < now - last` 703. Every positional line after the users loop is still off by retail's
 // cmovne (a file-flag question, see above).
+// Round 112 (m3 lane 10, fast; aligned counts in brackets, control 703 [500]): the request test with the state-4 retry
+// ahead of `state == 1` (retail's test order) 747 [483]; one forced-inline clear-states helper for the three 16-player
+// clear loops 717 [538] (2862 bytes, but the users loop's variant getter is then called, not expanded: inline budget);
+// the read-failure counter as `g_50c460 = failed ? g_50c460 + 1 : 0` 703 (same code); the completion's incomplete-state
+// reset as `state == 2 ? 1 : 4` 737 [515]; the completion's variant type read once into a local ahead of the record
+// loop (retail keeps it in a stack slot at +0x30) 702 [502]. Retail sets `failed` (the +0x13 byte) in both incomplete
+// arms and counts `received` per property pass. All restored; the slot test's cmovne still needs the SSE flag.
+// M3 lane 2 r92 (fast; control 703, aligned 330): the users-loop record as a const reference (`s_session_interface_user
+// const &user`) for every field 777 (aligned 353: the cursor anchors at the xuid in EBX, retail keeps the record start
+// on the stack); the value group as a reference 703 (same code); the identity read through a pointer to the record's xuid
+// 703 (same code); through a two-use const reference to it 777; the identity through the existing 0x647a0 (the valid test
+// and the copy) 757 (called: its file is /Ob1, so it cannot inline here; retail's `lea edx, [ecx + 1]; mov eax, edx`
+// before the three-dword copy is that getter's xuid pointer inlined, a file-flag lead like the cmovne).
+// P587: Existing slot-converter direct result, empty/occupied early exits, complete
+// occupied/empty branches, occupied/empty conditionals and named pointer presence:
+// 782/748/748/748/748/782/782/782. NOT kept: all regress; original converter and complete body restored.
+// M3 lane 3 r254 (fast with the file's 41 functions, 0x641a0 and 0x8df50; control 703): 0x1934f0's callees in
+// src/matchmaking_hopper.cpp are all matched leaf functions with no stores, so retail's per-pass reload of the variant count
+// can only come from how that file was linked (the earlier flag lead). Retail also reads g_50c468 once at its test and
+// reuses it after the clock read, and holds no zero register (ours keeps 0 in EDI/EBX for the request tests and the two
+// counter stores). Forms: the last request time read into one local before the request test 746 (the load hoists to the
+// top); `team` computed before `valid = true` 703 (same code); the two flags declared before the value-group pointer 703;
+// the slot/identity test split into nested ifs 703; the failure delay as `delay = 2000; if (g_50c460 > 3) delay = 300000;`
+// 757.
+// M3 lane 7 r173 (fast, control 703, aligned 500): retail's write poll tests the pending range first (`cmp eax, ebx; jl
+// cleanup; cmp eax, 1; jle exit; cmp eax, 2`) and shares one cleanup block entered by a jmp after 0x80d70; as `if (state < 0
+// || state > 1) { if (state == 2 && succeeded) ...; cleanup }` 720 (aligned 491), as an early `if (state >= 0 && state <=
+// 1) return;` ahead of the state-2 test 720 (same code); the first with the delay as `> 3 ? 300000 : 2000` 717 (aligned
+// 489); the existing online_logon_connected() for the opening test with online_tasks.h included 823 (2926 B: the header
+// changes more than the test); the write timestamp in a named local used for both reads 727 (aligned 501).
+// M3 lane 16 r131 (fast; base 703): the poll delay as one nested conditional expression 703 (same code); the completion state
+// update as one `else if` chain 703 (same code); `team` declared where it is computed 703 (same code), with the delay expression
+// as well 703; the identity-change copy from the local identity instead of the session record 777. Body unchanged; the slot
+// helper's cmovne still needs the SSE flag.
+// m3 lane 13 r109 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703):
+// the slot helper returning `arg_0 ? arg_0 : NULL` 782 (2894 B: the null test is threaded away, still no cmovne), as
+// `if (!arg_0) return NULL; return arg_0;` 748; the read poll's failure test as `state != 0 && state != 1` 753; the delay
+// as one condition (`(busy session) || g_50c460 > 3 ? 300000 : 2000`) 757; the state advance `? 2 : 5` as an if/else 703
+// (same code). Body unchanged; the slot test's cmovne still needs the SSE flag.
+// Typed owner publication 703, also with typed team-key copy 703; combined/independent rejection bits 802/717.
+// Property slices by index with literal/recorded count 714/714; pointer slices 754/754.
+// NOT kept: the indexed slices reach retail length but grow the frame from 0xc0 to 0xc8.
+// M3 lane 16 r136 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703 at
+// 2910 B, aligned 500). Two forms retail's listing shows, each 16 bytes shorter: `failed = true` in the incomplete arm in
+// place of the `failed || received != 6` line, after the state update 731 (2894 B, aligned 497), ahead of it 734, with
+// `received != 6` tested first 737; the request builder's free space as named locals tested `> 0` and passed on 711 (2894 B,
+// aligned 477). Together 696 / 698 / 697 (2878 B, aligned 474 / 486 / 470): a gain of 7, one short of the keep bar, not
+// kept. On the 696 form: the last read time in a named local 716 (aligned 468), in both the read and the write test 716;
+// only the write test 696 (same code); a shared forceinline elapsed-time helper at both tests 705, at the write test 698
+// (on the plain body 746); the delay as an if/else chain 696 (same code), as `> 3 ? 300000 : 2000` 693 (retail's setle
+// and `add 0x7d0`, but an arm swap, so not a gain); `added < 4` first 709; properties_used declared first 696 (same code);
+// `now` read first 717; the space test nested 696 (same code); only the record space named 696; only the property space
+// named 705; the request state as an if/else or as `!= 1 ? 5 : 2` 696 (same code); the retry arm's `else if (state == 5)`
+// as a plain else 698; the property value as `= 0; if (type)` 700; the write poll as `state == 0 || state == 1` 696 (same
+// code); the read submission's two `> 0` tests nested 696 (same code). Checked, not a form: retail's hopper checks behind
+// 0x1934f0 take their argument in ESI, ECX and EAX, so they were built with link-time code generation; a non-LTCG flag
+// on their file would not explain why retail reloads memory after those calls.
+// Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
+// With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
+// NOT kept: the one-point gains leave the exit span and width unchanged.
+// M3 lane 3 r265 (fast with 0x1900a5; plain over the file, 0x1900a5 and its 18 callers, nothing changed): retail's slot
+// test (`mov ecx, 0; cmovne ecx, eax; test byte ptr [ecx + 8], 3`) is the matched guest test 0x1900a5 inlined, the
+// same code retail inlines into 0x6d080; calling it in place of the file's private copy of its null-tested accessor
+// gives the same code here, 703 (kept: it removes the hand copy; the cmovne still needs the SSE flag, so the
+// inlined body compiles to our je/mov). On it: the opening test through a switch on the logon status (retail's
+// `dec eax`) 823 (2926 B: the users loop loses its alignment pad); `valid = true` after the team test 703 (same
+// code); the identity's guest test through the SDK's guest macro 703 (same code); the identity copied after the
+// properties 705.
+// M3 lane 16 r138 (fast; control 703, aligned 330 by difflib with addresses masked). Round 136's 696 form re-built (the
+// incomplete arm setting `failed = true`, the request builder's free space named) 696 (2878 B, aligned 318), still one
+// short of the bar. On it: the users loop reading the slot index and properties through 0x647d0 with `inline` on its
+// definition 737 (2842 B, aligned 312; 0x647d0/0x647a0/0x18fd94 stay matched); the request test as retail's flag (`request
+// = false`, set by the state-1 test and by the state-4 elapsed test, then tested; retail's `xor dl, dl ... mov dl, al`) 707
+// (2894 B, aligned 310); the request identity copied into a local (team key by memcpy, owner by assignment) with an
+// indexed duplicate search 839 (2974 B, first difference +0x8); a user record pointer for the users loop 758 (2894 B).
+// LEAD (flag form, match-only): the completion identity picked as a member address (`variant->type == 5 ?
+// completed_values->unknown10 : (const byte *)&completed_values->owner`) on the 696 form gives 688 at retail's 2862 B
+// (aligned 310), with the incomplete arm's `failed = true` or a separate `if (received != 6) failed = true;` (688, same
+// code); the direct accumulator forms lose it: `failed |= received != 6` 705 (2878 B), main's `failed || received != 6`
+// 714 (2894 B), so it is the flag rule's case and not kept. Alone or in other pairs: the completion select 720, with the
+// named space 714, with `failed = true` 706; the request loop's identity select the same way 733, with the completion one
+// 735, with the space 723, all four pieces 704 (2862 B).
+// Body unchanged; the slot test's cmovne still needs the SSE flag.
+// The user-base home and slot conditional move still differ with the 0xc0 frame.
+// SDK guest predicate for identity/both masks 703/703. Typed slot base through the
+// selector 828, via the record reference 821, direct base reference 806.
+// With the SDK identity predicate these score 828/821/806. NOT kept: the typed forms
+// add sixteen bytes and retain the opening frame and exit-span mismatch.
+// Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
+// conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
+// M3 lane 2 r108 (fast; control 703, aligned 500 by difflib with addresses masked): retail's request loop branches on
+// the type-5 test once, copies the 12-byte key into a stack local (+0x34, the users loop's identity slot) in the
+// team arm, scans with an index counter and leaves a found entry straight to the next player (`je` to the step).
+// Tried: the key as a by-value XUID local, the scan indexed with `if (k < records_used) continue;` 858 (2990 B, frame
+// 0xc8); with the users loop's identity variable reused for it 858 (same frame); the indexed scan with `continue` on
+// the pointer key 798 (2942 B, frame 0xc8); the key pointer assigned in the arms of the existing type-5 test (no
+// ternary) 737 (2894 B, aligned 472: the select is then retail's branch, a lead once the slot's conditional move is
+// settled); that plus the completion loop's key pointer assigned by if/else 737 (2894 B, aligned 450).
+// M3 lane 7 r185 (fast with the file's 41 functions, 0x641a0, 0x8df50 and the getters' callers; control 703, aligned 500):
+// the logon test through the existing online_logon_connected() alone 823 (2926 B: retail's `dec eax`, but the loop pad
+// moves); 0x647a0 and 0x647d0 both `inline` at their definitions with the users loop reading the identity, slot and
+// properties through them 720 at 2862 B (aligned 456: the users-loop head is then retail's instruction for instruction
+// but for the cursor slot +0x14/+0x18 and the cmovne; 0x199c47 and 0x199c94 lose their matches, 29 and 46, because
+// their /O1 file then inlines 0x647a0 where retail calls it); 0x647d0 alone inline with the helper 759 (2878 B, aligned
+// 454); both with the helper 759; the missing-variant arm as an early `continue` 703 (aligned 505). Diagnostic, not
+// kept (flags are the user's decision): without /Ob1 on the getters' file (no `inline`) the users loop through both
+// getters gives the same 720 at 2862 B with 0x199c47, 0x199c94 and the getters' 58 file-mates all still matched in
+// the fast check: retail's evidence fits getters that an /O2 caller may inline and /O1 callers keep out of line. The
+// cmovne row shift (an /arch:SSE question) still dominates the positional count.
+// M3 lane 7 r197 (fast with 0x641a0, 0x8df50, 0x1900a5, 0x192e60, 0x749b0, 0x75790, all MATCH each run; control 703 at
+// 2910 B, aligned 330 by difflib with addresses masked, register-masked 204). Only forms without a flag: the write poll's
+// pending range as an early return ahead of the state-2 test 720 (aligned 327); the read poll as `if (state < 0 || state
+// > 1) { if (state == 2) ... else ... }` 728 (2894 B, aligned 328); the free space named (listed) 711 (2894 B, aligned
+// 315); write + read polls 731 (2894 B, aligned 325); write + read + space 717 (2894 B, aligned 310); write + space 714
+// (aligned 312); read + space 714 (aligned 313). Each piece moves the body toward retail's (shorter, fewer aligned
+// lines) but the positional count rises behind the users loop's conditional-move shift.
+// Copied team key base 703, cached team key base 791, cached player array base 776. Copied/cached keys
+// 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
+// destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
+// sixteen bytes. The status branch, user cursor and slot selection still differ.
+// M3 lane 12 r153 (fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x647a0, 0x647d0, 0x18fd94, 0x1900a5, all
+// matched; aligned exact / register-masked 475 / 325 at 703): the poll delay as `long delay = g_50c460 <= 3 ? 2000 :
+// 300000;` with the busy-session override after it 774 (2926 B); the property loop with a signed `long` index against
+// `record->count` 703 (same code); the property read through the record at each use (no property pointer) 703 (same
+// code); `if (received != 6) failed = true;` in place of the `failed || received != 6` line 731 (2894 B, 470 / 321); the
+// received count as `dword` 703 (same code). The slot test's cmovne still needs the SSE flag (a file-flag decision).
+// M3 lane 3 r270 (fast with the file's 41 functions; control 703, aligned 500, masked 327). Build-flag lead, measured as
+// this function's one compiler-setting diagnostic and not kept (the flags line is the user's decision): with `/arch:SSE`
+// added to this file's flags line, retail's `mov ecx, 0; cmovne ecx, eax` appears at the slot test and every other
+// function of the file keeps its baseline result, in the fast check and in a plain check of all 41 plus 0x1900a5 (the
+// 39 matched ones stay matched, 0x73360 stays at its baseline 33, 0x1900a5 stays matched), so the flag costs nothing
+// in this file; this function then reads 748 (aligned 490, masked 317), the positional count rising because the body
+// was shaped without the flag. Source forms (current flags / with the diagnostic): the existing
+// online_logon_connected() with its header for the opening test 823 at 2926 B (retail's `dec eax`) / 792;
+// `failed = true` in the incomplete arm in place of the `||` 731 (2894 B) / 776; the request record's identity as a
+// by-value identity local (copied from the team entry, with an index scan of the earlier records and `continue` on a
+// duplicate, for type 5; from the owner otherwise) stored by assignment 858 (2990 B, first +0x8, masked 315) / 895
+// (masked 305); both 838 / 858 (masked 299); the completion's identity pointer taken once ahead of the record loop
+// 737 (2894 B). Reading of retail's request loop: the identity is held by value in three registers and saved to the
+// first loop's identity home only in the type-5 arm, whose scan counts an index kept in memory against the record
+// count and leaves for the next player on a duplicate.
+// M3 lane 7 r193 (fast with the file's 41 functions, 0x641a0, 0x8df50, 0x1900a5 and 0x192e60; control 703). Retail's
+// property fill is a rolled loop through the properties pointer kept in a register (`lea edi, [ecx + 1]; mov word [eax],
+// di; mov [eax + 4], edx; add eax, 0x10; inc ecx; cmp ecx, esi`, ESI = 6 shared with the count store and the used-count
+// add); ours unrolls it and re-reads `record->properties` before each store. Forms with a `properties` pointer named where
+// it is computed and used for the record field and the fill: literal bound 771 (2814 B); bound `record->count` with
+// `properties_used += record->count` ahead of the fill 731 (2846 B); the same with `+= 6` ahead of it 731 (2846 B); bound
+// `record->count` with `+= 6` after the fill 718 (2862 B: retail's rolled loop, but the frame grows from 0xc0 to 0xc8);
+// with `+= record->count` after it 718 (same code). Body unchanged.
+// M3 lane 15 r115 (fast with 0x1900a5, 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x647a0, 0x647d0; control 703, aligned
+// 500 by difflib with addresses masked). Retail evidence read this round: in the request loop the identity is three registers at
+// the record write in both arms, and only the team arm stores it to the users loop's +0x34 slot for the duplicate scan and
+// reloads it after, so the scanned key is a separate local from a by-value identity. Forms: a by-value identity with a separate
+// key for the scan (an index scan, `if (k == records_used)` for the write) 839 (2974 B, aligned 518); the same with the pointer
+// scan 792 (2942 B, aligned 469); the index form with lane 7's rolled fill through a properties pointer 741 (2894 B, aligned
+// 474); the index form with the request test as a flag set from state 1 and the state-4 elapsed test 861 (2990 B, aligned 528);
+// the identity selected by value with a ternary and the key copied from it 837 (2974 B, aligned 466). Diagnostics on the hopper
+// check 0x193560 (another function's body, restored at once): its rating loop through a char pointer, and its result through a
+// reference to a local (the callee then summarised as writing) 746 / 784, and each loses most of the hopper check's matched
+// callers in the reduced image, so retail's reloads around 0x1934f0 are not that callee's write summary.
+// M3 lane 13 r129 (fast with 0x73a10, 0x749b0, 0x75790, 0x1900a5 and 0x192e60, all matched; control 703): `team`
+// declared before `valid` 703; the identity copied with memcpy 703; the group's values pointer declared after the two
+// bools 703; the owner compare and copy through `&values->owner` 703; the reset arm's test as `valid == false` 703 (all
+// the same code); the properties copied ahead of the identity re-measured 705. The slot test's cmovne still needs the
+// SSE file flag (a build-flag question). All restored.
+// MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Indexed player or state, reference or pointer before descriptor lookup, 703 each. Indexed player or
+// state pointer after lookup, 703 each. Advancing player cursor under ordinal or pointer-end bound,
+// 702/805. The ordinal-bound form moves one address setup and gains one point. The pointer-end
+// form adds 32 bytes. The user flags load uses +9 from the user record in both listings.
+// Shared logon task index 703; queried-or-absent status selected, initialized or assigned in separate arms 703/703/703.
+// Offline cleanup first with selected or initialized status 800/800; assigned connection result 819;
+// offline cleanup first with a short-circuit task query 703.
+// NOT kept: the connection result emits the decrement but materializes a Boolean; the offline-first status forms change the first branch and raise the score.
+// M3 lane 14 r134 (fast, confirmed plain with the file's 41 functions, 0x641a0, 0x8df50, 0x1900a5 and 0x192e60, all
+// matched; aligned = difflib count with addresses masked, 330 at 703). The count is positional and most lines after the
+// users loop were one or two instructions out of step, so this round worked from the first place the listings lose
+// step. Kept, 703 -> 663 at 2878 B (aligned 301): the first variant loop's index as `dword` (retail counts 16 down in
+// EBX and re-reads the availability word and the team byte each pass; a signed `long` index makes this compiler test
+// the variant pointer instead and hoist the word into EBX; `short`, `word` and `byte` give the same code) 695; with it
+// the request identity held by value with an index scan of the earlier records and the property fill bound
+// `record->count` (retail's three-register identity, counted scan and rolled fill) 663. On that: the incomplete arm's
+// `failed = true` (round 136's form) 663; the named free space (round 136's) 663; both 664 (2846 B, aligned 297), so
+// neither is kept. LEAD, not kept (a switch in place of an if is not a kept form without a match;
+// build/r134/lead-0x74aa0-switch.patch): the polls as a switch on the task state (cases 0 and 1 pending, 2 done,
+// default failed), retail's `jl / cmp 1, jle / cmp 2, jne` chain at both: the read poll 650, the write poll 660, both
+// 652, both with failed and space 648 (aligned 284); as nested range tests in place of the switches the write poll is
+// the same code as now and the read poll 10 worse. Pieces without the request loop: `dword` + failed 692; + space
+// 694; + both 677; + write switch 679 (with case 2 falling into the cleanup, same code); + read switch 682; + both
+// switches 666; + failed, space and both switches 667; the 648 set without `dword` 721; a `long` index with `i != 16`,
+// `i <= 15` or a `(long)` sizeof bound 703 each. On the 648 set: the 48 request-loop combinations of a group pointer
+// local, the by-value identity, the rolled fill, a properties pointer, the used-count add ahead of the fill and a
+// candidate pointer give 648 to 801 (30 of them grow the frame to 0xc8; pointer identity with the rolled fill 715,
+// by-value with the unrolled fill 801, group pointer with by-value and rolled 688 at aligned 282, group pointer with the
+// pointer identity and `+= 6` ahead of an unrolled fill 652 at retail's 2862 B); a user record pointer in the users
+// loop 648 (aligned 285) and 744 with the later copy through it; the existing online_logon_connected() with its
+// header 768 (retail's `dec eax`, but the loop pad and the team byte's slot move); the completion identity as a
+// member-address ternary 661; the last read time in a local under a nested test 676 (EDI then holds the delay and ESI
+// the time as in retail, one `mov esi, eax` short), assigned inside the test 667; the last write time the same way
+// 656; the delay as `> 3 ? 300000 : 2000` 667 (retail's setle, an arm swap). Diagnostics, reverted at once: `inline`
+// on 0x1934f0's definition 703 (same code, its 17 callers unchanged); the variant check as an unresolved call 760 (the
+// word is then re-read, the team byte takes EBX). Still differs and not a source form here: retail expands the two
+// user getters 0x647a0/0x647d0, the elapsed-time function 0x75890 (its by-value time is the `mov esi, eax` after each
+// `test eax, eax`) and the logon test's helper, all in files built /Ob1 (marking the getters `inline` instead makes
+// their two size-optimised callers expand them in a loop, where retail calls), and selects the slot with cmovne (the
+// SSE flag); after the request test the listings still lose step at the loop set-up (retail stores both zero counts
+// to their slots and loads them into ESI/EDI after the clock read).
+// MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Shared identity flags 663, flags and admission result 663, packed XUID member 760, flags
+// and native property source 663, flags and cache members 663, property endpoint 674, duplicate
+// result 654, admission and team names 663. Direct duplicate skip, scan-test duplicate skip
+// and duplicate skip with candidate each 694. NOT kept: 654 sets a flag in the scan and tests
+// it afterwards. The direct skips lengthen the image. The packed member changes the XUID reads.
+// One player reset for either invalid or changed user 760/760; a default reset with positive or negative
+// cache-key comparisons 760/760. Complete eligibility before the two clearing paths, assigned or
+// conditionally set from positive/exclusion tests 663/663/663/663.
+// NOT kept: The shared reset reaches 2862 bytes and raises the score. Eligibility assignment
+// reproduces the opening code, including the logon comparison and properties-based cursor.
+// Shared logon predicate on the retained request loop 766. Identity getter,
+// properties getter, both at group scope, or nested getters 760/784/778/778.
+// Shared logon predicate with identity, properties, or nested getters 756/766/754.
+// NOT kept: the logon decrement returns, but the providers stay out of line and
+// the cursor and slot selection still differ. The identity-only forms reach 2862 bytes.
+// Loop-head quota test 663, exact quota at loop head 663, quota after publication 642.
+// Remaining slots in the loop condition or body 669/669, last slot after publication 642.
+// Limit from the running total 662, count from the first request index 664. NOT kept: the
+// 642 forms reach retail length but move the quota check out of the retail loop head. The
+// logon comparison, validity-based cursor and slot selection remain.
+// M3 lane 16 r168 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 663, aligned
+// 301 by difflib with addresses masked). Kept, 663 -> 643 at retail's 2862 B: the request loop reaches each group
+// through a group pointer (`values`, the users loop's name) for the player, the scan key and the owner; the group
+// cursor then sits at +0x18 and the player cursor steps from group + 0x1c as in retail (aligned 415: the alignment
+// shifts, the positional count falls). Tried on 663: the delay as `> 3 ? 300000 : 2000` with the last request time in
+// a local read ahead of the request test 660; with that local under a nested test 658 (an arm swap, not kept). On
+// 643: the last request time in a local under a nested test 643 (same positional count); the free space named
+// (`record_space`, `property_space`) 663 (2846 B, aligned 281: retail's `sub` pair, but the positional rows shift); a
+// properties pointer with `properties_used += record->count` ahead of the rolled fill 723 (2910 B), with the add after
+// the fill 670 (2894 B); the variant lookup nested under the state test (no assignment inside the condition) 643 (same
+// code).
+// M3 lane 7 r211 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643).
+// Reading: retail's request gate is the elapsed-time function 0x75890 expanded (`mov esi, eax` copies g_50c468 after its
+// test, the delay in EDI); ours re-reads the global after the clock call, so every row after the gate is one instruction
+// off. LEAD, not kept: the gate through a file-local forceinline by-value elapsed step (a copy of 0x75890's body) 621 (the
+// gate exact; next the loop set-up, where retail stores both zero counts to their homes and loads them into ESI/EDI after
+// the clock read); that step at both gates 626; on the 621 form the opening test through the existing
+// online_logon_connected() with its header 750, as this file's switch on the logon status 750, the free space named 645
+// (2846 B); `inline` on 0x75890's definition with the gate calling it 664 (2846 B, and matched 0x72700 94: reverted).
+// M3 lane 16 r170 (h2m fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643): a user
+// record pointer for the users loop's flag, identity, properties, slot index and the later identity copy 726, without the
+// later copy 643 (same code); the existing online_logon_connected() (online_tasks.h) for the logon test 743 (retail's `dec
+// eax`, but the users loop loses its alignment pad); the last request time in `long last_read` ahead of the request test
+// 645; the last write time in `long last_write` ahead of the write test 637 (retail's `mov esi, eax` ahead of the clock; a
+// gain of 6, under the bar), both locals 639. On the 637 form: the completion identity as a member-address ternary 661
+// (2846 B), as an if/else of member addresses 661 (2846 B); the request builder's free space named 662 (2846 B); the write
+// poll as a nested range test with `state == 2 && succeeded` inside 660 (2846 B); the write time assigned inside the test
+// 637 (diagnostic). Reading: the positional count is set by the request loop's instruction count (ours is 10 short ahead of
+// its 0x1934f0 call: retail's request flag in DL and the two counts stored before the clock) and by the polls' range
+// chains, neither keepable without a match.
+// output-driven user ordinal with ordered bound 816; output-driven user ordinal with equality bound 816;
+// separate slot test 643; separate identity sentinel test 643; nested slot and identity tests 643;
+// unavailable variant early continue 658; team exclusion early continue 643; three availability arms
+// 658.
+// NOT kept: The nested tests and team exclusion reproduce 643. The output cursor grows to 2910 bytes,
+// and the explicit unavailable path changes the branch layout. The user base and logon comparison remain
+// different.
+// The logon compare and validity-based cursor home still differ. A user cursor deriving the cache index scored 773,
+// with direct cache indexing 777. A cache cursor deriving the user index scored 816, with the user bound once 795.
+// Relational and equality bounds had identical scores. NOT kept because all forms added bytes and differences.
+// M3 lane 11 r154 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / masked 298 by
+// difflib with addresses, then registers too, masked): the opening test through the existing online_logon_connected()
+// with online_tasks.h included 743 (aligned 697, masked 304), as this file's own `connected` switch idiom 743, the helper's
+// result held in a named bool 743, `g_467214 != NONE && online_logon_connected()` 743 (all the same code: retail's `dec
+// eax`, but the users loop then loses its alignment pad: at that offset retail pads 9 bytes, a `jmp` over a 7-byte `lea`,
+// where ours drops a pad over 7 bytes). Diagnostic, reverted at once (the one flag trial): `/arch:SSE` on this file 759
+// (aligned 691), with the switch idiom 690 (aligned 687): 0x1900a5's expansion then selects with retail's `cmovne` (its
+// own file is SSE), but the users loop pad is still missing, so the pad is not the flag. Lead for the user: retail's
+// 0x1900a5 expansion here uses cmov, so retail built this function with `/arch:SSE`.
+// M3 lane 3 r298 (h2m fast with 0x75790, 0x749b0, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / registers
+// masked 298): `inline` on 0x75790's definition (the completion loop's only out-of-line callee, to drop its memory
+// summary) 643 (same code: the property count is still hoisted); the users loop's group index as `dword` 715 (2878 B);
+// the team and failed flags renamed to sort first, or those two and the valid flag renamed to sort last, 643 each (same
+// code: the shared byte cell stays at +0x17 against retail's +0x13); the delay as an `else if` / `else` pair 643 (same
+// code, still `setg`).
+// M3 lane 12 r178 (h2m fast, control 643 at 2862 B; rows 157 to the end are all one or more instructions off, so a real
+// fix only shows once the instruction counts ahead of it agree). Diagnostic, restored: with this file's `connected`
+// switch idiom for the logon test (retail's `dec eax`, 743) and the users loop bounded by an undefined extern instead of
+// 4, the loop head gets its `jmp` + pad again (758, 2878 B): the build pads a loop head by more than 7 bytes only when
+// the trip count is not a known constant, so retail's 9-byte pad says its users loop was not a constant-count loop when
+// the pad was decided (it has the pad with the user getters expanded, lane 7 r185's lead). Loop spellings on the
+// switch idiom, none brings the pad back: a `short` index 750, a `dword` index 750, do/while with `++group < 4` 743, the
+// bound as the user table's element count 743; without the idiom the `short` and `dword` indices 715 / 715 (2878 B), the
+// do/while 643 (same code). A 32-combination grid of five forms on the current body (a: the switch idiom; b: the
+// builder's free space named and tested `> 0`; c: the last request time in a two-use local ahead of the request test;
+// d: the last write time in a two-use local ahead of the write test; f: `failed = true` in the incomplete arm): a 743,
+// b 663, c 645, d 637, f 679, ab 758, ac 743, ad 744, af 776, bc 666, bd 662, bf 695, cd 639, cf 681, df 678, abc 758,
+// abd 756, abf 789, acd 744, acf 776, adf 775, bcd 665, bcf 698, bdf 695, cdf 680, abcd 756, abcf 789, abdf 789, acdf 775,
+// bcdf 698, abcdf 789 (sizes 2814 to 2862 B). The lowest is d alone, 6 under the control and under the keep bar.
+// Reading of retail's request loop (0x74d40 to 0x74f2b), for the next round: a byte flag in DL is set for state 1
+// and the state-4 time test jumps past its test; the record cursor (EBX, +0x14 into the record) and a property cursor
+// (EBP, stepped by 0x60) are both carried; the count 6 sits in ESI for the count store, the `properties_used` add (ahead
+// of the fill loop) and the fill loop's bound; `existing`, `records_used` and `properties_used` stay in their homes
+// inside the scan loop and are loaded into ESI/EDI at the inner latch. Retail's write poll tests the range first
+// (`state < 0` to the release, `state <= 1` to the return) and `state == 2` inside it.
+// M3 lane 6 r233 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / masked 256):
+// the property fill written through the global property array (`g_50cbf8[properties_used + j]`, no record re-reads),
+// bound `record->count` 677 (2894 B); bound 6 with `properties_used += 6` 669 (2846 B); those two with the last write
+// time in a two-use local 678 / 669; bound 6 with `+= 6` and the free space named (`record_space`, `property_space`,
+// tested `> 0`) 645 at retail's 2862 B (aligned 453 / masked 258: the frame grows to 0xc8, and with no aliasing store
+// the player state stays in EBP, where retail re-reads it, so the property cursor loses EBP); that with the last write
+// local 645; bound 6 with `+= record->count` and the named space 645; bound `record->count` with the named space 689.
+// Reading: retail re-reads the state after the fill, so its fill stores go through a pointer that may alias it.
+// M3 lane 2 r143 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643): the two request counts
+// zeroed by one chained assignment 643 (same code); the clock read ahead of the two zeroed counts 646; the write poll's
+// pending test as `state == 0 || state == 1` 643 (same code); the received count as `dword` 643 (same code); `if (received
+// != 6) failed = true;` for the `failed = failed || ...` update 679 (2830 B). Reading: retail lays out the request's
+// failure arm (the expanded restore loop, then the failure count) ahead of the read poll, and tests that poll's range
+// (`jl`, `cmp 1; jle`, `cmp 2; jne`) before the completion block. Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -2033,9 +2354,7 @@ void function_074aa0(void)
                 XUID identity = g_4cd868.users[group].xuid;
                 byte properties[0x90];
                 memcpy(properties, g_4cd868.users[group].properties, sizeof(properties));
-                s_player_slot_flags *slot = function_74aa1((s_player_slot_flags *)
-                    ((byte *)&g_54e8e0[g_4cd868.users[group].unknown10] + 0x470));
-                if (!(slot->flags & 3) && !(identity.dwUserFlags & 3) &&
+                if (!function_1900a5(g_4cd868.users[group].unknown10) && !(identity.dwUserFlags & 3) &&
                     identity.dwUserFlags != 0xbad00000)
                 {
                     valid = true;
@@ -2047,7 +2366,7 @@ void function_074aa0(void)
                         memcpy((byte *)values + 0x10, properties + 0x70, 12);
                         for (long i = 0; i < 16; i++) values->players[i].state = 0;
                     }
-                    for (long i = 0; i < 16; i++)
+                    for (dword i = 0; i < 16; i++)
                     {
                         s_surface_description *variant = function_192e60(i);
                         if (variant)
@@ -2076,36 +2395,44 @@ void function_074aa0(void)
             long now = query_time_now();
             for (long group = 0; group < 5; group++)
             {
+                s_search_value_group *values = &g_509454[group];
                 long added = 0;
                 for (long i = 0; i < 16 && added < 4; i++)
                 {
-                    s_search_player_values *player = &g_509454[group].players[i];
+                    s_search_player_values *player = &values->players[i];
                     s_surface_description *variant;
                     if ((player->state == 1 ||
                         (player->state == 4 && now - player->time >= g_network_configuration.valuec74)) &&
                         (variant = function_192e60(i)) != NULL)
                     {
-                        const byte *identity = (const byte *)&g_509454[group] + (variant->type == 5 ? 0x10 : 4);
-                        s_cache_property_record *candidate = g_50c474 + records_used;
+                        XUID identity;
+                        long existing = records_used;
                         if (variant->type == 5)
-                            for (candidate = g_50c474; candidate < g_50c474 + records_used; candidate++)
-                                if (!memcmp(candidate->identity, identity, 12) &&
-                                    candidate->type == variant->field_8)
+                        {
+                            memcpy(&identity, values->unknown10, 12);
+                            for (existing = 0; existing < records_used; existing++)
+                            {
+                                if (!memcmp(g_50c474[existing].identity, &identity, 12) &&
+                                    g_50c474[existing].type == variant->field_8)
                                     break;
-                        if (candidate == g_50c474 + records_used)
+                            }
+                        }
+                        else
+                            identity = values->owner;
+                        if (existing == records_used)
                         {
                             s_cache_property_record *record = &g_50c474[records_used];
-                            memcpy(record->identity, identity, 12);
+                            memcpy(record->identity, &identity, 12);
                             record->type = variant->field_8;
                             record->count = 6;
                             record->properties = &g_50cbf8[properties_used];
                             records_used++;
-                            for (long j = 0; j < 6; j++)
+                            for (long j = 0; j < record->count; j++)
                             {
                                 *(word *)&record->properties[j].unknown00 = (word)(j + 1);
                                 record->properties[j].type = 1;
                             }
-                            properties_used += 6;
+                            properties_used += record->count;
                             added++;
                             player->state = player->state == 1 ? 2 : 5;
                         }

@@ -294,21 +294,6 @@ void __cdecl sound_effect_delete(long effect_index)
 #pragma inline_depth(255)
 
 
-PRIVATE __forceinline void function_21dcf1(long effect_index)
-{
-	s_record_pool *effects = function_x39bdd5();
-	s_sound_effect *effect = &((s_sound_effect *)effects->data)[effect_index & 0xffff];
-
-	if (effect->record_index != NONE)
-	{
-		looping_sound_controller_release(effect->record_index);
-		effect->record_index = NONE;
-	}
-	record_pool_release(effects, effect_index);
-}
-
-#define sound_effect_delete function_21dcf1
-
 /* starts a sound from a play state (src/unknown_124f90.cpp) */
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
@@ -326,6 +311,22 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax H (11-14): no new form, no lower score (181): the exact form needs the request passed in EDX by
 // 0x189fe0, whose file belongs to another lane and cannot be changed from here, so the eight-byte frame, the
 // state/tag registers and the opposite start/delete expansion stay as they are.
+// MiniMax C (11-16): no new form, no lower score (181): the entry still reserves eight bytes and keeps the state in
+// EDI where retail reserves four and keeps it in EBX, and the effect path still calls the start out of line where
+// retail expands it; the only form that reaches retail's shape (94 at 427 bytes, the state in EAX) needs the caller
+// 0x189fe0 in src/unknown_189010.cpp to move its request register, which loses ten matched functions:
+// BLOCKED-BY 0x189fe0.
+// MiniMax I (11-17): no new form, no lower score (181): retail still takes the state pointer in EAX and keeps it
+// in EBX with a four-byte frame, where this build reserves eight bytes and keeps the state in EDI, and the request
+// register is the caller's; the one form that reaches retail's shape (94 at 427 bytes) needs the caller 0x189fe0 in
+// src/unknown_189010.cpp to move its request register, which loses ten matched functions:
+// BLOCKED-BY 0x189fe0.
+// MiniMax H (11-18): score 181 (was 181): no new form, no lower score; retail takes the state pointer in EAX and
+// keeps it in EBX with a four-byte frame where this build reserves eight bytes and keeps the state in EDI, and
+// the request register is the caller's; the one form that reaches retail's shape (94 at 427 bytes) needs the
+// caller 0x189fe0 in src/unknown_189010.cpp to move its request register, which loses ten matched functions:
+// BLOCKED-BY 0x189fe0. The permuter's best (149 against its 160) swaps the arguments of the definition lookup and
+// adds a constant-only local, so it changes what the lookup is asked for and is dropped.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound
@@ -540,6 +541,44 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // through the force-inlined start helper too 94 (same code, 0x189fe0 135). Diagnostic (reverted): the 94 form with 0x221810
 // kept out of line (retail calls it at 0x189fe0's first lookup, ours expands it) puts both of 0x189fe0's arguments on the
 // stack (156 at 450 B), so that pairing is not retail's either. Still BLOCKED-BY 0x189fe0 (its request convention).
+// b9M (11-17) walk against retail, fast build on r840: no behaviour difference. Checked flag 0x100 -> +0x98 (0x21d117),
+// definition zeroed (0x21d135), count test (0x21d14e), failed allocation to the plain start (0x21d169 -> 0x21d251),
+// class flag 1 -> +0xd bit 0 (0x21d19c), the 0x78/0x79/0x7a availability bytes, reason NULL (0x21d1d0, 0x21d26e), the
+// type/sound_index/priority stores and 0x21d630(effect, 0) (0x21d21f-0x21d231), the delete's effect index in EBX
+// (0x21d240); all equal, and the `(short)` on the priority is redundant (both fields are short, same code). Retail
+// takes the state in EAX (0x21d113) and reads the tag from the stack (0x21d129, 0x21d16f, 0x21d1e3); its rate-limit
+// stage output is the tag's own dead stack slot (0x21d1e7, 0x21d281) and the listener shares the definition slot, so
+// its one four-byte frame is the slot the 94 form recovers. Re-measured, 0x21d110 94 at 427 B with state in EAX (both
+// starts through 0x125f70, delete out of line): 0x189fe0 135 and its ten callers differ by 1-16; moving this
+// function to the end of the file changes nothing. In ours-135 the request is not live across a call (the first
+// 0x221810 lookup is expanded) and stays in EDX; retail's call at 0x18a082 keeps it live in EBX (see lane 9's
+// noinline diagnostic above for why that alone is not enough). The 94 form still threads the rate-limited path
+// (retail 0x21d1f7 `or esi, -1; jmp 0x21d20f`) straight to the delete.
+// Round 454: Boolean starter with pointer to sound index, admission return, existing fallback 184, Boolean
+// starter with reference to sound index, admission return, existing fallback 184, Boolean starter with
+// pointer to sound index, result return, existing fallback 172, Boolean starter with reference to sound
+// index, result return, existing fallback 172, Boolean starter with pointer to sound index, admission
+// return, shared by fallback 207, Boolean starter with reference to sound index, admission return, shared
+// by fallback 207, Boolean starter with pointer to sound index, result return, shared by fallback 193,
+// Boolean starter with reference to sound index, result return, shared by fallback 193. NOT kept: the two
+// 172 forms add five bytes (459 versus the opening 454 and retail 427) and leave the eight-byte frame and
+// reversed input convention. Sharing the fallback also increases the score. The original starter, fallback,
+// deletion and body are restored.
+// m3 lane 7 r178 (fast with 0x189fe0, its ten matched callers and every caller of 0x221810; then one full check): body unchanged, still
+// 181; HELD, full diff in build/r178/held-21d110.patch. This function MATCHES byte for byte with both starts through the existing
+// 0x125f70, the delete called out of line and one result variable assigned in both arms with a single return (`long sound_index; if
+// (effect_index != NONE) { ...; sound_index = start; if (sound_index != NONE) { ... } else delete; } else { sound_index = start; } return
+// sound_index;`): the failed starts then stay on retail's shared `cmp esi, -1` and are not threaded to the delete, the last difference
+// of the 94 form. It takes the state in EAX as retail does, so its caller has to follow: 0x189fe0 with the flags built in the state's
+// own field by three set-or-clear steps, the source and the priority in locals and the +0xa bits as word bitfields keeps its request in
+// EAX/EBX and all ten callers matched (0x189fe0 150 -> 32), but only when its first 0x221810 lookup stays out of line as retail has it
+// at every site. Measured with 0x221810 in a file of its own built /Ob1 (a build-flag decision, and src/unknown_221490.cpp is lane 6's
+// this round): full check 10685 game functions matched, lost against HEAD none, gained this function; 0x21c400 (339) unchanged once its
+// lookup site calls the header's inline accessor (555 otherwise). Other forms this round: the 94 form again 94 at 427 B (0x189fe0 137,
+// ten callers lost); one start call site shared by both paths 245 (336 B, callers kept); the failed start tested first with its own
+// return 154 (437 B, old convention, callers kept, aligned 80 -> 49; an arm order picked by score, not kept); `inline` on 0x221810's
+// definition (diagnostic) leaves this at 181 and loses matched 0x129790 (it re-zeroes XMM0 after the call, retail keeps it), so
+// retail's lookup is not an opaque inline function. Still BLOCKED-BY 0x189fe0, which is BLOCKED-BY 0x221810 (its expansion).
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -552,6 +591,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		effect_index = sound_effect_new(definition);
 	}
 
+	long sound_index;
 	if (effect_index != NONE)
 	{
 		s_sound_effect_class_flags *sound_class = (s_sound_effect_class_flags *)function_18d090(tag_index, platform_playback);
@@ -561,7 +601,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		}
 		sound_effect_attach(effect_index, state);
 
-		long sound_index = sound_start(state, tag_index);
+		sound_index = function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
 		if (sound_index != NONE)
 		{
 			s_sound_effect *effect = sound_effect_get(effect_index);
@@ -574,10 +614,28 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		{
 			sound_effect_delete(effect_index);
 		}
-		return sound_index;
 	}
-	return function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
+	else
+	{
+		sound_index = function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
+	}
+	return sound_index;
 }
+
+PRIVATE __forceinline void function_21dcf1(long effect_index)
+{
+	s_record_pool *effects = function_x39bdd5();
+	s_sound_effect *effect = &((s_sound_effect *)effects->data)[effect_index & 0xffff];
+
+	if (effect->record_index != NONE)
+	{
+		looping_sound_controller_release(effect->record_index);
+		effect->record_index = NONE;
+	}
+	record_pool_release(effects, effect_index);
+}
+
+#define sound_effect_delete function_21dcf1
 
 PRIVATE __forceinline long function_21d2c1(s_sound_effect_definition *arg_0)
 {

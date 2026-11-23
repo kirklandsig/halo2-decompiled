@@ -1334,10 +1334,77 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // function and zeroed inside the guard 118; sibling loops sharing one function-scope count 127; round 171's guard +
 // nonzero-count for in the first position only, real build 107 (368 B; the guard compares with the zero register, the
 // inner `test eax, eax; je` stays).
+// M3 lane 4 r204 (fast with 0x13a532, 0x1393f3; round 157's letters): JSG 44 (368 B: loops 1 and 2 exactly retail's, the
+// third is retail's plus its inner `test eax, eax; je`), JGS 76 (368 B), JSF 3 (only the third loop's offset zeroed before
+// its guard), JSW 3 (the same), JTG 44 (368 B). So a guard + nonzero-count for in the third position costs one zero use
+// and leaves loops 1 and 2 exact; its redundant inner test is the only difference there.
+// M3 lane 4 r205 (fast with 0x13a532, 0x1393f3; SSS = three guarded do-whiles as 0x13a532): SSS with loop 1's offset named
+// local_8/a_offset/z_offset/local_0/offset 118 each (names do not break the tie); SSS with the later loops' offset and count
+// typed dword/dword, dword/long, long/dword, int/int, or loop 1's dword/dword, 118 each (the zero is shared across types);
+// the four masks zeroed by one chained assignment, local_3 first 5 (store order) or local_6 first 1 (same code), on SSS 122/118;
+// SSS with a `>= 1` guard on loop 1/2/3 120/119/119 (`cmp eax, 1`); `!(count <= 0)` on loop 3 118. Diagnostic (not kept): SSS
+// with one mask left uninitialised gives retail's three loops exactly (the guard's `cmp eax, ebx`, loop 1's offset in EBX,
+// loops 2 and 3 `test` then `xor ebx, ebx`) less the store: retail is SSS with one zero-constant use fewer than ours.
+// Also r205: loop 1's draw call through a file-local bool wrapper (inline or forceinline) on SSS 118/118, on the current body 1.
+// Also r205: the definition as a const reference on SSS 118, on the current body 1; loop 1's element through a
+// `byte const &` on SSS 118.
+// M3 lane 6 r188 (round 157's harness with this build's ballast, control 1): in every S form the three failure stores
+// take BL (the kept zero) where retail stores AL, so the zero gains three in-loop uses; in the current form they are AL.
+// SSS with the draw result named and stored on failure in loop 1/2/3 only 106/106/106; the current form with it in loop 1
+// 107; S first with later `long count = field; long offset; for (offset = 0; count > 0; --count)` 6 (xor before the
+// guard, as S F F); SSS with `success = 0;` 106 (same code).
+// M3 lane 3 r256 (fast with 0x13a532, 0x1393f3; control 1): SSS with all three guards written zero-first (`0 < field`)
+// 118; SSS with loop 1's failure written `success = draw(...) ? success : false;` 150 (381 B: the kept-value arm is
+// not dropped), in all three loops 166 (393 B); SSS with loop 1's offset stepped and read through a `long &` bound to
+// it 118 (the binding folds); S first with both later loops as a `> 0` guard around a for with offset and count in the
+// header (S K K) 118.
+// Round 138 (m3 lane 12, fast with 0x13a532, 0x1393f3; control 1; round 157's letters): S T T 118 (375 B); S J J 118;
+// S S F 3 (loops 1 and 2 exactly retail's: the guard compares with the zero in EBX and it dies into loop 1's offset;
+// only loop 3's offset is zeroed before its guard); S S J 118; S S T 118. So with a guarded do-while first loop the
+// zero dies after loop 1 when the third loop is the for form (as with round 204's J S F), and is kept when the third
+// loop is S, T or J.
+// m3 lane 14 r109 (fast with 0x13a532, 0x1393f3; control 1): SSS re-measured 118 (375 B; the zero stays in EBX through
+// loop 1, loop 1's offset spills to [ebp-0x18] and its failure store takes BL); SSS with loop 1's draw result named and
+// stored as the success value on failure (`if (!drawn) success = drawn;`) 118 (the result is propagated to the zero:
+// `cmp al, bl`, store BL); the first loop as a `> 0` guard around `for (long count = field; count > 0; --count)` with
+// its offset zeroed inside the guard 118 (the inner test threads away and the zero is kept, as for the later loops);
+// the current form with the offset step in the for header 1, with offset and count in one declaration 1 (both the
+// same code).
+// M3 lane 3 r260 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on SSS the four masks in one
+// declaration 118, the item output declared ahead of the masks 118, the success flag after the definition pointer 118,
+// loop 1's count declared bare at function scope 118; S S G (loop 3 as a `> 0` guard around a nonzero-count for) 44
+// (368 B: loops 1 and 2 exactly retail's, loop 3 retail's plus its inner `test eax, eax; je`).
+// m3 lane 14 r111 (fast with 0x13a532, 0x1393f3; control F S S 1; round 157's letters, Q = count read first, then a
+// `> 0` guard around a do-while with the offset inside): S S X 3, S S W 3, S S D 3 (each: loops 1 and 2 exactly
+// retail's, loop 3's offset zeroed before its guard, as S S F); S S H 118, S S Q 118 (375 B, the zero kept in EBX).
+// M3 lane 4 r216 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): loops 2 and 3 drawing through
+// file-local forceinline bool wrappers on SSS 118, on this body 1 (both the same code as without them); the first loop as
+// `while (count > 0)` with the step and `--count` at the body's end, count and offset first, 1 (same code); the first
+// loop's count and offset declared bare at the function's top 1 (same code); SSS with the success flag declared just
+// ahead of the first loop 127 (375 B).
+// M3 lane 7 r187 (fast with 0x13a532, 0x1393f3; SSS control 118): SSS with loop 1's condition result named 118 (same
+// code); SSS with 0x13ad48's anchor re-formed from the field (`local_2->field_24 + local_8 + 4`) 14 (365 B: the load is
+// merged across the condition call and `field + offset` with the element, so the anchor is retail's `lea eax, [esi+4]`
+// and all three loops get retail's registers, but the merged load is its own temp: `mov eax, [edi+0x24]; lea esi,
+// [eax+ebx]` against retail's `mov esi, [edi+0x24]; add esi, ebx`); that with the element formed in two statements 14;
+// that with the anchor as `&local_2->field_24[local_8 + 4]` 14.
+// M3 lane 3 r266 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on the current body the count
+// declared before the offset 1, the count in the for initialiser 1 (same code). On SSS, loop 1's mask argument formed
+// from the field again (`local_2->field_24 + local_8 + 8`, also written offset-first or as `&field_24[local_8 + 8]`)
+// 14/14/14 (365 B), with the element declared after the condition call 14: every loop then gets retail's allocation
+// (the guard compares with the zero in EBX, the zero dies into loop 1's offset, loops 2 and 3 test then `xor ebx, ebx`),
+// and only the element's formation differs (`mov eax, [edi+0x24]; lea esi, [eax+ebx]` for retail's `mov esi, [edi+0x24];
+// add esi, ebx`, the field load now a shared temp). The draw call's element re-formed from the field 92 (367 B, reloaded
+// after the calls). So retail's loop 1 holds one more reference (definition pointer or offset) than SSS, not through a
+// second field load.
+// Matched in a full build with stand-in SDK headers (was 1): the success flag's initial store goes through a reference
+// to its address, and the first loop is a guarded do-while counting down (the form of the second loop).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
-	bool success = true;
+	bool success;
+	bool *const &kept = &success;
+	*kept = true;
 	s_13a532 const *local_2 = (s_13a532 const *)g_4e3b44[arg_1 & 0xffff].bytes;
     word local_3 = 0;
     word local_4 = 0;
@@ -1345,19 +1412,23 @@ bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
     word local_6 = 0;
     s_13ad48_item const *local_7;
     function_13a050(arg_3, arg_2, arg_4, &local_7, &local_3, &local_4, &local_5, &local_6);
-    long offset = 0;
-    long count = local_2->field_20;
-    for (; count > 0; --count)
+    if (local_2->field_20 > 0)
     {
-        byte const *local_9 = local_2->field_24 + offset;
-        if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
-            local_6, (s_condition_subject const *)local_7, local_5))
+        long local_8 = 0;
+        long local_11 = local_2->field_20;
+        do
         {
-            real local_10[4];
-            function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
-            if (!function_22b7dd(local_9, arg_2)) success = false;
+            byte const *local_9 = local_2->field_24 + local_8;
+            if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
+                local_6, (s_condition_subject const *)local_7, local_5))
+            {
+                real local_10[4];
+                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
+                if (!function_22b7dd(local_9, arg_2)) success = false;
+            }
+            local_8 += 0x50;
         }
-        offset += 0x50;
+        while (--local_11);
     }
     if (local_2->field_8 > 0)
     {

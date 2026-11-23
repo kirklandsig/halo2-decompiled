@@ -406,6 +406,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax C (11-16): no new form, no lower score (13): all thirteen differences are the j and k rows of the inlined
+// rotation, whose term order is the shared rotate_vector_170d70 helper's own text in src/unknown_170d70.cpp, a file
+// this lane may not edit.
+// MiniMax E (11-16): no new form, no lower score (13): the thirteen differences are still the j and k rows of the inlined rotation, where retail adds the projection term first and this build adds the cosine term first; that text is the shared rotate_vector_170d70 helper's own, in src/unknown_170d70.cpp, which this lane may not edit, and a copy of it written for this caller is a same-behaviour twin that builds to the same bytes (13); writing the three rows out in the caller scores 59 and computing them into locals first scores 84, so the body stands.
+// MiniMax S (11-16): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, where this build adds the cosine term first and retail adds the projection term first; the permuter over the whole image (the reduced image scores 245 here) reported nothing below the baseline of 13 before it was stopped, and the rows follow the shared rotate helper's own text in another file: BLOCKED-BY 0x170d70.
 // MiniMax D (11-14): no new form, no lower score (13): the thirteen differences are all in the j and k rows
 // of the inlined rotation, whose text is the shared rotate_vector_170d70 helper's in src/unknown_170d70.cpp,
 // a file this lane may not edit.
@@ -583,11 +588,25 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
 // rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
 // this lane may not edit.
+// MiniMax E (11-17): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, and the rotation helper (0x170d70) is defined in src/unknown_170d70.cpp, which this lane may not edit.
 // score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
 // `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
 // MiniMax S (11-15): no new form, no lower score (13): only the j and k rows of the inlined rotation differ, where the
 // helper adds the projection term after the cosine term and retail adds it before; the helper's own text fixes that order
 // and it lives in another file.
+// b16E (11-17) walk against retail, fast build on r852 (0x170d70 in the image; control 13): statements, offsets,
+// jcc senses, draws, flag store and the i row agree with retail; only the j and k rows of the rotation differ
+// (retail 0x1551ba-0x1551fb: v.j loaded at 0x1551ba before the i store, then (axis.j * projection) + (v.j * cosine),
+// k likewise; ours adds v * cosine first and loads v.j after the store). The lanes' premise that the shared helper's
+// TEXT in src/unknown_170d70.cpp decides this is refuted: j,k rows projection-first 13, all three rows 13, every
+// row-sum order (7), cosine/v and axis/projection factor orders (9 more) 13, 0x170d70 MATCH in each; a same-file
+// rotate_slot_vector twin (static, inline, forceinline) with j,k projection-first or with the helper's text 13.
+// Retail's own 0x170d70 shows v-first i and projection-first j,k rows from the same text; matched 0x1055b0 and
+// 0x177d10 spell v-first text: no retail evidence for a helper change. Helper local orders: 4 of 18 keep 13/MATCH,
+// the other 14 give 24-47 (0x170d70 46-110); parameters v-first (6 orders) 13, axis first 19. function_259d0 as
+// random * range + lower 13 (lerp form 171); `volatile real scale` 17 (retail loads the scale at 0x155204 after the
+// k store at 0x1551fb, ours hoists it once xmm0 is free). No outside piece changed; the operand order follows
+// register state, not any text.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -710,6 +729,10 @@ struct s_player_axes_153d10
 	vector3f up;
 };
 
+/* the cross and dot block: MSVC orders the operands of each product and sum by
+   its own expression keys, so the k row's parenthesized products, its forward.j
+   read through the forward pointer and the forward dot accumulated in two
+   statements give retail's operand orders (any other spelling flips one of them) */
 // score 2 (was 2): one product is built with its operands in the other order: retail multiplies up.k by
 // forward.i, ours multiplies forward.i by up.k. Everything else is identical. Retail keeps every
 // cross product's text order; ours orders all six by the axis pointers' age. Round 14 (plain):
@@ -789,6 +812,59 @@ struct s_player_axes_153d10
 // first product 4/10/8): one paren flips fk*uj and fk*ui to up first, two flip every product but uk*fi; the first product
 // wrapped twice with 1/2/3 around the k row's last product 2/2/6, with one around any other product 2, but always either
 // fj*uk or uk*fi stays wrong (they share up.k); 1 or 2 parens around any single operand change nothing (2).
+// M3 lane 4 r204 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the i row's first forward.j and this
+// product's forward.i read through the forward pointer 2 (same code); the k row's first forward.i through it 2 (same code);
+// every forward read of the cross through the forward pointer 12; the j row as `forward->k * up->i - up->k * forward->i`
+// 34 (first difference +0x13); every up read of the cross through the up pointer 28.
+// M3 lane 4 r205 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the cross written inside relative.i's dot (no
+// cross local), rows in k, j, i order 46 (an earlier inlined block reorders, first difference +0x364), in i, j, k order 46; the
+// cross read through the forward and up pointers with this product's text kept 105; relative declared before cross 2 (same
+// code); the j row as `-(up.k * forward.i - forward.k * up.i)` 117 (1301 B).
+// Also r205: forward/up as const references (cross and dots through them) declared after delta, after the cross and
+// relative declarations or at the top of the block 105 each, declared after the cross for the dots only 10, after delta for
+// the dots only 2; a `real const &` to up.k for both its products 8, declared after the i row for the j row only 2; to
+// forward.i for both its products 6, after the i row 10; to forward.j for both 6; the axes view as a const reference after
+// or before the two point calls 2/2.
+// M3 lane 6 r188 (fast with the four callees listed, control 2): the j row as `-(up.k * forward.i) + forward.k * up.i` 6;
+// a `(real)` cast on this product's up.k or forward.i operand alone 2/2 (same code); the axis pointers, the axes view, or
+// cross/relative/delta renamed 2/2/2 (names do not key the order); in the real build the forward and up dots ahead of the
+// cross 115 (1300 B), the forward dot only 47, the up dot only 46.
+// M3 lane 3 r256 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70, control 2; without 0x154df0 listed every form reads
+// 345 at 1335 B): the second unit index as one ternary 2 (same code); as `unit_index = NONE;` then the lookup under the
+// player test 63 (1296 B); the cross as three named scalars feeding relative.i (real build) 47; delta declared after
+// the cross 121 (1303 B); all three dots written delta-first 2 (same code).
+// Round 138 (m3 lane 12, fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): delta as three statements in
+// k, j, i order 35; this product's up.k read through the array form of up (`[2]`) 2, its forward.i through the array
+// form of forward 2, the i row's up.k through the array form 2 (all the same code: the array reads fold before the
+// operands are ordered); this product written forward first in the text 2 (same code: the compiler orders the two
+// operands itself, so the text order of this product never reaches the code).
+// m3 lane 14 r109 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): forward.i named once for its two cross
+// products, ahead of the cross 113 (1297 B: the named leaf takes a register) and between the i and j rows 111 (1297 B);
+// the cross as a `real[3]` 2 and delta as a `real[3]` 2 (both the same code); the up dot's k leaf read through the axes
+// view (the rest through the up pointer) 20 (the k row and both i-row second products now load up first, this product
+// unchanged); the forward dot's i leaf through the axes view 24 (every product loads up first but this one); one leaf
+// through the axes view: the forward dot's k 26, its j 13, the up dot's j 19, its i 10 (each flips forward.k's two
+// products or all six; up.k against forward.i never moves alone).
+// Round 142 (m3 lane 12, fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2). Diagnostics with K dead
+// initialised locals (`long unused_k = 0;`): at the function top K = 0..26 gives 2 except K = 3/4/5, 11/12, 19/20
+// (101/102/16, 101/16, 101/16), period 8, and in every state the six cross products stay as they are (only the i terms
+// of the forward/up dots flip); the same pattern with the locals after the target fetch, after the axes view or between
+// the two axis pointers; after the `up` pointer or after delta nothing moves. So the hand-written cross does not follow
+// the symbol count. Forms, each scanned over K = 0..7 at the top: cross3f(&axes->forward, &axes->up, &cross)
+// 8/6/8/105/106/24/10/6 (the cross products now move with K; the first two stay up-first in every state); a file-local
+// textbook-order cross helper called the same way, the same eight states; with dot3f for the three dots in either
+// argument order 10/10/10/105/104/22/6..10. LEAD: cross3f(forward, up, &cross) through the two axis pointer locals
+// 105/104/104/106/107/100/101/103, and at K = 5 all six cross products are retail's (fj*uk fk*uj fk*ui fj*ui uk*fi
+// fi*uj), the first form that separates up.k's two products; there the delta components take other registers (xmm1,
+// xmm5, xmm4 for retail's xmm4, xmm5, xmm3) and two dot terms flip. On that form: dot3f dots in either argument order
+// the same eight states; cross3f_staged the same eight states; 1-7 dead locals between delta and the cross call 105
+// each (no effect: only symbols ahead of the axis pointers count); the axis pointers declared after delta the same
+// eight states; delta through vector3d_from_points3d 115/116/116/109/102/112/113/113 (1294-1299 bytes). Untried: other
+// ways to bring the delta registers back on the pointer-helper form at K = 5 (mod 8), then natural symbols for the K.
+// Same-role locals merged (round 142, after one shared loop index matched 0x12eb00): one unit-index variable for both
+// lookups 2, one player-index variable for both 2, both 2 (all the same code); the owner's position fetched into the
+// vector that later holds the relative direction (no separate target point) 2 (same code); delta and the relative
+// vector as one vector through three named dots 112 (1302 bytes).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
@@ -902,9 +978,10 @@ void __stdcall function_153d10(long user_index, long tag_index, void *owner, voi
                 vector3f relative;
                 cross.i = axes->forward.j * axes->up.k - axes->forward.k * axes->up.j;
                 cross.j = axes->forward.k * axes->up.i - axes->up.k * axes->forward.i;
-                cross.k = axes->forward.i * axes->up.j - axes->forward.j * axes->up.i;
+                cross.k = (axes->forward.i * axes->up.j) - (forward->j * axes->up.i);
                 relative.i = cross.k * delta.k + cross.j * delta.j + cross.i * delta.i;
-                relative.j = forward->k * delta.k + forward->j * delta.j + forward->i * delta.i;
+                relative.j = forward->k * delta.k + forward->j * delta.j;
+                relative.j += forward->i * delta.i;
                 relative.k = up->k * delta.k + up->j * delta.j + up->i * delta.i;
                 *(real *)((byte *)slot + 0x8c) = relative.i;
                 *(real *)((byte *)slot + 0x90) = relative.k;
@@ -944,9 +1021,9 @@ static inline real random_real_1546f0(dword *seed)
 
 static inline void point_set_1546f0(point3f *point, real x, real y, real z)
 {
-	point->x = x;
-	point->y = y;
 	point->z = z;
+	point->y = y;
+	point->x = x;
 }
 
 static inline void cross_product3d_1546f0(vector3f const *a, vector3f const *b, vector3f *result)
@@ -961,30 +1038,29 @@ static __forceinline void rotation_from_axis_1546f0(transform4x3f *matrix, vecto
 {
     real s = (real)sin(angle);
     real c = (real)cos(angle);
-    real ii = axis->i * axis->i;
-    real jj = axis->j * axis->j;
-    real kk = axis->k * axis->k;
+    vector3f squares;
+    squares.i = axis->i * axis->i;
+    squares.j = axis->j * axis->j;
+    squares.k = axis->k * axis->k;
     vector3f sine_axis;
     sine_axis.i = axis->i * s;
     sine_axis.j = axis->j * s;
     sine_axis.k = axis->k * s;
     matrix->scale = 1.0f;
-    real forward_i = (1.0f - ii) * c + ii;
+    matrix->forward.i = (1.0f - squares.i) * c + squares.i;
     real t = 1.0f - c;
     real tij = (t * axis->j) * axis->i;
-    real left_i = tij - sine_axis.k;
-    real forward_j = tij + sine_axis.k;
-    real left_j = (1.0f - jj) * c + jj;
+    matrix->left.i = tij - sine_axis.k;
+    matrix->forward.j = tij + sine_axis.k;
+    matrix->left.j = (1.0f - squares.j) * c + squares.j;
     real tk = t * axis->k;
     real tki = tk * axis->i;
-    real up_i = tki + sine_axis.j;
-    real forward_k = tki - sine_axis.j;
-    real up_k = (1.0f - kk) * c + kk;
+    matrix->up.i = tki + sine_axis.j;
+    matrix->forward.k = tki - sine_axis.j;
+    matrix->up.k = (1.0f - squares.k) * c + squares.k;
     real tkj = tk * axis->j;
-    real up_j = tkj - sine_axis.i;
-    real left_k = tkj + sine_axis.i;
-    matrix3x3 rotation = {{forward_i, forward_j, forward_k}, {left_i, left_j, left_k}, {up_i, up_j, up_k}};
-    matrix->rotation = rotation;
+    matrix->up.j = tkj - sine_axis.i;
+    matrix->left.k = tkj + sine_axis.i;
     matrix->position.z = 0.0f;
     matrix->position.y = 0.0f;
     matrix->position.x = 0.0f;
@@ -1012,6 +1088,13 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
+// score 244 (was 484) in a full build with stand-in SDK headers: the speed flags are loaded once and tested with &
+// 1 / & 2 (retail 0x15470e), the slot flags as & 2 / & 4, the clamp is if / else-if assignments, the three random
+// draws are inlined calls in the arguments of 0x141ce0 and of the point setter (retail stores the seed three times
+// at 0x1547cc-0x154806 and reads the first two values back from memory), and the rotation helper writes its nine
+// elements straight into the transform. The frame is now retail's 0x98. Left: the transform at [esp+0x28] against
+// retail's 0x1c, the z/y conversions of the position triple, `xor eax, eax` before both 0x17ca10 curve loads.
+// Before:
 // score 484 (was 521): flags 5 and others read through a word bitfield view give retail's load-and-shift; the rest still differs.
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
@@ -1019,48 +1102,46 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
     if (local_index == NONE)
         return;
     s_game_speed *speed = g_510c5c;
-    if (speed->flags & 1)
+    dword flags = speed->flags;
+    if (flags & 1)
     {
         real amount = *(real *)&speed->value20;
         transform4x3f transform = *g_4687d0;
         if (speed->timer24 > 0)
         {
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&speed->flags)->bit1))
+            if (flags & 2)
                 amount *= (real)speed->timer24 / (real)speed->timer26;
             else
                 amount *= 1.0f - (real)speed->timer24 / (real)speed->timer26;
         }
-        amount = 0.0f > amount ? 0.0f : (amount > 1.0f ? 1.0f : amount);
+        if (0.0f > amount)
+            amount = 0.0f;
+        else if (amount > 1.0f)
+            amount = 1.0f;
         s_random_globals *random = g_4e7408;
         g_502120->value228 = amount;
-        /* retail advances the seed three times and then reads it once for all three axes
-           (0x1547cc-0x154806, again at 0x154888-0x1548d0): the third draw scales every axis */
-        random_real_1546f0(&random->seed);
-        random_real_1546f0(&random->seed);
-        real shake = random_real_1546f0(&random->seed) * 2.0f - 1.0f;
-        function_141ce0(shake * speed->angles[0] * amount, shake * speed->angles[1] * amount,
-            shake * speed->angles[2] * amount, &transform);
-        random_real_1546f0(&random->seed);
-        random_real_1546f0(&random->seed);
-        shake = random_real_1546f0(&random->seed) * 2.0f - 1.0f;
-        point_set_1546f0(&transform.position, shake * speed->point.y * amount, shake * speed->point.x * amount,
-            shake * speed->point.z * amount);
+        function_141ce0((random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[0] * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[1] * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[2] * amount, &transform);
+        point_set_1546f0(&transform.position, (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.y * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.x * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.z * amount);
         function_142a60(matrix, &transform, matrix);
     }
     else
     {
         s_speed_slot *slot = &speed->slots[local_index];
-        if (slot->timer80 > 0 || TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit1))
+        if (slot->timer80 > 0 || (slot->flags & 2))
         {
             real amount;
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit1))
+            if (slot->flags & 2)
                 amount = 1.0f;
             else
             {
                 real duration = slot->bounds.duration;
                 real elapsed = (duration - (real)slot->timer80) / duration;
                 real priority = slot->priority9c;
-                amount = priority * function_17ca10(1.0f - elapsed, *(short *)&slot->bounds.unknown04[0]);
+                amount = function_17ca10(1.0f - elapsed, *(short *)&slot->bounds.unknown04[0]) * priority;
             }
             transform4x3f transform;
             vector3f axis;
@@ -1076,19 +1157,19 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
             transform.position.z = slot->vector.k * amount + offset.k;
             function_142a60(matrix, &transform, matrix);
         }
-        if (slot->timer82 > 0 || TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit2))
+        if (slot->timer82 > 0 || (slot->flags & 4))
         {
             transform4x3f transform = *g_4687d0;
             s_game_time_globals *time = g_510c54;
             real amount;
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit2))
+            if (slot->flags & 4)
                 amount = 1.0f;
             else
             {
                 real duration = slot->values50.value[0];
                 real elapsed = (duration - (real)slot->timer82 * time->rate) / duration;
                 real priority = slot->priority98;
-                amount = priority * function_17ca10(1.0f - elapsed, *(short *)&slot->values50.value[1]);
+                amount = function_17ca10(1.0f - elapsed, *(short *)&slot->values50.value[1]) * priority;
             }
             real elapsed = (slot->values50.value[0] - (real)slot->timer82 * time->rate) / slot->values50.value[5];
             real curve = function_17c900(*(short *)&slot->values50.value[4], elapsed);

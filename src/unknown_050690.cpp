@@ -478,6 +478,24 @@ void __stdcall function_508d0(void *payload_data)
 	g_46713c = true;
 }
 
+// MiniMax A (11-20): no new form, no lower score (626): the frame is 0x1468 against retail's 0x1474
+// MiniMax H (11-19): no new form, no lower score (626): the frame stays 0x1490 against retail's self-aligned 0x1474 and the mode still has a stack home where retail keeps it in CL; the only caller at 0x508d0 is still a stub, so the frame's alignment is not reachable from here.
+// MiniMax I (11-19): no new form, no lower score (626): the frame is still 0x1490 against retail's self-aligned 0x1474 and the mode still has a stack home where retail keeps it in CL, so every stack home sits further out; the only caller at 0x508d0 is still a stub, so the flag's convention is out of reach from here and the body is unchanged.
+// MiniMax B (11-18): no new form, no lower score (626): the frame is still 0x1490 against retail's self-aligned
+// 0x1474 and the mode still has a stack home where retail keeps it in CL; the exponent clamp, the random real and the
+// level float are already retail's, so the body's own arithmetic is not the difference and nothing else in this file
+// can be reached from here.
+// MiniMax H (11-18): no new form, no lower score (626, was 626): the frame stays 0x1490 against retail's 0x1474, so
+// every stack home sits further out, the flag is still a stack load into AL where retail keeps it in CL, and the
+// exponent's clamp still reads its input twice where retail reads it once; the only caller at 0x508d0 is still a stub,
+// so the caller side of the flag's convention stays out of reach from here.
+// MiniMax S (11-17): no new form, no lower score (626, was 626; the fast image without 0x508d0 scores 680); the frame stays 0x1490 against retail's self-aligned 0x1474 and the flag stays a stack load into AL against retail's CL, the exponent clamp, the random real and the level float are already retail's, and the permuter over this function's source (300 s, fast with 0x508d0) was stopped before its first trial finished on the loaded machine, so the body stays as it is.
+// MiniMax D (11-17): no new form, no lower score (626, was 626); the frame stays 0x1490 against
+// retail's self-aligned 0x1474 and the mode stays a stack home against retail's CL, so nothing else
+// in this file can be reached from here; a permuter run over the body (5 tries, full image, 603
+// differing instructions) finds nothing below the baseline, and the reduced image counts 680
+// where it counted 626 before, because the image this function is built in changed.
+// in this file can be reached from here.
 // MiniMax D (11-05): no new form, no lower score; retail's self-aligned 0x1474 frame and its sole
 // caller at 0x508d0 (still a stub) keep this function out of reach.
 // MiniMax E (11-06): no new form, no lower score; retail's flag is its second parameter (CL) and it
@@ -571,6 +589,12 @@ void __stdcall function_508d0(void *payload_data)
 // +508d0; exponent as `exponent - 2 < 0 ? 0 : exponent - 2` (retail's exact sequence) 688 / 633; `weight + weights[i]`
 // 680 fast, unchanged. The caller loads the flag as a raw byte (0x5123d), no != 0 test, so the parameter may be a byte;
 // the callee only tests cl (0x516e0), so no behaviour difference.
+// MiniMax G (11-20): no new form, no lower score (626): this build still stacks the mode argument and returns
+// with ret 0x1c where retail takes the mode in CL and returns ret 0x18, its frame is still the unaligned 0x1468
+// against retail's self-aligned 0x1474, and retail still keeps its static limits in xmm7 and xmm4 across the
+// 0x1420f0 call where this build re-reads them at each use; retail's only caller has no source, so the calling
+// convention cannot be coordinated from here.
+// MiniMax H (11-20): no new form, no lower score (626); this build still stacks the mode argument where retail takes it in CL and returns ret 0x1c against retail's ret 0x18, and the frame is 0x1468 against retail's 0x1474 (BLOCKED-BY 0x508d0).
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

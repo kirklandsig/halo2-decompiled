@@ -151,7 +151,7 @@ static inline bool device_iterator_next(s_device_iterator *iterator)
 
 void function_b7360(long object_index);
 void function_b58c0(long index, dword mask);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 void device_groups_initialize();
 void device_groups_dispose();
 
@@ -302,7 +302,7 @@ void function_107980(long object_index, long tag_index)
 			function_176780(object_index, &owner, device->power, tag_index, device->position, NULL, NULL);
 			break;
 		case 'snd!':
-			function_189060(object_index, NONE, 1.0f, g_468788, g_4687a8, tag_index);
+			function_189060(object_index, NONE, g_468788, g_4687a8, 1.0f, tag_index);
 			break;
 		}
 	}
@@ -524,6 +524,12 @@ struct s_device_model_definition
 PRIVATE inline bool device_channel_valid(c_animation_channel const *channel)
 {
 	return channel->graph_tag_index != NONE && channel->animation_id.index != NONE;
+}
+
+/* the length of one game tick in seconds */
+PRIVATE inline real device_tick_length()
+{
+	return g_510c54->rate;
 }
 
 /* samples a device's two channels */
@@ -1024,6 +1030,62 @@ struct s_device_machine_view
 // `word const *` to the group's flags 116 (655 B); the group pointer formed at the top of the case (ahead of the position
 // test) with direct masks 167 (661 B), with the lane S word and mask 170 (663 B); the machine flags read at the top of the
 // case on the lane S form 135 (657 B). Body unchanged.
+// M3 lane 3 r249 (fast; base 2, the zero store in place, only the word load differs): the machine flags through a
+// machine pointer re-derived from the index by DEVICE_GET 2 (same code); that pointer with the group pointer and direct
+// field masks 122 (the pushed ESI); a machine pointer local (the device cast) with the group word read after the machine
+// test 122; the machine pointer as `type == 7 ? device : NULL`, tested in place of the type test, 141 (666 B); the lane S
+// bits as an unmasked byte copy of the word, `(byte)group_flags`, 115 (654 B: retail's word load into AX and no mask,
+// registers all retail's, but the load stays folded ahead of the machine test, one instruction short). Body unchanged.
+// M3 lane 4 r205 (fast with 0x107870, 0x1071e0): the whole group copied as an aggregate and its flags tested 199 (686 B,
+// a 12-byte frame); the group pointer and machine flags declared bare and assigned in order 122; the group pointer with
+// `(group->flags & 3) == 3` 120 (654 B, the pushed ESI); a `word const *` to the group's flags tested twice 122; the
+// two bit tests as nested ifs on the group pointer 122. Body unchanged.
+// Also r205 (references): `word const &` to the group's flags with the lane S bits 116 (655 B), tested directly 122,
+// declared after the machine flags 127 (657 B); `dword const &` machine flags 2 (same code); a const group reference with
+// the lane S bits 115 (655 B).
+// M3 lane 4 r207 (fast with 0x107870, 0x1071e0; compile-only screens agree): the group pointer from a masked
+// `group_index` local with direct masks 122 (656 B); the machine flags read in the test itself (no local) with the
+// group pointer 122; a dead `else` on the group test 122; both value updates as ternaries on function_value 122; the
+// machine test spelled per bit (`(f & 1) || (f & 4) || (f & 8)`) on the lane S form 2 (merged into `test dl, 0xd`).
+// Re-measured round 62's both-arm read: 3 (the pointer takes EAX, the load hoists above the `je`).
+// M3 lane 1 r117 (fast with 0x107870, 0x1071e0): on the group pointer read after the machine test (122, pushed ESI): an
+// `s_device_group *&` bound to it 122; the word through a `word &` bound to a word local 122; `__assume(group != NULL)`
+// placed between the machine test and the word read 122; a word local read after the machine test 122.
+// M3 lane 13 r108 (fast): on the group pointer, the machine and both-bits tests as one `||` test 111 (654 B, the pushed
+// ESI), with the group bits first 119 (654 B); the pointer with a byte machine-flags local 122 (656 B), with a word
+// machine-flags local 123 (657 B); the lane S word local tested with direct `& 1`/`& 2` masks (no byte copy) 115.
+// M3 lane 10 r120 (fast with 0x107870, 0x1071e0, both matched throughout; control 2; compile-only screen exact): on the
+// plain group pointer (122, the pushed ESI) any third reference to the pointer between its lea and the word load gives
+// retail's EAX and `mov ax, [eax + 2]`: the machine arm reading `group->value` (diagnostic, reverted at once) is retail's
+// code but for that arm's `movss xmm0, [eax + 4]`, and a test of `group->identifier` likewise but for its compare. So
+// retail's pointer had three references when registers were chosen and one of them left no code. Trials: the value
+// set through a `real &` in both tests 122; both tests through file-local inline helpers taking `real *value` 122; the
+// group test alone through that helper 122; one inline helper taking the value, the machine flags and the group and
+// returning the value 83 (658 B); an inline both-bits helper with two return paths chosen by the machine test 92
+// (655 B). Screens: the flags read at the end of both machine arms hoists between the `test` and the `je` (aligned 2,
+// with the value through a reference too); bit 0 through the word and bit 1 through a bit-field view (either way
+// round) the pushed ESI; the two bits tested in a counted loop aligned 57; that one helper with the lookup as its
+// argument aligned 13.
+// M3 lane 11 r120 (fast; the compile-only screen is exact, control 2): on the group-pointer form (122, pushed ESI) the
+// pointer declared NULL and assigned on the next line 122; the second bit as `(group->flags >> 1) & 1` 122; screens of the
+// same form: the type and index tests nested, a `long group_index` local, a machine pointer local, a `short` copy of the
+// flags after the machine test, all the pushed ESI. Lead: the power read into a local at the top of the group block
+// (`real power = device->power;`, used in the power test) gives retail's `lea eax` group pointer and `mov ax, [eax + 2]`
+// after the machine test, but its load rises above the group lookup: 16 (654 B); the same local declared bare and assigned
+// before the power test, or declared just before it, keeps the pushed ESI; declared ahead of the group pointer 32 (screen).
+// So a float live across the group tests moves the pointer to EAX, while retail's power load stays below them.
+// M3 lane 5 r205 (fast): the group pointer before the machine flags with the word flags read after the machine test under a
+// re-test of the group index (threaded away) 122 (pushed ESI); that pointer with the lane S bits read from it after the
+// machine test, `(byte)(group->flags & 3)`, 115 (655 B): retail's `lea eax, [eax + edx*4]` before the machine flags and the
+// load after the machine arm with the pointer in EAX, left only `mov al, [eax + 2]; and al, 3` for retail's `mov ax,
+// [eax + 2]` (the masked byte is a one-use temporary, so the pointer wins EAX); the same with a word local and an unmasked
+// byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
+// 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
+// Matched in a full build with stand-in SDK headers (was 2): the group is a pointer local and its two flag bits are
+// tested on the field, with the second bit also tested through a reference-bound local that holds the flags (read
+// after the first bit's test). The extra test leaves no code; it adds a reference of the flags before registers are
+// chosen. With bit 2 tested once (the reference-bound local alone, read there or before the test) 122; with the local
+// declared ahead of the machine flags 3 (the word load rises above the machine test's `je`).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1036,7 +1098,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	{
 	case 0x5000561:
 		if (definition->delay_time > 0.0f)
-			function_value = g_510c54->rate / definition->delay_time * (real)device->delay_ticks;
+			function_value = device_tick_length() / definition->delay_time * (real)device->delay_ticks;
 		break;
 	case 0x5000081:
 		function_value = device->position;
@@ -1049,14 +1111,19 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
+			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			byte group_flag_bits = (byte)(group_flags & 3);
-			if ((group_flag_bits & 1) && (group_flag_bits & 2))
-				function_value = 1.0f;
+			if (group->flags & 1)
+			{
+				word flags = group->flags;
+				word const &kept = flags;
+
+				if ((kept & 2) && (group->flags & 2))
+					function_value = 1.0f;
+			}
 			if (device->power == 1.0f || (machine_flags & 0x10))
 			{
 				function_value = 0.0f;
@@ -1242,9 +1309,39 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// score 116 (was 116): The frame-free XMM6 entry and retail length agree. Duration and position use different registers. Ramp-down stays cached across the upper clamp and cruise speed stays cached in deceleration.
+// Earlier at 116 (was 116; earlier 116, was 127). Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Earlier measurement 116 (was 127).
+// Previously noted: Both denominator arms compute the cruise speed, then a shared
+// store publishes it at the join. The body is 523 bytes and both callers still match.
+// Duration and position use different XMM registers. The ramp-down clamp caches its value,
+// and deceleration keeps the cruise result in a register where retail reloads the field.
+// Earlier at 127 (was 127; 121 before the coordinator decision): the plan block in the order that makes both callers match
+// (0x108600 31 -> MATCH, 0x108670 13 -> MATCH; this body ret 0x14 with the initial velocity in XMM6 as retail), kept over
+// this body's 121: the cruise velocity through the motion field, velocity/deceleration/start/target stores first, the
+// half ramp-up, the acceleration zero, the half ramp-down, the denominator with the cruise time written out
+// (`duration - ramp_up_time - ramp_down_time`), then the position and cruise stores, distance declared at its fabs.
+// Still differs: the ramp-down time keeps a register through its clamps (retail compares its stack slot), 528 bytes
+// against 523.
+// Earlier at 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
+// duration/position registers are exchanged and the ramp-down is still cached in a register through its clamps.
+// MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
+// build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
+// own registers (this build xmm7, xmm2 and xmm1 for the duration and the two ramp times, retail xmm5, xmm7 and xmm1);
+// the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
+// tried, so the clamp's XMM homes stand.
+// MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
+// Earlier score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
+// Earlier 121 (was 121; a second stacked first line, merged in r108): Frameless at retail length. Retail keeps ramp-down in memory and takes
+// Earlier at 121: Frameless at retail length. Retail keeps ramp-down in memory and takes
+// initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
+// MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
+// but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
+// duration and the two ramp times, retail xmm5/xmm7/xmm1); the permuter found no spelling that moves them.
 // MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
 // returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
-// score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
+// MiniMax E (11-16): no new form, no lower score (121): the initial velocity stays stack-passed where retail takes it in xmm6 with five stack floats and a 0x14 return.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
 // MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
@@ -1538,6 +1635,176 @@ bool function_108530(long device_index, long name)
 // M3 lane 7 r163 (fast, callers 31/13 throughout): 1-7 unused locals 121 each; the cruise numerator's products velocity
 // first (re-measured) 121; both distance denominators as `2.0f * rate` 121; the denominator summed half ramp-up, cruise,
 // half ramp-down 121; the reset stores in field order 121; the deceleration from the local cruise velocity 121.
+// m3 lane 16 r130 (fast, callers 0x108600/0x108670 in brackets, base 31/13): retail's inner order (cruise time, the
+// target/position/start stores, then the half times) with both ramp-down clamps as ifs 170 (486 B, the ramp times then
+// passed in xmm7/xmm6) [19/34]; with the half ramp-up named first 171 (485 B) [19/34]; the cruise time first, then all
+// seven inner stores, then the half times 144 (509 B) [26/28]; the ramp-down minimum under a redundant
+// `if (ramp_down_time > 0.0f)` 133 [31/13]; the position pin through a trivial inline accessor 121 (same code).
+// MiniMax D (11-17): no new form, no lower score (121): the full image measures the same 121 as the reduced one, and a
+// permuter run (27 tries over the body) finds nothing below the baseline; retail's callee takes the initial velocity in
+// xmm6 with five stack floats and returns with ret 0x14, while this build passes it on the stack and returns with
+// ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7, retail's
+// in xmm5) and the ramp-down value stays in a register here where retail keeps it in its stack slot; the split between
+// xmm6 and the stack is the callee's own convention, set by the definition that the six float signature may not change.
+// MiniMax S (11-17): no new form, no lower score (121): retail's callee takes the initial velocity in xmm6
+// with five stack floats and returns with ret 0x14, while this build passes it on the stack and returns with
+// ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7,
+// retail's in xmm5); the split between xmm6 and the stack is the callee's own convention, set by the
+// definition that the six float signature may not change, so the body stands.
+// P595: Initial velocity remains stack-passed and ramp down still displaces the retail XMM6 input.
+// guarded position/target/both 121/121/121, successive position/target/both 142/121/142, guarded
+// position with successive target 121, successive position with guarded target 142. NOT kept: the
+// sampled position adds an entry push and moves the extent off retail, while the other forms tie.
+// duration magnitude after floor 138; duration magnitude between ramp bounds 138; duration magnitude
+// after ramp bounds 138; duration magnitude after endpoint pins 121; duration admission after ramp
+// bounds 138; duration admission after endpoint pins 136; double duration magnitude before endpoint
+// pins 121; early duration magnitude with cruise field 145. NOT kept because the forms tie or raise the
+// score. The early float decisions also increase the extent.
+// M3 lane 16 r135 (fast, callers 31/13 throughout, every form ret 0x18): ours also stores each clamped time back to
+// its slot; the difference is that ours caches the ramp-down time in XMM1 after its zero clamp and compares the
+// minimum against that register, where retail stores the zero only to the slot and compares the slot. The half times
+// named before the cruise time 121; the deceleration test as `0.0f < ramp_down_time` 121; the cruise time as
+// `duration - ramp_up_time - ramp_down_time` 123; remaining/position/delta/distance declared at the function top 121;
+// the ramp-down minimum as `ramp_down_time < remaining ? ...` 121. Diagnostic (reverted at once): `(void)&ramp_down_time;`
+// 121 (same code: the dead address folds away).
+// M3 lane 11 r118 (fast with 0x108600/0x108670, base 31/13; "screen" = a compile-only pass of this body, which the LTCG
+// build follows exactly): LTCG compiles this body once and makes a stack float a register parameter when its single
+// load lands in an XMM register nothing wrote before it (the load is then dropped). Ours writes all eight before the
+// velocity's one late load. Diagnostic, reverted at once: `real initial_square = initial_velocity * initial_velocity;`
+// after the pins 153 (539 B, ret 0x14, both callers MATCH; its LTCG code is the plain compile minus that load). The
+// cruise velocity through the motion field with the plan block as velocity, start and target stores, the half ramp-up,
+// the acceleration zero, a denominator `remaining - ramp_down_time + half down + half up`, then the position,
+// deceleration and cruise stores, and distance declared at its fabs 133 (527 B; its tail and plan block are retail's
+// with the velocity in XMM6, but the ramp-down still holds a register through its clamps; callers 31/13); the same with
+// the deceleration store second and `remaining` written out for the cruise time 127 (528 B, ret 0x14, both callers
+// MATCH; a statement order found by search, not kept: build/r118/lead-0x107ab0-callers.patch); the cruise velocity
+// through the field alone (re-measured) 134 (524 B). Screen only (about 14,000 bodies: the eleven plan statements in
+// 960 block orders and 6,400 random orders; the denominator, cruise time, half times, remaining, delta, acceleration
+// and deceleration each named or written out; distance declared at the top or at its fabs; the two store runs
+// through one inline setter in 5,760 combinations; the five clamps as inline min/max helpers or ifs in all 32 mixes;
+// the velocity parameter in every declared position; 1 to 40 dead locals): the plan block's order and which sums are
+// named decide which values get whole-function registers. 31 bodies leave a register untouched for the velocity (the
+// nearest 75 aligned lines from retail), about 480 leave the ramp-down uncached as retail does (the nearest 53), none
+// does both with retail's body. A diagnostic with the cruise time's ramp-down term dropped gives retail's exact
+// uncached clamp pair, so the ramp-down sits one reference from losing its register.
+// On the caller-matching body, separate positive time with parameter limit 136, separate final
+// limit 138, separate clamp results 138, explicit branches in either or both clamps 138/138/138,
+// one named time through both clamps 141, and first conditional write with named final limit 138.
+// NOT kept: every form demotes both callers. The ramp-down comparison still needs its stack slot
+// while preserving the incoming initial velocity in XMM6.
+// M3 lane 2 r108 (fast with both callers, which stay MATCH only on the first two): on the kept 127 body, the ramp-down
+// zero clamp as `if (!(ramp_down_time > 0.0f)) ramp_down_time = 0.0f;` 127 (same code); its minimum as `if
+// (!(remaining > ramp_down_time)) ramp_down_time = remaining;` 127 (same code); the denominator from `remaining -
+// ramp_down_time` 139 (534 B, callers 31/13); no remaining local (the difference written in the minimum) 139 (534 B,
+// 31/13); both ramp-down clamps as PIN(ramp_down_time, 0.0f, remaining) 140 (530 B, 31/13); the ramp-up clamps as
+// PIN(ramp_up_time, 0.0f, duration) ahead of the ramp-down zero clamp 141 (530 B, 31/13). Left as before: the ramp-down
+// held in XMM2 from its zero clamp to the minimum (retail compares the slot) and duration/position in XMM3/XMM5
+// (retail XMM5/XMM3).
+// M3 lane 8 r191 (fast with 0x108600/0x108670, control 127, both callers MATCH; a compile-only build of this file gives
+// this body exactly except the velocity's one load, which LTCG turns into the XMM6 parameter): the denominator through
+// `remaining` 139 (534 B, callers 31/13); both length tests as early returns 127, the duration test alone 127 (same
+// code); 700 plan-block orders and 1500 clamp-and-order variants screened: no order keeps the XMM6 velocity with the
+// ramp-down uncached (when the ramp-down loses its register the duration takes XMM6; the one order that gives retail's
+// XMM5/XMM7 duration and ramp-up caches the ramp-down in XMM6). A velocity copy at the top folds away (same code). The plan order start, half ramp-up, acceleration zero, position, cruise zero, velocity, half
+// ramp-down, target, denominator, deceleration 75 at 523 B (retail's uncached clamp pair and tail, but the duration takes
+// XMM6, so the target becomes the register parameter instead; callers 26/28; a statement order, not kept); velocity,
+// position, cruise zero, target, halves, acceleration zero, start, denominator, deceleration 132 (527 B, `ret 0x18`).
+// Early cruise span 139; early span with staged additions 127; select distance and divisor
+// before one division 127 at 525 bytes; reuse cruise result for acceleration 116; duration
+// test, fallback or both from the stored field 127 each; cruise calculation scope 127.
+// Shared cruise store 116 (plain confirmed) with both phases reading the field. Scope the
+// result through acceleration, name both square differences, or select the result with a
+// conditional 116 each. The early span loses both callers. The retained source uses the
+// common store and preserves both formulations of the later field calculation.
+// Separate ramp-down floor 129, upper-limit default 122, scoped floor with explicit alternatives 129, both limit
+// intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
+// trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
+// form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
+// M3 lane 8 r201 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, difflib-aligned 54,
+// register-masked 19). The score is positional; by aligned lines the kept shared-store body is further from retail than
+// the earlier one: the cruise velocity stored in each arm of the denominator test with every later read through the
+// field 127 (528 B, aligned 41, masked 13: 2.0 held in XMM3, the acceleration square in place and the deceleration reads
+// from the motion are then retail's; a score rise, not kept). What both leave: the ramp-down time holds a register from
+// its zero clamp to its minimum and again from the plan block to the end (retail never gives it one), the duration and
+// the position sit in XMM3/XMM5 (retail XMM5/XMM3), the distance is reloaded at the end (retail keeps it in XMM5) and the
+// final velocity takes XMM5 (retail XMM7). Reading of retail's plan block: its stores come out target, position, start
+// (each forced early because its register is reused) and then acceleration, deceleration, velocity, cruise at the block's
+// end, the order of the eight reset stores, so retail's source has the velocity store after both distance stores (ours
+// has it first). `delta` declared after the reset stores 109 (523 B, aligned 56; a moved declaration, not kept).
+// Compile-only screens (the first pass, with the XMM6 conversion check): 1500 random bodies (plan stores in the reset
+// order or shuffled, the cruise time, halves and denominator at any gap, each cruise, velocity and distance read as the
+// local or the field, the cruise time and halves named or written out, delta before or after the reset) give 7 that
+// keep XMM6 for the velocity (the nearest 75 aligned lines) and none with retail's duration/ramp-up/velocity registers;
+// 680 bodies with the plan stores in the reset order and the three computations at every gap: none keeps XMM6; 1200
+// one-to-three-step neighbours of the kept body: none under 41 aligned (the 127 form above); 1500 neighbours of the 127
+// form: none under 41. On the 127 form, same code each: the ramp-down zero clamp or minimum through a `real &`, a
+// `real const &`, an inline helper taking `real &` or `real *`, and both as if-statements; `<=`/`>=` if-forms 43
+// aligned, `<`/`>` 46. Diagnostics (reverted): the half ramp-down from another value puts the duration in XMM6; dropping
+// the ramp-down from the deceleration test or divide changes nothing in the clamps.
+// Positive input split 141, positive remaining split 141, nested bound selection 148, and a separate
+// lower-bound branch 145. Zero rate for absent acceleration, deceleration, or both 116 each. Accumulate
+// the half ramps into the remaining span 131. NOT kept: rate forms tie, and the other forms lose
+// both callers through the initial-velocity convention. Ramp-down still occupies an XMM register.
+// Separate request paths as statements or values 141/141, positive span first as statements or values
+// 141/141, carried request predicate as statements or values 156/156, span accumulator 141, clamp within a
+// positive span 145. NOT kept: all lengthen the body and lose the incoming velocity register. The ramp-
+// down slot and duration and position registers remain displaced.
+// MiniMax B (11-20): no new form, no lower score (116): the initial velocity still reaches the clamp on the stack
+// where retail passes it in XMM6, so the clamp's own convention keeps the ramp-down slot and the duration and
+// position registers displaced; every form that moves the velocity off the stack loses a matched caller.
+// M3 lane 7 r197 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, aligned 48, register-masked
+// 13). Re-measured on this XMM6 body: the deceleration distance reduced in place 116 (same code); the acceleration block
+// from the cruise_speed local with the deceleration block on the field 116 (same code), with the in-place deceleration 116
+// (same code); a named cruise time (`remaining - ramp_down_time`) first in the inner block with the denominator from it 131
+// (528 B, callers 31/13); that with delta after the reset stores 120; delta after the reset stores alone 109 (listed, a
+// moved declaration) and with either first form 109 (same code). In the inner block retail gives XMM registers to the
+// distance (XMM5), the final velocity (XMM7) and the 2.0 constant (XMM3) and reloads the ramp-down and the cruise velocity
+// from memory; ours keeps the ramp-down (XMM7) and the cruise velocity (XMM4) and reloads the distance.
+// MiniMax C (11-20): no new form, no lower score (116): the velocity still reaches the clamp on the stack, retail in xmm6.
+// M3 lane 14 r134 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, aligned 48, register-masked
+// 14). Diagnostics, each reverted at once: the ramp-down time's address stored to an extern pointer at the top of the
+// reset-order body (cruise time first, the seven plan stores in the reset order, then the halves) 131 (524 B, callers
+// 31/13): the escape does not keep it in memory (it stays in XMM7 and its slot is reused for the delta) and the ramp-up
+// time becomes the uncached one, with retail's conditional-store clamps, so retail's uncached ramp-down is an allocation
+// loss and not an address-taken variable; an entry store of the initial velocity to the motion on that body 153 (503 B,
+// both ramp times register parameters, ret 0x10; callers 19/34), on the kept body 138 (the ramp-down the register
+// parameter; callers 26/28): an early use does not hold the velocity in one register; the two ramp parameters declared
+// in the other order on the reset-order body 144 (same code as that body: the ramp-down is promoted either way and the
+// stack slots close up, so the choice follows use and not the declared position). Forms: the reset-order body
+// re-measured 144 (509 B, the ramp-down passed in XMM7; callers 26/28), with the cruise time after the seven stores 144
+// (same code); the deceleration distance as `distance -= ...; motion->deceleration_distance = distance;` 116 (same code).
+// MiniMax R (11-20): score 116 (was 116): no new form; the clamped duration, ramp-up and ramp-down still take xmm3, xmm7
+// and xmm2 where retail takes xmm5, xmm7 and xmm1, the ramp-down still stays in a register where retail reloads it from the
+// stack, and the initial velocity still reaches the clamp on the stack where retail passes it in xmm6 (the callee's own
+// link-time convention, which no form here moves).
+// Published duration through plan 116, reset target before delta 109, chained target 116,
+// chained target and zeroes 116, phase cruise snapshots 116, early full-speed span 154,
+// separate bounded ramp-up 134, common initial cruise numerator 116.
+// NOT kept: 109 gains seven. The early span and separate bound displace the initial-velocity
+// register and lose both matched callers. Other forms tie.
+// One cruise-speed square shared across both ramps, calculated/field/cached speed 124/124/124;
+// named energy differences 124/124; square gated on a positive ramp time 102/102/102.
+// NOT kept: The unconditional square raises the score. A positive-ramp gate scores 102 at 532 bytes
+// and breaks both caller previews. Retail computes separate squares.
+// Shared phase-travel quotient with a direct expression, named square difference,
+// named squares, or named difference and doubled rate 116 each, with the original
+// sampled distance or a reduction of the published deceleration distance. NOT kept:
+// all tie at 523 bytes. Ramp-down stays cached and duration still uses XMM3.
+// Value-first duration or both tolerance comparisons 116/116. Combined active gate or inactive exit 136/136.
+// Displacement from published target 109; active target readback 116; active start readback 116;
+// published displacement and endpoint readbacks 109. NOT kept: the seven-point forms store
+// the displacement after the reset, and the combined gates break both caller previews. The
+// ramp-down comparison still needs the stack slot.
+// M3 lane 5 r227 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, already `ret 0x14`):
+// both ramp-down clamps as if-statements 116 (same code: the ternaries already compile as conditional stores); all five
+// clamps as if-statements 116 (same code); the ramp-down minimum on `duration - ramp_up_time` written twice (no
+// `remaining`) 131 (528 B, callers 31/13); the deceleration distance reduced from the motion's field instead of
+// `distance` 116 (same code); that with the if-statement clamps 116.
+// M3 lane 3 r293 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, `ret 0x14` as retail): the
+// ramp-down minimum as `if (ramp_down_time > remaining) ramp_down_time = remaining;` 116, the ramp-up minimum as `if
+// (ramp_up_time > duration) ramp_up_time = duration;` 116, both 116; the half ramp-down as `0.5f * ramp_down_time` 116; both
+// half times as `/ 2.0f` 116 (all the same code); the ramp-up minimum ahead of the ramp-down zero clamp 138 (528 B, callers
+// 31/13).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1554,7 +1821,6 @@ void device_motion_start(s_device_motion *motion, real target, real duration, re
 	target = PIN(target, 0.0f, 1.0f);
 
 	real delta = target - position;
-	real distance = delta;
 
 	motion->position = target;
 	motion->start = target;
@@ -1566,39 +1832,36 @@ void device_motion_start(s_device_motion *motion, real target, real duration, re
 	motion->duration = duration;
 	if (!(0.0001f > (real)fabs(duration)))
 	{
-		distance = (real)fabs(distance);
+		real distance = (real)fabs(delta);
 		if (!(0.000001f > distance))
 		{
-			real cruise_time = remaining - ramp_down_time;
-			real half_ramp_down_time = ramp_down_time * 0.5f;
-			real half_ramp_up_time = ramp_up_time * 0.5f;
-			real denominator = cruise_time + half_ramp_down_time + half_ramp_up_time;
-			real velocity;
-
-			motion->target = target;
-			motion->position = position;
-			motion->start = position;
-			motion->acceleration_distance = 0.0f;
-			motion->deceleration_distance = distance;
 			motion->velocity = initial_velocity;
+			motion->deceleration_distance = distance;
+			motion->start = position;
+			motion->target = target;
+			real half_ramp_up_time = ramp_up_time * 0.5f;
+			motion->acceleration_distance = 0.0f;
+			real half_ramp_down_time = ramp_down_time * 0.5f;
+			real denominator = duration - ramp_up_time - ramp_down_time + half_ramp_down_time + half_ramp_up_time;
+			motion->position = position;
 			motion->cruise_velocity = 0.0f;
+			real cruise_speed;
 			if (denominator != 0.0f)
 			{
-				velocity = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) /
-					denominator;
+				cruise_speed = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) / denominator;
 			}
 			else
 			{
-				velocity = delta / duration;
+				cruise_speed = delta / duration;
 			}
-			motion->cruise_velocity = velocity;
+			motion->cruise_velocity = cruise_speed;
 			if (ramp_up_time > 0.0f)
 			{
-				real acceleration = (velocity - initial_velocity) / ramp_up_time;
+				real acceleration = (motion->cruise_velocity - initial_velocity) / ramp_up_time;
 
 				if (acceleration != 0.0f)
 				{
-					motion->acceleration_distance = (velocity * velocity - initial_velocity * initial_velocity) /
+					motion->acceleration_distance = (motion->cruise_velocity * motion->cruise_velocity - initial_velocity * initial_velocity) /
 						(acceleration * 2.0f);
 				}
 			}
@@ -1753,6 +2016,127 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // 330 (1634 bytes); the factor as `(real)(1.0 / 30.0)` 2; the first call's 0.0f through a start-time local 2; the
 // definition, model and render-model lookups through a file-local inline tag getter 2; a const state pointer with the
 // flag block reading the animation and time through a const channel reference declared first in the block 2.
+// M3 lane 4 r205 (fast): the sampling method's unused third parameter typed `void const *` (header, definition, four callers;
+// the local a pointer, so no conversion is pushed) 2; the nested tests as early returns of the false result 402; the time
+// assigned inside the first call's animation argument (its store after the 0.0f push in source order) 2, so the store's
+// position in the call does not set it either; the step tests nested 2; inverse and relative at the flag block's scope 2.
+// Diagnostic: the speed block's two calls given a constant render model (fewer uses of the local) 98, fstp unmoved.
+// Also r205: the animation state as a reference (member calls through it), the model or the definition as a const
+// reference, the flag block reading the animation id and time through a const channel reference, the frame position
+// as a `real const &`, 2 each (same code).
+// M3 lane 4 r207 (fast): the two flag-block sample calls through a file-local forceinline pair helper 11 (the fstp unmoved);
+// `start` scoped to the flag block with the second block sampling into its own `end` 13; the animation and the time
+// declared at function scope and assigned in the block 2; the state declared first in the function 2; the node test's
+// arms swapped (`node == NONE` first) 74. Diagnostics: with the orientation block removed the state takes EBX (no reload)
+// and the fstp follows `push edi` as in retail, while dropping only its second half keeps the reload and our order; the
+// state renamed to sort first or last 2. In every build the fstp is the eighth instruction after the flag branch;
+// retail's is ninth, as if the state's reload were not in the block when it was scheduled.
+// M3 lane 1 r117 (fast): the render model typed dword 2; the first sample call's render model through a `long const &`
+// 2; that call through an `s_animation_state *const &` to the state 2; the time assigned through a `real &` 2; the
+// first call's output through a matrix pointer local 2.
+// M3 lane 13 r108 (fast): the definition's model tag index in a local used at its test and lookup 317 (as round 174's
+// render-model index local); the step read from the frame globals at each of its three uses (no local) 185; the else
+// arm's inverse and relative declared the other way round 2; the orientation declared before the two quaternion
+// pointers 2; the speed as `(real)(sqrt(d) / step)` 2.
+// M3 lane 10 r120 (fast; control 2): compile-only probes of the flag block (the first call's arguments varied, 14 forms)
+// put the time's fstp after exactly five non-x87 instructions of its basic block every time (eighth with the fld and
+// the fmul), wherever the fld and the fmul land; retail's block has six before it, so retail's render-model load
+// `mov edx, [esp + 0x18]` was not in that block when it was scheduled: a block boundary after the load that emits no
+// code, as 0x1253d0's. Diagnostic (reverted at once): `if (render_model == 0) return false;` at the top of the flag block
+// 379, and the block after that test then has retail's order (the fstp after the animation push). Trials: the two
+// flag-block samples through a plain `inline` pair helper taking the block's locals 380 (called, not inlined); a plain
+// `inline` helper taking the channel and returning the animation and the time through references 372 (called); the two
+// reads under a dominated `if (device)` guard with a block-local copy of the render model 2 (same code); the first
+// sample's seconds as `DEVICE_PIN(0.0f, 0.0f, time)` 365 (1654 bytes, not folded); the two sample calls in a bare scope
+// 2 (same code). Compile-only: the processor-tuning and debug-information options leave the block's schedule alone, and
+// the time assigned inside any of the first call's arguments compiles to the same block.
+// M3 lane 11 r120 (a one-file LTCG harness that reproduces the swap; control 131 positional, first difference the fstp):
+// the first block's animation, time and two samples in a file-local forceinline helper taking the state, the channel and
+// the render model and returning the time (the render model a helper parameter) 319 (prologue reordered), the fstp still
+// after `push 0`; everything inside the 0xbf5a0 test as a forceinline body taking (index, name, seconds, device, render
+// model) 328, fstp unmoved; the three tag lookups through the shared TAG_GET macro 131 (same code). Diagnostic only (the
+// harness links the callee's old object, so its convention moved): the render model as a one-member aggregate argument.
+// Compile-only (no /GL) hoists the render model's load into EDI above the flag branch, so there the block starts at the fld.
+// M3 lane 5 r205 (fast): the render model through a file-local forceinline accessor taking the model 2; `__assume(render_model
+// != 0)` at the top of the flag block 2 (no block boundary, unlike the real test); the render model zero-initialised at
+// function scope and assigned at its lookup 2; had_animation set at the end of the flag block 270 (fstp unmoved); a const
+// channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
+// two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
+// pushes), so retail's x87 time needs both calls in one block.
+// M3 lane 4 r225 (fast; control 2). Compile-only study of the schedule (small functions with `fld; fmul; fstp` ahead of a
+// call's loads and pushes): the fstp lands at a fixed slot counted from the start of its scheduling region, index 7 (the
+// eighth instruction) when the fld is the region's first or second instruction, else six after the fld. A call starts a
+// region as its index 0; a label or the fall-through of a conditional jump starts one with nothing counted; lea, register
+// moves, pushes, movsx loads and stack loads count one each (imul three); the prologue's frame push is not counted and a
+// string copy is no region start. Ours follows it (mov edx 0, fld 1, fstp 7); retail's fstp at index 8 fits only a block
+// that starts at the fld, so retail's render-model load was outside the scheduled block (round 120's reading). Trials:
+// the animation id through an inline getter returning it by value 2 (same code); a named copy of the render model with
+// `__assume(copy != 0)` at the block top 2 (same code). Diagnostics (reverted at once): the matrix copy moved into the
+// flag block 379 (x87 instructions cross the copy, fstp again at index 7); a second way into the flag block that holds
+// the render model in a register (`!render_model ||` ahead of the flag test) 421 (no load in the block, fstp at index 7
+// behind `push edi`); the samplers' unused third parameter as a one-member aggregate with a converting constructor 2
+// (same code: promoted to a long).
+// M3 lane 15 r115 (fast; control 2). A scan of every x87 load / multiply-or-add / store chain in the retail image (193
+// chains): all the others that open a block follow the slot rule above, and this flag block is the only one with a stack
+// load first, the fld second and the store nine slots in, so the cause is local to this block. Trials: the sampling
+// method's matrix parameter declared first (definition, declaration and its three other callers; a diagnostic for the
+// declared order, reverted at once) 2 here with 0x16c110 121 and 0x16cfa0 136 lost, so the matrix is declared last;
+// the channel through a file-local inline accessor with a switch on the channel index, at each read 2, named once 2;
+// the animation state fetched again for the first sample 346 (1635 bytes). Diagnostics (reverted at once):
+// had_animation's initialiser moved after the matrix copy 10, the speed's 32, both 32, the flag block unchanged each
+// time: one or two more instructions ahead of the flag branch do not move the store, so the scheduler carries nothing
+// across the branch. Compile-only replica of the block (a matrix copy ahead of it, both locals spilled; 40 forms: a
+// block-local copy of the render model, a const reference, forceinline pair helpers, a one-member aggregate render
+// model with and without a constructor, one-pass loops, the copy written in both arms, switch accessors): the store
+// stays at the eighth slot in every one.
+// M3 lane 15 r118 (fast; control 2): the two quaternion pointers declared a first 12; the current matrix and its inverse
+// declared at the top of the orientation block 2; the state fetched ahead of the 0xbf5a0 test 12; the state read through
+// the inline accessor at every use (no local) 366 (1644 bytes); had_animation set right after the second sample 31.
+// Diagnostics (reverted at once): the orientation block's object as the device local 383 (the state then takes EBX, no
+// reload, and the fstp follows `push edi` at the same eighth slot); its first or second half removed 204/225 (our order);
+// one fabs test in place of nine 477 (our order), so the temporaries of the compare chain do not set the slot.
+// M3 lane 2 r119 (fast; control 2): a redundant `had_animation = false;` at the top of the flag block 2 (same code);
+// had_animation left uninitialised and cleared in an else arm of the flag block 170; the time computed ahead of the
+// flag test 71 (1636 B, not sunk into the block); the animation id read ahead of the flag test (the speed block
+// assigning the same local) 13: its load and spill then sit above the branch and the block's fstp follows `push edi` as
+// retail, so with `mov edi` out of the block the store reaches retail's slot; the animation read through a const
+// reference at both sample calls 2 (same code).
+// M3 lane 12 r161 (fast; control 2): the flag block's body in a one-pass do/while (diagnostic, a loop boundary ahead of
+// the fld) 301 (homes move); the flag test as a while with a closing break (diagnostic) 2 (same code); had_animation
+// and speed declared ahead of the state lookup 2; the flags read into a named word for the test 2 (both the same code);
+// `&& render_model` on the 0xbf5a0 test (diagnostic, a real test) 393 (1650 bytes).
+// M3 lane 2 r132 (h2m fast; control 2): had_animation initialised from the flag test and tested for the block (two
+// uses, no store inside) 396 (1635 B); the same declared right after the matrix copy 351 (1630 B: the flag is then
+// read as a dword `shr eax, 3; and al, 1` and the fstp stays after `push 0`); the first call's render model under a
+// real `!= NONE` test (diagnostic) 351 (1638 B); the first call reading the render model from the model tag again 398
+// (1655 B); the node lookup first in the flag block 369 (1652 B). Restored.
+// M3 lane 1 r147 (fast; control 2): the tick length read at the top of the flag block 350 (1635 bytes); the matrix copy
+// written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
+// the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three
+// the same code: the copies are coalesced before scheduling).
+// BirchWoodGod (11-21, fast; control 2): a _ReadWriteBarrier at the top of the flag block 7 (the fld then opens the
+// block, but the fstp moves ahead of `push 0`); after the animation id 12; after the time 9; between the two samples 2
+// (same code); a block-local copy of the render model ahead of a barrier 7. None kept.
+// M3 lane 3 r295 (h2m fast; control 2): `long node;` declared at the top of the flag block and assigned at the lookup 2
+// (same code); a redundant `speed = 0.0f;` at the top of the flag block 342 (1636 B, the store is emitted); a redundant
+// `result = false;` there 2 (same code); speed declared at function scope beside the result 48; had_animation declared
+// there 92.
+// M3 lane 13 r141 (h2m fast; control 2): had_animation set right after the first sample call 34; the node index
+// declared at the top of the 0xbf5a0 block 2; the render model renamed to sort before the other locals (symbol
+// order) 2; the animation renamed to sort after the time 2; had_animation renamed to sort first 2 (the 2s the same
+// code: local names do not move the fstp).
+// M3 lane 2 r136 (h2m fast with 0x107cc0; control 2): the render model's test and the 0xbf5a0 call as one `&&` with the
+// lookup in a comma expression (diagnostic) 2; the three matrices declared in one statement 2; the two flag-block samples
+// in the other order (the timed one first) 16; the object matrix built into `adjusted` and copied to `original` 5;
+// `original` and `adjusted` declared at function scope 7. Compile-only replica of the flag block (rm and the state
+// spilled, the animation a field load; it reproduces our order exactly): 16 spellings of the time, the animation read,
+// the flag test and the render model (a copy, a temp written at each use, a block-scoped call) keep the store at slot 7;
+// only reading the animation ahead of the branch moves it, as round 119 found. Restored.
+// M3 lane 13 r144 (h2m fast; control 2): the time and both samples through a file-local forceinline pair helper 2;
+// the flag test negated with an empty first arm and the block in the else arm 2; the first sample's zero time named
+// `real const start_time` 2; the animation and the time `const` 2 (the four the same code); the first sample reading
+// the id through a `c_animation_channel const &` to channel 0, 328. Reading: retail's fstp is where a scheduling region
+// opening at the fld would put it, so its render-model reload acts as if it lay outside the block (an edge reload).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -1800,7 +2184,7 @@ bool __stdcall function_107ed0(long device_index, long name, real seconds)
 								function_142a60(&adjusted, &relative, &adjusted);
 							}
 							had_animation = true;
-							real step = g_510c54->rate;
+							real step = device_tick_length();
 							if (step > 0.0f && time - step > 0.0f)
 							{
 								state->animation_matrix_get(animation, time - step, render_model, &start);
@@ -1910,7 +2294,7 @@ bool function_107cc0(long device_index, s_device_motion *motion, c_animation_cha
 		real absolute_remaining = (real)fabs(remaining);
 		if (!(absolute_remaining < 0.000001f))
 		{
-			real step = g_510c54->rate;
+			real step = device_tick_length();
 			if (distance < motion->acceleration_distance)
 			{
 				distance = motion->acceleration_distance - distance;
@@ -1992,7 +2376,16 @@ bool function_0b6760(s_index_pair const *pair);
 // retail's ESI/EBX and the result byte at [esp+0xf] (ours in DL) are unchanged.
 // MiniMax I (11-15): no new form, no lower score (250): the index and index * 12 sit in EDI/ESI where retail has ESI/EBX, the result is returned in DL where retail keeps a stack byte, and the definition is re-read where retail reads it once; the 58 and 69 leads rest on a one-use rate local, which is match-only.
 // MiniMax S (11-15): no new form, no lower score (250): the saved definition's volatile, the tick rate read straight from the global and the == 0 byte test are the standing body; the one shape that reaches retail's block order (58 at retail's 1495 bytes) needs the tick rate read into a local once just before the 0x11eed0 call, a one-use local, so it is not kept and the body stands.
-// score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
+// MiniMax E (11-16): no new form, no lower score (250): the frame is retail's 0x20 and the state test matches; the index and index * 12 stay in EDI/ESI where retail uses other registers.
+// MiniMax B (11-18): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes the entry pointer in edi where retail takes esi, and the 0x11eed0 call still passes its float arguments in the other order; the one shape that reaches retail's block order needs a one-use tick-rate local, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (250): the frame 0x20 and the state test are retail's; the index and index * 12 sit in
+// EDI/ESI where retail has ESI/EBX, the result byte is returned in DL where retail keeps it on the stack, and the definition pointer is
+// re-read; the one-use tick-rate local that reaches retail's block order (58) stays match-only, so the body stands.
+// score 61 (was 61; earlier 61, was 250): retail's length (1495 bytes) and registers up to the position arms. Left: retail stores the definition
+// slot before the result byte (ours after), the manual position arm loads the state for its push into ECX (ours EAX), the
+// unit byte test is `ja` (ours `jne`), and at the two channel-1 0xb6760 calls retail keeps the channel pointer in ESI and
+// nothing in ECX/EDX across the call (ours keeps it in ECX and copies it to ESI): BLOCKED-BY 0xb6760 (see r118 below).
+// Earlier (250, was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (250): nothing new this round; frame 0x20 and the state test are retail's; the
@@ -2339,6 +2732,8 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// MiniMax I (11-16): no new form, no lower score (250): the first difference is the incoming register (retail takes the index in
+// ESI and the object header in EBP, this build in EDI and EBP) and the order in which the globals are loaded.
 // MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
 // passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
 // main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused
@@ -2376,12 +2771,82 @@ bool function_0b6760(s_index_pair const *pair);
 // acceleration read at the top of the position-group block 118 (1510 B); the 0x40 update with the arms swapped 61. Same
 // code as the lead: the speed/acceleration or the target named just before the call, `state != NULL` / `!= false` in the
 // refresh, a `real position = 0.0f` argument, the group index in a local.
+// MiniMax D (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off, and the body is still
+// sixteen bytes short of retail's 1495.
+// MiniMax E (11-17): no new form, no lower score (250): the only form below 250 is the one-use `real rate = g_510c54->rate;`
+// local before the power call (60 with the result local declared before the definition), a form the coordinator ruled out
+// without a byte match; retail loads the global pointer once and takes the rate from it for both the delay test and the call,
+// a two-use rate local at the outer else top measures 276 and 278, and dropping the volatile on the definition alone measures
+// 380, so the qualifier and the body stay.
+// MiniMax I (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off and the body is
+// sixteen bytes short of retail's 1495; the only form under 250 needs a one-use rate local (58/60), a form the coordinator
+// ruled out without a byte match, and dropping the volatile on the definition alone measures 386.
+// M3 lane 11 r118 (fast, confirmed plain; the file's other 29 functions unchanged): kept 61: the definition pointer's
+// volatile dropped and the tick length read through `device_tick_length()` (a file accessor returning the rate by value,
+// also used by 0x106d70, 0x107ed0 and 0x107cc0 with their code unchanged). The accessor's returned value is the named
+// float that retail stores to a stack home before the power 0x11eed0 call, so the listed one-use `rate` local is not
+// needed. With the accessor: the result declared after the definition, the acceleration and speed as running sums and
+// the unit byte as `<= 0` (the listed 58 lead) 58; the accessor at the power call only 58, at both 0x11eed0 calls 58;
+// the accessor returning `real const &` 380; the result left before the definition 60, that with the named
+// acceleration products as now 60, that without `<= 0` 61 (the kept form); the volatile kept 350. Not kept as
+// match-only: the result after the definition (2 points) and `<= 0` (1 point; matched 0x1cd8a0 tests the same byte as
+// `> 0`). The rest sits at the channel-1 0xb6760 calls. `inline` on 0xb6760's definition (so its callers assume it
+// clobbers ECX and EDX) on the 58 form 111 (1504 B: the linker then expands it at the first channel-1 site, one test
+// level shallower than the second, where the call stays) and takes 0x1cd070 210 -> 269 (its one call expanded), so it
+// is not kept; with 0xb6760 at the two channel-0 tests as well 111 (same code). Diagnostic (one compiler setting,
+// reverted at once): src/unknown_0b66c0.cpp built without link-time code generation gives 4 here on the 58 form (the
+// two calls then differ only in the argument register), but 0xb6760 2, 0xb6780 5, 0xb66c0 20, 0x1cd8a0 1 and 0x1cdb00 1
+// stop matching. So the body is retail's once callers treat 0xb6760 as clobbering ECX/EDX while it stays out of line
+// at both channel-1 sites: BLOCKED-BY 0xb6760 (the link-time expansion threshold, not a source form here).
+// MiniMax A (11-18): no new form, no lower score (250): the prologue saves ebp, esi and edi where retail saves ebx, ebp
+// and esi, takes the entry pointer in edi where retail takes esi, and builds the index in esi where retail builds it in
+// ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
+// below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
+// on the definition alone measures 386.
+// Round 642 forms: absent state first with definition-first result 399, direct offset
+// test with state helper 235, shared signed state offset 246, actual position-channel
+// reference 61, nested state and validity tests 61, shared channel and index-pair
+// references 61, position activity before refresh 384, named device tag fields 61.
+// NOT kept: the two-point definition-first gain is below threshold. The remaining
+// manual state register and channel-1 call lifetimes stay different on the tied forms.
+// Round 438: The definition/result stores and channel-1 register lifetimes still differ. Position-group lvalues and the typed definition receiver were tried.
+// Bind the position-group field reads and updates to position 61.
+// Bind the position-group field reads and updates to position velocity 314.
+// Bind the position-group field reads and updates to group target 64.
+// Bind the position-group field reads and updates to position and position velocity 314.
+// Bind the position-group field reads and updates to position and group target 64.
+// Bind the position-group field reads and updates to position velocity and group target 316.
+// Bind the position-group field reads and updates to position and position velocity and group target 316.
+// Use the existing device definition as the saved receiver in both motion paths 61.
+// NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
+// MiniMax H (11-19), at 61: the result local is declared after the saved definition, the speed is a
+// running sum and the unit byte is tested as `<= 0`; what still differs sits at the two channel-1 0xb6760 calls,
+// whose convention is fixed in another file.
+// MiniMax H (11-20), NOT kept: 58 (was 61), a 3-point gain, under the 8-point bar for a function above 30.
+// M3 lane 7 r197 (fast with 0x108600, 0x108670, 0x107cc0, 0x107520, 0x107980, 0x1cd070, all MATCH each run; control 61,
+// aligned 27, register-masked 8): the first channel-1 test nested under `if (state)` 61 (same code); a channel pointer
+// local for both channel-1 tests and both channel calls 61; `inline` on this file's declaration of 0xb6760 (diagnostic,
+// reverted) 61 (same code: the declaration alone does not change the callers' view of its registers); the previous
+// position read ahead of the first channel-1 test and passed to the frame call 98; the group target read once into a
+// local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
+// BLOCKED-BY 0xb6760 at the channel-1 sites.
+// MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
+// M3 review (11-20, lane 14 r134): a MATCH was found and is held for the user's ruling: it needs `inline` on 0xb6760's
+// definition (called from five other files), a bool in the matched 0x1cd070 that keeps one 0xb6760 call out of line, the
+// position test in a bool here, the unit byte tested `<= 0`, and 0x107cc0's state ahead of its channel. Body is main's.
+// MiniMax B (11-20): no new form, no lower score (61): the entry registers are still one rotation off from retail's and the body is sixteen bytes short of retail's 1495; what is left sits at the two channel-1 0xb6760 calls, whose convention is fixed in another file.
+// MiniMax R (11-20): score 61 (was 61): no new form; the prologue still clears the result flag before the definition
+// pointer where retail stores the definition first, and the two channel-1 0xb6760 calls still load the device index into
+// eax where retail loads it into ecx (the callee's link-time convention is fixed in another file, so the body stays
+// BLOCKED-BY 0xb6760).
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
 	bool result = false;
-	byte const *volatile saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
+	byte const *saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	s_animation_state *state = NULL;
 	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
@@ -2395,7 +2860,7 @@ bool __stdcall function_106790(long device_index)
 			bool finished = function_107cc0(device_index, &device->motion_14c,
 				&device->channels[0], state, previous, &position);
 			device->power = position;
-			device->power_velocity = (position - previous) / g_510c54->rate;
+			device->power_velocity = (position - previous) / device_tick_length();
 			if (finished)
 				device->flags |= 0x20;
 			else
@@ -2423,7 +2888,7 @@ bool __stdcall function_106790(long device_index)
 			bool increasing = device->power_velocity > 0.0f;
 			device->flags = acceleration > 0.0f && speed > 0.0f ?
 				device->flags | 0x100 : device->flags & ~0x100;
-			if (!((real)device->delay_ticks * g_510c54->rate >= *(real const *)(saved_definition + 0x10c)) &&
+			if (!((real)device->delay_ticks * device_tick_length() >= *(real const *)(saved_definition + 0x10c)) &&
 				device->power == 0.0f && !(device->power > group->value))
 			{
 				++device->delay_ticks;
@@ -2437,7 +2902,7 @@ bool __stdcall function_106790(long device_index)
 				if (fabs(local_c01284_2) > speed)
 					device->power_velocity = increasing ? speed : 0.0f - speed;
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
-					group->value, g_510c54->rate, speed, acceleration,
+					group->value, device_tick_length(), speed, acceleration,
 					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
 					function_107980(device_index, increasing ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
@@ -2477,7 +2942,7 @@ bool __stdcall function_106790(long device_index)
 			if (state && function_0b6760((s_index_pair const *)&device->channels[1]))
 				device->channels[1].set_frame_ratio(device->position);
 			real previous = device->position;
-			function_11eed0(&device->position, &device->position_velocity, group->value, g_510c54->rate,
+			function_11eed0(&device->position, &device->position_velocity, group->value, device_tick_length(),
 				*(real const *)(saved_definition + 0xc0), *(real const *)(saved_definition + 0xc4), false, 0.0f, 1.0f);
 			if (previous != device->position)
 			{

@@ -13,16 +13,52 @@ void function_dc0a0(long index);
 void function_b7680(long index, real scale, real seconds);
 void function_bf830(long index, real shield, short value);
 void function_bf890(long index, byte const *states);
-void function_dbc80(long index, short first, short second);
+void __stdcall function_dbc80(long index, short first, short second);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 
 PRIVATE byte *update_object_0a6430(long index)
 {
 	return *(byte **)(g_4e0300->data + (index & 0xffff) * 12 + 8);
 }
 
-// score 16 (was 16): the 0x100 block's object pointer takes ECX (retail EAX, reusing the pool
-// base) and the pushed state pointer EDX (retail ECX), one scratch register on in rotation; the
-// 0x200 block loads the object pool before the index (retail after it, +1 byte). Tried: the
+// MiniMax E (11-20): no new form, no lower score (14): the 0x200 head still loads the object pool into ECX before the
+// masked index and keeps the object in EAX where retail computes the index into EDX first, loads the pool into EAX and
+// the object into EDX, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX; the count
+// initialised after the model read measures 18 (the tag pool load then joins the head), a separate tag local, the
+// 0x100 call's pointer formed from the address parameter and the getter written inline all measure 14, and the
+// reference form that reaches 12 binds the 0x100 object inside 0xba690, whose body is in src/unknown_0bad50.cpp and
+// may not be edited here.
+// MiniMax H (11-20): no new form, no lower score (14): the 0x200 head loads the pool into ECX before the
+// masked index and keeps the object in EAX where retail computes the index into EDX first, loads the pool into EAX and
+// the object into EDX, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX.
+// MiniMax H (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100 call's pushed state pointer still takes EDX where retail takes ECX; the getter written inline, in the header form, in one expression, with the index masked by the caller or with the pool in a local all compile the same code.
+// MiniMax A (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the masked
+// index and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100
+// call's pushed state pointer still takes EDX where retail takes ECX; the state pointer as `&state[0x51]`, as a named
+// local bound before the count compare and the getter's masked slot in a named local all compile the same code, so the
+// body is as it was.
+// MiniMax I (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the masked index and keeps the object in EAX where retail computes the index first and keeps it in EDX, and the 0x100 call's pushed state pointer still takes EDX where retail takes ECX; the body stays 549 bytes against retail's 548.
+// MiniMax B (11-18): no new form, no lower score (14): the 0x200 head still loads the object pool before the index
+// and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100
+// call's pushed state pointer still takes EDX where retail takes ECX; hoisting the index into a named local changes
+// nothing (the compiler folds it), so the body is as it was.
+// MiniMax H (11-18): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and
+// colours the object EAX where retail computes the masked index first and colours the object EDX, and the 0x100 call's
+// pushed state pointer still takes EDX where retail takes ECX; masking the index at the call site as well as inside
+// the getter, the header form and the plain getter all give the same bytes, and a permuter run over the body
+// (300 s) found nothing under the 13 differing instructions.
+// MiniMax R (11-17): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it
+// ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100 call's pushed state pointer still
+// takes EDX where retail takes ECX; the lookup through the object header's typed element form needs another header in this file
+// and the plain forms give the same code, so the body is as it was.
+// MiniMax I (11-17): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it ECX (retail loads the pool into EAX after the index, and the object into EDX), the 0x100 call's pushed state pointer takes EDX where retail takes ECX, and the two call and jump targets differ only because the reduced image lays the callees out elsewhere; a named slot in the getter, a named masked index, the header form, a named data pointer, a named tag and a slot-taking getter all give the same 14 bytes, and the permuter (14 tries in 319 s) found no variant under the 13 differing instructions of the full image.
+// MiniMax A (11-20): no new form, no lower score 14: the 0x200 head still loads the object pool before the masked index and keeps the object in EAX, where retail computes the index first and keeps it in EDX; the getter, the header form and the inline masked index all compile the same bytes, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX.
+// score 14 (was 16): round 173 reads the 0x100 block's count through the existing 0xba690, which
+// LTCG inlines: its object now takes EAX as retail. Left: the 0x100 call's pushed state pointer
+// takes EDX (retail ECX), and the 0x200 block loads the object pool before the index (retail after
+// it, +1 byte), its object in EAX where retail has EDX. Before round 173, at 16: the 0x100 block's
+// object pointer took ECX (retail EAX, reusing the pool base) and the pushed state pointer EDX
+// (retail ECX), one scratch register on in rotation. Tried: the
 // 0x100 compare reversed 17; the object read without a local 16; the tag lookups as tag-array
 // elements 16; the definition read straight from the object getter 16; the count cleared after
 // the object read 16.
@@ -112,6 +148,36 @@ PRIVATE byte *update_object_0a6430(long index)
 // the callers stay matched); the same in the callers' own order (object index, mask, c, state) 16 (byte-identical); the
 // 0x40 block's object through the header form 16 (same code); the 0x100 quotient named as a region count 16 (same code);
 // that compare state-byte first with `!=` and the call in the else 17.
+// M3 lane 8 r173 (fast; callers matched each time): before the 0xba690 form, the function as a const member of the
+// object type definition (every caller passes `this`; header, definition and six call lines) 16 (byte-identical); the object
+// getter returning `byte *const &` 16 (same code). Kept: the 0x100 count through 0xba690 into a `region_count`
+// out-parameter 14 (plain 14). On it: the 0x200
+// object read before `count = 0` 14 (same code); the 0x200 lookup through OBJECT_DATUM_GET with the typed definition
+// index 14; the 0x100 compare state byte first 15; the model lookup as a tag-array element 14 (same code); the 0x200
+// lookup through a header pointer 14.
+// P575: Independent positive/complementary region-count, model-presence, entry-count and tail-count
+// decisions on the shared-count-provider body 14/14/14/14/14/14/14/14. NOT kept: no exact repair
+// of the state-pointer register or final pool/index schedule; original complete body restored.
+// P577: Shared-provider output at entry 14; scalar memcpy at region/tail/both
+// count bytes 14/14/14; first/second/both packed word observations 14/181/181;
+// existing model-count result through memcpy 14. NOT kept: no equality; native
+// state-pointer register and final pool/index schedule remain. Full body restored.
+// MiniMax B (11-20): no new form, no lower score (14): every spelling of the pool lookup compiles to the same bytes - retail loads the pool into EAX after the index and keeps the object in EDX, ours loads the pool into ECX first - and retail's 0x100 call pushes lea ecx,[edi+0x51] where ours pushes EDX.
+// M3 lane 12 r180 (h2m fast, 14): the 0x200 model count through a forceinline helper taking the model tag index
+// 18 (550 B); the region count declared at function scope 14; 0xba690 also given an unused states out-pointer 14;
+// the pushed pointer as `(byte const *)(state_address + 0x51)` 14; the region compare state byte first 15.
+// M3 lane 12 r181 (h2m fast, 14): the whole 0x200 count (object lookup, definition, model, count) in a forceinline
+// helper taking the object index 14, the object pointer 14 or the definition 14 (all same code), the index-taking
+// helper plain inline 124 (471 B, stays a call); the two words through a named `word const *` used three times 14;
+// the 0x100 state byte and pushed pointer through a named `state + 0x50` pointer 14 (same code).
+// M3 lane 4 r255 (h2m fast, 14): the 0x8 scale named 14, the 0x80 shield value named 14, the 0x80 flag named as a short
+// 14, the region count through a `long const &` 14, the region byte and pushed pointer through one `state + 0x50` pointer
+// 14, the 0x200 model index bound as a `long const &` 48 (551 B). Lane 14 r90's lead re-measured on this body (the 0x100
+// block written out with its object bound as `byte *const &object`): 12 at 548 B (0x200 head index-first with the pool
+// in EAX; left: the 0x100 quotient ECX / byte EDX for retail's EAX / ECX, the 0x200 head's index*3 ECX, data EAX, object
+// ECX for retail's EDX, ECX, EDX); on it the byte through `byte const &` 12, the 0x118 word through `short const &` 12,
+// `level = word; level /= 10;` 12, the quotient as a `long const &` 14 (549 B), the two-step quotient through `long &`
+// (0xba690's own shape) 14 (549 B, main's code).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
@@ -160,8 +226,9 @@ void function_a6430(c_object_type_definition const *definition, long mask, long 
 		function_bf830(object_index, *(real *)(state + 0x48), state[0x4c] == 0);
 	if (mask & 0x100)
 	{
-		byte *object = update_object_0a6430(object_index);
-		if (*(short *)(object + 0x118) / 10 == state[0x50])
+		long region_count;
+		function_ba690(object_index, &region_count, NULL, NULL, NULL);
+		if (region_count == state[0x50])
 			function_bf890(object_index, state + 0x51);
 	}
 	if (mask & 0x200)

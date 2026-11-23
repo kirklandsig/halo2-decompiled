@@ -197,16 +197,18 @@ PRIVATE inline s_scenario_block *function_x6e4ccb(void *scenario, long type)
 // the only caller, 0xd4e60 (score 74), whose call site loads the type into edx
 // in retail and eax here. Permuter (17 min, 262 tries, seed 999): no form
 // below 10.
+// Matched in a full build with stand-in SDK headers (was 10): there is no `definition` local; the type's placement
+// record is named through OBJECT_TYPE_PLACEMENT(type) at each of its four uses, and the datum size and block address
+// are written out instead of going through function_x71bcc9.
 // @retail 0xd5260
 s_type_4f0dcc *function_d5260(long type, long index)
 {
-	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
 	s_type_4f0dcc *result = NULL;
 
-	if (definition->scenario_datums_offset != NONE && definition->scenario_palette_offset != NONE)
+	if (OBJECT_TYPE_PLACEMENT(type)->scenario_datums_offset != NONE && OBJECT_TYPE_PLACEMENT(type)->scenario_palette_offset != NONE)
 	{
-		long size;
-		s_scenario_block *block = function_x71bcc9(g_4e0350, type, &size);
+		long size = OBJECT_TYPE_PLACEMENT(type)->scenario_datum_size;
+		s_scenario_block *block = (s_scenario_block *)((byte *)g_4e0350 + OBJECT_TYPE_PLACEMENT(type)->scenario_datums_offset);
 
 		if (PIN(index, 0, block->count - 1) == index)
 			result = (s_type_4f0dcc *)(block->elements + size * index);
@@ -473,6 +475,8 @@ bool function_d5390(long object_index, long key)
 }
 
 /* whether an object placed on one structure bsp stays on another */
+// Matched in a full build with stand-in SDK headers (was 31): the previous bsp index is read from the placement
+// object again instead of from the local copy, which gives retail's branch and second load.
 // @retail 0xd5460
 bool function_d5460(short previous_bsp_index, short bsp_index, long object_index)
 {
@@ -483,7 +487,7 @@ bool function_d5460(short previous_bsp_index, short bsp_index, long object_index
 		char object_bsp_index = PLACEMENT_OBJECT(object_index)->bsp_index;
 
 		if (previous_bsp_index != object_bsp_index)
-			previous_bsp_index = object_bsp_index;
+			previous_bsp_index = PLACEMENT_OBJECT(object_index)->bsp_index;
 
 		long b = bsp_index;
 		long a = previous_bsp_index;
@@ -626,20 +630,20 @@ void function_d4e60(short bsp_index)
 }
 
 /* fills in the data a scenario object is made from */
-// score 135 (was 184): the volatile on type stays: without it this scores 63, and the same
-// length as retail, but LTCG then passes the caller 0xbf0f0's arguments in other slots and that
-// matched caller drops to 2 (also with type read once through a volatile local). With it, case 1
-// reading the datum's byte again (retail's mov al, [edi + 0x5a]) and the palette entry kept as a
-// pointer, as retail does, give 135. Without the volatile, retail keeps type in ebp and the palette
-// in ebx (ours the reverse), and sets or clears flag 8 at the end through a register in two exits;
-// the flag test as a shift, a bitfield view or an explicit read and write left that at 63.
+// Matched in a full build with stand-in SDK headers (was 135): type is a plain long (no volatile; the
+// caller 0xbf0f0 stays matched), the function has one return with the create / definition / palette
+// index tests nested around the rest (the two early returns gave another register convention: retail
+// has the palette in ecx and type on the stack), result is declared before definition, flag 8 is set
+// in two arms (the type mask, then the datum's flag byte tested as a byte) and cleared in the third,
+// and the rotation's address is held in a local that a const reference names, which keeps it out of
+// the call's argument evaluation.
 // @retail 0xd5060
-bool function_d5060(s_scenario_block *palette, volatile long type, long unknown10,
+bool function_d5060(s_scenario_block *palette, long type, long unknown10,
 	s_type_4f0dcc const *datum, bool unknown, s_object_placement_data *data)
 {
 	bool create = !((datum->flags >> 6) & 1);
-	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
 	bool result = false;
+	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
 
 	if (type == 6 && g_4e6948->state == 2)
 	{
@@ -674,41 +678,49 @@ bool function_d5060(s_scenario_block *palette, volatile long type, long unknown1
 		}
 	}
 
-	if (!create || !definition || datum->palette_index == NONE)
-		return result;
-	if (PIN(datum->palette_index, 0, palette->count - 1) != datum->palette_index)
-		return result;
-
-	s_scenario_palette_entry *entry = &((s_scenario_palette_entry *)palette->elements)[datum->palette_index];
-	long tag_index = entry->tag_index;
-
-	if (tag_index != NONE)
+	if (create && definition && datum->palette_index != NONE &&
+		PIN(datum->palette_index, 0, palette->count - 1) == datum->palette_index)
 	{
-		function_b7930(data, entry->tag_index, NONE, NULL);
-		data->position = datum->position;
-		data->scale = datum->scale > 0.0f ? datum->scale : 1.0f;
-		function_11df60(&datum->rotation, &data->forward, &data->up);
-		data->bsp_policy = (char)function_d5a70(datum);
-		result = true;
-		if (((1 << type) & 0x847) && (word)definition->scenario_datum_size >= 0x4c)
+		s_scenario_palette_entry *entry = &((s_scenario_palette_entry *)palette->elements)[datum->palette_index];
+		long tag_index = entry->tag_index;
+
+		if (tag_index != NONE)
 		{
-			data->unknown0c = datum->unknown34;
-			data->unknown74 = datum->unknown38;
-			for (long i = 0; i < 4; i++)
-				unpack_color3f(datum->field_3c[i], &data->field_3c[i]);
+			function_b7930(data, entry->tag_index, NONE, NULL);
+			data->position = datum->position;
+			data->scale = datum->scale > 0.0f ? datum->scale : 1.0f;
+			vector3f const *rotation = &datum->rotation;
+			vector3f const *const &kept = rotation;
+
+			function_11df60(kept, &data->forward, &data->up);
+			data->bsp_policy = (char)function_d5a70(datum);
+			result = true;
+			if (((1 << type) & 0x847) && (word)definition->scenario_datum_size >= 0x4c)
+			{
+				data->unknown0c = datum->unknown34;
+				data->unknown74 = datum->unknown38;
+				for (long i = 0; i < 4; i++)
+					unpack_color3f(datum->field_3c[i], &data->field_3c[i]);
+			}
 		}
+		data->unique_id = datum->unique_id;
+		data->unknown08 = *(long *)&datum->origin_bsp_index;
+		if (unknown && ((1 << datum->type) & 0x1883))
+			data->flags |= 8;
+		else if (((byte)(datum->flags >> 8) & 1))
+			data->flags |= 8;
+		else
+			data->flags &= ~8;
+		data->unknown10 = unknown10;
 	}
-	data->unique_id = datum->unique_id;
-	data->unknown08 = *(long *)&datum->origin_bsp_index;
-	if (unknown && ((1 << datum->type) & 0x1883) || (datum->flags & 0x100))
-		data->flags |= 8;
-	else
-		data->flags &= ~8;
-	data->unknown10 = unknown10;
 	return result;
 }
 
 /* makes the scenario's objects that come with the map */
+// Matched in a full build with stand-in SDK headers (was 64): the placement definition is read into two named locals;
+// the offset tests use the first and the palette address is computed from the second (written out, not through
+// function_x6e4ccb). The two share a register but are separate values to the compiler, so the palette's offset load
+// is not merged with the test's and the later re-read gets retail's `mov eax, ecx` copy.
 // @retail 0xd5560
 void function_d5560(bool skip_existing)
 {
@@ -717,12 +729,13 @@ void function_d5560(bool skip_existing)
 	for (long type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
+		s_object_type_placement_view *palette_definition = OBJECT_TYPE_PLACEMENT(type);
 
 		if (definition->scenario_datums_offset != NONE && definition->scenario_palette_offset != NONE)
 		{
 			long size;
 			s_scenario_block *block = function_x71bcc9(scenario, type, &size);
-			s_scenario_block *palette = function_x6e4ccb(scenario, type);
+			s_scenario_block *palette = (s_scenario_block *)((byte *)scenario + palette_definition->scenario_palette_offset);
 
 			for (short i = 0; i < block->count; i++)
 			{
@@ -752,6 +765,27 @@ struct s_scenario_object_bits
 	}
 };
 
+PRIVATE __forceinline bool placement_creatable_d5640(s_type_4f0dcc const *datum, bool force)
+{
+	bool creatable = !(datum->flags & 1);
+	bool result = false;
+
+	if (creatable || (force & 1))
+	{
+		if (datum->bsp_policy != 2)
+		{
+			bool unplaced = datum->origin_bsp_index == NONE || datum->origin_bsp_index == g_4686c4;
+			bool named = datum->name_index != NONE || function_d59f0(datum);
+
+			if (unplaced || named)
+				return true;
+			return false;
+		}
+		result = (datum->bsp_mask & (1 << g_4686c4)) != 0;
+	}
+	return result;
+}
+
 /* makes the scenario's objects that belong on a new structure bsp and
    don't exist yet */
 // score 184 (was 203; fast build): walked statement by statement against retail, no behaviour
@@ -771,16 +805,20 @@ struct s_scenario_object_bits
 // instead of the written-out body stays out of line (call, `push 0`; 258, 494 bytes) where retail
 // inlines it, so the body stays. Tried: type declared per loop (184, same), memset as an
 // initializer or a zeroing loop (still realigns).
+// Matched in a full build with stand-in SDK headers (was 184): the object iteration keeps the object in a struct in
+// front of the iterator (as matched 0x3d380 does; retail stores it at [esp+0x28]), the creatable test is an inlined
+// copy of 0xd5910 called with force false (retail's 0xd57da..0xd5857 is that function inlined), bit_count is zeroed
+// after existing.clear(), and the palette address comes from a second local of the placement definition.
 // @retail 0xd5640
 void function_d5640()
 {
 	void *scenario = g_4e0350;
 	long first_bits[k_object_type_count];
 	s_scenario_object_bits existing;
-	long bit_count = 0;
 	long type;
 
 	existing.clear();
+	long bit_count = 0;
 	for (type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
@@ -796,16 +834,15 @@ void function_d5640()
 		}
 	}
 
-	s_type_f1af8e iterator;
-	s_placement_object *object;
+	struct { s_placement_object *object; s_type_f1af8e iterator; } iteration;
 
-	function_bae80(&iterator, NONE, 0);
-	for (object = (s_placement_object *)function_baeb0(&iterator); object;
-		object = (s_placement_object *)function_baeb0(&iterator))
+	function_bae80(&iteration.iterator, NONE, 0);
+	for (iteration.object = (s_placement_object *)function_baeb0(&iteration.iterator); iteration.object;
+		iteration.object = (s_placement_object *)function_baeb0(&iteration.iterator))
 	{
-		if ((1 << object->placement_source) & 3)
+		if ((1 << iteration.object->placement_source) & 3)
 		{
-			long bit = first_bits[object->type] + object->placement_index;
+			long bit = first_bits[iteration.object->type] + iteration.object->placement_index;
 
 			existing.bits[bit >> 5] |= 1 << (bit & 0x1f);
 		}
@@ -814,13 +851,14 @@ void function_d5640()
 	for (type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
+		s_object_type_placement_view *palette_definition = OBJECT_TYPE_PLACEMENT(type);
 
 		if (definition->scenario_datums_offset == NONE || definition->scenario_palette_offset == NONE)
 			continue;
 
 		long size;
 		s_scenario_block *block = function_x71bcc9(scenario, type, &size);
-		s_scenario_block *palette = function_x6e4ccb(scenario, type);
+		s_scenario_block *palette = (s_scenario_block *)((byte *)scenario + palette_definition->scenario_palette_offset);
 		long first_bit = first_bits[type];
 
 		function_bf380();
@@ -841,23 +879,11 @@ void function_d5640()
 
 			if (entry && entry->tag_index != NONE && function_d5990(datum->type, entry->tag_index))
 				continue;
-			if (datum->flags & 1)
-				continue;
-			if (datum->bsp_policy == 2)
+			if (placement_creatable_d5640(datum, false))
 			{
-				if (!(datum->bsp_mask & (1 << g_4686c4)))
-					continue;
+				function_bf0f0(datum, type, i, palette, true, true);
+				function_bf380();
 			}
-			else
-			{
-				bool unplaced = datum->origin_bsp_index == NONE || datum->origin_bsp_index == g_4686c4;
-				bool created = function_d59f0(datum) != 0;
-
-				if (!unplaced && !created)
-					continue;
-			}
-			function_bf0f0(datum, type, i, palette, true, true);
-			function_bf380();
 		}
 	}
 }

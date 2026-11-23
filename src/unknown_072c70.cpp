@@ -648,7 +648,7 @@ void c_game_engine_derived::v0(long killer, long victim, bool suicide_or_betraya
 					team = player_get(killer)->c0;
 				else
 					team = NONE;
-				long r = function_23f260(0, victim, team);
+				long r = function_23f260(victim, team, 0);
 				if (r / 2 == 0)
 					valid++;
 			}

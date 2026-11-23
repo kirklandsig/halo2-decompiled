@@ -939,6 +939,9 @@ void function_2a0580(long definition_index)
 long function_1765e0(point3f const *point, vector3f const *direction, vector3f const *normal, long tag_index, long mode, long deterministic);
 
 /* creates an effect at a cutscene flag, facing the flag's direction */
+// Matched in a full build with stand-in SDK headers (was 6): the flag's position pointer is passed through a
+// reference-bound local (`kept`).
+// Before:
 // score 6 (was 6): only the order of the pushes: retail pushes esi and both
 // constant arguments before the x87 work, ours interleaves push esi and the
 // second push 1 with the fld/fcos; four source rewrites all scored 6.
@@ -966,6 +969,8 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 84 (--fast): j before i 10; a long index local 6; `T &flag` with dot reads 6; the pitch cosine first in both products 6; `real
 // forward[3]` 6; a 600 s permuter run (17 tries) none below 6. Matched retail sites have `imul; push; push; add` (0x17ae50, 0x1b0400, 0x1be840);
 // none has `imul; push; add; push`, which is what ours emits here.
+// Restated from a second note (6, was 6), merged here: ours issues the element's table add ahead of `push esi` (retail saves ESI first), so the second
+// `push 1` and `lea esi` land after the pitch load and fcos.
 // Lane 11 round 70 (fast): flag and vector computed inside the call's arguments 41 (98 bytes); a flag local with the vector filled inline in the
 // arguments 6; parameters as (flag, effect), as 0x2a06a0 has them, caller updated 6 (0x2a1120 12); a scenario local before the element 6; a long index
 // parameter with a short cast 15 (93 bytes). Diagnostic: `inc eax` between movsx and imul still leaves one push before the add, so the add waits on the imul, then outranks `push esi`.
@@ -1002,16 +1007,66 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // from a scenario local at each field use 76 (125 bytes; 0x2a1120 8); a `dword` effect index with `true, true` 6; the flag
 // index read once through its own address 15 (93 bytes; 0x2a1120 13); `forward.i = forward.j = cosf(pitch)` then `*=` by the
 // yaw cosine and sine 6.
+// Round 186 (m3 lane 6, fast with 0x2a1120): the yaw trig in double, `(real)(cos(yaw) * cosf(pitch))` 6; a named `double`
+// pitch cosine with double products 6; forward filled by a forceinline const member of the flag view (`flag->get_forward(&forward)`)
+// 6; the element from a forceinline member getter of the flags view 6; both members together 6. Diagnostic (reverted): a
+// constant store (1, 0, -1 or 2) to a scratch global before the call keeps the ESI save after the add, so no numbering tie.
+// M3 lane 2 r90 (fast with 0x2a1120, which stays matched): the flag as `T *const &flag = &...[index]` (0x2a06a0's spelling) 6;
+// the position as a `point3f const &` passed by address 6; `real const &` references to the yaw and pitch fields 6; the
+// vector as an aggregate initializer of its three components 6; the vector declared before the flag 6.
+// M3 lane 13 r101 (fast with 0x2a1120, which stays matched): the components stored as cos(yaw), sin(yaw), sin(pitch), then
+// i and j scaled by `*= cosf(pitch)` 29 (93 bytes); a `const *const` flag with the position (pointer to const) taken after
+// the components 6; a `const &` flag element with double `(real)(cos * cos)` trig and `&flag.position` passed inline 6; a
+// `const *const` flag with a `real const` pitch cosine named first and the position inline 6; the position re-subscripted
+// from the table at the call 41 (98 bytes; 0x2a1120 8). Permuter (seed 101, 600 s, fast, anneal): 35 tries, none below 6.
+// M3 lane 5 r193 (fast with 0x2a1120, which stays matched but where noted): the up-vector global read into a local first 6;
+// that with a const flag and the position named after the components 6; the flag as `flags + index` from a named
+// table local 6; a named pitch cosine with the position passed inline 6; re-measured, the element subscripted at each
+// field use 76 (125 bytes; 0x2a1120 8). Diagnostic (value-wrong, reverted): the call given `&flag->yaw` as its point
+// 8, with the ESI and EBX saves both ahead of the add and both `push 1` ahead of the first fld as in retail (the yaw
+// address then shares ESI with the x87 loads). So the ESI save goes early only when the ESI value feeds the x87 chain;
+// retail's position pointer does not, yet its save still precedes the add.
+// Then the flag's position and angles read through a pointer to a position-plus-angles view at +0x24 39 (97 bytes;
+// 0x2a1120 8; the loads become `[eax + edx + 0x34]`).
+// M3 lane 12 r137 (fast with 0x2a1120, which stays matched): the element from a raw byte read of the table pointer
+// (`*(byte **)((byte *)scenario + 0x1e4) + index * 0x38`) 6; a `vector3f *` to the forward vector taken after the flag
+// and passed to the call 6, taken before the flag lookup 6; an empty label ahead of the component stores 6; forward declared before the flag with the
+// position taken after the three components 6. Reading:
+// retail's loads from the flag never pass a stack push (the add waits for `push esi`, the first fld for both `push 1`),
+// ours pass them freely, so retail's scheduler may not have separated the flag's memory from the stack.
+// Round 110 (m3 lane 14, fast with 0x2a1120 and 0x1765e0, both matched but where noted; control 6): 0-30 dead initialised
+// locals at the top 6 each (no symbol-count state). Counted in slots, retail keeps two instructions between the imul and
+// the table add (both register saves) and two between the add and the first fld (both `push 1`); ours keeps one after the
+// imul and two after the add (`push esi`, `push 1`), so the whole difference is the add issued one slot early. Tried: the
+// table pointer read into a `byte *` local with the element at a byte offset from it (the sibling 0x2a06a0's retail
+// shape) 6; the angles through a `real const *` to the yaw with a named pitch cosine 6; the two constants as named
+// enumerators with the call's result discarded through a void cast 6 (all the same code). Diagnostic (compiler setting,
+// reverted): a size preference around the body 34 (90 bytes; 0x2a1120 8).
+// Round 118 (m3 lane 10, fast with 0x2a1120, which stays matched): a `vector3f *` to forward taken before the flag
+// lookup and used for the three stores and the call, with a const flag and the position inline 6; the up vector read
+// into a named `vector3f const *` before the call 6; forward and the call in an inner block 6; i and j stored as the
+// yaw cosine and sine, then scaled by `*= cosf(pitch)` 29 (93 bytes); a named scenario view with the flag as
+// `cutscene_flags + index` 6. In every form the scenario add and the first fld still pass `push esi` and the second
+// `push 1`.
+// M3 lane 9 r139 (fast with 0x2a1120 and 0x1765e0, both matched each time): the element as `cutscene_flag_index +
+// table` (index-first pointer arithmetic) 6; that through a named table local 6; that bound as a `T *const &` 6; that
+// with the position passed inline 6; that with forward declared before the flag 6 (all the same code).
+// M3 lane 9 r141 (fast with 0x2a1120 and 0x1765e0, both matched each time): the flag table field bound by const
+// reference (`T *const &flags = view->cutscene_flags;`, the element `&flags[index]`) 6; that with the element also bound
+// as `T *const &` 6; with the position passed inline 6; with the element as `flags + index` 6; with a const element and
+// a pointer-to-const position 6 (all the same code: the table add still issues ahead of `push esi`). Redundant parens,
+// 1-3 deep, around each component's right side 6 each (9 forms, the same code: the schedule does not follow the count).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
 	s_scenario_cutscene_flag_view *flag = &((s_scenario_cutscene_flags_view *)g_4e0350)->cutscene_flags[cutscene_flag_index];
 	point3f *position = &flag->position;
+	point3f *const &kept = position;
 	vector3f forward;
 	forward.i = cosf(flag->yaw) * cosf(flag->pitch);
 	forward.j = sinf(flag->yaw) * cosf(flag->pitch);
 	forward.k = sinf(flag->pitch);
-	function_1765e0(position, &forward, g_4687b0, effect_index, 1, 1);
+	function_1765e0(kept, &forward, g_4687b0, effect_index, 1, 1);
 }
 
 struct s_effect_owner;

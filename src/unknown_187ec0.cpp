@@ -70,6 +70,15 @@ static inline s_player_datum *player_get(long player_index)
 // the top; integer arithmetic; memcpy; a byte source pointer. Eight name permutations gave identical
 // listings, and /O1 or /Os (compile-only diagnostic) the same allocation. The pointer before the test 5.
 // Retail keeps the index in ecx and builds the pointer from a copy, as if the index were still live.
+// b14E (11-17) walk against retail, fast build on r847: every instruction matches except the pointer chain at
+// 0x187f0d: retail copies the record index (`mov esi, ecx`) then computes `imul esi, esi, 0x1c` / `add esi, 0x51ea18`
+// in esi; ours scales in ecx and copies the result into esi. Tried and dropped: `result = record.flag1a &&
+// record_index != NONE` (16, 114 bytes: the second test stays), the record index as a `long const &` to the datum
+// field (18, reloads through a pointer), the first-player test through a `bool const &valid` as in function_187f30
+// (43, the test is materialised). No behaviour difference found; the player index, the 0x21c stride, the 0x24 field
+// and the 0x1a flag read match retail.
+// Matched in a full build with stand-in SDK headers (was 3): the player index is held in a local that a const
+// reference names for the player lookup, and the record is copied straight from the indexed table (no pointer local).
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -78,12 +87,13 @@ bool function_187ec0(void)
 
 	if (index != NONE)
 	{
-		long record_index = player_get(g_4e8c20->entries[index])->index24;
+		long player_index = g_4e8c20->entries[index];
+		long const &kept = player_index;
+		long record_index = player_get(kept)->index24;
 		if (record_index != NONE)
 		{
-			s_player_record const *local_0 = (s_player_record *)g_51ea18 + record_index;
 			s_player_record record;
-			record = *local_0;
+			record = ((s_player_record *)g_51ea18)[record_index];
 			result = record.flag1a;
 		}
 	}
@@ -676,6 +686,10 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax I (11-16): no new form, no lower score (165): the whole difference is still that this build expands 0x1765e0
+// (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in src/unknown_175bd0.cpp,
+// which this lane may not edit; the declarations that would give retail's own parameter list are fixed by call sites in
+// other files: BLOCKED-BY that file.
 // MiniMax A (11-14), NOT kept (coordinator: 6 points, under the 8-point bar): a dword index for the scan over the
 // first values (like retail's) gave 159 from 165 by dropping one instruction from the scan. What still differs: retail calls 0x1765e0 out of line with the
 // promoted register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c
@@ -691,6 +705,20 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // the seventh argument reads best as a short - but the declarations that fix that split live in other files,
 // so the list stands as it is; the frame is 0x16c against retail's 0x48 because retail keeps 0x1765e0 out of
 // line and this build expands it.
+// MiniMax D (11-16): no new form, no lower score (165): the whole difference is still that this build expands
+// 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48); no form of this file's own body keeps the
+// call out of line, and the only known lever ("/Ob1" on src/unknown_175bd0.cpp) is in a file this lane may not
+// edit: BLOCKED-BY that file.
+// MiniMax R (11-17): no new form, no lower score (165): adding /d2inlT60 and then /d2inlT0 to this file's own flag
+// line leaves the score at 165, because the threshold that decides the inline comes from the generated ballast and
+// not from this file, so that lever is out of reach here; what still differs is that this build expands 0x1765e0 into
+// the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body is
+// in src/unknown_175bd0.cpp.
+// MiniMax I (11-17): no new form, no lower score (165): the difference is still that this build expands 0x1765e0
+// into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's
+// body is in src/unknown_175bd0.cpp, which this lane may not edit: BLOCKED-BY that file. The inline threshold on
+// this file's own flag line changes nothing, because the threshold that decides the expansion comes from the
+// generated ballast.
 // score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
 // expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
 // src/unknown_175bd0.cpp: BLOCKED-BY that file.
@@ -802,6 +830,11 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
 // that were measured (77 each) leave the body as it is.
 // MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
+// MiniMax I (11-17): no new form, no lower score (165): the difference is still that this build expands 0x1765e0
+// into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body
+// is in src/unknown_175bd0.cpp; the flag-line lever of the earlier round reaches no further, because the threshold
+// that decides the inline comes from the generated ballast and not from this file: BLOCKED-BY that file.
+// Matched in a full build with stand-in SDK headers (was 46): the first loop's counter is a dword.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
@@ -835,7 +868,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	position.compressed_forward = vector3d_compress(forward);
 	position.velocity = *g_4687a4;
 	position.location = *location;
-	for (short j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
+	for (dword j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
 	{
 		if (first_values[j] != NONE)
 		{

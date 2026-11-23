@@ -1485,75 +1485,25 @@ long function_26bc60(long clump_index)
 	return 2;
 }
 
-/* the clump pool walk 0x269040 makes: like s_clump_pool_iterator with a trailing index slot,
-   as s_ai_importance_squad_iterator (ai.cpp) has; retail's frame keeps the slot */
-struct s_clump_walk_269040
-{
-	s_clump *clump;
-	s_record_pool_iterator pool;
-	long clump_index;
-};
-
-/* record_pool_iterator_step with its result cleared before the search */
-PRIVATE __forceinline byte *clump_walk_step_269040(s_record_pool_iterator *iterator)
-{
-	byte *result = NULL;
-	s_record_pool *data = iterator->data;
-	long index = function_16bc00(data, iterator->index + 1);
-	if (index != NONE)
-	{
-		result = data->data + data->size * index;
-		iterator->index = index;
-		iterator->datum_index = (*(short *)result << 16) | index;
-	}
-	else
-	{
-		iterator->index = data->maximum_count;
-		iterator->datum_index = NONE;
-	}
-	return result;
-}
-
-PRIVATE __forceinline s_clump *clump_walk_advance_269040(s_clump_walk_269040 *walk)
-{
-	s_clump *clump = NULL;
-	if (g_4f55d0->active)
-		clump = (s_clump *)clump_walk_step_269040(&walk->pool);
-	walk->clump = clump;
-	return clump;
-}
-
 /* a new clump at the center for the team; when the pool is full, the clump
    whose active time is oldest is freed first */
-// score 106 (was 127): the frame and the walk's slots now match; retail clears the clump
-// register (ebp) before testing the active flag and keeps the result in ebx, the pool in esi
-// and the index in edi; ours clears it just before the search call and keeps the result in
-// ebp, NONE in ebx and the pool in edi. Tried: the stock data_iterator_next_calling in the
-// loop body (139, the empty search jumps straight out), next_clump_in_pool (125),
-// record_pool_iterator_step (164, not inlined), the step written into one helper with the
-// clump cleared first (139), the stock step under this walk (124). Tried at 127 (lane): plain
-// oldest-time/index storage separately 136/126; byte activity 127; native pool step 160; activity while 136.
 // @retail 0x269040
 long function_269040(point3f const *center, short team)
 {
 	long result = record_pool_allocate(g_502420);
 	if (result == NONE)
 	{
-		s_clump_walk_269040 walk;
-		if (g_4f55d0->active)
-		{
-			walk.pool.data = g_502420;
-			walk.pool.index = NONE;
-		}
+		s_clump_datum_walk clumps;
+		clump_datum_walk_new(&clumps);
 		long oldest = NONE;
 		long oldest_time = 0x7fffffff;
 		s_clump_activity_view *clump;
-		while ((clump = (s_clump_activity_view *)clump_walk_advance_269040(&walk)) != NULL)
+		while ((clump = (s_clump_activity_view *)clump_datum_walk_next_calling(&clumps, g_4f55d0->active)) != NULL)
 		{
 			if (clump->active_time < oldest_time)
 			{
 				oldest_time = clump->active_time;
-				oldest = walk.pool.datum_index;
+				oldest = clumps.clump_index;
 			}
 		}
 		if (oldest != NONE)
@@ -1565,7 +1515,7 @@ long function_269040(point3f const *center, short team)
 	if (result != NONE)
 	{
 		s_clump_activity_view *clump = (s_clump_activity_view *)(g_502420->data + (result & 0xffff) * sizeof(s_clump_activity_view));
-		clump->center = *center;
+		real_point3d_set(&clump->center, center->x, center->y, center->z);
 		clump->team = team;
 		clump->count = 0;
 		clump->first_actor = NONE;
@@ -1839,348 +1789,8 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
-// score 87 (was 87): round 112 (m3 lane 12) note at the end.
-// MiniMax I (11-15): no new form, no lower score (87); retail keeps the walk's pool in ebx, the selection on the stack and the two scores on the x87 stack, ours keeps the pool in memory, the selection in edi and compares with comiss; the in-arm compare (126) and the walk's datum index as the selection (128) both score worse, and the walk helpers are shared with four matched functions.
-// MiniMax G (11-14): no new form this round, unchanged (87; 89 on this build's reduced image): retail hoists the
-// walk's pool load into ebx and keeps the selection on the stack, ours keeps the pool in memory and the selection in
-// edi; the two walk helpers are shared with four matched functions and were left as they are.
-// Retail hoists the walk's pool load into ebx and keeps the selection
-// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
-// ours keeps the pool in memory and the selection in edi.
-// MiniMax A (11-11, run 58): score 87 (was 87) as the notes above record it (89 on this build's reduced image,
-// the body unchanged): no lower score; retail keeps the walk's datum index in ESI
-// across the score call and stores it on the stack, ours keeps the walk's pool in memory, the selection in EDI
-// and compares the two scores with comiss on xmm0 where retail compares them on the x87 stack; the in-arm
-// compare (126) and the selection taken from the walk's datum index (128) each score worse alone, and the
-// shared walk step cannot keep the datum and its index in registers without losing its four matched users.
-// MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
-// (reloading it from the stack after the bit scan takes EBX) where ours keeps it in memory and loads it into ECX at
-// each use, retail still keeps the selection on the stack where ours caches it in EDI and reloads it at the loop top,
-// retail still stores the best at the loop head where ours stores it in the improving branch, and retail still pops the
-// score to the stack and compares the two scores on the x87 stack (fld the best, fld the score, fcompi) where ours
-// pops the score to the stack and compares it with comiss on xmm0. The in-arm compare (the
-// compare inside the team-match branch) reaches 126 with retail's homes and x87 sequence, but the pool and selection
-// stay as they are. The permuter (300 s, 123 tries) left it at 87.
-// MiniMax I (11-09): no new form, no lower score; retail still hoists the walk's pool into EBX and keeps the selection on the stack where ours keeps the pool in memory and the selection in EDI, and the declaration-order reshapes that would move those homes are not applied.
-// MiniMax I (11-06): the walk's reload is what shifts the rest of the listing: the shared helper takes
-// the iterator by pointer, so the pool is re-read from its field into ecx at every step, where retail
-// keeps the pool in ebx across the scan and reloads it after the bit scan clobbers ebx; three extra
-// instructions before the compare, and the body stands at 89 (fast) and 87 (plain).
-// MiniMax I (11-06): the in-arm compare re-measured at 126 (fast) against this body's 89 (fast); besides retail's
-// three homes and its x87 compare it carries the best score in xmm0 across the walk as retail does,
-// and what still differs is the walk's pool (the stack slot and ecx against retail's ebx) and the
-// selection's copy in edi.
-// MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
-// selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
-// Earlier note (87, was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
-// Earlier at 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection.
-// MiniMax B (11-03): no new form, no lower score.
-// Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
-// size preference 338; double candidate/both scores 157/158; activity while 160; role-based scalar
-// names 134; inline depth two 134; the clump datum walk with a cached activity flag 126 (retail's frame);
-// selection stored before the best score 126; selection from the iterator's datum index 128 (selection
-// on the stack and pool hoisted, but the null-current join is threaded); creation arm first 130;
-// walk declared after the selection locals 129; actor index local 126; early continue on a
-// non-improving score 128; declaration orders, scopes, cached or global activity flag, team test as
-// continue or nested if, and inline/forceinline walk helpers all compile identically.
-// Common score path: zero default with branch/selection-first 92/92, ternary 125/125;
-// best default with branch/selection-first 89/89 fast, ternary 128/128. Retained
-// branch score initialized from best, 87 plain; pool/selection and x87/SSE homes remain.
-// Round 247: common-graph scalar homes 89; wide best/names 175/175; wide candidate/names 146/146; both wide/names 169/169; homes with existing center setter 111. Pool and scalar/x87 allocation remain.
-// Round 84: score computed and compared inside the team arm 126 (retail's three homes and x87 compare,
-// selection still split into EDI); with the selection stored first or names best_index/best_score 126
-// (same code); selection from the walk's datum index 128 (selection memory-only, pool hoisted, but the
-// null-current join threads away and the homes reverse); common path with the datum index 146.
-// Round 422: persistent score 128; native selection handle 146; persistent score/native handle
-// 152; actor handle snapshot 89; persistent score/actor handle 128; native/actor handles 146;
-// all scan lifetimes 152; function-scope candidate 128. Opening body restored.
-// Round 31: in-arm compare with datum-index selection 128 (pool hoisted into EDI, selection memory-only,
-// but the exhaustion null test threads away and the homes rotate); with best declared first 128; score
-// local renamed 128 (slots do not follow names here); in-arm compare with clump-index selection 126;
-// each with the walk at function scope 128/126.
-// Round 83 (fast; unchanged control 89): two-arm score assignment 128; zero-initialized two-arm
-// assignment 128; reversed strict comparison 89; separate best publication 89; old-clump local
-// after/before the scan 141/147; flattened selection/creation tests 89; byte activity snapshot 89.
-// Round 129: selection stored before the best score (retail cross-jumps the best store with the
-// initialisation's) 89 (aligned 54 -> 58); in-arm compare with that order 126 (480 B, aligned 60;
-// retail's x87 compare, but the found block is laid out after the improve block and the selection
-// stays in EDI after the loop); with the iterator's datum index 128 (pool hoisted and the shared best
-// store as retail, but the not-found path threads to the exit and the score/best/selection homes are
-// 0x14/0x18/0x1c against retail's 0x1c/0x18/0x14 reversed); best, score, selection declared in that
-// order, either selection 128/126 (homes unchanged).
-// Round 107 (fast, with 0x269580/0x269040 in the build; without them 0x269580's arguments swap):
-// the team-arm form gives retail's homes (selection 0x14, score 0x18, best 0x1c) and x87 compare,
-// 126; a memory-only selection (diagnostic, reverted) shows the pool then takes EBX. On the
-// team-arm form: selection locals before the walk 129; activity read in the walk call 126; team
-// compare reversed 126; the datum step reading the pool field at each use (data_iterator.h) 126,
-// identical. Zero-default score with the common compare 90.
-// Round 29 (plain checks): the in-arm compare 126 (480 B; plain agrees with fast), with the selection
-// from the iterator's datum index 128, with the selection stored first 126; the walk as 0x26bc60's
-// s_clump_pool_iterator (current cleared and set each step, selection from pool.datum_index) with the
-// in-arm compare 144, with the common compare 138; the created clump through the existing clump_get
-// 87 (same code), with the in-arm compare 126. A record-pool walk without the datum field is ruled out:
-// retail's 0x268510 passes this walk's iterator to the out-of-line 0x6b380.
-// Round 250: Native actor/group output ownership, then native selected-handle combinations:
-// 104/146/147/147/146/147; both complete-output forms with team-local scoring 129/129.
-// Pool/selection and x87/SSE allocation remain; all matched controls survive.
-// Round 31 (lane 15, fast): in-arm compare with the selection stored first, with `continue` on a team mismatch,
-// with `best < score`: 126 each (480 B); `(void)&selected;` on either form identical (87/126). Diagnostics:
-// the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
-// into a register and leave the selection in memory as retail: the selection wins the callee-saved register
-// only through the call in the walk plus its post-loop uses.
-// Round 116 (lane 8, fast with 0x269580/0x269040; the unchanged body gives 89 there): in-arm x87 compare with the
-// selection stored first 126; with the selection from `groups.iterator.datum_index` 128 (pool promoted to EDI and the
-// selection memory-only as retail, but the walk's join loses the clump-index copy, so the not-found path threads to
-// the exit and the homes rotate); the walk struct declared once outside the actor loop 126 / 128; selection and best
-// declared before the walk 129.
-// Round 51 (lane 10, fast): one `clump_index` local for both the selected and the created clump 89 (482 bytes), with
-// the in-arm compare 126 (480); that with the selection stored before the best score 89, in-arm 126; the in-arm
-// compare with the score declared at the top of the walk body 126; the group declared in the while condition 89.
-// Retail never gives the selection a register (stored from ESI in the walk, reloaded after the post-loop calls,
-// unlike the created index in EDI), so the walk's pool field is scalarised into EBX; ours gives EDI to the selection.
-// Round 193 (lane 3, plain): the in-arm compare gives retail's 480 bytes and homes (126), but our found
-// block is laid out after the improve block (0x26ae30's identical walk keeps retail's order); a
-// memory-only selection (diagnostic, reverted) gives the pool EBX but promotes the walk index into EBP
-// and sends the actor to the stack, 145. On the in-arm form: the walk reading g_4f55d0->active at each
-// step 126 (same code); score declared per actor 126; activity snapshot before the walk init 126; the
-// creation arm assigning the selection 126 (same code); creation arm first 130.
-// Round 34 (plain checks): in-arm compare with the selection stored first 126; on it `actor->unknown07c != selected`
-// 126, best declared and stored first 126 (both same code), the team read once into a `short` before the scan 168
-// (497 bytes), creation arm first 130.
-// Round 18 (m3 lane 18, fast with 0x269580/0x269040/0x269250/0x2694d0/0x268bb0; this body is 89 fast): the walk's
-// scan (data_next_absolute_index_inlined, data_array.h) returning from inside its loop: this body 89, the in-arm
-// compare 126, the in-arm compare with the iterator's datum index 128 (all three unchanged code: the walk already
-// threads as retail); in-arm compare with `if (score <= best) continue;` 128, with the team test as a `continue`
-// too 128. Re-measured: in-arm with the selection stored first 126 (480 B; found block placed after the loop body,
-// selection in EDI, best stored in the improve block), with the iterator's datum index 128 (pool hoisted and the
-// selection memory-only as retail, but the not-found path threads to the exit and the homes reverse). Plain: the
-// in-arm search as a forceinline function returning the selection 126 (480 B); the in-arm compare with the selection
-// and best declared once for the whole function and reset per actor 126. The fast image swaps 0x269580's two
-// argument registers (0x269580 matches only in the full image): read this function's call setup from plain checks.
-// Round 231: Produced actor/group/both pointer for scopes 87/335/335; readonly actor 87, with
-// those scopes 87/335/335; all with entry uninitialized score 335. Original common score graph,
-// observations and body restored.
-// Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
-// all plus pre-search created-result storage 89. Original declarations and body restored.
-// Round 234: Native candidate/team/both/activity-before-construction/candidate-activity/team-activity/all input observations 195/100/224/87/195/100/224; all via library copy 224. Timing alone ties, all other forms regress. Original complete body restored; frame 0x3c agrees, pool/selection and x87/SSE homes remain.
-// Round 136 (m3 lane 6; --fast misbuilds 0x269580/0x269250 here, so plain checks after the first): in-arm compare
-// 126 (fast); in-arm with the selection from groups.iterator.datum_index 128 (pool in EDI, selection memory-only and
-// the improve block cross-jumping into the init as retail, but the not-found path threads to the exit); in-arm with
-// the selection first and the group pointer outside the actor loop 126; this body with the group pointer outside
-// 87 (same code); in-arm with the activity snapshot before the walk struct 126 (same code).
-// Also round 136 (plain), on the datum-index in-arm form: team mismatch as `continue` 128; selection and best
-// declared outside the actor loop 128; activity read from the global in the walk call 128.
-// DH292: Common final transfer after intact selected/created merge arms, selected/separate destination,
-// existing/creation-first priority: clump identity 146/151/147/152; native datum identity
-// 193/192/188/187. Original separate transfers, common score and entire body restored.
-// DH296: Joint function-owned group iterator/selected/best storage subsets
-// 1-7 and all with persistent score storage, eight forms 87 each. Every original
-// per-actor initialization and per-candidate assignment retained; full body restored.
-// Round 379: Native team-admission truth at its comparison, bool/byte/short/long eligible then
-// excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
-// exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
-// remain.
-// Round 127 (lane 8, fast; body 89 fast): the walk as a `for` loop with the call in init and step 343, with the
-// in-arm compare 339 (624/625 B); in-arm with the score at function scope 126; in-arm with the previous clump read
-// once into a local 144 (plain 140); in-arm with the team test's operands swapped 126.
-// Round 63 (m3 lane 1, fast; this body 89 fast): in-arm compare 126 (480, retail's fcompi); with the datum index
-// 128; in-arm with `best < score` 126, score declared per actor 126, team test as `continue` 126.
-// Also round 63 (in-arm form): best/selected declared before the activity snapshot 126; best before selected 126;
-// the actor walk as a for loop 126.
-// F350: Native created-center memcpy/memmove, actual output pointer/reference,
-// original then shared selected/created result: 87/125/87/125/87/125/87/125.
-// memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
-// Original assignment, receiver and full body restored; pool/selection and
-// x87 score homes remain.
-// Round 82 (m3 lane 9, fast; this body 89 fast, 87 plain): in-arm compare as `if (!(score <= best))` with the
-// selection stored first 128 (480 B); team mismatch `continue` then the compare 126; the common graph with the
-// selection stored first 89 (same code as fast control); the score as a ternary on the team test 128 (484 B);
-// in-arm compare ending in `continue` 126.
-// DH339: Immutable activity/created handle/created receiver, seven subsets and all with
-// readonly actor, eight at 89 fast (unchanged preview 89; full baseline 87).
-// Original mutable storage and full body restored; pool/selection and x87 homes remain.
-// DH355: Strict improvement truth at the common score join, positive/complementary
-// bool/byte/short/long: 89/89/89/89/89/89/89/89 (reduced control 89; full 87).
-// NOT kept: no exact one-use decision; original pool/selection and complete body restored.
-// Round 149 (m3 lane 6, fast; control 89, aligned 58, masked 45): score in the team arm 126 (480 bytes, masked 42), with datum_index selection 128 (57); team mismatch as `continue` 126 / 128 (same
-// code); common path with datum_index selection 146 (458 bytes, 59); a find-best forceinline helper returning the selection: in-arm 126, datum 128, common 89 (the copy coalesces),
-// plain inline 374 (250 bytes, not inlined). Ours keeps the selection in EDI where retail keeps it memory-only (`mov [esp + 0x14], esi`), which leaves the pool in memory.
-// M3 lane 4 r164 (fast; this body 89 fast, in-arm 126): a compiled-out `do {} while (false);` at the walk's join with the in-arm
-// compare 126, with the selection from the datum index 128 (the empty join does not stop the not-found path threading; that
-// form's head and pool hoist are retail's shape, with EDI for EBX and the selection memory-only); the selected arm's transfer in a
-// forceinline helper, in-arm 126, common graph 89 (same code); a block-local actor index in the selected arm, in-arm 126 (same
-// code); the walk's result index in a local at the top of the body, in-arm 126, with the actor index local 126.
-// M3 lane 12 r91 (harness with src/actors.cpp equals fast, 89; in-arm 126, masked 39): in-arm with the search loop inside a compiled-out loop 126 (39); with
-// the datum index 128 (64), the same in the region 128 (64); the common compare in the region 89 (45); the loop body in the region 126 (39); an empty else arm on
-// the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
-// selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
-// only once the not-found path threads; retail has both.
-// Y607: Complete common merge/removal/transfer continuation, selected/separate destination,
-// existing/creation-first admission and aggregate/CRT center copy: 164/164/168/168/176/176/179/179.
-// NOT kept: no exact native continuation/storage recovery; original full body restored.
-// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
-// M403: Native selected/created 32-bit long/int/dword declaration pairs on the common
-// score graph, eight nonoriginal pairs: eight at 87/482. NOT kept: pool/selection
-// residency and x87 score homes unchanged; original domains and complete body restored.
-// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
-// Round 75 (m3 lane 10, fast with 0x268840 and the six callees; this body 87 fast): retail sets the clump NULL before the
-// active test (`xor eax, eax`) and tests it once at the found/not-found join, so the not-found path is not threaded;
-// its pool sits in EBX but is clobbered by the scan's mask and reloaded. Re-measured: in-arm compare with the selection
-// stored first 126 (480 B), with the datum index 128 (pool in EDI, homes selection 0x1c / best 0x18 / score 0x14 against
-// retail's 0x14 / 0x1c / 0x18), datum index with best stored first 128. The shared walk helper respelled, checked on all
-// five users: datum-index copy before the clump store 144 (0x268510 119, 0x268840 81, 0x268c90 75, 0x26ae30 238), the
-// step folded into the active test with an else-NULL 146 (users lost too): the helper's shape is right for the others.
-// M3 lane 4 r168 (fast, this body 89). New: a 600 s permuter run (55 tries, none below 87); the selection as a dword 89
-// (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init
-// and increment 339 (624 bytes), with the in-arm compare 343 (625; round 127 listed the pair as 343/339). Retail hoists the walk's pool field into EBX (reloaded after the bit scan uses EBX
-// as the mask) and keeps the selection memory-only; matched 0x26ae30's retail walk reads the pool each step. All restored.
-// N391: Actual retained best bool/byte/short/word/int/long/dword/unsigned-char:
-// 177/160/145/155/141/141/155/160. NOT kept: all regress against reduced control 89/full 87;
-// original real best and full body restored. Memory-only selection, pool and x87 homes remain.
-// N393: Selected/created signed or unsigned eight-byte handle storage, eight nonoriginal
-// width pairs 115/115/170/160/160/170/160/160. NOT kept: no native memory-only selection
-// match; original handles/body restored. Pool EBX and x87 score/best transport remain.
-// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
-// Round 135 (m3 lane 7, plain checks with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30, all matched; aligned
-// difference 54 lines on this body, 56 on the in-arm form): the in-arm compare with the selection stored first re-measured 126
-// (homes selection 0x14 / score 0x18 / best 0x1c and the x87 compare are retail's; left: the pool not hoisted into EBX, the
-// selection in EDI with a reload at the loop top, and the found block placed after the loop body); on it a `byte` activity
-// snapshot 126, the group declared in the while condition 126, a `dword` selection 126, the score declared at the top of the
-// walk body 126, the candidate index named before the score call 126 (all the same code).
-// Round 160 (m3 lane 5, fast; this body 89 fast, 87 plain; in-arm 126 plain, 480 bytes): on the in-arm form, the activity snapshot
-// declared first and best before selected 126; the actor's current clump in a named local for the post-loop tests 140; the
-// selection written through a `long *` 126 (same code); the activity read from the global at each step 126; the datum-index
-// selection on the walk variant that calls the out-of-line step 243 (375 bytes). In the in-arm form the scan's count takes EDI,
-// so the selection (EDI) is reloaded at every step; retail spills the walk's pool (EBX) around the scan instead.
-// Round 97 (m3 lane 9, fast; this body 89 fast, 87 plain; aligned in brackets, this body [58]): in-arm compare re-measured 126 (480
-// bytes) [60]: every instruction left is the selection cached in EDI across the walk (ours) against the walk's pool cached in EBX
-// with the selection read from its slot at each use, also after the post-loop calls (retail). On the in-arm form, all 126 [60] and
-// the same code: the score call and compare in an inline helper taking best and the selection by pointer; that helper with the team
-// test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
-// with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
-// unchanged.
-// Round 66 (m3 lane 15, fast; this body 87 plain, in-arm 126 at 480 bytes): retail loads the selection from its slot at every use after the loop too, where both
-// callee-saved registers are free, so it is never a register candidate there. On the in-arm form: the selection, score and best as members of one local record 126; the
-// selection and best as members with a plain score 126; the selection alone in a one-member record 126 (all the same code: members of a local record are still given
-// registers here); the score call and compare in an inline function returning whether the best improved, the selection assigned by the caller, in one test with the team
-// or nested 126/126 (same code). Permuter on the in-arm form (600 s, 39 tries): best 108 in the full image, only with the creation arm first and the created index
-// declared short, which truncates a datum index (not a real form); nothing else below 126.
-// Round 161 (m3 lane 6, fast; control 87 fast and plain; 0x268840, 0x269580, 0x269250, 0x2694d0, 0x268bb0 matched throughout):
-// the post-walk test turned round (`selected == NONE` creates first, then `else if (selected != current)`) 112 (480 bytes);
-// the score started at 0 instead of best 90 (480 bytes); the activity snapshot taken before the walk's init 87 (same code);
-// best and the selection declared before the walk 90; the compare as `best < score` 87 (same code); all five re-measure
-// listed forms. New: the team read once into a `short` used by the test and the creation call 100 (481 bytes); the actor
-// walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
-// selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
-// code). Body unchanged.
-// Round 103 (m3 lane 16, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): the
-// in-arm compare re-measured 126 (480 bytes; register-masked aligned 23 against this body's 25); on it the score as `real const` 126 and
-// the team test as `actor->unknown024 == group->team` 126 (both the same code), the score test as `if (score <= best) continue;` 128;
-// on this body the score set in an else arm (`else score = best;`) 128 (484 bytes) and the swapped team test 87 (same code). Retail keeps
-// the walk's pool field cached in EBX across the score call, so it treats the walk as not escaping; ours re-reads it from the frame at
-// each use. The compile-only /Gr harness promotes both walk fields to registers (frame 0x2c), so it does not model this body.
-// Lane 12 r105 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x268510/0x268c90/0x26ae30, all matched): the in-arm
-// compare with the selection stored first re-measured 126 (480 B; the post-loop is retail's but for the selection in EDI); without
-// the callees in the reduced build 0x269580's arguments swap, as round 107 found. Diagnostics (an existing helper written out, not
-// keepable): the walk's init in the body 89; the walk's step in the body too, as a loop with a top break, 146 (458 B); the step
-// with the scan written out so the walk's address is never taken 146 (458 B, the loop shape changes, so this does not isolate the
-// address). 0x268bb0 calls the sqrt routine at 0x322b0c, so it may write memory in both builds. New: the selection and best
-// declared at function scope and set per actor, in-arm 126, on this body 87 (same code each).
-// Round 69 (m3 lane 15, fast): in-arm compare with the selection stored first re-measured 126 (480 B; retail's code skips the
-// score call on a team mismatch, so that is retail's form). On it, a one-caller forceinline walk variant assigning the clump
-// only in the found arm (not-found leaves it NULL) with the clump-index copy at the join 126 (same code); with the clump index
-// set in each arm instead 128 (480 B: pool in EDI and the selection memory-only as retail, but the not-found path threads,
-// the walk top loses `xor eax, eax`, and the homes rotate). The join copy is what stops the threading; it also ties the
-// selection to the walk's index, which then outweighs the pool.
-// Round 91 (m3 lane 1, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched;
-// this body 87, in-arm compare with the selection stored first re-measured 126 at 480 bytes): on the in-arm form, the clump walk
-// declared at function scope 126 (same code), the post-walk test turned round (`selected == NONE` creates, then `else if
-// (selected != current)`) 130, the selection and best declared ahead of the walk 129; on this body, the walk at function scope
-// 87 and the selection stored ahead of best 87 (both the same code). The in-arm form's x87 compare (`fstp` score, `fld` best,
-// `fcompi`) and homes are retail's; the found block of the walk still sits after the score block. Body restored.
-// M3 lane 3 r231 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched, and 0x269040
-// listed): the in-arm compare with the selection stored first re-measured 126 (480 B). Retail's walk step also lays the
-// not-found block first and the found block after it, falling into the clump test, and its improving arm jumps into the
-// initialisation's `best` store; ours places the found block after the loop body and keeps the selection in EDI. New, on the
-// in-arm form: `selected != NONE && selected != current` with `else if (selected == NONE)` for the creation 126. Re-measured
-// listed forms: on the in-arm form the post-walk test turned round 130 (the creation arm first), best stored before the
-// selection 126, the activity snapshot before the walk's init 126, the selection and best initialised before the snapshot 126;
-// on this body the selection stored before the best 87 (round 129's, same code). No other untried natural form is left: the
-// lever is register priority (the walk pool against the selection), the declaration, statement-order, type, helper and
-// loop-shape forms listed here leave it, and the walk step helpers are shared headers used by matched functions.
-// m3 lane 14 r84: no trial run. Checked against this note and the round reports: the in-arm compare (retail's form,
-// 126), the zero-default score path 92, inline/forceinline walk helpers (same code), the selection from the walk's datum
-// index 128, declaration orders and scopes are listed, and the permuter has run twice on this body (m3 lanes 15 r66 and
-// 4 r168). The caller-scope naming lever that moved 0x296e60's frame temps has no counterpart here (the only temps are
-// the score's x87 store); the lever left is register priority between the walk's pool and the selection.
-// M3 lane 12 r112 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched; this body
-// 87, aligned 34, masked 23): the shared clump_datum_walk_next with the found test as a ternary (`clump = next ? datum :
-// NULL;`) 130, 0x268510/0x268840/0x268c90/0x26ae30 all lose their match; with an early `return NULL` when inactive 146
-// (0x268840/0x268c90/0x26ae30 lost). Both restored. Checked against this note: the file's other walk helpers call the bit scan
-// (clump_datum_walk_next_calling, through 0x16bc00) or the whole step (clump_datum_walk_step, round 160's 243) out of line,
-// where retail inlines both (0x268a50-0x268abe), so neither is retail's; the selection's cross-jump with the created index
-// (both in EDI, merged at `push edi; call 0x269250`) is what our allocation buys, retail keeps them apart (selected reloaded
-// into EDX, created in EDI). The lever left is register priority between the walk's pool field and the selection, inside
-// the shared clump_datum_walk_next, whose respellings moved its four matched users in round 75.
-// M3 lane 3 r236: no new form. Checked against this note: the in-arm compare (retail's form, 126), selection sources,
-// declaration orders and scopes, the zero/best default score paths, ternaries, continue forms, one clump-index local,
-// the walk at function scope or as 0x26bc60's iterator, and inline/forceinline walk helpers are listed. The lever left is
-// register priority between the walk's pool field and the selection inside the shared clump_datum_walk_next, whose
-// respellings cost its four matched users (rounds 75 and 112).
-// MiniMax A (11-12): no new form, no lower score (87); retail hoists the walk's pool into EBX, keeps the selection in memory and compares with the x87 stack, while ours reloads the pool from the struct field and compares with comiss; the lever is the shared clump_datum_walk_next, whose respellings cost its four matched users.
-// M3 lane 8 r161 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched; this
-// body 87): the team mismatch as `continue` ahead of the score call, the selection stored before best, 126 (480 B; the same
-// code as the in-arm compare); on it the selection local renamed to sort before the walk 126, the walk renamed to sort last
-// 126 (names do not move this register tie), the score declared at actor scope 126, and the walk, selection and best all at
-// function scope 126 (each the same code). In the in-arm form our walk step also lays the found block after the loop body
-// (retail and matched 0x268840 keep it inline after the not-found block), and the improving arm cannot cross-jump into the
-// initialisation's best store because our loop top reloads the selection into EDI. Body unchanged.
-// M3 lane 12 r118 (fast with the eight matched neighbours, all still matched): the actor index read into a named local
-// (`actor_index`, four uses) before the post-walk tests 87 (same code), at the top of the actor loop body 87 (same code); on the
-// in-arm form (126 re-measured) the same two 126/126 and with `selected` declared at function scope as well 126. Diagnostics, removed
-// at once: `(void)&selected` and the improving arm writing `selected` through a pointer on the in-arm form 126 each (same code; the
-// address is propagated away, so retail's memory-only selection is not an address-taken local).
-// P460: Complementary readiness snapshot bool/char/byte/short/word/int/long/dword: 131/131/131/84/84/132/132/132. NOT kept: short/word gain only three at 480 bytes; native byte, pool/selection and x87 homes remain. Original body restored.
-// M3 lane 2 r82 (fast with the eight matched neighbours, all kept; this body 87, in-arm re-measured 126 at 480 B): on the in-arm
-// form, a `short` activity snapshot 132 (481 B); the actor's team read once into a `short` for the walk test and the creation
-// call 168 (497 B); the creation arm's one-use group pointer removed 126 (same code); `if (selected == actor->unknown07c)
-// continue;` in the selected arm 126 (same code). Diagnostic (an existing helper written out): a private step reading the
-// iterator's pool field at each use instead of the step's local copy 126 (same code), so the pool's reference count is not
-// what loses it the register. Body unchanged.
-// Round 103 (m3 lane 10, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): on
-// this body the score as one conditional expression (`team == ... ? function_268bb0(...) : best`) 128 (484 bytes); the score
-// declared at the actor-loop scope beside best 87 (same code); the creation arm reusing the walk's group pointer instead of
-// declaring a second one 87 (same code); a `dword` selection 87 (same code); the in-arm compare with the selection stored first
-// plus that group-pointer reuse 126 (480 bytes). All restored.
-// M3 lane 13 r93 (fast with the eight matched neighbours, all still matched; this body 89 on the reduced image, the in-arm
-// form 126 at 480 B): dead-local phase scan on this body (n = 0..7, removed) 89 at every n; the post-loop arms in the other
-// order (`if (selected == NONE) { create } else if (selected != actor->unknown07c) { ... }`) 112 at 480 B (the creation
-// block then leads, retail lays the selected arm first), on the in-arm form 130; on the in-arm form the walk result as a
-// `byte *` cast to the group in the body 126 (same code), `selected` and `best` declared ahead of the walk 129. Body
-// unchanged.
-// M3 lane 5 r186 (fast with the eight matched neighbours, all still matched; 0x269040 106 throughout): the in-arm
-// compare (selection then best stored in the improving arm) re-measured 126 at retail's 480 B: it already gives retail's
-// x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and best (+0x1c); left are the pool held in
-// EBX (ours reloads it from the walk at each use and gives EDI to the selection) and the found block's place. A 600 s
-// permuter run on that form (48 tries) reached 122 only by swapping call arguments (wrong values), not usable. On the
-// in-arm form: best declared before the selection 126; a `dword` selection 126; `g_4f55d0->active` passed to the walk
-// at each step with no snapshot local 126 (identical code: LTCG hoists the read across 0x268bb0 into the same stack
-// byte, so the snapshot is not what keeps it there); the team test as `actor->unknown024 == group->team` 126. On this
-// body, the walk given `g_4f55d0->active` with no snapshot local 87 (identical code). Body unchanged.
-// M3 lane 6 r182 (fast with 0x268840/0x1e46c0/0x268bb0/0x269040/0x269250/0x2694d0/0x269580/0x26ae30/0x268510/0x268c90,
-// all matched but the unmatched 0x269040; control 87 fast = plain, masked 45): the activity snapshot as `short` 125 (480 B,
-// first difference +0x4b); on the in-arm form (126 re-measured, selection stored first) the selection from the walk's datum
-// index with a `short` snapshot 138 (480 B); on this body the datum-index selection with a `short` snapshot 156 (458 B); the
-// selection stored before best with a `short` snapshot 125; the snapshot taken ahead of the walk's construction 87 (same
-// code). In both forms our walk lays the found block after the loop body and keeps the selection in EDI.
-// Round 123 (m3 lane 16, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510/0x1e46c0, all
-// matched; this body 87, the in-arm form with the selection stored first re-measured 126 at 480 B): permuter on the in-arm
-// form (1800 s, seed 123, 60 tries) best 112 only by swapping the 0x269580/0x2694d0/0x269250 arguments and narrowing the
-// created index to short (wrong values); its legitimate parts alone, the actor pointer declared before the iterator 126 and
-// with the snapshot read before the walk's init and the selection assigned after it 126 (same code each); a `short` activity
-// snapshot on the in-arm form 132 (481 B), on this body 125 (480 B, P460's 84 is another form). Retail never gives the
-// selection a register (reloaded from +0x14 at each use after the loop, even with EDI free in the selected arm); ours holds
-// it in EDI there, and the matched 0x268840 shows the same walk fully in registers when nothing competes.
+/* picks the clump group whose score beats the best so far for the actor; the score is computed and compared inside
+   the team test, and the shared datum step scans through data_find_index (lane 8 r230) */
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2197,13 +1807,14 @@ void function_2689d0(void)
 		s_clump_activity_view *group;
 		while ((group = (s_clump_activity_view *)clump_datum_walk_next(&groups, active)) != NULL)
 		{
-			real score = best;
 			if (group->team == actor->unknown024)
-				score = function_268bb0(group, actor);
-			if (score > best)
 			{
-				best = score;
-				selected = groups.clump_index;
+				real score = function_268bb0(group, actor);
+				if (score > best)
+				{
+					best = score;
+					selected = groups.clump_index;
+				}
 			}
 		}
 		if (selected != NONE)
@@ -2225,7 +1836,7 @@ void function_2689d0(void)
 			{
 				if (actor->unknown07c != NONE)
 				{
-					s_clump_activity_view *group = (s_clump_activity_view *)(g_502420->data + (created & 0xffff) * sizeof(s_clump_activity_view));
+					s_clump_activity_view *group = (s_clump_activity_view *)clump_get(created);
 					group->center = actor->position;
 					function_269580(created, actor->unknown07c);
 					function_2694d0(actor->unknown07c, actors.actor_index);

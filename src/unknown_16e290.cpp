@@ -1496,40 +1496,11 @@ void __stdcall function_16f570(long user_index)
 }
 void function_16fe90(long user_index);
 
-void function_170bb0(real *out, real const *second, real const *first);
+void function_170bb0(real const *second, real const *first, real *out);
 void function_1701f0(long player_index);
 void function_1703f0(long player_index);
 void function_170630(long player_index);
 
-// score 7 (was 7): command/base registers and channel address setup differ. BLOCKED-BY 0x170bb0:
-// callers set its register arguments right to left in declared order, and retail sets out
-// (EDX), first (EAX), then second (ECX), so retail declares it (second, first, out); an
-// inline forwarder with that order changes nothing. Round 52: forwarder 7; address from
-// the array element at each argument 7; shifted flag test 7; state pointer inside the guard 7;
-// state before the array pointer 36. This round: forwarder with the (second, first, out)
-// order 7; the three channel addresses as named locals in five orders 7 each; the observer
-// element through a local 28; the command test before the state pointer 18. Earlier:
-// three channel-pointer orders 7/7/7; delta pointer early/late 7/7;
-// command pointer 7; guard return 7; motion-channel view 7.
-// scalar channel addresses 7; timer cursor after delta 11; countdown for 7;
-// inline/noinline delta declarations 7/7; noinline update declaration 7;
-// shifted command bit 33; branch timer stores 27.
-// Single current/previous/delta pointers 7/7/7; direct observer array 36;
-// scoped state/time 18; command flags snapshot 7; countdown entry/before delta/split 7/7/7;
-// fixed base pointers 7.
-// This round: the three channel addresses as named locals in four orders (out/first/second
-// and three others) 7 each and byte-identical to the inline form, the command pointer as a
-// local 7, the state pointer from the observer element 7: the compiler always prepares the
-// three addresses in the argument-register order, while retail prepares out, first, second.
-// Native observer timer/channel fields 7/7/7; full typed receiver 7; timer end pointer
-// with byte/typed receiver 23/23; word/byte countdown 7/7.
-// Round 70: the observer base takes the register of the last-evaluated argument (the leftmost,
-// out in EDX); out from the timer cursor instead 3 (base then in ECX, all else as retail;
-// diagnostic only), so the fix is the callee's consistent (second, first, out) reorder.
-// Real-element receiver 7; forceinline (second, first, out) forwarder 7; timer cursor from the
-// element with state inside the guard 7; named delta 7; state-taking inline call helper 7.
-// Round 25 (0x170bb0's file held): real-pointer base with indices 7; pointer-add element 7; byte
-// base from the global 36; flag test through the state pointer 28; timer cursor in the guard 18.
 // @retail 0x16fe90
 void function_16fe90(long user_index)
 {
@@ -1538,7 +1509,7 @@ void function_16fe90(long user_index)
 	real *time = (real *)(state + 0x9c);
 	if (!(observers[user_index].command->flags & 0x20))
 	{
-		function_170bb0((real *)(state + 0x320), (real *)(state + 0x10c), (real *)(state + 0xc));
+		function_170bb0((real *)(state + 0x10c), (real *)(state + 0xc), (real *)(state + 0x320));
 		function_16ff10(user_index);
 		function_1701f0(user_index);
 		function_1703f0(user_index);
@@ -1567,13 +1538,18 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax S (11-17): no new form, no lower score (87): the classification's plane sum written with the plane's
+// i, k and j terms in that order measures the same as the j, k, i order, so that reorder was restored; retail
+// still reloads the copied forward's second component before the third component's store where ours reloads the
+// third, the shared cross3f fixes the product order, and the permuter's 31 tries over this body (fast) found
+// nothing below 87.
 // MiniMax D (11-14): no new form, no lower score (87): the cross product's second product still takes
 // forward.j before up.k where the shared cross3f (include/vector_products.h, which this lane may not edit)
 // takes them the other way round, and the clip block still folds the cluster address into the load where
 // retail materialises it; a cluster pointer local and a pointer-arithmetic local both fold it again.
 // MiniMax H (11-14): no new form, no lower score (87).
 // MiniMax H (11-13): no new form, no lower score (87): the cross block still gives retail's up.k to xmm0 and forward.j to xmm1 the other way round, the clip block still folds the cluster address into the load where retail materialises it, and the interpolated pair still loads [esp+0x20] before the store to [esp+0x24]; the cross helper is in a shared header and 0x171d00 is in another file, and the permuter over this body was stopped at the run's time limit without a result.
-// score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's
+// older score 87: unchanged this round: the cross product's colouring is swapped against retail's
 // (retail gives up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the
 // clip block materialises the cluster address (a register load of the base, an add, then the byte load)
 // where ours folds the base into the load; the cross helper is in a shared header this lane may not edit.
@@ -1594,6 +1570,11 @@ struct s_camera_clip_reference_16ebf0
 // retail keeps the cluster reference in al and materialises the cluster address, while ours keeps it
 // in cl and folds the address into the load.
 
+// MiniMax C (11-16): no new form, no lower score (87): the cross product's colouring is fixed by the shared helper's
+// text in include/vector_products.h; the clip block still folds the cluster address and the interpolated pair still
+// loads the value before storing it, so the register order stays as it is.
+// MiniMax S (11-16): no new form, no lower score (87): the inlined cross product still gives xmm0 the forward's j and xmm1 the up's k where retail gives xmm0 the up's k and xmm1 the forward's j, so the two products are the same and only their colouring differs; the cross helper's text is in include/vector_products.h, which this lane may not edit, so the swap cannot be produced from here.
+// MiniMax S (11-16): no new form, no lower score (87): the clip block still folds the cluster address where retail materialises it, the plane sum still adds the i*x term where retail adds the j*y term first, and the interpolation's two products still land in the other order; the interpolation's addend order, a false-first narrow default (105) and a plane-value accumulator all leave the same code, and the shared cross helper's text is in a header this lane may not edit.
 // MiniMax G (11-05): no new form, no lower score. The clip block still loads the cluster
 // reference with a folded address where retail materialises it (mov edi,[esi+0xa0]; add
 // eax,edi; mov al,[eax+0x70]), so the block is one instruction short and the code after the
@@ -1609,10 +1590,10 @@ struct s_camera_clip_reference_16ebf0
 // function was killed before it printed, so no new form was found.
 // MiniMax E (11-04): no new form, no lower score; the clip test still adds the plane terms
 // i*x, k*z, j*y where retail adds j*y, k*z, i*x (an accumulator in retail's order gives 87 too).
-// score 87 (was 87): this round found no gain - the frame is 0x9c against retail's 0x98, retail copies both
+// older score 87: this round found no gain - the frame is 0x9c against retail's 0x98, retail copies both
 // vectors whole while we copy them scalar by scalar, and the 0x171d00 narrow convention is set in
 // another file.
-// score 87 (was 87): frame 0x98, vector homes and forward/position EBX/EBP now agree;
+// older score 87: frame 0x98, vector homes and forward/position EBX/EBP now agree;
 // Left: cross-product carriers, clipping-result production and interpolation scheduling.
 // Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
 // position pointers take EBP/EBX for retail's EBX/EBP, the cross product's forward.j/up.k xmm0/xmm1
@@ -1781,16 +1762,31 @@ struct s_camera_clip_reference_16ebf0
 // MiniMax I (11-15): no new form, no lower score (87): the clip block still folds the cluster address into the load where
 // retail materialises it (every spelling tried from here folds the same way), and the cross helper's colouring and 0x171d00
 // are in other files, so the first differences stay.
-// score 87 (was 87): unchanged this round: the two products of the interpolation keep retail's operands but our
+// older score 87: unchanged this round: the two products of the interpolation keep retail's operands but our
 // compiler hands them to the registers the other way round, and the clip block folds the cluster address into the
 // load where retail materialises it; the cross helper and 0x171d00 are in other files, which this lane may not edit.
-// score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's (retail gives
+// older score 87: unchanged this round: the cross product's colouring is swapped against retail's (retail gives
 // up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the clip block folds the cluster
 // address into the load where retail materialises it; the addends of the clip sum and of the interpolation compile in
 // the same order either way, and the cross helper and 0x171d00 are in other files.
 // MiniMax S (11-15): no new form, no lower score (87): the cross-product rows differ, with retail keeping the first product
 // in the register ours uses for the second and adding the two products in the other order, and the clip call's block follows
 // from it; the shared cross product's text fixes that order and it lives in another file.
+// MiniMax I (11-17): no new form, no lower score (87): the clip block still folds the cluster address into the load
+// where retail materialises it, and the cross product's colouring is still the other way round; the cross helper's
+// text lives in include/vector_products.h, which this lane may not edit.
+// b16G (11-17) walk against retail, fast build on r852: shared cross3f (include/vector_products.h) rows written
+// a->j*b->k - b->j*a->k give the cross product retail's registers (fwd.j loaded early at 0x16ecab, up.k late at
+// 0x16ed0f), 87 -> 68, first block matches. The clip lookup reads cluster->cluster_reference at each use through one
+// pointer (retail's `add eax, edi` at 0x16ee7c is not folded into the load; the reference local and the null-returning
+// helper fold or re-test) 70 with the sum below; the sum spelled i, k, j compiles to retail's j, k, i products from
+// 0x16ee9f, and `narrow` starts false (`xor dl, dl` 0x16ee5f, one assignment, `mov dl, 1` 0x16eed7) with the `& 0x80`
+// test (`jns` 0x16ee9f) -> 49. All 1163 functions of the 43 files using cross3f, before/after: only this one moved.
+// Left: the interpolation (0x16ef03..0x16ef57): retail multiplies point.x by amount first, loads point.y early and
+// stores y and z together at the end (0x16ef51, 0x16ef57), then the tail stores [ebp+8] after [ebx] (0x16ef7d);
+// operand spellings, temps, k-j-i order, a component loop and 1 - amount inline all give the same 49; a blended
+// point3f temp 87, x + (p - x) * f 69.
+// score 49 (was 87): see above; 0x171d00 now matches, so the old BLOCKED-BY no longer applies.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
@@ -1845,25 +1841,22 @@ void function_16ebf0(long user_index)
 	{
 		s_location location;
 		function_11bed0(&location, &point);
-		bool narrow;
+		bool narrow = false;
 		if (location.cluster_index != NONE)
 		{
 			s_16e210_match_view *geometry = (s_16e210_match_view *)g_4e0348;
-			signed char reference = geometry->clusters[location.cluster_index].cluster_reference;
-			if (reference != NONE)
+			s_16e210_cluster *cluster = &geometry->clusters[location.cluster_index];
+			if (cluster->cluster_reference != NONE)
 			{
 				s_camera_clip_reference_16ebf0 *entry =
-					&((s_camera_clip_reference_16ebf0 *)geometry->references)[reference & 0x7f];
+					&((s_camera_clip_reference_16ebf0 *)geometry->references)[cluster->cluster_reference & 0x7f];
 				if (entry->index != NONE)
 				{
-					narrow = reference >= 0 ||
-						entry->plane.j * point.y + entry->plane.k * point.z + entry->plane.i * point.x - entry->plane.d < 0.0f;
+					narrow = !(cluster->cluster_reference & 0x80) ||
+						entry->plane.i * point.x + entry->plane.k * point.z + entry->plane.j * point.y - entry->plane.d < 0.0f;
 				}
-				else narrow = false;
 			}
-			else narrow = false;
 		}
-		else narrow = false;
 		real fraction;
 		point3f *original = original_position;
 		if (function_171d00(original, &point, &fraction, narrow))

@@ -56,6 +56,51 @@ void line_query_2dddf0::function_2dddf0(__m128 const *first_point, __m128 const 
 	*distance_squared = dot3_2dddf0(offset, offset);
 }
 
+// Havok (third-party physics library): the point of a segment closest to a
+// given point.
+#include <xmmintrin.h>
+
+class segment_2ddfc0
+{
+public:
+	void function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out);
+};
+
+// three-term dot product of two vectors
+inline void dot3_2ddfc0(float *result, __m128 const &a, __m128 const &b)
+{
+	__m128 const product = _mm_mul_ps(a, b);
+	_mm_store_ss(result, _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product)));
+}
+
+// out: start when the point projects before it, end when it projects past
+// it, else the projection itself
+// @retail 0x2ddfc0
+void segment_2ddfc0::function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out)
+{
+	__m128 const b = start;
+	__m128 const c = end;
+	__m128 const direction = _mm_sub_ps(c, b);
+	__m128 const product = _mm_mul_ps(direction, _mm_sub_ps(b, point));
+	float along;
+	_mm_store_ss(&along, _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product)));
+	float length_squared;
+	dot3_2ddfc0(&length_squared, direction, direction);
+	if ((along = -along) <= 0.0f)
+	{
+		out = b;
+	}
+	else if (along >= length_squared)
+	{
+		out = c;
+	}
+	else
+	{
+		__m128 const single = _mm_set_ss(along / length_squared);
+		out = _mm_add_ps(b, _mm_mul_ps(_mm_shuffle_ps(single, single, 0), direction));
+	}
+}
+
 // @flags /O2 /GL- /GX
 // Havok (third-party physics library): casting a segment against a capsule.
 // A segment starting inside misses; otherwise the closest points of the
@@ -65,15 +110,10 @@ void line_query_2dddf0::function_2dddf0(__m128 const *first_point, __m128 const 
 #include <math.h>
 #include <xmmintrin.h>
 #include "unknown_0a9f20.h"
+#include "unknown_1c58f0.h"
 
 static __declspec(align(16)) const float g_412420[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-// a value in the first term of a vector (src/unknown_1c58f0.cpp)
-struct s_1c58f0
-{
-	__m128 field_0;
-	s_1c58f0(real arg_0);
-};
 
 // the sphere an end cap is cast as (src/unknown_2def90.cpp; its base's
 // destructor is 0xdc370)
@@ -87,13 +127,6 @@ public:
 };
 
 #include "sphere_2deda0.h"
-
-// the point of a segment closest to a point (src/unknown_2ddfc0.cpp)
-class segment_2ddfc0
-{
-public:
-	void function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out);
-};
 
 // a segment cast at an end cap, as the sphere's cast takes it
 struct cap_segment_2de1b0
@@ -128,12 +161,23 @@ __forceinline __m128 inverse_sqrt_2de1b0(__m128 const &value)
 	return _mm_mul_ss(_mm_mul_ss(half, estimate), _mm_sub_ss(three, _mm_mul_ss(_mm_mul_ss(value, estimate), estimate)));
 }
 
+// the same, for a single value
+__forceinline __m128 inverse_sqrt_single_2de1b0(__m128 const &value)
+{
+	__m128 const half = _mm_set_ss(0.5f);
+	__m128 const three = _mm_set_ss(3.0f);
+	__m128 const estimate = _mm_rsqrt_ss(value);
+	return _mm_mul_ss(_mm_mul_ss(half, estimate), _mm_sub_ss(three, _mm_mul_ss(_mm_mul_ss(value, estimate), estimate)));
+}
+
 // the point a fraction of the way from a to b
 __forceinline __m128 interpolate_2de1b0(__m128 const &a, __m128 const &b, float fraction)
 {
-	__m128 scale = _mm_load_ss(&fraction);
-	scale = _mm_shuffle_ps(scale, scale, 0);
-	return _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a), _mm_mul_ps(scale, b));
+	__m128 const scale = _mm_set_ps1(fraction);
+	__m128 first = _mm_sub_ps(*(__m128 const *)g_412420, scale);
+	first = _mm_mul_ps(first, a);
+	__m128 const second = _mm_mul_ps(scale, b);
+	return _mm_add_ps(first, second);
 }
 
 class capsule_2de1b0
@@ -146,7 +190,31 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 257 (was 340): Earlier callee placement reduces the frame from 0xd8
+// MATCH (was 2): the blend's first product reuses its weight's variable
+// (`first = 1 - scale; first *= a`), so `first` is one variable with six
+// references; it is then given its register before `start`, and the entry point
+// takes the same register as `first`, which retail spills after the dot product's
+// multiply.
+// Before, 2 (was 12): the vector constructor's body is visible here
+// (include/unknown_1c58f0.h), so the compiler knows its call leaves the ones vector
+// alone and keeps one load of it across the call, reloaded in the side blend as
+// retail does; the blend multiplies the scale by `b` and adds the two products
+// first first. Left: retail spills `entry` after the dot product's multiply.
+// Before, 12 (was 150): the closest-point function 0x2ddfc0 is defined in this file,
+// in address order (the caller's frame then keeps `closest` at retail's home), the
+// squared distance and the ray are declared before the two end points (retail's four
+// stores before the first query), and the side blend multiplies `b` by the scale and
+// adds the two products second first, which gives the blend retail's seven
+// instructions and length. Left: retail spills `entry` after the dot product's
+// multiply, not before, and in the side blend forms `scale * b` before it loads the
+// ones.
+// Before, 150 (was 194): the axis is normalized by the single-value inverse square
+// root helper, the normal is formed before the length is stored, and the start
+// fraction divides the named along value directly.
+// Before, 194 (was 257): the single-value inverse square root is its own
+// helper, the blend's two products are named in retail's order, the pulled-back
+// distance is named before it is subtracted, and the sphere is scoped to the call.
+// Before, 257 (was 340): Earlier callee placement reduces the frame from 0xd8
 // to 0xc8 (retail 0xb8), reaches 1435 bytes and keeps the input vectors live.
 // Stack homes and later scalar instructions still differ. Shared inverse 398;
 // placement 257; shared dot 344; endpoint names 257; direct vertices 347;
@@ -176,12 +244,12 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 		}
 	}
 
+	float distance_squared = 3.40282347e+38f;
 	__m128 end = segment->end;
+	__m128 ray = _mm_sub_ps(end, start);
 	__m128 const a = vertices[0];
 	__m128 const b = vertices[1];
-	__m128 ray = _mm_sub_ps(end, start);
 	__m128 axis = _mm_sub_ps(b, a);
-	float distance_squared = 3.40282347e+38f;
 	float ray_fraction;
 	{
 		float axis_fraction;
@@ -202,12 +270,12 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 	if (axis_length_squared > 1.1920929e-07f)
 	{
 		__m128 const sum = length_squared_2de1b0(axis);
-		__m128 scale = inverse_sqrt_2de1b0(sum);
+		__m128 scale = inverse_sqrt_single_2de1b0(sum);
 		scale = _mm_shuffle_ps(scale, scale, 0);
+		normal = _mm_mul_ps(scale, axis);
 		float length;
 		_mm_store_ss(&length, _mm_mul_ss(sum, scale));
 		axis_length = length;
-		normal = _mm_mul_ps(scale, axis);
 	}
 	else
 	{
@@ -219,8 +287,9 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 	float const along = -dot3_2de1b0(ray, normal);
 	ray = _mm_add_ps(ray, _mm_mul_ps(_mm_set_ps1(along), normal));
 	float inverse_length;
-	_mm_store_ss(&inverse_length, inverse_sqrt_2de1b0(length_squared_2de1b0(ray)));
-	ray_fraction -= (float)sqrt(radius * radius - distance_squared) * inverse_length;
+	_mm_store_ss(&inverse_length, inverse_sqrt_single_2de1b0(length_squared_2de1b0(ray)));
+	float const back = (float)sqrt(radius * radius - distance_squared) * inverse_length;
+	ray_fraction = ray_fraction - back;
 	if (ray_fraction > 1.0f)
 	{
 		return answer_2deda0(false);
@@ -234,7 +303,9 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 		// the side
 		s_1c58f0 const fraction(entry_along / axis_length);
 		__m128 const scale = _mm_shuffle_ps(fraction.field_0, fraction.field_0, 0);
-		__m128 const on_axis = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a), _mm_mul_ps(scale, b));
+		__m128 const second = _mm_mul_ps(scale, b);
+		__m128 const first = _mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a);
+		__m128 const on_axis = _mm_add_ps(first, second);
 		__m128 const outward = _mm_sub_ps(entry, on_axis);
 		__m128 const inverse = inverse_sqrt_2de1b0(length_squared_2de1b0(outward));
 		hit->normal = _mm_mul_ps(_mm_shuffle_ps(inverse, inverse, 0), outward);
@@ -245,8 +316,8 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 
 	// an end cap: none when the start is outside the capsule's radius and
 	// the line entered behind it
-	float const start_fraction = (dot3_2de1b0(start, normal) - a_along) / axis_length;
-	__m128 const start_on_axis = interpolate_2de1b0(a, b, start_fraction);
+	float const start_along = dot3_2de1b0(start, normal) - a_along;
+	__m128 const start_on_axis = interpolate_2de1b0(a, b, start_along / axis_length);
 	float start_distance;
 	_mm_store_ss(&start_distance, _mm_sqrt_ss(length_squared_2de1b0(_mm_sub_ps(start, start_on_axis))));
 	if (start_distance > radius && ray_fraction < 0.0f)
@@ -267,6 +338,8 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 	}
 	cap.start = start;
 	cap.end = end;
-	c_2def90 sphere(radius);
-	return ((sphere_2deda0 const *)&sphere)->function_2deda0((segment_2deda0 const *)&cap, hit);
+	{
+		c_2def90 sphere(radius);
+		return ((sphere_2deda0 const *)&sphere)->function_2deda0((segment_2deda0 const *)&cap, hit);
+	}
 }

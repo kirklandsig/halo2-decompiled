@@ -10,7 +10,7 @@
 #include <float.h>
 #include "unknown_25fc30.h"
 
-bool function_2624d0(s_261d20_entry *entry, s_reference reference);
+bool function_2624d0(s_reference reference, s_261d20_entry *entry);
 __declspec(noinline) bool function_260160(long actor_index, s_prop_search *search, s_261d20_entry *entry);
 struct s_reference_filter_view;
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference);
@@ -34,7 +34,7 @@ bool function_2613d0(long actor_index, s_reference reference, s_prop_search *sea
 		{
 			struct { s_261d20_entry entry; byte output[0x78]; } evaluation;
 			s_261d20_entry &entry = evaluation.entry;
-			if (function_2624d0(&entry, reference))
+			if (function_2624d0(reference, &entry))
 			{
 				byte *candidate = (byte *)&entry;
 				if (reference.unknown2 & 0x8000)
@@ -101,7 +101,7 @@ s_reference function_261280(s_prop_search *search, long actor_index, s_261d20_en
 	if (REFERENCE_EQUAL(reference, g_470fa0) && !REFERENCE_EQUAL(actor->unknown418, g_470fa0) && actor->unknown3f0)
 	{
 		reference = actor->unknown418;
-		if (entry && function_262b40(reference) && function_2624d0(entry, reference))
+		if (entry && function_262b40(reference) && function_2624d0(reference, entry))
 		{
 			if (request->unknown618)
 			{
@@ -151,7 +151,7 @@ struct s_reference_candidate_view
 };
 
 // @retail 0x2624d0
-bool function_2624d0(s_261d20_entry *entry, s_reference reference)
+bool function_2624d0(s_reference reference, s_261d20_entry *entry)
 {
 	bool result = false;
 	s_type_c3b527 *location = (s_type_c3b527 *)function_262b40(reference);
@@ -326,7 +326,7 @@ short __stdcall function_262180(long actor_index, long block_index, long range_i
                             if (function_2623a0((s_reference_filter_view const *)context, actor_index, actor, reference))
                             {
                                 s_reference_candidate_view *entry = (s_reference_candidate_view *)&entries[*count];
-                                if (function_2624d0((s_261d20_entry *)entry, reference))
+                                if (function_2624d0(reference, (s_261d20_entry *)entry))
                                 {
                                     switch (type)
                                     {
@@ -617,6 +617,9 @@ bool __stdcall function_261ec0(long actor_index, long squad_index, s_261d20_entr
 
 #include "unknown_2605d0.h"
 
+// Matched in a full build with stand-in SDK headers (was 110): function_2624d0 takes the reference first and the
+// entry second. Retail forms the entry address in EDI before it pushes the reference (0x261e5c..0x261e6e), so the
+// reference conflicts with EDI and is read from the stack at both of its uses.
 // @retail 0x261d20
 short __stdcall function_261d20(long actor_index, s_261d20_entry *entries, long maximum_count,
     s_2605d0_request const *request)
@@ -646,7 +649,7 @@ short __stdcall function_261d20(long actor_index, s_261d20_entry *entries, long 
         {
             s_reference reference = { index, (word)(list_index | 0x8000) };
             if (function_2623a0((s_reference_filter_view const *)request, actor_index, actor, reference) &&
-                function_2624d0(&entries[(short)count], reference))
+                function_2624d0(reference, &entries[(short)count]))
             {
                 if (*(short *)(list + 2) == 1)
                     *(short *)((byte *)&entries[(short)count] + 0x5c) = ((short *)(list + 0x444))[index];
@@ -663,7 +666,7 @@ done:
 #include "props.h"
 #include <string.h>
 typedef bool (__stdcall *t_reference_compare)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_reference_compare compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_reference_compare compare, const void *context);
 bool __stdcall function_2600e0(long a, long b, void *unused);
 void __stdcall function_25f7b0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *position);
 void function_270590(s_path_source *source, s_type_c3b527 const *point, long node_index);
@@ -927,7 +930,7 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 			sorted_indices[i] = i;
 		g_51ec9c = count;
 		g_51eca0 = positions;
-		sort_4byte(sorted_indices, count, &sort_scratch, (t_reference_compare)function_2600e0, NULL);
+		sort_4byte(&sort_scratch, sorted_indices, count, (t_reference_compare)function_2600e0, NULL);
 		context->unknown680 = 0.0f;
 		bool possible = true;
 		for (long evaluator = 0; g_44adf0[evaluator].proc && possible; evaluator++)
@@ -998,6 +1001,17 @@ long function_baf80(long object_index);
 long function_1e4a10(long index);
 long function_1e4990(long index);
 void *function_1e5280(long actor_index, long key);
+void *function_1e5240(long actor_index);
+#include "unknown_26b230.h"
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
+struct s_node_view;
+void function_26be00(long actor_index, s_iterator *iterator);
+s_node_view *function_26be30(s_iterator *iterator);
 long function_1e1f20(long actor_index);
 bool function_1e1e50(long actor_index, vector3f *direction);
 bool function_267840(long actor_index, long prop_index, vector3f *direction);
@@ -1005,21 +1019,65 @@ struct s_bsp3d;
 extern s_bsp3d *g_4e033c;
 long function_14a280(s_bsp3d *bsp, long index, point3f *point);
 
+// score 433 (was 433): retail calls 0x25d740 where ours inlines it (+11 instructions mid-body, so the positional score
+// stays high), spills the actor offset at +0x18 for the inlined prop iterator start, and copies the speed field to
+// +0x1c through EDX after storing it. M3 lane 12 r139: weapon properties through 0x1e5240, the action-state test
+// through 0xe70b0, the lookups through prop_node_get/object_get/element_502420_get and the member loop through
+// element_502420_member_next 433 (same code, kept). Not kept: the first group loop through 0x26be00/0x26be30 543
+// (retail's loop shape); the request type read at each use 576, with the loop 559 (prologue and frame 0x1c exact);
+// on that, the 0x53/0x644 flags stored as bool, the root object by if-else and the group flag by one if 568 together
+// (structurally closest: aligned 103 against 389 at the start); the group-flag if alone 411 but its direct form 535;
+// the speed copy as a long or 4-byte memcpy 507 (diagnostic: retail's EDX copy); the copy or store through the typed
+// context field 559; distance3d 566 (other square order); vector3d_from_points3d + magnitude3d 574 (magnitude3d out
+// of line); the target point's fields through a point pointer 568. 0x25d740: through prop_node_view or
+// prop_node_state 568; under a node test 538 (not folded); under the already-tested prop index 357 at 2067 bytes, as
+// the one pragma diagnostic (an always-true test: not keepable); its own body through tracking_get, prop_ref_view or
+// an index local still inlines; with the view chosen by a ternary (42 bytes) it stays out of line here (357) and its
+// matched callers still match, early returns (39 bytes) break every caller. Lead: those structural forms together
+// once 0x25d740 is called (BLOCKED-BY 0x25d740's inlining at this call site).
+// Frame 0x18 versus 0x1c, actor displacement and early speed publication differ.
+// Round 415. shared actor displacement with explicit speed result 554, per-branch speed store 551, full-width
+// default copy 551, typed unit choice 554, prop capacity after each visit 539, prop capacity on insert 549, typed
+// group slots 554, typed actor walk 554. The 0x1c frame returns, with the displacement at +0x1c against retail +0x18.
+// M3 lane 12 r141: the distance through vector3d_from_points3d + the existing magnitude3d 433 (kept: retail expands
+// both; r139's 574 was a fast-image artefact, magnitude3d's file was not in the reduced image, so list 0x24590).
+// The body MATCHES byte for byte (fast and plain, 2059 bytes) once 0x25d740 is called, measured with the one pragma
+// diagnostic (inline_depth(0) around that call, not kept): r139's lead (first loop through 0x26be00/0x26be30 with
+// iterator.index passed to 0x267840, the request type read at each use, the 0x53/0x644 flags stored as bool, the
+// group flag set by one if) plus the speed stored in each arm of an if/else-if chain (retail stores after the join
+// and copies +0x18 to +0x1c from memory), the root as `if (type || (root = parent) == NONE) root = node object`,
+// and the +0x60c point in a pointer local declared before the unit choice. With the getter expanded (the real link)
+// that body scores 461 (2095 bytes), so it is not kept; full diff in build/r141/held-261510.patch. Steps on the way
+// (called / expanded): lead 357/568; + distance3d 314 (orig 441; `fmulp` shape, not this helper); + magnitude3d
+// 317/567; + per-arm speed stores 250/463 (orig 540); root as a ternary in the call or into the local 250, parent
+// read first 376, assigned in the test 3; unit choice as a ternary argument (either sense), if/else or a ternary
+// local 3 each, the pointer local MATCH.
+// Why the getter is expanded here: the link's inliner goes by the callee's compiled size, the site's static
+// frequency (halved per enclosing test, else arm, && operand, early return or switch case; a loop gives back three)
+// and a limit that rises with program size. It expands 0x25d740 under up to 3 tests and calls it under 4; retail
+// expands it under 2 (0x1b57f0, 0x1b5aa0, 0x1b2630) and calls it under 3 (here, 0x1aa0d0, and 0x1b7b90, 0x1b4560,
+// 0x1b4680, which carry the pragma on main). Caller size, argument/result spelling, other callers, `inline`,
+// wrappers, member or convention forms do not move it, and every spelling of the getter that compiles to the same
+// 13 instructions measures the same (9 screened), so no source form here or in 0x25d740 changes it: BLOCKED-BY the
+// link's inline limit for 0x25d740 at 3-test sites (build calibration; or the ruling on the pragma). A call nested
+// in an expanded helper is decided inside that helper before constant arguments fold (a constant-guarded helper
+// keeps the getter out of line), but retail has no out-of-line copy of this target block to justify one.
 // @retail 0x261510
 void __stdcall function_261510(long actor_index, s_2605d0_request const *request)
 {
  byte *actor = (byte *)actor_get(actor_index);
  byte *parameters = (byte *)request;
- short type = request->type;
- *(real *)(parameters + 0x18) = *(short *)(actor + 0x270) > 0 ? 80.0f : actor[0x229] ? 30.0f : 15.0f;
+ if (*(short *)(actor + 0x270) > 0) *(real *)(parameters + 0x18) = 80.0f;
+ else if (actor[0x229]) *(real *)(parameters + 0x18) = 30.0f;
+ else *(real *)(parameters + 0x18) = 15.0f;
  if (*(real *)(parameters + 0x1c) == 0.0f) *(real *)(parameters + 0x1c) = *(real *)(parameters + 0x18);
+ point3f *origin = (point3f *)(parameters + 0x60c);
  long unit_index = *(long *)(actor + 0x26c);
  if (unit_index == NONE) unit_index = *(long *)(actor + 0x18);
- function_1caa40(unit_index, (point3f *)(parameters + 0x60c));
- type = request->type;
- parameters[0x53] = type == 5 || type == 8 || type == 3;
+ function_1caa40(unit_index, origin);
+ *(bool *)(parameters + 0x53) = request->type == 5 || request->type == 8 || request->type == 3;
  parameters[0x618] = 0;
- if (type == 4) parameters[0x618] = 0;
+ if (request->type == 4) parameters[0x618] = 0;
  else if (parameters[0x20])
  {
   *(point3f *)(parameters + 0x620) = *(point3f *)(parameters + 0x24);
@@ -1027,27 +1085,28 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
   *(long *)(parameters + 0x64c) = *(long *)(parameters + 0x40);
   parameters[0x618] = 1;
   *(short *)(parameters + 0x660) = *(short *)(parameters + 0x44);
-  double x = (double)*(real *)(parameters + 0x620) - *(real *)(actor + 0x238);
-  double y = (double)*(real *)(parameters + 0x624) - *(real *)(actor + 0x23c);
-  double z = (double)*(real *)(parameters + 0x628) - *(real *)(actor + 0x240);
+  vector3f delta;
+  vector3d_from_points3d((point3f *)(actor + 0x238), (point3f *)(parameters + 0x620), &delta);
   *(long *)(parameters + 0x664) = NONE;
   *(long *)(parameters + 0x648) = NONE;
   *(real *)(parameters + 0x678) = 0.0f;
-  *(real *)(parameters + 0x61c) = (real)sqrt(z * z + y * y + x * x);
+  *(real *)(parameters + 0x61c) = magnitude3d(&delta);
   function_1e3b00(*(long *)(actor + 0x18), 1, (point3f *)(parameters + 0x620), NULL, NULL, (point3f *)(parameters + 0x62c));
   *(point3f *)(parameters + 0x638) = *(point3f *)(parameters + 0x62c);
  }
  else
  {
   long prop_index;
-  if (type == 1) prop_index = *(long *)(actor + 0x344);
+  if (request->type == 1) prop_index = *(long *)(actor + 0x344);
   else prop_index = *(long *)(actor + 0x338);
   if (prop_index != NONE)
   {
-   s_prop_node *node = (s_prop_node *)(g_502418->data + (prop_index & 0xffff) * 0x3c);
+   s_prop_node *node = (s_prop_node *)prop_node_get(prop_index);
    s_type_5cfb45 *state = function_25d690(node);
+#pragma inline_depth(0)
    s_type_f95cd3 *tracking = function_25d740(node);
-   byte *object = *(byte **)(g_4e0300->data + (node->object_index & 0xffff) * 12 + 8);
+#pragma inline_depth()
+   byte *object = (byte *)object_get(node->object_index);
    function_26c2d0(prop_index);
    parameters[0x618] = 1;
    *(point3f *)(parameters + 0x620) = state->position;
@@ -1058,10 +1117,10 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
    *(long *)(parameters + 0x664) = prop_index;
    *(point3f *)(parameters + 0x62c) = *(point3f *)((byte *)state + 0x30);
    *(long *)(parameters + 0x648) = NONE;
-   long root = node->object_index;
-   if (!object[0xaa] && *(long *)(object + 0x14) != NONE) root = *(long *)(object + 0x14);
+   long root;
+   if (object[0xaa] || (root = *(long *)(object + 0x14)) == NONE) root = node->object_index;
    *(long *)(parameters + 0x648) = function_baf80(root);
-   if (type == 2 && ((1 << object[0xaa]) & 3) && node->unknown27 < 1 && tracking && tracking->unknown10 >= 0)
+   if (request->type == 2 && ((1 << object[0xaa]) & 3) && node->unknown27 < 1 && tracking && tracking->unknown10 >= 0)
    {
     point3f point;
     function_210850((s_type_c3b527 *)((byte *)tracking + 0x18), &point);
@@ -1078,17 +1137,11 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
     parameters[0x668] = 1;
     *(vector3f *)(parameters + 0x66c) = tracking->unknown94;
    }
-   parameters[0x644] = type == 4 || type == 6;
+   *(bool *)(parameters + 0x644) = request->type == 4 || request->type == 6;
   }
  }
- if (parameters[0x618] && (type == 0 || type == 3 || type == 2 || type == 6)) parameters[0x55] = 1;
- long weapon = function_1e1f20(actor_index);
- byte *local_67e06b_2 = NULL;
- if (weapon != NONE)
- {
-  byte *object = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
-  local_67e06b_2 = (byte *)function_1e5280(actor_index, *(long *)object);
- }
+ if (parameters[0x618] && (request->type == 0 || request->type == 3 || request->type == 2 || request->type == 6)) parameters[0x55] = 1;
+ byte *local_67e06b_2 = (byte *)function_1e5240(actor_index);
  if (local_67e06b_2)
  {
   vector3f *direction = (vector3f *)(local_67e06b_2 + 0x60);
@@ -1103,8 +1156,7 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
 weapon_done:
  if (*(short *)(actor + 0x358) > 0)
  {
-  long index = *(long *)(actor + 0x368);
-  byte *node = g_502418->data + (index & 0xffff) * 0x3c;
+  byte *node = (byte *)prop_node_get(*(long *)(actor + 0x368));
   if (*(short *)(node + 0x24) >= 1 && *(real *)(actor + 0x39c) + 3.0f > *(real *)(actor + 0x394)) parameters[0x51] = 1;
  }
  if (*(short *)(actor + 0x270) == 4) { parameters[0x5b] = 1; parameters[0x5c] = 1; }
@@ -1120,8 +1172,7 @@ weapon_done:
    parameters[0x58] = 1;
   }
   else parameters[0x59] = 0;
-  byte *object = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
-  if (*(short *)(object + *(short *)(object + 0x346) + 0x36) == 5)
+  if (function_e70b0(*(long *)(actor + 0x18)).value == 5)
   {
    byte *definition = (byte *)function_1e4990(*(long *)(actor + 0x54));
    if (definition && !(definition[0] & 2) && (movement[0] & 0x20)) parameters[0x56] = 1;
@@ -1132,24 +1183,23 @@ weapon_done:
  *(short *)(parameters + 0x276) = 0;
  *(short *)(parameters + 0x278) = 0;
  bool group = false;
- long group_index = *(long *)(actor + 0x7c);
- if (*(short *)(actor + 0x86) >= 5 && group_index != NONE)
-  group = *(short *)(g_502420->data + (group_index & 0xffff) * 0x50 + 0x10) > 1;
+ if (*(short *)(actor + 0x86) >= 5 && *(long *)(actor + 0x7c) != NONE &&
+  element_502420_get(*(long *)(actor + 0x7c))->member_count > 1)
+  group = true;
  switch (request->type)
  {
  case 0: case 2: case 3: case 6:
   if (group)
   {
-   long index = *(long *)(actor + 0x58);
-   while (index != NONE && *(short *)(parameters + 0x274) < 32)
+   s_iterator iterator;
+   s_prop_node *node;
+   function_26be00(actor_index, &iterator);
+   while (*(short *)(parameters + 0x274) < 32 && (node = (s_prop_node *)function_26be30(&iterator)) != NULL)
    {
-    s_prop_node *node = (s_prop_node *)(g_502418->data + (index & 0xffff) * 0x3c);
-    long current = index;
-    index = node->next_index;
     s_type_5cfb45 *state = function_25d690(node);
     s_type_76cf92 *prop = prop_get(node->prop_index);
     vector3f direction;
-    if (node->state >= 1 && !state->unknown5e && !prop->unknown23 && prop->unknown25 && function_267840(actor_index, current, &direction))
+    if (node->state >= 1 && !state->unknown5e && !prop->unknown23 && prop->unknown25 && function_267840(actor_index, iterator.index, &direction))
     {
      *(short *)(parameters + 0x27c + *(short *)(parameters + 0x274) * 0x1c) = 1;
      *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = state->position;
@@ -1158,17 +1208,18 @@ weapon_done:
      ++*(short *)(parameters + 0x276);
     }
    }
-   group_index = *(long *)(actor + 0x7c);
+   long group_index = *(long *)(actor + 0x7c);
    if (group_index != NONE)
    {
-    index = *(long *)(g_502420->data + (group_index & 0xffff) * 0x50 + 0x18);
-    while (*(short *)(parameters + 0x274) < 32 && index != NONE)
+    s_element_502420_member_iterator members;
+    s_actor_view *member;
+    members.next_index = element_502420_get(group_index)->first_actor_index;
+    members.index = NONE;
+    while (*(short *)(parameters + 0x274) < 32 && (member = element_502420_member_next(&members)) != NULL)
     {
-     byte *other = g_4f55f0->data + (index & 0xffff) * 0x888;
-     long current = index;
-     index = *(long *)(other + 0x80);
+     byte *other = (byte *)member;
      vector3f direction;
-     if (other != actor && function_1e1e50(current, &direction))
+     if (other != actor && function_1e1e50(members.index, &direction))
      {
       *(short *)(parameters + 0x27c + *(short *)(parameters + 0x274) * 0x1c) = 0;
       *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = *(point3f *)(other + 0x238);

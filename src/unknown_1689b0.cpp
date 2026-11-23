@@ -607,6 +607,10 @@ bool function_1eff40(s_lookup *lookup, long flags, point3f const *point,
 	vector3f const *direction, s_lookup_ray_result *result);
 short *function_d8ae0(long object_index, long region_index, short *material);
 
+// Matched in a full build with stand-in SDK headers (was 12): the material type is stored through a pointer to the
+// field, and the material buffer is two words with the second passed (retail passes esp+0x1a, the second word of a
+// 4-byte cell; the first word is never written, so the exact type of the local is a guess).
+// Before:
 // score 12 (was 26): the material local sits at esp+0x18 where retail has
 // esp+0x1a, and the material store is scheduled after the hit copies; tried
 // the local declared first, between found and lookup, in the inner block and
@@ -618,7 +622,7 @@ bool __stdcall function_169510(long object_index, bool a, dword flags, dword tes
 	bool found = false;
 	s_lookup lookup;
 	s_lookup_ray_result hit;
-	short material;
+	short material[2];
 	do
 	{
 		s_collision_object_header *header = &((s_collision_object_header *)g_4e0300->data)[object_index & 0xffff];
@@ -631,7 +635,8 @@ bool __stdcall function_169510(long object_index, bool a, dword flags, dword tes
 			if (lookup_pointer->initialize(object_index) && function_1eff40(lookup_pointer, test_flags, point, vector, &hit) && result->t > hit.hit.t)
 			{
 				result->type = 4;
-				result->material_type = *function_d8ae0(lookup.handle, hit.hit.surface_index, &material);
+				short *material_type = (short *)&result->material_type;
+				*material_type = *function_d8ae0(lookup.handle, hit.hit.surface_index, &material[1]);
 				result->instance_index = NONE;
 				result->unknown3c = NONE;
 				*(short *)result->unknown44 = hit.item;
@@ -710,8 +715,8 @@ extern short g_4686c4;
 extern short g_47d8e0;
 extern byte *g_4ed280;
 #include "cluster_marks_storage.h"
-long g_4e7c1c;
-bool g_4e7c18;
+#include "instance_marks_storage.h"
+s_instance_marks_storage g_instance_marks_storage;
 extern s_bsp3d *g_4e033c;
 
 static inline long collision_leaf_cluster(long leaf_index)
@@ -824,33 +829,21 @@ inline bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 	return result;
 }
 
-// score 25 (was 25): plane k/j product operands at +0x314, late i/y
-// products and success-result reload differ; single plane k/j snapshots
-// 340/357; start z/y 124/124; movement j 56; plane k+j 390;
-// correction movement i 56; start z+y 157; the found path's `result = true;` dropped 92
-// (retail's single result-reload exit, but the reload is hoisted onto two inner paths);
-// `return true;` there 25; point/vector read directly in the plane distances 124; the k/j
-// plane terms through `instanced_plane->plane` 177 (both k products then load the plane
-// first, as retail; j does not, and the stepping block grows); the j operands swapped 25.
-// Round 57: plane->n products 25; a typed normal pointer for all/k-only/j-only products
-// 25/25/25; normal k/j with plane i 56; direct entry k-only/j-only 25/25; return the existing
-// result from the successful correction branch 24 (one-point gain and 2168 bytes, restored).
 // @retail 0x1697c0
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision)
 {
 	vector3f const * *vector_reference = &vector;
 	point3f const * *point_reference = &point;
-	long *flags_reference = &flags;
 	s_1697c0_bsp *bsp;
 	bool result = false;
 	dword test_flags;
 	s_collision_bsp_test_vector_result bsp_result;
 	bsp = (s_1697c0_bsp *)g_4e0348;
 
-	if (!((*flags_reference) & 0x1800000))
+	if (!(flags & 0x1800000))
 	{
-		(*flags_reference) |= 0x1800000;
+		flags |= 0x1800000;
 	}
 	collision->t = 1.0f;
 	collision->type = 0;
@@ -859,9 +852,9 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 	collision->instance_index = NONE;
 	collision->unknown3c = NONE;
 	collision->unknown40 = NONE;
-	test_flags = collision_flags_to_test_flags((*flags_reference));
+	test_flags = collision_flags_to_test_flags(flags);
 	if (function_1de630(test_flags, g_4e0340, &bsp_result, 3.4028235e38f, 0x100, g_4ed280 + g_4686c4 * 0x20 + 1, (*point_reference),
-		(*vector_reference)) && ((*flags_reference) & 1))
+		(*vector_reference)) && (flags & 1))
 	{
 		short surface_index = bsp_result.surface_index;
 		short const *material_type;
@@ -913,24 +906,24 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 		collision->end_location.cluster_index = (short)collision_leaf_cluster(leaf_index);
 		collision->end_location.bsp_index = g_4686c4;
 
-		if (((*flags_reference) & 0xe) && (!result || !((*flags_reference) & 0x10000000)))
+		if ((flags & 0xe) && (!result || !(flags & 0x10000000)))
 		{
 			long leaf;
 
 			g_4e7414++;
 			g_4e7411 = true;
-			if ((*flags_reference) & 4)
+			if (flags & 4)
 			{
 				g_4e7c1c++;
 				g_4e7c18 = true;
 			}
-			if ((*flags_reference) & 8)
+			if (flags & 8)
 			{
 				g_4de2fc++;
 				g_4de2f8 = true;
-				if (!((*flags_reference) & 0x1fff0))
+				if (!(flags & 0x1fff0))
 				{
-					(*flags_reference) |= 0x1fff0;
+					flags |= 0x1fff0;
 				}
 			}
 			for (leaf = 0; leaf < bsp_result.leaf_count; leaf++)
@@ -944,7 +937,7 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 				g_4e7418[(short)cluster_index] = g_4e7414;
 				s_1697c0_cluster *cluster = &bsp->clusters[cluster_index];
 
-				if ((*flags_reference) & 2)
+				if (flags & 2)
 				{
 					long reference = cluster->instanced_plane_reference;
 
@@ -955,14 +948,8 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 
 						if (instanced_plane->material_type != NONE)
 						{
-							plane3f const *plane = &instanced_plane->plane;
-							real point_distance = plane->k * (*point_reference)->z;
-							point_distance += plane->j * (*point_reference)->y;
-							point_distance += plane->i * (*point_reference)->x;
-							point_distance -= plane->d;
-							real vector_distance = plane->k * (*vector_reference)->k;
-							vector_distance += plane->j * (*vector_reference)->j;
-							vector_distance += plane->i * (*vector_reference)->i;
+							real point_distance = plane_distance_to_point(&instanced_plane->plane, (*point_reference));
+							real vector_distance = dot3f((*vector_reference), &instanced_plane->plane.n);
 
 							if ((point_distance > 0.0f) != (vector_distance > 0.0f))
 							{
@@ -979,7 +966,7 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 										collision->type = 2;
 										collision->t = t;
 										collision->material_type = instanced_plane->material_type;
-										collision->plane = *plane;
+										collision->plane = instanced_plane->plane;
 										if (behind)
 										{
 											plane_negate_168b40(&collision->plane, &collision->plane);
@@ -993,27 +980,27 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 							}
 						}
 					}
-					if (result && ((*flags_reference) & 0x10000000))
+					if (result && (flags & 0x10000000))
 					{
 						break;
 					}
 				}
-				if ((*flags_reference) & 4)
+				if (flags & 4)
 				{
-					if (function_244980(cluster_index, (*point_reference), (*vector_reference), (*flags_reference), test_flags, collision))
+					if (function_244980(cluster_index, (*point_reference), (*vector_reference), flags, test_flags, collision))
 					{
 						result = true;
 					}
-					if (result && ((*flags_reference) & 0x10000000))
+					if (result && (flags & 0x10000000))
 					{
 						break;
 					}
 				}
-				if ((*flags_reference) & 8)
+				if (flags & 8)
 				{
 					s_object_cluster_reference *reference = NULL;
-					word object_flags = collision_flags_to_object_flags((*flags_reference));
-					word type_mask = (word)(((dword)(*flags_reference) >> 4) & 0x1fff);
+					word object_flags = collision_flags_to_object_flags(flags);
+					word type_mask = (word)(((dword)flags >> 4) & 0x1fff);
 					s_object_cluster_iterator iterator;
 					long object_index;
 
@@ -1030,27 +1017,27 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 						if ((type_mask & (1 << reference->type)) && !(reference->flags & object_flags) &&
 							function_11e5e0((*point_reference), (*vector_reference), &reference->center, reference->radius) &&
 							object_index != ignore_object_index && object_index != ignore_unit_index &&
-							function_169510(object_index, true, (*flags_reference), test_flags, (*point_reference), (*vector_reference), ignore_object_index,
+							function_169510(object_index, true, flags, test_flags, (*point_reference), (*vector_reference), ignore_object_index,
 								ignore_unit_index, collision))
 						{
 							result = true;
 						}
-						if (result && ((*flags_reference) & 0x10000000))
+						if (result && (flags & 0x10000000))
 						{
 							break;
 						}
 					}
-					if (result && ((*flags_reference) & 0x10000000))
+					if (result && (flags & 0x10000000))
 					{
 						break;
 					}
 				}
 			}
-			if ((*flags_reference) & 8)
+			if (flags & 8)
 			{
 				g_4de2f8 = false;
 			}
-			if ((*flags_reference) & 4)
+			if (flags & 4)
 			{
 				g_4e7c18 = false;
 			}
@@ -1059,7 +1046,7 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 	}
 
 	point_along_vector_1696d0((*point_reference), (*vector_reference), collision->t, &collision->point);
-	if (result && ((*flags_reference) & 0x20000000))
+	if (result && (flags & 0x20000000))
 	{
 		s_bsp3d *surface_bsp;
 
@@ -1071,48 +1058,46 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 		{
 			surface_bsp = NULL;
 		}
-		if (collision->end_location.leaf_index != NONE &&
-			function_14a280(g_4e033c, 0, &collision->point) != collision->end_location.leaf_index ||
-			surface_bsp && collision->bsp_surface_reference[0] != NONE &&
-			function_14a280(surface_bsp, 0, &collision->point) != collision->bsp_surface_reference[0])
+		if ((collision->end_location.leaf_index == NONE ||
+			function_14a280(g_4e033c, 0, &collision->point) == collision->end_location.leaf_index) &&
+			(!surface_bsp || collision->bsp_surface_reference[0] == NONE ||
+			function_14a280(surface_bsp, 0, &collision->point) == collision->bsp_surface_reference[0]))
 		{
-			point_along_vector_1696d0(&collision->point, (vector3f const *)&collision->plane, 0.000244140625f, &collision->point);
-			function_11bed0((s_location *)&collision->end_location, &collision->point);
-			if (collision->end_location.leaf_index == NONE ||
-				surface_bsp && function_14a280(surface_bsp, 0, &collision->point) == NONE)
-			{
-				real normal_speed = collision->plane.k * (*vector_reference)->k;
-				normal_speed += collision->plane.j * (*vector_reference)->j;
-				normal_speed += (*vector_reference)->i * collision->plane.i;
-				real step;
-
-				if (normal_speed != 0.0f)
-				{
-					step = 0.000244140625f / (real)fabs(normal_speed);
-				}
-				else
-				{
-					step = 0.03125f;
-				}
-				do
-				{
-					real t = collision->t - step;
-
-					if (!(t > 0.0f))
-					{
-						t = 0.0f;
-					}
-					collision->t = t;
-					point_along_vector_1696d0((*point_reference), (*vector_reference), t, &collision->point);
-					function_11bed0((s_location *)&collision->end_location, &collision->point);
-				}
-				while (!(collision->t <= 0.0f) && (collision->end_location.leaf_index == NONE ||
-					surface_bsp && function_14a280(surface_bsp, 0, &collision->point) == NONE));
-			}
+			goto done;
 		}
-		result = true;
+
+		point_along_vector_1696d0(&collision->point, (vector3f const *)&collision->plane, 0.000244140625f, &collision->point);
+		function_11bed0((s_location *)&collision->end_location, &collision->point);
+		if (collision->end_location.leaf_index == NONE ||
+			surface_bsp && function_14a280(surface_bsp, 0, &collision->point) == NONE)
+		{
+			real normal_speed = collision->plane.k * (*vector_reference)->k;
+			normal_speed += collision->plane.j * (*vector_reference)->j;
+			normal_speed += (*vector_reference)->i * collision->plane.i;
+			real step;
+
+			if (normal_speed != 0.0f)
+			{
+				step = 0.000244140625f / (real)fabs(normal_speed);
+			}
+			else
+			{
+				step = 0.03125f;
+			}
+			do
+			{
+				real t = collision->t - step;
+
+				collision->t = t > 0.0f ? t : 0.0f;
+				point_along_vector_1696d0((*point_reference), (*vector_reference), collision->t, &collision->point);
+				function_11bed0((s_location *)&collision->end_location, &collision->point);
+			}
+			while (!(collision->t <= 0.0f) && (collision->end_location.leaf_index == NONE ||
+				surface_bsp && function_14a280(surface_bsp, 0, &collision->point) == NONE));
+		}
 	}
 
+done:
 	return result;
 }
 
@@ -1402,7 +1387,6 @@ void __stdcall function_16a280(long object_index, dword flags, point3f const *po
     while (object_index != NONE);
 }
 
-extern long g_4e7c20[1024];
 struct s_shapes;
 struct s_shape_counts
 {
@@ -1465,6 +1449,15 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // marks' flag, tick and table (0x4e7c18, 0x4e7c1c, 0x4e7c20) are three separate globals, while the cluster and object
 // marks this function also uses are one storage block each; retail hoists only the instance tick out of its loop
 // (reloading it after the call). The table is defined in src/unknown_1321f0.cpp (a held file), so it was not tried.
+// Round 230 (m3 lane 8, h2m fast over this file's markers plus the six listed above, base 23): that lead is now on main
+// (include/instance_marks_storage.h, one block), and the tick still loads at the loop top. Diagnostics: the tick as a
+// separate scalar global 23; the store going to another block 58; the loop without the store 186; without the call 241:
+// in every one the load stays in the loop, so neither the table store nor the call is what keeps it there. Tried: the
+// test and mark as a forceinline helper returning whether it marked 23; the tick named inside the loop body for the
+// test and the store 23 (both same code); the tick read into a local ahead of the loop and read again after the call
+// 27 (retail's preheader load and reload, but loaded ahead of the count guard and in EAX, the count in EDX); that inside
+// an explicit `if (0 < count)` guard 24 (retail's layout, scratch registers rotated: tick EAX, element pointer ECX,
+// index EDX against retail's EDX/EAX/EAX); that with the dword world mask 218 (898 bytes).
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)
@@ -1571,7 +1564,35 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 606 (was 606): earlier 610, 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
+// score 551 (was 551; m3 lane 2 r139 unchanged, its lines just above the marker): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
+// The projected and first point now have retail's stack homes.
+// MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
+// either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
+// loop guard still differ.
+// Earlier status line, merged in r127 (551, was 551): Frame 0xb964 and the sum, projected point, prism cursor and query-zero homes agree.
+// Count and clearance homes differ, and the radius square precedes the nonempty branch. The axis reload
+// and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
+// Earlier 580.
+// Earlier at 551 (was 580; a second score line, merged in round 211): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// Earlier at 551 (was 551; a stacked score line, merged in lane 8 round 201): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
+// Earlier at 551 (was 580): initial sum homes also agree.
+// Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
+// The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
+// Earlier at 551 (was 551; a stacked score line, merged in lane 8 round 201): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
+// Earlier at 551 differences (was 551): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
+// projected point and first point use retail slots. Count, clearance and prism-index homes differ.
+// The square precedes the nonempty branch. The axis reload and early remainder also differ.
+// Earlier scores 580, 606, 610, 637, 640 and 552.
+// MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
+// Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
+// where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
+// retail's homes (+0x5c, +0x64, +0x68) and the second sits four bytes high (+0x54, +0x58, +0x60 against retail's
+// +0x50, +0x54, +0x60). The successor index and the second point's address taken before the first reconstruction were
+// not re-tried: both move a one-use value ahead of a call.
+// m3 lane 3 r250 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380, control 606): the nearest reset ahead of the
+// plane distance 605 (one store moves); `real offset = 0.0f - distance;` named for the three projected rows 617 (2905 B);
+// the nearest reset and `inside` both at the top of the prism loop 605; relative and edge both through the existing
+// vector3d_from_points3d 612 (2884 B); the two sum initialisations swapped (face first) 609.
 // Earlier first line: score 610 (was 610), the same status.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
@@ -1973,6 +1994,316 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // P538: Unrounded direction-root/contact-root/paired absolute API producers, subsets
 // 1/2/4/3/5/6/7 then complete immutable: 667/667/667/669/667/667/659/659.
 // NOT kept: frame and extent move away; original real consumers, observations, helpers and full geometry restored.
+// M3 lane 16 r127 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0, control 606): composites of the listed match-only
+// forms. Lane 6's second-vertex pointer first re-measured 544; with the ray arms as `if (use_normal) { normal } else { edge }`
+// 525 (2867 B); that plus `radius * radius` at its use 577; plus 0x120790's one-store ternary tail 598 (0x120790 still matched,
+// 0x17dd80 453 unchanged); plus the nearest reset right after the distance 522; on that, a named next index in place of the
+// vertex pointer 595 (frame changes at +0x1); `inside = true` set before the distance 521. Left on 521: retail reads the axis
+// before the early `inc`/`idiv` and keeps the remainder as an index in EDX (the pointer form takes EDI), loads plane.j
+// early for projected.y (load-first product), and the sum homes (face, nearest, edge) still differ.
+// P583: Consumed first-vertex postincrement/second-vertex preincrement with
+// long/int/short/word edge ordinals: 607/607/616/616/598/598/609/609. NOT kept: no exact native early
+// remainder, accumulator or query-zero recovery; original full body and increments restored.
+// M3 lane 7 r172 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 606, aligned 574, masked 397): nothing kept.
+// The counts and radii declared interleaved (edge count, edge radius, face count, face radius) 606, face pair first 606 (same
+// code each); the sums by one chained assignment `face_sum = edge_sum = *g_468788;` 608; `nearest_squared_local` declared
+// between the two sums (retail's face/nearest/edge homes) 606 (same code); both square roots through the existing out-of-line
+// magnitude3d (0x24590, plain check, LTCG inlines it) 606 (same code: the inlined copy still starts with k on the x87 stack);
+// both squared sums written j, k, i 606 (k still first). Retail stores k with fstp and sums i, k, j from memory.
+// M3 lane 13 r104 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380; control 606): the two count declarations
+// moved after the 0x16a440 query 590 (2874 B), the two radius declarations moved there instead 590 (same listing; retail
+// stores both counts and both radii before the call, at interleaved homes count/radius/count/radius, so the gain is a
+// declaration move and not kept); the two sum copies after the query 614 (0xc2d00 and 0x17a380 break in the fast
+// image); counts and radii declared as edge/face pairs 606 (same code); `++count` ahead of the radius minimum 623.
+// M3 lane 3 r256 (fast with 0x16a440, 0x120790, 0x2469b0, 0xc2d00, 0x17a380; control 606, the four matched callees stay
+// MATCH): `radius * radius` written at its use 612 (2895 B); the squared radius declared at the top of the prism loop
+// body 606 (other code, same count); a redundant `if (0 < shapes.counts[2])` around the prism loop with the squared
+// radius inside it 610 (the square then follows the count test as in retail, but the test reloads the count into AX
+// and the zero stays in EBX), with the square at its use 614 (2895 B); the edge loop as `for (edge_index = 0; edge_index
+// < count; )` with `long next_index = edge_index + 1;` at the top (the modulo's input) and `edge_index = next_index;` at
+// the end 637 (2922 B). Reading: retail's edge loop keeps the index in EAX from the back-edge compare into the loop
+// head, so `inc`/`idiv` run first and the successor is stored at once; ours keeps the successor in EBP across the body.
+// Retail tests the edge count and zeroes the index with fresh literals (`test ecx, ecx`, `xor eax, eax`), so its
+// function-level zero dies into the prism cursor (ESI) while ours keeps it in EBX for the edge loop's start.
+// AC564: End-pointer walks, edge < and != 678/678, prism < and != 670/650,
+// both < or != in prism/edge order (<,<), (<,!=), (!=,<), (!=,!=) 726/726/660/660.
+// NOT kept: all increase the score and length. Face-sum home, query-zero register
+// and early signed remainder remain.
+// The sum homes and early remainder still differ with frame 0xb964.
+// Inside accumulated with logical or compound AND 654/645. Outside accumulated with logical or compound OR
+// 661/636. A skip of the exterior edge gives the same respective scores.
+// NOT kept: outside logical OR recovers ESI query zero but moves the outer saves and grows to 2940 bytes.
+// One-based successor for/direct while, preceding ordinal, first-vertex cursor: long
+// 579/579/621/605; short 555/555/617/610. NOT kept: plane-dot reassociation or an extra
+// short-width extension, or no qualifying gain. Long successor with shared plane distance
+// 606, named X/Y sum 606, sequential plane sum 580.
+// Keep the one-based long successor and sequential plane sum: ESI query zero and
+// the original plane-dot association agree. The endpoint remainder still comes late.
+// B460: Endpoint array with direct calls and original/early successor 701/641.
+// Paired vertex-index loop with indexed/cursor/separate outputs 607/607/630.
+// Paired vertex-pointer loop with those outputs 538/538/536. NOT kept: one-use vertex
+// pointers and grouped endpoint outputs in the first two forms. The third has retail's
+// frame, length and ESI query zero, but still has different sum/endpoint homes.
+// Direct one-based end ordinal, early remainder, and test increment 579/623/579.
+// Zero-based advance before/between/within the calls 582/598/607. NOT kept: the
+// 579 and 598 forms still divide after the first reconstruction, and 582 changes
+// the frame. Sum homes, early signed remainder and axis schedule remain. Original body restored.
+// M3 lane 8 r184 (fast and plain with 0x16a440/0x120790/0x2469b0/0x17dd80): kept 0x120790's one-store ternary tail (lane 9
+// r124's lead; retail's two inlined copies here store out[axis] once after the join) 580 -> 551 (2877 B; 0x120790 still
+// matched, 0x17dd80 453 unchanged). On it, match-only: the ray arms as `if (use_normal) { normal } else { edge }` with a
+// 0-based edge loop, `(edge_index + 1) % point_count` named at its top and `radius * radius` at its use 573 (2879 B, frame
+// 0xb968: retail's edge-loop head exactly, but relative.i takes XMM0 where retail has XMM5 and the side cross spills one
+// more value); plus the nearest reset right after the distance 573 (retail's store place); on that, edge computed before
+// relative 581 (2850 B), relative through vector3d_from_points3d 597, both vectors through it 590.
+// Projected-point setter 598, scaled vector sum 629, direct component loop 570,
+// copied origin with component updates 639, separate scaled displacement and add 619,
+// in-place displacement and add 631, in-place scaled sum from copied origin 649,
+// setter with early nearest reset 597. NOT kept: the 570 form grows to 2893
+// bytes and leaves the projected-point homes and late remainder.
+// Component loop with a shared projection scale 614.
+// Count and clearance homes still differ before the query, with the frame and ESI zero intact.
+// Accepted-count names 551; clearance names 551; both 551; both with prism-index name 551.
+// Chained count initialization 551; chained clearance initialization 551; both 553; both with paired names 553.
+// Count and radius homes, nearest-distance storage and signed remainder timing still differ.
+// Tried scalar face sums 601; scalar edge sums 554; scalar face and edge sums 622;
+// scalar sums initialized at the original reads 622; scalar sums initialized through one origin pointer 622;
+// scalar sums with axis-first names 622; component loops for initial sum copies 623;
+// coordinate aggregates for initial sums 643.
+// NOT kept: All eight scores rise. The original sum copies agree with retail.
+// M3 lane 7 r180 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, register-masked aligned 449): the plain
+// zero-based edge loop (`points[edge_index]`, `points[(edge_index + 1) % point_count]`) 602 (2885 B); `bool inside = true;`
+// right after the plane distance 549; the nearest reset right after the plane distance 548 (masked 443; both moves under the
+// keep bar); the plane distance through dot3f 567 (2893 B); the squared radius ahead of the shape query 616 (2857 B).
+// M3 lane 5 r203 (fast with 0x16a440, 0x120790, 0xc2d00, 0x17a380 and 0x2469b0; control 551): both square roots (direction,
+// half) of the sum written `(i*i + k*k) + j*j` 551 (the x87 sums then run k, i, j; retail i, k, j at both sites); the sums
+// accumulated in a double i, k, j 634 (2902 B: retail's order, but the frame grows); the vertex clamp as `count =
+// point_count; if (count > 8) count = 8;` 552; the final averages written inverse first 551 (same code); the ray arms as
+// `if (use_normal) { normal } else { edge }` alone 547 (2868 B, an arm swap under the keep bar).
+// M3 lane 4 r215 (fast, control 551; aligned/masked = difflib-aligned exact/register-masked counts, control 363/139): the
+// edge loop from 0 with `long next_vertex = (vertex + 1) % prism->point_count;` named at its top 619 (2904 B, frame
+// 0xb968, aligned 361, masked 115: the clamp, the early inc/idiv and the loop tail are then retail's shape); with
+// `radius * radius` written in the test (no radius_squared local) 601 (2888 B, aligned 344, masked 114: the product is
+// computed after the guard and `push ebx` as retail; the frame keeps one compiler temporary too many). On that form:
+// the modulo inline in the second reconstruction 600 (frame 0xb964 as retail, but aligned 423, masked 137);
+// radius_squared named in the prism loop 617 (2900 B); first/second declared at prism scope 601 (same code).
+// Lead: the 601 form is the closest structure yet; what is left is one frame temporary and the cursor/point EBX/EBP swap.
+// Separate count/clearance assignments in edge-first or face-first pairs 550/551,
+// edge-first with declarations before the copies or face declarations first 550/550,
+// paired initialization beside each sum or counts beside sums with clearances last 550/551,
+// prism index before the square or square in the admitted loop 551/548.
+// NOT kept: the count and clearance homes remain, and the three-point gain is below the threshold.
+// Squared radius at prism admission 553; nearest measure scoped to the prism 551;
+// one separation for the edge search and interior path 557. Carried wrapped successor
+// with live or retained point count 601/601; first-endpoint cursor 581.
+// Existing point setter for both accumulated sums or both output means 552/551.
+// The count and clearance homes and signed remainder schedule still differ.
+// M3 lane 4 r219 (fast with 0x120790 and 0x2469b0, both MATCH each time; control 551): the edge loop from 0 with
+// `long next_vertex = (vertex + 1) % prism->point_count;` at its top 619 (2904 B, frame 0xb968; re-measure), with
+// `radius * radius` in the test 601 (2888 B), plus the nearest reset after the plane distance 601, plus `inside` there 600.
+// Main's body with the nearest reset and `bool inside = true;` both right after the plane distance (retail stores the float maximum
+// right after the distance's last `subss`, then `inside` from DL) 545; with `radius * radius` in the test 547 (2883 B);
+// with `radius_squared` declared at the top of the prism loop (retail squares it after the loop guard) 542, also 542
+// declared after `inside`. Not kept: the gain comes only from moved declarations and a moved statement. On that 542 form:
+// the 0-based edge loop 617 (2904 B); the nearest local declared at its reset 542 (same code); the ray arms as
+// `if (use_normal) { normal } else { edge }` 539 (2868 B, a swap picked by score). The arm swap alone on main 547.
+// Diagnostic: 1..7 dead initialised locals on main 558/558/558/555/554/553/553 and on the 542 form
+// 553/553/553/546/545/544/544, so the operand sides here are not a symbol-count state.
+// Grouped surface sums with aggregate or separate initialization 538/538, grouped counts
+// and clearances 567, counts before initial sum copies 551, shared plane components 540,
+// named projection products 565, early nearest reset and common projection scale 564,
+// prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
+// plane components eliminate retail coefficient reloads and move the prism cursor.
+// Shared count reciprocal 598, with common clearance store 598, selected sum with split clearance
+// 567, selected sum and clearance 591, early sum selection 589, selected sum through point setter
+// 591, selected coordinates 619, and class-specific assignments for all three inputs 603.
+// NOT kept: shared output selection shortens the function and displaces the pre-query stack homes.
+// M3 lane 5 r211 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0, control 551; the four matched ones stay MATCH):
+// a redundant `if (0 < count)` around the edge loop 599 (2894 B); the nearest-edge scan (nearest reset, `inside`, clamp
+// and edge loop) as a forceinline helper returning `inside` 556 (2878 B: the plane distance's y and z products then load
+// the plane first); the clamped count read through a `long const &` 565 (2893 B); the three ray casts (hit position or
+// the ray's end) through one three-caller forceinline helper 588 (2898 B); the two averages through one two-caller
+// forceinline helper 552 (2879 B; the same averaging code: ours still copies the inverse and folds each sum component,
+// retail loads the component and multiplies by the inverse).
+// M3 lane 11 r125 (fast with 0x120790 and 0x2469b0, both MATCH; control 551, difflib-aligned 564, register-masked 238):
+// `real radius_squared = radius * radius;` declared right before its one use in the prism loop's test 543 (2878 B, aligned
+// 501, masked 223: the square is then hoisted after the loop guard and `push ebx` as retail, with the prism index stored
+// after the shape query; NOT kept, a moved declaration and a one-use local without a match); the product written in the
+// test with no local 553 (2883 B, not hoisted); the face count and radius then the edge count and radius as pairs with the
+// square at the top of the prism loop 548; the prisms walked by a pointer stepped with the index 552; the vertex clamp as
+// `point_count < 8 ? point_count : 8` 551 (same code); both sums copied through one const origin pointer 558 (2889 B).
+// M3 lane 15 r109 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380, the four matched ones stay matched; control 551).
+// Lane 6 r179's lead re-measured on this body (it predates r184's 0x120790 tail): the second vertex's pointer named ahead of
+// the first reconstruction, `real const *second_vertex = (real const *)&prism->points[next_vertex % prism->point_count];`,
+// 536 (2867 B); with a zero-based edge loop (`points[vertex]`, `(vertex + 1) % point_count`) 591 (2855 B); with `radius *
+// radius` at its one use 540 (2876 B); with the square declared at the top of the prism loop 530; with the nearest reset and
+// `bool inside = true;` right after the plane distance 530; both moves together 524 (2867 B). All match-only (a one-use pointer
+// and moved declarations), restored. Left on the 524 form: the side-test cross products and the in-plane projection run
+// in other registers and order (retail spills side.i to 0x124 and side.k's operand to 0xec), and 15 bytes short.
+// Signed query count with indexed or cursor traversal gives 570/568 or 574/572
+// for square before/in the loop. End-pointer forms give 647/647 with a bounded
+// extent and 623/623 with positive-count advancement. NOT kept: all regress.
+// The in-loop square reaches retail +0xd4 after the count branch, with a widened
+// initial count test and different ordinal home. Count and clearance homes remain.
+// Live signed prism count by field reference, array pointer, typed count header,
+// or header reference, indexed 547/547/551/547 and with an entry cursor
+// 555/554/551/554. NOT kept: the four-point indexed leads remain above 30;
+// the count and clearance homes and pre-branch radius square still differ.
+// M3 lane 8 r201 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380; control 551, difflib-aligned 564, register-masked
+// 311). Homes read from the head stores and the tail (frame offsets with no pushes): retail keeps the face count at
+// 0x78, the edge radius 0x7c, the edge count 0x80, the face radius 0x84, the prism index 0x98 and the nearest square at
+// 0x50 between the two sums (face 0x44, edge 0x54); ours keeps the edge radius 0x7c, the face radius 0x80, the edge
+// count 0x84, the face count 0x88, the prism index 0x8c and the nearest square 0x78. The four locals renamed so their
+// names sort in retail's home order 551, in the reverse order 551 (same code each: these homes do not follow names).
+// The projection offset `0.0f - distance` named and used in the three rows 565 (2893 B); the rows as `point - distance *
+// plane` 595 (2899 B, aligned 534). The four declared in retail's home order (face count, edge radius, edge count, face
+// radius) 550 (one point: the head stores come out count, radius, count, radius as retail's, at the old homes), in the
+// reverse order 551. Body unchanged.
+// Signed word prism ordinal with square before the loop, at prism entry or at clearance admission
+// 602/600/584, end-step while 602. Unsigned word ordinal 620/620/623/620. NOT kept: all raise the score.
+// The late signed square reaches its retail slot but displaces the ESI zero and prism cursor. The count
+// and clearance homes remain displaced.
+// M3 lane 13 r127 (fast with 0x16a440 23, 0x120790, 0xc2d00, 0x17a380, 0x2469b0, unchanged each time; control 551). The along
+// sum is emitted (z + y) + x here and (x + z) + y in retail: its five other term orders 551 each (same code: the order is
+// canonicalised); retail also stores the candidate's rows x, z, y where ours stores z, x, y: the candidate rows in the
+// orders x z y 570 (2900 B), y x z 574, y z x 611, z x y 585, z y x 567, the amount written first in the three products 551
+// (same code); the projected point through the existing vector3f_add_scaled 604 (2906 B), the candidate through it 582,
+// both 597; the perpendicular as cross3f(&plane.n, &edge) (the same values, both signs cancel) 557, with the side cross
+// as cross3f(&relative, &edge) tested `> 0.0f` too 574; the two averages as three divisions by the count (one stored
+// reciprocal) 573 for the face average, 578 for both. Body unchanged.
+// MiniMax B (11-20): no new form, no lower score (551): the count and clearance homes are still displaced and the
+// radius square is still computed before the clearance branch where retail computes it after; the four-point indexed
+// leads stay above 30 and the live-count forms tie at 547 or 551.
+// M3 lane 7 r199 (fast with 0x120790/0x2469b0, both MATCH): the counts and radii declared as edge pairs then face pairs
+// (edge count, edge radius, face count, face radius: retail's store order at the head) 550 (the head stores come out
+// count, radius, count, radius at our homes 0xb0/0xa8/0xb4/0xac against retail's 0xac/0xa8/0xa4/0xb0); that with
+// `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
+// order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
+// one point, moved declarations: not kept).
+// Face/edge/both average returns 575/589/628, admitted-radius/rejected-radius/both
+// fallback returns 569/585/635, face/edge count as the result test 620/563.
+// NOT kept: all raise the score and leave the count and clearance homes displaced.
+// In-place averages by named component for face/edge/both 604/602/642, through the
+// coordinate arrays 620/618/660. Indexed accumulation with native/indexed in-place averages
+// 669/692. NOT kept: all grow the body and leave the count and clearance homes displaced.
+// M3 lane 14 r133 (fast with 0x120790/0xc2d00/0x17a380/0x2469b0, all MATCH, 0x16a440 23; control 551): the per-prism
+// separation as `inside ? 0.0f : nearest` after the closest-point test 552; the nearest distance declared at its per-prism
+// initialisation 551 (same code); the radius minimum tests as `available < radius` 551 (same code); `++face_count` ahead
+// of the face radius minimum 566 (2885 B); the averages' reciprocal as `1.0f / (real)count` 551 (same code). The
+// averages multiply `inverse * sum` from memory where retail loads each sum and multiplies by the inverse, x, y, z in order.
+// Prism while, ordinal before the fill, square at prism entry or clearance, edge while, both while
+// loops, and both with the square at prism entry or clearance 551/553/548/543/551/551/548/543.
+// Last-index prism bound with square at entry 573. Named square at clearance with the original for
+// loop 543 reduced and 543 ordinary.
+// NOT kept: the clearance-local square was already rejected as a moved one-use local without a
+// match. Its alternate loop forms produce the same score and square slot. The count and clearance
+// homes still differ.
+// First or second reconstructed point through the returned address 555/553, both 551,
+// second point copied from the return 617. Early signed successor with the first,
+// second or both returns 603/603/616, between both reconstructions 558.
+// NOT kept: all tie or regress. The early forms change the 0xb964 frame.
+// Face, edge or both as vector accumulators with scalar updates 618/620/613.
+// Shared vector updates for face, edge or both 623/625/624; both with aggregate initializers
+// or shared output scaling 643/624. NOT kept, higher scores and two controls changed with both vectors.
+// M3 lane 11 r142 (fast with 0x120790/0x2469b0, both MATCH; control 551, aligned 564, masked 311): in post-call offsets retail
+// homes the second count (sharing the prism index's slot) at 0x88, the first radius 0x8c, the first count 0x90 and the
+// second radius 0x94, ours the radii at 0x8c/0x90 and the counts at 0x94/0x98. Names do not order these slots:
+// `face_count` renamed to sort first, or the edge and face names exchanged, 551/551 (same code). `if (shapes.counts[2] > 0)`
+// around the square and the prism loop 550 (aligned 511: the square moves after the guard as retail, but the guard's
+// compare stays separate from the loop's; a redundant guard, match-only); the fallback arms storing the radius first 552;
+// the two sums initialised at their declarations 551 (aligned 568); `radius * radius` at its one use 553 (2883 B).
+// Body unchanged.
+// Earlier at 551 (was 551; stacked header merged here in m3 lane 16 r172): The first count and clearance stores and the prism ordinal still miss their retail homes.
+// The first count and clearance stores and the prism ordinal still miss their retail homes.
+// Squaring after plane distance, projection or the vertex bound 548/548/548, after the edge walk 543.
+// Minimum first 570, count first 576, minimum and count first 570, count and minimum first 570.
+// NOT kept: 548 gains only three points. The 543 form reproduces the already-rejected late
+// one-use square, and the accumulator orders grow and raise the score.
+// M3 lane 12 r167 (h2m fast with 0x120790 and 0x2469b0, MATCH in each; control 551): the side vector through the existing
+// cross3f_staged 553; the perpendicular through cross3f_staged 553; relative and edge through vector3d_from_points3d 599
+// (2873 B); the side test as `0.0f > dot3f(...)` 551 and with the side vector as the dot's first operand 551 (same code
+// each). Retail's edge loop computes the successor `i + 1` at its top for the idiv and stores it at once (+0xd0), the first
+// vertex walked by a pointer spilled at +0x98. Body unchanged.
+// The 0xb964 frame and query setup agree. Count and clearance homes, pre-branch radius square and late
+// signed remainder still differ. Tried interval projection dot with aggregate displacement 553,
+// interval projection dot with shared point difference 559, projected-separation x/z/y dot 551,
+// direction-length x/z/y dot 568, half-span x/z/y dot 552, both square roots through x/z/y dot 568,
+// projected separation and both roots through x/z/y dot 570, interval projection dot with retail
+// signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise
+// the score.
+// signed-side product grouping 560. NOT kept: The projection and x/z/y product forms tie or raise the
+// score.
+// Count and clearance homes and the pre-branch square still differ. Conditional update
+// destinations for sum, clearance, count, sum/clearance, sum/count, clearance/count and all
+// three 656/597/588/649/678/593/653; branch-selected update pointers 655.
+// NOT kept: every form shortens the body away from retail and raises the score.
+// M3 lane 8 r218 (H2M_FAST with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, the four matched ones MATCH
+// each run): the vertex clamp as `count = 8; if (point_count <= 8) count = point_count;` 572 (2878 B); both averages as
+// three divisions by the count with no inverse local 578 (2891 B: the tail is then retail's instruction for instruction,
+// one reciprocal, each sum loaded and multiplied by it in x, y, z order, but the plane distance's rows flip operand sides
+// and the cross-product region churns); that with the distance's y row plane first 578; that with the zero-based edge
+// loop 620 (2902 B); with `radius * radius` at its use as well 612 (2898 B). Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x120790 and 0x2469b0, both MATCH; control 551): the face count, radius and sum renamed
+// 551 (identical code: names do not break these homes' ties); `relative` computed j, k, i 567 (2882 B); the second point
+// reconstructed before the first 569 (2869 B, retail's clamp select but the second point stored first); the nearest reset
+// moved to just after the plane distance 548 (the FLT_MAX load and store at retail's place); with `inside = true` moved
+// up as well 545 (statement moves, a lead only); on 545 the edge loop zero-based 599 (2885 B), on main's body 602 (its
+// `vertex = 0` start becomes a loop-invariant zero in EBX where retail makes the index's zero fresh). Body unchanged.
+// M3 lane 16 r172 (H2M_FAST with 0x120790 and 0x2469b0, both MATCH each run; control 551): each average through a
+// three-use float divisor (`real divisor = (real)count; out->x = sum.x / divisor;`, P452's real divisors re-measured on this
+// body) 571 (2889 B); the half vector through vector3d_from_points3d 558 (2889 B); the clamped difference through it 552
+// (2879 B); the direction through it 584 (2891 B); the plane distance through plane_distance_to_point 567 (2893 B); one
+// `ray` scratch shared by both ray arms 592 (2865 B, first difference +0x1). Body unchanged.
+// Shared point setter for the projection, candidate, midpoint, all miss endpoints,
+// projection and candidate, miss endpoints and midpoint, or all points 558/553/551/571/558/570/588.
+// Shared vector setter for clamped and midpoint separations 552. NOT kept: the midpoint ties.
+// The count and clearance spills and radius-square schedule still differ.
+// M3 lane 11 r151 (H2M_FAST with 0x16a440, 0x120790 and 0x2469b0, the two matched ones MATCH each run; control 551): the
+// normal test as `!(inside && fabs(distance) < 0.01f)` 555; the separation started at the nearest distance and zeroed in
+// the inside arm 550 (2878 B); the clamp's second test written length first 551, the side test written zero first 551,
+// `0.01f < magnitude` 551 (same code each). Body unchanged.
+// More r151 forms: the zero store ahead of the closest copy in that arm 550 (same as above); the inside arm zeroing
+// nearest_squared_local with the radius test reading it (no separation local) 557 (2879 B).
+// M3 lane 14 r145 (H2M_FAST with 0x16a440, 0x120790, 0x2469b0, 0x17a380 and 0xc2d00, unchanged in every run; control 551; body
+// unchanged). Second metric "masked": aligned rows with general registers, XMM registers and ESP offsets masked, so a 4-byte frame
+// shift does not hide structure (control 235 of 629 rows). 48 combinations of the radius square (named before the loop / in the
+// test / named at the top of the prism loop) x the nearest reset and `inside` right after the plane distance x a named second-
+// vertex pointer x counts and clearances initialised as pairs x the normal ray arm first: best 503 (2858 B, all five on; the
+// pointer takes the length 24 B under retail's). 120 combinations of those x the edge loop 1-based, zero-based with `long
+// next_vertex = (vertex + 1) % prism->point_count;` at its top, or zero-based with the modulo in the second reconstruction, by
+// masked count: normal arm first 217 -> 135 on average, zero-based with the named successor 180 -> 155 (unnamed modulo 182), the
+// square at the top of the prism loop 179 -> 171, the reset after the distance 179 -> 173, paired initialisation 177 -> 175; the
+// closest form is all of these without the pointer: masked 107, positional 584 at 2895 B, frame 0xb968 (retail 0xb964). Retail's
+// own listing has that shape (`mov ecx, 8; jg; mov ecx, eax; xor eax, eax; test ecx, ecx` for the clamp and guard, `inc eax; cdq;
+// idiv` at the top of the edge loop, the normal arm laid out first). Not kept: the positional score rises and the form is made of
+// moved declarations and an arm swap (the swap alone 547); saved as build/r145/lead-16a8e0-structural.patch. Diagnostic on it:
+// 1..7 dead initialised locals at four positions give the same result at every position (masked 107, 108, 113, 106, 106, 106, 105;
+// K = 7: 545 positional at 2880 B), so its product sides follow the whole function's symbol count and no phase clears them. Left
+// on the lead: one frame temporary too many, the plane-distance and side-test product sides (retail keeps plane.j in XMM7 across
+// the projection and loads the plane first in two products) and the second ray's set-up schedule.
+// M3 lane 15 r132 (H2M_FAST with 0x16a440, 0x120790 and 0x2469b0; control 551): retail's homes (loop frame) are face_count
+// 0x84, edge_radius 0x88, edge_count 0x8c, face_radius 0x90, the prism index 0xa4; ours edge_radius 0x88, face_radius 0x8c,
+// edge_count 0x90, face_count 0x94, index 0x98 (all four have equal reference counts). Forms: `radius * radius` at its one
+// use with no square local 553 (2883 B; the head is retail's, index store and `jle` ahead of the square, but the three
+// distance products flip to plane-first); that with the distance operands swapped in the source 553 (same code); the
+// four declared face_count, edge_radius, edge_count, face_radius 550, with the square at its use 552; the `opposite`
+// local written into its call 552 (2879 B), with the square at its use 553. Body unchanged.
+// M3 lane 2 r139 (H2M_FAST with 0x16a440, 0x120790 and 0x2469b0; control 551, aligned 363, register-masked 289). Retail
+// stores the four tallies before the query call in the order edge count, edge radius, face count, face radius (frame
+// 0x8c, 0x88, 0x84, 0x90). Declared in that order 550, face pair first 551, each radius ahead of its count 551, chained
+// `edge_count = face_count = 0; edge_radius = face_radius = radius;` 553, the other chain order 553 (no home moves in any).
+// Both averages as three divisions by the count (no inverse) re-measured 578 (2891 B, aligned 337, masked 272); the
+// diagnostic 1 to 7 dead initialised locals at the top on it 578, 573, 590, 590, 590, 579, 580 (no phase brings the
+// distance and cross rows back). Body unchanged.
+// M3 lane 6 r234 (h2m fast; control 551, aligned-equal 487 of 629 masked rows): the edge loop zero-based with
+// `long next_vertex = (vertex + 1) % prism->point_count;` at its top, measured alone, 619 (2904 B, aligned-equal 504):
+// the clamp, guard, `inc eax; ...; cdq; idiv` head and the `jl` bottom are then retail's instruction for instruction
+// (ebx and ebp exchanged), but the frame grows to 0xb968 because xmm7 is spilled once more in the cross-product rows;
+// the successor named without the modulo (`long next_vertex = vertex + 1;`, modulo at the call) 615 (2900 B, z1's code:
+// the add folds into the late index); the two loop names over four by four spellings 619 each (registers only, inert);
+// the named successor with `radius * radius` at its one use 601 (2888 B, frame still 0xb968); with the nearest reset
+// and `inside` moved up after the distance 618. Diagnostic on the named-successor form, restored: 1 to 10 dead
+// initialised longs at the top 619, 620, 609, 610, 611, 611, 576, 619, 619, 619 (frame 0xb968 in every one). Body
+// unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
@@ -1995,8 +2326,10 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 		for (long index = 0; index < shapes.counts[2]; ++index)
 		{
 			s_prism *prism = &shapes.prisms[index];
-			real distance = point->x * prism->plane.i + point->y * prism->plane.j +
-				prism->plane.k * point->z - prism->plane.d;
+			real distance = point->x * prism->plane.i;
+			distance += point->y * prism->plane.j;
+			distance += prism->plane.k * point->z;
+			distance -= prism->plane.d;
 			point3f projected;
 			projected.x = (0.0f - distance) * prism->plane.i + point->x;
 			projected.y = prism->plane.j * (0.0f - distance) + point->y;
@@ -2005,12 +2338,12 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 			bool inside = true;
 			long count = prism->point_count > 8 ? 8 : prism->point_count;
 			point3f closest;
-			for (long edge_index = 0; edge_index < count; ++edge_index)
+			for (long next_vertex = 1; next_vertex <= count; ++next_vertex)
 			{
 				point3f first;
 				point3f second;
-				function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[edge_index], prism->axis, prism->side);
-				function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[(edge_index + 1) % prism->point_count], prism->axis, prism->side);
+				function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[next_vertex - 1], prism->axis, prism->side);
+				function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[next_vertex % prism->point_count], prism->axis, prism->side);
 				vector3f relative;
 				relative.i = projected.x - first.x;
 				relative.j = projected.y - first.y;

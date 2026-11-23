@@ -618,6 +618,32 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // T105: Finite pump budget, long/dword/short/byte with positive/nonzero
 // guards: 272/272/272/284/272/272/272/284. NOT kept: native ordinal/frame
 // equality absent; original retry, clock producers and complete body restored.
+// M3 lane 13 r99 (fast, in a file of its own with /arch:SSE from M3 lane 1 r99's 150 lead, this file's other functions
+// MATCH throughout): the texture format as a named local used for the texture, the bitmap format and 0x1358c0 150
+// (same code: retail's EBP-held 10 and EDX-held 3 are not a propagated local); the existing function_155e50() called at
+// entry in place of the inline memory-status helper 356 (LTCG keeps it a call, frame 0x34); the surround bins declared
+// before the volumes 150 (same code); the elapsed clock declared at the top with the start 150 (same code); the copy
+// flags stored before the movie size 152. Diagnostic: the same file built /O1 464 (an EBP frame), so /O2 stays. Retail's
+// two dead zero stores at entry fall on the memory-status block's +0x18 dword. Not moved (kept only with a match).
+// P574: Actual audio-layout admission, positive/complementary bool/byte/short/long:
+// 272/272/272/272/272/272/272/272. NOT kept: no exact native frame/status/clock/audio-home
+// recovery; original layout test, arrays, helpers and complete body restored.
+// N408: Shared initialized timestamp reader at start/elapsed/both 278/272/278. Raw start/elapsed/both
+// 283/324/326. Initialized reads with elapsed reduced in place 278. Explicit clock zeros and raw assignments 324.
+// NOT kept: frame stays 0x3c or shrinks to 0x30 against 0x40. The status/clock slot overlap remains.
+// P608: Library copies into surround bins/volumes, stereo bins/volumes, then surround pair,
+// stereo pair, both bins and all: 301/302/296/292/315/300/307/334.
+// NOT kept: longer bodies and no retail memory-status/clock/audio frame recovery.
+// M465: 64 KiB count long 278; 64 KiB count dword 277; page count long 280; page count dword 280; MiB
+// count long 279; MiB count dword 280; selected bytes long 290; selected bytes dword 292.
+// NOT kept: all reservation-size carriers shrink the frame to 0x38 against retail 0x40.
+// The dword mode, status and clock homes still differ.
+// M3 lane 8 r230 (h2m fast, own /arch:SSE file from M3 lane 1 r99's 150 lead, this file's other functions MATCH; 0x163890
+// reads 174 in this image with or without the move): the elapsed clock zeroed at the top in place of the start 302 (1085
+// bytes; the elapsed initialiser vanishes), both zeroed 150 (same code as start alone); the start as an unsigned 64-bit
+// value 302 (1085); the start zeroed by its own statement after its declaration, ahead of the memory-status helper 150
+// (same code); the copy flags and texture format as named locals (3 and 10) used for the stores, the texture call and
+// the bitmap 150 (same code: they propagate, retail holds 10 in EBP and 3 in EDX). Not moved.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

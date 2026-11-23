@@ -79,12 +79,33 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax E (11-20): no new form and no lower score (125): retail computes the across-j product right after the size and
+// spills it at once to [ebp-8], later reusing that slot for the side point's y, so its result float sits at [ebp-0x10];
+// this build sinks both across products into the side computation, so they never get a stack home, the result stays at
+// [ebp-8] and the kind and bitmap homes sit eight bytes above retail's. The forms the earlier rounds recorded (across
+// products stored at their definition, the side point set to them, the half-width conversions) all score worse or sit
+// under the eight-point bar, so the body is unchanged.
+// MiniMax C (11-20): no new form, no lower score (125): the side point declared at function scope instead of inside the
+// corner block compiles to the same code, so the frame's homes are not set by the declaration order; the result, kind
+// and bitmap homes are still eight bytes above retail's; a permuter run with annealing (18 tries, 301 s, 1 confirming
+// build) reached 124, one point, and was not kept.
+// MiniMax B (11-20): no new form, no lower score (125): the result, kind and bitmap homes are still eight bytes
+// above retail's and the early across-axis product still has no retail spill at [ebp-8]; this build sinks the two
+// across products into the side computation, so they never get a stack home and the frame slots stay high. The
+// corner sums written with the other operand first give the same code, and `back + (up + origin)` grows the body
+// to 749 bytes (137). No form found this round.
+// score 125 (was 125): The result home remains eight bytes high, and the early across-axis product still lacks its retail spill.
+// Positive corners before negative corners, all upper vertices first, origins first, or separate components by side:
+// in-place negation 149/149/149/154. Separately initialized negative displacement 149/146/148/148.
+// Earlier 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
+// left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
+// xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
+// MiniMax R (11-17): no new form, no lower score (125): the corner sums written with the other operand first (up + origin, then back + that) compile to the same code, and the same sums written as back + (up + origin) grow the body to 749 bytes (137); retail still computes the two across products right after the size and spills the second to [ebp-8], so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.
 // MiniMax S (11-15): no new form, no lower score (125, was 125): the file's /O2 flag measures 279, so it keeps /O1, and a
 // permuter run over this body (86 tries) stays at the starting score; a second run with a new seed reaches 121 only by making
 // the height volatile, which is not kept; retail computes the two across products right after the size and spills the second to
 // [ebp-8], which this build sinks into the side computation, so the result, kind and bitmap homes stay eight bytes above
 // retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.
-// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax G (11-14): no new form, no lower score (125, was 125): retail's early across-product spill at [ebp-8] still has no counterpart here, so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5; the extra room comes from retail's scratch chain of summed values below the marker copy, which this build keeps in registers, and no form listed in the earlier rounds' notes produces that chain.
 // MiniMax B (11-12): no new form, no lower score (125, was 125): retail computes the two across products early and
 // spills the second one to [ebp-8], which it then reuses for the side vector's y, so its result home is [ebp-0x10];
@@ -118,8 +139,6 @@ struct s_24e9c7_points
 // MiniMax B (11-06): no new form, no lower score (125); the source permuter (240 s) found 123, but it adds a bool set by one test and tested by the next and swaps two arguments of function_22a664, so the original body is restored.
 // MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // MiniMax D (run 46): no new form, no lower score.
-// left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
-// xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
 // Earlier (125, was 125): reassociating the corner sums and splitting them into two steps both
 // canonicalise back to retail's association, so what is left is the SSE schedule itself, the
 // eight-byte-higher stack homes and the sprite pointer staging; no source form found.
@@ -505,6 +524,242 @@ struct s_24e9c7_points
 // conversion (no long local) 125; the default bounds as two chained assignments 131.
 // P540: Complete scalar-SSE perpendicular/upper/side products and size addition, 258/264/262/273/282/282/297/321.
 // NOT kept: extra stack alignment and larger frame/extent; original complete source restored.
+// b8M (11-17) walk against retail, fast build on r836 (125, same as the control; 0x24e59f and 0x22a664 MATCH):
+// no logic, structure or behaviour difference found. Walked 0x24e9c7..0x24ecad block by block: every jcc is an
+// integer compare (kind 0x24e9ea/0x24e9f6, the -1 tests 0x24ea14/0x24ea1e, sequence_index 0x24ea61/0x24ea6d/0x24ea9d,
+// sprite_count 0x24ea7f, fallback 0x24eaa3/0x24eaaf, first_bitmap 0x24eabe), so no NaN direction can differ; field
+// offsets, the 1.0 at 0x45dbc0, the xorps zero, the pushes at 0x24ec91-0x24ec9d and the alpha arms (0x24ec3c-0x24ec81:
+// full = table * alpha, hidden = 0, else (1 - fade) * table * alpha) agree. The corner sums compile to retail's
+// tree: n0 = back + (up + origin), n1 = side + (up + origin), n2 = side + origin, n3 = back + origin.
+// Frame: at 0x24eb01 retail stores the across-j product to [ebp-8] although xmm5 (the 1.0) is already dead, so that
+// spill is not register pressure; the pair [ebp-0xc/-8] has x untouched and y with five references (0x24eb01,
+// 0x24eb75, 0x24eb95, 0x24eba9, 0x24ebcf), like ours' back pair but allocated above result. New (fast): `size *=
+// forward_i` as across j with `0.0f -` across i 138 (739 B); the same with unary minus 125 (same code).
+// M3 lane 12 r135 (fast with 0x24e59f/0x22a664, both matched each time; control 125): our frame has six 4-byte cells (a
+// scalar spill at -0x14) where retail has four and an 8-byte aggregate at -0xc whose y half holds across j and then side y;
+// ours forward-substitutes the across products into side. Forms: side filled y first 125 (other code); back filled y first
+// 125 (same code); up filled y first 137 (741 B); the alpha computed ahead of the corner points 173 (762 B); the four marker
+// stores after the alpha 139 (748 B).
+// M3 lane 13 r105 (fast with 0x24e59f/0x22a664, both matched each time; control 125): retail's frame has an 8-byte pair above
+// the result (-0xc never touched, -8 with five references: across j, then side y), ours the back pair below the bitmap index
+// (-0x18 untouched, -0x14 back y). Forms: the across scalars scaled in place by the half width (`across_i = (real)half_width *
+// across_i;`, no side point, corners and back read the across scalars) with `(0.0f - forward_j)` 138 (739 B), with back as
+// `0.0f -` 138; the in-place side point declared at the function's top ahead of the result, `(0.0f - forward_j)` 139 (742 B:
+// its home stays below the scalars); across j bound as `real &across_j = size; across_j *= forward_i;` with `(0.0f -
+// forward_j)` 139 (742 B); both across terms as a copy of size scaled in place with across j a reference to size 144 (746 B).
+// The across-Y spill still leaves result, kind and bitmap eight bytes above retail.
+// Rectangle span through the existing point difference before bitmap/after bitmap/after size/after across:
+// 143/143/125/125. Aggregate span with the same four boundaries gives the same scores.
+// NOT kept: the early spans grow to 746 bytes, and the later spans tie at retail length.
+// B458: Both scaled pixel extents before conversion, height-first/width-first 125/125; both truncations
+// before returned height, or a direct height conversion with separate integer width 125/125; paired signed
+// dimension reads/conversions 125/125; paired unscaled pixel products with direct/in-place scaling 125/125.
+// Across spill and the result, kind and bitmap homes remain.
+// B460: Upper vertices before side scaling, both/first/both with lower origins 165/149/170.
+// In-place basis with both/all/first vertices and shared forward component 145/156/154/159.
+// Upper-before-width and independent-basis/converted-width variants 176/157/147/163/159.
+// The first upper vertex before side scaling recovers the return and metadata slots at frame
+// 0x48, but the shallow spill holds the converted half width and the body grows. Early across j
+// spill remains. Original body restored.
+// The across/side spill above the result still differs. Backward addition of the negated side, with original
+// across scalars, a separate pair, a sized side scaled in place, or an in-place two-stage side: 167, 161, 161,
+// 163. Backward subtraction on the same four producers: 167, 161, 161, 163. All eight shrink the frame to 0x40.
+// Seed the upper displacement with the unscaled forward pair before size,
+// after across, after height, or after width. Signed products and separate
+// scale/negate stages respectively 129/129, 129/129, 127/127, 125/125.
+// All retain 743 bytes but the early across spill and height home stay wrong.
+// M3 lane 16 r134 (fast with 0x24e59f/0x22a664, both matched throughout; control 125): the side point set to the across
+// products (`size * -forward_j`, `size * forward_i`) and scaled in place by the half width, with the first corner's base copy
+// right after that set, 145 (746 B: the across products are then computed early, but the corner copy hoists to the top);
+// the same with `size * (0.0f - forward_j)` 141 (742 B); with the copy after the result 139 (742 B); after the half width 143
+// (739 B); the copy after the result and up computed after the side scaling 140 (742 B). Re-measured: the first corner's base
+// copy right after the across scalars 124 (listed; the across products still sink into the side products).
+// The across-Y spill and returned-height home still differ. Height committed between
+// upper products, after upper, after side or after back 125 each; after corners 139;
+// after draw 187; in-place side with interleaved height 143; first raised origin before
+// back 153; shared forward components 142. NOT kept: early commitments tie and the
+// later or combined forms miss the original frame, extent or score.
+// M3 lane 7 r179 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125, aligned 115, addresses masked 87). Reading:
+// retail's 1.0 sits in XMM5 and its across i product is `size-copy * (0 - forward_j)` because the perpendicular pair is set
+// before the size is read, and its integer height lives in ESI because the half width is divided before the height is
+// converted. The side point set to the perpendicular (`side.x = -forward_j; side.y = forward_i;`) after the scale read and
+// ahead of the size, then scaled in place by the size and later by the half width, plain statements: 125 at 745 bytes
+// (aligned 102, masked 73): the listing then agrees with retail from the block's top through `mulss xmm1, xmm4` (the across j
+// product) except for two swapped loads; retail stores that product to its home there and converts in XMM1 with forward_i
+// kept in XMM4, ours keeps it in XMM1 and converts in XMM4. On that form: the half-width scaling through a one-caller
+// pointer helper 145 (755 bytes, aligned 100; the side home moves between result and kind in a compile-only frame listing,
+// retail has it above result); the result conversion after the half width 141 (aligned 109), with the first corner's base
+// copy between them 141 (aligned 106; height in ESI and the corner's x load in EDX after `sub eax, edx` as retail); a
+// separate perpendicular point with side from it and up.x from its y 138 (741 bytes, aligned 113); a named copy of the
+// perpendicular's y for up.x 138 (744 bytes, aligned 107). A compile-only frame listing orders the 4-byte and helper-taken
+// homes by their reference counts (later-declared first on a tie), so retail's side pair sits above result once its y half
+// has five references (both products stored); every form above stores only the second product. A form that does store both
+// (compile-only listing: the size product stored at its definition, `mulss xmm3, [side y]`, the half-width product stored,
+// back y as `0 - [side y]`, as retail): the first corner's base copy and its two up sums written ahead of the side's
+// half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
+// 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
+// with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 4 r218 (fast with 0x24e59f/0x22a664, both matched each time; control 125): by-value inline helpers (new):
+// the across pair returned by value with side from it 181 (770 B, frame 0x50), side initialised from it and scaled in
+// place 181, side from a by-value scale helper 213 (796 B, frame 0x58), up returned by value 169 (762 B); the in-place
+// side filled inside a block scoping size 144 (746 B). Return copies grow the frame. Body unchanged.
+// M3 lane 2 r102 (fast; control 125). Reading: retail's -0xc/-8 pair is the side point (x kept in XMM6, y spilled: first
+// the across-j product, then the scaled side.y in the same slot), so the side is filled with the across products and
+// scaled in place; the plain form of that (no other move) 144 (746 B: across products early as retail, result still at
+// -8); with the half width converted before the result 148; with the side declared ahead of the size 144; with
+// `size * (0.0f - forward_j)` 139 (742 B); zero to seven dead initialised locals on the control 125 each (diagnostic).
+// Body unchanged.
+// M3 lane 5 r201 (fast, 0x22a664 matched; control 125): the across products written through references bound to the side
+// values and then scaled in place by the half width (keeps them early, as retail: size * (0 - forward_j) and size * forward_i
+// right after size), side as two scalars 148 (746 B) / with `0.0f -` 143 (742 B), side as a point 144 / with `0.0f -` 139
+// (742 B); on the scalar `0.0f -` form back as scalars, and up too, 143/143 (same code); the first corner's base copy right
+// after the half width 146 (739 B) / unary 132; result assigned after the half width, scalar/point 150/146 (`0.0f -`),
+// 152/148 (unary). The early products then spill elsewhere and the result home moves to -0xc, not retail's -0x10.
+// M3 lane 7 r183 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125). Reading: retail's [ebp-8] is the side
+// point's y home (written with the across j product, then with the half-width product, read back three times) and its
+// x home [ebp-0xc] is never used, so retail's side point owns the two slots above result. Tried, the corner copies left in
+// place: the side point set straight to the across products with no across locals and scaled later by the half width 144
+// (746 B), with compound scaling 144 (same code), with `size * (0.0f - forward_j)` 139 (742 B), with the side point
+// declared before the size 144 (same code); on main the side point declared at the drawing block's top 125 (same code).
+// Quad aggregate from one shared origin before size, after across, after height or after half width:
+// 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
+// NOT kept: The across-y spill and the returned-height home remain different at retail length.
+// M3 lane 2 r109 (fast, 0x22a664 matched; control 125): forward_i and forward_j read once into named locals for the across
+// products and up 161 (767 B); the same with `0.0f - forward_j` 140 (746 B: still `0 - forward_j` after the height chain,
+// not before it); the across products written forward first (`-forward_j * size`) 125 (same code); the bounds height and
+// width named before the height 125 (same code); the width named before halving 125 (same code). The scheduler still
+// computes the across products after the height and width conversions, so across j is never spilled to retail's -8.
+// M3 lane 1 r126 (fast with 0x24e59f/0x22a664, both MATCH; control 125, aligned 87): the size read ahead of the bitmap
+// pointer 125; the scale read there too, ahead of the size 125; the side point declared ahead of up 125; back, side, up
+// declared in that order ahead of the up products 125; the corner record declared ahead of up 125 (all the same code).
+// M3 lane 11 r122 (fast with 0x22a664; control 125, register-masked aligned 94; a compile-only /O1 screen reproduces
+// this body): re-measured lane 7 r183's side point set to the across products and scaled later 144 (746 B), with `size *
+// (0.0f - forward_j)` 139 (742 B, masked 105), with compound scaling 139; new: the back point written as the negated
+// half-width products of the across locals (a second use of each) 154 (753 B, masked 109), with `size * (0.0f -
+// forward_j)` 137 (749 B, masked 119). Compile-only, forward i and j read into locals for the across and up products
+// leaves the products late (same order as main). Each early-product form leaves the result home at [ebp-8].
+// M3 lane 14 r121 (control 125; forms screened in a compile-only build with a true-LCS count, registers masked /
+// stack slots masked of 197 lines, main 53 / 95, then five measured with `--fast`, 0x24e59f and 0x22a664 MATCH each
+// time). Reading: retail loads forward_i once (XMM4) for both the across j product and `result * forward_i`, so the
+// across j product has no register and goes to the side point's y home at once, while the across i product stays in
+// XMM6; both products copy the size and multiply by the other operand. forward_i read into a local for the across j
+// and up x products on main's form 124 (L 50 / 95; one point, not kept); forward_i and forward_j locals with the side
+// point set to the across products and scaled in place 126 (51 / 97), only forward_i there 142 (739 B), only
+// forward_j 54 / 98; the size written `placement->size + 1.0f` in each across product with across locals 143 (739 B,
+// 53 / 95), with the in-place side point 150 (735 B, 54 / 96), with unary minus 56 / 93; the in-place side point
+// with `0.0f - forward_j` re-screened 54 / 99, with compound `*=` 54 / 99, with the across operands written the other
+// way round 54 / 99 (same code); both forward locals on main's form 57 / 100. Body unchanged.
+// AC597: Both lateral components start from size in scalar, per-component scalar, aggregate point or
+// field-written point forms, with dimension scale before or after: 125/125/125/125/144/144/143/143.
+// M3 lane 16 r152 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). All on the side point
+// set to the across products early (`size * (0.0f - forward_j)`, `size * forward_i`) and scaled in place by the half width:
+// with the half width ahead of the result conversion 146 (742 B: the width chain then runs first, its `cdq` ahead of the
+// height's load, and the bitmap pointer moves to ESI, where retail keeps the truncated height in ESI across the `cdq`
+// and the bitmap pointer in EAX); the width truncated into its own long ahead of `width / 2` 146 (same code); the first
+// corner's base copy between the half width and the result 146 (same code); both 146 (same code); that copy there with
+// `(real)height` written in both up products and the result assigned after them 144 (738 B). Reading of retail
+// (0x24eab8 on): the first corner's base copy loads x into EDX straight after `sub eax, edx` and y into EDX after it,
+// and the three later copies take y from EDX (`mov eax, edx`) while reading x again from the placement; ours copies
+// through EAX, so nothing is left in a register to reuse. forward_i stays in XMM4 from the across j product to
+// `result * forward_i`, which is why the conversions take XMM1 and across j goes to [ebp-8] at once.
+// M3 lane 12 r156 (fast; control 125): across j read through a const reference bound to it 125 (same code); that with
+// across i as `size * (0.0f - forward_j)` 138 (739 B); both across values through const references with `0.0f -` 139
+// (742 B); the size through a const reference 125 (same code); the forward pair copied into a point local first and
+// read from it for the across and upper products 147 (752 B, 0x24e59f still MATCH).
+// M3 lane 3 r280 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). One grid of 24 on the
+// side point set to the across products and scaled in place by the half width: the first corner's base copy (with the
+// corner record declared there) right after the side products / after the scale read / after the result / after the
+// half width / after up / after back, each with forward_i read at its two uses or once into a local, and across i as
+// `size * -forward_j` or `size * (0.0f - forward_j)`. Scores, in that order of copy position, for (at uses, unary),
+// (at uses, `0.0f -`), (local, unary), (local, `0.0f -`): 145/141/145/143, 145/141/145/143, 143/139/143/141,
+// 128/143/139/144, 128/143/139/144, 144/139/143/141 (743 B only for the two 128 forms; 738-746 B otherwise). None
+// stores the across j product at its definition, so the result home stays at [ebp-8]. Reading of retail's corner
+// copies: the first copy goes through EDX while EAX still holds the half width before its `sar`, and EDX keeps the
+// placement's y for the three later copies (`mov eax, edx`), x being read again each time.
+// Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
+// base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
+// gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
+// M3 lane 2 r122 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). Reading of retail's frame:
+// two 4-byte float cells sit between the first-bitmap cell and the result ([ebp-8] holds across j and later the side's y, read
+// from memory at every use; [ebp-0xc] is never touched), where ours has the result at [ebp-8] and an 8-byte aggregate at the
+// bottom ([ebp-0x18]). Tried: the side as two reals set to the across products and scaled in place with `=` or `*=` 133 / 133
+// (first difference +0x5); every offset as reals (no aggregates) 133; the across pair as a two-float aggregate 144 (746 B);
+// `back` from the across products 154 (753 B); the forward pair read once into locals 142 (740 B); every negation as
+// `0.0f -` 147 (735 B).
+// M3 lane 2 r124 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). Reading of retail:
+// forward_i is loaded once (XMM4) for the across j product and `result * forward_i`, while forward_j is read from the
+// placement again for the upper y product, after the first corner's x has been stored; so one corner store may sit
+// between the two upper products. Tried, a position the grids above do not have: the first corner's base copy between
+// the upper x and upper y products 138 (740 B); that with the side point set to the across products and scaled in place
+// by the half width 128 (743 B); that with `size * (0.0f - forward_j)` 143 (739 B); the first corner's x copied ahead of
+// the upper x product and its y between the two 139 (756 B); the copy between the two with the half width taken after
+// the upper pair 138 (738 B). In each the across j product is still not stored at its definition, so the result keeps
+// [ebp-8].
+// Separate signed-width truncation and halving, width or height first, then halve
+// after the upper offsets with an early origin, after both upper offsets, after
+// the first origin, or after its upper sums: 138/123/124/163 for either order.
+// NOT kept: 123 and 124 gain only two and one at 743 bytes. The returned height
+// still uses EBP-8 and the early across-axis product has no retail spill.
+// M3 lane 4 r239 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125), all on lane 7 r179's form (the side point
+// set to the perpendicular ahead of the size, scaled in place by the size and later by the half width; re-measured 125 at 745
+// B): forward i read once into a local for the perpendicular and the up product 138 (741 B); the size read ahead of the scale
+// and the perpendicular 140 (742 B); the size scaling as `*=` 125 (same code); the result conversion after the half width with
+// the first corner's base copy between them re-measured 141, with the copy after the conversion 139 (742 B), with that
+// corner's up sums written offset first 141 (same code). A 148-form grid of statement orders on that form (height, half width
+// as one statement or as width then `width / 2`, result conversion, first corner's base copy, up, side scaling; every order
+// that defines each value before its use with the height first or second): best 122 at 742 B (height, result, half width, then
+// the copy and up in either order, then the side scaling; three points, a statement order), 125-148 otherwise. Reading: retail
+// keeps the side point's y in its frame home from the across-j product on while its x stays in a register, and keeps forward i
+// in XMM4 from that product to `result * forward_i`, so it converts in XMM1; every form here keeps side y in XMM1 and reloads
+// forward i.
+// M3 lane 14 r140 (h2m fast with 0x24e59f/0x22a664, both MATCH; control 125): the side point set to the across products at
+// the across position (before the scale read) and scaled in place by the half width, with the points declared ahead of
+// the first corner's base copy (a store into the escaping corner array between the products and their use): that copy
+// right after the result 141 (746 B); after the half width 126 (743 B: the across products are then computed early as in
+// retail, but negated after the product and kept in XMM2/XMM6, the result still at [ebp-8]); all four copies after the
+// result 143 (746 B); the 141 form with `side.x = (real)half_width * side.x` 141; the copy after up 126 (743 B); the 126 form
+// with `size * (0.0f - forward_j)` 147 (739 B). Body unchanged.
+// M3 lane 6 r222 (H2M_FAST with 0x24e59f/0x22a664, both matched each time; control 125, aligned 119, register-masked
+// 94; each run also checked for which float goes to a frame home: every form below still stores only the back
+// vector's y at [ebp-0x14], never retail's side y at [ebp-8]; body unchanged). The side point set to `size * (0.0f -
+// forward_j)`, `size * forward_i` and scaled in place by the half width, with the height, result and half-width
+// statements in the orders height/result/width 139 (742 B) and height/width/result 146; each with the scale read ahead
+// of the size 140 / 146; the in-place scaling as `*=` or with the half width on the right 146 (same code). That form
+// with forward_i read once into a local (retail keeps it in XMM4 from the across j product to `result * forward_i`
+// while forward_j is read from the placement both times): the local declared ahead of the size 148 (739 B), after the
+// size or between the two side products 147 (741 B) with height/width/result and 141 with height/result/width;
+// between the products with unary minus 149 (745 B). Reading: retail's listing needs forward_i held across the two
+// conversions and the side y left in memory from its first product on; with the local, ours holds forward_i but still
+// gives side y a register and converts in the freed one.
+// M3 lane 15 r128 (H2M_FAST with 0x24e59f/0x22a664, both MATCH; control 125): the side point set to the across products
+// with `size * (0.0f - forward_j)` and scaled in place, forward_i read once into a local for side y and up x, 141 (741 B:
+// forward i stays in a register but side y does not spill); back as two scalars 133 (frame 0x44: back y's spill cell sorts
+// above result, at [ebp-8], result at [ebp-0xc]); side as two scalars set to the across products and scaled in place 125
+// (same code); side and back as scalars 133 (frame 0x44); side scalars with `(0.0f - forward_j)` 138 (739 B); side and back
+// scalars with it 146 (739 B); back and up as scalars 133 (frame 0x44). Our back point spills its y and sorts below the
+// 4-byte cells ([ebp-0x18]); retail's pair above result keeps x untouched and y with five references. Body unchanged.
+// M3 lane 14 r140 (h2m fast with 0x24e59f/0x22a664, both MATCH; control 125): the side point set to the across products at
+// the across position (before the scale read) and scaled in place by the half width, with the points declared ahead of
+// the first corner's base copy (a store into the escaping corner array between the products and their use): that copy
+// right after the result 141 (746 B); after the half width 126 (743 B: the across products are then computed early as in
+// retail, but negated after the product and kept in XMM2/XMM6, the result still at [ebp-8]); all four copies after the
+// result 143 (746 B); the 141 form with `side.x = (real)half_width * side.x` 141; the copy after up 126 (743 B); the 126 form
+// with `size * (0.0f - forward_j)` 147 (739 B). Body unchanged.
+// M3 lane 15 r130 (H2M_FAST with 0x24e59f/0x22a664, both MATCH each time; control 125): true `__assume(p != NULL)` on
+// placement (P), marker (M), kind (K), group (G) and bitmap (B) at their definitions, one or two at a time, PMKG and
+// PMKGB 125 each, every set of three (KGB, PMK, MKG, PKG) 139 (738 B: a count effect, the 1.0 constant still in
+// XMM4); one bitmap assume at
+// each statement of the float block: after the size 125, after across_i 139 (746 B: across_i then evaluates early, but
+// as `-(size * forward_j)` where retail computes `size * (0 - forward_j)`), after across_j or any later statement 144
+// (746 B); across_i as `size * (0.0f - forward_j)` alone 138 (739 B), with the assume after across_i 140 or after
+// across_j 139 (742 B); the side point set to the across products in that form and scaled in place 139 (742 B), with an
+// assume after it or three top assumes 139. Across j still gets no frame home. Body unchanged.
+// Shared planar scaling from a separate across vector, immutable across or
+// in-place side 154/154/154. Two shared in-place scales 144. First corner's
+// upper displacement before the shared side scale 175. Scoped perpendicular
+// and across inputs 141, side published at the size conversions 142, or signed
+// raster width retained to scaling 154. NOT kept: all grow the body and leave
+// the result above its retail home or enlarge the frame.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

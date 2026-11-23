@@ -67,15 +67,16 @@ struct hkVector4
 
 	void operator=(hkVector4 const &v) { m_quad = v.m_quad; }
 	real const &operator()(long i) const { return m_quad.m128_f32[i]; }
+	real &operator()(long i) { return m_quad.m128_f32[i]; }
 
+	/* each component is stored through the element accessor, so the four
+	   stores keep this order in every caller (0x1d7ef0, 0x1d87b0) */
 	void set(real x, real y, real z, real w = 0.0f)
 	{
-		real *components = (real *)&m_quad;
-
-		components[0] = x;
-		components[1] = y;
-		components[2] = z;
-		components[3] = w;
+		(*this)(0) = x;
+		(*this)(1) = y;
+		(*this)(2) = z;
+		(*this)(3) = w;
 	}
 };
 
@@ -446,6 +447,9 @@ struct s_havok_component
 	real function_1d1230(long rigid_body_index);
 	void rigid_body_matrix_get(long rigid_body_index, struct transform4x3f *matrix);
 	void rigid_body_linear_velocity_add(long rigid_body_index, vector3f const *velocity);
+	void rigid_body_linear_velocity_change(long rigid_body_index, vector3f const *change);
+	void rigid_body_transform_set(long rigid_body_index, hkTransform const *transform);
+	bool function_1d5120(long rigid_body_index, long a, long b, real rate, long *result, long value);
 };
 
 inline s_havok_component *havok_component_get(long component_index)
@@ -456,6 +460,15 @@ inline s_havok_component *havok_component_get(long component_index)
 inline hkRigidBody *havok_component_rigid_body_get(long rigid_body_index, s_havok_component const *component)
 {
 	return component->rigid_bodies[rigid_body_index].rigid_body;
+}
+
+void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform);
+
+/* the member spelling of havok_component_rigid_body_transform_set (0x1d0cf0); every caller uses it (see the
+   function's comment in src/unknown_1cec30.cpp) */
+inline void s_havok_component::rigid_body_transform_set(long rigid_body_index, hkTransform const *transform)
+{
+	havok_component_rigid_body_transform_set(rigid_body_index, this, transform);
 }
 
 /* the free-function spelling of s_havok_component::rigid_body_matrix_get */

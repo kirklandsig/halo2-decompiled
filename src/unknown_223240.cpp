@@ -57,27 +57,54 @@ bool function_68290(void);
 void main_time_wait_for_vblank(void);
 void function_13f10(long, long);
 
-PRIVATE __forceinline s_223240 *function_2232a1(s_223240 *arg_0)
-{
-	arg_0->field_4 = NONE;
-	arg_0->field_8 = NONE;
-	arg_0->field_b0 = g_485a8a.a;
-	arg_0->field_b8 = g_485a8a.b;
-	arg_0->field_0 = 1;
-	function_2f800((s_2f800_view *)arg_0->field_80, 0, 0, 0);
-	memcpy(arg_0->field_c, arg_0->field_80, 0x74);
-	return arg_0;
-}
-
 // @retail 0x2232a0
 void function_2232a0(void)
 {
-	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
+	function_223080(1, NONE, NONE, (s_223080 *)&g_47f0f8[0], 0, 0, 0);
+	function_2c8a0((byte const *)&g_47f0f8[0]);
 }
 
+// score 47 (was 47): The terminal record gets its base before the stores, and the dispatch stub carries the count in EDX.
+// M3 lane 7 r208 (H2M_FAST with 0x223240 and 0x2232a0, MATCH throughout; control 47, aligned 20): the terminal record
+// indexed `local_0 + 1` (the loop counter, equal to the view count after the loop) 182 (584 B, first difference +0x0); that
+// with the stub call's count `local_0 + 1` and no view-count local 99 (575 B); the terminal record indexed `local_2 + 1`
+// 183 (583 B); the view count declared after the loop re-measured 40 (the record base still added before the six stores);
+// the terminal call given `local_2, local_3` for the two layout arguments its constant-mode path never reads 47 (same code).
+// 0x2b5d0's real body is in src/unknown_023540.cpp, a file another lane holds this round: still BLOCKED-BY 0x2b5d0.
+// MiniMax D (11-20, run 131): no new form, no lower score (47): retail folds the record base into the six stores' displacement and forms the pointer with a lea after them, where this build materializes the base early, and the tail's 0x2b5d0 call takes its count in another register and lacks the `mov eax, edx` that retail has before the fstp: BLOCKED-BY 0x2b5d0 (its stub is in src/stubs/lane_k.cpp).
+// MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
+// Earlier first line (47, was 47): Earlier score 79. Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// Earlier measurement 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
+// 0x68290, 0x2f6b0, 0x2c490, 0x3f450 and the 0x2b5d0 stub) reproduces the full build's listing exactly (0 rows); against
+// retail it leaves 9 aligned rows: the terminal record's `add eax, base` before the six stores (retail folds the base into
+// the six displacements and forms the pointer with `lea` just before the type store), the `push eax` of the layout,
+// scheduled after the record setup (retail pushes it right after the record-array address, before EAX takes the count),
+// and the stub's missing `mov eax, edx`; the last two follow the stub's fastcall convention (BLOCKED-BY 0x2b5d0). Screened,
+// all the same code as the body (0 rows from it): the terminal record through a pointer local, a pointer assigned in the
+// loop and again for the terminal, a NULL-initialised pointer assigned before the call, `g_47f0f8 + view_count`, an
+// inline wrapper taking the index and one taking the pointer; in 0x223080's body (still the same out-of-line code there)
+// the type store moved after the two sentinel stores and a named view pointer for 0x2f800: same code. Worse: a walking
+// record pointer stepped in the loop 67 rows (the terminal uses the stepped register); 0x223080's two rectangle copies as
+// one pair copy 16. Diagnostics: without 0x2f800's object (kept out of line) 83 rows, still no fold; without 0x2f6b0's 14.
+// Round 192 (m3 lane 8, fast with 0x223240/0x2232a0/0x223080): the view count declared after the loop, right before the
+// terminal record 40 (575 B, but aligned 20 -> 25: the two zero byte stores move off a shared register, the record base
+// still forms early; a moved declaration, not kept); the stub call's count written as `local_2 + 1` 47 (same code);
+// without the found arm's second `local_5 = 0` 110; the source declared and zeroed inside the loop 47 (same code); the
+// terminal record through a reference 47 (same code). Still BLOCKED-BY 0x2b5d0 (its stub drops the count).
+// MiniMax B (11-19): no new form, no lower score (47): the terminal record's address is still formed differently
+// (this build adds the array's base into the register and stores at [eax + 4] and [eax + 8], retail keeps the scaled
+// index in the register and folds the base into the displacement), the tail call's arguments still need 0x2b5d0's own
+// body, which is stubbed in src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0, and part of the reduced-image count is the
+// pushed global addresses, which the reduced image places at other addresses than retail's.
+// Earlier first line (47, was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// Earlier 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// MiniMax C (11-19): no new form, no lower score (47): retail folds the record base into the displacement of the terminal stores (eax keeps the scaled index) where this build adds the base to the index register first, and typing the global's element as the callee's own record type (so the cast disappears) does not change it; the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// Earlier at 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
 // arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
-// main at 79): score 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// main at 79): at 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax E (11-14): no new form, no lower score (90 in this lane's measurement set; the earlier note records 79 under
 // its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
 // src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
@@ -109,7 +136,8 @@ void function_2232a0(void)
 // src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
 // retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
 // (BLOCKED-BY 0x2b5d0).
-// score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
+// MiniMax C (11-17): at 47 (was 79): the outer traversal is now a pretested while (retail tests the view count at the loop head and the bottom test jumps back into the body), the source pointer is cleared at the loop head and again in the found arm as retail does (its loop head and its found-arm getter each zero the pointer, the getter's default surviving the inline), so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// Earlier at 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
 // layout, source) at its disabled definition and this call passes (3, view_count, ...): the same values as before, in the
 // order retail's own 0x2b5d0 body needs (with these formals it takes the count in EAX and the mode in ECX, lane 11 r50 and
 // lane 2 r55 below) and retail's setup implies (count set up first, mode last); plain 79, 0x223240 and 0x2232a0 match.
@@ -355,6 +383,137 @@ void function_2232a0(void)
 // arm first (`if (local_1 < 4) { if (g_4686c4 != NONE) ... } else local_1 = NONE;`) 109; the found arm through
 // `&g_4e9bd4[local_1].state` (the getter's own spelling) 79; the do-while with the loop-top NULL and the found arm as
 // `g_4686c4 == NONE ? 0 : ...` 122; the pretested `for` with the loop-top NULL and that conditional 108.
+// Records from first live entry 183, live record cursor 141, cursor bound 165,
+// dispatch base from initializer return 48, initializer inside dispatch argument 48,
+// terminal pointer local 47, first entry shared at the tail 183, dispatch base from final cursor 134.
+// NOT kept: no qualifying gain or native terminal stores.
+// Earlier 47 (was 47): MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
+// MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
+// can be reproduced byte for byte in the reduced image by hoisting the four field stores into the two callers and leaving
+// the helper with the field_0 store, the 0x2f800 call and the memcpy - that form matches retail's instructions exactly up
+// to +0x17e, and its only difference is that retail materializes the record pointer with `lea eax, [eax + 0x47f0f8]` after
+// the six folded stores where this build folds every use of the same address into the displacement, so it scores 56 there
+// and is not kept; the pointer's spelling does not steer that choice (pointer parameter, local pointer, `g + index`,
+// byte-pointer arithmetic, an intptr cast, a member pointer and a helper returning the pointer all fold the pointer's uses
+// the same way). The full build tells a different story: there the block materializes the pointer early with
+// `add eax, <base>` and keeps the six stores off that register, so the first difference is at +0x13a and the score is 47
+// with the hoisted form as well - the reduced image's shape is not the full build's. BLOCKED-BY 0x2b5d0 and 0x16f3a0's
+// noinline declaration (tail stubs in another file).
+// Round J264: The terminal record base is formed before the early stores. The tail stub carries the count in EDX.
+// shared projection address 47, entry projection address 47, two view buffer addresses 77, rectangle pair field 72.
+// projection record with two stores 47, projection record with pair store 72, projection record with shared address 47, three-word descriptor prefix 47.
+// NOT kept: separate rectangle stores tie with the typed record. The pair copy shortens the body and the two-buffer form raises the score.
+// Y616: Incremented terminal count 47, count from the returned record
+// position 144, last player record plus one 183, count declaration at
+// entry 47, player count from total 157, both counts from returned record
+// position 158, typed optional view pointer 47, role names 47. Terminal
+// field addressing and the stub's count register still differ.
+// M3 lane 15 r97 (fast, plain confirmed; 0x223240, 0x2232a0 and 0x223080 matched throughout): the terminal record is the
+// existing 0x223080 called with constant arguments (1, NONE, NONE, the record, no source), which the compiler inlines here
+// and in 0x2232a0 as retail does (the same six stores, the delayed type store, the 0x2f800 defaults and the copy); the
+// hand-written copy of that path (the former function_2232a1) is removed from both callers: same code, 47, kept. Retail's
+// six folded stores followed by `lea` need the record pointer to stay unforwarded after them. One record pointer assigned
+// in the loop and again for the terminal call 47 (same code); the six stores in index form in the callers with a pointer
+// helper for the rest 56 (all nine uses fold; a diagnostic); the terminal index written `local_2 + 1` 183, that with the
+// count argument written out too 120, as `local_0 + 1` 182; the unused count and layout arguments as the loop's 47 (same
+// code). Left: the fold-then-form of the record base, and the 0x2b5d0 stub's count register (BLOCKED-BY 0x2b5d0, whose
+// activation still waits on 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600, all unmatched today).
+// M3 lane 9 r138 (fast with 0x223240/0x2232a0, MATCH each; base 47, aligned 20): the terminal record through a
+// reference bound to the element 47, a record pointer declared at the top and assigned after the loop 47, a typed
+// element pointer 47, `(byte *)g_47f0f8 + view_count * sizeof` 47 (all the same code); indexed by the loop counter
+// `local_0 + 1` 182 (584 bytes), as `&g_47f0f8[1] + local_2` 183 (583 bytes). Retail's own 0x2232a0 (constant record)
+// also emits the type store last, just ahead of the 0x2f800 work, so here the six index-form stores come first and
+// the record pointer is formed (`lea`) only for the type store and the two copy pointers; the integer and x87 streams
+// interleave the same way in both builds, so the difference is in address selection, not scheduling. Still BLOCKED-BY
+// 0x2b5d0 (its blockers 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 are all unmatched today).
+// M3 lane 14 r122 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 throughout; control 47): a terminal record pointer local
+// `g_47f0f8 + view_count` declared with the view count 163 (598 B); the view count as a `short` 79; the record passed as
+// the address of its first field 47; both 0x2b5d0 and terminal records as `g_47f0f8 + n` 47; the loop's records as
+// `g_47f0f8 + 1 + local_0` 47 (same code each). The stub still takes the count in EDX where retail passes EAX.
+// M3 lane 13 r119 (fast with 0x223240, 0x2232a0 and 0x223080; control 47, aligned 20): the terminal record as
+// `(s_223080 *)(g_47f0f8 + view_count)` 47, through a typed table-element local 47, through a `(void *)` cast 47, the
+// view count `long const` 47 (all the same code); the terminal record indexed `[local_2 + 1]` with the view count kept for
+// the stub call 183 (583 B). Diagnostic: the stub call removed still adds the table base into the register before the
+// terminal stores, so the base fold is not the stub's register need. Still BLOCKED-BY 0x2b5d0 for the tail.
+// M3 lane 5 r214 (fast with 0x223240/0x2232a0, both MATCH; control 47, aligned 20): view_count declared after the loop
+// where it is first used 40 (aligned 23: only the zero-byte stores change, a positional gain of 7 that is a moved
+// declaration, so not kept), the same as `long const` 40, with the stub's count written `local_2 + 1` 120; the scan loop
+// as a plain `for` 47, the stub's count as `local_2 + 1` alone 47, the layout as one conditional expression 47 (same code
+// each); dead longs K = 0..7 at the top 47 each. Still BLOCKED-BY 0x2b5d0 (activation loses 0x223240, 0x12b450 and
+// 0x12b690 while 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 stay unmatched).
+// M3 lane 8 r202 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 as before; control 47, aligned 20): the 0x2b5d0 stub and its
+// declaration `__stdcall` 56 (aligned 32), with view_count declared just before the terminal call 63; diagnostic, the terminal
+// record as a two-definition pointer (NULL, then set under a test) 78: the inlined 0x223080 still adds the base first, so
+// the call site's pointer shape does not reach the inlinee's fold.
+// M3 lane 3 r280 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 as before; control 47, aligned rows 12 of 174): the
+// tail call's records pointer written from the terminal record (`&g_47f0f8[view_count] - local_2`) 52 (577 B); the
+// terminal record addressed from the first view record (`&g_47f0f8[1] + local_2`) 183 (re-measure); the terminal
+// record's two sentinel fields stored by this function in index form ahead of the initialiser 52 (586 B: the fast
+// build then folds the table base into every later use, the type store and both `lea`s included, where retail folds
+// only the six stores and forms the pointer with `lea` before the type store); the view count as a dword 47 (same
+// code); one record pointer stepped by the loop and reused for the terminal record 141. Nine of the twelve rows are
+// that fold-then-form of the record base; the other three are the stub's count register (BLOCKED-BY 0x2b5d0).
+// M3 lane 1 r136 (fast with 0x223240/0x2232a0, MATCH; control 47): what is left besides the 0x2b5d0 tail is the terminal
+// record's addressing: retail keeps the scaled index in EAX for the first stores (base folded into the displacement) and forms
+// the pointer with a late `lea`, ours adds the base at once. The record address as byte arithmetic 47 (same code); the view
+// count formed after the loop 40 (a declaration move, seven points, not kept: the fold stays, only the tail's zero stores
+// change); the terminal record indexed by the loop counter 182 (584 B); the count written at both uses with no view_count
+// local 120; the count taken back from a terminal pointer (diagnostic) 195. Body unchanged.
+// Paired terminal count, paired clamp outcomes, total clamped directly, and
+// requested total clamped 172/192/176/174. With layout selected from the total
+// 172/187/176/173. NOT kept: all forms grow the function and still form the
+// terminal base early. The dispatch count still goes to EDX in the stub.
+// M3 lane 4 r236 (fast with 0x223080/0x223240/0x2232a0; control 47; the fast image shows matched 0x223080 at 2, a
+// reduced-image artifact): the terminal record passed as `&g_47f0f8[local_0 + 1]` (the record after the loop's last) 182
+// (584 B), as `&g_47f0f8[local_2 + 1]` 183 (583 B), as `g_47f0f8 + view_count` 47 (same code); the loop's record as
+// `g_47f0f8 + 1 + local_0` 47 (same code), with the terminal through the loop counter 182. Still BLOCKED-BY 0x2b5d0.
+// M3 lane 14 r132 (H2M_FAST with 0x223240/0x2232a0, MATCH each run; control 47): view_count declared after the loop 40
+// (re-measure; a moved declaration, match-only); on it the terminal record as `g_47f0f8 + view_count` 40, through a typed
+// element pointer declared at the call 40, the stub's views as `g_47f0f8 + 1` 40; the count as `1 + local_2` 47 (40 after
+// the loop). The base still folds early. 0x2b5d0's parked body is in another lane's file this round and the stub takes
+// the count in EDX (retail EAX): still BLOCKED-BY 0x2b5d0.
+// Terminal as the final indexed visit, terminal first with saved address or ordinal 251/218,
+// player first with saved address or ordinal 239/216, shared record cursor 273.
+// One-based player slots with terminal from the cursor 175, also using that cursor as dispatch count 163,
+// and terminal address from its predecessor 47. NOT kept: the combined traversal moves the matching prefix.
+// M3 lane 2 r127 (fast; control 47): round 55's held activation of 0x2b5d0 (its body in a new file, the stub removed)
+// re-measured on today's main: 0x2b5d0 MATCH and this function 28, but 0x223240 0 -> 19, 0x12b450 0 -> 120 and
+// 0x12b690 0 -> 23 again (the named `double` locals in the unmatched deep callees round 55 listed, three of them in
+// avoid-listed files, still flip 0x223240's EBX save), so not kept. The terminal record indexed as `local_2 + 1` 183
+// (583 B); as the address of its first member 47; the view count declared const right after the clamp 47 (both the
+// same code); indexed from the loop counter (`local_0 + 1`, equal there) 182 (584 B).
+// M3 lane 5 r222 (H2M_FAST with 0x223240/0x2232a0 MATCH, 0x223080 2 as before; control 47, aligned 20): the terminal record
+// as `&g_47f0f8[0] + view_count` 47, through its first field 47, through a named record pointer 47, `unsigned long
+// view_count` 47 (all the same code: the base still adds before the stores); as `&g_47f0f8[local_2] + 1` 183 (583 B).
+// Still BLOCKED-BY 0x2b5d0 for the tail's count register.
+// M3 lane 6 r224 (H2M_FAST with 0x223240/0x2232a0, MATCH unless said; control 47; all restored): `inline` on 0x223080's
+// definition 47 (the expanded terminal copy unchanged); the terminal record as byte arithmetic on the array with the view
+// count times the record size 47 (same code); in 0x223080 the record through a reference to `*arg_3` 47 (same code); its
+// three header stores moved to the end of each arm 98 (0x223080 137 at 446 B, 0x2232a0 19); the view count declared after
+// the loop 40 (re-measure), with the `inline` on 0x223080 40 (no further fold). Still BLOCKED-BY 0x2b5d0.
+// M3 lane 1 r148 (H2M fast with 0x223240/0x2232a0 MATCH, 0x223080 2 on the reduced image as before, check.py --fast agrees;
+// control 47): the terminal record indexed `local_2 + 1` with the view count kept for the stub call 183 (583 B, first
+// difference +0x0); the outer loop as a `for` with the counter set in its init 161 (first +0x30); the source pointer
+// declared inside the loop (no outer declaration, no found-arm clear) 110 (first +0xa8); the view count computed right
+// after the player count, ahead of the counter and layout 47 (same code); the view count declared const 47 (same code).
+// Body unchanged.
+// M3 lane 6 r224 (H2M_FAST with 0x223240/0x2232a0, MATCH unless said; control 47; all restored): `inline` on 0x223080's
+// definition 47 (the expanded terminal copy unchanged); the terminal record as byte arithmetic on the array with the view
+// count times the record size 47 (same code); in 0x223080 the record through a reference to `*arg_3` 47 (same code); its
+// three header stores moved to the end of each arm 98 (0x223080 137 at 446 B, 0x2232a0 19); the view count declared after
+// the loop 40 (re-measure), with the `inline` on 0x223080 40 (no further fold). Still BLOCKED-BY 0x2b5d0.
+// M3 lane 6 r229 (H2M_FAST with 0x223240 and 0x2232a0; control 47): 0x2b5d0's real body (round 55's recipe) activated in
+// place of the disabled copy in src/unknown_023540.cpp, stub removed, 53 (0x2b5d0 95: it no longer aligns its own frame,
+// and 0x223240 19 with EBX saved at entry); the same body in a file of its own 53 (the same); with that body the terminal
+// record still adds its base early, so that part is not the stub's. The found arm as a default-zero ternary 90; the layout
+// as one ternary in the `local_2 > 1` arm 47 (same code); that ternary with the view count declared at the terminal call
+// 108. Still BLOCKED-BY 0x2b5d0 (its activation is blocked by the frame-alignment chain round 55 lists).
+// M3 lane 2 r141 (H2M_FAST with 0x223240, MATCH; 0x223080 reads 2 on the reduced image even unchanged; control 47): the
+// terminal record indexed `local_2 + 1` with the view count kept for the stub call 183 (583 B); the view loop as
+// `for (; local_0 < local_2; ++local_0)` 47 (same code); the terminal record through a named pointer local 47 (same code);
+// no view-count local, `local_2 + 1` at both uses 120; the view count as a short 79. Re-measured: the view count declared
+// just ahead of the terminal call 40 (the flag stores then share a CL zero; a moved declaration, under the bar). Still
+// BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
@@ -384,9 +543,10 @@ void function_2234e0(void)
 	else
 		local_3 = 0;
 	long view_count = local_2 + 1;
-	do
+	byte const *local_5 = 0;
+	while (local_0 < local_2)
 	{
-		byte const *local_5;
+		local_5 = 0;
 		for (++local_1; local_1 < 4; ++local_1)
 		{
 			if (local_player_exists(local_1))
@@ -394,18 +554,19 @@ void function_2234e0(void)
 		}
 		if (local_1 >= 4)
 		{
-			local_5 = 0;
 			local_1 = NONE;
 		}
-		else if (g_4686c4 != NONE)
-			local_5 = g_4e9c8c[local_1].field_0;
 		else
+		{
 			local_5 = 0;
+			if (g_4686c4 != NONE)
+				local_5 = g_4e9c8c[local_1].field_0;
+		}
 		function_223080(0, local_0, local_1, (s_223080 *)&g_47f0f8[local_0 + 1],
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
-	} while (local_0 < local_2);
-	function_2232a1(&g_47f0f8[view_count]);
+	}
+	function_223080(1, NONE, NONE, (s_223080 *)&g_47f0f8[view_count], 0, 0, 0);
 	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }
 

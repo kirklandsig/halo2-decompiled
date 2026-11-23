@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "physical_memory.h"
+#include "normalize3d.h"
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
 
@@ -62,9 +63,9 @@ union s_180d85
 real function_30bf0(vector3f *arg_0);
 void *function_439d0(long arg_0);
 bool __stdcall function_d47d0(s_cluster_query const *arg_0, color3f *arg_1);
-color3f *function_131c20(color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3, color3f *arg_4);
+color3f *function_131c20(color3f *arg_4, color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3);
 dword __cdecl pack_color3f(color3f const *arg_0);
-long function_17cfa0(long first_index, long definition_index, short cluster_index, short decal_type, bool permanent);
+long function_17cfa0(long definition_index, long first_index, short cluster_index, short decal_type, bool permanent);
 void __stdcall function_180b60(s_cluster_query const *arg_0, real arg_1, long arg_2);
 dword vector3d_pack(vector3f const *arg_0);
 
@@ -107,6 +108,48 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// score 91 (was 91; 93 earlier): r176 baseline 91 (fast and full); the 0x17cfa0 call setup now agrees with retail. Left: the entry
+// guard's registers, the count loop's movsx (retail tests the word and zero-extends), the count-sum/vertex-index slot pair
+// and the inlined point transform's x/y row product forms (24 lines over the four copies).
+// MiniMax C (11-19): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the
+// 0x17cfa0 call setup all still differ, and the callee that decides the last one lives in another file; the body stands.
+// MiniMax E (11-20): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the 0x17cfa0 call setup still differ, and the callee that decides the last one is in another file and does not match yet: BLOCKED-BY 0x17cfa0.
+// Earlier first line: score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
+// Round 127 (m3 lane 10, fast): dead initialised locals at the top for K = 8/10/12 216/216/261 and K = 14..32 (even)
+// 93 each, the transform rows never flip (diagnostic, removed); the count sum as a `short` without its two casts 93
+// (same code); with the short count-loop index as well 102 (aligned 36 against 38); the luminance in red, green, blue
+// order 93 (same code), with the short index 102; the strip loop's vertex cursor as a `long` 367 (2659 bytes).
+// definition in EAX, retail the other way round). Round 199 (m3 lane 5, fast): the short count-loop index re-measured 102
+// (aligned 81, register-masked 36); dead initialised locals at the top, k = 1..7, 168/169/169/169/169/213/216 (diagnostic:
+// the transform rows' operand sides never move, the field sums and the count slots do); the same on the short index
+// 177/178/178/178/178/222/225; k = 1..4 inside the transform helper 169/169/213/216; the transform helper taking and
+// returning the point by value 721 (2940 bytes).
+// m3 lane 8 r195 (fast, control 93): retail stores the luminance into the packed vector only after the vertex loop's
+// pretest (the preheader); the store moved into the loop body as its first statement 547, just before the pack call 509
+// (both 2695 bytes: kept in xmm6 and stored every pass, never hoisted, and not hoisted either with the clamp helper's
+// volatile reads removed, 680); the loop under `if (count > 0)` with the store inside 545 (the count is loaded into ax and
+// tested); under the loop's own test `if (counter < count)` 91 (retail's preheader exactly, but a repeated test, kept only
+// with a match); that with the luminance red, blue, green 89, with the short count index 100, all three 98; the x row
+// accumulating the left product first 94 (retail's emission order, accumulator register swapped); dead initialised locals
+// on the short index (k = 1..7) and inside the transform helper both change code, the rows never flip.
+// MiniMax H (11-18): no new form, no lower score (93): retail's transform rows compute the up product first and keep
+// each product's first operand in the destination register, where this build computes the left product first with the
+// two operands the other way round; spelling the three products in the opposite order compiles to the same bytes, and
+// giving each product a named local and summing them shortens the body by 16 bytes and scores 235. What still differs:
+// the entry guard's registers (ours loads the strip record into ecx after the pushes, retail into eax before them), the
+// count loop's sign extension where retail zero-extends the word, the swapped count sum and vertex cursor slots, and the
+// 0x17cfa0 call setup (that callee's own body is in another file).
+// MiniMax H (11-18): no new form, no lower score (93): the length agrees (2683 bytes against 2683) and what still
+// differs is the entry guard's registers (ours loads the strip record into ecx after the saves, retail into eax
+// before them), the count loop's extension (ours sign-extends the word into the counter, retail zero-extends it
+// and counts down), the accumulator's slot (0x10 here, 0x14 in retail) and the 0x17cfa0 call setup. The count's
+// extension cannot be changed here without a width cast on the compare or a copy of the field in a local of its
+// own, which the rules drop: BLOCKED-BY 0x17cfa0, whose body is in another file.
+// MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
+// argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
+// still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
+// after them), the count loop's sign extension where retail zero-extends the word, and the swapped slots of the count
+// sum and the vertex cursor.
 // MiniMax S (11-15): no new form, no lower score (93): the three field sums spelled as a load and an accumulate
 // give 290 (the body then loses 21 bytes and every row moves), the same sums spelled the other way round compile to
 // the same code, the luminance red, blue, green gives 91, a gain under the review threshold, and the vertex cursor
@@ -128,7 +171,20 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // short strip count read at the entry gives 168; all three were restored. What still differs: the count sum and the
 // vertex cursor take the opposite stack slots, and the 0x17cfa0 call still passes the first index in ecx where retail
 // passes it in eax (that callee lives in another file).
-// score 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
+// MiniMax R run 92 (11-17): no new form, no lower score (93): retail's transform rows multiply up.i*z first and keep
+// the second product in the vector's register, where this build computes the second product first and forms the first
+// one the other way round; that middle product written with the matrix term first and the row written as an
+// assignment instead of an accumulation both measure 93 (the same code) and the row written as one expression
+// measures 298, so the body stands; the permuter's run over the reduced image did not finish in its window and was
+// stopped; what still differs is the entry guard's registers, the count loop's sign extension, the swapped count and
+// vertex slots and the 0x17cfa0 call's argument registers (that callee lives in another file).
+// MiniMax R (11-17): no new form, no lower score (93): the permuter's annealed tries over the reduced image found
+// nothing below 93, so the body stands; what still differs is that retail loads the fifth argument into eax before
+// the register saves where this build loads the strip record into ecx after them, the count loop sign-extends the
+// word where retail tests it and zero-extends, the count sum and the vertex cursor take the opposite stack slots,
+// and the transform's x row computes left.i*y before up.i*z where retail computes up.i*z before y*left.i; the call to
+// 0x17cfa0 that passes the first index in ecx where retail passes it in eax belongs to that callee's own file.
+// Earlier 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
 // ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
 // zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)
 // and the transform rows' product forms. Earlier rounds below.
@@ -153,6 +209,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ecx where retail loads it before them into eax; the guard as one positive test scores 121, a local copy of the strip pointer 168, and
 // the permuter's 22 annealed tries over the reduced image found nothing below the 93 baseline.
 #pragma inline_depth(1)
+// MiniMax E (11-16): no new form kept, the score is still 93: the guard's first index travels on the stack where retail keeps it in eax, and the callee that takes it, 0x17cfa0, has its parameter order in another file (BLOCKED-BY 0x17cfa0); the luminance terms in red, blue, green order score 91 and were restored (a gain of 2 is below the review bar), the guard with the cluster test first scores 650 and the count field as unsigned scores 149, so the body stands.
 // Earlier at 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // MiniMax I (11-10): no new form, no lower score (93); the count sum and the vertex cursor still take the
 // opposite stack slots, the three field sums still load the lower field first where retail loads the higher
@@ -179,6 +236,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
 // separate returns gives 650 and the negated guard compiles identically, so both were reverted.
 // MiniMax S (11-06): no new form, no lower score.
+// M3 lane 9 r144 (fast with 0x180b60/0xd47d0/0x131c20/0x30bf0, control 93): the short count-loop index again gives
+// retail's prologue (the guard's record in EAX before the saves) and count loop, 102 (first difference +0x29); on it the
+// three centre sums written lower field first 102 (same code), the luminance written red, blue, green 100, both 100.
+// The count sum and the vertex index renamed (quad_count/vertex_index, strip_quads/point_index: both name orders) 93
+// each: their swapped frame homes do not follow the names.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
 // prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
@@ -288,6 +350,65 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // luminance order with the transform x row accumulating the left product first 92 (retail's emission order and
 // load forms for the row, the accumulator register swapped); the luminance order with the x row's first two
 // products in one expression 296 (2658 bytes).
+// M3 lane 15 r95 (fast; the plain baseline is 93: 28 of its lines are global, call and float-pool addresses, 24 the
+// transform rows): the four transforms through the existing out-of-line transform4x3f_apply_point (0x142570; it stays
+// a call) 1352 (1929 bytes); the transform rows each as one expression with `x = scale * x`, the spelling of 0x142570's
+// own body, 316 (2647 bytes); the scale written `scale * x` and the locals named x, y, z with a `sum` accumulator 93
+// (same code); the scale read once into a const local 226 (2657 bytes); the point read in an if/else of the scale test
+// 305 (2663 bytes); the test written `1.0f != scale` 98; the four locals in one declaration 93 (same code). Retail's
+// copies keep each product in its spelled operand order (`up.i * z` loaded, `y * left.i` copied, `left.j * y` loaded);
+// ours commutes those three whatever the spelling. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// m3 lane 14 r108 (fast with 0x17cfa0 105, 0x13d370 201, 0x439d0 5, 0x180b60 MATCH; control 93, 63 aligned rows by sequence alignment with
+// addresses masked): the short count-loop index re-measured 102 (aligned 81; first difference moves from +0xa to +0x29: retail's prologue and
+// count loop, then the three field sums load the lower field first, the count sum and vertex counter keep the opposite slots, the 0x13d370 and
+// 0x17cfa0 setups rotate EAX/ECX/EDX and the loop pad is `mov edi, edi` for retail's nop). New on it: one short index declared ahead of the count
+// loop and shared with the strip loop 292 (2667 B, aligned 117); shared with the vertex loop instead 292 (2667 B, aligned 117); the short index
+// declared first in the block 102 (same code); the short count loop as a `while` 102 (same code); a pointer cursor over the strip lengths with a
+// short countdown 603 (2663 B, aligned 110). The short index is retail's by its prologue and loop, but nothing found turns the field sums back.
+// P604: Forward strip-length cursor with long/short/word ordinals, long/short remaining
+// counts, the cursor bound before normalization, and checked-count reuse with a short
+// ordinal/remaining count: 583/285/660/583/603/637/284/604. NOT kept: the entry load stays late and
+// the cursor forms disturb the loop and frame slots.
+// M3 lane 5 r214 (fast; control 93; the reduced image warns that callee 0x439d0 builds differently): the short
+// count-loop index re-measured 102 (retail's prologue and `test bx, bx; movzx ebx, bx` loop; the centre sums flip to the
+// lower field first, the count/counter slots stay swapped, the transform rows keep our operand order); on it dead longs
+// K = 1..7 at the top 177/178/178/178/178/222/225 (one centre-sum row and the fourth transform copy change order, the
+// first three copies do not), one dead long inside the block or after the count loop 177; the transform helper's point
+// read z, y, x 114; the vertex counter as a long 585 (2697 bytes). Still BLOCKED-BY 0x17cfa0 for the call setup.
+// M3 lane 11 r128 (fast with 0x180b60 MATCH; control 93, aligned 63 by a sequence-aligned diff, 38 with registers masked;
+// row state = how many of the four inlined transforms have retail's x-row and y-row operand forms, 0 of 4 throughout):
+// one to seven unused long locals re-measured 168/169/169/169/169/213/216 (aligned 87 to 97, the rows never move); live
+// named float locals in the helpers, counted per expansion: a named result in the random-fraction helper 169, a named x
+// output in the transform helper 169, x and y 169, x, y and z 213, the fraction result with x 169, with x and y 216, with
+// all three 216 (the same states as the unused locals, rows unmoved); the transform helper's accumulator through a `real &`
+// 307 (2689 B, aligned 327), for the x row only 298 (2669 B); one accumulator per row 169; the x row's left product in a
+// named local 297 (2661 B); the two `+=` of the left terms written `local_4 = local_4 + ...` 93 (same code). Retail's rows
+// keep every product in its spelled operand order and statement order; ours evaluates the x row's left product ahead of
+// its up product and commutes three products, at every symbol count tried. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// m3 lane 4 r248 (h2m fast with 0x180b60, 0x17cfa0, 0x13d370, 0x439d0; control 91, aligned 55): the luminance terms red,
+// green, blue 91 (same code); red, blue, green re-measured 89 (gain under 3, not kept); the three centre sums spelled
+// lower field first 91 (same code); the vertex counter declared in its `for` after the luminance store 142, with the
+// red, blue, green terms 140. Diagnostic: the clamp helper's two input pointers without `volatile` 694 (2551 B), so
+// those reads are what give retail's per-test re-reads. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// M3 lane 12 r176 (h2m fast, control 91, 63 non-address lines): the short count-loop index again 102 (entry and count
+// loop exact, the three centre sums and two call setups turn); that with a short count sum 102 (same code); the scale
+// steps as `x = scale * x` 91 (same code); the transform rows as one expression each 314 (2647 B); one named sum per row
+// 167 (rows unchanged, the rest moves). The rows never flip. Body unchanged.
+// M3 lane 6 r231 (h2m fast, control 91; 0x17cfa0 and 0x180b60 MATCH): kept, the 1/256 scale through the existing
+// vector3f_scale (same code). The three centre ranges typed as the existing real_bounds (hi + lo) 91 on the long index and
+// 102 on the short index (same code each); the colour/vector overlay split into a colour and a separate vector 267 (2668 B:
+// retail shares one slot); vector3f_scale on the short index 102 (same code); the luminance written constant-first in the
+// green, blue, red order 91 and red, green, blue 91 (same code each), blue, green, red 92.
+// M3 lane 6 r233 (h2m fast with 0x180b60 and 0x17cfa0, both MATCH; control 91): the vertex loop's input element pointer
+// `*const` 91; the output pointer `*const` 91; the stored flag as a `(bool)` cast of the masked byte 91; the colour record
+// declared at the top of the block 91 (same code each); the fourth strip index as `local_13 + (wrap ? 0 : local_16 + 2)`
+// 417. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// M3 lane 12 r181 (h2m fast, control 91): the transform helper's rows as src/unknown_11c380.cpp spells its matched
+// inline transform (x row left, forward, up term by term; y and z rows one expression each) 282 (2666 B); as
+// src/unknown_1eff40.cpp spells it (three named x-row terms) 284 (2664 B); this x row with one-expression y and z rows
+// in up, left, forward order 280 and in forward, up, left order 280 (2666 B each); this x row with the y and z rows term
+// by term in up, left, forward order 140 (2683 B). The count sum and the vertex counter renamed to sort either way
+// round 91/91/91 (same code: the slot pair ignores names).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
@@ -305,16 +426,14 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
             local_3.j = arg_0->field_98 + arg_0->field_94;
             local_3.k = arg_0->field_a0 + arg_0->field_9c;
             function_30bf0(&local_3);
-            local_3.i *= 0.00390625f;
-            local_3.j *= 0.00390625f;
-            local_3.k *= 0.00390625f;
+            vector3f_scale(&local_3, 0.00390625f, &local_3);
         }
         for (long local_5 = 0; local_5 < arg_5->field_5802; local_5++)
             local_4 += (arg_5->field_5002[local_5] - 1) / 2;
         long local_5 = function_13d370((s_physical_object *)g_509448, (short)local_4 * 0x40, 1);
         if (local_5 != NONE)
         {
-            long local_6 = function_17cfa0(NONE, local_5, arg_3->cluster_index, *(short *)(local_2 + 4), arg_4);
+            long local_6 = function_17cfa0(local_5, NONE, arg_3->cluster_index, *(short *)(local_2 + 4), arg_4);
             if (local_6 != NONE)
             {
                 byte *local_7 = g_4ea950->data + (local_6 & 0xffff) * 0x40;
@@ -357,7 +476,7 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
                     *(short *)(local_7 + 0x2a) = (short)local_4;
                     *(long *)(local_7 + 0x2c) = arg_2;
                     if (!arg_6->field_0) arg_6->field_8 = function_180d82();
-                    function_131c20((color3f *)(local_2 + 0x1c), (color3f *)(local_2 + 0x28), ((dword)local_2[0] >> 1) & 3, arg_6->field_8, &local_11.field_0);
+                    function_131c20(&local_11.field_0, (color3f *)(local_2 + 0x1c), (color3f *)(local_2 + 0x28), ((dword)local_2[0] >> 1) & 3, arg_6->field_8);
                     *(dword *)(local_7 + 0x24) = pack_color3f(&local_11.field_0);
                     local_7[0x27] = 0xff;
                     short local_13 = 0;

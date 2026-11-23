@@ -311,6 +311,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+/* hands 0x10e480 the promotion data run of a sound permutation's entry */
 // score 2 (was 2): only the two loads' registers differ: ours loads the samples address into EDI (the data
 // pointer's dying register) and the entry's data offset into EDX, retail the samples into EDX and the offset into EDI.
 // MiniMax E (11-09): 2 (was 7): the samples pointer is copied into a dword and the scale is passed
@@ -423,21 +424,63 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // offset, size) over the data head 8; the set as the existing two-field tag-data aggregate with the plain sum 8; the
 // samples fetched through an inline out-parameter getter into an address-taken local 8 (only memcpy keeps the scale first);
 // the offset through an inline entry getter, plain samples 8, memcpy'd samples 2 (the getter's result propagates).
+// Round 91 (m3 lane 15, fast): the memcpy replaced by a conversion of the samples address: `(byte const *)(dword)
+// data->samples + offset` 8, a dword local initialised from that cast 8, `(byte const *)(data->samples + offset)` 8,
+// `(byte const *)((dword)data->samples + offset)` 8, through `(void const *)` 8 (all the plain sum's schedule).
+// M3 lane 11 r108 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10, all matched throughout): the set built and passed
+// in a forceinline helper taking (object, tag, samples, offset, count, scale) with the plain sum 8 (the add still runs
+// ahead of the scale load); the samples block read as a by-value copy of the existing two-field tag-data aggregate of
+// include/unknown_246cd0.h (address + offset) 28 (155 bytes: the dead size copy stays); the sum named where it is
+// computed with the count stored before the address 4 (registers unchanged, the stores follow source order); a
+// forceinline setter taking (set, count, offset, samples) and returning the set, called in 0x10e480's argument list with
+// the plain sum 8; `entry` declared before `data` and the copy local before the set 2 (same code). Reading of the
+// listings: in every plain-sum form the samples take EAX, so the scale load (EAX) waits for the add; retail's samples
+// and offset are both short temporaries (EDX, then EDI only because EAX holds the scale and ECX the set's address and
+// the object index across the add), which needs the add to come after the argument setup in the IR.
+// Round 91 (m3 lane 2, fast with 0x10e480): the plain sum with the scale first copied into a block local passed
+// to the call 8 (samples into EAX, the offset still the add's destination, the add ahead of the scale load); on
+// the copy body: const data, const entry and const sound pointers 2/2/2, a `long const` count 2 (same code). Restored.
+// Round 94 (m3 lane 2, fast with 0x10e480): the offset in a named local on the plain sum 8; the set's address field
+// bound by reference, assigned the samples, then `+= offset` 9 (the samples become the add's destination with the
+// offset in EDI as retail, but the offset loads first into EAX and the samples reuse EDI, ahead of the scale); the
+// same with the count stored first 11; the copied samples assigned to the field then `+= offset` 8 (the plain sum's
+// schedule returns); the samples copied with memcpy straight into the referenced field, then `+=` 9; the copied
+// samples assigned to the referenced field, then `+= offset` 9; a `dword &` bound to the copy, `+= offset`, then
+// stored 2 (same code). A compile-only screen (CL without /GL reproduces this body's tail) shows the add's first
+// operand is the more complex one and, for two field reads, the offset (pointer arithmetic puts the index first);
+// every plain spelling, rename (data after entry), declaration order or integer sum keeps the offset first; only a
+// non-forwardable offset (a copy of the entry, a memcpy, or a reference to the result) puts the samples first.
+// M3 lane 13 r106 (fast with 0x10e480, matched throughout): the entry as a `const &` to the array element 2; the samples'
+// memcpy moved to the function's top 57 (142 bytes); the offset bound to a `long const &` at the sum 2; the sum through a
+// file-local forceinline (base, offset) address helper 2; `samples_address += offset` then the cast 8. Re-measured the
+// memcpy'd offset with plain samples 3: the samples load into EDX as retail, but the offset loads first, into the entry's
+// ESI in place, where retail loads it second into the data pointer's dying EDI.
+// m3 lane 14 r109 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): both sum operands copied with memcpy into locals, the
+// pointer sum 9 (the scale moves to EDX, the offset loads into the entry's ESI in place and becomes the add's destination,
+// `add esi, edi`), as an integer sum 9, with the offset local declared ahead of the samples local 9 (same code: the
+// commutative add keeps the offset as its destination whatever the declaration order); the sum named before the set's
+// declaration 2; the scale copied into a local at the call 2 (both the same code).
+// M3 lane 3 r260 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the sound, data, entry and count locals declared bare
+// and then assigned 2; no sound-tag local (its promotion index read inline) 2; the curve set as an aggregate initializer on
+// the copied samples address 4; the guard written `0 < count ... != 0` 2; the entry index in a named local 2.
+// Round 181 (m3 lane 7, fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the copy read through a cast of its own address
+// (`*(byte const *const *)&samples_address + offset`) 2 and as `(byte const *)*(dword const *)&samples_address` 2 (folded); a
+// `long` copy 2; the offset cast `(dword)` in the pointer sum 2; an integer sum of the copy and the `(dword)` offset, then the
+// cast, 2. In every form the operand loaded second becomes the add's destination (EDX).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
 	s_sound_promotion_tag *sound = (s_sound_promotion_tag *)g_4e3b44[tag_index & 0xffff].bytes;
-	s_sound_promotion_data *data = ((s_sound_globals_promotion_view *)g_51ebd4)->promotions[sound->promotion_index].data;
-	s_sound_promotion_entry *entry = &data->entries[permutation->entry_index];
+	short promotion_index = sound->promotion_index;
+	s_sound_promotion_entry *entry = &((s_sound_globals_promotion_view *)g_51ebd4)->promotions[promotion_index].data->entries[permutation->entry_index];
+	s_sound_promotion_data *data = ((s_sound_globals_promotion_view *)g_51ebd4)->promotions[promotion_index].data;
 	long count = entry->data_count;
 
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		dword samples_address;
 
-		memcpy(&samples_address, &data->samples, sizeof(samples_address));
-		curves.data = (byte const *)samples_address + entry->data_offset;
+		curves.data = data->samples + entry->data_offset;
 		curves.count = count;
 		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
@@ -632,13 +675,46 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// score 49 (was 49): left as round 191 lists below. Round 199 (m3 lane 5, fast; on round 191's 20-count chain of match-only
+// forms, re-measured 20, aligned / register-masked 15 / 9): the definition lookup after the +2 store 30; that with the pointer
+// select 122 (1032 bytes); the marker word in a named short for its test and call 20 (same code), with the pointer select 98;
+// the forward compress before the position copy 22; the marker declared before its name 20, the position through a named
+// point local 20, through a by-value inline setter 20, the marker as a one-element array 20, the position and forward read
+// through a named matrix pointer 20 (all the same code). Diagnostics (volatile probe loads, reverted): one probe before the
+// position copy 85 (the copy one register further), two probes there 89 with retail's copy exactly (masked 9: only the head,
+// the select and the probes left), two probes before the marker name or before 0xb8d30 103/96 (copy fixed, the 0xb8d30
+// owner push moves to EAX). So retail has two more (or one fewer) scratch temps than this body between the 0xb8d30 owner
+// load and the copy; no source form found yet that gives them. The pointer select with those two probes 163 (register-masked
+// 13): the head/select and the copy are two separate rotation offsets.
+// Earlier 49 (was 184): `inline` on 0x188790's definition (round 191, plain): this body then keeps the object in EBX, re-zeroes
+// xmm0 after each 0x188790 call and has retail's 0x80 frame. Left: the top select (retail forms the address in each arm and
+// loads once, `mov eax, [eax]`), the clear path's `or byte ptr [edi], 2` (ours folds it into a word store), case 0's flag
+// store ahead of the last location store, the audibility byte stored after its arguments, and the marker position copy's
+// scratch registers (retail edx/eax/ecx, ours eax/ecx/edx). Round 191's line at the end of this note has the forms.
+// MiniMax I (11-16): no new form, no lower score (184): spelling the flags aggregate with byte-wide members and
+// byte-wide bitfields (retail tests a byte at offset 4) scores 336 and was restored, the last condition split into two
+// nested tests is 184, and the permuter over the reduced image found nothing below 184; what still differs is the frame,
+// 0x84 against retail's 0x80, because the literal 1 is pooled into EBX and the leftover store takes a four-byte home, which
+// moves the case-3 vector, the marker and the trailing dword four bytes up, and the top field is read as a value where
+// retail reads it through a pointer.
+// MiniMax C (11-16): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80, so the extra four bytes are not in the case-0 cluster local, the object index local or the marker name local (dropping each of them leaves the frame at 0x84 and the score at 184); what is left is the pooled literal 1 in EBX, the four-byte gap between case 3's compress source and the 0x17b2d0 out-parameter where retail shares one slot, and the audibility byte's store.
 // MiniMax I (11-15): no new form, no lower score (184): the only lever left is the held chain - `inline` on 0x188790's
 // definition, which lives in src/unknown_1887d0.cpp and not in this lane's file (113 alone, 49 with the ternary this body
 // already keeps), and the steps after it rest on match-only forms; the body stands.
-// score 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
+// MiniMax R (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80, the constant 1
+// still sits in ebx, and the audibility byte and the flag stores still take other registers; the chain that reaches
+// the lower scores needs the inline contract on 0x188790, whose definition is in src/unknown_1887d0.cpp, and the rest
+// of that chain (the flags cleared by memset, the named listener, the named object index) may be kept only with an
+// exact match.
+// MiniMax I (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80 and the
+// constant 1 still sits in EBX; retail reads the top field through a pointer (`lea eax, [esi + 0x10]`, then
+// `mov eax, 0x444ae0; mov eax, [eax]`), which this build only reaches by taking the address of the shared
+// constant g_444ae0, and the rest of the chain that reaches the lower scores needs the inline contract on
+// 0x188790, whose definition is in src/unknown_1887d0.cpp.
+// Earlier 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
 // where this build keeps it in ECX with a 0x84 frame, and that follows whether 0x188790 is expanded, which is decided
 // by its definition in src/unknown_1887d0.cpp: BLOCKED-BY that file.
-// score 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
+// Earlier 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
 // ruling): `inline` on 0x188790's definition, 113 alone and 49 with the ternary (build/r170/held-0x18cbc0.patch in the m3-lane6
 // worktree); round 170's line at the end of this note has the forms.
 // MiniMax E (11-10): no new form, no lower score (246); the literal 1 is still pooled in EBX, so the frame stays 0x84 against retail's 0x80 (a byte flag field 324, word bitfields 246 and the flag-0 bitfield test 324 all score the same or worse).
@@ -840,14 +916,49 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // retail shares the last `mov [edi+3], al` between the forced `audible = 1` and the outer `else audible = 0` (load/and/store,
 // laid out before the join); ours emits the else as `and byte ptr [edi+3], 0xf0` after the `ret`. Tried: the forced block as
 // `flags |= 1; audible = 1;` 183 (only the `or` moves up, as retail); the type-1 test inverted with `audible = 0` first 193.
+// MiniMax I (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80 and the
+// literal 1 is still pooled in ebx, where retail tests the flags byte with an immediate and materialises the 1 only
+// for the shift; retail gives ebx to the object pointer because it treats 0x188790 as clobbering ecx, and that
+// helper's inline-ness is decided in src/unknown_1887d0.cpp, which this lane may not edit. Reading the same bit
+// through TEST_FIELD_BIT(sound->flag0) instead of sound->flags & 1 compiles to the same bytes (184).
+// M3 lane 6 r191 (fast with 0x188790/0x21db80; fast and plain agree on this body, checked at 49 and 20): `inline` on
+// 0x188790's definition kept, 184 -> 49 (plain, 1031 B; main has 83 @retail definitions marked inline, and retail's call
+// Matched in a full build with stand-in SDK headers (was 49): the top value is read into a local used through a
+// reference before it is stored, the owner is passed through a reference-bound local, unknown02 is cleared through
+// a pointer to the field (which keeps case 2's `or byte [edi], 2` separate), the listener is chosen before the 0x10
+// flag is set, and the audible object index is named before the 0x18d4f0 call.
+// Before:
+// sites show the clobber: xmm0 re-zeroed after each call, the object held in EBX). Not kept, on that (match-only forms): the
+// flags cleared by memset 31 (gives retail's `or byte ptr [edi], 2`), plus the listener named ahead of the 0x1000 flag 29,
+// plus the object index named before audible 20 (plain 20, 1029 B). On the 20 chain: the pointer select `*(type == 0 ?
+// &owner : &g_444ae0)` 98 (the head is then retail's, entry scheduling included, but the load lands in EDX and cases 3 and
+// 2 run one scratch register off); that select on the 49/31/29 steps 113/109/107, with the +2 store ahead of it 104; a
+// const datum pointer 20 (same code; 49 on the kept body), with the pointer select 98; the select bound to a const
+// reference 98, a named pointer local 98, a reference to the dereference 98; a one-member aggregate view of the three
+// fields 98, memcpy from the selected address 98, a reference to that view 98; the pointer local set to the field and
+// overwritten when type != 0, and a long holding the address then its target, 330 each (the load is then retail's
+// `mov eax, [eax]`, but the field address moves to EBP and the frame grows); a reference-bound copy of the pointer 98.
+// 0x444ae0 holds 0.0f and sits between float constants: with real-typed operands the value select 49 (movss in both arms,
+// plain 49), the pointer select 98, a const real reference 98. Marker copy: through an inline pointer setter 20, a
+// position accessor 20, both 20, a forward accessor for the compress call 20, a reference setter 20, memcpy 20 (all the
+// same code); the marker name as a conditional expression 28; the 0xb8d30 result named 20; that call through an inline
+// void helper 20; its object through the type-1 accessor 20.
+// The select through inline helpers, on the 20 chain with the const datum pointer (all 98, the same code as the written
+// pointer select, the load still in EDX): a setter taking the value by const reference; an accessor returning a const
+// reference; an accessor returning a pointer; the reference accessor into a by-value setter and into a reference setter;
+// an accessor returning the dereferenced value; a by-value setter given the written dereference; a pointer accessor
+// written with two returns.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
 	s_loop_location_datum *sound = &((s_loop_location_datum *)g_4ed28c->data)[looping_sound_index & 0xffff];
 	byte *definition = g_4e3b44[sound->tag & 0xffff].bytes;
 	location->flags = 0;
-	location->unknown08 = sound->type == 0 ? sound->owner : g_444ae0;
-	location->unknown02 = 0;
+	long top = *(sound->type == 0 ? &sound->owner : &g_444ae0);
+	long const &kept_top = top;
+	location->unknown08 = kept_top;
+	byte *unknown02 = &location->unknown02;
+	*unknown02 = 0;
 	switch (sound->type)
 	{
 	case 0:
@@ -857,8 +968,9 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		{
 			location->spatial.location.cluster_index = cluster;
 			location->spatial.location.leaf_index = NONE;
-			location->spatial.location.bsp_index = sound->type == 0 ? sound->listener : NONE;
+			long listener = sound->type == 0 ? sound->listener : NONE;
 			((byte *)&location->flags)[1] |= 0x10;
+			location->spatial.location.bsp_index = listener;
 		}
 		break;
 	}
@@ -908,13 +1020,16 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		long marker_name = 0;
 		if (sound->marker != NONE) marker_name = function_b8c40(sound->owner, sound->marker);
 		s_object_marker marker;
-		function_b8d30(sound->owner, marker_name, &marker, 1, false);
+		long owner = sound->owner;
+		long const &kept_owner = owner;
+		function_b8d30(kept_owner, marker_name, &marker, 1, false);
 		location->spatial.position = marker.matrix.position;
 		location->spatial.compressed_forward = vector3d_compress(&marker.matrix.forward);
 		function_ba1d0(loop_location_object_index(sound), &location->spatial.velocity, NULL);
 		object_get_root_location(loop_location_object_index(sound), &location->spatial.location);
+		long audible_object_index = loop_location_object_index(sound);
 		char audible = 1;
-		function_18d4f0(loop_location_object_index(sound), &audible, NULL);
+		function_18d4f0(audible_object_index, &audible, NULL);
 		location->audible = audible;
 		if ((*definition & 8) && !location->audible)
 		{

@@ -9,6 +9,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
+/* chooses and stores an actor's movement direction from a stored vector, a perpendicular side test and a
+   path trace; the length's sum of squares is staged around the flag store, as retail schedules it */
 // score 4 (was 4): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
 // the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
@@ -243,6 +245,50 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 108 (m3 lane 1, fast): the record pointer `s_actor_view *const` 4; the loop bound as `sizeof(local_3.n) /
 // sizeof(local_3.n[0])` 4; the rows indexed from each vector's first component, `(&local_0->position.x)[component]`, 4;
 // the flag through a `bool *const` to its field 4 (re-measured); a `byte` component counter 243 (960 bytes, not unrolled).
+// Round 107 (m3 lane 11, fast): the flag through a `bool *const` taken at entry, with the rows written out by field 191
+// (1001 bytes: the flag stays early but the interleave is ours; written-out rows also renumber the later projection's
+// XMM registers, so retail's rows are loop-shaped); the copy as memcpy with the rows written out 192 (1001 bytes, the
+// flag sinks: exposing the copy's address early gives the store no edge); the entry flag pointer with the store in place
+// 4 (same code); the rows counted down with the flag after them 22; the entry flag pointer with the store after the rows 18.
+// Round 187 (m3 lane 6, fast): the direction copied field by field 196 (1001 bytes); the flag stored through a raw byte
+// offset 4; the rows read through `real *` casts of each vector 4; `position`/`velocity`/`origin` field pointers taken
+// at entry and used in the row loop 4, with the flag store after the loop 18 (the store still sinks below the rows).
+// M3 lane 5 r190 (fast with 0x30bf0, 0x1f5110, 0x1e4290 and 0x25d700): a 600 s annealing permuter run (seed 1190, 56
+// tries, reduced image equal at 4) none below 4; the row loop, then the flag, then the direction copy 18 (retail's x87/SSE
+// interleave, the flag store sinks below the row stores as in the flag-after-loop form); the same with the rows written out
+// by field 192 (1001 B); the flag, the rows, then the copy 4 (same code: the copy's place does not matter, only the flag's
+// against the rows); the flag written at the end of both arms of the prop test 4 (tail-merged back, same code).
+// M3 lane 10 r114 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): `#pragma optimize("a", on)` around
+// the function (diagnostic, no-aliasing) 4 (same code: the store/load ordering is not an alias edge); the row as
+// `position + 0.5f * velocity - origin` without parentheses 4; unit.k as `local_8 * local_2.k` 4; the flag store inside the
+// row loop body 240 (1012 B); the length, then the flag, then the rows 181 (1000 B).
+// M3 lane 14 r107 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the square sum spelled
+// `(k*k + i*i) + j*j` 10, `j*j + (k*k + i*i)` 10 (the x87 order changes), `(i*i + k*k) + j*j` 4 (same code); the row
+// loop tested `component != 3` 238 (962 B, not unrolled); a short component counter 243 (960 B, not unrolled).
+// M3 lane 11 r114 (fast): each row bound by reference (`real &row = local_3.n[component]`, the sum then `-=` the offset)
+// 195 (1001 bytes); an `unsigned char` component counter 243 (960 bytes, not unrolled); the flag through a `bool &` bound
+// to its field 4; the half step as `0.5f * velocity` in the loop 4; a `register` component counter 4 (the 4s the same code).
+// M3 lane 11 r116 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): a `real const half = 0.5f`
+// named ahead of the flag store and used in the row loop 4; the origin component read into a const local at the top of
+// the loop body 4; the origin through a `point3f const *` named after the flag store 4 (all the same code); each row in
+// two statements (the half-stepped position stored, then `-=` the origin) 195 (1001 bytes); the square sum with each
+// product in double (`(double)j * j + ((double)i * i + (double)k * k)`) 214 (1006 bytes); the direction copied through a
+// named `vector3f const *` to its field 196 (1001 bytes). Reading of the listing: in retail every dependent x87 pair
+// (fmul -> faddp, faddp -> faddp, faddp -> fsqrt) has three other instructions between its two halves, the flag store
+// being one of the three in the first pair; ours has three, two, three, and the build without the flag store two, three,
+// three. So the store is counted as a filler for the first pair in both builds, and ours then issues the second faddp a
+// slot early: the store's slot is charged to the row stream only.
+// M3 lane 15 r100 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the root's argument without
+// the `(double)` cast 266 (1045 B, the float overload is called); the direction copy through memcpy with the row loop 4
+// (same code); the row loop counted down with the flag store still ahead of it 21; each row written velocity-term first
+// 4 (same code); no facing pointer (the final dot reads the field at each use) 21.
+// Round 103 (m3 lane 2, fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time; control 4): round 151's
+// lead re-measured, `real partial = i*i + k*k;` named ahead of the flag store and the root on `j*j + partial`, 182 (1002
+// B): retail's whole x87/SSE interleave (the second add after the first row's subss, the root after the second's), but the
+// named partial stays on the x87 stack (`fadd st(1)`, then `fstp; fstp st(0); fld` around the fabs test); the square sum
+// staged as `length_squared = i*i + k*k; length_squared += j*j;` ahead of the flag store 4, at the root 4 (same code: the
+// staged sum is folded back), split with the first part ahead of the flag store and the `+=` at the root 182 (1002 B, the
+// partial's code); the root computed ahead of the row loop 181 (1000 B).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
@@ -257,10 +303,13 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     vector3f local_3;
     vector3f unit;
     vector3f const *facing = &local_0->unknown290;
+    double squares = local_2.i * local_2.i + local_2.k * local_2.k;
+    double &sum = squares;
     local_0->unknown456 = true;
     for (long component = 0; component < 3; ++component)
         local_3.n[component] = (local_0->position.n[component] + local_0->unknown258.n[component] * 0.5f) - local_0->unknown370.n[component];
-    real local_4 = (real)sqrt((double)(local_2.j * local_2.j + (local_2.i * local_2.i + local_2.k * local_2.k)));
+    sum += local_2.j * local_2.j;
+    real local_4 = (real)sqrt(sum);
     if (!((real)fabs((double)local_4) < 0.0001f))
     {
         real local_8 = 1.0f / local_4;

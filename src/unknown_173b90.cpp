@@ -472,13 +472,50 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
-// score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
+// walks the location's emitters by index into the definition's emitter array; each emitter frame call takes the
+// location flag as a named bool and the emitter cast to its frame, and the motion vector is rotated in place through
+// a pointer to it passed as both the input and the output of 0x2477b1
+// score 42 (was 42): row i of both rotations, the offset's zero store before the list test, the 1.0 defaults' order
+// and three reload pairs differ. M3 lane 14 r112 (fast with 0x173c10/0x2477b0, both MATCH; control 42): scale first 40
+// (two points, not kept); indexed definitions without scale first 115; the translation through the existing
+// vector3f_add 122 (1136 B); both rotations through vector3f_rotate_into_axes 84; scale first with the definition formed
+// before the emitter lookup 45. Compile-only screen of the rotation block (it reproduces the LTCG block exactly; scored
+// with registers masked against retail's 62 block lines): this body already has the rotation order of round 120's
+// indexed-plus-motion-reference form (7 lines off: only row i of both rotations, ours left/up/forward, retail
+// left/forward/up); the indexed form moves it to 35 and nothing natural brings it back: 56 single and paired rewrites
+// on it (declaration orders of the frame outputs and colour, the particle pointer hoisted, the index declared at the
+// top or stepped first, `+=` translation, const masks, `!= 0`, the definition first, the next index read late) all 35;
+// dead initialised locals of any type 11 at best (four or five), placed after the first rotation no effect; private
+// helper texts (operand order, component locals, by-value vector) 22 to 37.
+// MiniMax B (11-18): no new form, no lower score (42): a local copy of the emitter definition for the three property
+// tests measures 125 and a local copy of the emitter flags for the same three tests 181, both above the plain body; the
+// permuter's annealed run (900 s) finds nothing below 39, so row i of both rotations still sums the up product before
+// the forward one and the three post-call reload pairs still restore ebx before esi.
+// MiniMax S (11-17): no new form kept, no lower score (42): the emitter walk as a guarded do-while with the offset's
+// zero store inside it measures 41 on its own and 39 with the scale declared before the multiplier (the form MiniMax
+// R 11-14 and MiniMax A 11-12 measured), under the keep bar, so the body stands; row i of both rotations still sums
+// the up product before the forward one: regrouping the sum, swapping the products' operands and writing the rotation
+// out in a local helper (with the copy taken by the caller) leave the shared helper's product order alone (41, 81 and
+// 274) and the copy's component order alone, and the permuter's 48 tries (fast) found nothing below 39.
+// MiniMax C (11-16): no new form, no lower score (42): the i row of both rotations still sums the up product before
+// the forward one and that term order is the shared rotation helper's own text in include/matrix_transform.h, a file
+// this lane may not edit.
+// MiniMax S (11-16): no new form, no lower score (42): the emitter walk wrapped in an if with the offset's zero store inside it puts the store after the list test but shrinks the frame to 0x94 against retail's 0x98 (306), and moving the cache call ahead of the definition's test puts the two reloads in retail's order but flips the prologue's push order (140); the rotation's call sites (a temporary copy, a separate result, the two calls swapped and the origin added the other way round) leave the row-i order alone, as does the particle mask read before the particle loop.
+// Earlier at 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
 // reassociates each row's three-term sum, retail row i (left*y + forward*x) + up*z, ours (up*z + forward*x)
 // + left*y): `unknown0c != 0` 113, the 0x107f0 refresh mask named 113, the location flag as a (bool) cast
 // 113 (all same code), the definition formed before the emitter lookup 124; on the body the emitter mask read
 // before the defaults 204.
+// M3 lane 11 r113 (fast with 0x173c10/0x1751d0/0x2477b0, all MATCH; control 42): the list test wrapped around the
+// emitter loop with the offset's zero store inside it plus scale declared first 39 (left: the three reload pairs, row i
+// of both rotations and the branch offsets that follow from the rows' lengths); on it the definition formed ahead of
+// the emitter lookup 44 (reload pairs as retail, the definition then scheduled first), indexed definitions 113 (1136 B),
+// `+=` translation 39, the definition formed before the particle index 39, the motion copy declared first 47. A
+// compile-only screen (whole file, rotation block scored against retail) reproduces row i: every row-i term order
+// and copy spelling in the helper, the caller's local names, declaration orders, the translation's component order
+// and no-code field mentions of either copied vector leave row i at (left*y + up*z) + x*forward or worse.
 // MiniMax A (11-12): the emitter list test wrapped around the loop with the offset's zero store
 // inside it: 42 -> 39 (1130 bytes), the store now follows the list test as in retail.
 // MiniMax A's form, not kept: 39 (was 42): the offset's zero store now follows the list test as in retail; left: row i of
@@ -618,11 +655,6 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // indexed with scale first and `+=` translation 113 (1136 bytes); indexed with the one declaration 113. A
 // compile-only screen of the helper's copy as memcpy gives the same code as the struct copy; copying from
 // `*out` (the same vector) loses the copy's alias and turns every row.
-// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
-// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
-// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
-// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
-// fixed); after the particle mask or the particle lookup 42 (no change).
 // Round 20 (lane 17, fast): permuter 600 s, 58 tries, none below 42. Row i's input copy is stored in the
 // order the row consumes it (ours y, z, x; retail y, x, z), so the copy follows the sum order. Both
 // rotations fed from a separate input copy (`position = translated_position`, rotated into it; the same
@@ -633,18 +665,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
 // before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
 // All overrides and memory observations stayed fixed; original defaults and complete body restored.
-// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
-// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
-// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
-// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
-// fixed); after the particle mask or the particle lookup 42 (no change).
 // Round 299: Word carried particle mask with indexed definitions, scale-first defaults and early pure mask
 // derivation, masks 0..7: 199/201/197/199/259/260/260/261. Original dword mask, offset/default lifetimes and
 // body restored. Shared rotation/frame providers stay matched; offset/default/reload and row-i input/product
 // residence remain.
-// Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
-// before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
-// All overrides and memory observations stayed fixed; original defaults and complete body restored.
 // Round 453: Unscaled property residence with callback/pre-rotation scale product, indexed
 // definitions and scale-first defaults, masks 0..7: 304/308/305/309/315/316/315/316.
 // Original executable body restored.
@@ -854,6 +878,59 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // MiniMax S (11-15): no new form, no lower score (42): the i row of both rotations sums the up product before the forward
 // one where retail sums the forward one first, the copy's second and third components swap, and the two saved registers are
 // reloaded in the other order after each property call; the rotation's term order is fixed by the shared helper's text.
+// M3 lane 12 r133 (fast with 0x173c10 and 0x2477b0, both MATCH; control 42): indexed definitions with scale first
+// re-measured 113 (1136 B; every integer line retail's, every rotation row reordered); on it the multiplier's flag tested
+// as the plain bitfield (`if (system->flag10)`) 265 (1118 B), the index stepped right after the definition is formed
+// instead of at the latch 236. On this body: the plain bitfield test 273 (1110 B); the frame call's location flag as
+// `TEST_FIELD_BIT(...)` 42 (same code); the scale default declared after the multiplier block 50. Body unchanged.
+// M3 lane 16 r126 (fast): the particle pointer declared at the emitter scope ahead of the particle loop 42 (same
+// code); the two particle copies made after the field_50 refresh 181; the scale product as `multiplier * value` 42
+// (same code); the emitter definition as a const pointer 42 (same code); the translation as three `+=` rows 42 (same
+// code).
+// M3 lane 14 r105 (fast, base 42): in the transform block, `matrix3x3 const &rotation_matrix = *rotation_result;` for
+// both rotations 45 (1130 B), `point3f const &frame_origin = *origin_result;` for the translation 122 (1136 B), both 122
+// (1134 B); on indexed definitions with scale first (re-measured 113, 1136 B: row i of the position rotation sums
+// (up*z + x*forward) + left*y, retail (left*y + forward*x) + up*z) the same three 112/115/115 (1134/1138/1138 B).
+// The offset initialization and row-i rotation still differ. Saved successor with byte offset 203/203/203/203.
+// saved successor with indexed definitions and scale first 205/205/205/205.
+// Declared link area, definition-array member, or both 42/42/42.
+// Mode as the low byte of its word 122, also with either or both member reads
+// 122/122/122 and with the offset in a for initializer and step 122.
+// NOT kept: the member reads tie and the low-byte mask grows the body by six bytes.
+// Empty-chain offset initialization, receiver reloads and row-i products still differ.
+// m3 lane 1 r120 (fast with 0x175270, 0x175430, 0x173c10, 0x2477b0 and 0x1751d0, all MATCH throughout; control 42). LEAD, not
+// kept (a reference that only renames a local): indexed definitions (`&definitions[index]`, `index++` at the latch) with
+// scale declared first and `vector3f &motion_vector = motion;` passed to the motion rotation: 33 at 1130 B, first +0x52.
+// Every integer difference is then gone (the zero store after the list test, the 1.0 stores, the three reload pairs) and
+// only row i of both rotations is left (28 aligned lines). Other forms: the system and location identity updates as
+// inline members of the value cache 42 (same code); the particle identity update as an inline member 42 (same code);
+// all three on indexed definitions with scale first 113 (1136 B), the first two 113; indexed with scale first 113.
+// Compile-only (whole file through CL /c /FAs reproduces both rotations; rows as the order of the matrix offsets
+// multiplied, l load-first, c copy-first): retail `l12,l0,l24 | l28,l4,l16 | c32,c8,l20` for the position and
+// `l0,l12,l24 | l28,l4,l16 | c32,c8,l20` for the motion, this body `l12,l24,c0 | l28,l4,l16 | c32,c8,l20` for both.
+// About 1900 forms: declarations hoisted to function scope (emitter, particle index, emitter definition, defaults, frame
+// locals, colour, both masks, particle, both copies; 450 subsets) never change the state; on the indexed form dead
+// initialised locals at function scope do (n = 0..12, diagnostic): with the motion reference n = 2..6 gives retail's
+// row i in both rotations (`l12,l0,l24` and `l0,l12,l24`) but rows j and k then multiply forward before up
+// (`l4,l28,l16 | c8,c32,l20`); dead locals in the particle loop or the emitter block, the inline members, the mask at
+// each use or inline, `+=` translation, pointer or reference locals for the position vector, the helper's returned
+// pointer and no-code mentions of the copied components give 20 other states, none retail's. So the row state follows
+// the function's tuple numbering, and retail's is one neither count reaches with the shared helper's text.
+// Typed ordinal for-latch and declared array member 115/115, on it
+// staged position rotation 119. Packed scale bit 42, all three property
+// bitfields 229, shared mutable update mask 209, input block copies 42,
+// linked latch with empty-emitter continue 212. NOT kept: the indexed
+// loop advances the first difference but the rotation rows grow the body.
+// M3 lane 1 r123 (compile-only build of the file, which reproduces both rotations; rows judged by the order the matrix
+// elements are read: retail l.i f.i u.i / f.j u.j l.j / u.k f.k l.k, ours l.i u.i f.i / the same j and k): explicit
+// parentheses (a reassociation barrier) always evaluate forward before up before left inside a pair, so retail's
+// left-then-forward pair is not reachable that way (row i parenthesised in all 6 term orders with matrix- or vector-first
+// products, all rows parenthesised: float ops aligned 20-57 against 18); the vector read into component locals in all 6
+// definition orders x 6 row-i term orders best 29; the helper's row statements in all 6 orders with the copy taken only
+// when aliased, always, or bound to a const reference (the first row computed gets left, up, forward when it is row i
+// and left, forward, up when it is row j or k); the translation's statements in all 6 component orders 18-25 (row i
+// unchanged); dead reads of the matrix elements before the rotation (no change). Reading: row i pairs the first two
+// components the in-place copy makes available (ours y, z; retail y, x).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -869,17 +946,17 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		cache->mask &= 0xfffecf7f;
 	}
 	long emitter_index = *(long *)((byte *)location + 4);
-	long emitter_definition_offset = 0;
+	long emitter_definition_index = 0;
 	while (emitter_index != NONE)
 	{
 		s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
 		long particle_index = emitter->first_particle_index;
 		s_emitter_definition_175610 *emitter_definition =
-			(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
+			&(*(s_emitter_definition_175610 **)((byte *)definition + 0x34))[emitter_definition_index];
 		if (particle_index != NONE)
 		{
-			real multiplier = 1.0f;
 			real scale = 1.0f;
+			real multiplier = 1.0f;
 			if (TEST_FIELD_BIT(system->flag10))
 				multiplier = function_3eb70();
 			matrix3x3 rotation;
@@ -887,9 +964,11 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 			matrix3x3 const *rotation_result;
 			point3f const *origin_result;
 			color4f color;
+			s_particle_frame const *frame = (s_particle_frame const *)emitter;
 			dword emitter_mask = emitter_definition->mask;
+			bool location_flag = *((byte *)location + 2) != 0;
 			if (definition->unknown0c)
-				function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
+				function_248450(&rotation, frame, &origin, &rotation_result, &origin_result, location_flag);
 			cache->function_173c10(emitter_mask & 0x107f0);
 			if (emitter_definition->flags & 1)
 				color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
@@ -922,13 +1001,14 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 					translated_position.x = origin_result->x + translated_position.x;
 					translated_position.y = origin_result->y + translated_position.y;
 					translated_position.z = origin_result->z + translated_position.z;
-					function_2477b1(rotation_result, &motion, &motion);
+					vector3f *motion_vector = &motion;
+					function_2477b1(rotation_result, motion_vector, motion_vector);
 				}
 				callback(particle, cache, &translated_position, &motion, scale, &color, context);
 			}
 		}
 		emitter_index = emitter->next_index;
-		emitter_definition_offset += sizeof(s_emitter_definition_175610);
+		emitter_definition_index++;
 	}
 }
 
@@ -1105,44 +1185,26 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 	spawn->location_index = particle_location->next_index;
 }
 
-// score 17 (was 17): Frame and entry agree; half-path buffer/result ownership and the distant untinted exit remain.
-// Earlier 17 (was 29): the untinted half-path exit is a long jump to the last
-// the untinted half-path exit is a long jump to the last
-// epilogue where retail's short jump joins the half path's own; the half path
-// reads the unpacked color through the returned pointer where retail reads the
-// buffer and pushes the returned pointer. Store per path (retail's entry
-// registers) 41; returned pointer packed only 41; one shared buffer 17;
-// early untinted return 17; tinted tested first 37.
-// Update inline/noinline declarations 17/17; packing noinline 17; paired update-inline/packing-noinline 17.
-// Plain product loop with long/short/byte ordinals 21/45/45; shared native product-loop storage 23.
-// Shared double scale 58; immutable/ordinary complete products 23/23;
-// product value copy 74; decode value copy 63; exchanged decode workspaces 17;
-// two decode-result lifetimes 45; double scale with in-place result 64.
-// Standalone unpack before scaling 41; unpacked pointer for scale and pack 42 (204 bytes);
-// vector half buffer 17; half names buffer/scaled 17/17; product declarations swapped 17;
-// second input alternate with declarations swapped/original 17/17.
-// Scale from the buffer through the unpacked result 42 (204 bytes); a 2400 s permuter run, no result.
-// Round 27 (lane 13): parameters reordered to (color_a, color_b, system, multiplied, tinted): all three retail
-// callers query the tint before the multiply flag, which a call written with the tint last evaluates first
-// (0x174a30 292 -> 248 with it); this body's code is unchanged (17), and so are 0x177040 and 0x178c80.
+/* sets a particle system's colour from its two packed colours: their product when multiplied and tinted, the
+   first colour when only multiplied, half the second when only tinted. The half tint is packed after the arms:
+   retail takes the product's pack argument before the half tint's (`mov ecx, eax; push ecx` there) and ends the
+   untinted path at the half tint's own epilogue. */
 // @retail 0x175a80
 void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted)
 {
+	color3f color;
+	color3f other;
+
 	if (!multiplied)
 	{
 		if (tinted)
 		{
-			color3f color;
-
-			vector3f_scale((vector3f *)unpack_color3f(color_b, &color), 0.5f, (vector3f *)&color);
-			particle_system->color = pack_color3f(&color);
+			unpack_color3f(color_b, &color);
+			vector3f_scale((vector3f *)&color, 0.5f, (vector3f *)&color);
 		}
 	}
 	else if (tinted)
 	{
-		color3f color;
-		color3f other;
-
 		unpack_color3f(color_a, &color);
 		unpack_color3f(color_b, &other);
 		color.red *= other.red;
@@ -1154,6 +1216,8 @@ void function_175a80(dword color_a, dword color_b, s_particle_system_datum *part
 	{
 		particle_system->color = color_a;
 	}
+	if (!multiplied && tinted)
+		particle_system->color = pack_color3f(&color);
 }
 
 extern vector3f *g_4687bc;
@@ -1283,13 +1347,13 @@ long function_181800(s_sphere_frustum const *, point3f const *, real);
 real function_249bb0(s_distance_fade const *, real);
 bool function_3eb20(long cluster_index);
 typedef void (__stdcall *t_1e4e0_callback)(void *);
-bool function_1e4e0(point3f const *, t_1e4e0_callback, void const *, long);
+bool function_1e4e0(long, point3f const *, t_1e4e0_callback, void const *);
 struct s_sort_record;
 typedef bool (__stdcall *t_record_fill)(long, void *, long, long, long, void *, s_sort_record *);
 void function_40e30(short, long, real, long, short, dword, dword, t_record_fill, dword, void *);
 
 // MiniMax S (11-06): the permuter's 41 rewrites all score 135 or worse on the reduced image; no new form, no lower score.
-// score 108 (was 135): lane 9 r99: the loop reads the request's location field at every use (typed as a location
+// MATCH (was 108): lane 9 r99: the loop reads the request's location field at every use (typed as a location
 // pointer; retail reloads it from the request after 0x1e4e0), the camera rotation and cross product go through the
 // existing vector3f_rotate_into_axes and cross3f, the second getter call's result is kept as a pointer whose tag is
 // read at each use, and bit 5 is the definition's named flag5 (retail's mov dl/shr/test). Left: the tag is
@@ -1407,6 +1471,18 @@ void function_40e30(short, long, real, long, short, dword, dword, t_record_fill,
 // declared at the top or renamed 6, the 0x2477b1 rotation 12-17, other camera orders 10-20, the rotation written out 237, the
 // cross product written out 298, the bitfield tests without the macro 200-332 (the alias test folds), camera_relative read
 // through its address 195, the bias short named 195, the bias product constant-first 6.
+// b9I (11-17) walk against retail, fast build on r839: checked every field and offset, each jcc and its NaN sense (view
+// test 0x1745e1, fade comiss/ja 0x174822/0x174829, draw default mov bl, 1 0x1745f6, flag10 0x17472f/0x1747aa, stamps
+// 0x1746c2/0x174837/0x174914), the cross product 0x17452b-0x1745a3, the rotation trees 0x174621-0x1746be, the bias sums
+// 0x17486b-0x1748b1, the x87 distance 0x1747eb-0x174813 (one rounding at the fstp) and the register arguments of
+// 0x165010/0x181800/0x249bb0/0x40e30: no behaviour difference, no missing or extra statement. MATCH (fast) needs these
+// forms, all match-only (retail's order, not a behaviour change): request.system and the location index set ahead of
+// the bias and the camera test (0x1744da/0x1744ef before 0x1744f9); the tag index in a local (kept in EDX, 0x17445b);
+// the frustum index in a local (0x41640's form, 0x174759); 0x1e4e0 as (size, position, callback, data) (EDX before ECX,
+// 0x1748c3/0x1748c7); 0x40e30's definition in a pointer local (0x1751d0 before the pushes, 0x1748df); cross3f_staged,
+// forward/cross/up copies (the camera block's registers); shader folded into table (the rotation's xmm phase); and a
+// volatile read of the parameter camera_relative at the camera test, which gives the rotation's vector-first z * up
+// products (0x17462c, 0x174675, 0x174692). Progress 108 -> 102 (order alone) -> 28 -> 26 -> 33 -> 6 -> MATCH.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1415,27 +1491,29 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
     {
         s_effect_particle_system_definition *tag_definition = system->function_1751d0();
         long const *reference;
-        dword group = TAG_GROUP(tag_definition->tag_index);
+        long tag_index = tag_definition->tag_index;
+        dword group = TAG_GROUP(tag_index);
         if (group == 0x5052544d || group == 'prt3')
-            reference = function_137bd0(tag_definition->tag_index)->function_x947334();
-        else reference = *(long const **)(TAG_GET(byte, tag_definition->tag_index) + 0x24);
-        byte *shader = TAG_GET(byte, *reference);
-        byte *table = *(byte **)(shader + 0x5c);
+            reference = function_137bd0(tag_index)->function_x947334();
+        else reference = *(long const **)(TAG_GET(byte, tag_index) + 0x24);
+        byte *table = *(byte **)(TAG_GET(byte, *reference) + 0x5c);
         dword render_flags = *(dword *)(*(byte **)(table + 4) + 2);
         s_effect_particle_system_definition *definition = system->function_1751d0();
         if (!TEST_FIELD_BIT(definition->flag5))
         {
-            real bias = *(short *)definition->unknown14 * 0.05f;
-            matrix3x3 camera;
-            if (camera_relative)
-            {
-                camera.forward = g_4b9dac;
-                camera.up = g_4b9db8;
-                cross3f(&g_4b9db8, &g_4b9dac, &camera.left);
-            }
             s_particle_render_request_173c90 request;
             request.system = system;
-            for (long index = system->location_index; index != NONE; )
+            long index = system->location_index;
+            real bias = *(short *)definition->unknown14 * 0.05f;
+            matrix3x3 camera;
+            /* volatile: retail's load order for the rotation's products (0x17462c, 0x174675, 0x174692) needs this load */
+            if (*(volatile bool *)&camera_relative)
+            {
+                camera.forward = g_4b9dac;
+                cross3f_staged(&g_4b9db8, &g_4b9dac, &camera.left);
+                camera.up = g_4b9db8;
+            }
+            while (index != NONE)
             {
                 request.location = DATUM(g_51ec8c, s_particle_location_datum, index);
                 bool in_view = ((byte *)request.location)[2] != 0;
@@ -1463,8 +1541,9 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                                 if (!TEST_FIELD_BIT(definition->flag9))
                                 {
                                     bool contained = false;
+                                    long frustum = ((signed char *)g_547f88.indices)[cluster];
                                     draw = function_165010((s_frustum_set_view const *)g_547f88.context,
-                                        ((signed char *)g_547f88.indices)[cluster],
+                                        frustum,
                                         (point3f const *)((byte *)request.location + 0x20), *(real *)((byte *)request.location + 0x2c), &contained);
                                 }
                                 else
@@ -1496,10 +1575,13 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                         position.y += g_485618.forward.j * bias;
                         position.z += g_485618.forward.k * bias;
                         if (render_flags & 0x8000)
-                            function_1e4e0(&position, (t_1e4e0_callback)function_173c90, &request, sizeof(request));
+                            function_1e4e0(sizeof(request), &position, (t_1e4e0_callback)function_173c90, &request);
                         if (render_flags & ~0x8000)
-                            function_40e30(0, system->function_1751d0()->tag_index, 0.0f, 5, (word)NONE, NONE, 0,
+                        {
+                            s_effect_particle_system_definition *record_definition = system->function_1751d0();
+                            function_40e30(0, record_definition->tag_index, 0.0f, 5, (word)NONE, NONE, 0,
                                 (t_record_fill)function_173cb0, (dword)function_173d80, (void *)system_index);
+                        }
                     }
                 }
                 else *(dword *)((byte *)request.location + 0x30) = g_4ba034;
@@ -1524,11 +1606,13 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// score 12 (was 12): main's body (MiniMax D's form, below); only the `same_view = 1` store's block differs (ours the view
+// test's, retail the availability test's); m3 lane 12 r134's forms are at the end of this note.
 // MiniMax E (11-15): 12 (was 47): the view global read at each use, the availability produced by a branch on
 // the query result and the same-view flag cleared by one owner/view/availability test; what still differs is
 // the flag's true store, which ours emits ahead of the view test where retail's sits between the
 // availability's test and its branch; the body is otherwise retail's, at retail's 498 bytes.
-// score 47 (was 47): availability clear/production and later view observation remain;
+// Before MiniMax D's form, 47 (was 47): availability clear/production and later view observation remain;
 // MiniMax E's not-kept 12 form (above): the same-view flag's true store is emitted ahead of the view test, retail writes it
 // between the availability's test and its branch; the availability's zero store also comes before the second
 // definition call where retail's comes after the owner lookup; frame 0x14, the owner, the view, the boolean
@@ -1986,6 +2070,201 @@ bool function_17afd0(long effect_index, long value);
 // branchy test in the if/else 113 (498 B; availability AL, cleared in the else block, so not live across the query);
 // lead form re-measured 12 (owner, then `same_view = true`, `available = false`, set, one clearing test); its true default
 // declared before the early clear 24, after the availability set 145 (513 B), with the clear after the owner as well 141.
+// P589: Original pool/salted-index/current-system identities, seven subsets then
+// cluster identity too: 47/47/47/47/47/47/47/47. NOT kept: no availability-clear/result
+// or later-view recovery; complete original body and observations restored.
+// MiniMax D (11-17): reached 12 (from 47): the same_view flag is set true and cleared by one test, the availability is
+// MiniMax D (11-17): cleared and then set by the query's result, and the view global is read at each use instead of
+// MiniMax D (11-17): through a local; one byte store of the true value sits ahead of the query call, where retail
+// MiniMax D (11-17): stores it in the flag's set path.
+// MiniMax D (11-17): retail's shape needs the flag written as the conjunction of the owner test and the availability,
+// which moves the constant and the owner out of EBP (138); copying the availability into the flag gives 56.
+// M3 lane 12 r134 (fast; base 12): the plain conjunction re-measured 138 (510 B: NONE EBX, availability spilled, same_view
+// BL); the availability as `!(g == NONE || query(g) != 0)` with the plain conjunction 113, on this body 96 (branchy, but
+// same_view then takes BL); same_view as `owner != NONE && g == owner ? available : false` 56 (498 B: availability BL and
+// same_view on the stack as retail, but it stores BL where retail tests BL and stores 1, and the pairs are NONE+availability
+// EBX, pool+owner EDI, data+effect index EBP against retail's NONE+owner EBP, pool+effect index EDI, data+availability EBX);
+// on that, the owner NONE-defaulted then set 121 (495 B: effect index EDI as retail, owner ESI), the owner as one ternary 56
+// (same code); same_view from the owner pair then `if (!available) same_view = false;` 135 (508 B). Permuter on the 56 form
+// (900 s, 97 tries): best 56. Body unchanged.
+// M3 lane 16 r131 (fast; base 12): the plain conjunction after the availability re-measured 138 (510 B: its temporary takes BL,
+// the availability spills); the same as an if/else 138 (same code); diagnostic, same_view written through a forceinline pointer
+// setter 138 (the address folds); the true default after the availability re-measured 141 (513 B); a false default before the
+// availability, set true by one owner/view/availability test, 119 (502 B: availability BL and same_view on the stack as retail,
+// but the owner leaves EBP for EDI and NONE takes EBX); the true value set after the owner tests and cleared when unavailable
+// (`if (owner ok) { same_view = true; if (!available) same_view = false; }`) 149 (519 B: retail's `test bl; mov [x], 1; jne`
+// shape, but same_view takes BL), that with a false default before the availability 129 (506 B, owner in EDI). Permuter on the
+// 12 form (600 s, 61 tries): best 12. Body unchanged.
+// M3 lane 5 r197 (fast with 0x174420, matched throughout; base 12): the view-state logic (owner, availability, same_view,
+// attached, draw, camera flag) as a forceinline helper returning draw with same_view and the camera flag as output pointers,
+// same_view as the plain conjunction 138 (510 B, the plain form's code: the output pointers fold away, the conjunction's
+// temporary takes BL and the availability spills), stored 1 then cleared when unavailable inside the owner test 148 (518 B),
+// from the owner pair then `if (!available) *same_view = false;` 135 (508 B); the same helper as plain `inline` is not
+// inlined (283 B, 365). Without the helper, same_view declared ahead of the availability and assigned later: nested true
+// store and clear 148, owner pair then clear 135, plain conjunction 138 (each the same code as with the later declaration:
+// the declaration order does not decide who gets BL). In all six NONE takes EBX from the loop top, so the availability
+// (set before the query) finds EBX taken and spills, the owner goes to EDI and same_view is cached in BL after NONE's last
+// use; only the early true default keeps EBX free of NONE until the availability claims it.
+// M3 lane 7 r180 (fast with 0x174420 and 0x1751d0; control 12; P = the plain `owner != NONE && g == owner && available`
+// conjunction, re-measured 138 at 510 B): the owner typed dword on P 138, on this body 12 (same code), on P NONE-defaulted
+// 138 (508 B); a redundant `if (index != NONE)` guard around the walk 12 on this body, 138 on P (same code each).
+// M3 lane 4 r216 (fast; control 12, P re-measured 138 at 510 B): the clearing test split into two consecutive ifs
+// (owner/view, then `!available`) 115 (507 B); same_view false after the availability and set by a nested
+// `if (owner != NONE && g == owner) { if (available) same_view = true; }` 141 (513 B); P with every local of the arm
+// declared bare at the arm's top and assigned in retail's order 138 (P's code); `long owner = NONE;` at the loop body's
+// top, set only for a valid effect index, on this body 12 (same code), on P 171 (510 B).
+// M3 lane 3 r267 (fast with 0x174420 and 0x1751d0; base 12): same_view defaulted to `effect_index != NONE` (an effect-index
+// use ahead of the availability, r135's diagnostic as real code) 122 (504 B); same_view set true/false in the owner
+// lookup's two arms, then cleared by the same test 145 (516 B); the view compare written `owner != g_4b9ed8` 12 and the
+// query as `!function_155760(g_4b9ed8)` (0x3e9c0's spelling) 12 (same code each); the clearing test as
+// `same_view = same_view && owner != NONE && g_4b9ed8 == owner && available;` 138 (510 B, the plain conjunction's code).
+// M3 lane 7 r190 (fast; control 12, P re-measured 138 at 510 B: owner EDI with a `mov edi, ebx` NONE copy, the conjunction
+// materialised in BL and spilled, where retail stores 1/0 to the flag's slot in each arm with NONE and the owner sharing
+// EBP): P with the availability read through a `bool const &` 138, with the owner through a `long const &` 138; on this
+// body the availability through a result-style forceinline helper 12 (same code), as one `g != NONE && query(g) == 0`
+// initialiser 96, `draw = view_pass == same_view` 13, the true default between the availability's clear and its test 12
+// (same code), attached as a false default set by one `if` 133 (510 B). All restored.
+// M3 lane 10 r129 (fast with 0x174420 and 0x1751d0; base 12): the true default moved down to just after the second definition
+// call 22 (the store moves exactly where it is written, the rest is retail: retail's store sits in the owner-ok path, after
+// the availability); the plain conjunction re-measured 138, with the attached flag defaulted false and set by its test 146
+// (518 B); that attached form on this body 133 (510 B); the availability as a direct conjunction on this body 96, with the
+// plain conjunction 113; the true default after the availability re-measured 141 (513 B: NONE EBX, availability spilled).
+// The plain conjunction is retail's control flow (both stores on their paths, the true store hoisted above the `jne`);
+// what it lacks is retail's allocation (availability BL, same_view on the stack, NONE and the owner sharing EBP). On the plain
+// conjunction: the draw compare spelled `view_pass == same_view` 138, the view compare spelled `owner == g_4b9ed8` 138.
+// Then a one-object LTCG screen (exact with the callees' and both callers' files linked; aligned differences against main's
+// listing with the true store moved after the `test bl, bl`): 355 combinations of the same_view form (main's, the plain
+// conjunction, if/else, false default then `same_view = available` in the owner test) with 11 natural toggles (direct
+// availability, owner ternary or NONE default, attached flag defaulted, draw compare order, a second definition local,
+// effect index and cluster read at each use, the latch step inline, nested camera and else blocks): best 2, main's own
+// state; every conjunction-shaped row 51 or worse (NONE stays in EBX for the whole walk and the owner is not shared with it).
+// M3 lane 10 r132 (fast with 0x174420 and 0x1751d0; base 12; round 129's one-object LTCG screen first, 144 random combinations
+// of the same_view forms with the natural toggles, best main's own state 2): same_view false after the availability and set
+// true by one flat owner/view/availability test 141 (513 B); the availability as an if/else on this body 96; same_view false
+// ahead of the availability, set by the flat test, with the availability as one expression, the camera flag nested, the
+// cluster and the effect index read at each use 101 (NONE and the owner share EBP there, but the availability takes AL and
+// same_view BL); the owner as `if (effect_index == NONE) NONE else lookup` 12 (same code); the false default ahead of the
+// availability with a NONE-defaulted owner 123 (500 B). All restored.
+// M3 lane 11 r132 (fast with 0x174420/0x1751d0; lane 10 r129's one-object LTCG screen rebuilt): retail's allocation (availability
+// BL, same_view on the stack, NONE and the owner sharing EBP) appears only with a false default ahead of the availability and
+// same_view copied from the availability in the owner-ok arm (screen: `= available` 6, `available ? true : false`, `available !=
+// false` and `!!available` 5 each); any constant store there gives the conjunction's allocation (nested `if (available) same_view =
+// true;` 49, the three-way test 49, if/else of the copy 48, an inner if/else of constants 77). Fast: the false default with
+// `same_view = available ? true : false` 98 (496 B: `test bl, bl; setne` where retail stores 1 and 0 on branches, every register
+// retail's), with `available != false` 98; same_view false at the loop body's top set by the three-way test 141 (502 B); `bool
+// same_view = available;` cleared by the owner/view test 56; the true default kept with the copy in an if/else on the owner/view
+// test 56. All restored.
+// M3 lane 1 r135 (fast, control 12; P = the plain conjunction, re-measured 138 at 510 B: availability spilled to a stack
+// byte, the conjunction in BL, NONE in EBX for the walk): the clearing test given an `else same_view = true;` arm 138 (510 B,
+// P's code); a false default with `same_view = available ? true : false` in the owner-ok arm and `false` in its else 121
+// (502 B); the true default with `if (owner fail) false; else same_view = available;` 56 (498 B); `bool same_view =
+// available;` cleared by `owner == NONE || g != owner || !same_view` 119 (501 B); same_view from a forceinline (owner,
+// available) helper with a false result set by the conjunction 141 (513 B), a true result cleared by the test 141 (513 B),
+// an early `return false` then `return available` 56 (498 B); P with same_view declared at function scope 138 (P's code).
+// M3 lane 8 r205 (fast with 0x174420/0x1751d0; control 12; P = the plain conjunction): P with every later read of
+// same_view through a `bool const &` 138 (510 B: the reference is forwarded, NONE stays in EBX), with only the 0x174420
+// argument through it 138; same_view declared bare and assigned the conjunction through a `bool &` bound ahead of the
+// availability 151 (509 B); the true default moved to the arm's top, ahead of the effect-index read, 25 (the store moves up);
+// a false default ahead of the availability with `same_view = available;` under the owner/view test 102 (493 B: one
+// `mov [x], bl` where retail stores 1 and 0 on branches), with an inner if/else of constants on the availability 149 (519 B).
+// M3 lane 11 r135 (fast with 0x174420 and 0x1751d0; control 12, aligned 6): a false default ahead of the availability
+// and `same_view = available;` in the owner/view arm 102 (493 B, aligned 6: every register retail's; left are the early
+// false store and the copy's `mov [x], bl` where retail stores 1 and 0 on branches); that copy with the default at the
+// loop body's top 137 (493 B, aligned 6); no default, the owner/view arm copying the availability and an else arm storing
+// false 56; a false default ahead of the availability with `if (available) same_view = true;` nested in the owner/view
+// arm 119 (502 B, register-masked 6: NONE and the owner leave EBP); the copy form with the availability as one
+// conjunction 48 (494 B).
+// M3 lane 12 r164 (fast with 0x174420/0x1751d0; control 12; P = the plain conjunction, re-measured 138): P with the owner as
+// one ternary 138; the attached flag reading `system->effect_index` again, on P 140, on this body 42 (500 B); a dead true or
+// false default ahead of the availability with P, or with P's if/else of constants, 138 each (removed first); the true
+// default kept with `if (conj) same_view = true;` then the clearing test 133 (509 B); the camera flag's false default ahead
+// of the availability, between it and P, or ahead of the owner lookup 138/138/101 (494 B). Diagnostics (semantics changed,
+// reverted): on P the NONE constant stays in EBX through the view test before 0x155760 and the owner test after it, so the
+// owner cannot share EBP with it; P without the owner test 96 (owner and NONE share EBP, availability BL); without the view
+// test 129; this body without the owner test 102. On this body both later tests are immediates. All restored.
+// M3 lane 4 r236 (fast with 0x174420 and 0x1751d0; control 12, P re-measured 138 at 510 B): the availability as a true
+// default `g_4b9ed8 != NONE` cleared when the query fails 122 (504 B), on P 123; the availability assigned the query's
+// compare inside `if (g_4b9ed8 != NONE)` 102 (496 B), on P 121; the owner lookup moved after the availability, just
+// ahead of the clearing test, 118 (485 B). In P the conjunction's temporary takes BL and the availability spills; retail
+// writes the 1/0 straight into the flag's slot with the availability in BL. Body unchanged.
+// M3 lane 8 r207 (fast with 0x174420 and 0x1751d0; control 12): the clearing test as `!(owner != NONE && g == owner &&
+// available)` 12 (same code); split into an owner/view test and a separate `!available` test, each clearing 115 (507 B);
+// the same as an `else if (!available)` arm 105 (502 B); the availability assigned `function_155760(g) == 0` inside an
+// `if (g != NONE)` after its false default 102 (496 B); same_view initialised `owner != NONE` and cleared by a view and
+// availability test 118 (499 B); `bool same_view = available;` cleared by the owner/view test re-measured 56.
+// M3 lane 7 r204 (h2m fast with 0x174420, MATCH): a false default ahead of the availability set true by one flat
+// owner/view/availability test 119 (502 B); same_view declared bare ahead of the availability with an if/else of constants
+// on the flat test 138 (510 B, the plain conjunction's code); `bool available = false;` declared at the arm's top 24 (its
+// clear moves up); `bool camera_relative = false;` declared at the arm's top 45; the true default kept with the clear as
+// `if (owner != NONE && g == owner) { if (!available) same_view = false; } else same_view = false;` 105 (502 B).
+// M3 lane 12 r168 (h2m fast with 0x174420/0x1751d0; control 12): the view test written `owner != g_4b9ed8` 12; the clearing
+// test's last term `available == false` 12; the owner as a NONE default set under `effect_index != NONE` 12; the availability and
+// same_view declarations swapped (availability first) 12 (all four the same code); `attached` false by default and set by an `if`
+// on the same conjunction 133 (510 B). All restored.
+// M3 lane 7 r206 (h2m fast with 0x174420/0x1751d0, MATCH): the clearing test with `!available` first 41 (the prologue's
+// registers move); the availability as nested ifs 12 (same code); the owner/view clear then `same_view = same_view &&
+// available;` 138 (510 B); `bool same_view = owner != NONE && g == owner;` after the availability, cleared by
+// `if (!available)` 135 (508 B); the owner lookup's arms swapped 12 (same code).
+// M3 lane 13 r138 (h2m fast with 0x174420 and 0x1751d0, MATCH each run; control 12): no default, the owner/view test's
+// else arm storing true then clearing it when unavailable (the true store where retail has it) 148 (518 B); the plain
+// conjunction with the attached flag defaulted false and set from the guarded call 125 (503 B); that attached form on this
+// body 103 (491 B); the plain conjunction with the availability as an if/else of constants 113 (498 B, the prologue's
+// registers move); same_view and available in one declaration 12 (same code). Re-measured: the `else if (!available)`
+// clear 105 (502 B). All restored.
+// M3 lane 4 r245 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): same_view written by a file-local forceinline
+// helper through an out-pointer 138 (the plain conjunction's code). Diagnostic, reverted at once: same_view declared volatile
+// with an if/else of constants 133 (508 B): the availability block is then retail's exactly (true store ahead of the
+// `jne`, one shared false store), so retail's flag lives in memory and is stored where written; left are the callee-saved
+// choices (NONE EBX, owner EDI, effect index EBP against retail's NONE and owner in EBP, effect index EDI). A false default
+// with the owner/view arm setting true then clearing it when unavailable 129 (506 B); the true default with `else same_view
+// = true;` on the clearing test 138; the true default with that arm and `else` false 148; a NONE-defaulted owner with the
+// false-default arm 149 (517 B). All restored.
+// M3 lane 13 r142 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): same_view read through a `bool const &`
+// for the draw compare and the camera test 12 (same code); the clearing test moved after the attached flag 59 (501 B); the
+// plain conjunction's if/else of constants after the attached flag 102 (490 B); the attached flag as a false default then
+// `if (available) attached = effect_index != NONE && call` (a two-definition bool) 124 (504 B), that with the plain
+// conjunction's if/else 125 (504 B). All restored.
+// M3 lane 14 r142 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the plain conjunction as an if/else of
+// constants into a one-member aggregate, copied out 138 (510 B), the member read at every use 138; into a one-element array
+// 138 (both promoted like a scalar: retail's memory-resident flag is not an aggregate's); `same_view = owner != NONE &&
+// g == owner ? available : false` 56; the true default at the loop body's top 51; the availability as a ternary initialiser
+// 96. All restored.
+// M3 lane 8 r224 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction after main's
+// availability, re-measured 138 at 510 B): P with same_view declared at function scope above the walk 138, with the
+// availability too 138, with camera_relative too 138 (all P's code: scope does not move same_view off BL); draw as
+// `same_view ? view_pass : !view_pass` 98 (510 B), on P 138 (514 B); the camera block's arms swapped under `if (!same_view)`
+// 43, on P 138. All restored.
+// M3 lane 13 r143 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the effect-index test named once as a
+// bool for the owner lookup and the attached test 128 (510 B), with the plain conjunction 157 (522 B); lane 8 r135's
+// attached-in-both-arms form re-measured 17 (498 B: retail's registers, but our cross-jump keeps the tail in the true
+// arm and the false arm jumps back into it, where retail's true arm jumps forward into the false arm's copy); that form
+// with the availability repeated in the true arm (the two arms' attached identical) 17 (same code); with the false value
+// as the declaration's initialiser and only the true arm storing 113 (502 B); with attached false by default and the
+// else arm's set under `if (available)` 121 (506 B). All restored.
+// M3 lane 6 r232 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): with the availability computed first, same_view
+// as `owner != NONE && g == owner` cleared when unavailable 135 (508 B); a false same_view set true and cleared under the owner
+// tests 149 (519 B); main's same_view statements after the availability 141 (513 B), with the clear as an `else if` 149; same_view
+// declared first without an initialiser and set true after the availability 141, set by if/else there 138 (510 B); main's
+// initialiser plus a second true store after the availability 141, a false initialiser with it 141. Each puts same_view in BL and
+// the availability in memory (retail the other way round). Restored.
+// M3 lane 11 r155 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction, 138 at 510 B;
+// L = no default, the owner/view arm storing true then clearing it when unavailable, its else false, 148 at 518 B): the
+// pool global read at each use (no `systems` local) on this body 12 (same code), on P 138, on L 148; on L the owner lookup
+// moved after the availability 125 (500 B), the availability as a ternary initialiser 130 (506 B); P with a dead `false`
+// or `true` initialiser on same_view at its declaration ahead of the availability 138 / 138 (P's code: the dead store goes
+// before allocation, so it does not lengthen same_view's range). All restored.
+// M3 lane 3 r300 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the availability declared ahead of
+// same_view 12 (same code); the view test `owner != g_4b9ed8` 12 (same code); the availability test `!function_155760(...)`
+// 12 (same code); `view_pass == same_view` 13; the attached flag false then set by an `if` on the conjunction 133 (510 B).
+// Restored.
+// M3 lane 16 r182 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12, P re-measured 138 at 510 B): P with a
+// redundant `available &&` on the else arm's attached test 149 (518 B). Diagnostics (match-only steering, reverted): P with
+// one fewer same_view read (the camera test as `draw == view_pass`) 121 (502 B), the 0x174420 argument replaced 126: either
+// flips the BL contest (availability BL, same_view in its stack byte with retail's exact `test bl; mov [x], 1; jne` and
+// `mov [x], 0` blocks), so same_view's read count is what gives it BL in P; left there are NONE in EBX with the pool data
+// in EBP and the owner in EDI (`mov edi, ebx`), where retail has the data in EBX and NONE coalesced with the owner in EBP.
+// On that diagnostic: the owner NONE-defaulted 122, as a ternary 121, NONE-defaulted above the effect index 125, the
+// draw compare `view_pass == same_view` 121.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
@@ -2002,23 +2281,24 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
-            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
                 owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
             else
                 owner = NONE;
-            long view = g_4b9ed8;
-            if (view != NONE)
-                available = !function_155760(view);
-            bool same_view = owner != NONE && view == owner && available;
-            bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
+            bool same_view = true;
+            bool available = false;
+            if (g_4b9ed8 != NONE && function_155760(g_4b9ed8) == 0)
+                available = true;
+            if (owner == NONE || g_4b9ed8 != owner || !available)
+                same_view = false;
+            bool attached = available && effect_index != NONE && function_17afd0(effect_index, g_4b9ed8);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
+                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }

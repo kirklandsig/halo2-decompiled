@@ -103,10 +103,18 @@ PRIVATE __forceinline void collision_damage_location(dword key, long *instance, 
 	}
 }
 
+struct s_material_type_1da550
+{
+	short index;
+};
+
 /* fills a collision damage entry from one of an object's contacts when its
    impulse is above 0.4 */
 // score 13 (was 95): the tail's loads of the location are scheduled
 // differently (retail reloads the instance right after function_1201a0)
+// Matched in a full build with stand-in SDK headers (was 13): the contact's material is copied through a one-member
+// struct local (a struct-typed local is not folded into its use, so the 16-bit value stays a register value while its
+// load stays after the kind store), and the surface index is stored after the material index.
 // @retail 0x1da550
 bool function_1da550(long object_index, long contact_index, s_collision_damage_entry *entry)
 {
@@ -126,13 +134,14 @@ bool function_1da550(long object_index, long contact_index, s_collision_damage_e
 		entry->direction = contact->normal;
 		function_1201a0(&entry->direction, g_4687a8);
 		entry->kind = 2;
-		entry->unknown7c = contact->material_b;
+		s_material_type_1da550 material = *(s_material_type_1da550 const *)&contact->material_b;
+		*(s_material_type_1da550 *)&entry->unknown7c = material;
 		entry->object_value28 = object->value28;
 		entry->object_value2c = object->value2c;
 		entry->flags |= 0x100;
 		entry->instance_index = location.instance;
-		entry->surface_index = location.surface;
 		entry->material_index = location.material;
+		entry->surface_index = location.surface;
 		result = true;
 	}
 	return result;
@@ -262,46 +271,38 @@ real magnitude3d(vector3f const *vector);
 long function_1dac40(long object_index, long other_object_index);
 void function_e3f00(long object_index);
 
-// score 62 (was 90): retail swaps the stack slots of speed and body_speed,
-// keeps scale in xmm1 and the speed in xmm3, and copies the velocity through
-// other registers
+// score 47 (was 62): with magnitude3d `inline` (src/unknown_023540.cpp) retail's spill of the speed across the
+// magnitude3d call comes from the inline callee, so the larger speed is a plain ternary (no volatile, no copy local,
+// no reference locals). Left: the velocity copy's registers, the damage-index load order around the 0xd6660 call,
+// the flags / owner stores before 0xd7b80 and the second havok_component_get's global load.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {
-    long const *object_index_reference = &object_index;
-    real const *impulse_reference = &impulse;
-    s_havok_object *object = havok_object_get(*object_index_reference);
+    s_havok_object *object = havok_object_get(object_index);
     s_havok_object *other = havok_object_get(other_object_index);
     s_collision_force_definition *definition = (s_collision_force_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-    /* volatile: retail stores the larger speed to its stack slot straight
-       from either argument and reads it back once, after the calls */
-    volatile real speed;
-    if (speed_a > speed_b)
-        speed = speed_a;
-    else
-        speed = speed_b;
+    real speed = speed_a > speed_b ? speed_a : speed_b;
     bool result = false;
-    if (speed_b > speed_a * 0.25f && other->havok_component_index != NONE && (byte)function_1dac00(*object_index_reference))
+    if (speed_b > speed_a * 0.25f && other->havok_component_index != NONE && (byte)function_1dac00(object_index))
     {
         s_havok_component *component = havok_component_get(other->havok_component_index);
-        if ((byte)function_1dac40(*object_index_reference, component->object_index) && component->rigid_bodies.size > 0)
+        if ((byte)function_1dac40(object_index, component->object_index) && component->rigid_bodies.size > 0)
         {
             s_collision_force_definition *other_definition = (s_collision_force_definition *)g_4e3b44[*(long *)other & 0xffff].bytes;
             vector3f velocity = component->rigid_bodies[0].linear_velocity;
             real body_speed = magnitude3d(&velocity);
             real scale = 1.0f;
-            real collision_speed = speed;
             if (havok_component_unknown10_recent(component))
             {
                 body_speed += component->unknown14;
-                if (collision_speed >= 0.001f)
-                    scale = (component->unknown14 + collision_speed) / collision_speed;
+                if (speed >= 0.001f)
+                    scale = (component->unknown14 + speed) / speed;
             }
-            real maximum_speed = *impulse_reference > body_speed ? *impulse_reference : body_speed;
-            if (!(1.5f > *impulse_reference && 1.5f > body_speed))
+            real maximum_speed = impulse > body_speed ? impulse : body_speed;
+            if (!(1.5f > impulse && 1.5f > body_speed))
             {
                 real speed_ratio = body_speed / maximum_speed;
-                real force = speed_ratio * other_definition->transfer_scale * scale * collision_speed;
+                real force = speed_ratio * other_definition->transfer_scale * scale * speed;
                 if (maximum_speed >= 0.001f && force > definition->minimum_force && definition->maximum_force - definition->minimum_force >= 0.001f)
                 {
                     real lower = definition->minimum_damage;
@@ -321,7 +322,7 @@ bool function_1da6d0(long object_index, long other_object_index, real speed_a, r
                     object_get_damage_owner(component->object_index, (s_damage_owner *)event.owner);
                     event.flags |= 0x101;
                     event.owner_object = component->object_index;
-                    function_d7b80((s_type_1e6529 *)&event, *object_index_reference, NONE, NONE, NONE, NULL);
+                    function_d7b80((s_type_1e6529 *)&event, object_index, NONE, NONE, NONE, NULL);
                     if (havok_component_unknown10_recent(component))
                         havok_component_unknown10_expire(component);
                     if (object->havok_component_index != NONE)
@@ -331,7 +332,7 @@ bool function_1da6d0(long object_index, long other_object_index, real speed_a, r
                             havok_component_unknown10_expire(component);
                     }
                     if (definition->type == 0 && other_definition->type == 1)
-                        function_e3f00(*object_index_reference);
+                        function_e3f00(object_index);
                     result = true;
                 }
             }

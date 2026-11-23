@@ -363,6 +363,36 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// score 84 (was 84): m3 lane 16 r179 and lane 5 r233 unchanged (their lines just above the marker); r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// M3 lane 6 r223 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): local renames, to test name order among
+// same-size homes: `a`/`b` as occupant_secondary/occupant_primary, the facing pair as secondary_reach/primary_reach,
+// the squared distance and clip amount as distance_sq/clip_fraction, range and scale as perception_range/range_scale,
+// and (diagnostic) `result` under two names sorting first and last: 84 each (same code, homes unchanged). The frame map
+// is as round 67 found: ours shares the clip amount's slot with the seat loop's down-counter, retail with the squared
+// distance.
+// MiniMax E (11-20): no new form and no lower score (84): retail's homes run result 0x8, facing maxima 0x14/0x18, the
+// clip amount sharing 0x1c with the squared distance, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and the
+// delta at 0x4c/0x50/0x54, while this build puts the result at 0xc, the clip amount at 0x10, the range at 0x18 and the
+// delta at 0x48/0x4c/0x50, so the whole set of homes sits one cell low. The seat loop's two cross products also load
+// their operands the other way round, and both come from a helper in another file's header, so the forms that would
+// move them are not this lane's to write; the body stands.
+// MiniMax H (11-20): no new form, no lower score (84): six source forms measured this round (the clip amount's scope, the facing pair's declaration order, the distance's scope, the delta as a point3f, and the scale and the facing maxima initialized at the top) leave the homes where they are, except the two top-init forms that rise to 90 and 208/212; retail's homes run result 0x8, facing maxima 0x14/0x18, clip amount 0x1c, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and delta 0x4c/0x50/0x54, and ours run result 0xc, clip amount 0x10, range 0x18, scale 0x1c, facing maxima 0x20/0x30, seat cursor 0x34 and delta 0x48/0x4c/0x50.
+// The 0x350 frame agrees. The initial result is four bytes above retail, and the clip output shares the later seat-count slot.
+// Earlier measurement 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
+// other order (retail multiplies a term with the vector's component in the register and this build with the memory
+// operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
+// seat loop's result still lands four bytes above retail's and the range still loads into xmm2 for xmm0.
+// MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
+// M3 lane 8 r189 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): names do not order these homes (result,
+// range or the facing maxima renamed to sort first or last, diagnostic, 84 each); the facing copies as secondary then
+// primary 84; distance_squared declared at the top of the settings block 84; the clip amount declared in the motion
+// block 84; the loop index as long 173 (repeats an earlier form); the b maximum tested before the a maximum 83; the
+// scaled range as `range * scale` 84; the posture switch as an if/else-if chain 131 (1308 B). Retail's homes, by esp
+// offset: result 0x8, facing maxima 0x14/0x18, clip amount sharing 0x1c with distance_squared, scale 0x20, range 0x30,
+// loop count 0x34, seat cursor 0x48, delta 0x4c; ours: result 0xc, clip amount sharing 0x10 with the loop count, range
+// 0x18, scale 0x1c, facing maxima 0x30/0x20, seat cursor 0x34, delta 0x48, distance_squared 0x5c.
+// Previous stack measurements are in the lane 8 round 166 entry below.
 // MiniMax H (11-12): no new form, no lower score (84): the result long still lands at [esp+0xc] where retail
 // keeps it at [esp+8], the clip's amount out-parameter sits at [esp+0x10] against retail's [esp+0x1c] and
 // retail's range is at [esp+0x30] against our [esp+0x18]; the seat loop's two cross products keep our
@@ -375,7 +405,6 @@ real function_30bf0(vector3f *vector);
 // +0x1c, +0x28 and +0x30) and the two seat-loop cross products, whose operand order differs because both
 // products are computed by a helper that lives in another file's header and is therefore not this lane's to
 // rewrite; every form in the note block below has already been measured, so the body stands.
-// score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
 // MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
@@ -814,6 +843,235 @@ real function_30bf0(vector3f *vector);
 // squared distance through dot3f(&delta, &delta) 84; the two out-of-range arms as `else if (out_of_range)` 84; the clip's
 // upper clamp as `amount = amount > 1.0f ? 1.0f : amount` 84; the endpoint and actor tests as nested ifs 84 (all the same
 // homes: the clip amount still shares the counter's slot at +0, the result sits at +4).
+// Round 112 (m3 lane 10, fast): the facing outputs declared at function scope after the result 84 (same code); the
+// not-facing secondary computed from primary 84 (same code); the world-up axis copied into a local vector for the first
+// seat-loop cross 220 (1326 bytes); the occupant's forward pointer formed ahead of the player test 96 (1308 bytes, but
+// `lea esi` then precedes the first cross); the first cross given the object-relative cast for the forward with the
+// pointer kept for the second cross and 0x263740 152 (1312 bytes). Retail treats every forward component as the
+// memory operand in both crosses (loading the world-up and side components), ours loads the forward component in
+// three of them. All restored.
+// P592: Original incoming origin/actor/point/endpoint/posture/mode/facing/output fixed
+// bindings: eight 84 at 1310/1308. NOT kept: no native result/range/projection-home
+// or cross-product operand recovery; original complete body restored.
+// M3 lane 1 r114 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH): retail's 4-byte homes are result, facing primary,
+// facing secondary, the clip amount, scale and range (frame 0, 4, 8, c, 10, 20); declaring facing primary, facing secondary
+// and scale ahead of range at the settings block's top 84 (same code), `range` given a longer name 84 and `result` another
+// name 84 (same code: neither names nor declaration order move these homes); the facing pair as one
+// two-element array (primary [0], secondary [1]) 103; the seat loop counter as long 173 (1308 B).
+// b12K (11-17) walk against retail, fast build on r846: every statement, field offset (+7, +0x26c,
+// +0x2a8/+0x2b4/+0x2c0, seat object +0x13c/+0x18c..+0x194, settings +0/+4), argument and constant checked
+// (0.0025f, 0.0f as a memory operand at 0x26399c, 1.0f, 0.3f, 0.7f shared with the scaled secondary at 0x263cc6,
+// 36.0f) and every jcc sense: jbe at 0x263911, 0x26398e, 0x26399c, 0x263a14, 0x263a66, 0x263c9a, 0x263ca7,
+// 0x263cf0 skip NaN and ja at 0x263981 lets it through, as ours does; the shared out-of-range tail 0x263d0c, the
+// `test ax,ax; jle` seat guard at 0x263adb and the dword result with `mov ax, word` reloads agree. No behaviour
+// difference found, so the body is unchanged. New measurements (fast, with 0x263740/0x25c9d0/0x26d370): both seat
+// crosses written out as component expressions 148, the second alone 84 (same code as cross3f), the first alone
+// 148, and ten of the twelve products' source operand order flipped one at a time 148 each: the emitted operand
+// side does not follow source order. The emission still differs from retail in the first cross's world-up.i *
+// forward.k and world-up.j * forward.i (retail loads the up component first, 0x263b57 and 0x263b7d) and in the
+// second's side.j * forward.k and side.i * forward.k (retail copies the register first, 0x263bd2 and 0x263bf7);
+// the second cross's two are the 2 extra bytes. Best match-only recipe: none (84).
+// Select original or clipped point by pointer/value, or select the displacement
+// by pointer/value: 345/322/301/283; with the shared point setter 337/331/301/282.
+// NOT kept: none recovers the native clip/distance home. The closest score grows
+// to 1334 bytes and keeps the first result-store mismatch.
+// The clip output still shares the lowest slot with the seat counter, and the result stays one word above retail's.
+// Two-sided clip if/else 97, upper-first nested select 192, inclusive endpoint saturation 189. Signed seat
+// countdown with postincremented input 187, indexed count with postincremented input 185. Primary fallback
+// first with selected 3/2 tier 84, four-way result select 153, explicit zero in the primary fallback 153.
+// NOT kept: the two-sided clip and cursor forms reach 1308 bytes but keep the wrong result home and raise the score.
+// M3 lane 7 r177 (fast with 0x263740/0x25c9d0/0x26d370/0x263d70, all MATCH; control 84, aligned 57): a redundant
+// `if (0 < count)` guard around the seat loop 148 (1315 B); the seat element copied into a local for the occupant lookup
+// 150 (the frame moves); the seat element bound as a const reference 90 (1308 B, aligned 70); the occupant's forward
+// bound as `vector3f const &` 84 (same code); the second probe's outputs and maxima in their own block 84 (same code).
+// Seat record reference 90, value copy 150, named vehicle/seat/both 84/84/86;
+// record reference, value copy and paired fields with a scan-wide world-up pointer 149/203/144.
+// NOT kept: the result and projection/count homes remain unresolved.
+// DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
+// before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
+// NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
+// MiniMax G (11-18): no new form, no lower score (84): the frame agrees at 0x350; the result, the range and the three
+// delta components sit in homes four bytes away from retail's (the range at +0x18 against retail's +0x30, the deltas at
+// +0x48..+0x50 against retail's +0x4c..+0x54), and the range is loaded into xmm2 where retail loads it into xmm0; the
+// home offsets follow the declaration order, so moving them is frame shaping. The clip and count homes the earlier
+// rounds record stay unresolved.
+// M3 lane 3 r259 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the clip amount declared at function
+// scope ahead of the result 84 (same code); the seat basis (both crosses and the normalise) through a new forced-inline
+// helper with a local copy of the world-up pointer 88 at 1308 B (the first cross's i product flips the wrong way), with no
+// local 86 (1310 B), with a forward-pointer local 146 (1315 B), world-up and forward locals 92 (1308 B), a side-vector
+// local for the second cross 92 (1308 B), world-up and side locals 88 (1308 B); as plain `inline` it stays out of line
+// (408, diagnostic). None moves the result/clip/range homes.
+// M3 lane 3 r261 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84): the first delta through the
+// file's vector3d_from_points3d (as the clip arm already does) 142 at retail's 1308 B (the homes stay; the operand
+// sides elsewhere move); the range read after the delta 87; both 145 (1308 B); the clipped point through the shared
+// vector3f_add_scaled 90; the facing results copied at the end of the facing block in place of the second `if (facing)`
+// 101. The range still loads into XMM2 (retail XMM0) and every 4-byte home but the delta's is where round 81 found it.
+// M3 lane 11 r121 (fast with 0x263740, MATCH each time; control 84): the range as a `real const &` bound to the settings field
+// 215 (1308 B: read at each use); the occupant test as `if (occupant == NONE) continue;` 84 (same code); unused locals inside the
+// facing arm, n = 1, 2, 3, 5: 84, 86, 138, 82 (diagnostic, the same phase round 81 found at the top); the endpoint test written
+// `!actor->unknown007 && endpoint` 88; the seat index declared ahead of the count 84 (same code).
+// Use the eventual up vector for the world-up input to the side cross, then overwrite it with
+// corrected up. Copy initialization, direct/staged crosses: 219 each with frame 0x34c.
+// Component setter with the same four cross pairs: 167 each at 1308 bytes. The result and
+// clip homes still differ.
+// M3 lane 5 r200 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84, frame-blind 9): the endpoint clip block
+// through a new forced-inline helper 417 (1392 B); the facing pair declared first 84 and distance_squared declared before
+// the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`
+// 86. Diagnostic, reverted: 1..7 dead initialised locals 84/86/138/138/82/82/82. Reading: retail shares one slot between the
+// clip amount and distance_squared ([esp+0x1c]) with the result lowest; ours gives the clip amount the lowest slot.
+// M3 lane 8 r194 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): both seat-loop crosses through a
+// file-private cross product in the textbook spelling (`a->j * b->k - a->k * b->j`, as the other files' private copies) 84
+// (byte-identical: the products' operand sides do not follow the spelling); `real const range` 84; the vehicle index read as
+// `actor->unknown26c` 84; the not-facing secondary as `primary * 0.7f` 84 (all the same code); the seat count held in a long
+// 193 (1318 B). Body unchanged.
+// M3 lane 6 r200 (fast; control 84): distance_squared and everything after it in its own `{}` block 84; `vector3f delta`
+// declared ahead of the range 84; the endpoint test as two nested `if`s 84; the posture switch with a `default: break;`
+// 84; the range `real const` 84 (each the same score; homes and the two seat-loop products unchanged).
+// M3 lane 7 r186 (fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH; control 84, aligned/masked 57/22): the occupant and
+// player tests combined in one `&&` test 90 (1308 B; 70/36); `i++` for `++i` 84 (same code); the squared distance as
+// dot3f(&delta, &delta) 84 (same code); the facing query writing `secondary`/`primary` directly (no facing copies, no
+// re-test) 196 (1328 B, on this base); the vehicle index as the typed `actor->unknown26c` 84 (same code). Diagnostic, not
+// kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
+// retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
+// the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// M3 lane 4 r226 (fast with 0x263740/0x25c9d0/0x26d370; control 84): the actor's byte flag at +7 read once into a named
+// bool for the clip and facing tests 97; the motion threshold as `0.05f * 0.05f` 84 and the close-range one as `6.0f * 6.0f`
+// 84 (same code); the settings through the file's typed situation view with flags and range at +0/+4 84 (same code); the
+// endpoint and flag tests as nested ifs 84 (same code). All restored.
+// M3 lane 5 r210 (fast with 0x263740, 0x25c9d0, 0x26d370 and five neighbours; control 84, register-masked 46): both
+// seat-loop crosses through a trial copy of the textbook cross spelling (`a->j * b->k - a->k * b->j`, as several files keep
+// it locally) 84, the first cross only 84, the second only 84 (all the same code: the product operand order does not
+// follow the spelling); the seat array declared at function scope 84, beside the facing outputs 84 (same code).
+// Y643: sampled point with direct delta 320; sampled point with shared delta 332; selected point pointer with direct
+// delta 337; selected point pointer with shared delta 345; sampled point with direct delta and late range 326;
+// sampled point with shared delta and late range 339; selected point pointer with direct delta and late range 332;
+// selected point pointer with shared delta and late range 344.
+// NOT kept: Calculating delta after clip selection shortens the function below retail length and raises the score on
+// all eight forms. The earlier range reads also change the matched caller 0x25c9d0 in the reduced image.
+// Empty seat list when the actor has no vehicle. Conditional then default count, each with indexed
+// then pointer traversal, scores 186/204/102/204 with short counts and 202/206/199/206 with long counts.
+// Empty-or-half-open seat range 207 or with step at lookup 202, signed admission with
+// equality latch 152, nonnegative indexed bound 188, indexed advance after lookup 161,
+// seat array extent 84, separate clipped fraction 245, scalar names 84, inclusive last
+// seat 204. NOT kept: the extent and names tie. The indexed advance and separate clip
+// fraction reach 1308 bytes but keep the result and clip homes displaced.
+// M3 lane 16 r152 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84; body unchanged). Retail packs
+// the clip amount and distance_squared into one cell ([esp+0x1c]); ours packs the amount with the seat count and gives
+// distance_squared the top cell (0x5c), which is what puts delta and the probe outputs four bytes low. One real for
+// both (the clip amount's variable reused for the squared distance; a reused variable, so match-only) 81 at 1310 B:
+// delta and the probe outputs then sit in retail's homes, but motion moves up four and result, range and scale stay
+// off. On that form, 1 to 7 dead initialised locals (diagnostic) 83/83/85/139/139/81/81 (1308 B at four and five):
+// no symbol count completes the layout. distance_squared written through a pointer to itself 84 (same code: the
+// pointer folds, the cell does not change class). One, two or three redundant parenthesis pairs around `scale * range`
+// 150/154/148 (1312/1312/1310 B): the pairs do move the float operand sides, but not to retail's.
+// Clip output initialized to zero or unity 263/268. Separate intersection status 84,
+// plane scope ending at the query 84, nested success and lower bound 84, named positive
+// fraction test 153, named motion squared 150, condition-local intersection status 84.
+// NOT kept: the narrowed scopes tie and the initialized output grows the body.
+// The result slot and the clip output’s spill partner still differ.
+// M3 lane 13 r126 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): the clip amount, the squared
+// distance, the delta or the seat count declared at the top of the function (or of the facing block for the count) 84
+// each (same code: scope does not move these homes); the settings lookup ahead of the actor pointer 310 (1308 B).
+// M3 lane 14 r131 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84; body unchanged): the two facing
+// maxima declared at the top of the settings block 84 (same code); the seat count held as `long` 193 (1318 B); the range
+// read from the settings field at each use, no range local, 268 (1308 B); the not-facing arm storing the secondary limit
+// first 101; the vehicle index through the actor view's typed unknown26c field 84 (same code).
+// M3 lane 11 r134 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84, aligned 57, frame-blind 20):
+// the two `if (facing)` tests merged (the else arm filling the facing pair, both outputs copied after) 199 (1331 B); the
+// clipped point through the existing vector3f_add_scaled 90 (aligned 69); distance_squared `real const` 84 (same code);
+// the plane distance through dot3f 138 (1308 B, aligned 73); the delta through vector3d_from_points3d 142 (1308 B, aligned 79).
+// MiniMax A (11-20): no new form, no lower score (84); the clip amount and the squared distance still take separate cells where retail packs them into one, so delta and the probe outputs sit four bytes low and the motion cell sits four high; the earlier rounds' reused-variable and dead-local forms measure 81 or more.
+// Point setter return 148, with outer clip fraction/plane/both 148/148/148,
+// separate intersection and lower tests 148, capped fraction 213, positive
+// intersection before cap 276, outer workspaces and capped fraction 213.
+// NOT kept: the native-length forms leave the displaced result and clip homes
+// and raise the score.
+// M3 lane 6 r216 (fast with 0x263740/0x25c9d0, all MATCH; control 84): the defaults in an else arm of the second facing
+// test (copies first) 101; `result = 2;` then `if (distance_squared < 36.0f) result = 3;` 136 (1292 B); the posture scale
+// through a new forced-inline helper 84 (same code); the 3/2/1 level through a new forced-inline helper 234 (1268 B); the
+// vehicle seat scan through a new forced-inline helper with pointer maxima 196 (1318 B). A two-second LTCG frame lab (this
+// file's generated unit linked with the full build's caller and callee objects, frame homes read by name) reproduces this
+// frame exactly: 25 natural respellings (facing copies, defaults and negated arm, maxima order, result-chain spellings,
+// out-of-range arms, posture if/else, seat pointer or reference, world-up pointer, early forward pointer, delta through
+// vector3d_from_points3d, plane through dot3f, mode as a switch, the helpers above) and 131 pairs of them all keep the
+// clip amount sharing the seat counter's cell; a redundant `result = 0;` anywhere after entry emits no code and moves
+// result to retail's cell 0 only (match-only); only extra blocks after the seat loop (probes, not source forms) give the
+// squared distance the clip amount's cell as retail.
+// M3 lane 11 r140 (H2M_FAST with 0x263740/0x26d370, both MATCH; control 84): the squared distance through dot3f of the delta
+// with itself 84 (same code); declared, then assigned 84 (same code); read through a `real const &` at its five tests 150
+// (1312 B); the clip test `amount >= 0.0f` for `!(0.0f > amount)` 236. Diagnostic (a file-local copy of the cross helper
+// with the subtracted products written a first, not keepable): 84, the same code, so the seat-loop cross products' operand
+// sides do not follow the helper's spelling.
+// Common radius failure before the sole exit 239, late failure block 239; squared limits selected before classification 129.
+// Primary fallback before the secondary classification 84; clipped point setter 148, inner positive gate 184, positive arm clamp 252, point initializer 84.
+// NOT kept: the two ties keep the first result store and the clip slot. The remaining forms regress.
+// Unscaled-radius or scaled-radius guard to the sole exit 152/152; both guards 193.
+// NOT kept: these forms retain the displaced result store and raise the score.
+// Complete range level expression, primary fallback on a zero result, split close/intermediate
+// arms with that fallback, and explicit primary-or-zero 153/90/90/153; named squared tests
+// with chained, conditional, explicit-tier or fallback result selection 84/153/84/153.
+// NOT kept: Two zero-result fallback forms reach 1308 bytes at 90. The named tests tie or regress.
+// The result and clip slots remain displaced.
+// Direct default-level returns at mode, settings, unscaled radius or scaled radius failure 315/320/254/238.
+// Paired entry guards, paired radius guards, mode with unscaled radius, and all four guards 325/222/360/317.
+// NOT kept. The exits raise the score and leave the result/clip allocation unresolved.
+// Default primary threshold carried across the scaled test, with fallback block, selected secondary,
+// selected pair or final fallback 90/90/90/104. Conditional threshold initializers in both orders
+// 101/90, carried primary with one joined pair 90, separate default primary declaration 90.
+// NOT kept: the threshold lifetime variants raise the score. Result, clip and range homes still differ.
+// M3 lane 5 r229 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): compare operand sides, one at a time: the
+// two maxima tests as `facing_secondary < a` / `facing_primary < b` 84; the motion threshold with the constant on the left
+// 84; `36.0f > distance_squared` 84; `distance_squared < secondary * secondary` 84; `distance_squared < primary * primary`
+// 84; `NONE != object->player_index` 84 (all the same code). Reference counts per home (normalised to the body's esp)
+// sort retail's 4-byte homes and aggregates by references per byte (result 8 refs lowest, then the 1.0 group: facing
+// pair, clip amount sharing with the squared distance, scale, motion, range; then counter, plane, cursor, delta, a, b);
+// ours follows the same order except its first slot (clip amount shared with the seat counter, 5 refs) sits below the
+// result, and the squared distance (2 refs) gets its own slot at the top.
+// M3 lane 16 r174 (h2m fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH; control 84, aligned 57): the facing limits
+// copied at the end of the facing arm (no second facing test) 101; the scaled range as `range * scale` 84 (same code);
+// the scale chosen by an if/else with a defaulted posture switch (no 1.0 initialiser) 214; the range test as
+// `distance_squared < range * range` 84; the clip test as `0.0f < amount` 84 (all same code). Retail's seat-loop
+// subtrahends load the up global's member first in all three side components (ours only in i). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0x263740 and 0x26d370, both MATCH; control 84). Where the two bytes come from: our
+// first range load goes to XMM2 and stays there on the early path, so the no-endpoint and unknown007 jumps land six bytes
+// past the join's range reload while the clip path's jumps land on it; retail loads into XMM0 and every path reloads.
+// Forms: the facing copies moved into the facing arm (no second `if (facing)`) 101; the seat maxima as ternaries 84 (same
+// code); the seat array declared at the top of the settings block 84 (same code); the plane distance through dot3f 138
+// (1308 B: the second seat cross product reschedules, the range load does not move); the plane sum with its first two
+// terms parenthesised 150 (1312 B), each product parenthesised 154 (1312 B). Body unchanged.
+// Optional endpoint via condition declaration, named selection, complete branches or clear
+// 152/152/152/152, range after the initial delta 155/155/155/155. NOT kept:
+// the result stays at +0xc and the clip fraction still shares with the seat count.
+// M3 lane 5 r233 (h2m fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84, aligned 55; body
+// unchanged). A link-time lab with named homes (this file's unit and the nine objects of its reduced link, 1.3 s a
+// variant, the full build's frame and code exactly; build/r233/lab.py and p263.py) gives ours as clip amount + seat
+// down-counter, result, range, scale, facing primary, motion + side, facing secondary, cursor, plane + up, delta, a, b,
+// squared distance, seats, against retail's result, facing secondary, facing primary, clip amount + squared distance,
+// scale, motion + side, range, counter, plane + up, cursor, delta, a, b, seats. Both are in descending references per
+// byte (2.0, 1.25, the 1.0 group, 0.75, 0.67, 0.5); what differs is the clip amount's partner and the order inside
+// each equal group. Measured in the lab: one to five unused locals leave every home where it is (they only move the
+// seat-loop products); the squared distance declared first in the settings block (so that it is the older symbol) the
+// same frame; the clip amount pairs with the seat loop's counter in every form, the compiler's down-counter or a named
+// index held in memory (a long count, a guarded do-while), and the squared distance is always placed last; the facing
+// pair's order follows the order of the two copies after the seat loop (secondary copied first puts the secondary
+// home below the primary one, retail's order) and a and b follow the order of the two maxima tests; a restated
+// `result = 0;` moves the result first and also exchanges range and scale. Scored: the seat loop as a do-while under
+// `if (count > 0)` 183 (1308 B); secondary copied first 84 (same score); one scalar for the clip amount and the squared
+// distance re-measured 81, with secondary copied first 81 (the homes then run range, scale, result, facing secondary,
+// amount, facing primary, motion + side, cursor, plane + up, counter, delta, a, b), with a restated result and
+// secondary copied first 101 (1311 B). No form here gives the squared distance the clip amount's cell without naming
+// them as one variable, and on that form range and scale still sort ahead of the facing pair where retail has them
+// behind it.
+// M3 lane 16 r179 (H2M_FAST with 0x263740 and 0x26d370, both MATCH; control 84): the occupant pointer declared const 84;
+// the occupant's forward vector bound by const reference and passed by address to both crosses and the facing query 84;
+// the clipped point declared beside `motion` 84; `bool const facing` 84 (all the same code); the scaled-range test
+// through a named squared scaled range 150 (1312 B). Body unchanged.
+// M3 lane 14 r149 (H2M_FAST with 0x263740 and 0x26d370, both MATCH; control 84). Diagnostic phase scan, 1..7 unused
+// longs at the top: 84, 86, 138 (1308 B), 138, 82, 82, 82; the phase moves only the first seat cross's subtrahend rows (at
+// 5..7 the k row is retail's, the j row never) and never the second cross's register copies or the homes. Forms: the seat
+// count typed long 193 (1318 B); `vector3f side, up;` at the top of the seat-loop body 84 (same code); the first delta
+// through vector3d_from_points3d 142 (1308 B); the clipped point through vector3f_add_scaled 90; the facing maxima
+// initialised to 0.0f 201 (1315 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2079,20 +2337,46 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// MiniMax H (11-12): no new form, no lower score (168): the first difference is still the inlined 0x26be00
-// lookup's address operand (ours [eax+ecx+0x58], retail [ecx+eax+0x58]), a base/index order the compiler
-// picks when the helper is expanded, and that helper's body is in src/unknown_26bda0.cpp, which is not mine;
-// the permuter refuses this function because the reduced image and the full image disagree.
-// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
-// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
-// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
-// MiniMax I (11-15): no new form, no lower score (168): retail's second player search keeps a dword result at +0x1c and a
-// 32-bit counter with a stepped pointer, and the result is read back as a word, so typing that result long with a long counter
-// measures 365 (2893 bytes against 2880) and is not kept; the first search has retail's shape already (a 16-bit result in SI, a
-// 32-bit counter) and differs only in the register that holds the table base (EDI here, EDX in retail); in the positive arm
-// retail zeroes +0x31e and jumps back to the one store of the +0x320 count, while this build stores both in the else branch and
-// falls through to the +0x31c store.
-// score 168 (was 168; m3 lane 8 r166 at the end): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
+// score 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// Earlier stacked line, merged: 158 (was 158; 168 earlier): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// M3 lane 6 r223 (h2m fast with 0x26be00/0x26be30/0x25d690/0x25d740/0x25d810, all MATCH; control 158): 0x26be00 is now
+// this machine's and its file is open, so its lookup was respelled there: `(index & 0xffff) * size + data` 158, the
+// multiply by a signed 0x888 158 (both the same code here and 0x26be00 still matches), `(word)index * size` 697 (0x26be00
+// 7); diagnostic, restored at once: the actor lookup here written with its operands swapped 158 (same code). The head's
+// `[eax + ecx + 0x58]` follows neither spelling (retail's own 0x26be00 body and 0x263210 use `[offset + data]` too).
+// The positive arm with the NONE case first 164 (the NONE arm then precedes the slot test; retail keeps it after the
+// arm's closing jump and cross-jumps it back to the count store); the count read into a `short` used for the test and
+// the decrement 158 (same code). Reading: the velocity dot after the velocity normalize folds the direction in both
+// builds; only after the relative normalize does retail load it into XMM1-XMM3, which earlier diagnostics reproduced
+// only with the direction escaped and that call opaque, so the lead is 0x30bf0's whole-program summary (BLOCKED-BY 0x30bf0).
+// Earlier stacked line, merged: 158 (was 158; 168 before lane 2 r119): The 0x80 frame agrees. The contact head reverses the base and index in its address.
+// MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
+// base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
+// takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
+// MiniMax H (11-18): no new form, no lower score (168): the 0x80 frame agrees, but the first iterator load still
+// encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
+// retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
+// registers.
+// Earlier measurement 158 (was 158): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// Earlier measurement 158 (was 158; 168 before lane 2 r119): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// Earlier measurement 158 (was 168): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// the players iterator loads its table into ECX (retail EAX) and the direction is not held in XMM1..XMM3 across the two dots.
+// Earlier first lines: 158 (was 168); 168 (was 168): r200 unchanged.
+// MiniMax A (11-20): no new form, no lower score (168): the 0x80 frame agrees and the first difference is still the contact head's reversed base and index in the address encoding (ours `[eax + ecx + 0x58]`, retail `[ecx + eax + 0x58]`), which comes from the inlined 0x26be00's `object->value58` read of the clump table - that helper lives in src/unknown_26bda0.cpp, so the roles cannot be changed from this file; the rest of the gap is the players iterator's table pointer, which retail loads into EAX and stores at once (a five-byte load against this build's six-byte one into ECX, which moves the loop pad and every row after it), and the per-case scratch rotations; the two NONE stores in the other order measure 170 and the two player searches merged into one 829, so the two separate searches and the store order are retail's.
+// Earlier at 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// Earlier first line (merged into the note above): 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// Earlier stacked line, merged here: 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// Earlier measurement 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// M3 lane 8 r189 (fast with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 168): the first difference is the
+// inlined 0x26be00, whose head load retail addresses as [table + slot offset + 0x58] and ours as [offset + table + 0x58]
+// (the slot offset is shared with the actor lookup). Forms: the byte alias `data` dropped for `(byte *)actor` 168; the
+// alias taken from actor_get with the actor cast from it 168; the clear through `(byte *)actor + 0x324` 168; the level
+// and strongest declared after the clear 171; the iterator declared before the actor lookup 168; the actor lookup after
+// the other locals' initialisers 180 (first difference +0x7).
+// One decoded actor slot for both lookups, long/word with the iterator helper 168/695 and with the typed actor accessor 168/695.
+// Named clear destination, with the typed head read, and with typed summary fields 168/168/168. Chained selections 170.
+// Earlier 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
+// The players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
 // block's established/visible layout. Round 64, fast, masked aligned in brackets (start 194 [66]): the block entered on
@@ -2108,11 +2392,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // [43]); two beside the iterator also do; one gives EDX: the iterator's register is a rotation step, not its statements.
 // MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
 // uses EAX, and the entry loop's index compare and the iterator's setup still differ.
-// Earlier first line: score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
+// Earlier first line: 194, was 194: frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
-// Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
-// Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
+// Earlier first line: 502, was 502: Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// Earlier status 502, was 502: frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
 // the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
 // frame is 0x84 against 0x80 since the visible flag became a stack byte, and the result/level slots,
@@ -2575,6 +2859,243 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the first search's index widened into a long local for the NONE test and the address 372 (that block becomes
 // retail's `movsx eax, si; cmp eax, -1`, but the players loop's registers rotate). Re-measured: 0x1c8150 for the slot
 // search alone, and for both searches, 769 each (2680 B, a call); 1 to 7 unused locals 168 each.
+// MiniMax R (11-16): no new form, no lower score (168); retail keeps the direction's three components in XMM1/XMM2/XMM3 across the relative and facing dot products where this build reads them from the frame again, and the two player searches still differ (retail's first search compares the index in 32 bits with the table base in EDX and the result in ESI, ours in 16 bits with the base in ESI and the result in EDX, and retail's second search steps a pointer where ours scales the index).
+// MiniMax H (11-12): no new form, no lower score (168): the first difference is still the inlined 0x26be00
+// lookup's address operand (ours [eax+ecx+0x58], retail [ecx+eax+0x58]), a base/index order the compiler
+// picks when the helper is expanded, and that helper's body is in src/unknown_26bda0.cpp, which is not mine;
+// the permuter refuses this function because the reduced image and the full image disagree.
+// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
+// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
+// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
+// MiniMax I (11-15): no new form, no lower score (168): retail's second player search keeps a dword result at +0x1c and a
+// 32-bit counter with a stepped pointer, and the result is read back as a word, so typing that result long with a long counter
+// measures 365 (2893 bytes against 2880) and is not kept; the first search has retail's shape already (a 16-bit result in SI, a
+// 32-bit counter) and differs only in the register that holds the table base (EDI here, EDX in retail); in the positive arm
+// retail zeroes +0x31e and jumps back to the one store of the +0x320 count, while this build stores both in the else branch and
+// falls through to the +0x31c store.
+// M3 lane 14 r100 (fast with 0x25d810, 0x26be00, 0x25d740, all MATCH; base 168): the iterator start written as the file's
+// sibling idiom `iterator.next = actor_get(actor_index)->first_prop_index;` 168 (same code: the reloaded table's
+// `[eax + ecx + 0x58]` stays; retail's own 0x26be00 body has that order too, `[eax + edx + 0x58]`); the same as an array
+// index on the table (diagnostic) 168 (same code); the start through the `actor` local 559 (retail reloads the table); the
+// relative and facing dots through dot3f (`dot3f(&relative, &direction)`, `dot3f(&direction, &forward)`) 168 (same code:
+// the direction stays in memory); `direction` declared at the players-loop top 168 (same code).
+// M3 lane 1 r112 (fast with 0x25d810 listed, equal to plain): the slot search with a long counter 169 (2880 B: the loop
+// is then retail's exactly, masked 35 -> 32; plain 169 too); with `player = NULL` declared ahead of the first search
+// 376 (the not-found exit threads past the index test); with a long copy of the short index for its NONE test and
+// subscript (`long table_index = player_table_index;`) 375 (masked 30: the search is retail's but for where `xor edi,
+// edi` sits); with the player as one ternary 184; the facing dot's products written forward-first 168 (same code).
+// b8E (11-17) walk against retail, fast build on r836 (168, 2880 B, as before): no logic, offset, field, callee or
+// constant error found. Walked: the prop walk 0x2666b0-0x2668c8 (`!prop` skips the strongest test at 0x266743, a failed
+// unknown5e test does not, 0x266755; 0x2672e0 returns its view in EAX, 0x26679f `mov edi, eax` feeds 0x267700, ours
+// passes `view`); the flags 0x2667c7-0x266899; the tail 0x2668cd-0x26690a; the 0xa8/0xa9 events 0x26690f-0x266a5b; the
+// gates 0x266a5b-0x266b5d; the players loop 0x266b70-0x267147 (every constant read; every jcc sense equals ours, NaN
+// included, except one). That one: the decrease test `else if (distance <= 3.5f)` compiles `comiss 3.5, d; jb` (NaN
+// skips) where retail 0x266fcc is `comiss d, 3.5; ja` (NaN enters); NaN cannot reach it (0x266db3 `jbe 0x26713c` drops
+// it), so no behaviour differs. `!(distance > 3.5f)` there gives retail's sense and measures 239 (fast, r836), 701
+// instructions against 695: not kept. Facing lives only in xmm1 (0x266f39); the stack zero at 0x266c51 is what the
+// not-visible arms reload (0x266f9f, 0x26705f), as ours `facing = 0.0f`. The far-and-slow exit 0x266f8e skips the score
+// test; ours reads `score > 0` on the same paths. Body unchanged.
+// M3 lane 2 r95 (fast with 0x25d810/0x26be00/0x25d740, all MATCH; control 168): retail's positive arm keeps the decay arm's
+// `[0x320] = ax; [0x31c] = slot` tail and the reset arm (laid out after the join) jumps back into it, so its unmerged
+// layout had the reset arm first. The reset arm written first (`if (slot == NONE) reset; else { mismatch continue;
+// decay; }`) 174 (2880 B: the merge direction is then retail's, reset jumping to the decay's 0x320 store, but the reset
+// block stays ahead of the decay where retail places it after the join); with the slot search's counter long as well 175;
+// the slot store written in both arms 481 (2896 B, first difference +0x35, the duplicate store kept), the same with the
+// reset arm first 481; the approach maximum as `approach = value > approach ? value : approach;` 168 (same code).
+// M3 lane 3 r256 (fast with 0x25d810, 0x26be00, 0x25d740, all MATCH; control 168): the players iterator started through a
+// file-local inline setter of its three fields (data, then NONE index and datum index) 168 (same code: the table pointer
+// still takes ECX); the first normalize through the header's inline normalize3d 405 (2954 B), the relative one 507 (2967 B);
+// approach and facing in two declarations 168 (same code); the player pointer as `if (index == NONE) player = NULL; else
+// player = &...;` 374.
+// Round 620: the inlined iterator load still exchanges base and index. Typed proximity fields 168;
+// typed winning level and view influence 168; one view influence read 409; typed proximity with retained
+// other object 163 (NOT kept: five-point gain above 30), plus one view influence read 404;
+// absent view rejected first 589; direct proximity predicates 621, with retained other object 616.
+// Named primary/other/both reference handles 168/168/168, proximity assigned from both 587.
+// Observed object and both handles 163. NOT kept: the five-point gain at 163 is below the eight-point cutoff.
+// Actor lookup delayed 595, both lookups delayed 592, shared separation 379. Iterator SIB, player searches
+// and direction residence still differ.
+// MiniMax S (11-17): fast build on r852: the permuter's 2 tries and the source order of the inlined 0x26be00 both stay at 168;
+// the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
+// reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
+// further down allocates the table base and the index to different registers.
+// M3 lane 7 r177 (fast with 0x25d810/0x26be00/0x25d740/0x26be30/0x2662f0/0x266540, all MATCH; control 168, aligned
+// 107): the slot search's counter long 169; 0x26be00 in the array-index form 168 (same code); the score through a
+// reference-bound local 168 (same code); the decay read into a named short before its store 168 (same code); the
+// relative vector ahead of the velocity copy 266 (695 instructions, aligned 122).
+// DH398: Normalized direction snapshot after its call, distance guard, contact lookup,
+// or relative construction, as a vector or three scalars 429/429/429/429, 168/168/168/168.
+// NOT kept: Vector copies enlarge the frame to 0x8c. The scalar snapshots reproduce the baseline, including the iterator SIB and the direction reloads. The original direction consumers are restored.
+// The first difference reverses the base and index in the inlined iterator load. Both builds have a 0x80
+// frame. The player scans retain different registers even when they share the table and datum index in
+// source. shared datum index for both searches 168; shared player table for both searches 168; shared
+// player table and datum index 168; first scan selects player pointer 378; player selected from first
+// scan bound 375; slot selected from second scan bound 370; both searches select from scan bound 189;
+// player pointer selected after first scan 374. NOT kept: the retention threshold was not met.
+// M3 lane 3 r261 (fast with 0x25d810, 0x26be00, 0x25d740, 0x26be30, 0x2662f0, 0x266540, 0x267700 and 0x2672e0, all
+// MATCH; control 168): the other actor's lookup as `s_slot_object_view *object = object_get(...); other =
+// object->actor_index == NONE ? NULL : actor_get(object->actor_index);` 163 (the type-2 arm is then retail's line for
+// line: the object pointer reuses EAX and the actor table takes ECX, as round 620's retained other object found; a
+// five-point gain, under the bar); that lookup as an if/else on `other_index` 168; as `other_index != NONE ?
+// actor_get(other_index) : NULL` 173; on the 163 form: the slot search's counter long 164, with the player as a ternary
+// on the found index 179, the direction built by vector3d_from_points3d 169. Left on 163: the first iterator load's
+// base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
+// player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
+// relative and facing dots (retail loads two of them ahead of the relative-length test).
+// M3 lane 11 r121 (fast with 0x25d810, MATCH each time; control 168): the players iterator started through a file-local
+// inline helper returning the iterator by value 383 (2883 B: the whole iterator is copied, the table pointer still misses EAX;
+// diagnostic for a scheduler boundary, not kept); the two NONE stores chained 170; the players iterator declared at function
+// scope 168 (same code); the actor looked up as the byte pointer first with the typed actor derived from it 168 (same code: the
+// iterator start keeps `[eax + ecx + 0x58]`); the byte alias dropped, the raw offsets through `(byte *)actor` 168 (same code).
+// Shared actor displacement with pool pointer, pool reference, refreshed data or field reads:
+// 167 each, first +0x1a7. Typed indexing across the same reads: 168 each.
+// NOT kept: the one-point SIB gain is below the retention threshold.
+// M3 lane 5 r200 (fast with the eight callees, all MATCH; control 168; on lane 3 r261's 163 form unless noted): `visible` as
+// `reference == NONE || prop_ref_get(reference)->unknown27 >= 1` 423 (the frame changes); the iterator's NONE fields chained
+// 165; the player as a ternary on the found index 367; both searches in ai_player_get's shape (player NULL first, a long copy
+// of the short index for its NONE test, a long second counter) 378 (register-masked aligned 41 -> 39: both searches are then
+// retail's line for line, one line late because the iterator's table load takes ECX where retail's takes EAX); on that, the
+// NONE fields first 380, the iterator set up before the vehicle lookup 401 (2889 B), the NONE fields chained 380.
+// M3 lane 8 r194 (fast with the nine callees, all MATCH; control 168): the players iterator's NONE fields in one chained
+// assignment 170; the established decay as `score += 1.0f - MAX(distance - 2.5f, 0.0f);` 168 (same code); the positive arm's
+// decay through a `short &` binding to the 0x320 field 168 (same code: the reset arm still holds the shared 0x320 store); the
+// zero-distance `continue` ahead of the established and retain flags 182; the established flag computed after the visibility
+// lookup 618. Body unchanged.
+// M3 lane 6 r200 (fast; control 168): re-measured round 65's search recipe (both searches as the existing 0x1c8180 and
+// 0x1c8150 helpers 849 at 2642 B; `inline` on 0x1c8180's definition 795 at 2682 B, all its callers still matched, the
+// forward getter then drops out of line; plus a `__forceinline` declaration of that getter 383 at 2880 B with every search
+// line retail's); a dead field read beside the vehicle lookup on it 383 (eliminated). On the base: the other actor as `other =
+// NULL; if (other_index != NONE) other = actor_get(...)` 382; very_close declared ahead of close 406; `facing, approach`
+// declared in that order 170; `close` as one direct `||` expression 620 (first difference +0x0); the other-actor ternary
+// with the test negated and the arms swapped 173. Still left on the recipe: the players iterator's table pointer in ECX for
+// retail's EAX (`mov eax, [abs]` is a byte shorter), which shifts the loop pad and everything after it.
+// M3 lane 7 r186 (fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740, 0x25d810, all MATCH; control 168, aligned/masked
+// 107/88): `player` cleared before the first search and the slot search on a long counter 376 (702 rows; the slot search
+// becomes retail's pointer walk, the NONE test threads); the player through the existing ai_player_get with the long slot
+// search 849 (2642 B: ai.cpp's /Ob1 keeps it a call, re-measured); ai_player_get's shape written out (player NULL first,
+// short index copied to a long for its NONE test, long slot counter) 383 (107/83: both searches are retail's instruction for
+// instruction, but the players table then loads into ECX, a 6-byte load against retail's 5-byte EAX load, so the loop-top
+// pad becomes `jmp` plus `lea ecx, [ecx]` and every later row is one off); plus the decrease test as `!(distance > 3.5f)`
+// 317 (108/84); plus the established arm nested in `if (established || !(far && slow)) { ...; positive = score > 0; }`
+// 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
+// setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
+// keeps in XMM1-3 from the relative dot to the facing dot.
+// M3 lane 5 r210 (fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and four neighbours; control 168, register-masked 41):
+// the actor lookup written out (diagnostic for the iterator head's operand order) 168 (same code); the contact iterator
+// declared first 168 (same code); best level and strongest declared after the iterator start 172; the players
+// iterator's index and datum index stored before its table 170; the players iterator declared at function scope 168
+// (same code).
+// Contact step results declared in the while condition or advanced in the for loop score 168/168
+// and 753/753 as a node view and prop datum, respectively. Keeping the other object across both
+// actor-index reads scores 163/163 and 753/753. NOT kept: five-point gain at 163.
+// Post-increment loss/age/both 168/168/168; separate increment publication
+// loss/age/both 224/206/223; post-increment loss or age with shared actor displacement
+// and other-object field reads 162/162 at 2880 bytes. NOT kept: the six-point gain
+// leaves a score above 30. Player iterator and scoring registers still differ.
+// M3 lane 16 r152 (fast with 0x25d810, MATCH each time; control 168; body unchanged): the vehicle-type test through a
+// file-local inline predicate taking the type by value 769 (2687 B: one more inline function here moves the link's
+// inline choices for the whole body); this file's own inline definition of 0x30bf0 (same name and body, in place of
+// the declaration) 168 (same code, 0x30bf0 still matches: the direction's residence does not follow where the call
+// binds); `direction` as an aggregate initializer 168 (same code); direction k and j named inside the relative arm
+// 168 (same code: the copies fold back into memory operands). Re-measured: the two NONE stores ahead of the table
+// store 170. Diagnostics (behaviour changes, reverted at once): the vehicle-type exit without its two reset stores
+// 398, and the players iterator started with no NONE stores at all 385: in both the iterator's table pointer still
+// loads into ECX, so that register follows neither the zero register of the reset stores nor the NONE constant.
+// Reading of retail's relative arm: direction j and k load ahead of the relative-length branch and i in both arms
+// (the skip arm at 0x266ed0, the join at 0x266ed6), all three then feeding the facing dot from registers, where the
+// first dot (after the velocity normalize) reads them from memory in both builds.
+// Other actor-index field reference or pointer 384/384, contact object handle 168,
+// shared threshold distance 379, nested very-close tests 350, explicit qualified outcomes 168,
+// complete view-state selection 619, named shared-target object handles 168.
+// NOT kept: the field alias inserts an address addition. The explicit outcomes and handles tie.
+// The contact head SIB and player iterator registers still differ.
+// M3 lane 2 r119 (fast, plain agrees; 0x26be00/0x26be30/0x25d690/0x25d740/0x25d810 MATCH each run; control 168; aligned = rows
+// outside a minimal diff against retail, addresses, stack offsets and registers masked, control 66). Kept, 158 at 2880 B
+// (aligned 50), four parts that each need the others (leave one out: 235/163/224/163): (1) the outer test reduced to
+// `distance < 15.0f` with `visible || established` tested after the facing block (the visible arm is then laid out first,
+// as retail); (2) the decrease test as `!(distance > 3.5f)` (retail's `comiss d, 3.5; ja` sense, the b8E walk's one
+// differing jcc); (3) the slot search on a long counter (retail's 32-bit pointer walk); (4) the other actor through the
+// object pointer (`object->actor_index == NONE ? NULL : actor_get(object->actor_index)`, lane 3 r261's type-2 form).
+// Steps: (1) alone 241 (2887 B, aligned 54); (1)+(2) 168 (2883 B, 695 instructions as retail, aligned 52); (1)+(2)+(3) 163.
+// On (1): the established arm setting positive with the far-and-slow test as its else 247 (2890 B); the not-established arm
+// first with positive in each arm 248 (2895 B, aligned 41). On the 163 form: player NULL first with a long copy of the short
+// index for its NONE test 377 (the players loop then takes retail's registers, one row late behind the ECX table load), the
+// long copy alone 369, NULL first alone 370. On 158: the far-and-slow test joined to the outer test ahead of the established
+// arm, `if ((visible || established) && (established || !(far && slow))) { if (established) {...} positive = ...; }` 224
+// (2880 B, aligned 34: the scoring block's layout is then retail's, the direction residence and the iterator remain; a
+// nested test repeating its enclosing one, match-only); the iterator's NONE fields chained 160; the NONE reset arm first
+// 164; the decay through a short local with one unconditional store 159; the players iterator's two NONE fields stored
+// ahead of its table pointer 160. Diagnostic: 1 to 7 unused long locals at the top
+// 168 each (the +0x5c base/index order does not follow the symbol count).
+// Early player iterator index/datum/both before the vehicle lookup 398/398/410,
+// before actor admission 423/423/421, with shared actor displacement and both
+// defaults before the vehicle lookup or actor admission 409/420. NOT kept: the
+// shared displacement fixes the head address encoding, but the other forms
+// leave the pool register and player search differences and raise the score.
+// M3 lane 2 r123 (fast with 0x25d810/0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 158, difflib-aligned 96,
+// register-masked 50; check.py --fast agrees on the lead). LEAD (match-only: an if/else order picked by score): the
+// positive arm's skip test hoisted ahead of its dispatch with the reset arm first (`if (31c != NONE && 31c != slot)
+// continue; if (31c == NONE) { reset } else if (cooldown > 0) decay; 31c = slot;`) 149 (2880 B, aligned 90, masked 44):
+// the arm is then retail's row for row (the NONE test threads into the skip test, the reset arm sits after the join and
+// jumps back to the decay's 0x320 store); the same with the decay arm first 158 (same code), so the gain is the arm order
+// alone. Also: the slot store at the end of both positive arms 239 (2896 B: the then-arm's store reuses the slot loaded
+// for its compare, CX, so the two copies differ and do not merge); the hoisted skip test with three plain statements
+// (reset, decay, slot) 224 (2884 B). Re-measured on 158: the reset-first else-if chain 164; the reset arm first 164;
+// player NULL first with a long copy of the short index 372 (the search lines are retail's, everything after them one row
+// and one scratch step late behind the iterator's ECX load). Scoring block with no `visible || established` wrapper: the
+// established arm setting positive with `else if (visible && !(far && slow))` for the rest 186 (2853 B; with the lead
+// 177); the established block followed by one `established || (visible && !(far && slow))` test 255 (2848 B; with the
+// lead 255). Diagnostic: one or two unused locals read from actor fields beside the iterator 158 (dropped before
+// allocation; the iterator's ECX does not move).
+// M3 lane 3 r283 (fast, control 158; body unchanged): the scoring block as `if (established) { ...; positive = score > 0; }
+// else if (visible && !(far && slow)) positive = score > 0;` with no outer `visible || established` test 186 (2853 B); the
+// vehicle-type test as `!(type == 0 || type == 1 || type == 4)` 158 (same code); the vehicle definition named and its type
+// read at each of the three compares 363; `retain` assigned directly in the decay arm (`retain = !(count > limit || age <
+// threshold);`) 201 (2882 B); the established block's approach bonus tested ahead of the distance bonuses 232. Reading:
+// every instruction ahead of the players loop is retail's, yet the loop's table pointer is one scratch-rotation step off
+// (ECX for retail's EAX); lane 2 r119's 377 form already gives the loop retail's registers behind that one-byte-longer load.
+// Prop-view head 158, with the sibling cursor 158; iterator seeded before the clear 690, typed head before the clear 690.
+// Winning handles read at publication 158; level stored after its handle 420; cached signed alert slot 499; unsigned slot check 526.
+// NOT kept: the typed iterator forms tie and the remaining forms regress. The player iterator and direction homes still differ.
+// MiniMax H (11-20): no new form, no lower score (158): the relative dot still reads the direction's components from
+// memory where retail keeps them in registers (it loads the direction's j and k before the branch), the players
+// iterator still takes the table pointer in eax where retail takes it in ecx, and neither the operand order in the
+// three dots nor copying the direction's components into scalars changes anything; a permuter run found no variant.
+// state and view gate 158, view and state gate 585, one state-first eligibility test 158, one view-first
+// eligibility test 585, view-owned updates with nested state 585, view-owned updates with combined state
+// 585, nested state and one view influence read 605, combined state and one view influence read 605.
+// NOT kept: The state-first forms tie. The other forms shorten the body and raise the score. The one-read forms also disagree with retail’s two influence loads.
+// The 0x80 frame agrees. The contact-head address reverses base and index, and the player iterator and direction registers still differ.
+// Player-pointer and slot searches with bounded header tests, independently and together 363/353/179.
+// Bounded slot with failure default 164, bounded pointer initialized by selection 362, shared table
+// across separate scans 158, shared table with bounded scans 179, block-scoped bounded cursors 364.
+// NOT kept: the shared table ties and the other forms regress at retail length. Contact-head address
+// encoding and the player iterator's table register still differ.
+// Shared admission and reset with positive/complement/presence-first/explicit-default actor tests,
+// each with supported-type assignment or unsupported-type clear 401/401, 401/401, 459/459, 401/401.
+// The contact-head address remains the first difference and the shared reset shortens the body.
+// M3 lane 14 r140 (h2m fast with 0x26be00/0x25d810/0x25d740, all MATCH; control 158): the not-established far-and-slow
+// decision inside the visible arm (`if (!established && !(far && slow)) positive = score > 0.0f;`) with the established
+// arm after it setting positive itself, no `visible || established` block, 160 (2885 B: the scoring block then has
+// retail's order, the established test jumping out to the bonus arm and the unseen path testing established before it, but
+// the two score tests stay separate where retail shares one, and the zero/approach XMM roles and two slot pairs swap);
+// that form with the far-and-slow test written first 233, with the visible decision as one direct boolean expression 227;
+// one `established || (visible && !(far && slow))` block holding the bonuses and the score test 247 (2856 B); the
+// established arm with `else if (!visible || (far && slow)) score = 0.0f;` and one score test 255 (2848 B).
+// M3 lane 16 r174 (h2m fast with 0x25d810, 0x26be00, 0x26be30, 0x25d740, 0x25d690, all MATCH; control 158, aligned 93):
+// the relative maximum as `approach = value > approach ? value : approach;` 158; approach and facing declared apart 158;
+// the velocity dot through dot3f 158 (all same code); `facing` declared just ahead of the distance test (zeroed there)
+// 706 (2854 B); the relative vector written out from the two velocities (diagnostic) 172 (2883 B). Retail loads the
+// normalized direction's k and j into XMM1/XMM2 after the relative normalize and before its length test, and i into XMM3
+// on both edges, then reads all three from registers in the facing dot. Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and 0x25d810, all MATCH; control 158): the stacked
+// first lines merged into one note. Diagnostics for the head's `[eax + ecx + 0x58]`: 8, 16, 24 and 40 initialised dead long
+// locals at the top 158/158/164/158 (the order never flips, so it does not follow the symbol count); the count block cleared by
+// four long stores in place of the memset 688 (still `[eax + ecx]`). Forms: the head read as `actor_get(actor_index)`'s +0x58
+// field with no 0x26be00 call 158, as `g_4f55f0->data + (actor_index & 0xffff) * 0x888 + 0x58` 158, product first 158 (all the
+// same code: matched 0x1e23c0 forms the same CSE'd product and gets retail's data-first order, so the order is this body's
+// context, not a spelling); strongest/best declared ahead of the actor 170; all three dots through dot3f 158, the relative and
+// facing dots alone 158 (same code: the sum order is canonical and the direction still reads from memory). Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
@@ -2614,8 +3135,8 @@ void function_266640(long actor_index)
 				}
 				else if (node->type == 2)
 				{
-					long other_index = object_get(node->object_index)->actor_index;
-					s_actor_view *other = other_index == NONE ? NULL : actor_get(other_index);
+					s_slot_object_view *object = object_get(node->object_index);
+					s_actor_view *other = object->actor_index == NONE ? NULL : actor_get(object->actor_index);
 					bool close = false;
 					bool very_close = false;
 					if (node->unknown28 < 8.0f) close = true;
@@ -2697,7 +3218,7 @@ void function_266640(long actor_index)
 		s_ai_player *player = NULL;
 		if (player_table_index != NONE) player = &g_4f55cc[player_table_index];
 		short player_slot = NONE;
-		for (short i = 0; i < 2; i++)
+		for (long i = 0; i < 2; i++)
 			if (g_4f55cc[i].player_index == players.datum_index) { player_slot = (short)i; break; }
 		real score = 0.0f;
 		long threshold = round_tick_count((real)g_510c54->field_2_3 * 2.0f);
@@ -2736,7 +3257,7 @@ void function_266640(long actor_index)
 				if (reference != NONE && prop_ref_get(reference)->unknown27 < 1)
 					visible = false;
 				bool positive = false;
-				if (distance < 15.0f && (visible || established))
+				if (distance < 15.0f)
 				{
 					if (visible)
 					{
@@ -2744,18 +3265,21 @@ void function_266640(long actor_index)
 						if (facing > 0.8660253882408142f) score = (facing - 0.8660253882408142f) * 7.4641008377075195f;
 						else if (distance < 1.0f) score = 1.0f;
 					}
-					if (established)
+					if (visible || established)
 					{
-						if (distance < 2.5f) score += 1.0f;
-						else if (distance <= 3.5f)
+						if (established)
 						{
-							real decrease = distance - 2.5f;
-							if (decrease < 0.0f) decrease = 0.0f;
-							score += 1.0f - decrease;
+							if (distance < 2.5f) score += 1.0f;
+							else if (!(distance > 3.5f))
+							{
+								real decrease = distance - 2.5f;
+								if (decrease < 0.0f) decrease = 0.0f;
+								score += 1.0f - decrease;
+							}
+							if (approach > 0.5f) score += 1.0f;
 						}
-						if (approach > 0.5f) score += 1.0f;
+						if (established || !(distance > 3.5f && approach < 0.5f)) positive = score > 0.0f;
 					}
-					if (established || !(distance > 3.5f && approach < 0.5f)) positive = score > 0.0f;
 				}
 				if (positive)
 				{

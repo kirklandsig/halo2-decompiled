@@ -61,7 +61,7 @@ void link_connection_close(s_link_connection *connection, long reason);
 void __stdcall function_061570(c_class_58d20 *session, bool flag);
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address);
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message);
-bool __stdcall network_session_handle_player_add(c_class_58d20 *session, long remote_index, const void *volatile message);
+bool __stdcall network_session_handle_player_add(c_class_58d20 *session, long remote_index, const void *message);
 bool __stdcall function_05d9e0(c_class_58d20 *session, const void *message);
 bool network_session_handle_peer_establish(c_class_58d20 *session, long remote_index);
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message, long *reason, bool *has_identity, s_session_member_identity *identity);
@@ -113,7 +113,7 @@ bool __stdcall network_session_handle_time_synchronize(const s_session_id *messa
 void __stdcall function_0785d0(void *unknown10, const s_type_99af70 *address, const void *message);
 class c_class_938e0;
 void __stdcall function_093fa0(c_class_938e0 *handler, const void *message);
-void __stdcall function_094220(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address);
+void __stdcall function_094220(c_class_938e0 *handler, const s_type_99af70 *address, const s_session_id *message);
 void __stdcall function_0942d0(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address);
 
 /* src/unknown_092870.cpp */
@@ -336,7 +336,7 @@ void network_message_handler_handle_leave_request(c_class_938e0 *handler, long a
 }
 
 // @retail 0x94220
-void __stdcall function_094220(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address)
+void __stdcall function_094220(c_class_938e0 *handler, const s_type_99af70 *address, const s_session_id *message)
 {
 	c_class_58d20 *session = network_session_manager_find_session(handler->session_manager, message);
 	if (session)
@@ -961,8 +961,26 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// One switch in retail's block order. Retail keeps the address in EDI for the whole body (loaded from the stack at
+// 0x938e5) and hands it to 0x94220 there, after that call's message goes into EAX: the address is that handler's
+// parameter ahead of the message, so it stays live across the EAX setup and cannot share EAX with the three lookups.
+// MiniMax E (11-16, second round): no new form tried this round, no lower score (143 plain, 196 on the reduced image):
+// retail's dispatcher takes the message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while
+// the declaration here is a thiscall member with the address, the type and the message, and the only caller
+// (src/unknown_07b330.cpp) passes them in this file's order, so neither the entry registers nor the argument order can be
+// reached from this file.
 // MiniMax I (11-15): no new form, no lower score (143); retail's parameter order is (message type, message, address) and the declaration here is frozen, so the address cannot take the stacked home that retail's convention needs while the case-18 body stays out of line.
-// score 143 (was 143; 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
+// MiniMax C (11-16): no new form, no lower score (143 plain, 196 on the reduced image): retail's dispatcher takes the
+// message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while the declaration here
+// is a thiscall member with the address, the type and the message, and a declaration never changes, so the entry
+// registers cannot be reached from this file.
+// MiniMax E (11-16): no new form, no lower score (143): retail's dispatcher takes the message type in EAX, the
+// message in ECX, the receiver in EDX and the address on the stack, while the declaration here is a thiscall
+// member with the address, the type and the message, and a declaration never changes, so the entry registers
+// cannot be reached from this file - and the only caller (src/unknown_07b330.cpp) passes them in this file's
+// order, so the order cannot be changed here either; case 11 sits in the first switch after case 24.
+// score 143 (was 143): native input roles agree; delayed ESI save and terminal-handler expansion remain.
+// Earlier header detail: 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier 143 (was 153).
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
@@ -1490,6 +1508,57 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // `ja` reaching the late test (the only path of unknown type), which is also what keeps that site hot enough to inline.
 // P535: ESI-consuming primary cases 8/24 after each connection case, six independent then two paired adjacencies; reduced control 196, full 143. Best six-point preview lead is below the keep gate; delayed ESI save and terminal expansion remain.
 // 194/193/193/196/195/195/193/190. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P564: All three lookup outcomes set by their original tests, bool/byte/short/long
+// then complementary defaults: 196/196/196/196/196/196/196/196 fast (control 196; full 143). NOT kept:
+// no delayed ESI save or outlined terminal case; original complete dispatch and call tuples restored.
+// P578: Per-case connection-link scalar memcpy at cases 5/6/7, seven subsets,
+// then the actual case-4 receiver transfer: 193/193/195/235/236/236/253/196 fast. NOT kept: no exact delayed ESI
+// save or terminal expansion repair; original classifiers, receivers and full body restored.
+// b8I (11-17) walk against retail, fast build on r836: no logic or structure error found; fast 196 (444 B, retail 444),
+// the full-build 143 above is unchanged and no code was edited. Every case body was compared instruction by instruction
+// with 0x938f9..0x93a33: the same callee and the same argument loads in each case; only esi (ours) against edi (retail)
+// as the home of the address differs, which is the convention difference listed above. Case 4 loads this->unknown10
+// (0x93922, [edx+0x10]) and pushes message, address, handler for 0x785d0 (0x93928). Cases 5/6/7 read the link from
+// [edx+4], pass the address in EAX and 0 in ECX to 0x92ef0, and compare with -1 (0x939eb, 0x93a09, 0x93a25). Case 5
+// loads the message into EDX (0x939f0) because 0x94ae0 reads [edx] (0x94b01); case 6 loads nothing before 0x93a0e
+// because 0x94b40 reads the message from EBX (0x94b5f); case 7 pushes it (0x93a2a), 0x94bb0 reading [esp+4] (0x94bc7);
+// case 2 passes only the handler (0x93908) because 0x93fa0 reads [ebx] (0x93fac). Ours matches each of these. The range
+// check is unsigned in both (retail `ja` at 0x938eb), the in-band types 1/15/16/17/19/20/21 and every type above 24
+// do nothing in both, and the late 18 test with the inlined 0x94420 body (retail calls it at 0x939c4) has the same
+// effect, so there is no behaviour difference to report; the remaining difference is the register assignment.
+// m3 lane 1 r115: no form run. The listing agrees with this note (convention as retail; the early ESI save and the late
+// compare chain that inlines 0x94420 are what is left), and every switch, parameter-order and lookup form found is listed.
+// M3 lane 13 r105 (all plain with every function of this file and 0x7afd0/0x92ef0/0x92d10/0x785d0; control 143, 0x7afd0
+// MATCH): the one retail-order switch with every case through its own `static __forceinline` wrapper (handler, address,
+// message) 915 (988 B: the handlers inline too; 0x7afd0 6); the one switch with a no-code `(void)address;` after case 18's
+// call 217 (420 B, the one-switch code; 0x7afd0 3), with `(void)address->ipv4_address;` there 217 (same code: no-code reads
+// fold before the convention is chosen). On the kept two-switch body, an unsigned `if ((dword)message_type > 24) return;`
+// ahead of the switches 111 (460 B; retail's prologue, delayed ESI save, two-pop range exit and jump table, 0x7afd0 MATCH;
+// left are case 18, which retail calls from its jump table where ours tests it late and inlines 0x94420; not kept: the test
+// is implied by the switches); that with 11 back in the late switch beside 18 121 (round 65's form re-measured).
+// M3 lane 13 r106 (all plain with 0x7afd0, 0x93aa0, 0x94420, which stay matched unless noted; --fast builds this body at
+// 444 bytes and scores every form 196, so it cannot screen here): r105's unsigned range test ahead of the switches with the
+// late 18 test moved into the first switch's default arm 111 (460 B, same code as r105's 111); the range test with 18 in the
+// first switch after 24 (one switch) 217 (420 B, 0x7afd0 3: type ECX, address EAX, message stacked; case 10 moves the
+// address into EDI around 0x94220's call); that with the address read once through its address 219 (424 B: the address
+// stacks but loads into EAX, type ECX, message EAX); the one switch with the address bound to a `const &` local passed to
+// case 18 219 (424 B, same code). Only the late 18 site inlines 0x94420, and only that inlined use across a call gives
+// retail's convention (type EAX, message ECX, address stacked); with the address stacked any other way the type and the
+// message trade registers. The one switch with the range test and the parameters declared (type, message, address), the
+// declaration and 0x7afd0's call changed with it, 217 (420 B, same code as the declared order: 0x7afd0 3). Restored.
+// ESI is saved before the range check. Retail calls case 18 out of line.
+// case 0 before terminal case 18 194; case 0 after terminal case 18 194; case 2 before terminal case 18 196;
+// case 2 after terminal case 18 196;
+// case 3 before terminal case 18 191; case 3 after terminal case 18 191; case 4 before terminal case 18 199;
+// case 4 after terminal case 18 199.
+// NOT kept: best reduced score 191 against reduced control 196, a five-point gain. It still saves ESI before
+// admission. Full baseline is 143.
+// AC572: Case-18 return expression, terminal conditional void expression,
+// that conditional in primary default, return expressions for 8/24/18,
+// and successful lookups plus terminal 18 all 196 fast. Single retail-order
+// switch with expression returns at 18, 8/18/24, or every handler 218 each.
+// NOT kept: reduced control 196, full 143. The single switch takes 420 bytes
+// and changes the matched caller. Early ESI save and full-only inlining remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
@@ -1515,7 +1584,7 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 		network_message_handler_handle_leave_request(this, (long)address, (const s_session_id *)message);
 		return;
 	case 10:
-		function_094220(this, (const s_session_id *)message, address);
+		function_094220(this, address, (const s_session_id *)message);
 		return;
 	case 12:
 		function_0942d0(this, (const s_session_id *)message, address);
@@ -1534,6 +1603,9 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 		return;
 	case 24:
 		function_945f0((const s_session_id *)message, address);
+		return;
+	case 18:
+		function_94420((const s_session_id *)message, address);
 		return;
 	case 11:
 		function_94270((const s_session_id *)message, address);
@@ -1554,11 +1626,5 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 			network_message_handle_connect_closed(connection_index, (const s_type_ac8d96 *)message);
 		return;
 	default: break;
-	}
-	switch (message_type)
-	{
-	case 18:
-		function_94420((const s_session_id *)message, address);
-		break;
 	}
 }

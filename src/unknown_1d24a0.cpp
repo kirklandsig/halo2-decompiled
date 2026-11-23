@@ -21,7 +21,6 @@ void function_11d790(quaternionf const *arg_0, real *arg_2, vector3f *arg_1);
 void havok_component_rigid_body_angular_velocity_get(s_havok_component *arg_1, long arg_0, vector3f *arg_2);
 void havok_component_rigid_body_linear_velocity_get(s_havok_component *arg_1, long arg_0, vector3f *arg_2);
 real havok_component_rigid_body_mass_get(long arg_0, s_havok_component *arg_1);
-void havok_component_rigid_body_linear_velocity_change(long arg_0, s_havok_component *arg_1, vector3f const *arg_2);
 void havok_component_rigid_body_angular_velocity_set(long arg_0, s_havok_component *arg_1, vector3f const *arg_2);
 real function_1d2280(bool arg_0, bool arg_1, real arg_2, real arg_3, real arg_4, real arg_5, real arg_6, real arg_7, real arg_8, bool arg_9, real *arg_10);
 
@@ -65,8 +64,9 @@ PRIVATE __forceinline real function_1d24a6(vector3f const *arg_0, vector3f const
 }
 PRIVATE __forceinline vector3f *function_1d24a2(vector3f const *arg_0, real arg_1, vector3f *arg_2)
 {
- for (short component = 0; component < 3; ++component)
-  arg_2->n[component] = arg_0->n[component] * arg_1;
+ arg_2->i = arg_0->i * arg_1;
+ arg_2->j = arg_0->j * arg_1;
+ arg_2->k = arg_0->k * arg_1;
  return arg_2;
 }
 PRIVATE __forceinline void function_1d24a3(vector3f *arg_0, vector3f const *arg_1)
@@ -105,6 +105,19 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// score 838 (was 838): r143, m3 lane 8 r221, m3 lane 11 r152 and r158 unchanged (r152's line just above the marker); the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
+// at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
+// MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
+// Earlier score line: 949 (was 949): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain; earlier 949 (was 902), 902 (was 902).
+// Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
+// byte-flag homes and the record/vector homes still differ; the forms below were measured.
+// MiniMax B (11-18): no new form, no lower score (949, was 949): the frame is still 0x1f0 against retail's
+// 0x1d4, so every stack home differs; retail unrolls the scale helper into three multiplies with both
+// vectors in memory while this build rolls the loop, retail reloads the delta from its stack copy after the
+// 0x24590 call and keeps two subtract arms, and retail's loop head (the element pointer formed with
+// `shl eax,3; add`, the object index in EDI across 0xbadc0) belongs to that callee's own file; the calls,
+// the argument values and the float constants are unchanged.
 // MiniMax H (11-14): no new form, no lower score (902): this round re-walked retail's listing block by
 // block against the source; the conditions, fields, constants and callee arguments agree, so what is
 // left opens with the frame and the entry's register roles, and the loop head's shape is settled in the
@@ -124,7 +137,21 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax R (11-15): no new form, no lower score (902): the frame is still 0x1f0 against retail's 0x1d4, so every
 // stack home below the top differs, and the loop head's shape is still decided by the callee 0xbadc0, whose file
 // this lane may not edit.
-// score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
+// Earlier score line: 949 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// MiniMax A (11-18): no new form, no lower score (949 in the reduced image): the first difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, ours the other way round) and the frame (0x1f0 against retail's 0x1d4), so every stack home below the top is out of step.
+// Earlier 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score line: 902 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score line: 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// M3 lane 3 r268 (fast, control 949): the three entry flags renamed (time step, newly active, velocity changed) 949
+// (same code: the flag bytes stay at +8/+9 where retail leaves +9 between them); the newly-active test with the
+// flags-word bit first and the time-step flag second 997; the swap-remove copy reading `[--size]` in one statement 949
+// (same code); the speed product written field first 949 (same code); the object-type mask computed at each of its two
+// tests (no mask local) 1008 (4283 bytes). The three cross-file causes above (rolled scale loops behind the contact
+// array's destructor, 0x24590 treated as clobbering, 0xbadc0 treated as writing memory) are unchanged and their files
+// (src/unknown_1cec30.cpp, src/unknown_023540.cpp, src/unknown_0bad50.cpp) are avoided this round.
+// Earlier at 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add
 // (k + j) + i. The source spells out (i*i + k*k) + j*j; ours adds k*k + i*i first and then j*j, the same grouping. Same score 902.
@@ -478,6 +505,218 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // component and slot locals renamed to the other sort order 902 (same code); the angular pair read from the record at
 // each use (retail's [ebp+0x58]/[ebp+0x5c]) with a long scale counter 950 [357] (4220 B). Retail re-makes its zero
 // (`xorps`) and reloads every live XMM value after both 0x24590 calls although 0x24590 is pure x87.
+// MiniMax D (11-17): no new form, no lower score (902): the first difference is still the argument's
+// register (retail reads it into EAX and tests EAX, ours into ECX) and the frame (retail 0x1d4 against our
+// 0x1f0), so every later stack home differs by four bytes; retail's rolled scale loop is also still
+// unrolled into three multiplies with both vectors in memory, which is what decides the frame size here.
+// M3 lane 11 r115 (fast with 0x1cf9f0, 0x1d2070, 0x1d1260, 0x24590, 0x1d2280; the baseline is 949 since main made 0x1d1010 a
+// member; aligned unmatched [exact/stack-masked/register-masked], base [528/391/229]): the unroll lead with the header free.
+// The contact array freed through a plain release member in place of its destructor and operator delete, at all three users,
+// with a long scale counter 1170 (4032 bytes, frame 0x1d4) [450/316/206], but 0x1d2070 loses its match (32, 510 bytes: its
+// `delete` carries a null test the member lacks). The release member beside the destructor, used here only: 1170 (4032
+// bytes) [450/316/206], 0x1cf9f0 and 0x1d2070 still matched. On that, `inline` on 0x24590's definition 1044 (4171 bytes)
+// [536/253/144]; with the rigid-body position copied field by field 1033 (4176 bytes) [435/214/121]; with the record flags
+// read from the field at each pair as well 1033 (4156 bytes) [434/213/120]. Positionally every one is above the base (the
+// body is then 83 to 103 bytes short, mostly the loop head that 0xbadc0 decides), so none is kept; aligned, the three
+// cross-file causes (destructor-free release, `inline` 0x24590, opaque 0xbadc0) account for about half of what differs.
+// Body, header and both other files restored.
+// M3 lane 4 r222 (fast with 0x1cf9f0, 0x1d2070, 0x1d1260, 0x24590 matched and 0x1d2280 26 throughout; control 949, aligned 689):
+// the component flags read once into a `dword flags` for the entry test and the bit-13 test 962 (4283 B), as `long` 962;
+// the attached-object lookup as `local_13 = NULL; if (field_4 != NONE) local_13 = ...` 949 (same code); the later
+// `field_4 != NONE &&` dropped from the component test (local_13 is NULL then) 982; the slot clamp replaced by its range
+// test 964 (retail computes the clamp, `movsx`/`jle`/`mov ecx, edx`, so not retail's form). The cross-file causes stand:
+// 0x24590 and 0xbadc0 (both files held this round) and the contact array's destructor.
+// M3 lane 13 r115 (fast, all restored): the body as one `if (flags & 0x104000) { ... }` with no early return 949 (same
+// code); the flags word read once into a named local for both entry tests 962 (4283 B); the was-active bit tested as
+// `!(flags & 0x2000)` 951; the activity flag and response maximum declared before the two entry flags 956; the
+// contact array pointer read once before the loop test 1003 (4287 B).
+// M3 lane 6 r205 (fast with 0x1cf9f0, 0x1d2070, 0x1d1260, 0x24590, 0x1d2280, 0x1152e0, 0x11bce0; control 949, aligned unmatched
+// [exact/stack-masked] [528/391]): the flags word in a named local for both entry tests re-measured 962 [532/395]; the
+// validity tests nested around the body with the removal after it re-measured on this baseline 964 [533/405]; that with the
+// slot byte read from the element at each use and the long slot local defined at its later assignment (retail keeps the
+// byte in AL and widens it at the clamp, the compare and the first body lookup) 974 [540/407]; that with the record flags
+// read from the field at each bit 983 [538/405]; the entry test as two shifted bit tests of the flags word 1011 (4283 B)
+// [524/391] (still `test ecx, 0x104000` with the component in EAX where retail has EAX and ECX the other way round). Retail
+// saves EBX with ESI and EDI for the whole function and only EBP around the loop; ours saves EBX with EBP around the loop,
+// which is one instruction of shift from the third push to the loop head. All restored.
+// MiniMax B (11-19): no new form, no lower score (949): the frame is still 0x1f0 against retail's 0x1d4 and the first
+// difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
+// the other way round), so every stack home below the top is out of step; the loop head's shape is decided by the callee
+// 0xbadc0, which lives in another file - BLOCKED-BY 0xbadc0.
+// M3 lane 5 r214 (fast; control 949, aligned 528): record bit 1 declared before bit 2 949 (aligned 521); local_2 and
+// local_3 declared ahead of the entry flags 956; the activity flag as `!bit13 && local_0` 997; the activity flag as a
+// copy of local_0 cleared when bit 13 is set 994 (retail's entry registers, first difference +0x9, but the flag takes
+// its own byte at +3); the record loop counter declared at block scope 949 (same code). Both builds are in asm
+// slot-ordering mode (inlined fistp helper, cvttss2si).
+// M3 lane 15 r116 (fast = plain; control 1014 at 4299 B, frame 0x1f4): main's count rose from 949 when lane 8 r201 put
+// `inline` on magnitude3d's definition (0x24590; the old file swapped into the fast image gives 949 again), the round 148
+// held lead's condition. Kept: the residual subtract written in both arms at the two limit sites (retail keeps two subtract
+// blocks) and the record flags read from the field at each bit (no flags local): 895 (4278 B, aligned 670, frame 0x1f0).
+// LEAD (no count change, so not kept): with the scale helper as three statements (retail's unrolled multiplies) and the motion
+// position copied field by field (retail's three movss) as well, 895 at 4240 B, frame 0x1dc, aligned 405 (plain 895).
+// Steps (fast): subtract alone 951; helper alone 1048 (4167 B); helper with the subtract 958; with the field copy as well
+// 952; all four 895; the scale helper with the subtract and the field reads 921; plus the second-bit flag declared first 895 (same as without); plus the
+// removal as an else arm after the body with the clamp test written on the field 898 (aligned 377), with the slot locals
+// kept 895 (same code). Not kept: the first block's offset through the existing vector3d_from_points3d with no staging copy
+// 948 on the old body (frame 0x1e8), 1028 with the kept forms (frame 0x1cc); the angular block's slot index through local_15
+// 944 (aligned 736: retail reads the field there); both 964; each block's response fraction in its own block 1012; the
+// motion-position pointer dropped 1017; the two in-place differences through vector3d_from_points3d 948 (same code); the
+// attached object index named at its tests 895 (same code), named right after the element pointer 901; the angular
+// coefficients read from the record at each use 916 (4210 B, aligned 348). Left: retail pushes EBX at entry and keeps the
+// element pointer (shl/add) in a stack home with the attached index in EDI; the frame is 8 bytes over retail's 0x1d4.
+// M3 lane 11 r139 (h2m fast = check.py --fast = plain; aligned unmatched [exact/stack-masked/register-masked], control 895
+// [498/375/209]): kept, 895 -> 838 at 4255 B [340/196/92], first difference +0x9 (retail's entry registers), frame 0x1d8:
+// the scale helper as three statements and the motion position copied field by field (round 116's lead, re-measured 895
+// at 4240 B [352/184/104]); the validity tests (attached index, object, component index) as one `if` around the component
+// lookup with the slot clamp nested in it, the body ending in `continue` and the swap-remove after both (retail jumps
+// straight to the removal and never tests the component pointer); the slot index read from the element at the clamp and
+// at the first rigid-body lookup, its long local defined where retail re-reads it after the object-type calls (retail
+// keeps the byte in AL at the clamp and re-reads `[element + 1]`); the angular residual scaled by -1.0 and then added
+// through the file's scale and add helpers (retail multiplies by -1.0 and adds; the fused add-scaled call folds to a
+// subtract). Steps on the lead: slot from the field 898 [323/185/104]; slot in a signed-char local 914; nested tests with
+// the long slot local at the clamp 980; nested with the field 857 [344/206/102]; nested with a signed-char local 862. On
+// 857: the scale helper's products as `scale * component` 857 (same code); the five coefficient and rate products with
+// their sides swapped, one at a time and together, 857 each (same code: the compiler orders them itself); one, two or
+// three redundant paren pairs around the first block's x difference 862/871/857 and around the first solver product
+// 857/862/871 (a three-state phase, each state flips other product pairs; not keepable); the angular coefficients read
+// from the record at each use (retail's [record + 0x58] and [record + 0x5c] reads) 893 at 4205 B [322/199/98]; the
+// scale-then-add alone 838; both 871 at 4225 B [312/189/88], frame 0x1cc (the lead for the next round). On 838: the
+// aggregate position copy again 868; the helper's loop again 1033; the attached index in a named local after the element
+// pointer 973, after the record pointer 970; the slot index read from the element at every use (no local) 938 (first
+// difference back to +0x1). Diagnostic, reverted at once: an opaque call after the attached-object lookup on the 871 form
+// gives retail's loop head (list in EBX, element pointer formed by shl/add and spilled) 899 [319/190/75], so BLOCKED-BY
+// 0xbadc0 stands (its file is another lane's this round), and with it the attached index wants a named local (retail
+// keeps it in EDI across the call). Left on 838 besides that head: the operand order of the float products and sums
+// (retail loads the vector component and multiplies by the scale in the first two blocks, the other way round in the
+// third), the object-type byte read with movzx, EBX saved at entry, and ECX/EDX swapped in the tail's level arithmetic.
+// Also on 838: the object-type mask computed at each of its two tests from the byte field (no mask local) 852 (4259 B,
+// retail's length; still `mov cl`); from a long type local 834 (4256 B, retail's `movzx` read; under the bar and a
+// computed value written out at each use, so not kept).
+// M3 lane 11 r141 (h2m fast = check.py --fast = plain; aligned unmatched [exact/stack-masked/register-masked], control 838
+// [340/196/92]): kept, 838 -> 780 at 4264 B [282/139/70]. The loop head was not blocked by 0xbadc0: retail keeps the list
+// in EBX from the loop top to the removal and re-reads its data pointer there, which is the component's list field read
+// once at the loop top (for the element pointer) and once more at the removal into the list local (four uses there):
+// 786 [287/145/73], with retail's head (`shl eax, 3`, the attached index in EDI, `add esi, eax`, the element pointer
+// spilled) and retail's removal block byte for byte. The same code from a private swap-remove helper taking the list
+// (786, a new one-caller helper, not needed) and from the old top-of-loop local with the field read again at the removal
+// (786). Other removal spellings on the 838 body: only the size decrement through the component's field 788 (head
+// retail's, removal 5 rows off); the decrement inside the index expression through the field 932; every removal read
+// through the field 932 (4281 B, the list is reloaded after the size store); no list local at all 932 [323/166/79]; the
+// copy through the element pointer 838 (same code), with the decrement through the field 956; the list local at
+// function scope, set before the entry test, or also used by the final free 838 each (same code); the counter at
+// function scope 838; a named data pointer 838. On 786: the second simulating query through the existing
+// havok_component_rigid_body_get 780 (retail forms the body pointer before the result-buffer push), the owner body and
+// the motion position through it too 780 (same code; all three kept); the record's bit-1 flag declared ahead of its
+// bit-2 flag 773, with the getter 767 (retail copies the flags word for bit 1 and shifts the original for bit 2, as it
+// does for bits 25 and 26 in that order; a declaration order, so not kept); the angular coefficients read from the
+// record at each use 815 at 4231 B [272/138/69], frame 0x1cc (retail's reads, positional rise), with the bit-1 flag
+// first 804. On 780: the list local at function scope (declared only, or set for the entry test) 780 (same code); the
+// scale of the first limit arm in a named local 793 [305/163/74], of the second 780 (same code), both 793; the
+// object-type byte in a long local 780 (same code). Tail forms on the 838 body (same code unless a count is given): the
+// step arms as a ternary, with `<=` and the arms swapped, with the compare turned round; the two levels declared in
+// the other order; the clamps in named locals; the else arm's two steps or the two step locals in the other order; the
+// final clamp as a ternary; the first clamp testing the upper bound first 834 (4259 B); the first level's step ahead of
+// the target test 807 at retail's 4259 B (not kept: a statement order, and the tail is then not retail's; it is the one
+// form that uses EBX outside the loop, which moves `push ebx` to the entry as retail has it).
+// Left on 780: retail saves EBX with ESI and EDI at the entry though it uses EBX only inside the loop, exactly where
+// this build does (the same 18 rows), and this build saves it around the loop with EBP (one row of shift from the
+// third push to the loop, and one at the exit); the frame is 0x1d8 against 0x1d4 with the two angular coefficient
+// homes retail does not have; the flag pairs' copy roles and the argument loads at the marker calls; `mov cl` against
+// retail's `movzx` for the object type; the operand sides of about a dozen float products (retail loads the vector
+// component and multiplies by the scale at both limit arms); and the tail (retail keeps the first level in EDX with its
+// clamp result in ECX, and loads the second step into ESI only in the add arm).
+// MiniMax H (11-20): no new form, no lower score (895): the frame is still 0x1f0 against retail's 0x1d4 and the first
+// difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
+// the other way round), so the stack homes below the top stay out of step: BLOCKED-BY 0xbadc0 in another file.
+// M3 lane 3 r289 (fast, single address; control 838): 0..35 unused initialised locals at the top 838 each (no symbol-count
+// state here); the two simulating bools declared at function scope 838; the marker record at function scope 838; both 838;
+// the record's bit-2 and bit-1 bools at function scope 838 (same code each: scope does not move `push ebx`, which retail has
+// with ESI/EDI at the entry and uses only for the loop's list, the simulating bool and the EBX/BL arguments of 0xb8d30 and
+// 0x1d2280); the attached-object test without the repeated NONE test of the element's index 970 (4244 B); the first
+// simulating bool as `local_1 || (...)` 845; the two step levels declared in the other order 838; the response fraction
+// declared ahead of the first zero vector 838; the element pointer as `data + index` 838; the removal's copy through the
+// element pointer 838 again. Body unchanged.
+// M3 lane 1 r143 (fast = check.py --fast; aligned [exact/stack-masked/register-masked]): on 838 the angular coefficients read
+// from the record at each use 871 (4225 B). The removal as the existing `remove_at` of the shared Havok array members
+// (s_havok_array08 declared with ELEMENTS_2D91D0_MEMBERS in include/unknown_1cec30.h, the same data/size/capacity layout),
+// called on `arg_0->unknown94`, with the loop head reading the component's field (no list local) 780 [282/139/70] at
+// 4264 B, r141's code with no moved declaration. Not kept: the full check then loses matched 0x54590 (and flips 0xc2d00
+// to matched); with the macros moved into a header free of the memory classes 0x54590 is still lost, while r141's
+// hand-written form with the headers untouched passes the full check (12325 matched, nothing lost). So the members
+// added to that header, not the 780 code, move 0x54590 (the include of the memory classes alone moved 0x185be0 60 -> 62).
+// On 780: one flags word local for the four record bit tests 813 (4270 B), for the bit-2/bit-1 pair only 780;
+// `field_20 * arg_1` for `arg_1 * field_20` 780; the shared vector3f_scale for the private scale copy at all eleven
+// calls 780; the shared dot3f for the private copy 780 (each the same code). Left at 780 as r141 lists: EBX saved around
+// the loop with EBP (retail at the entry), the frame 0x1d8 against 0x1d4, the flag pairs' copy roles, `mov cl` for
+// retail's `movzx`, product sides, and the tail's ECX/EDX rotation (ours tests the response flag through DL, retail CL).
+// M3 lane 11 r147 (fast, single address, control 838): the entry test as one `if` around the body in place of the early
+// return 838 (same code: EBX is still saved around the loop, retail saves it with ESI and EDI); the removal in
+// src/unknown_1cec30.cpp's form `data[i] = data[--size]` on the array's own element type 838; the element pointer as a
+// cast of `&list->data[i]` 838; the final free through a named list local 838 (all the same code); the half rate named
+// once for both rounding calls 869 (4230 B: retail converts it twice). Body unchanged.
+// M3 lane 4 r244 (h2m fast; control 838; body unchanged): the removal in the sibling contact-removal function's form
+// (`data[i] = data[--list->size]` through the list local) 838; the object-type byte read into a long local for the shift
+// 838 (still `mov cl`, the table data still in EDI where retail reuses EDX); local_2 and local_3 initialised ahead of
+// local_0/local_1 851; the two angular coefficients bound `real const &` to the record 871 (4225 B, as the reads at each
+// use); the element pointer as `data + index` 838 (same code). Reading: retail's head forms and spills the element pointer
+// because its data pointer is not kept across the attached-object lookup to the removal; ours keeps it in EBX for that path.
+// M3 lane 13 r140 (H2M_FAST, single address; control 838, difflib-aligned 340 with call targets masked): the angular
+// coefficient field_5c read from the record at its two uses (field_58's local kept) 843 at 4242 B (aligned 317): the frame is
+// then retail's 0x1d4 and the first difference moves to +0x14 (left there: `push ebx` at the entry, which this body saves around
+// the loop); field_58 read at each use with field_5c's local kept 857 (4238 B, frame 0x1d4, aligned 316); all four response
+// fractions through the one `response_fraction` local 876 (4243 B), with field_5c at each use 888. Lead (match-only, a statement
+// order): field_5c at each use plus the first level's step ahead of the target test (lane 11 r141's 807 form) 809 at 4245 B,
+// aligned 299: the whole entry block, frame and `push ebx` are then retail's to the loop head, where this body still keeps the
+// element list's data pointer in a register (retail re-reads it; r141's 780 removal form). With r141's list local moved to the
+// removal as well 739 at 4254 B (aligned 239; three match-only forms together). Body unchanged.
+// M3 lane 8 r221 (full checks unless marked). The removal as the
+// shared Havok array's existing `remove_at` (s_havok_array08 typed in include/unknown_1cec30.h with the existing
+// growable-array members macro, the loop head reading the component's field) 780 (h2m fast and full, 4264 B), but the
+// full check loses matched 0x54590 (two loads swapped at +0xff) and gains 0xc2d00, 0x24cf66 114 -> 115; with all four
+// arrays of that header typed the same way (a second change, as the coordinator advises for a lone 0x54590 loss) the
+// identical result. Diagnostic: lane 11 r141's hand-written 780 body with the header untouched loses nothing (only
+// 0x1d24a0 moves), so the header's members, not the body, flip the 0x54590/0xc2d00 pair. Restored. On main's body
+// (h2m fast): the type mask as `long` 838 and the four running-maximum updates as conditionals 838 (same code each).
+// M3 lane 7 r215 (H2M_FAST, single address; control 838, difflib-aligned 386 here). Lead, under the keep bar (4
+// points): the object-type byte in a `long` local read by both mask tests (`(1 << type) & 1`, `(1 << type) & 0x1000`,
+// no mask local) 834 at 4256 B: the dispatch block is then retail's byte for byte (`movzx ecx`, the header table in
+// EDX; aligned 384). The two tests written on the byte itself with no local 852 (4259 B: `lea` + `mov cl`); the mask
+// local with a `(long)` cast on the byte 838 (same code). With the type local and field_5c read at its two uses (lane
+// 13 r140's frame form, 843 alone at 4242 B) 838 at 4243 B, frame 0x1d4, first difference +0x14, aligned 365. Diagnostic,
+// restored at once: an indirect call right after the attached-object lookup (0xbadc0 made opaque) 820 at 4262 B, aligned
+// 333: the list is then in EBX with the element pointer formed by `shl eax, 3; add` as retail, but EBX is still saved
+// with EBP around the loop and the frame is still 0x1d8, so neither follows from 0xbadc0's write summary; with the
+// type local too 864 (4261 B). Body unchanged.
+// M3 lane 11 r152 (h2m fast; control 838). Retail re-reads both angular coefficients at each use (the test, the
+// 0x1d2280 arguments, the 0xa75d0 product) and gives the four 0x1d2280 fraction outputs four homes (+0x108, +0xec,
+// +0xd8, +0x3c), where this body shares one fraction local between the second limit block and the angular block.
+// The coefficients read at each use 871 (4225 B, frame 0x1cc); the shared fraction split into one per block 836
+// (frame 0x1dc); both 848 (frame 0x1d4 = retail's, first difference `push ebx`). With the removal through the
+// existing remove_at (the array typed with the growable-array members, the head reading the field): alone 780,
+// with the reads 808, with the split 776, with both 775 (full check too: the loop head, frame and fraction homes are
+// retail's), but the full check again loses matched 0x54590 and gains 0xc2d00, so not kept. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST, single address; control 838, difflib-aligned 386): r215's object-type long local (the mask
+// written at both tests) with the angular block's fraction split off into its own local 831 (4256 B, aligned 339; 7
+// points and the mask computed at each use, so not kept); that with the angular coefficients read at each use 843
+// (4226 B, aligned 267, first difference +0x14); the two level bytes read ahead of the two step conversions 837 (a
+// statement order, one point); the swap-remove through a named elements pointer 885 (4259 B); the second limit block's
+// fraction split off instead of the angular block's 836 (aligned 341, the same count as lane 11 r152's split). The loop
+// head stays BLOCKED-BY 0xbadc0 (its file is on this round's avoid list). Body unchanged.
+// M3 lane 11 r158 (h2m fast, single address; control 838): the angular coefficients read at each use with one fraction
+// local per block (r152's 848, re-measured at 4225 B, frame 0x1d4, first difference `push ebx`); on it the loop counter
+// at function scope 848, the list local at function scope set before the entry test and used by it 848 (same code
+// each), the object type in a long local for both mask tests 843 (4226 B), one flags-word local for the four record bit
+// tests 884 (4230 B); on the body `if (!local_21) continue;` as a block around the rest 838 (same code). Body unchanged.
+// M3 lane 3 r302 (H2M_FAST, single address; control 838 at 4255 B, difflib-aligned exact/register-masked 386/299): the
+// list bound as `s_havok_array08 *const &` to the component's field 927 (4277 B); the element as `s_1d24a0 &` 838 (same
+// code); main's mix of `local_15` and direct `field_1` reads made uniform: the field at every use 934 (4271 B), the local at
+// every later use 862 (4253 B). One `real response_fraction;` declared inside each of the two blocks that share it (the
+// same name in both scopes; retail gives the four fraction outputs four homes) 836 (aligned 341/260: a structural gain of
+// 45 rows, 2 points positional, under the bar); with both angular coefficients read at each use 848 at 4225 B (aligned
+// 269/172, frame 0x1d4 = retail's, first difference `push ebx`), with only field_5c at each use 848 (4242 B, 332/246).
+// Lead (match-only, a moved declaration): those two plus lane 11 r141's list local at the removal (the head reading the
+// field) 775 at 4234 B, aligned 206/149, the same 775 as r152's remove_at form but with no header change. The loop head
+// stays BLOCKED-BY 0xbadc0's write summary (src/unknown_0bad50.cpp, on this round's avoid list). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -499,177 +738,184 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
    byte *local_11 = *(byte **)(local_7 + 0x44) + local_10->field_0 * 12;
    s_1d24a1 *local_12 = &(*(s_1d24a1 **)(local_7 + 0x2c))[*(short *)(local_11 + 8)];
    byte *local_13 = local_10->field_4 != NONE ? (byte *)function_badc0(local_10->field_4, (dword)-1) : NULL;
-   s_havok_component *local_14 = NULL;
    if (local_10->field_4 != NONE && local_13 && *(long *)(local_13 + 0xb4) != NONE)
-    local_14 = havok_component_get(*(long *)(local_13 + 0xb4));
-   long local_15 = local_10->field_1;
-   long local_16 = local_14 ? (local_15 < 0 ? 0 : local_15 > local_14->rigid_bodies.size ? local_14->rigid_bodies.size : local_15) : NONE;
-   if (!local_14 || local_16 != local_15)
    {
-    --local_9->size;
-    ((s_1d24a0 *)local_9->data)[local_8] = ((s_1d24a0 *)local_9->data)[local_9->size];
-    --local_8;
-    continue;
-   }
-   dword record_flags = local_12->field_0;
-   bool local_17 = (bool)((record_flags >> 2) & 1);
-   bool local_18 = (bool)((record_flags >> 1) & 1);
-   hkRigidBody *local_19 = arg_0->rigid_bodies.data[local_10->field_3].rigid_body;
-   bool local_20 = (!local_19->m_fixed && local_19->body_is_simulating().m_bool) || local_1;
-   bool local_21 = local_14->rigid_bodies.data[local_15].rigid_body->body_is_simulating().m_bool || local_20;
-   bool local_22 = (bool)((record_flags >> 25) & 1);
-   bool local_23 = (bool)((record_flags >> 26) & 1);
-   s_object_marker local_24;
-   if (!function_b8d30(arg_0->object_index, local_12->field_8, &local_24, 1, false))
-    function_ba160(arg_0->object_index, &local_24.matrix);
-   if (!local_21) continue;
-   vector3f local_25 = *g_4687a4;
-   real response_fraction;
-   byte *local_26 = g_4e0300->data + (local_14->object_index & 0xffff) * 12;
-   dword local_27 = 1 << local_26[3];
-   if (local_27 & 1) function_def30(local_14->object_index);
-   else if (local_27 & 0x1000) function_119250(local_14->object_index);
-   local_15 = local_10->field_1;
-   point3f const *local_76 = (point3f const *)((byte *)local_14->rigid_bodies.data[local_15].rigid_body->m_motion + 0x70);
-   point3f local_28 = *local_76;
-   vector3f local_29;
-   vector3f local_30;
-   havok_component_rigid_body_angular_velocity_get(local_14, local_15, &local_29);
-   havok_component_rigid_body_linear_velocity_get(local_14, local_15, &local_30);
-   if (local_12->field_20 != 0.0f && local_12->field_24 != 0.0f)
-   {
-    vector3f local_75;
-    local_75.i = local_24.matrix.position.x - local_28.x;
-    local_75.j = local_24.matrix.position.y - local_28.y;
-    local_75.k = local_24.matrix.position.z - local_28.z;
-    vector3f local_31 = local_75;
-    real local_32 = function_30bf0(&local_31);
-    if (local_32 == 0.0f) local_31 = *g_4687b0;
-    real local_33 = function_1d24a1(&local_30, &local_31);
-    real local_34;
-    real local_35 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
-     local_32, arg_1 * local_12->field_20, local_33, local_12->field_24, local_12->field_1c,
-     local_12->field_18, local_22, &local_34);
-    real local_36 = g_510c54->rate * local_12->field_20;
-    vector3f local_37;
-    function_1d24a2(&local_31, local_35, &local_37);
-    if (!local_17 && local_36 > local_35)
+    s_havok_component *local_14 = havok_component_get(*(long *)(local_13 + 0xb4));
+    long local_16 = local_10->field_1 < 0 ? 0 : local_10->field_1 > local_14->rigid_bodies.size ? local_14->rigid_bodies.size : local_10->field_1;
+    if (local_16 == local_10->field_1)
     {
-     real local_38 = g_51e9c4->unknown0 * g_510c54->rate;
-     real local_39 = local_36 - local_35;
-     if (!(local_38 > local_39)) local_39 = local_38;
-     local_37.k += local_39;
-    }
-    if (local_32 - local_12->field_1c >= 0.0f)
-    {
-     vector3f local_40;
-     function_1d24a2(&local_31, local_33, &local_40);
-     local_40.i = local_30.i - local_40.i;
-     local_40.j = local_30.j - local_40.j;
-     local_40.k = local_30.k - local_40.k;
-     real local_41 = magnitude3d(&local_40);
-     if ((local_41 >= 0.0f ? local_41 : 0.0f-local_41) > 0.001f)
+     bool local_17 = (bool)((local_12->field_0 >> 2) & 1);
+     bool local_18 = (bool)((local_12->field_0 >> 1) & 1);
+     hkRigidBody *local_19 = havok_component_rigid_body_get(local_10->field_3, arg_0);
+     bool local_20 = (!local_19->m_fixed && local_19->body_is_simulating().m_bool) || local_1;
+     bool local_21 = havok_component_rigid_body_get(local_10->field_1, local_14)->body_is_simulating().m_bool || local_20;
+     bool local_22 = (bool)((local_12->field_0 >> 25) & 1);
+     bool local_23 = (bool)((local_12->field_0 >> 26) & 1);
+     s_object_marker local_24;
+     if (!function_b8d30(arg_0->object_index, local_12->field_8, &local_24, 1, false))
+      function_ba160(arg_0->object_index, &local_24.matrix);
+     if (!local_21) continue;
+     vector3f local_25 = *g_4687a4;
+     real response_fraction;
+     byte *local_26 = g_4e0300->data + (local_14->object_index & 0xffff) * 12;
+     dword local_27 = 1 << local_26[3];
+     if (local_27 & 1) function_def30(local_14->object_index);
+     else if (local_27 & 0x1000) function_119250(local_14->object_index);
+     long local_15 = local_10->field_1;
+     point3f const *local_76 = (point3f const *)((byte *)havok_component_rigid_body_get(local_15, local_14)->m_motion + 0x70);
+     point3f local_28;
+     local_28.x = local_76->x;
+     local_28.y = local_76->y;
+     local_28.z = local_76->z;
+     vector3f local_29;
+     vector3f local_30;
+     havok_component_rigid_body_angular_velocity_get(local_14, local_15, &local_29);
+     havok_component_rigid_body_linear_velocity_get(local_14, local_15, &local_30);
+     if (local_12->field_20 != 0.0f && local_12->field_24 != 0.0f)
      {
-      if (local_41 > local_36)
+      vector3f local_75;
+      local_75.i = local_24.matrix.position.x - local_28.x;
+      local_75.j = local_24.matrix.position.y - local_28.y;
+      local_75.k = local_24.matrix.position.z - local_28.z;
+      vector3f local_31 = local_75;
+      real local_32 = function_30bf0(&local_31);
+      if (local_32 == 0.0f) local_31 = *g_4687b0;
+      real local_33 = function_1d24a1(&local_30, &local_31);
+      real local_34;
+      real local_35 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
+       local_32, arg_1 * local_12->field_20, local_33, local_12->field_24, local_12->field_1c,
+       local_12->field_18, local_22, &local_34);
+      real local_36 = g_510c54->rate * local_12->field_20;
+      vector3f local_37;
+      function_1d24a2(&local_31, local_35, &local_37);
+      if (!local_17 && local_36 > local_35)
       {
-       real local_42 = local_36 >= 0.0f ? local_36 : 0.0f-local_36;
-       function_1d24a2(&local_40, 1.0f - (local_41-local_42)/local_41, &local_40);
+       real local_38 = g_51e9c4->unknown0 * g_510c54->rate;
+       real local_39 = local_36 - local_35;
+       if (!(local_38 > local_39)) local_39 = local_38;
+       local_37.k += local_39;
       }
-      function_1d24a4(&local_37, &local_40);
-     }
-     if (!(local_3 > local_34)) local_3 = local_34;
-     local_2 = true;
-    }
-    function_1d24a3(&local_25, &local_37);
-   }
-   if (local_12->field_28 != 0.0f && local_12->field_2c != 0.0f)
-   {
-    vector3f local_43;
-    real local_46 = function_1d24a7(&local_24.matrix.position, &local_28, &local_24.matrix.forward, &local_43);
-    if (local_46 != 0.0f)
-    {
-     real local_47 = function_1d24a1(&local_43, &local_30);
-     real local_49 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
-      local_46, local_12->field_28 * arg_1, local_47, local_12->field_2c, local_12->field_1c,
-      local_12->field_18, local_22, &response_fraction);
-     vector3f local_50;
-     function_1d24a2(&local_43, local_49, &local_50);
-     if (local_46 - local_12->field_1c >= 0.0f)
-     {
-      real local_51 = function_1d24a6(&local_30, &local_24.matrix.forward);
-      vector3f local_52;
-      function_1d24a2(&local_24.matrix.forward, local_51, &local_52);
-      local_52.i = local_30.i - local_52.i;
-      local_52.j = local_30.j - local_52.j;
-      local_52.k = local_30.k - local_52.k;
-      vector3f local_53;
-      function_1d24a2(&local_43, local_47, &local_53);
-      function_1d24a4(&local_52, &local_53);
-      real local_54 = magnitude3d(&local_52);
-      if ((local_54 >= 0.0f ? local_54 : 0.0f-local_54) > 0.001f)
+      if (local_32 - local_12->field_1c >= 0.0f)
       {
-       if (local_54 > local_12->field_28 * g_510c54->rate)
+       vector3f local_40;
+       function_1d24a2(&local_31, local_33, &local_40);
+       local_40.i = local_30.i - local_40.i;
+       local_40.j = local_30.j - local_40.j;
+       local_40.k = local_30.k - local_40.k;
+       real local_41 = magnitude3d(&local_40);
+       if ((local_41 >= 0.0f ? local_41 : 0.0f-local_41) > 0.001f)
        {
-        real local_55 = local_12->field_28 >= 0.0f ? local_12->field_28 : 0.0f-local_12->field_28;
-        function_1d24a2(&local_52, 1.0f-(local_54-local_55*g_510c54->rate)/local_54, &local_52);
+        if (local_41 > local_36)
+        {
+         real local_42 = local_36 >= 0.0f ? local_36 : 0.0f-local_36;
+         function_1d24a2(&local_40, 1.0f - (local_41-local_42)/local_41, &local_40);
+         function_1d24a4(&local_37, &local_40);
+        }
+        else
+         function_1d24a4(&local_37, &local_40);
        }
-       function_1d24a4(&local_50, &local_52);
+       if (!(local_3 > local_34)) local_3 = local_34;
+       local_2 = true;
       }
-      if (!(local_3 > response_fraction)) local_3 = response_fraction;
+      function_1d24a3(&local_25, &local_37);
+     }
+     if (local_12->field_28 != 0.0f && local_12->field_2c != 0.0f)
+     {
+      vector3f local_43;
+      real local_46 = function_1d24a7(&local_24.matrix.position, &local_28, &local_24.matrix.forward, &local_43);
+      if (local_46 != 0.0f)
+      {
+       real local_47 = function_1d24a1(&local_43, &local_30);
+       real local_49 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
+        local_46, local_12->field_28 * arg_1, local_47, local_12->field_2c, local_12->field_1c,
+        local_12->field_18, local_22, &response_fraction);
+       vector3f local_50;
+       function_1d24a2(&local_43, local_49, &local_50);
+       if (local_46 - local_12->field_1c >= 0.0f)
+       {
+        real local_51 = function_1d24a6(&local_30, &local_24.matrix.forward);
+        vector3f local_52;
+        function_1d24a2(&local_24.matrix.forward, local_51, &local_52);
+        local_52.i = local_30.i - local_52.i;
+        local_52.j = local_30.j - local_52.j;
+        local_52.k = local_30.k - local_52.k;
+        vector3f local_53;
+        function_1d24a2(&local_43, local_47, &local_53);
+        function_1d24a4(&local_52, &local_53);
+        real local_54 = magnitude3d(&local_52);
+        if ((local_54 >= 0.0f ? local_54 : 0.0f-local_54) > 0.001f)
+        {
+         if (local_54 > local_12->field_28 * g_510c54->rate)
+         {
+          real local_55 = local_12->field_28 >= 0.0f ? local_12->field_28 : 0.0f-local_12->field_28;
+          function_1d24a2(&local_52, 1.0f-(local_54-local_55*g_510c54->rate)/local_54, &local_52);
+          function_1d24a4(&local_50, &local_52);
+         }
+         else
+          function_1d24a4(&local_50, &local_52);
+        }
+        if (!(local_3 > response_fraction)) local_3 = response_fraction;
+        local_2 = true;
+       }
+       function_1d24a3(&local_25, &local_50);
+      }
+     }
+     if (local_12->field_30 != 0.0f && local_12->field_34 != 0.0f)
+     {
+      real local_56;
+      real local_57 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
+       10000.0f, local_12->field_30 * arg_1, function_1d24a6(&local_30, &local_24.matrix.forward),
+       local_12->field_34, local_12->field_1c, local_12->field_18, local_22, &local_56);
+      vector3f local_58;
+      function_1d24a2(&local_24.matrix.forward, local_57, &local_58);
+      function_1d24a3(&local_25, &local_58);
+      if (!(local_3 > local_56)) local_3 = local_56;
       local_2 = true;
      }
-     function_1d24a3(&local_25, &local_50);
+     if (local_17) local_25.k += g_510c54->rate * g_51e9c4->unknown0;
+     local_14->rigid_body_linear_velocity_change(local_15, &local_25);
+     if (!TEST_FIELD_BIT(local_14->flag1))
+     {
+      if (local_12->field_c != 0x7000001)
+       function_b8d30(arg_0->object_index, local_12->field_c, &local_24, 1, false);
+      vector3f local_59 = *g_4687a4;
+      real coefficient_58 = local_12->field_58;
+      real coefficient_5c = local_12->field_5c;
+      if (coefficient_58 != 0.0f && coefficient_5c != 0.0f)
+      {
+       transform4x3f local_60;
+       local_14->rigid_body_matrix_get(local_10->field_1, &local_60);
+       function_142b80(&local_60.rotation, &local_60.rotation);
+       matrix3x3 local_61;
+       quaternionf local_62;
+       function_141f60(function_142eb0(&local_60.rotation, &local_24.matrix.rotation, &local_61), &local_62);
+       vector3f local_63;
+       real local_64;
+       function_11d790(&local_62, &local_64, &local_63);
+       /* retail 0x1d31a6-0x1d31f2 adds this x87 dot product as (i + k) + j (the other two: (k + j) + i) */
+       real local_65 = (real)(((double)local_63.i * local_29.i + (double)local_63.k * local_29.k) + (double)local_63.j * local_29.j);
+       real local_67 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_10->field_1, local_14),
+        local_64, coefficient_58 * arg_1, local_65, coefficient_5c, 0.0f,
+        local_12->field_54, local_23, &response_fraction);
+       function_1d24a2(&local_63, local_67, &local_59);
+       vector3f local_68;
+       function_1d24a2(&local_63, local_65, &local_68);
+       vector3d_from_points3d((point3f const *)&local_68, (point3f const *)&local_29, &local_68);
+       function_a75d0(&local_68, g_510c54->rate * coefficient_58);
+       function_1d24a2(&local_68, -1.0f, &local_68);
+       function_1d24a3(&local_59, &local_68);
+       if (!(local_3 > response_fraction)) local_3 = response_fraction;
+       local_2 = true;
+      }
+      function_1d24a3(&local_29, &local_59);
+      havok_component_rigid_body_angular_velocity_set(local_10->field_1, local_14, &local_29);
+     }
+     continue;
     }
    }
-   if (local_12->field_30 != 0.0f && local_12->field_34 != 0.0f)
-   {
-    real local_56;
-    real local_57 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
-     10000.0f, local_12->field_30 * arg_1, function_1d24a6(&local_30, &local_24.matrix.forward),
-     local_12->field_34, local_12->field_1c, local_12->field_18, local_22, &local_56);
-    vector3f local_58;
-    function_1d24a2(&local_24.matrix.forward, local_57, &local_58);
-    function_1d24a3(&local_25, &local_58);
-    if (!(local_3 > local_56)) local_3 = local_56;
-    local_2 = true;
-   }
-   if (local_17) local_25.k += g_510c54->rate * g_51e9c4->unknown0;
-   havok_component_rigid_body_linear_velocity_change(local_15, local_14, &local_25);
-   if (!TEST_FIELD_BIT(local_14->flag1))
-   {
-    if (local_12->field_c != 0x7000001)
-     function_b8d30(arg_0->object_index, local_12->field_c, &local_24, 1, false);
-    vector3f local_59 = *g_4687a4;
-    real coefficient_58 = local_12->field_58;
-    real coefficient_5c = local_12->field_5c;
-    if (coefficient_58 != 0.0f && coefficient_5c != 0.0f)
-    {
-     transform4x3f local_60;
-     local_14->rigid_body_matrix_get(local_10->field_1, &local_60);
-     function_142b80(&local_60.rotation, &local_60.rotation);
-     matrix3x3 local_61;
-     quaternionf local_62;
-     function_141f60(function_142eb0(&local_60.rotation, &local_24.matrix.rotation, &local_61), &local_62);
-     vector3f local_63;
-     real local_64;
-     function_11d790(&local_62, &local_64, &local_63);
-     /* retail 0x1d31a6-0x1d31f2 adds this x87 dot product as (i + k) + j (the other two: (k + j) + i) */
-     real local_65 = (real)(((double)local_63.i * local_29.i + (double)local_63.k * local_29.k) + (double)local_63.j * local_29.j);
-     real local_67 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_10->field_1, local_14),
-      local_64, coefficient_58 * arg_1, local_65, coefficient_5c, 0.0f,
-      local_12->field_54, local_23, &response_fraction);
-     function_1d24a2(&local_63, local_67, &local_59);
-     vector3f local_68;
-     function_1d24a2(&local_63, local_65, &local_68);
-     vector3d_from_points3d((point3f const *)&local_68, (point3f const *)&local_29, &local_68);
-     function_a75d0(&local_68, g_510c54->rate * coefficient_58);
-     vector3f_add_scaled(&local_59, &local_68, -1.0f, &local_59);
-     if (!(local_3 > response_fraction)) local_3 = response_fraction;
-     local_2 = true;
-    }
-    function_1d24a3(&local_29, &local_59);
-    havok_component_rigid_body_angular_velocity_set(local_10->field_1, local_14, &local_29);
-   }
+   --local_9->size;
+   ((s_1d24a0 *)local_9->data)[local_8] = ((s_1d24a0 *)local_9->data)[local_9->size];
+   --local_8;
   }
  }
  if (arg_0->unknown94 && !arg_0->unknown94->size)

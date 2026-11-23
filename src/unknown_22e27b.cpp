@@ -461,6 +461,205 @@ static inline real interpolate_linear(real a, real b, real t)
 // `restart = false;` at the loop bottom after the timing updates 139 (661 bytes); the loop as `for (; time >= next_time;
 // next_time += frame_time)` on this body 1 (same code); every animation-state read through one reference to the member 1
 // (same code); a 600 s permuter run (63 tries) none below 1.
+// Round 130 (m3 lane 12, fast): the loop test as `!(time < next_time)` 1 (same code); the flags word read into a
+// per-pass local at the loop-body top (none outside the loop) 200 (656 bytes); both loop disposal tests as
+// `(flags & 2) ? type == 0 : false` 216 (664 bytes); both loop restart tests as `type == 0 ? (bit 0 || bit 1) : false`
+// 1 (same code); diagnostic: the break as `restart & 1` 87 (659 bytes).
+// Round 111 (m3 lane 1, fast): the in-range frame as an empty first arm (`if (frame >= 0 && frame != value8) {} else if
+// (frame < 0) ... else ...`) 60 (661 bytes); the second boundary as `frame >= value8` 1 (`jl` for `jne`, still past the
+// restart test); both boundary restarts as `expr ? true : restart` 197 (645 bytes); restart as the element of a one-element
+// bool array 1 (same code); restart as the member of a one-member local aggregate 1 (same code).
+// Round 102 (m3 lane 13, fast): the in-range frame as an empty middle arm (`else if (frame != value8) {} else`) 1;
+// the loop test as `next_time <= time` with a direction-first frame sum 5; the flag-8 test reading the field 1;
+// `!type` in both loop restart tests 1; the frame count in a named local for both boundary compares 1.
+// Round 116 (m3 lane 1, compile-only screen of the file, which reproduces the skip): the boundary restarts as `type == 0 &&
+// (flags & 3) != 0` 1 (skip); `else restart = false;` after the restart break 1; `&& !restart` added to the loop test 1;
+// restart declared after dispose and cleared by a separate statement 1; `dispose = restart = false;` as the per-pass reset 1;
+// `restart = dispose;` after the restart break 1 (dispose is known false there). Diagnostics (reverted): an unknown value
+// stored to restart on the latch path (after the break), or an unknown start value, each lands the miss on the test, so
+// the skip needs both the known start and the latch's implied false; retail stores the false start at entry, so its latch
+// must not imply false.
+// Round 210 (m3 lane 4, fast): restart left uninitialised at the top and cleared just before the loop 16 (the clear
+// lands after the timing setup, the in-range jump is still threaded), cleared first in the animating branch 19;
+// restart and dispose in one declaration 1 (same code); the boundary restart as `restart |= ...` 184, as `type == 0
+// ? (bit 1 || bit 2) : false` 1 (same code).
+// Round 212 (m3 lane 4; compile-only harness of the file, which reproduces the skip, then fast): the in-range miss lands on
+// the restart test, with every other instruction unchanged in the harness, when the join test compares restart to a value
+// that folds to false only later: `restart != (dispose && type == 0)`, `restart != (frame != frame)`, or with no per-pass
+// disposal reset `dispose || restart` (also with the reset moved to the end of the pass); plain `restart || dispose`,
+// `dispose || restart` with the reset, `restart != dispose`, `restart && !dispose`, `!!`, `^ 0`, `& 0xff` and `? true :
+// false` keep the skip. In the real build every such form is 87 (659 bytes): breaking the thread hands EBX to the flags
+// word (hoisted, reloaded at the latch) and the zero moves to EAX; on `restart != (dispose && type == 0)`: the flag-8 test
+// on the field 87, the flags read from the field throughout 207 (657), a flags local per boundary block 207 (next time
+// takes EBX, frame 0xc), a per-pass flags local 87, a long flags local 215 (655), the boundary restart as if/else 87, the
+// inactive arm on the field 87; the no-reset `dispose || restart` 87, with the reset at the pass end 87. Lead: retail's
+// source breaks the thread and still keeps the zero (the per-pass disposal clear) in EBX, so something else lowers the
+// flags word's and next time's weights there.
+// Round 185 (m3 lane 8, fast; compile-only screen of the file for the skip): no per-pass disposal reset with
+// `dispose || restart` at the join and the flags read from the field in the loop 207 (frame 0xc, next time in EBX,
+// no zero register: the per-pass reset is what gives EBX its zero); restart in the loop test (`!restart && time >=
+// next_time`) with the frame store and timing updates under `if (!restart)` 122 (652 bytes; the screen keeps the
+// skip); restart typed byte 1 (char, byte and long all keep the skip in the screen); the loop test as `next_time
+// <= time` 5; the three restart expressions through a forceinline predicate taking the type and the flags 1 (same
+// code). Screen only, skip kept: `else if` for the flag-8 store after the restart break.
+// M3 lane 1 r121 (compile-only screen of the file for the skip, then fast with 0x22e957/0x22eeee/0x148119, all MATCH):
+// both boundary restarts computed after their switch 249 (618 bytes; screen: skip kept); the restart assignment in an
+// `else` of the dispose break 1 (same code); the boundary compare as `animation.value8 == frame` 2; restart declared
+// after dispose with its initialiser 1; the loop frame declared ahead of the loop 1. Screen diagnostics (not kept): the
+// thread stays with the flag-8 store dropped, with the timing updates dropped, with the store unconditional and with
+// no per-pass disposal reset, so nothing in the latch's own statements decides it.
+// M3 lane 10 r122 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// restart as a reference bound to a value local 186 (the two restart stores merge into one byte store from DL); dispose
+// the same way 228 (670 bytes); a redundant `if (time >= next_time)` guard around the loop 1 (same code); the join test
+// through a `bool const &` bound to restart 1 (same code); the flags local as a `word const &` bound to the field 1 (same
+// code). Screen: all five keep the skip, as do the frame declared after the per-pass reset and the guard as `next_time <= time`.
+// M3 lane 8 r193 (compile-only screen of the file for the skip, then fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH):
+// `while (time >= next_time && !restart)` with the tail under `if (!restart)` re-measured 220 (666 bytes); a guarded
+// `do ... while (!restart && time >= next_time)` with that tail 1 (screen: same code); the flag-8 store guarded by `!restart &&`
+// with the break after it 1 (same code); the restart break inside each boundary block instead of at the join 1 (same code: the
+// two tests merge and the in-range path still skips them); the two loop restarts through a file-local `static inline`
+// predicate in the result style (`bool result = false; if (...) result = true; return result;`, inlined) 101 (659 bytes:
+// the result is materialised through DL and the in-range path still skips the test).
+// M3 lane 10 r124 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// the high boundary as a separate `if` (not `else if`) 66 (658 bytes: the in-range miss then lands on the restart test, but
+// the low block falls into a second frame-count compare where retail jumps to the join); that with the flags read from the
+// field (no flags local) 208; the next index kept in its own `step` local with both boundaries testing it as separate
+// `if`s 160 (659 bytes, same second compare); the switches' common `frame = valuea` written once ahead of the low
+// block's switch 86 (659 bytes), ahead of both switches 219 (650 bytes). Screen: `else if` on the step local keeps the skip.
+// M3 lane 7 r190 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): round 212's thread-breaking join test
+// (`restart != (dispose && type == 0)`) with the flags local as a `word const &` bound to the field 87 (659 bytes: the
+// reference folds and the flags word is still hoisted into BX); the per-pass disposal reset ahead of the frame sum 1; the
+// frame sum direction first 1; the per-pass disposal reset dropped 1 (same code: dispose is already known false at each
+// pass top, so that reset is not what puts the zero in EBX); the low boundary as `frame <= -1` 211 (658 bytes). All restored.
+// M3 lane 12 r151 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// the flag-8 store as an `else if` of the restart break 1 (same code); a function-scope `bool top_level = type == 0;` for
+// the three dispose and three restart tests 228 (663 bytes: the compare is hoisted); a `word` flags local declared in each
+// boundary block with the flag-8 test on the field 207 (frame and loop registers move); the join test through a result-style
+// `static inline` predicate on restart 1 (same code); an explicit `(short)` on the frame sum 1. Screen only, skip kept: the
+// flag-8 store guarded by `!restart` ahead of the break, the boundary pair nested under `frame < 0 || frame == count`, an
+// unused `wrapped` range flag, the break inside each boundary block with none at the join, an in-range result-style helper
+// as an empty first arm.
+// M3 lane 10 r132 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file, which
+// reproduces the skip): dispose also false at its declaration 1 (same code); restart typed char 1 (same code; signed
+// char, byte and unsigned char screen the same); the whole advance loop in a forceinline helper taking next time, elapsed,
+// dispose and restart by reference 1 (the references fold); the if/else arms swapped with the active test negated 1 (same
+// code); the active test in a named bool 1 (same code). Screen only, skip kept: the loop as a guarded do, restart in the
+// loop condition with a guarded update, restart cleared again at each pass top, three more copies of the next-frame
+// switch after the loop (so no size limit). Diagnostics (screen, not keepable): the miss reaches the restart test only
+// when restart's value is unknown at the loop head: an opaque call taking &restart before the loop, or inside the loop
+// after the test, or a non-constant start value; the same call after the loop, an escape followed by `restart = false`,
+// or an opaque call without restart's address keep the skip. So retail's compiler saw no constant restart on one of
+// the loop head's two edges. All restored.
+// M3 lane 11 r132 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; a compile-only thread screen and a new one-object
+// LTCG screen of the file entered through v3, both reproducing the skip): dispose and restart as the two members of one local
+// result aggregate 10 (restart's home moves to [ebp-3], the skip stays); restart with the three timing values in one local
+// aggregate 10; restart and next time in one aggregate 21; the flags word assigned just ahead of the loop 200 (656 B); the high
+// boundary as a separate `if` with the flag-8 test on the field 66 (658 B). LTCG screen only: 60 random combinations of round 212's
+// join test, `== true` (keeps the skip) or the separate high `if` with five natural toggles (flags on the field in the loop, no
+// per-pass dispose reset, the flag-8 test on the field, long next time, a late flags local): once the thread breaks the flags word
+// is hoisted into BX and the zero leaves EBX in every one (27+ aligned lines). All restored.
+// M3 lane 3 r279 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): dispose set only where it breaks (`if ((flags & 2)
+// && type == 0) { dispose = true; break; }`, no per-pass reset) 1; the restarts without the inner parentheses 1; both boundary
+// restarts as `if (...) restart = true; else restart = false;` 1; the frame store under `if (!restart) ... else break;` 1 (the
+// four the same code); the loop's identical switch arms merged (`case 0: case 2:` low, `case 2: default:` high) 199 (676 B).
+// M3 lane 14 r127 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop as `for (; time >= next_time; next_time
+// += frame_time)` with the other two updates in the body 1 (same code); restart typed `long` 230 (661 B); an in-range arm
+// `else { restart = false; }` after the high boundary 153 (663 B); restart cleared again at each pass top, beside dispose, 206
+// (661 B); the low boundary as `0 > frame` 1 (same code). All restored.
+// M3 lane 14 r130 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop test as `next_time <= time` 5;
+// dispose declared ahead of restart 1; the loop test as `!(time < next_time)` 1; no per-pass disposal reset, an
+// `else { dispose = false; }` after the high boundary instead 1 (same code each); both loop restart expressions with
+// the flag tests ahead of the type test 216 (654 B).
+// M3 lane 5 r221 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): dispose false at its declaration with
+// `bool restart = dispose;` 1; the loop test `time >= next_time && !dispose` 1 (both the same code); the join test `if (restart |
+// dispose)` 87 (659 B, the thread breaks and the flags word takes EBX); `dispose = false;` again inside the restart break 1
+// (same code); the loop test `!restart && time >= next_time` with the join break kept 122 (652 B).
+// M3 lane 9 r146 (fast with 0x22e957/0x22eeee/0x148119, all MATCH): the owner type read once into a long local for the
+// loop's dispose and restart tests 215 (655 B); the loop as `for (; time >= next_time; next_time += frame_time, elapsed -=
+// frame_time)` with the end-time store in the body 1 (same code); both loop boundary restarts as `restart = false; if
+// (...) restart = true;` on the plain body 210 (658 B); the flags local typed dword 202 (653 B), short 1 (same code).
+// All restored.
+// M3 lane 13 r131 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the restart and switch of both
+// boundary blocks under `if (!dispose)` (no break inside) with no per-pass disposal reset and the join as `if (dispose ||
+// restart) break;` 87 (659 B: the in-range miss lands on the restart test, the flags word is hoisted into BX and the zero
+// moves to EAX), the join as `if (restart || dispose) break;` 1 (same code as now, the skip stays), the join as two
+// breaks, dispose then restart, 87; the first form with the flags read from the field in the loop 207 (657 B: next time
+// takes EBX, frame 0xc, no zero register), that with the per-pass reset kept 207. Re-measured: the join as `restart !=
+// (frame != frame)` 87. The callees are on no call cycle with this function (0x22e957 only calls itself), so the
+// allocation does not depend on a missing callee summary.
+// M3 lane 6 r220 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the flag-8 test through the
+// existing `animation.flags.flag3` bitfield 1 (same code); no per-pass disposal reset with `if (dispose || restart) break;` at
+// the join and the bitfield flag-8 test 87 (659 B: the thread breaks, but the join reloads the flags word into BX for the next
+// pass); the same with `!ANIMATION_FLAG(animation, 3)` 224 (665 B); both boundary blocks as `dispose = ...; if (!dispose) {
+// restart = ...; switch }` (no inner break) with `if (dispose || restart) break;` at the join, per-pass reset kept, 1 (the
+// thread comes back), the same with two separate breaks (dispose, then restart) 1. Lead (diagnostics, the flag-8 test read
+// through a byte cast of the flags field, reverted): with that byte read every thread-breaking join keeps the flags word
+// out of a register and the whole function is retail's except one pair, 14 at 657 B: `restart != (dispose && type == 0)`,
+// `restart != (frame != frame)`, no per-pass reset with `dispose || restart` (also with the reset at the pass end), the wrap
+// form above without the reset, dispose declared first, the reset after the frame sum. Left in each: the loop's zero is a
+// plain constant in EAX and the `& 2` bit takes EBX (retail: the per-pass disposal clear `xor ebx, ebx` serves as the zero
+// and the bit takes EAX), because once the thread breaks the per-pass reset is folded away as known false. So retail's
+// source keeps the flag-8 read apart from the boundary blocks' flags word and still keeps the disposal clear as a real
+// definition each pass. Without the pre-loop reset (byte read, `restart != (dispose && type == 0)`) 170 (664 B). On the
+// byte read with `restart != (frame != frame)`: dispose false at its declaration, the per-pass reset at the pass end, dispose
+// set only where it breaks (`if (...) { dispose = true; break; }`) with or without the per-pass reset, a direction-first
+// frame sum: 14 each (the same pair); set-only with no reset and `dispose || restart` at the join 1 (threaded again); the
+// `& 2` bit named per block as `long` 42 (655 B), as `word` 206 (663 B).
+// M3 lane 13 r136 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the flags word read per pass at the
+// loop body's top 200 (656 B); `short frame` declared once in the active block 1; both loop restart expressions as `!type &&
+// (...)` 1; the join as `restart != false` with the flag-8 test `== 0` 1; the outer if/else arms swapped with the condition
+// negated 1 (the four 1s the same code).
+// M3 lane 15 r125 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the restart break inside each
+// boundary block and none at the join 1 (same code, re-measured); each boundary block reading its own `word flags` with
+// `if (!dispose) { restart; switch }`, the join as `if (dispose || restart) break;` and the flag-8 test on the `flags.flag3`
+// bitfield 207 (frame 0xc); the boundary tests as `if (frame >= 0) { if (frame == count) ... } else ...` 136 (689 B); both
+// loop restarts as `!type && (playback_flags & 3) != 0` 229 (639 B); the three timing locals declared at their computations
+// 1 (same code).
+// M3 lane 4 r243 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the in-range case as an explicit
+// last arm holding only the flag-8 store, each boundary arm ending in its own restart break and flag-8 store (no join
+// test) 88 (664 B); that without the per-pass disposal reset 88; that with each boundary arm's store as an `else if` of
+// its break 88; the flag-8 store as an `else if` of the join's restart break 1 (same code); the closing dispatch as `if
+// (dispose && get_screen() == this) ... else if (restart) ...` 221 (644 B).
+// M3 lane 1 r150 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the flags word declared `word
+// const` 1 (same code); both loop restarts as `(type == 0) & ((playback_flags & 3) != 0)` 231 (636 B); a per-pass `wrap`
+// bool computed at the loop body's top and copied into restart in both boundary blocks 242 (619 B); both loop disposals
+// with the type test first 232 (636 B); the per-pass disposal reset moved into each boundary block's top 1 (same code).
+// M3 lane 6 r226 (h2m fast; base 1): round 220's lead rebuilt (join `restart != (dispose && type == 0)`, flag-8 test
+// through a byte cast) 14 at 657 B, left the zero EAX / `& 2` bit EBX pair; on it the join as `restart || (dispose &&
+// type == 0)` 1 (the thread returns), the per-pass reset written `dispose = restart;` 296 (749 B), a `short` flags local
+// 14; a forceinline (flags, owner type) dispose predicate at all three dispose sites 1 (same code), on the 14 form 14;
+// the existing flag-3 bitfield for the flag-8 test with that join 87 (659 B), with `restart != (frame != frame)` 87.
+// M3 lane 7 r213 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): restart typed `byte` 1; `bool
+// restart = false, dispose;` 1 (both the same code); no entry initialiser with `restart = false;` just before the loop 16
+// (still threaded); the boundary blocks setting restart only when it wraps 197 (645 B). Diagnostic (undefined, not
+// kept): restart never initialised 226 (653 B), but the in-range `jne` then targets the restart test as retail's does,
+// so the thread follows a known false start wherever it is written. On a multi-object LTCG harness (exact here) a
+// one-member aggregate, a one-element array and a two-member flags aggregate all keep the thread.
+// M3 lane 2 r137 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the false start written
+// through the flag's own address (`*(byte *)&restart = 0;` after a bare declaration) 1; through a named `char *` to the
+// flag 1; `restart = dispose = false;` at the top 1; restart typed `char` with an integer start 1; typed `byte` with the
+// break as `restart != 0` 1 (all the same code: the address folds and the thread stays).
+// M3 lane 14 r144 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): dispose initialised false at its
+// declaration too 1 (same code); an explicit in-range arm `else { restart = false; }` before the restart break 153 (663 B,
+// the store is kept); the loop test as `next_time <= time` 5; the timing step ahead of the flag-8 store 9; restart typed
+// `long` 230 (661 B).
+// M3 lane 8 r227 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): both loop boundary restarts with
+// `|=` 184; `restart = false;` again at each pass's end 139 (661 B); the false start as a one-byte memset of the flag 223
+// (659 B); the loop as a do-while under an `if` of its test 1 (same code). Diagnostic (removed): the flag's address
+// stored to a probe global at the top 227 (665 B), and the in-range miss still skips the restart test, so an escaped
+// address does not stop the thread.
+// M3 lane 4 r250 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): on lane 6 r220's 14 lead
+// (diagnostic: the thread-breaking join and the flag-8 test through a byte cast), the per-pass disposal reset ahead of
+// the frame sum 14, dispose typed `byte` 14 and `char` 14, the frame declared once ahead of the loop 14 (all the same
+// zero EAX / `& 2` EBX pair); the two loop restarts as `type == 0 && (playback_flags & 3) != 0` 243 (626 B).
+// M3 lane 13 r146 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): `dispose = false;` again inside
+// the restart break 1; a second join break on dispose after the restart break 1; `!dispose` added to the loop test 1 (the
+// three folded, the in-range jump still threaded); restart started as a copy of a false-initialised dispose 1 (same code);
+// the per-pass reset as `dispose = restart = false;` 206 (661 B).
+// M3 lane 6 r236 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the join's break as `if (restart
+// == true)` 87 (659 B: the thread breaks, but the byte is compared with 1); both boundary restarts assigned after their
+// switch 249 (618 B); the pass end as `if (!restart) { flag-8 store; step; continue; } break;` 1 (same code); the frame
+// typed `long` 213 (656 B); the pass end ordered elapsed, next time, end time 5.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

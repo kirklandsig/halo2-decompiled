@@ -8,6 +8,7 @@
 #include "object_iterator.h"
 #include "sound_sources.h"
 #include "vector_products.h"
+#include "object_tag_definitions.h"
 
 /* the item (the object data) */
 struct s_item
@@ -397,7 +398,7 @@ inline real item_real_random_range(real lower, real upper)
 {
 	dword *seed = &g_4e7408->unknown0;
 	*seed = *seed * 0x19660d + 0x3c6ef35f;
-	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
+	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f)) + lower);
 }
 
 // score 2 (was 2): frame 0x14 and retail length agree; the final x87 add
@@ -421,6 +422,23 @@ inline real item_real_random_range(real lower, real upper)
 // Product-first range span/sample/offset named subsets 1..7: 2/76/76/61/61/61/61;
 // scalar offset accumulator 61. Original range producer and complete body restored;
 // frame 0x14 and last add/third owner-field load scheduling remain.
+// b14E (11-17) walk against retail, fast build on r847: the body matches retail statement by statement (both ITEM_GET
+// reloads, the seed store, the owner stores in the order unknown4/unknown0/unknown8, the 0.0f/NULL pushes). The one
+// difference is 0x10d583 `fadd st(1)` (the delay's final add), which retail issues between the c4 field load (0x10d57d)
+// and the c2 load `mov cx` (0x10d585); ours issues the c2 load first. Tried, same 2: each field read through
+// ITEM_GET(item_index) (the loads fold into one pointer); `owner` declared before `delay` or before `owner_item`;
+// `location_c2` as word; the helper returning `lower + span * sample`. Worse: the c2 copy before c4 (5, register
+// assignment changes), brace-initialising the owner {c4, c8, c2} (6, c4 loaded first), the helper with a named sample
+// local (76, SSE). No behaviour difference found against retail.
+// existing full random-range helper with the item seed 76; existing slot sample feeding the product-first
+// range 29; existing normalized sample with the explicit seed 29; existing integer draw with the original
+// normalization 2; existing object getter for the post-draw owner source 2; existing object getter for both
+// independently observed items 2; existing bounds type for the adjacent delay endpoints 2; owner source
+// scoped to filling its packet 2. The integer draw, object lookups, bound pair and packet scope preserve the
+// same two instructions. The normalized draws move other instructions, and the full range helper grows the
+// body. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 2): item_real_random_range returns its sum inside one pair
+// of parentheses, which puts the delay's last fadd before the field load as in retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -572,13 +590,30 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// score 190 (was 198): Frame 0xa0, both plane calls and instance addressing agree. The rotated normal and contact-point registers still differ.
+// Earlier detail: Frame 0xa0 and both plane calls agree. The transformed normal, contact point and pending x87 spin scale still use different homes.
+// MiniMax C (11-19): no new form, no lower score (190): retail keeps the spin scale in the x87 stack across the branch
+// merge where this build gives it a stack home, and the plane distance written as one expression scores 203 against the
+// four accumulating statements; the body stands.
 // MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
 // expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
 // three products followed by three adds 207 - all worse. Reverted.
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
-// score 198 (was 200; full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
+// MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
+// MiniMax B (11-18): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the plane-normal and spin/speed homes remain; the shared receiver gains six points and the transformed-plane rows 22, both under the eight-point minimum, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the instance indexing, the plane-normal rows and
+// the spin/speed homes still differ (the spin scale sits in a stack slot where retail holds it in st(1)), and the accumulating-statement form
+// of the plane distance scores 176, under the keep bar, so the body stands.
+// MiniMax A (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the transformed-plane rows
+// written as accumulating statements fix the sum's association to retail's tree and measure 196, and the accumulating
+// plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
+// still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
+// products stay in fresh registers where retail overwrites them in place.
+// Earlier detail: the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
+// Earlier score 200.
+// Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
 // the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
 // row 0x58, section 0xc8 + 0x70 and matrix products (up.k, left.j, forward.i order) 0x10d0c2..0x10d19f; distance sum z,y,x then -d
@@ -783,6 +818,141 @@ struct s_item_collision_bsp
 // accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
 // 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
+// P544: current baseline already sign-extends both plane-query indices correctly;
+// instance-address scheduling, transformed-plane registers and spin/speed homes remain.
+// Whole plane/marker-axis/fallback-axis/both-axis memmove 336/247/196/264;
+// whole-object forward copies 342/240/194/263; shared instance receiver 192,
+// shared signed ordinal 207 (receiver/selector revisited after query-width repair).
+// NOT kept: fallback copies gain only two/four and the receiver only six, below
+// eight above 30; original complete body, observations and calls restored.
+// P564: Actual instance-table base captures or two-step advanced receivers, mutable/readonly
+// and existing/direct matrix consumers: 201/288/201/288/192/192/192/192. NOT kept: six-point best below
+// threshold; base/direct forms also raise controls. Original instance reads, plane math and body restored.
+// MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
+// changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
+// [esp+0xac] after the two pushes). Body back to main.
+// P578: Actual surface/section/material signed ordinal memcpy acquisitions, seven subsets,
+// then paired plane-index field transfers: 198/198/198/198/198/198/198/198. NOT kept: no exact acquisition/frame-home
+// recovery; original complete body, plane interface, observations and arithmetic restored.
+// MiniMax C (11-16): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order; the marker's y is the one read, as retail does.
+// P591: Actual matrix receiver before the query/section derivation, ordinary/fixed
+// pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
+// 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
+// MiniMax S (11-17): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order.
+// Typed section with embedded collision 198; const section 198; instance
+// receiver shared with the matrix 192; shared signed surface index 198;
+// named section index 198; section reference 253; collision member reference
+// 198; getter result used in the normal rows 252. NOT kept: the six-point
+// receiver gain falls short of the threshold. The instance address sequence
+// and native plane and spin register allocation still differ.
+// Transformed surface first 220; separate section displacement 198; instance byte
+// displacement 235, with section displacement 235 or one surface read 235; typed
+// base and section displacement 201; shared byte-displaced receiver 192; collision
+// displacement 235. NOT kept: the shared receiver gains only six; instance indexing
+// still adds the base before the section read.
+// instance table field binding through section and transform reads 198; section table field binding for the
+// selected geometry 198; signed instance selector field in the guard and both reads 198; instance and section
+// table fields kept distinct through the query 198; signed selector and both table fields at their native
+// observations 198; section ordinal bound to the indexed instance field 198; signed selector and section
+// field on the shared instance record 192; world and instanced surface records supply the two plane indices
+// 198; shared signed instance selection with direct section field use 192; direct section field and all three
+// transformed normal accumulators 190. The first eight trials include the shared instance selector at 192.
+// NOT kept on its own: the exact instance-address sequence gains six at the original extent. The direct
+// section field with all three normal accumulators scores 190 in both checks at 1366 bytes and preserves the
+// 0xa0 frame. Retail reads the section index before adding the instance base, then adds the up and left
+// products before the forward product. The shared instance and staged normal rows are retained. All plain
+// controls keep their opening scores.
+// Spin k finished in each branch, carried to the join, published with angular velocity, or finished with a
+// shared factor. Real factors 233/233/233/197; double factors 238/250/250/238. NOT kept: the shared real
+// factor recovers spin, axis and speed homes and the x87 scale at 197, but raises the score overall.
+// Round 640: contact point accumulates normal displacement 199; updates a marker copy 267;
+// shared scale and point setter 199; indexed projection 190; two coordinate passes 492;
+// complete point initializer 190; named displacement components 194; scaled vector plus
+// indexed marker sum 199. Transformed plane and contact point homes still differ.
+// Marker X and Z kept for both calculations, Z declared first 190.
+// Marker X and Z kept for both calculations, X declared first 190.
+// Marker X Y and Z captured with the distance terms' Z Y X order 190.
+// Marker X Y and Z captured in coordinate order 190.
+// Marker X and Z kept as mutable scalar values 190.
+// Complete marker point value supplies both calculations 261.
+// Complete marker coordinates initialized at the join 190.
+// Marker Z at the first distance sum and marker X at its contribution 192.
+// NOT kept: six marker coordinate forms tie at 190. The complete point copy grows the body
+// and the split distance expression loses two points. The transformed normal and contact
+// position still use different XMM homes, and the spin scale still spills.
+// Axis-wide field passes 194, Up scale helper with axis-wide field additions 194, Left and forward multiply-add
+// helpers 194, Shared scale and multiply-add helpers for all axes 194, Indexed normal with a complete component
+// expression 196, Indexed normal with a field accumulator 192, Separate scaled left vector before the first sum
+// 248, Separate scaled forward vector before the final sum 194. NOT kept: The forward-vector form reaches 1365
+// bytes at 194. The indexed field accumulator scores 192 at 1366 bytes. The transformed-plane and spin homes
+// still differ.
+// Rotating into a separate normal vector and publishing it after/before the distance gives
+// 311/322 for compound or aggregate rows and 343/353 when copying the input normal first.
+// NOT kept: every form grows the body, and early publication also grows frame 0xa0 to 0xa4.
+// The transformed normal and contact position registers and pending x87 spin scale still differ.
+// Queried normal coefficients carried through all rows, i/j/k and ordered pairs jk/kj/ji/ki/ik,
+// 190 each. NOT kept: the first coefficient loads, contact-point home and pending spin factor remain.
+// Left-axis products as a vector 192, all scalars 195, or row-local scalars 195;
+// output carrying left products into the row sums 196 or all sums before forward 194;
+// separate paired-product vector 193; separate left and up vectors 194; all three basis
+// vectors 246. NOT kept: all regress. The transformed plane's j input still misses its
+// retail XMM home through the three rows.
+// Shared left coefficient 190, left and up coefficients 190. Basis field references or pointers 190/190.
+// Left axis value 271, three independent axis values 350, embedded rotation reference or value 190/338.
+// NOT kept: aliases and coefficients tie. Axis copies grow the body. The transformed-plane XMM homes
+// and pending x87 spin scale still differ.
+// Overlapping left products before normal-row completion, next-row/first-pair/early first sums/early last sums:
+// 191/191/198/193 through plane fields, 191/191/191/191 through scalar sums. NOT kept: every schedule
+// raises the score at 1366 bytes and frame 0xa0. The normal and contact XMM homes and pending spin factor remain.
+// MiniMax E (11-19): no new form, no lower score (190, baseline): the plane transform still differs in its register
+// assignment (the two component loads at [esp+0x30] and [esp+0x34] land in xmm3 and xmm4 here and in xmm2 and xmm4 in
+// retail, and every row's product and sum then differs by one register), the body is still 1366 bytes against retail's
+// 1361, and the branches inside the function still reach their blocks at other offsets.
+// Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
+// Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
+// contact registers still differ at the 1366-byte extent.
+// Normal rows paired with translation products in coordinate order: late scale with expression or
+// accumulator 203/199, early scale 199/201; in distance-sum order, late scale 203/199, early scale 199/201.
+// NOT kept: the scalar products do not give a byte match or recover the retail coefficient homes.
+// Coordinate-array views for queried normal, matrix axes and result normal, alone and
+// in all combinations, then also at the contact join: 190 each. NOT kept: the 0xa0 frame
+// agrees, and the transformed-plane and contact-point registers still differ.
+// Left products from a carried j coefficient, j/k, all three at first use, or all three
+// with overlapping rows: 191 each through plane fields or row scalars. NOT kept: j now
+// loads before k, but its XMM home and the first axis operands still differ. The 0xa0
+// frame agrees and the rebuilt body still exceeds retail by five bytes.
+// Contact point declaration beside marker, at the surface arm, before the marker query or
+// beside its plane workspaces. Direct stores and the shared point setter at each site all score
+// 190. NOT kept: the placement slot and 1366-byte extent stay the same.
+// MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
+// Accumulated normal by axis 194, add-scaled left/forward/both 194/194/194,
+// indexed rows with direct or local accumulation 192/192, shared contact
+// translation 190, shared normal and translation 193. The coefficient loads
+// and pending spin scale still differ.
+// Vector setter for the rotated normal 193; scalar normal rows published before or after
+// the distance translation 199 each; left product seeds all three normal rows 191;
+// instanced query result pointer 246; instanced plane output with saved equation 291;
+// named real or double random fraction 196/232. NOT kept: all scores exceed 190.
+// The transformed normal and the common x87 spin factor still use different homes.
+// Complete axis contributions staged before the normal rows. Left, up, forward, up/left, left/forward,
+// up/forward, and all three 194/194/191/195/195/195/246. All three summed with the shared vector addition 253.
+// NOT kept: partial staging raises the score and full staging also extends the body to 1382 bytes.
+// The normal coefficient homes and contact point still differ in the 0xa0 frame.
+// Overlap the j, k or both forward products in plane or scalar rows: 194 each.
+// Overlap both left and forward products in plane or scalar rows: 191 each.
+// NOT kept: the paired overlaps load j before k and still place j in XMM3.
+// Every preview retains the 1366-byte extent against retail's 1361.
+// Transposed rows through the shared dot product with coefficients before/after row setup:
+// separate aggregates 269/269, separate vector setters 269/269, reused row setter 194/194,
+// and a three-axis matrix 273/273. NOT kept: the reused row leaves the normal coefficients
+// in other registers at 1366 bytes. The other forms grow to 1392 bytes.
+// Dead normal scaled in place with field point publication 247 / In-place scale and point setter 247 /
+// In-place scale and indexed point publication 247 / In-place scale and translated marker copy 283 /
+// Marker point translated in place 200 / Corrected coordinates in dead normal with setter 247 /
+// Corrected coordinates in dead normal with point initializer 247 / Corrected coordinates in dead normal
+// by index 247.
+// NOT kept: Reusing the normal makes the contact block longer, and the marker-point form reaches 200 at
+// 1378 bytes. The earlier instance-plane coefficient homes still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -808,7 +978,8 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 			{
 				plane3f plane;
 				plane3f surface_plane;
-				if (item->surface_index == NONE)
+				short const &instance_index = item->surface_index;
+				if (instance_index == NONE)
 				{
 					s_item_collision_data *collision = (s_item_collision_data *)g_4e0340;
 					bsp3d_get_plane((s_bsp3d *)collision, collision->surfaces[item->material_index].plane_index, &plane);
@@ -820,13 +991,19 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 				else
 				{
 					s_item_collision_bsp *bsp = (s_item_collision_bsp *)g_4e0348;
-					s_item_collision_data *collision = (s_item_collision_data *)(bsp->sections +
-						bsp->instances[item->surface_index].section_index * 0xc8 + 0x70);
+					s_item_collision_instance const &instance = bsp->instances[instance_index];
+					s_item_collision_data *collision = (s_item_collision_data *)(bsp->sections + instance.section_index * 0xc8 + 0x70);
 					bsp3d_get_plane((s_bsp3d *)collision, collision->surfaces[item->material_index].plane_index, &plane);
-					transform4x3f const *matrix = &bsp->instances[item->surface_index].matrix;
-					surface_plane.i = matrix->up.i * plane.k + matrix->left.i * plane.j + matrix->forward.i * plane.i;
-					surface_plane.j = matrix->up.j * plane.k + matrix->left.j * plane.j + matrix->forward.j * plane.i;
-					surface_plane.k = matrix->up.k * plane.k + matrix->left.k * plane.j + matrix->forward.k * plane.i;
+					transform4x3f const *matrix = &instance.matrix;
+					surface_plane.i = matrix->up.i * plane.k;
+					surface_plane.i += matrix->left.i * plane.j;
+					surface_plane.i += matrix->forward.i * plane.i;
+					surface_plane.j = matrix->up.j * plane.k;
+					surface_plane.j += matrix->left.j * plane.j;
+					surface_plane.j += matrix->forward.j * plane.i;
+					surface_plane.k = matrix->up.k * plane.k;
+					surface_plane.k += matrix->left.k * plane.j;
+					surface_plane.k += matrix->forward.k * plane.i;
 					surface_plane.d = matrix->position.z * surface_plane.k;
 					surface_plane.d += matrix->position.y * surface_plane.j;
 					surface_plane.d += matrix->position.x * surface_plane.i;
@@ -1056,11 +1233,72 @@ void function_10ca80(long object_index, long owner_index)
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
+// MiniMax E (11-20): no new form, no lower score (130): our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the alignment dot as its own statement gives retail's j, i, k order (175) and writing the cross out in place also gives retail's frame and 848 bytes but scores 173.
+// MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
+// MiniMax B (11-20): no new form, no lower score (130): the cross result keeps a 12-byte stack home because its address is passed to the scale helper, which makes our frame 0xc0 against retail's 0xb4 and our locals sit 12 bytes higher; retail multiplies the dot as j, i, k and keeps the cross in registers, and a dot written as a separate statement reaches that product order but moves the old vector's components into other registers. Writing the cross out in place gives retail's frame and 848 bytes but scores 159.
 // score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
 // depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
 // The square's products come out i, k, j whatever their source order; retail's j, i, k come only
 // from a separate statement for the dot product, which then folds facing loads into mulss: 173-175.
+// Square-to-root, root through half-root and doubled magnitude, and all four stages each score 130.
+// Named reciprocal with half-root update 204. Separate axial contribution with and without the
+// magnitude update 267/268. Final shared vector sum with and without it 194/194.
+// NOT kept: frame remains 0xc0 and the scaled axis i still spills in the tied forms.
+// Staged fallback side/up/both 130/130/130; fallback first with both staged 163.
+// Named rotation cross numerators 130; named two-term rotation sums 130; named
+// forward-projection products 130; sqrtf 130. The extra vector-sized frame region
+// and the first alignment-product order remain.
+// Staged cross / returned cross / output axis with aggregate / in-place fallback / common branch cross
+// workspace / item dot / native rotation / output axis with setter / returned fallback / separate axis
+// with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
+// NOT kept: the two 117 forms recover the 0xb4 frame but spill the intermediate axis k to the
+// result k home before its final store. Retail keeps that intermediate in a register.
+// Scaled-axis scalars 130; forward scalars 130; separate shared-scale output 204; cross numerators
+// staged together 130; reciprocal before cross 205; doubled half-root before projection 184;
+// conditional point selections 130; normalized vector value 246.
+// NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
+// vector value grow the body, and the earlier doubled half-root regresses.
+// Scalar scale after doubled or undoubled projection 133/130; later forward binding 130;
+// named alignment products with one sum or staged accumulation 148/148; weighted cross
+// contribution, with shared operations, or via the output workspace 224/277/277.
+// NOT kept: the 0xc0 frame remains throughout and weighted cross forms grow the body.
+// Item cross 130, mixed-product scale 130, shared rotation with axial or forward
+// contribution first 273/278, shared i-k-j projection 154, value-returning cross
+// with shared scale 248, and staged cross in place on the marker or facing operand
+// 241/271. NOT kept: the shared projection recovers frame 0xb4 and 848 bytes but
+// raises the score and changes its sum grouping.
+// quaternion vector output 133, quaternion with direct components 133, quaternion scalar before scaling
+// 187, quaternion scalar before cross 144, quaternion cross before root 133, quaternion with staged
+// cross 133, staged quaternion with direct components and early scalar 187, quaternion with shared scale
+// 133.
+// NOT kept: The quaternion forms grow the frame to 0xc4 and raise the score.
+// The 0xc0 frame exceeds 0xb4. The cross product has a separate stack home and the alignment products are scheduled differently.
+// Scoped normalized scalars 206, initialized scaled vector 206, shared setter for scaling 204.
+// Indexed scale 191, descending projection loop 195, first-component projection seed 130.
+// Origin default at transform 174, output workspace with scaled scalars 206.
+// NOT kept: the 0xc0 frame and rotation-axis spill remain. The projection seed ties.
+// Rotation-axis, adjusted-forward and perpendicular names 130 each; transform-forward workspace 153.
+// Projection in three additions, staged diagonal scale, grouped cross rows and interleaved rows 130 each.
+// NOT kept: the transform workspace grows the function. The other forms retain frame 0xc0 and the axis spill.
+// Raw shared or staged cross with scaled scalar, const-vector, setter or component-loop
+// results: 206/206/204/191 for either cross. NOT kept: all retain frame 0xc0 and
+// grow the body. The loop reaches 877 bytes with the axis home still present.
+// Returned unscaled cross with scaled scalar coefficients 245, scaled j/i/k 244, separate alignment dot 237,
+// same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
+// named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame
+// excess and grows the body to 909–919 bytes.
+// Scale and accumulate projection 200 / Native projection-product loop 168 / In-place scale and
+// projection with setter 188 / In-place last-use components 205 / In-place deferred rows 174 / Split
+// alignment with in-place setter 166 / In-place workspace in both branches 161 / Shared cross and
+// uniform rotation loop 220.
+// NOT kept: The both-branch workspace recovers frame 0xb4 and 848 bytes at 161 differences. The
+// alignment and projection-product forms also recover the frame and raise the score. Retail still
+// retains the scaled axis in different registers.
+// The 0xc0 frame and scaled-axis spill remain. Output cross/scale with scalar or vector capture 200/234.
+// Separate cross scaled into output, with a final setter or scalar capture 183/202.
+// Separate alignment via the item/shared dot with output cross 167/167, with separate cross 168/168.
+// NOT kept: the best output-plus-dot forms recover 0xb4 but raise the score and remain seven bytes long.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1188,6 +1426,24 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// score 824 (was 813): Frame 0x154 versus 0x12c. The entry Boolean and motion workspaces still differ.
+// Earlier (824, was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
+// stack homes still differ.
+// MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
+// forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
+// still held in registers where retail keeps them in stack bytes, and the forms the earlier rounds tried all grow
+// past retail's 4096 bytes or land below the eight-point gate, while the permuter over the body (one job, --fast,
+// 300 s) tried sixteen forms and its best is the 824 baseline, so the body stands.
+// MiniMax B (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c (forty spare
+// bytes below the homes), so every stack home sits further out; retail keeps the two entry flags in stack slots where
+// this build holds them in registers, and the item walk still differs, so no form of the body's locals changes it.
+// MiniMax H (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every
+// stack home sits 0x28 further out; the two entry flags are still tested in registers where retail keeps them in stack
+// bytes, and the item's own flag byte is still written with a load, a mask and a store where retail masks the byte in
+// place (the byte's own view of the field, the bit-field view and a byte pointer all give the same bytes here). The
+// collision result's home is at esp+0xdc here and at esp+0xb4 in retail, so the thirty-six bytes of difference sit
+// below it in the locals of the main block; copying the normal and the point out of the result instead of taking a
+// reference into it grows the frame to 0x168 and scores 895.
 // MiniMax H (11-11): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c from the first instruction, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where ours holds them in registers.
 // MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
 // first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
@@ -1210,7 +1466,8 @@ struct s_item_flags_view_10b850
 // sits 0x28 higher; the marker's address and the block copy's source are at the same distance from the entry stack pointer
 // in both, so the forty spare bytes lie below the homes and the rest of the gap is in the block bodies, which this round
 // did not move.
-// score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
+// MiniMax E (11-16): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, retail keeps the two entry flags in stack bytes where this build holds them in registers, and the item walk still differs.
+// Earlier score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
 // `update_position = fixed` skipped the position update after a bounce when the bit was clear (retail 0x10c136
@@ -1231,6 +1488,10 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax I (11-19): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still extracts the two flag bits into a byte in the frame (mov byte ptr [esp+8], al) where this build tests them in place.
+// MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
+// [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
+// against 0x12c); a named bool for the bits measures the same 824.
 // MiniMax E (11-15): no new form, no lower score (824): the frame is still 0x154 bytes against retail's 0x12c, so every stack home sits 0x28 further out, and retail keeps the two entry flags in stack slots where this build holds them in registers.
 // MiniMax G (11-13): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c,
 // the entry's flag byte differs (retail shifts the value and stores the parity byte where this
@@ -1465,6 +1726,107 @@ struct s_item_flags_view_10b850
 // P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
 // unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
 // frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
+// P571: Actual flow-magnitude nonzero/zero decision at its consumer, bool/byte/short/long:
+// 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
+// point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
+// complete body restored.
+// P585: Existing carrier-query result on the corrected single-position-flag graph, false/true
+// defaults, positive/complementary exhaustive bool, then false-default char/byte/short/long:
+// 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
+// misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
+// MiniMax S (11-17): no new form, no lower score (824): the frame still misses retail's size (0x150/0x154 against 0x12c) and the entry, carrier, contact and rotation homes stay in other registers; the seven forms tried earlier all grow past the native extent or land below the eight-point gate.
+// Shared lateral direction 820; existing output cross 932; staged
+// cross 928. With a ray scoped to its query 840/944/955.
+// Shared direction with endpoint query 857; early collision and settle
+// initialization 820. NOT kept: shared-motion forms miss the native
+// frame or the gain threshold. Entry flag and motion workspaces still differ.
+// Contacted object tag flags read through the typed definition field 824.
+// position and collision result scoped through the position write 820; carrier and contact samples scoped
+// through the carrier correction 820; geometry and carrier samples end at their separate last consumers 820;
+// timestep scope ends immediately after position integration 824; timestep scope inside the position and
+// collision scope 820; timestep scope inside the carrier and contact sample scope 820; separate timestep,
+// geometry and carrier-sample scopes 820; bounded geometry workspace and flow magnitude declared at its test
+// 820. NOT kept: limiting the geometry or carrier scope reaches 820 at 4096 bytes, four below baseline. All
+// eight forms retain the 0x154 frame and first entry difference. The timestep scope alone ties at 824.
+// Opening executable source restored.
+// Ray and flow share storage, with the lateral result from a value-returning cross, direct cross, staged
+// cross or existing item output helper. Component ray 881/943/944/943; point-difference ray
+// 829/944/949/944; component ray and direct cross with real absolute value 923. NOT kept: the real absolute
+// value recovers the 0x12c frame at 923 and 4029 bytes. The entry flags and later code still differ, and
+// all forms raise the score.
+// Lateral absolute value with ordered conditional 853, Lateral absolute value with unary negation 859, Named
+// lateral distance from conditional 853, Lateral distance adjusted after initialization 854, Lateral distance
+// selected by full branch 853, Float result of the absolute-value call 824, Float absolute-value function 849,
+// Signed lateral interval 856. NOT kept: The ordered absolute value preserves 4096 bytes and cuts the frame to
+// 0x150 at score 853. A float result from the original call ties 824 without changing the frame. The opening body
+// is restored.
+// Collision origin pointer used through integration and fallback 824, Collision origin reference used through
+// integration and fallback 824, Linear-velocity field pointer shared across the carrier query 824, Linear-
+// velocity field reference shared across the carrier query 824, Collision origin and linear-velocity field
+// pointers 904, Collision origin and linear-velocity field references 904, Collision origin bound for the
+// complete motion phase 868, Linear-velocity pointer scoped through the two carrier samples 824, Point-difference
+// helper on the original collision origin 824, Point-difference helper on the shared collision origin 823. NOT
+// kept: Paired fields cut the frame to 0x148 but score 904 at 4051 bytes. The ray helper with the shared origin
+// saves one difference, below the retention threshold. The opening body is restored.
+// Lateral response scope 824, correction step after lateral projection 845, shared reversed step 850,
+// shared lateral magnitude and correction sign 878, branch-local lateral step 859, longitudinal step
+// 892, or both 883, shared carrier addition 824. The 0x148 forms fall short of retail extent and raise
+// the score. The motion frame remains 0x154.
+// Point setter for pre-impact, bounce or both nudges 904/821/911. Bounce on the copied
+// point with scalar adds, the point setter, both point setters or shared scaled addition
+// 817/825/894/817. Named bounce displacement vector 870. NOT kept: the 821 and 817
+// gains are below eight, and the 817 forms are three bytes past retail with frame 0x154.
+// Separate lateral/longitudinal/both fluid response writebacks and existing scaled-add output:
+// 905/901/894/884 through fabs, 903/902/899/890 through scalar absolute value. NOT kept: all grow
+// past 4096 bytes and raise the score. The fluid response frame stays above 0x12c.
+// MiniMax E (11-19): no new form, no lower score (824, baseline): the frame is still 0x154 against retail's 0x12c, so
+// every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes (esp+8) where this
+// build holds them in registers and shifts one of them right by eight.
+// The frame remains 0x154 versus retail 0x12c and the entry flag bytes differ.
+// Paired integration/ray, with shared origin component, with query origin, and with typed gravity flag
+// 821/842/822/821. Copied origin and point difference, loop/scaled add 913/882;
+// direct scaled add with ray initializer/point difference 885/877.
+// NOT kept: the tied-length gains are below eight, and the helper forms change extent and regress.
+// Separate local normal vector plus sum at impact/bounce/both 911/870/862.
+// Shared scale plus sum at impact/bounce/both 904/855/863.
+// Ray storage for both offsets 885, also with the shared scaler 885.
+// Ray storage for bounce only 879, impact only 860. The local-sum forms
+// reach frame 0x148, while the reused-ray forms stay above retail’s 0x12c.
+// All score higher and the original position and ray expressions are restored.
+// Shared integration and fluid step, before the cross or at the first response:
+// single product 824/845, split multiplication 817/852. With a query-scoped ray,
+// 846/862 and 815/843. NOT kept: the 815 form reaches the retail extent and frame
+// 0x148, but the ray and flow still have separate slots and the scale stays in XMM4.
+// The entry Boolean stores and the 0x12c frame remain unresolved.
+// Motion-vector names for pre/post-query velocities, both query vectors, those
+// vectors plus carrier output, and all same-size motion vectors: 824 each.
+// Early collision sentinel 823, early settle result 822, both 823, and motion-entry
+// collision declaration with early sentinel 823. NOT kept: gains below eight.
+// The 0x154 frame and entry flag stores still differ.
+// MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
+// Typed item gravity bit, unscaled carrier add, both 824/824/824. Typed
+// collision prefix through position write, alone or with either or both
+// forms, 817/817/817/817. NOT kept: seven points at 4099 bytes, frame 0x154.
+// Hit-scoped prefix with both 904. Entry flag stores and the motion frame differ.
+// Shared scaled sum at lateral, longitudinal, both flow sites, contact, all contact/flow sites,
+// or carrier with lateral/longitudinal/contact: 824 each. The frame stays 0x154 against 0x12c,
+// and the reused entry Boolean bytes still differ.
+// Working or sampled gravity step 837/837. Gravity-adjusted velocity initializer 868.
+// Working, sampled or both conditional vertical values 851/858/858. Separate height 824.
+// Single gravity observation 824. NOT kept: the frame remains 0x154 and the entry flag stores differ.
+// Endpoint declared before the carrier 824, early or late point setter 904/904,
+// copied-origin component or indexed integration 886/905, early ray setter 824,
+// paired point and displacement setters 824, and component writes through the query origin 824.
+// NOT kept: the tied forms retain the 0x154 frame. The point setter alone shortens the body and the copied-origin forms grow it.
+// Shared forward/up spin cosine, sine, or both 852/853/848; shared axis 932;
+// axis with cosine, sine, or both 872/878/878; all with shared cosine complement 861.
+// NOT kept: all raise the score and retain or expand the 0x154 frame. Entry Boolean and motion homes remain.
+// Settle eligibility from floor fallback, conditional fallback, slow gate, slow selection, rejected-floor
+// fallback, surface arms, qualified publication, shared support and bounce rejection
+// 859/862/871/871/892/886/817/875/903. NOT kept: the seven-point lead grows to 4099 bytes and retains frame
+// 0x154. Entry flag bytes and low motion homes still differ.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the four item_spin_vector calls through include/axis_rotation.h's helper (the item's axis, sine and
+// cosine) 865 (4143 B); the first two only 829. Restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1511,7 +1873,8 @@ void __stdcall function_10b850(long object_index)
                 long other = *(long *)(hit + 0x40);
                 s_item_header *header = &((s_item_header *)g_4e0300->data)[other & 0xffff];
                 surface = ((1 << header->type) & 0x3c0) != 0;
-                if (!surface) surface = (g_4e3b44[header->item->definition_index & 0xffff].bytes[2] & 0x40) != 0;
+                if (!surface)
+                    surface = (((s_object_definition const *)g_4e3b44[header->item->definition_index & 0xffff].bytes)->flags & 0x40) != 0;
             }
             if (((surface && floor) || item->value_13a >= 4) && slow && !(collision.value_58 & 0x20))
             {
@@ -1684,11 +2047,46 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax A (11-20): no new form, no lower score (140): the release flag is still cleared with a load, an and and a
+// store where retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf,
+// and the release impulse is still one shared copy where retail keeps two that differ in where the flag clear sits;
+// splitting the impulse so that the flag-5 path clears the flag before the velocity is computed and the flag-6 path
+// clears it after measures 223, and clearing through the flag bits themselves measures 257, so the body stands.
+// MiniMax B (11-18, round 2): no new form, no lower score (140): the permuter over this body (17 tries, 301 s) found
+// nothing below the 140, and the one new form - the spin flag's local lifted to the function's scope so that it
+// takes a frame slot of its own - compiles to the same code (140 at 892 bytes, the first difference still at
+// +0x4c), so the body stands; the result byte still sits at [esp+0xe] where retail has [esp+0xf], the release flag
+// is still cleared by a load, an and and a store where retail masks the byte in place, and the impulse helper is
+// still shared here where retail has two inlined copies, and the callee 0xba300's parameter order is fixed in a file
+// this lane may not edit: BLOCKED-BY 0xba300's file.
+// MiniMax B (11-18): no new form, no lower score (140): the frame 0xac agrees with retail's, but the returned byte
+// still sits at +0xe where retail keeps it at +0xf, retail clears the release flag with one byte read-modify-write where
+// this build splits it into a load, an and and a store, and the event and point homes and the location call's setup
+// still differ; no form of the return value's home or the flag clear lowered the score.
+// MiniMax H (11-18): no new form, no lower score (140): the release byte is still cleared with a load, an and and a
+// store where retail masks the byte in place, the release impulse is still one shared copy where retail keeps two, and
+// the returned byte still sits at esp+0xe where retail keeps it at esp+0xf; the flag clear moved into the impulse
+// helper (a mask argument) measures 198, the flag-4 test without its own local measures 192, and the direct success in
+// the damping branch measures 190, so the body stands.
+// MiniMax R (11-16): no new form, no lower score (140): the release scale's two factors swapped in the source leave the
+// bytes unchanged (the compiler picks the operand order), retail clears the release flag with one byte read-modify-write
+// where this build splits it into a load, an and and a store, retail keeps two copies of the release impulse (the flag-5
+// path computing the first two components and the flag-6 path its own) where the shared helper here gives one copy that
+// both paths jump to, and the returned byte still sits at esp+0xe where retail keeps it at esp+0xf. This round's battery
+// on the flag clear (the byte-bitfield view, a byte pointer local, the plain assignment and the inverted mask) leaves all
+// four at 140 with the same bytes: this build always splits the byte mask into a load, an and and a store.
 // MiniMax H (11-11): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the damage data block and the position local still sit twelve bytes below retail's.
 // MiniMax A (11-06, run 52): no new form, no lower score (140) - retail keeps the two release
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax I (11-20): no new form, no lower score (140): the frame 0xac agrees and the differences are still the return byte's slot (esp+0xe here, esp+0xf in retail) and the release flag's clearing (a load and a store here, one byte read-modify-write in retail, which needs a narrower cast of the field's own address); retail also keeps two copies of the release impulse where a shared helper gives one copy.
+// MiniMax B (11-19): no new form tried this round, no lower score (140): the frame 0xac agrees and the remaining
+// differences are the return byte's slot (esp+0xe here, esp+0xf in retail) and the release flag's clearing (a load
+// and a store here, one byte read-modify-write in retail, which needs a narrower cast of the field's own address - a
+// form the rules bar). The clear written through the union's own bitfields (flag5 = 0 and flag6 = 0, 257 and 257)
+// gives a word read-modify-write, a byte-unit bitfield member added to the union gives 192, and folding the spinning
+// flag into the result instead of OR-ing it later gives 190, so the byte member stays a byte member.
 // MiniMax E (11-15): no new form, no lower score (140): the return byte still sits at esp+0xe where retail keeps it at esp+0xf, and the release flag is still cleared with a load and a store where retail masks the byte in place.
 // MiniMax B (11-13): no new form, no lower score (140): retail clears the release flag with one byte read-modify-write (a narrower cast of the field's own address, a banned form) and keeps two separate copies of the release impulse, one clearing the flag before it and one after it, where a shared helper gives one copy and the two calls then merge.
 // MiniMax G (11-12): no new form, no lower score (140): nothing new this round; frame 0xac agrees; the return bytes +0xe/+0xf,
@@ -1710,7 +2108,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // where retail clears it with one byte read-modify-write - neither the raw byte mask nor the byte-bitfield view
 // (s_item_flags_view_10b850) makes this build emit the memory form; dropping the spin local so that the returned byte
 // could sit at esp+0xf costs eighteen bytes of body length (874 against 892) and raises the score to 190, so the body stands.
-// score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
+// MiniMax S (11-16): no new form, no lower score (140): the release byte is still cleared by a load, an and and a store where retail
+// clears it with one byte read-modify-write, and the return bytes, the event-point homes and the location-call setup remain; that call
+// setup follows the allocation callee 0xba300's own convention (retail takes the object in ecx and the location in eax), whose body is
+// in another file: BLOCKED-BY 0xba300; the permuter (annealing, 420 s, 15 tries) found no variant below 140.
+// score 140 (was 140): frame 0xac agrees; the returned byte sits at +0xe and the result byte at +0x12 where retail has
+// +0xf and +0x13, the release byte is cleared by a load, an and and a store where retail clears it with one memory
+// read-modify-write, and our one shared release call stands where retail computes the impulse twice and shares a tail.
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
 // the tail, the event-point homes and the location-call setup are unchanged, and
@@ -2034,6 +2438,36 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
 // shared impulse producer, damping statements and complete body restored.
 // P540: Eight coordinated contact-provider orders at its definition and both callers, 140 each. NOT kept: no return-byte/release/event-home recovery; original contracts, calls, helper and entire body restored.
+// MiniMax C (11-16): no new form, no lower score (140): retail still clears the release flag with one byte read-modify-write where this build splits it into a load, an and and a store, and retail still keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
+// MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where
+// retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf, and retail still
+// keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
+// P604: Existing item scaler and shared in-place scaler, each with captured-bit OR,
+// direct success after/before damping, and logical accumulation: 140/190/190/179/140/190/190/179.
+// NOT kept: both captured-bit OR forms tie. Direct success restores +0xf and
+// shortens the body by 18 bytes. The logical join still spills the return byte at +0xe.
+// MiniMax R (11-17): no new form, no lower score (140): the result byte sits at [esp+0xe] where retail has [esp+0xf], the flag clear is a load, an and and a store where retail has a byte read-modify-write, and the impulse helper is shared here where retail has two inlined copies; a permuter run over the body (17 tries, 308 s) found nothing below the 140.
+// MiniMax A (11-19): no new form, no lower score (140): the three differences that are left are all frame or width
+// ones. The returned flag lives one byte lower here (ours [esp+0xe], retail [esp+0xf] in the same 0xac frame), and
+// retail keeps the event buffer at [esp+0x28] with the damage record at [esp+0x38] where this build keeps the buffer
+// at [esp+0xb0] and the record at [esp+0x2c]. The release flag is a byte inside a union with word bitfields, and this
+// compiler writes that union member through memory (a load, an `and` and a store) where retail masks the byte in
+// place (`and byte ptr [ebp+0x12c], 0xdf`); a narrower view of the field's own address would give retail's
+// instruction, but that is a cast of the field's own address. Retail computes the release impulse twice, once in
+// each branch, with the two flag clears around the two copies, where this build shares one copy - BLOCKED-BY the
+// transform helper's own file.
+// Direct spin with separate active/inactive defaults 190, separate
+// active result 206, release success before the queries 180, countdown success
+// after decrement 190, returned contact point 191, center workspace used directly
+// 189, returned center for both event points 171, and owner copied after flag and
+// scale 190. The shared center form reaches the retail return-byte slot and length
+// with the release-byte clear and impulse branches still differing.
+// MiniMax G (11-20): no new form, no lower score (140): the returned flag still sits one byte lower in the
+// frame than retail's, retail still clears the release flag with one byte read-modify-write where this build
+// loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
+// build shares one: BLOCKED-BY the transform helper's own file.
+// MiniMax R (11-20): re-checked, no new form and no lower score (140): the three flag arguments to the 0xe2d80 call are written to different stack slots than retail uses, and the flag byte is cleared with a load, an and and a store where retail clears it in place with an and against [ebp + 0x12c].
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

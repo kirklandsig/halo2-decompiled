@@ -774,30 +774,6 @@ void *function_449e0(short index, bool instance, bool load)
 	return result;
 }
 
-PRIVATE __forceinline byte *visible_entry_geometry(short index)
-{
-	s_44940_entry *entry = &g_4ba138[index];
-	if (entry->tag != NONE)
-	{
-		byte *definition = g_4e3b44[entry->tag & 0xffff].bytes;
-		byte *sections = *(byte **)(definition + 0x28);
-		return *(byte **)(sections + ((entry->flags >> 9) & 0x1ff) * 0x5c + 0x34);
-	}
-	byte *structure = (byte *)g_4e0348;
-	byte *data;
-	if (!((byte)(entry->unknown00 >> 12) & 1))
-	{
-		byte *section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
-		data = *(byte **)(section + 0x50);
-	}
-	else
-	{
-		byte *instances = *(byte **)(structure + 0x144);
-		short definition_index = *(short *)(instances + ((entry->flags >> 18) & 0x7ff) * 0x58 + 0x34);
-		data = (byte *)*(dword const *)(*(byte **)(structure + 0x13c) + definition_index * 0xc8 + 0x50);
-	}
-	return data;
-}
 
 struct s_render_part_context;
 bool function_45ce0(short index, byte *out, short part, short transform_index);
@@ -1316,12 +1292,42 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax I (11-19): no new form, no lower score (93): the 0x4bcc0 argument load still takes ecx where retail takes eax before the force push, retail's dead entry lea is still missing, the header global is still loaded second, the previous level is still a dword where retail keeps a byte, and the scratch rotation those leave stands.
+// score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
+// reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
+// into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry
+// test nested inside the flag/index test 93 (same code); the failure count declared after the 0x4bcc0 call 375 (1296
+// bytes); the first cache lookup on *source_object with no drawn-object local 98. Left: the 0x4bcc0 argument load
+// (retail EAX before the force push), retail's dead entry lea, the header global loaded first, the byte previous level
+// with record + 0xbc in its own branch, and the scratch rotation those leave.
+// M3 lane 2 r107 (all plain; 0x4bcc0, 0x4c190, 0x133f70 MATCH throughout): retail's previous-level block is exactly 0x4c450's
+// cached-level helper shape (a signed-char result, the slot at the record + 0xbc indexed by the view), but retail adds the
+// record base and the offset in two steps here (`add eax, ecx; lea ebx, [eax + 0xbc]`, the cache too) where 0x4c450's retail
+// folds them into one lea. That helper moved into a shared header and called here (`signed char previous =
+// cached_level_4c450(*source_object);`, 0x4c450 still MATCH) 328 (1309 B: one instruction fewer, everything after shifts).
+// The view entry as a pointer local in a nested test 93 (same code: no dead lea); the same test through a forceinline
+// pointer helper 93 (same code); `bool success = true;` declared first in the loop body 91 (retail's success store before
+// the source-object spill), with the pointer helper 91, with `fallback` declared at the loop top 91, with the sections
+// pointer beside the slot pointers 367 (1311 B); the record's level as a named `short *level` used for all eight reads
+// and writes 234, with `success` first 234.
+// MiniMax B (11-18): no new form, no lower score (93 on the full image): every difference still sits before the 0x4c190 call - the 0x4bcc0 argument load (retail EAX ahead of the force push), the entries in ecx, retail's dead entry lea, the header global's load order, the byte previous level, the two-step record adds and the 0x4c190 argument order; the reduced image of this file is not faithful, so only the plain build measures it.
+// MiniMax E (11-16): no new form tried this round, no lower score (93 on the full image, 355 on the reduced one): the plain
+// build's first difference is still at the 0x4bcc0 call, where retail loads the distance into EAX and this build loads it into
+// ECX, and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns are unchanged; the reduced
+// image's 355 is not the measure, because the globals it leaves out are not masked.
 // MiniMax H (11-13): no new form, no lower score (93 on the full image, 355 on the reduced one): the plain
 // build's first difference is at +0x21, where the call to 0x4bcc0 sets up its arguments - retail loads the
 // distance into EAX and pushes that, this build loads it into ECX and pushes that; what follows are the two
 // globals' addresses, which differ between the two builds, and the layout of the entry test.
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
-
+// Earlier 93 (was 93): The frame agrees, and distance still loads into ECX after the force push. The cache and previous-level homes also differ.
+// Signed-short query count widened across the level store, after count clear, or at loop entry 96/367/367.
+// Native count selection widened before count clear, widened after type, or used directly 367/109/109.
+// Explicit suppressed/admitted long count 110. Zero count with an admitted assignment 354.
+// MiniMax S (11-17): no new form, no lower score (93 on the full image): every difference still sits before the
+// 0x4c190 call - the previous level is still a dword against retail's byte, the distance argument still travels
+// in ecx against retail's eax, and success is still stored after the esi spill against retail's before it; the
+// reduced image of this file is not faithful, so the permuter cannot search this body.
 // MiniMax E (11-11, run 80): no new form, no lower score (93 on the full image, 355 on the reduced one); a byte
 // previous level with the 0xbc offset folded into the levels base measured 328 and the same offset with a dword
 // previous measured 326, so both forms were restored; what still differs is that the previous level is a dword
@@ -1343,7 +1349,14 @@ struct s_133f70;
 // push where retail loads it before, the dead entry lea in the 0x4ed284 test is still there, the previous level's byte
 // home still differs, and the record's +0xbc and +0x44 adds and the 0x4c190 argument order still differ; the tail
 // after that call is 0x23690 in src/unknown_023540.cpp, which this lane may not edit: BLOCKED-BY 0x23690.
-// score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// MiniMax I (11-15): no new form, no lower score (93 on the full image; the reduced image this lane measures gives 344): the previous level is still a dword against retail's byte, the distance argument still travels in ecx against retail's eax, and the tail after the 0x4c190 call is still 0x23690 in another file, which this lane may not edit.
+// MiniMax R (11-16): no new form, no lower score (93): the plain check is the measure (the reduced image builds this function
+// differently and scores 355), and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns
+// remain; that tail's body is in another file. BLOCKED-BY 0x23690.
+// MiniMax S (11-16): no new form, no lower score (93): the frame 0x33f8 agrees with retail, but the distance staging, the
+// nullable-entry and cache adds and the result homes still differ, and the tail that 0x23690 owns is in another file:
+// BLOCKED-BY 0x23690; the permuter (full-image builds, 900 s, 14 tries) found no variant below 93.
+// Earlier 93 (was 93): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // MiniMax E (11-10, run 73): no new form, no lower score (93 on the full image, 355 on the reduced one); every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, success stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end, and the tail stays blocked by 0x23690 in another file.
@@ -1557,6 +1570,37 @@ struct s_133f70;
 // the 0x4ed284 test through a one-caller inline entry getter 93 (it folds: no dead lea); that getter with `success` first 91.
 // Retail's 0x3e380-like allocate-and-fill sequence (count, bytes, render_memory_allocate, 0x137800) is one inlined helper in
 // retail; the existing 0x3e380 differs (NONE object, extra bytes), so no existing helper fits.
+// MiniMax C (11-17): no new form, no lower score (93 plain; the reduced image's fast score is 344 and is only a screen): every difference sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the signed-char and inline-getter forms of the earlier rounds all raise the positional count, so the body stands.
+// Earlier context (175 before round 82).
+// The distance load and view-entry address still differ. Separate admitted count through a cached user 351,
+// an optional view index 358, explicit selected outcomes 353, or a conditional count within the valid view 365.
+// Those forms with a signed-byte previous level: 356, 150, 358, 365. The 150 form keeps the original first
+// difference and takes more differences through the view and cache blocks. Body restored.
+// MiniMax A (11-17): no new form tried this round, no lower score (93): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the tail needs 0x23690, which is still todo in config/functions.csv. BLOCKED-BY 0x23690. The reduced image scores 344 here, so --fast is only a screen.
+// M3 lane 7 r179 (all plain, control 93, aligned 130, addresses masked 48). On the first difference (retail loads the distance
+// into EAX ahead of the force push, which fixes the scratch rotation down to the type store): the distance read once through
+// its own address 93 (same code); the 0x4bcc0 call through a one-caller forwarding helper whose parameter list puts the
+// distance right before the level pointer (diagnostic) 93 (same code: the helper's arguments are substituted, so their order
+// does not move the load); the level pointer in a named local for the call (diagnostic) 93 (same code); the call's result in
+// a named short widened into the entry count 93 (same code); `success` declared at the loop's top re-measured 91 (two
+// points, a declaration move, not kept). Reading: ours picks ECX for the distance because the force is already pushed when
+// the load's register is chosen; retail's choice of EAX means ECX and EDX were both still taken there. Body unchanged.
+// M3 lane 10 r128 (control 93, aligned 58, register-masked aligned 29 of 382 instructions). A faithful fast image exists
+// after all: with the callers 0x133790, 0x133ab0 and 0x133f70 and the callees 0x23690, 0x3d480, 0x3d4f0, 0x3db00, 0x3dd10,
+// 0x3ddd0, 0x4bcc0, 0x4c190, 0x137650, 0x137800, 0x3d430 and 0x4c450 listed next to 0x4b5d0 the reduced build gives 93
+// with the same listing as the plain build (about 21 s; the first four trials below were also run plain and agree).
+// Forms, [aligned, masked]: a signed-char previous level through a signed-char levels pointer, with the record address
+// from a small inline getter that has its own NONE test (the record set under one test, the member offset added under
+// the caller's, which is what keeps retail's two-step `add eax, ecx; lea ebx, [eax + 0xbc]` and `[eax + 0x44]`), at both
+// pool sites 321 [57, 21] (383 instructions; both sites then agree with retail line for line); that with the previous
+// level written through an out-parameter getter 320 [56, 21]; as an unsigned byte compared with 0xff 321 [57, 21]; with
+// the drawn-object local read again ahead of the 0x3d430 call 321 (same code); with `reuse` set inside the test 298 at
+// 1287 bytes [75, 40]; with `success` declared first in the loop 319 [55, 19] (retail's store order ahead of the 0x3d4f0
+// call). The one instruction every byte-level form is long by is the previous-level test: retail keeps `cmp byte ptr
+// [esp + 0x20], 0xff` behind the two slot stores, ours loads the byte ahead of the stores and compares the register, so
+// the listing runs one instruction out of step from there. On the first difference (plain body): `initial_level`
+// declared ahead of `failed` 95 [60, 31]; a named flag pointer for the call, a named level pointer for the call, and
+// the record cast written in place of `output` in the call 93 each (same code). Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

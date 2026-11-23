@@ -67,6 +67,7 @@ struct s_ease_output
 };
 
 real function_30bf0(vector3f *v);
+real magnitude3d(vector3f const *v);
 
 struct s_direction_rotation_input
 {
@@ -183,7 +184,18 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// score 603 (was 603): r131, m3 lane 1 r154 and lane 16 r179 unchanged (delta helper forms below; r154 and r179 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
+// r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
+// MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
+// The score was 636 before the settle factor.
+// (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// MiniMax E (11-16): no new form, no lower score (622 plain, 614 fast): retail keeps q (the fourth stack
+// argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and the first clamp
+// still computes t before the 12/8 factor is selected; a named local copy of q at the function entry (732) and
+// one just before the output copy (665) both score worse and both leave d in EBX, so the body is unchanged.
+// MiniMax I (11-17): no new form, no lower score (622 plain, 614 fast): retail keeps q, the fourth stack argument, in EBX from the activation block on (its fallback is the cmove ebx, [0x4687a4]) and reads d from its stack slot at each of its five uses, this build keeps d in EBX and reloads q, and d is used here four times against q's three, so the choice is not reachable from the source; the body is unchanged.
+// Earlier at 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// Earlier score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
 // selected before t in each clamp, xmm homes and coefficient schedules.
@@ -312,8 +324,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Complete supplied-direction native/const/setter/CRT observations 731/731/743/731,
 // frame 0x2c and caller loss in each. Original 0x24 frame, inputs, qualifiers and caller restored;
 // direction/sample residence and coefficient schedules remain.
-// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
-// scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm
+// forms; scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
 // Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
 // all with the activation workspace declared at entry 642. Original initializers and complete body restored.
 // Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
@@ -595,6 +607,344 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P538: Both actual direction-normalization return producers, real/const-real/double/const-double
 // and bool/byte/short/long missing-direction outcomes: 659/659/746/746/659/659/659/659.
 // NOT kept: no sample-register or coefficient-schedule repair; original calls, fallback stores and full body restored.
+// P556: Actual displacement/impulse/target-field/direction-object/target-object/output/
+// sampled-workspace/settling-workspace lvalues, fast control 614: 694/741/752/704/693/614/637/602.
+// NOT kept: local settling alias at 602 is nonexact and shortens away from retail; other forms tie or regress.
+// Original executable body, counter qualifier, helpers and 622 (was 622) heading retained.
+// P569: Working sample array: forward/backward long 684/687; forward short/dword 639/684;
+// while 684; standard forward/backward transfer 714/714; backward short 696 (fast control 614).
+// NOT kept: all regress. Original copy/body restored; sample/direction residence
+// and coefficient schedules remain.
+// M3 lane 11 r109 (plain each with the matched caller 0x1eb6f0, MATCH throughout; control 622): the active block's two target
+// updates through the existing vector3f_add_scaled 667 (2897 B); the activation delta plus the impulse through the existing
+// vector3f_add 683 (2890 B); the void return with `s->counter++`, the closing test reading the field and the clear arm as
+// `{ out->flags &= ~4; return; }` 627 (2893 B, lane 8 r172's code: the pops stay in each exit; the matched sister 0x1ed4a0
+// ends the same way and gets retail's early pops, so the cause is not that tail's spelling); the settle arm's test as
+// `nlen != 0.f && align > ...` 635 (2888 B, first difference +0x2); the output stage's distance vector computed in full
+// before the three rate scalings 622 (same score). Body unchanged.
+// M3 lane 14 r105 (fast reads 614 for the 622 body; plain where stated): KEPT the settling align as the existing
+// `dot3f(d, &nq)` (round 60 measured it at 640 on its 642 base) fast 597, plain 603 (2885 B; 0x1eb6f0 and 0x1ed4a0 MATCH);
+// d still takes EBX at entry. On 603 (fast): the activation alignment as dot3f(d, a) 597, the 0.866 test as
+// dot3f(&s->direction, d) 598 (both the same code or one worse), the output stage's w as dot3f(&s->direction, q) 682 (the
+// prologue changes), the settle length and the output distance through sqrt(length_sq3f(...)) 597/597; the 12/8 factor
+// selected before t in the second clamp 723 (2854 B), in the output clamp 597, in both 722; the void return 597, with
+// `s->counter++` and the closing test reading the field 596 (2880 B). Also kept (identical code, 603): the activation
+// alignment as dot3f(d, a), the settle length and the output distance as sqrt(length_sq3f(...)).
+// Round 96 (m3 lane 2, fast with 0x1eb6f0 and 0x1ed4a0, MATCH in each; control 603, register/stack/global-masked aligned
+// 281): the time globals read at each use with no local (round 68's 634 on the old base) 600 (2888 B); with the void
+// return, `s->counter++` and the closing test reading the field 601 (2890 B); with the void return alone 600; with the
+// 0.866 test as dot3f(&s->direction, d) 601; the globals local kept for the update block and the output stage reading
+// g_510c54 at each use (retail reloads it there) 600. Retail's final block pops EDI, EBP, EBX before the closing tests
+// and ORs memory directly (`or dword ptr [eax], 4`); ours pops in each exit.
+// Object-valued reference selection 673; conditional pointer copy 673; reference copy
+// branches 663 at retail length; active-only output pointer 659; shared output rate 681;
+// early speed-factor branches 697; ramp cap branches 726; activation limit defaults 681.
+// NOT kept: all regress. Direction still occupies the reference velocity register at entry.
+// Second-clamp mode shared with duration, after/before the step 699/699; joint
+// multiplier and duration branch before/after the step 710/710; shared mode
+// producing both coefficients 709; direct guarded bound with shared mode
+// 689; preselected multiplier with guarded rate 708; preselected multiplier
+// with the direct bound 675. The sample still needs retail's EBX home.
+// Direct component loops for supplied-direction fallback at activation, refresh,
+// and the angle guard, subsets 1 through 7, 684/673/689/673/685/674/689. All
+// with the opening sample copy as a loop 690. Frame 0x24 and matched caller
+// transport survive. The supplied direction stays in EBX and the zero moves
+// ahead of the register saves.
+// Shared normalize-or-copy and its guard form, vector and state refresh, each inline/forceinline
+// 603/603/603/603/672/672/671/671. The full refresh forms keep frame 0x24 and move zeroing ahead
+// of the register saves. The sampled-velocity register and stack direction reads still differ.
+// M3 lane 15 r98 (plain with 0x1eb6f0 and 0x1ed4a0; control 603, LCS-aligned 444 stack-masked): retail selects the 12/8
+// factor into XMM1 (`mov al, [esi + 0xc]`) before t at each clamp, which an inline step helper with the factor as its last
+// argument (evaluated first) would give. A forceinline step helper (globals, distance, factor) at all three clamps 696
+// (2870 B, aligned 411: each clamp's factor-first shape is retail's), but the frame drops to 0x20, the fast byte takes CL, a
+// moves from ECX to EDX and b to the stack, and the matched caller 0x1eb6f0 falls to 22; at the two update-block clamps only
+// 697 (0x1eb6f0 22); at the output clamp only 603 (same count, one caller); the helper taking the fast flag and selecting
+// inside 697 (0x1eb6f0 22); the factor declared before t at all three clamps, no helper, 694 (0x1eb6f0 22).
+// Settled state kept across normalization 603; complemented first-settle state
+// 599; output rate read once 685, activation rate read once 710, both 739; local
+// settling clock 600; shared ramp tick conversion 699; local settling clock and
+// settled-state read 600. NOT kept: best gain is four and the sampled-velocity
+// register still differs. The clock form grows beyond retail length.
+// Fixed-size copies of published sample 603, selected sample 665, both 665,
+// activation start 603, activation target fallback 603, both activation points
+// 678, tick-scaled output 603, settling workspace 603, and activation direction
+// fallback 603. The sampled-velocity register remains displaced.
+// Sampled velocity still loses EBX to the supplied direction. Initial/capped/output
+// ramp scopes, every nonempty combination 603; all scopes with distinct tick and step
+// result names 603. The frame, clock and instruction listing stay the same.
+// The sampled velocity still needs retail's EBX register. The bound selection and coefficient schedules differ.
+// Tried carry the upper-bound value in activation step 711;
+// carry the upper-bound value in activation distance 674;
+// carry the upper-bound value in activation step and activation distance 695;
+// carry the upper-bound value in active output 688;
+// carry the upper-bound value in activation step and active output 682;
+// carry the upper-bound value in activation distance and active output 672;
+// carry the upper-bound value in activation step and activation distance and active output 693;
+// all upper-bound carriers with the lower bound initialized first 691.
+// NOT kept: All scores rise. The first-activation forms also disturb the matched caller's convention.
+// M3 lane 15 r105 (plain with 0x1eb6f0 and 0x1ed4a0, [0] = both still matched; aligned = difflib count with addresses
+// masked, 458 at 603): retail selects the 12/8 factor into a register through AL before t in all three clamps, and its
+// counter block computes in EDX and pops EDI/EBP/EBX ahead of the closing tests. The output clamp's factor read before t
+// 603 [0] (aligned 460); the void return with `s->counter++` and the closing test reading the field 604 [0] (2887 B); both
+// 604 [0]; both with the factor first in the two activation clamps too 693 (0x1eb6f0 22: the fast byte again leaves `a`
+// without ECX); both with the factor first in the first clamp only 710 (0x1eb6f0 22).
+// M3 lane 11 r118 (fast with 0x1eb6f0 and 0x1ed4a0, MATCH throughout; control 603): the counter conversion without its
+// volatile 702 (2857 B), that with the 0.866 test as dot3f(&s->direction, d) 702; the 0.866 test and the output stage's
+// w both as dot3f 679 (2877 B); the sample copy as one aggregate `qr = *q` 665 (2880 B); no count local, `(real)counter`
+// at its three uses 706 (2853 B); the count tests in integers (`counter < 5`, `(real)(3 - counter)`) 687 (2845 B).
+// Retail loads q into EBX at entry, uses EBX and EDI as scratch for the activation's target copy and reloads q after
+// the 0x30bf0 call; d is read from its stack slot at five sites (the alignment dot, the two fallback copies, the 0.866
+// test with its copy, the settle dot).
+// M3 lane 12 r145 (fast with 0x1eb6f0 and 0x1ed4a0, MATCH each time; the fast control gave the full 603): retail loads q
+// (the fourth stack argument) into EBX at entry, reads d from its stack home at each of its five uses, borrows EBX for the
+// `s->start = *pos` copy and reloads q into EBX after the first direction refresh call; ours keeps d in EBX. The zero-tick
+// velocity as a `velocity = counter == 0 ? g_4687a4 : q` pointer read for qr 663 (2879 B, EBX still d); an unused pointer
+// to d 603 (same code); every d use read through that pointer (diagnostic) 675 (the reads are forwarded, EBX still d);
+// `out->position = *q;` ahead of the position alias 659 (2875 B); the 0.866 test as `dot3f(d, &s->direction)` 604.
+// Whole scaled displacement 744, indexed displacement scaling 673, whole impulse 734,
+// indexed impulse with displacement update 741, settling length before the copy 603,
+// shared activation and normalization motion 676, shared scaled-reference displacement 673,
+// staged target point 717. NOT kept: these forms leave or worsen the sample register and coefficient schedule.
+// M3 lane 14 r116 (plain with 0x1eb6f0 and 0x30bf0, both MATCH unless noted; control 603, --fast 597 under a caveat): both
+// direction refreshes through one shared inline helper taking (s, pos, d) 603 (same code); the activation step as one
+// conditional expression 607; diagnostics: the activation block as an inline helper 1730 (not inlined, 1880 B; 0x1eb6f0
+// 2), forced inline 709 (2875 B; d still takes EBX, so moving d's activation reads behind a helper parameter does not hand
+// q the register); `s->start` copied field by field 673 (2877 B).
+// M3 lane 15 r107 (fast with 0x1eb6f0 and 0x1ed4a0; control 603, both matched): the output stage's w as `dot3f(&s->direction,
+// q)` 678 (2880 B, an xorps moves to the entry, d still in EBX); `s->distance = len3;` 683 (2890 B); `s->limited` set ahead
+// of the clamp with `len3 = s->limited ? limit : len2` and the distance from len3 706 (2862 B); the position pointer dropped
+// (`out->position` at every use) 714 (2875 B, 0x1eb6f0 lost at 103); `bool fail = false;` declared just above the output
+// stage 655 (2885 B, the flag's slot moves).
+// m3 lane 8 r198 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603; aligned = difflib count with addresses masked,
+// 658 at the control, masked = registers and stack offsets masked too, 281; the matched caller 0x1eb6f0 kept unless noted).
+// Re-measured on this base as one step of a whole rewrite: the 12/8 factor declared before t at all three clamps and the
+// impulse through the existing vector3f_scale, with the clamp as PIN(t, 0.001f, rate * k) 675 (2891 B, aligned 568, masked
+// 227), as the if form with the cap in its own local 677 (2878 B, aligned 605, masked 233), as the if form assigning the
+// cap to the step and then t 706 (2884 B, aligned 581, masked 237). With the factor first the fast byte read at the second
+// clamp stays in CL to the duration's `neg cl`, so the start copy takes EDI/EBX/EDX and the target goes through `lea eax`,
+// both as retail (ours re-reads the byte because its second read sits inside the clamp's branch). New on the PIN form:
+// `s->limit` read at each of its nine uses (no local) 729 (2892 B, aligned 565, masked 219); that with the time globals
+// read at each use 666 (2888 B, aligned 589, masked 206, but 0x1eb6f0 falls to 22); the globals at each use without the
+// limit change 714 (0x1eb6f0 22). What is left at the head of the PIN form: retail's step takes the 0.001 register itself
+// (no copy; its later `e > 0.001` compares against memory) where ours copies the constant and keeps it for that compare;
+// ours moves b from EDX to EDI at entry and gives EDX to the time globals (retail: b stays in EDX, the globals take EDI);
+// d still loads into EBX at entry. The positional score rises with each of these because the later stages shift; the
+// combined form (factor first, scale helper, limit at each use) is saved as build/r198/lead-0x1eb8a0-565aligned.diff in
+// the m3-lane8 worktree.
+// M3 lane 15 r108 (fast with 0x1eb6f0 and 0x1ed4a0, both MATCH; control 603): the zero-tick fallback as `q = counter == 0
+// ? g_4687a4 : q;` 603 (same code: q stays in memory, no cmove, where retail selects into EBX with cmove); the zero-tick
+// test reading `s->counter` 603 (same code); no count local, `s->counter` at its three uses 603 (same code); the count
+// read at the top of the active block ahead of the clamp 609 (2883 B); the scaled sample through the existing
+// vector3f_scale(&qr, globals->rate, &qr) after the displacement 683 (2871 B).
+// M3 lane 4 r229 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603 = plain, aligned 458, register/offset-
+// masked 174): the 0.866 test as dot3f(&s->direction, d) 604; the output position filled from q as three component
+// statements 657 (2878 B); both 658; both with the zero-tick fallback as `q = counter == 0 ? g_4687a4 : q;` 658 (d keeps
+// EBX in all four, so q's and d's reference counts as written are not what ranks them). Diagnostic (reverted at once):
+// the d parameter qualified so that it stays in its stack home 659 (2890 B): the entry is then retail's (q loaded into
+// EBX from [esp + 0x38], first difference +0x1d), so d out of EBX is enough to give q the register; the count rises only
+// because the qualifier reloads d at every component where retail loads it once per site (0x1ebda0: one load for the
+// fallback copy, one for the 0.866 test and its copy). Body unchanged.
+// M3 lane 14 r123 (fast with 0x1eb6f0 and 0x1ed4a0, both MATCH; control 603; all restored): the output position copied from q
+// field by field (more q references for the q/d EBX weight) 657 (2878 B, d still in EBX); the 0.866 test's terms in i, j, k
+// order 603 (same code); the three step clamps through one forced-inline helper returning the step 688 (2873 B); the first
+// step clamp as one ternary 607; the alignment dot as `dot3f(a, d)` 603. Retail's alignment dot reads d from its stack home
+// into EAX (a in ECX), pos stays in EBP and the time globals in EDI.
+// Select the zero-tick sample before the dot, bracketing the tick conversion. Branched pointer
+// 672/672, conditional pointer 674/674, branched vector copy 622/623, conditional vector copy 667/670.
+// NOT kept: all regress and shorten the body past retail length. The supplied direction still takes
+// EBX at entry. Original sample selection and body restored.
+// M3 lane 1 r135 (plain; the fast image builds this body differently, 597 at 2878 B; plain control 603 at 2885 B): the first
+// clamp's 12/8 factor ahead of t 711 (2868 B, the caller 0x1eb6f0 lost); the third clamp's factor ahead of t3 603 (the
+// select lands in retail's place, the count stays); the two aim-at-target/normalise/fall-back-to-d blocks as one forceinline
+// helper used twice 603 (same code); the output copy as three q field copies 657 (2878 B, EBX still d); a block-local
+// game-time pointer read once at the top of the active block (retail loads it once there, ahead of the clamp's branch,
+// and uses it for the cap and the rate products) 600 (2888 B; a second local for the same pointer, not kept).
+// Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
+// output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
+// Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
+// Select the direction value at activation/refresh/angular threshold 604/623/667,
+// both normalizations 646, activation-plus-threshold 662, refresh-plus-threshold 672,
+// all three 664, or select a fallback pointer at all three 662. NOT kept: all raise
+// the score. The supplied direction still takes EBX ahead of the sample.
+// M3 lane 15 r116 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH: with these listed the fast count equals the plain
+// 603; control 603, aligned 658): the target copy from pos as memcpy 603, the output position copy from q as memcpy 603, both
+// 603 (same code each); the output position assigned through `out->position` before the pointer local 659 (2875 B); a, b and
+// pos as const pointees (definition and declaration) 603 (same code). Retail evidence: q is loaded into EBX at entry, EBX is
+// then a temp in the target copy and q is reloaded into it after the second normalise call, so q's EBX range is split.
+// Round 452: A single ramp-tail calculation or a single elapsed-count read
+// 693/693. Named braking distance or travel ticks 693/693; accumulated estimate 697.
+// Real estimate before the cast on the first or both arms, or one shared store 693/693/693.
+// All eliminate the repeated elapsed-count calculation but move the first gap earlier
+// and shorten the body to 2865 bytes. EBX still keeps the supplied direction.
+// M3 lane 7 r201 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless noted; control 603, which this screen
+// reproduces; aligned = register/offset-masked difflib count over the listing, 281 at the control). The void return
+// 603 (same code); with `s->counter++` and the closing test reading the field 604 (2887 B: the counter block is then
+// retail's, the pops still sit in each exit); `s->counter++` with the long return 612 (2893 B). The 0.866 test through
+// dot3f(&s->direction, d) 604 (aligned 283, d still EBX). Lane 8 r198's saved lead (the 12/8 factor ahead of t with
+// the clamps as PIN, the limit read at each use, the impulse through vector3f_scale) rebuilt 729 (2892 B, aligned 219:
+// b moves to EDI and the time globals to EDX at the entry, d still EBX). Diagnostics (reverted): an unreachable call
+// taking d's address 603 (the same code: in this function it does not keep the parameter in its home); the three dots
+// with d and the three fallback copies behind out-of-line probes 816 (2788 B, 0x1eb6f0 lost at 2: the globals take
+// EBX and `a` EDI, so calls at d's sites are no model for it). Read again against retail: d's home [esp+0x3c] and q's
+// [esp+0x40] are reused as float spill slots on the paths where each is dead, so d is an ordinary unregistered
+// variable (not address-taken); retail forms `&s->target` in EAX and `&s->direction` in EDI and reads and writes all
+// three components through them (ours the first component only), sums the three delta components with the impulse on
+// the x87 stack from memory after all three impulse stores, and scales delta in the registers that still hold it:
+// the shapes of pointer-taking vector helpers at each of those statements. Every such helper measured alone so far
+// raises the positional count; the entry (d against q for EBX) has to come first. Body unchanged.
+// M3 lane 16 r162 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the settle dot as `dot3f(&nq, d)`
+// 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
+// second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
+// local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
+// Joined refresh and angular fallback via predicate or length 687/678, with selected-source
+// projection 671/665. Selected-source branches, combined test, and one or two conditional
+// selections 679/687/677/677.
+// NOT kept. The joined stores raise the score and leave the entry allocation unresolved.
+// Sample dot across the zero-tick pointer choice: paired terms 660/660, three
+// products 661/661, successive sum 603/659, and complete sum 659/603, with
+// the rate applied separately or in the initializer. NOT kept: the higher scores
+// shorten past retail, and each form leaves the supplied direction in EBX.
+// EBX still retains the supplied direction at entry instead of the sample.
+// Direct sample rate products before displacement/after displacement/after distance 691/691/691.
+// Shared scaling from the selected sample at those points 689/689/689; captured sample with batched
+// rate products before/after displacement 603/603. NOT kept: the direct and helper forms shorten
+// past retail and regress; batching ties.
+// M3 lane 12 r167 (h2m fast reads 597 for this body; plain where stated): the activation target written through
+// `point3f *target = &s->target;` (retail stores it through EAX = esi + 0x30) fast 590 (2881 B), plain 602 (2888 B), not
+// kept (1 point); the activation direction through a pointer 597 (2883 B); both 691 (2862 B); `s->limited` first and the
+// clamped length taken from it 721 (2858 B). On the target-pointer body: the target and active rows' operand orders 590
+// each (same code); the active block's direction through a pointer 665 (2862 B), in both blocks 679 (2871 B); the 12/8
+// factor first at the output clamp 590 (same code), the second clamp 720 (2857 B), both 719, all three 689 (caller
+// 0x1eb6f0 22). Fast and plain differ only in the closing block: the reduced image pops EDI, EBP and EBX in the counter
+// block as retail does, the full build pops in each exit and splits the flag's `or` into load, or, store. Body unchanged.
+// The 0x24 frame and clock home agree. EBX still keeps the supplied direction rather than the sampled
+// velocity, and the limit and coefficient schedules differ. Tried live limit and reused limited
+// decision 680, live limit and separate distance stores 698, live limit with guarded step minimum 693,
+// live limit with guarded distance minimum 721, live limit with both guarded minima 721, live limit
+// with both minima and reused limited decision 705, live limit with default-step branch first 691, live
+// limit with both default branches first 691. NOT kept: The separate limit observations and guarded
+// minima raise the score. The reused decision also moves the first difference to +0x5.
+// EBX still keeps the supplied direction instead of the sampled velocity. Working sample
+// by conditional copy 673/676, branch-wide copy 663/659, component copy 680/667,
+// and shared setter 680/667, each after/before the rate product. NOT kept: all
+// raise the score and retain the incoming register exchange.
+// M3 lane 8 r218 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, which keep fast equal to plain; control 603, 0x1eb6f0 MATCH
+// each run): d and q declared `vector3f const *` in the definition and the declaration 603; the output block reading
+// `s->counter` at each use with no counter local 603; the settle arm's alignment as `dot3f(&nq, d)` 603 (same code each);
+// qr scaled through vector3f_scale after the three dl rows 683 (2871 B); qr formed as `vector3f_scale(q, rate, &qr)` 712
+// (2846 B). Reading: retail's closing block loads `out` into EAX after the counter compare, so the counter is not
+// returned there (the void forms listed above). Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless said; with all three listed fast
+// equals plain, 603): r167's target pointer re-measured 602 (2888 B); every time clamp as `real k = s->fast ? 12.f :
+// 8.f; real t = ...; real e = PIN(t, 0.001f, globals->rate * k);` 724 (2875 B, frame 0x20, caller 0x1eb6f0 22); at the
+// second and output clamps 699; at the output clamp only 659; at the second only 707 (2866 B: retail's `neg cl` reuse of
+// the factor's flag byte for the duration, but a function-wide XMM zero is hoisted to the entry); the second clamp's
+// factor ahead of t2 in main's if form 716. Diagnostic, reverted: d dropped from the 0.866 test 743 (b takes EBX, not q).
+// Retail compares both normalise results with the memory zero constant; ours keeps a zero in XMM6 for the active PIN.
+// M3 lane 16 r172 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the three limit tests written
+// `0.f != limit` 604; both normalise tests `0.f == function_30bf0(...)` 653 (2884 B); the settle test's `0.f != nlen` 605
+// (2881 B, retail's length); its alignment check `len * 0.087155744f < align` 614 (2891 B); the activation delta scaled
+// factor first 603 (same code). d keeps EBX. Body unchanged.
+// Shared setters for the start copy, impulse, activation target, all target updates,
+// both direction differences, reference sample, ramp position, and activation displacement
+// with scaling and impulse 699/708/678/693/675/603/661/713.
+// NOT kept: the sample setter ties and leaves the supplied direction in EBX.
+// The impulse setter reaches retail length with earlier prologue differences.
+// M3 lane 15 r131 (h2m fast with 0x1ed4a0, 0x30bf0, 0x1eb6f0 and 0x1ecf50; control 603 at 2885 B, 0x1eb6f0 and 0x1ed4a0
+// MATCH in each). Retail stores all three scaled delta components and adds the impulse on the x87 stack from memory, ours
+// keeps the scaled delta.k in XMM2 across the length test and adds it in SSE. The delta built by the existing
+// vector3d_from_points3d(pos, b, &delta) 671 (2875 B, first difference +0x5); with the impulse through the existing
+// vector3f_add(&delta, &s->impulse, &delta) 667 (2895 B); with the length scale through vector3f_scale(&delta, dt / len,
+// &delta) 671 (same code as without it); all three 667 (2895 B); the delta and the activation direction refresh both
+// through vector3d_from_points3d 672 (2874 B). Diagnostics, restored: the active pin's lower bound non-zero 685, both
+// normalise compares against a non-zero constant 712, both 668 (new constants, so they do not isolate the shared XMM6
+// zero). Body unchanged.
+// M3 lane 16 r177 (h2m fast with all 18 of the file's functions, which reproduces the full build's 603; with only
+// 0x1eb6f0 listed the image builds 597 under a builds-differently caveat): kept, the output block's target difference
+// through the existing vector3d_from_points3d(pos, &s->target, &dl) with the three qr rate rows grouped ahead of it, 603
+// (byte-identical code). Tried: d read at each use through its address (`vector3f *const *home = &d`) 675 (2885 B, d still
+// EBX: the reads are forwarded); the volatile sample count declared after w 603; qr declared at the active block's top
+// 603; w scaled by the rate in its initialiser 667 (2886 B). d keeps EBX in each.
+// M3 lane 1 r154 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603): the output position pointer declared at
+// the top of the function 710 (2886 B; 0x1eb6f0 drops to 11); `fail` typed long 603 (2891 B); the result returned by
+// re-reading `s->counter` 611 (2891 B); the closing flag test written as the failing condition first (`|= 4` arm first)
+// 603 (same code); the alignment factor clamped and scaled in one expression after the delta 673 (2875 B). Retail loads q
+// (fourth stack argument) into EBX at entry for the no-update path, clobbers it as a copy temporary in the activation
+// block and reloads it before the output stage. Body unchanged.
+// M3 lane 5 r232 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603, aligned 658, register-masked 302): the
+// first clamp alone as `real k = s->fast ? 12.f : 8.f; real t = step * 0.375f; real e = PIN(t, 0.001f, globals->rate *
+// k);` 703 (2869 B, frame 0x20, caller 0x1eb6f0 22: the factor is selected ahead of t as retail, but the fast byte
+// takes CL and a function-wide XMM zero moves to the entry); the output stage's hi declared ahead of lo 603 (same
+// code); the output stage's third computed right after e3 615; the first block's up declared ahead of third 603 (same
+// code); the second clamp's length as `real len3 = len2; if (limit != 0.f && len3 > limit) len3 = limit;` 688 (2882
+// B, aligned 637, register-masked 306). All restored.
+// M3 lane 16 r179 (H2M_FAST with the file's 17 other functions, all MATCH; control 603): kept, the output distance
+// through the existing magnitude3d(&dl) 603 (byte-identical, plain too). Tried: the settle length through magnitude3d
+// 605, both lengths 605; the tick counter declared at the active block's top 609 (2883 B); qr's rate rows through
+// vector3f_scale 691 (2861 B); the first settle arm's tick scaling through vector3f_scale 605; the output distance as
+// `sqrt(dot3f(&dl, &dl))` 603 (same code). d keeps EBX in each.
+// M3 lane 8 r229 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, which keep fast equal to plain; control 603, aligned 658,
+// register-masked 302; the caller 0x1eb6f0 MATCH unless said; body unchanged). New reading of the q/d contest: q reaches
+// EBX at entry, with retail's `cmove ebx`, once it has three top-level references on the factor-first form. Re-measured on
+// today's body (rounds 166/181/198's lead): the impulse through vector3f_scale 649, the delta sum through vector3f_add 674,
+// both 694; the 12/8 factor ahead of t at the second clamp 716, with the scale helper 703, the add helper 707, both 713; at
+// clamps one and two 695 (caller 22), with the scale helper 680 (the caller back), both helpers 682; at all three 694 (caller
+// 22), with the scale helper 679 (2888 B, aligned 561, masked 255: the start copy now takes EDI/EBX/EDX and reloads EBX from
+// the stack after the 0x30bf0 call as retail does, but for d), both helpers 681; at the third only 603, with the scale helper
+// 649; at two and three with the scale helper 702, both helpers 712; at the first with the scale helper 653, both 698.
+// On the all-three + scale-helper form (679): the output copy from q by component 706 (q in EBX at entry and the cmove,
+// but frame 0x20, the clock in EDX, b on the stack, caller lost); w as dot3f(&s->direction, q) 682; `qr = *q` 702; the
+// 0.866 test as dot3f(&s->direction, d) 682; the pairs and triples of those four 706/689/706/706/677/706 and
+// 687/706/687/706, all four 692 (q takes EBX exactly in the forms with the component copy). The component copy with the
+// clock read at each use (no globals local) 717 (2872 B, masked 248, caller kept: frame 0x24, q in EBX, pos in EBP, the
+// cmove, first difference +0x11, where d takes EDI and retail has the clock), with `s->limit` at each use 727, both 715;
+// those three with the 0.866 dot3f 720/722/715, with the w dot3f 720/722/715, with both 720/722/718. The clamps as
+// PIN(t, 0.001f, rate * k) with the scale helper and the component copy 716 (caller lost), clock at each use 701 (masked
+// 255), limit at each use 721 (masked 247), both 710 (2882 B, masked 242, first difference +0x11); the third clamp in the if
+// form 715/700/720/710; the PIN form without the component copy 675, clock at each use 714 (caller lost), limit at each use
+// 729, both 681 (caller lost). d keeps a callee-saved register (EDI) in every one of them.
+// Diagnostics, each reverted at once. d out of the activation block (a in its place) 723, also without q's reassignment
+// 737, no d anywhere 712 / 735: `a` takes EBX; d replaced by a global pointer 680, without the reassignment 705, with a
+// read of q at the top 739: the global's value takes EBX at entry, so the pointer used across the two 0x30bf0 calls takes
+// EBX whatever it is; one call on q at the function top 753 (b takes EBX), two 760 (q holds EBX for the whole function,
+// with the cmove), one ahead of the output copy 671 (d keeps EBX); the d and q parameters declared the other way round
+// 605 (caller 2; EBX still holds the direction); `qr = *q` on this body 665 (q in EDX and the copy through EBX, the
+// reverse of retail). On the component-copy forms: the 0.866 test, the settle dot, both fallback copies, or the alignment
+// dot read from a global pointer instead of d, with the limit at each use 741/727/743/729, with the clock at each use
+// 710/721/712/714 (with the clock at each use only the alignment dot's d decides EDI at entry: without it b takes EDI);
+// the alignment dot with two d references 724 (b then
+// takes EDI and the clock EDX) / 745; one more clock reference 727 / 732; the alignment as dot3f(a, d) 727; the alignment
+// named once for the store and the scale 713. d read through a volatile view of its home at every use (diagnostic only):
+// this body 692 with retail's entry to +0x1d (q EBX, pos EBP, clock EDI), the all-three + scale-helper form 684, with the
+// component copy 678 (+0x1d), with the limit at each use 719, the clock at each use 720, the PIN form with all three 723
+// (masked 238): with the entry right the count stays near 680, so the q/d choice is not what holds the body back.
+// Reading: retail's start copy needs EDI and EBX because CL holds the second clamp's fast byte to the duration and EAX the
+// limited flag; its output stage keeps the clock in ECX from the third clamp to the ramp arms, the counter in EAX and the
+// qr copy through EDX, so q has no scratch register there; ours reloads the clock four times in that span and holds q in
+// EDX. Leads saved as build/r229/lead-0x1eb8a0-q-ebx.patch (717) and lead-0x1eb8a0-q-ebx-pin.patch (710) in the m3-lane8
+// worktree; not kept (each raises the count).
+// M3 lane 15 r139 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603, aligned 658). Retail's exits load `out`
+// into EAX just before `ret 0x14` (no return value; the one caller ignores it) and its pops of EDI, EBP and EBX sit in the
+// counter block ahead of the final flag test, where this build pops in each exit. The blocker is the settle arm's double
+// local: with the settle factor computed inside the step expression (`real step = (real)(globals->rate *
+// PIN((double)s->alignment * 1.5, 0.75, 3.5));`, the same double arithmetic and constants) the pops move up and the
+// `or dword ptr [eax], 4` exit is retail's. Diagnostic cuts (not source forms): without the settle arm the pops move up,
+// without the approach arm they do not; `real v` there moves them up too (659). Forms: the void return alone 603 (same
+// code, aligned 657); void with `s->counter++` and the final test reading the field 604; void with `long new_counter =
+// ++s->counter;` 604; void with the flag test written failure-first 603; that counter tail through a file-local inline
+// helper 604; the factor inside the step expression 597, with the void return 597, with void and `s->counter++` 596
+// (plain 596 at 2880 B, aligned 639, the file's 17 other functions MATCH: a gain of 7, under the keep bar; lead patch
+// build/r139/lead-0x1eb8a0-596.patch in the m3-lane15 worktree). On that 596 form: the e3 test as retail's `!(0.001f >=
+// e3)` (a NaN takes the main arm, as retail's `comiss 0.001, e3; jb`) 642 with the main arm first and 644 with the
+// settled arm first (aligned 612/607); the second step count as a ternary 589 (the first one stays an if: a mixed
+// spelling of two parallel blocks, not kept; both as ternaries 672, the first only 670); w as one expression 614; the
+// settle dot as `dot3f(&nq, d)` 596 and len3 as one conditional 596 (same code each); `s->distance = len3;` 675
+// (2885 B, aligned 567). Body unchanged.
+// Also on the 596 form: q copied into the sample as one aggregate 664 (2875 B); the impulse through the existing
+// vector3f_scale 638 (2896 B, aligned 556); the activation delta's impulse add through the existing vector3f_add 676; the
+// impulse through vector3f_scale with `s->distance = len3;` 684 (aligned 575), with the e3 test as `!(0.001f >= e3)` 688
+// (2900 B, aligned 499, the lowest aligned count so far: the rest is the three clamps' 12/8 factor order and the q/d
+// EBX home; lead patch build/r139/lead-0x1eb8a0-n2-aligned499.patch in the m3-lane15 worktree), all three 712.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -639,7 +989,7 @@ long function_1eb8a0(
 				if (e > 0.001f)
 					n = rem / e + 6.f;
 
-				s->alignment = d->k * a->k + d->j * a->j + a->i * d->i;
+				s->alignment = dot3f(d, a);
 				real v = s->alignment * 1.5f;
 				vector3f delta;
 				delta.i = b->x - pos->x;
@@ -766,14 +1116,12 @@ long function_1eb8a0(
 		real hi = (e3 - third3) * 3.f * 0.5f;
 		if (lo < 0.f)
 			lo = 0.f;
-		vector3f dl;
-		dl.i = s->target.x - pos->x;
 		qr.i = qr.i * globals->rate;
-		dl.j = s->target.y - pos->y;
 		qr.j = qr.j * globals->rate;
-		dl.k = s->target.z - pos->z;
 		qr.k = qr.k * globals->rate;
-		real dist = (real)sqrt(dl.k * dl.k + dl.j * dl.j + dl.i * dl.i);
+		vector3f dl;
+		vector3d_from_points3d(pos, &s->target, &dl);
+		real dist = magnitude3d(&dl);
 
 		if (e3 > 0.001f)
 		{
@@ -806,7 +1154,7 @@ long function_1eb8a0(
 				double v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
 				real step = (real)(globals->rate * v);
 				vector3f nq = qr;
-				real len = (real)sqrt(qr.k * qr.k + qr.j * qr.j + qr.i * qr.i);
+				real len = (real)sqrt(length_sq3f(&qr));
 				real nlen = function_30bf0(&nq);
 				if (!s->settled)
 				{
@@ -814,7 +1162,7 @@ long function_1eb8a0(
 					s->settle_distance = MAX(step, len - step);
 					s->settle_minimum = MAX(0.001f, dist);
 				}
-				real align = d->j * nq.j + d->k * nq.k + d->i * nq.i;
+				real align = dot3f(d, &nq);
 				if (align > len * 0.087155744f && nlen != 0.f)
 				{
 					real m = s->settle_distance * 0.25f;

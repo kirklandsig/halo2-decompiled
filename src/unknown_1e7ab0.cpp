@@ -6,6 +6,7 @@
 #include "globals.h"
 #include <string.h>
 #include "units.h"
+#include "object_tag_definitions.h"
 #include <xmmintrin.h>
 
 /* a player (g_4e8c24, 0x21c bytes): +0x28 is its local player slot */
@@ -82,6 +83,7 @@ inline s_entry_420 *entry_420_get(long index)
 	return result;
 }
 
+long function_14de70(long local_player_index);
 bool function_1e69d0(s_time_entry *entries, long type, long age_limit);
 bool function_1e7a10(long player, long index);
 long function_1e7a60(long player, long index);
@@ -163,11 +165,58 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
+// into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
+// 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
+// with early returns, as a guard returning NULL then `table->entries + index`, and as one ternary 117 each (same code);
+// case 4's child test as `continue` on the seat/unit tests then the flag test 117 (same code); the child loop as `while
+// (!blocked && function_d05c0(&iterator))` setting the flag without `break` 509 (2288 bytes).
+// MiniMax D (11-20, run 131): no new form, no lower score (117): the gap is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the result into ECX, retail loads the table into ECX and the result into EAX), and case 4's parent still sits in ECX where retail holds it in ESI; the rotation is settled by 0xd0590's parameter order in src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
+// MiniMax B (11-19): no new form, no lower score (117): the first difference is still the inlined entry getter's
+// register rotation at +0x31 (ours loads the table global into EAX and the result into ECX, retail loads the table
+// into ECX and the result into EAX), and the getter spellings earlier rounds measured all give the same code. The
+// parent register behind it is settled by retail's 0xd0590 argument order (the iterator in ECX, the object index in
+// EDX) in src/unit_object_type.cpp, which is not this round's file, so I left that declaration alone.
+// MiniMax G (11-18): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX (six more getter spellings - the table read before the null result, the pointer
+// add, the count in a local, nested ifs, the count cast and a long return - all measure the same 117), and case 4's
+// parent still sits in ECX where retail holds it in ESI; the definition pointer (ours EDX, retail EAX) and the
+// seat-flag temporaries (ours EDX for both shifts, retail EDX then ECX) follow from that one rotation. The
+// parent's register is not settled by the callee's argument order: retail's 0xd0590 reads the iterator from ECX
+// and the object index from EDX, and retail's call site here sets ECX to the iterator and EDX to the parent, which
+// is what this source already does. An annealed permutation search over this body (300 s, seed 98) lowered
+// nothing: best 117 against a baseline of 117.
+// where retail loads it into ECX (the getter rewritten with an early return, and with the table read before the
+// null result, both measure the same 117), and case 4's parent still sits in ECX where retail holds it in ESI:
+// BLOCKED-BY 0xd0590's parameter order (src/unit_object_type.cpp). An annealed permutation search over this
+// body (300 s, seed 98) lowered nothing: best 117 against a baseline of 117.
+// MiniMax D (11-19): no new form, no lower score (117): the gap is still the register rotation at +0x31, where this build
+// loads the table global into EAX and retail into ECX, and seven more getter spellings (the second read of the global, a
+// const table, the count in a local, the entries pointer added to the index, the global read at each use, the count test
+// first and the entries read through the global) all compile to the same code, as do three forms around the call (the
+// lookup before the 0x14de70 call 585, the entry test before the player test 366 and both 274); the rotation is the
+// allocation around the lookup, not the lookup's shape.
+// MiniMax E (11-20): no new form, no lower score (117): the body is still retail's length and the difference is the scratch rotation - the inlined getter's registers (ours table EAX/result ECX, retail ECX/EAX), case 4's parent (ours ECX, retail ESI) and the rotations after it; the parent's register comes from 0xd0590's parameter order, which does not match yet and lives in another file: BLOCKED-BY 0xd0590.
+// MiniMax A (11-20): no new form, no lower score (117): the whole gap starts at the inlined 420-table getter, where retail keeps the table in ECX and the null result in EAX and this build keeps them the other way, and the swap moves every jump displacement from there on; five respellings of the getter (the count in a local, the guard nested, the entries pointer named, the entry tested first, the entry compared against NULL) all compile to the same code (117) and reordering the two tests of the caller costs 366, so the register rotation is the allocator's and not the getter's spelling.
+// MiniMax H (11-20): no new form, no lower score (117): the body is still retail's length and the first difference
+// is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the
+// result into ECX, retail loads the table into ECX and the result into EAX); the getter rewritten with an early
+// return measures the same 117, and the rotation is settled by 0xd0590's parameter order in
+// src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
+// MiniMax E (11-16): no new form tried this round, no lower score (118): the gap is still the register rotation that starts at
+// the inlined lookup, where retail keeps the table in ECX and the null result in EAX while this build keeps them the other way
+// round; that rotation follows 0xd0590's parameter order (retail takes the iterator in ECX and the object index in EDX, while
+// our call sets them up the other way round), and 0xd0590's body is in another file, which this lane may not edit.
 // MiniMax E (11-15): no new form, no lower score (118): the gap is still a register rotation that starts at the
 // inlined lookup, where retail keeps the table in ECX and the null result in EAX while this build keeps them the
 // other way round, and the rotation is decided by 0xd0590's parameter order in another file; the permuter's 65
 // tries (607 s, one job) left the best at 118.
-// score 118 (was 118): no new form and no lower score; every instruction but a register rotation among EAX,
+// MiniMax I (11-17): no new form, no lower score (118): the inlined lookup still hands the table to EAX where
+// retail hands it to ECX and keeps the result in EAX; four spellings of the getter (the early return, the negated
+// condition, pointer arithmetic instead of the subscript and the two tests split apart) all compile to the same
+// bytes, so the rotation is not the getter's shape but the allocation around it.
+// Earlier (117, was 118): Case 4 still exchanges the parent and iterator setup, and the entry table and child-seat bit use different registers.
+// no new form and no lower score; every instruction but a register rotation among EAX,
 // ECX and EDX differs, and it starts at the inlined lookup where retail keeps the table in ECX and the null
 // result in EAX; the permuter's 24 tries found nothing below 118, and 0xd0590 in another file settles it.
 // MiniMax A (11-12): no new form, no lower score (118): the frame, the length and every case still agree
@@ -184,7 +233,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax H (11-14): no new form, no lower score (118): every instruction but a register rotation among EAX, ECX
 // and EDX differs, and it starts at the entry getter, where retail keeps the table in ECX and the result in EAX;
 // the rotation is decided by 0xd0590's parameter order, which is in another file.
-// score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
+// Earlier (118, was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every
 // difference is a register rotation: retail keeps the table in ECX and the null result in EAX in the inlined
@@ -466,14 +515,151 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // two points is off by one, and case 4 still holds the parent in ECX where retail holds it in ESI. The form that puts the
 // parent in ESI reads it before the 0x13cb40 call and measures 115, under the retention margin, and the forms that move
 // the child's seat product or the seat-flag copies into EAX change the length or the reads.
+// b9O (11-17) walk against retail, fast build on r840: every block, field offset, jcc sense (NaN included: the two
+// 0.25f tests are `comiss; ja` in both), callee argument, switch/jump-table slot and constant agrees with retail; with
+// registers, call targets and globals normalised only 5 rows differ and the function differs by no behaviour. Case 4
+// now reads the seat after the parent test as retail does (parent 0x1e7d3c, its test 0x1e7d3f, seat 0x1e7d48),
+// 118 -> 117 (fast); this is retail's evaluation order, not a behaviour fix, and it aligns case 4's opening rows.
+// Left: (1) case 4 call setup, retail `lea ecx,[esp+0x18]` (0x1e7db5) then `mov edx,esi` (0x1e7db9) with the parent in
+// ESI, ours `mov edx,ecx` then `lea ecx` with the parent in ECX; retail's order is why the parent cannot stay in ECX,
+// and it is 0xd0590's parameter order in another file (round 197, 111 under that order); (2) case 23, retail loads
+// the table global (0x1e809c) before the unit index (0x1e80a5), ours the reverse, a scheduling choice, same values.
+// 0x1e83c0, 0x1e6bd0 (303 before and after), 0x1e8eb0, 0x1e7a10, 0x1e7a60, 0xd0590 and 0xd05c0 unchanged.
+// M405: Typed seat array; iterator exhaustion via while/for, each with direct/sampled seat; single exit with typed/raw seats; copied child flags.
+// Scores 117/484/484/484/484/117/117/117. Typed seat-array field confirmed in a plain check at the same score. Other forms restored.
+// MiniMax C (11-17): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX; a getter whose first parameter is the table gives retail's lookup bytes
+// exactly, but the body grows to 2312 bytes against retail's 2308, so every later jump target moves (164), and
+// case 4's parent still sits in ECX where retail holds it in ESI (a hoisted parent read and the inlined
+// parent-unit expression do not move it).
+// M405: Typed seat array; iterator exhaustion via while/for, each with direct/sampled seat; single exit with typed/raw seats; copied child flags.
+// Scores 117/484/484/484/484/117/117/117. Typed seat-array field confirmed in a plain check at the same score. Other forms restored.
+// m3 lane 9 r136 (fast with 0x1e83c0, 0x1e8d50, 0xd0590, 0xd05c0, 0x1e6bd0, 0x14de70, 0x1e8eb0, 0x1e7a10, 0x1e7a60, 0xcbd50,
+// control 117, aligned rows 57; 0x1e83c0 matched each time). Kept: the player index through the existing function_14de70
+// in place of its body written out here (117, same code, fast and plain). The entry through the existing function_1e8d50
+// 165 (2312 bytes; aligned 72): the head is then retail's through the switch, and what is left is case 4 and the
+// rotations after it; with function_14de70 as well 165. HELD (needs the owner's OK), re-measured on this body:
+// 0xd0590's parameters as (object_index, iterator) everywhere 110 (aligned 52; 0xd0590, 0xd05c0, 0xdb210 and 0x1e83c0
+// still match, 0xda110 stays 420); the full diff is build/r136/held-0x1e7ab0.patch and the code is back to main. On the
+// held order with function_1e8d50 for the entry 156 (aligned 67, 2312 bytes): everything up to case 4's definition pointer
+// is then retail's, and the first difference is that pointer's register (retail loads it over the index in EAX, ours takes
+// EDX), which turns the seat-flag temporaries (retail EDX then ECX) and the child loop's product (retail EDX, flags EAX).
+// On that: no definition local 156, a named definition index 156, the definition through a one-line tag accessor 156
+// (same code each); the parent's seat flags through the indexed array without the seat pointer 424 (2308 bytes, aligned
+// 45, but the flags load folds the `add` retail keeps).
+// Typed metadata block, typed entry base, guarded block pointer and guarded reference: 117/117/117/117.
+// Ternary, rejecting bounds and split rejecting bounds: 613/613/613. Caller-provided table: 164.
+// NOT kept: the caller-provided table repairs the entry registers but adds four bytes, and the child test still differs.
+// M3 lane 2 r104 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0/0x1e6bd0/0x14de70/0x1e8eb0/0x1e7a10/0x1e7a60/0xcbd50,
+// control 117; aligned exact/stack-masked/register-masked 57/57/4: with registers masked only four rows differ, the
+// rest is jump displacements between the getter (one byte short) and case 4's child test (one byte long)). The entry
+// through the existing 0x1e8d50 (entry_420_get is its body without the second table read) re-measured 165 (2312 B,
+// 72/72/18: the head is retail's through the switch; case 4's parent then sits in ECX where retail's is ESI, and the
+// child test's `test cl, 1` is the byte that moves the jump table); on that: the child's unit compared before its seat
+// 168; the child seat's flags through `(seats + index)->flags` 165, through TEST_FIELD_BIT 165; the parent seat as a
+// reference in place of the seat pointer 165 (same code each). BLOCKED-BY 0xd0590's parameter order (contributor).
+// m3 lane 9 r145 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all matched each time; control 117): the entry getter's table register
+// (ours EAX, retail ECX, the one byte that starts the displacement drift) through zero-code respellings of entry_420_get: the table
+// through a one-line inline accessor 117, the table declared before the result 117, `table->entries + index` 117, the entries
+// pointer named before the index 117, the global read at each use 117 (same code each). The table passed to the getter by the
+// caller 165 (2312 bytes): the getter is then retail's byte for byte, and the 4 extra bytes are case 4's child test (`test cl, 1`
+// against retail's `test al, 1`, one byte) moving the jump table's alignment pad (three bytes); what is left there is case 4's
+// parent and definition registers and per-case scratch rotations. BLOCKED-BY 0xd0590 stands.
+// M3 lane 6 r205 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0/0x1e6bd0/0x14de70/0x1e8eb0/0x1e7a10/0x1e7a60/0xcbd50; control 117,
+// aligned rows 86 with the 32 jump-table rows): case 4's parent declared at function scope 117; the child walk as
+// `for (function_d0590(&iterator, parent); function_d05c0(&iterator);)` 117; the iterator declared at function scope 117; the
+// parent's object in a named pointer ahead of the definition 117; the blocked flag declared ahead of the iterator 117; the
+// child's seat in a named short for its test and the flags lookup 117 (the same code each). Retail's own call setup (ECX =
+// iterator at 0x1e7db5, then EDX = parent at 0x1e7db9) is the reverse of ours, which is what a declared (object index,
+// iterator) order gives under link-time code generation, so the HELD 0xd0590 order above still stands as the cause.
+// m3 lane 15 r108 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all matched each time; control 117): the entry lookup
+// ahead of the player index 585 (first difference +0x3); case 4's parent seat flags read through `seats[seat]` without
+// the seat pointer 456; the definition pointer folded into the seats expression 117 (same code); the seat index typed
+// long 199; the parent re-read from the unit for the iterator call 117 (same code). Case 4's parent stays in ECX
+// because retail's call sets ECX before EDX (0xd0590's declared order), so BLOCKED-BY 0xd0590 stands.
+// M3 lane 5 r214 (fast with 0x1e83c0/0xd0590/0xd05c0/0xdb210/0x1e8d50, all MATCH; control 117): HELD order (0xd0590 as
+// (object_index, iterator) everywhere) re-measured 110; on it the entry through the existing 0x1e8d50 156 (2312 bytes):
+// retail's code through cases 10-14 and 2, then case 4's definition pointer in EDX (retail reuses EAX) and the bit2/bit3
+// temporaries in ECX/EDX (retail EDX/ECX); on that the seat pointer as `seats + seat`, the flag tests nested, the seats
+// read without a definition local 156 each (same code); the flags through `seats[seat]` without the seat pointer 424
+// (2308 bytes, the load folds retail's add). Case 15/18 and later rotations (retail reuses the dying source register
+// for the `lea`) are on main too. Code back to main.
+// M3 lane 4 r234 (fast with 0x1e83c0, MATCH; control 117): the unit index read from the player at each use with no local
+// 117; `__forceinline` on entry_420_get 117; `__forceinline` on request_unit 117; case 23's test as `2 * loaded` 117; the
+// empty case 3/19 labels dropped 117 (the same code each). Case 23's scratch rotation starts at its first load (ours ECX,
+// retail EDX for the local index), downstream of case 4. The held 0xd0590 order was not re-measured: its definition's
+// file was on this round's avoid list. BLOCKED-BY 0xd0590 stands.
+// M3 lane 14 r129 (fast with 0x1e83c0, which stays matched; control 117): the table getter `__forceinline` 117; the getter
+// reading g_510c94 at each use (no table local) 117; the entry test as `entry != NULL` with `(flag & 1) == 0` 117; the entry
+// local typed const 117; case 4's iterator declared at the top of the case 117 (all five the same code). Retail's case 4
+// keeps the parent in ESI and sets up 0xd0590's arguments iterator first (`lea ecx` then `mov edx, esi`), ours keeps it in
+// ECX and must move it to EDX first: still BLOCKED-BY 0xd0590 (its file is held this round).
+// Shared header data, pool with per-use data fields, typed headers, and typed parent
+// field 117/518/117/117. With the existing entry function 165/512/165/165.
+// NOT kept: retaining the pool changes the saved-register allocation. The existing
+// entry function recovers the first table load but exposes the extra child-test byte.
+// M3 lane 4 r236 (fast with 0x1e83c0/0xd0590/0xd05c0, all MATCH; control 117): case 4's `if (!blocked) result = true;` as
+// `result = !blocked;` 527 (2328 B); the child seat's flags through `(&seats[index])->flags` 117 (same code); the result
+// flag declared after the entry lookup 128; the entry test as `!(flag && state == 2)` 117 (same code); the entry tested
+// ahead of the player index 366 (2324 B). BLOCKED-BY 0xd0590 stands (contributor; its file is on this round's avoid list).
+// M3 lane 14 r132 (H2M_FAST with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all MATCH; control 117): the child test as `unit_index
+// != iterator.unit_index` 118, `NONE != iterator.seat_index` 117, both 118; the entry through 0x1e8d50 165 (2312 B), with
+// the first 166, with both 166; on the 0x1e8d50 entry, the child's seat read through a no-code inline accessor at the NONE
+// test, at the flags index or both, and the child's unit through one, 165 each (the child test keeps `test cl, 1`).
+// Still BLOCKED-BY 0xd0590.
+// M3 lane 2 r127 (fast with 0x1e83c0 and 0x1e8d50, both MATCH; control 117): the getter filling its result in an if/else
+// with the caller's `result = false` moved after the lookup (the brief's getter-plus-late-result shape) 128 (first +0x0);
+// the if/else getter alone 117 (same code); on the 0x1e8d50 entry the child's seat through an element pointer 165 (the
+// child test keeps `test cl, 1`); on the 0x1e8d50 entry case 4's parent read ahead of the 0x13cb40 call 166 (2312 B:
+// the parent is then in ESI as retail, and case 4 differs only in the definition pointer, which retail loads over the
+// dying index in EAX where ours takes EDX, the seat-flag temporaries after it, 0xd0590's argument setup order and the
+// child test); the parent read ahead of the call alone 118 (re-measured; was 115). The definition pointer, the child
+// test and the getter's table are the same allocator choice as 0xec4f0's: retail loads into the register that has just
+// died, ours into a fresh one.
+// M3 lane 5 r222 (H2M_FAST with 0x1e83c0, MATCH; control 117, aligned 57, register-masked 4): case 4's parent (retail
+// ESI, ours ECX) with the parent test on the field and the local read after the seat test 117; the d0590 argument read from
+// the unit again 117; `long const parent` 117; the parent's unit in a named local for the definition lookup 117; the child
+// iterator declared ahead of the seat test 117 (all the same code).
+// M3 lane 3 r292 (H2M_FAST with 0x1e83c0 and 0x1e8d50, both MATCH; control 117): the entry through the existing
+// 0x1e8d50 re-measured 165 (2312 B: the head retail's through the switch; case 4 left: the parent in ECX for retail's
+// ESI, the 0xd0590 argument setup order, and the child test's `test cl, 1` for retail's two-byte `test al, 1`, which
+// moves the jump table four bytes); on it the child's seat index in a named `short` used for its NONE test and the
+// index 165 (same code); that named child seat on this body 117 (same code); case 4's `if (!blocked) result = true;` as
+// `result = !blocked;` 527 (2328 B). Still BLOCKED-BY 0xd0590 (its file is on this round's avoid list, so the held
+// order was not re-measured). Body unchanged.
+// M3 lane 1 r148 (H2M fast with 0x1e83c0, MATCH each run; control 117): the entry lookup ahead of the player lookup 585
+// (first +0x3); the result declared after both lookups 128 (re-measure of the listed form); the state's byte alias
+// dropped (every byte access through `(byte *)state`) 117 (same code); the state computed after both lookups 318 (first
+// +0x3); the entry's flag tested through its typed field instead of a raw offset 117 (same code); the unit looked up
+// from `player->unit_index` with the local kept for the test 117 (same code). Body unchanged.
+// M3 lane 7 r208 (H2M_FAST with 0x1e83c0, MATCH throughout; control 117, aligned 57, register-masked 4): the entry test as
+// `!(flag && state == 2)` re-measured 117; the entry assigned inside the condition (`(entry = entry_420_get(type)) !=
+// NULL`) 606 (2324 B); the player index and the entry declared const 117; the entry's flag byte at +0x10 read through a
+// typed byte member 117 (same code each); case 4's result set true before the child walk and cleared at the blocking
+// child, no blocked flag, 504 (2332 B). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list).
+// M3 lane 3 r297 (H2M_FAST with 0x1e83c0, 0x1e8d50, 0xd0590 and 0xd05c0, all MATCH each run; control 117, aligned
+// 57/57/4; body unchanged). Case 4's seat test as a forced-inline bool helper with early returns (parent, seat, the
+// three seat bits, the child walk returning false at a blocking child), taking the unit index and unit pointer 117,
+// taking the unit index and fetching the unit itself 117 (the same code as the body each time); the same two on the
+// existing 0x1e8d50 entry 165 each (2312 B, the listed entry's code); that helper as a plain `inline` 639 (2284 B: it
+// stays out of line). The child loop with named locals: the child's seat then its unit, its unit then its seat, its
+// unit only, the seat widened into a named long index, the seat's flags through `(seats + index)->flags`: 117 each,
+// and 165 each on the 0x1e8d50 entry (same code; the child test keeps `movsx eax, ax` / `test cl, 1` where retail has
+// `movsx edx, ax` / `test al, 1`). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list, so
+// the held order was not re-measured).
+// M3 lane 1 r159 (H2M_FAST with 0x1e83c0 MATCH each run; control 117): diagnostic, 1 to 6 dead initialised locals at the
+// top 117 at every count (the getter's table/result rotation is not a symbol-numbering tie); request_unit's parameters as
+// (headers, object_index) at all four sites 117; case 23's headers named once for both weapon lookups 117; case 4's child
+// test against `player->unit_index` 117 (the same code each); the existing 0x1e8d50 entry with the swapped helper order
+// 165, with the child test on `player->unit_index` 165 (2312 B each). Still BLOCKED-BY 0xd0590 (contributor; its file is
+// on this round's avoid list, so the held order was not re-measured). Body unchanged.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
  s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
  byte *data = (byte *)state;
  bool result = false;
- long player_index = NONE;
- if (local_index != NONE) player_index = g_4e8c20->entries[local_index];
+ long player_index = function_14de70(local_index);
  s_entry_420 *entry = entry_420_get(type);
  if (player_index != NONE && entry &&
   (!(*((byte *)entry + 0x10) & 1) || g_4e6948->state != 2))
@@ -512,24 +698,27 @@ bool function_1e7ab0(long local_index, long type)
     if (!function_13cb40())
     {
      long parent = *(long *)(unit + 0x14);
-     short seat = *(short *)(unit + 0x1fc);
-     if (parent != NONE && seat != NONE)
+     if (parent != NONE)
      {
-      byte *definition = g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
-      s_unit_seat_definition *seats = *(s_unit_seat_definition **)(definition + 0x1cc);
-      s_unit_seat_definition const *seat_data = &seats[seat];
-      if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
+      short seat = *(short *)(unit + 0x1fc);
+      if (seat != NONE)
       {
-       s_unit_child_iterator iterator;
-       function_d0590(&iterator, parent);
-       bool blocked = false;
-       while (function_d05c0(&iterator))
+       s_unit_definition const *definition = (s_unit_definition const *)g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
+       s_unit_seat_definition const *seats = (s_unit_seat_definition const *)definition->unit.seats.address;
+       s_unit_seat_definition const *seat_data = &seats[seat];
+       if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
        {
-        if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
-         ((bool)seats[iterator.seat_index].flags.bit2))
-        { blocked = true; break; }
+        s_unit_child_iterator iterator;
+        function_d0590(&iterator, parent);
+        bool blocked = false;
+        while (function_d05c0(&iterator))
+        {
+         if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
+          ((bool)seats[iterator.seat_index].flags.bit2))
+         { blocked = true; break; }
+        }
+        if (!blocked) result = true;
        }
-       if (!blocked) result = true;
       }
      }
     }

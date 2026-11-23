@@ -5,12 +5,12 @@
 
 #include "unknown_0259d0.h"
 
-/* the cross product a x b */
+/* the cross product a x b; the subtracted product is written b first, which gives retail's loads in 0x16ebf0 */
 static inline void cross3f(vector3f const *a, vector3f const *b, vector3f *result)
 {
-	result->i = a->j * b->k - a->k * b->j;
-	result->j = a->k * b->i - a->i * b->k;
-	result->k = a->i * b->j - a->j * b->i;
+	result->i = a->j * b->k - b->j * a->k;
+	result->j = a->k * b->i - b->k * a->i;
+	result->k = a->i * b->j - b->i * a->j;
 }
 
 /* the cross product a x b, every component computed before the stores, so
@@ -24,6 +24,26 @@ static inline void cross3f_staged(vector3f const *a, vector3f const *b, vector3f
 	result->i = i;
 	result->j = j;
 	result->k = k;
+}
+
+/* result = -vector (shared by 0xc1d90 and 0x224fd0) */
+static inline void vector3f_negate_ab(vector3f const *vector, vector3f *result)
+{
+	result->i = 0.0f - vector->i;
+	result->j = 0.0f - vector->j;
+	result->k = 0.0f - vector->k;
+}
+
+/* the dot product a . b summed i, then k, then j (the order 0x143120 and
+   0x1f2a80 sum it in) */
+static __forceinline real basis_dot_xzy(vector3f const *a, vector3f const *b)
+{
+	real result = a->i * b->i;
+	result += b->k * a->k;
+	real side = a->j;
+	side *= b->j;
+	result += side;
+	return result;
 }
 
 /* input scaled by a double factor, each component rounded back to real;

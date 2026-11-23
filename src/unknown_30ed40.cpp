@@ -12,6 +12,8 @@ struct pair_body_30ed40
 {
 	long unknown0;
 	unsigned long id;
+
+	unsigned long read_id() const { return id; }
 };
 
 // an agent of a pair; a pair both islands held calls slot 5 of its agent
@@ -43,38 +45,51 @@ struct pair_30ed40
 // second's
 inline bool pair_less_30ed40(pair_30ed40 const *a, pair_30ed40 const *b)
 {
-	if (a->first->id < b->first->id)
+	pair_body_30ed40 const *const mine = a->first;
+	pair_body_30ed40 const *const other = b->first;
+	unsigned long const id = mine->read_id();
+	if (id < other->read_id())
 	{
 		return true;
 	}
-	if (a->first->id == b->first->id)
+	if (a->first->read_id() == b->first->read_id())
 	{
-		return a->second->id < b->second->id;
+		pair_body_30ed40 const *const second = a->second;
+		pair_body_30ed40 const *const other_second = b->second;
+		return second->read_id() < other_second->read_id();
 	}
 	return false;
 }
 
+// whether two pairs hold the same bodies
+inline bool pair_same_30ed40(pair_30ed40 const &a, pair_30ed40 const &b)
+{
+	return a.first->read_id() == b.first->read_id() && a.second->read_id() == b.second->read_id();
+}
+
 ELEMENTS_2D91D0(pairs_30ed40, pair_30ed40);
+
+// the number of pairs of an array
+inline long size_30ed40(pairs_30ed40 const &pairs)
+{
+	return pairs.size;
+}
 
 // the pairs of `destination` and `source` merged in order into
 // `destination`; a pair both hold is kept once, and its agent in `source`
 // told through its slots
-// The remaining differences concern the comparison loads, cursor registers,
-// and the resulting stack frame; the merge and callback order follow retail.
-// the pairs of `destination` and `source` merged in order into
-// `destination`; a pair both hold is kept once, and its agent in `source`
-// told through its slots
-// score 197 (was 197): the frame is four bytes bigger here than in retail, so
-// the locals sit at other offsets, and the counter is kept in another register.
-// Review cleanup score 196: removed unsupported volatile/one-use tuning;
-// the prior scored trials above remain available for future matching work.
+// Matched (was 69): the bodies' ids are read through the body's id getter in
+// both comparison helpers, the four cursors start after the destination is
+// resized, the ordering helper names the first body's id and both second
+// bodies, and the destination's first new size and the loop's source bound
+// read the size members directly.
 // @retail 0x30ed40
 static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 const *source)
 {
-	vectors_30d9a0 copy_storage(destination->size);
+	vectors_30d9a0 copy_storage(size_30ed40(*destination));
 	pairs_30ed40 *copy = (pairs_30ed40 *)&copy_storage;
-	copy->resize(destination->size);
-	for (int i = 0; i < destination->size; i++)
+	copy->resize(size_30ed40(*destination));
+	for (int i = 0; i < size_30ed40(*destination); i++)
 	{
 		copy->data[i] = destination->data[i];
 	}
@@ -83,7 +98,7 @@ static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 cons
 	int copy_cursor = 0;
 	int to = 0;
 	int both = 0;
-	while (copy_cursor < copy->size && from_source < source->size)
+	while (copy_cursor < size_30ed40(*copy) && from_source < source->size)
 	{
 		pair_30ed40 const *b = &source->data[from_source];
 		pair_30ed40 const *a = &copy->data[copy_cursor];
@@ -93,7 +108,7 @@ static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 cons
 			copy_cursor++;
 			to++;
 		}
-		else if (a->first->id == b->first->id && a->second->id == b->second->id)
+		else if (pair_same_30ed40(copy->data[copy_cursor], source->data[from_source]))
 		{
 			pair_agent_30ed40 *agent = b->agent;
 			pair_agent_30ed40 *second = agent->second;
@@ -109,17 +124,17 @@ static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 cons
 			to++;
 		}
 	}
-	destination->resize(copy->size - both + source->size);
-	if (copy_cursor == copy->size)
+	destination->resize(size_30ed40(*copy) - both + size_30ed40(*source));
+	if (copy_cursor == size_30ed40(*copy))
 	{
-		for (; from_source < source->size; from_source++, to++)
+		for (; from_source < size_30ed40(*source); from_source++, to++)
 		{
 			destination->data[to] = source->data[from_source];
 		}
 	}
 	else
 	{
-		for (; copy_cursor < copy->size; copy_cursor++, to++)
+		for (; copy_cursor < size_30ed40(*copy); copy_cursor++, to++)
 		{
 			destination->data[to] = copy->data[copy_cursor];
 		}

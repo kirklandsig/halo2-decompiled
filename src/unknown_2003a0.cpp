@@ -2721,7 +2721,24 @@ bool function_1fb8a0(long arg_0, short arg_1);
 
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
-// which shifts the later jump targets and drops the actor loop's alignment nop.
+// which shifts the later jump targets and drops the actor loop's alignment nop. Earlier 29 (was 50) with the
+// int/long trigger tail, whose 32-bit index retail does not have (round 169 below; reverted 11-17, short tail back).
+// MiniMax R (11-17): no new form, no lower score (50): both builds take ebp as a general register and put the squad index
+// there from the prologue, and the one difference left is the instruction before the first 0x1fb8a0 call, where retail
+// reads it from ebp and this build reloads its stack home (two bytes longer, which drops the actor loop's alignment nop).
+// Moving 0x202e90 into another translation unit with the same flags, and dropping its __stdcall declaration, leave the
+// reload in place (0x202e90 and 0x203120 still match); a 300 second permutation run over the reduced image found nothing.
+// MiniMax D (11-16): no lower score (29): retail reloads the squad index from its stack home in the second half's
+// 0x290e20 call (mov edx, [esp+0x30]) and keeps the EBP copy alive up to the first 0x1fb8a0 call, while this build
+// drops the copy there and reloads the home instead; where the copy's live range ends is the whole difference, and
+// the two extra bytes shift every later jump target. Casting that call's argument (a long cast, dropping the short
+// cast) and writing the flag argument as 0 or 1 all leave the reload in place at 29.
+// MiniMax D (11-16): 29 from 50: the trigger index local_12 is held as int and local_13 as long, so the second half
+// builds the index in EAX and narrows it for its test; retail builds it in EDI and tests the low half. Left: the first
+// 0x1fb8a0 call still reloads the squad index from its stack home where retail keeps the EBP copy, so the body is 580
+// bytes against retail's 578. Also measured this round and left out: local_13 as int (35), local_12 as short with
+// local_13 as int (35), local_13 taken from the trigger pointer (local_6 + 0x6e) at 60 with 578 bytes, the trigger index
+// as word (35) and the casts on the first half's arguments (50 each).
 // MiniMax D (11-11): no lower score (50): copying the squad index into a local and using the parameter directly at the call
 // both score 50, so the reload stays; no other form of that call changed the layout.
 // MiniMax S (11-10): no new form, no lower score (50); the only difference left is retail's EBP copy of the squad index where ours reloads its
@@ -2987,13 +3004,138 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // this function, frame 0x18 at 575 bytes): the pending arm as `if (pending != NONE && delay <= 0) {...} else if (pending == NONE)
 // {...}` 50; the follow-up test as `NONE != local_2` without the casts 50; the follow-up event copied into a short before the
 // 0x202e90 call 50 (folded); `long const squad_index = arg_1;` for the lookup and both first-half calls 50 (copy-propagated).
+// Round 110 (m3 lane 1, fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, 0x203330 and 0x204d30): the second half's
+// definition pointer through the existing getter 0x203330 (its body is that ternary; it inlines) 50 (same code); the whole
+// first half (lock test, pending arms, follow-up) as a forceinline helper taking the event, the squad index and the squad
+// 50 (its parameter copies fold); the pending arms swapped (`== NONE` query arm first, the take arm as `else if (delay <=
+// 0)`) 145 (578 B, the layout changes); the actor iteration as `for (function_204d30(...); next != NULL; )` 50; the
+// follow-up trigger index as an if/else 50 (both same code).
+// P545: Standard input/lock/pending/delay/task/trigger sentinel operations, short
+// threshold and mapped-event addition: 203/188/187/172/209/133/120/96.
+// NOT kept: extra operation calls, altered frame/extent and the first-event EBP
+// reload remain. Original whole body, word domains and wrapped scan restored.
+// Round 169 (m3 lane 7, fast; each form also on the short trigger tail, 50 at 579 B): the squad's 0x40 flag read through
+// the word at +2 29/50 (same code); the trigger count `long local_7 = 0;` at the function's top 175 (593 B; short tail 176):
+// the first follow-up gets retail's `mov eax, ebp` but the 0 is stored at entry in a new slot; count and scan index declared
+// bare at the top 29; trigger list, count, threshold and scan index bare at the top 29; the second half's definition pointer
+// bare at the top 29. The int/long trigger tail is a second real difference (retail's tail is 16-bit: `mov bp, [ebp+2]`,
+// `lea edi, [ebp+0x6e]`, `cmp di, -1`); its 50 -> 29 is the scoring's alignment, so a match needs the short tail back.
+// Diagnostics (probe stores into the squad pool, reverted): a store of 1 (byte or long) or 0 at the top, or of 1 at the
+// else-if arm's own level just before the follow-up test, gives `mov eax, ebp`; -1, 2, 3, 4, 5, 0x40, 0x41, 0x7c, 0x98,
+// 0x101 and 0x10001, and stores in the first arm, the pending or compute arm, the follow-up, after it or in the second half
+// do not; dead or overwritten stores do nothing. Lead: a constant 1 whose use dominates the follow-up's `push 1`.
+// Round 128 (m3 lane 16, fast; each on the short trigger tail, 50 at 579 B, where the first follow-up's index reload is
+// the only real difference): the delay local scoped to the query arm 50; the follow-up (task start, then the event) as
+// an inline helper that tests the task, called from the pending arm and from the query arm's no-delay branch 206 (546 B,
+// kept out of line), forced inline 74 (578 B: the pending arm's task test folds and the two starts stay apart); the
+// squad byte pointer `byte *const` 50; both parameters `long const` 50; a redundant `0 <` guard before the trigger-entry
+// loop 51. The reload stays in each.
+// Coordinator review 11-17: the int/long trigger tail (MiniMax D, merged 11-15) is NOT kept: retail's tail is
+// 16-bit (`mov bp, [ebp+2]`, `cmp di, -1`) and the int/long width took 50 -> 29 through the scoring's alignment
+// only, a width picked by score; the short tail is back (50), whose one real difference is the first follow-up's
+// index reload (lane 16 r128).
+// Round 189 (m3 lane 6, fast with the file and 0x290e20, 0x290cd0, 0x1fb8a0, 0x204d30, 0x1e4570; control 50): the
+// threshold word and the list's first word read through `*(byte **)(local_5 + 0x68)` 78 (582 B; the first word alone is
+// CSE'd, same code); the squad's trigger byte stored after the 0x204d30 call 51; the entry's sense bit read as a byte
+// (`*local_10 & 1`) 52; the entry base read once ahead of the trigger loop 121 (595 B); the trigger index ternary with
+// its arms swapped 54. The first follow-up still reloads the index from its home.
+// m3 lane 7 r174 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, all matched): the follow-up (start, then the event) as a
+// forceinline helper taking the squad index by const reference 50 (same code: the reference folds); the else-if's index
+// test read as a word against `(word)NONE` 54 (580 B); the first test's index read as a word 50; its lock bit read
+// word-wide 50 (same code each); the second half's pending test read as a word 52 (580 B). Re-measured, listed: the
+// query result in its own task local with local_4 set in the else 50, the second half's index named 50, the delay named
+// 50. The first follow-up still reloads the index from its home.
+// After-scan action via trigger list, event encoding, completing condition or actor options
+// 50/80/50/50. Remaining qualifying count, normalized count and short/long
+// pre-decrement tests 90/141/100/137. First follow-up reload stays on tied forms.
+// AC570: Shared pending eligibility with captured or typed definition index,
+// short-circuit/conditional/named/guarded override: 173/181/173/173/173/181/173/173. NOT kept: the
+// EBP copy returns, but the entry's definition read and branch shape drift.
+// Actor walk after the scan using the selected group, definition or entry 50/50/50; with the latch
+// set at the scan exit 60/60/60. Walk gated by the final predicate count 119; with the earlier latch 119.
+// NOT kept: the first event still reloads the squad index; the count forms add a threshold test.
+// m3 lane 5 r196 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, all matched): the pending and compute exits (delay above
+// zero, no task found, task stored) as breaks out of a `do { } while (false)` with the follow-up called straight after them
+// 135 (567 B): the first follow-up then gets retail's `mov eax, ebp`, but retail's shared task re-test (`cmp ax, 0xffff`)
+// ahead of the second 0x202e90 call is gone. With the re-test kept (`if (local_4 != NONE)` after the breaks): breaks for
+// the delay and stored exits 50, for the stored exit only 50, for the delay exit only 50, for all three 50 (the reload
+// returns in each). So the reload goes with the follow-up's task re-test block, whatever shape the exits take.
+// m3 lane 1 r120 (fast, control 50): the reload has a located cause. Diagnostics, reverted: the lock test's mask written 2
+// gives retail's whole body but that immediate (score 1, 578 B: `mov eax, ebp` and the loop pad); `push 2` for the follow-up
+// flag together with a threshold default of 2 gives the same (2); either one alone, the latch byte as 2 or the trigger sense
+// mask as 2 keep the reload (51/51/51/61). So the lock test's constant 1 is pooled by value with the `push 1` and the
+// threshold's 1 as one register candidate, and the index register's range is cut where that candidate is live from the first
+// arm on. No spelling separates the lock test's 1 (50 each, same code): a one-bit field of a typed entry view with base type
+// dword, byte, word, bool, long, char or short (`== false` / `== 0` too); `1u`; the flags read dword-, word-, long- or
+// char-wide; `!(bool)(flags & 1)`; byte-typed forms `!(byte)(flags & 1)`, `flags & (byte)1`, `!(char)(flags & 1)`; the existing
+// bit_vector_test(flags, 0); an inline `1 << bit` mask or (flags, bit) test helper. 0x202e90's third parameter as `bool` 50
+// (re-measured; with the threshold default 2 as a diagnostic 51, so a bool-typed `push 1` still pools); the threshold local
+// as `long` 52 (578 B). Left: a form in which the lock test's 1 is not the same value as the two later ones when the
+// register candidates are formed, or one more use of 1 at the else-if arm's level (round 169's probe gave `mov eax, ebp`).
+// Also r120: the threshold's if/else with its arms swapped 55, as the negated ternary 55; the latch as `= 1` and the flag as `1` 50/50.
+// Sentinel spellings (they change which constants pool): the pending test as `(short)pending != NONE` 68; the compute arm's task
+// test, the follow-up's task test or the entry word test as `(short)x != NONE` 50 each; the follow-up event test as
+// `(word)local_2 != (word)NONE` 52 (580 B); the trigger event test as `(word)local_13 != (word)NONE` 44 (580 B, the reload
+// stays); the second half's pending test word-wide against `(word)NONE` 52 (580 B); `word local_4 = NONE` or its reset
+// as `NONE` 50/50; the first four together 50, the two event tests 46 (581 B), with the pending test 48, all nine 48 (582 B).
+// Requested-index conditional 50; unlocked or absent-definition conditional 164; lock-owned
+// selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
+// separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
+// conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
+// M3 lane 16 r141 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, control 50): 1..8 dead initialised locals at the top 50 each;
+// the compute arm's delay test as `local_3 >= 1` 55 (580 B), the pending delay test as `< 1` 51, both together 50 at 578 B
+// with the reload gone (`mov eax, ebp`): only the two compares then differ (`cmp ..., 1` for retail's zero tests), so two
+// more uses of 1 at the else-if arm's level are enough (lead only); either delay test held in a named bool 50 (folded), both
+// 50; the first arm's lock test through the existing getter 0x203330 180 (594 B), the NONE and lock tests through it 162
+// (580 B), the else-if's NONE test as the getter's result 213 (610 B).
+// M3 lane 2 r102 (fast; control 50): both first-half 0x40 flag tests in the matched callee 0x202e90's shifted form
+// (`((dword)*(short *)(p + 2) >> 6) & 1`) 50 (same code: folded to the mask); one to four dead initialised locals at the
+// else-if arm's top 50 each (diagnostic); a 600 s permuter run reached 39 only by swapping 0x290e20's two arguments
+// with a constant-only local holding 1 for the lock test, threshold and trigger sense (not usable). Body unchanged.
+// m3 lane 5 r202 (fast with 0x202e90, 0x1fb8a0, 0x290cd0 and 0x290e20, all matched; control 50): the trigger threshold as
+// one positive ternary at its declaration 50; the pending word read from the squad at each use (no pending local) 50;
+// the trigger count `short` with the casts dropped from its threshold test 50; the first follow-up's index test and
+// argument without the short casts 50 (all four the same code); the latch store ahead of the trigger-index reads 60;
+// diagnostic, the squad's 0x40 flag read in both first-half tests as a one-bit field of a typed view 50 (same code).
+// M3 lane 15 r102 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, all matched; control 50): the pending delay test as `< 1` 51
+// (a real `cmp 1; jge`, not folded to the zero test); the squad's 0x40 flag in both arms read as 0x202e90 reads it,
+// `((dword)*(short *)(squad + 2) >> 6) & 1`, 50 (same code: the shift folds before the constants pool); the second
+// half's definition pointer NULL at the top and assigned in an `if` 107 (578 B: the NULL test is threaded away, the
+// reload stays); the first arm's unlock test as a forceinline predicate with early `return true` 179 (594 B, the lock
+// byte is loaded and tested in a register); the threshold as `mode == 0 ? 1 : count` 50 (same code). The reload stays.
+// M3 lane 2 r109 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, all matched; control 50): the threshold started at 1 and
+// overwritten when the list's first word is nonzero 100 (578 B: a store ahead of the test); the compute arm's task and delay
+// tests nested 50 (same code); the squad looked up as `squad_get((word)arg_1)` 104 (578 B, `movzx esi, bp`); the squad's
+// 0x40 flag read once into a bool for both first-half tests 189 (594 B); the threshold declared bare at the top 50 (same
+// code). Diagnostic (value-wrong, reverted): the follow-up returning early when the event is NONE 54 (583 B, reload stays).
+// The first follow-up still reloads the index from its home in each.
+// M3 lane 1 r126 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, all matched; control 50, aligned one line): the else-if
+// written as `else { if (...) }` 50; the reset index declared before the pending word 50; the delay out-value declared
+// after the two words 50 (all the same code); the compute arm's delay test as `>= 1` 55 (580 B, `cmp cx, 1; jl`, the
+// reload stays); the pending arm's two assignments swapped 50; the lock test as `(flags & 1) != 1` 50 (same code). The
+// first follow-up still reloads the index.
+// M3 lane 11 r122 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, 0x203bf0, 0x202a00, 0x204d30, 0x1e4570; aligned 2 at
+// 50): 0x202a00's spelling of the same query (one task variable seeded from the pending word and reassigned by the query,
+// gotos past the follow-up for a waiting delay, no task and a stored pending task), short task 160 (565 B), word task
+// 160 (565 B), with the follow-up's task test kept 160 (565 B, the test is threaded away); the current `&&` arms on that
+// one word variable, with a reset or with the gotos, 160/160 (565 B). Each of these gives `mov eax, ebp` (aligned 4:
+// retail's `xor eax, eax` before the pending load, its repeated task test before the follow-up and the loop pad), so the
+// reload goes only with a lost test, as the listed diagnostics found. `__assume(arg_1 != NONE)` at the top (both callers
+// pass a walked squad) 50; `__assume` of the arm's group index at the arm's head 50 (same code each). Looking for a
+// dominating use of the constant 1 (round 169's lead) with compares that might fold to their zero form: the delay test as
+// `< 1` 51 (`cmp ..., 1; jge`), the count test as `!(count < 1)` 55 (580 B), the trigger byte as `!= true` 116 (578 B);
+// none folds, and the reload stays in each.
+// Matched in a full build with stand-in SDK headers (was 50): the first test reads the definition's bit as bit 8 of
+// the word at +0x23 instead of bit 0 of the byte at +0x24. The compiler narrows it to the same `test byte [..+0x24], 1`,
+// but only after register candidates are formed, and that keeps the squad pointer in ebp across the block (retail's
+// `mov eax, ebp`) instead of reloading it.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
     byte *local_1 = (byte *)squad_get(arg_1);
     if (arg_0 != NONE && (!(local_1[2] & 0x40) ||
         *(short *)(local_1 + 0x2a) == NONE ||
-        !((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_1 + 0x2a) * 0x7c)[0x24] & 1)))
+        !(*(word *)((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_1 + 0x2a) * 0x7c) + 0x23) & 0x100)))
         function_202e90(arg_1, (short)arg_0, false);
     else if ((local_1[2] & 0x40) && *(short *)(local_1 + 0x2a) != NONE)
     {

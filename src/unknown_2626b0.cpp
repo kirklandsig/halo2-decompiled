@@ -275,9 +275,14 @@ PRIVATE inline void reference_table_replace(hash_table *table, void *key, void c
 		memcpy(node->data, data, table->data_size);
 }
 
-// score 5 (was 5): the same instructions in a different order in one block -
-// retail clears the previous owner's reference before it reloads the table
-// global, ours reloads the global first and stores the reference after.
+// An actor takes over a reference: the reference leaves the actor's old one in the owner table, and a
+// previous owner of the new one gives it up. Retail clears the previous owner's reference (0x2629a4) before it
+// reloads the table global for the replace (0x2629ab); the barrier after that store keeps the reload below it, as
+// retail has it. Without it the score was 5: the same instructions, the reload and the push hoisted above the store
+// (the forms tried then: a local actor or s_reference pointer 5, the store as a long 5, the cleared value copied to a
+// local 23, reference_table_replace loading the global itself 111, the replace written out 35).
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x2628f0
 void __stdcall function_2628f0(long actor_index, s_reference reference)
 {
@@ -290,6 +295,8 @@ void __stdcall function_2628f0(long actor_index, s_reference reference)
 		if (reference_table_find((hash_table *)g_557c6c, *(void **)&reference, &previous) && previous != NONE)
 		{
 			actor_get(previous)->unknown418 = g_470fa0;
+			/* retail stores the cleared reference before the table global is reloaded */
+			_ReadWriteBarrier();
 			reference_table_replace((hash_table *)g_557c6c, *(void **)&reference, &actor_index);
 		}
 		else
@@ -297,6 +304,7 @@ void __stdcall function_2628f0(long actor_index, s_reference reference)
 	}
 	actor->unknown418 = reference;
 }
+#pragma function(_ReadWriteBarrier)
 
 
 // The comparison is passed to the C runtime sorting routine.

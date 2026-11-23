@@ -11,11 +11,12 @@
 #include "globals.h"
 #include "unknown_0d0690.h"
 #include "geometry_cache.h"
+#include "scenario_skies.h"
 
 struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 dword __cdecl pack_color3f(color3f const *color);
 
 struct s_sky_surface_record
@@ -24,23 +25,6 @@ struct s_sky_surface_record
     dword color0;
     dword color1;
 };
-
-/* the tag data of a scenario sky, or NULL when the index or its tag is NONE */
-PRIVATE __forceinline byte *sky_surface_data(short index)
-{
-    byte *scenario = (byte *)g_4e0350;
-    long tag_index = NONE;
-    if (index >= 0)
-    {
-        long count = *(long *)(scenario + 8);
-        if (index < count)
-            tag_index = *(long *)(*(byte **)(scenario + 0xc) + index * 8 + 4);
-    }
-    byte *result = NULL;
-    if (tag_index != NONE)
-        result = g_4e3b44[tag_index & 0xffff].bytes;
-    return result;
-}
 
 real function_30bf0(vector3f *vector);
 
@@ -52,245 +36,8 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 	return value;
 }
 
-// score 30 (was 30): the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
-// the blend registers, the color0 store, the in-place strength add and the sete collision test match.
-// Left: the i == 0 block loads the strength before the colour copy, so the copy advances ebp (retail
-// copies through `lea eax, [ebp + 4]` first), and 0x131c20's `&color` is formed in edi and copied to ecx
-// (retail: ecx, then edi). Round 52 (lane 13, fast): colour first with 1 to 16 unused locals before the
-// light pointer or at entry 121 each (identical: not symbol numbering); colour first with a `continue`
-// out of the i == 0 arm 121; strength first with that `continue` 30; colour first with the light-count
-// test as an early `continue` 121; colour first with a const entry pointer 121; 0x131c20's parameters
-// reordered to (result, b, flags, t, a) everywhere 28 (retail's ecx-then-edi pair: it follows which
-// `&color` argument is evaluated first) but 0x131c20, 0x131d60 and 0xc0c80 stop matching. The in-place
-// add appears whenever the blend block is laid out before the first-light block. Round 96: a colour output pointer for blending and packing 30 (identical);
-// consuming the returned blend pointer 194; colour first with the strength-sum operands reversed 121;
-// the shared three-component setter for that copy 163; an entry-colour pointer for copy and blend 168;
-// the output pointer for both in-place arguments, and also for the copy, 30 each (identical);
-// the entry-colour pointer for the copy alone 168. Original copies and call restored.
-// Round 36 (lane 1, fast; aligned = difflib count over the listing): colour copy
-// first 121 (828 bytes, aligned 5: only the load-first strength add and the edi/ecx pair differ); colour
-// first with the copy field by field 163, `0.0f < power` test 121, add re-read as `((real *)entry)[4]` 121,
-// typed colour entry { color4f color; real strength; } 121, typed light record (yaw/pitch/count/colours)
-// 121, `strength` declared inside the lights branch 139 or at the top of the function 162, without the
-// `index` local / `hit` local / both 121/121/121, `strength` renamed to sort first or last 121/121;
-// `if (i != 0) { if (power > 0) ... } else { copy; strength }` 38 (821 bytes: in-place add and retail's
-// lea copy, but the i == 0 block lands after the blend block); a 600 s permuter run on the colour-first
-// form, best 51 (it moved the strength back first).
-// Round 39 (lane 1): compile-only screens reproduce the add's operand order: any non-local load or float
-// arithmetic ahead of the strength read in the i == 0 arm gives the load-first add, and 200 combinations of
-// declaration order, count/lights locals, entry placement, `0.0f <` test, `strength + power`, `!i`, named
-// ratio and direct sky index, plus 63 mixes of `entry` and re-read entries pointers, all stay load-first.
-// Real build: light count read once 34; lights base local 39; named blend ratio 30; entry read before the
-// entry-count test 37; colour first with the light count local 125.
-// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure, positional/aligned; base 10/16 = full 30):
-// colour copy first 105/5 (828 bytes: the copy is retail's, the strength add loads the entry first into
-// xmm0 and copies back); on it two to four extra used locals, `strength = entry + strength`, `if (!i)`,
-// a const source cast, a nested else-if, the fifth argument as `&color.red`: identical (105/5); strength
-// declared first 108; a named power local in a nested test 84/46; the strength add before the blend
-// call 182. On the strength-first body: the first argument as a const pointer or the fifth as
-// `&color.red` 10/16 (identical): the ecx/edi pair follows the CSE of `&color`, not the spelling.
-// Earlier (52): the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
-// the blend registers and the color0 store match. Left: the strength add loads the entry's strength,
-// adds and copies back where retail adds it to xmm7 in place (its operands flip only when the strength
-// load comes before the color copy in the i == 0 block, which then changes that block), 0x131c20's
-// `&color` formed in edi and copied to ecx (retail: ecx, then edi), and retail's sete collision test.
-// Round 30 (fast): strength first in the i == 0 block 97 (the add goes in place and the length is
-// retail's, but the copy then advances ebp, `add ebp, 4`, since the entry pointer is dead after it;
-// with memcpy for the copy also 97); `visible = hit && no object` 52 (folded); one entry-color
-// pointer for the copy and the call 161 (821 bytes; it takes esi); the blend written in the call 52.
-// Diagnostic: a store through `record` after the call keeps the load-first add, so it is the add's
-// operand order, not a value reused across the call. Screened (compile-only): only a flag set in a
-// test (`visible = false; if (hit) visible = no object;`) gives retail's sete.
-// the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
-// the blend registers, the color0 store, the in-place strength add and the sete collision test match.
-// Left: the i == 0 block loads the strength before the color copy, so the copy reuses ebp (retail copies
-// through `lea eax, [ebp + 4]` first, a byte shorter), and 0x131c20's `&color` is formed in edi and
-// copied to ecx (retail: ecx, then edi). The in-place add appears only when the strength read comes first.
-// Round 27 (lane 11): the open test as `hit ? no object : false` gives retail's sete (alone 121, 828
-// bytes); `hit && no object` or `call && no object` named bools fold it (52/52); with the strength
-// assigned first in the i == 0 block 30 (kept). On it: typed light-entry struct 30; strength declared
-// before direction 33; color declared before direction 36; blend computed in the call 30; const cast on
-// the blend source 30; earlier, a const source pointer local 52 and `(color3f *)&color.red` 52.
-// Compile-only, the explicit sum, `((real *)entry)[4]`, late or early strength declaration, field-wise or
-// pointer color copy and `+=` in the i == 0 block all keep the load-first add with color first.
-// Earlier (52): the strength add loaded the entry's strength, added and copied back where retail adds it
-// to xmm7 in place (its operands flip only when the strength load comes before the color copy in the
-// i == 0 block, which then changes that block), plus the `&color` registers and the sete.
-// Round 38 (lane 9): the contribution through vector3f_assign and the sum through vector3f_add 52
-// (kept: the j/k adds load the contribution as retail, since the contribution's fields are written in
-// an inlined helper; replaces the hand-written double sums). On it: `strength = strength + power` 52;
-// vector3f_add(&contribution, &direction, ...) 52; strength declared first 55; float `+=` and plain
-// contribution-first sums 162/162; double sums 56; strength first in the i == 0 block 97 (821 bytes,
-// strength add in place, color copy changes); a power pointer 52; `if (i != 0)` with the i == 0 block
-// in the else 118 (816 bytes). Compile-only screens, strength order unchanged: direction_from_angles
-// with vector3f_add (contribution-first adds, angles loaded once), the three declaration orders, a
-// typed entry struct, a color pointer, memcpy, a named power local, `0.0f <` test, entry read late.
-// Round 100 (lane 5): j/k sums without the cast 56; no-lights arm first 184; start copied field by
-// field 198; `strength = power + strength` 56; strength updated before the blend call 191; strength
-// declared before direction/color 59; named power local 171.
-// Earlier (93): the frame, the sky/count homes, the trig temporaries, the blend registers and the
-// the frame, the sky/count homes, the trig temporaries and the color0 store match.
-// Left: the j and k direction adds load the direction where retail loads the contribution (the i add
-// matches with the double-typed sum); the entry strength is loaded, added and copied back where retail
-// adds it to the strength in place (`addss xmm7, [ebp + 0x10]`); 0x131c20's `&color` is formed in edi
-// and copied to ecx (retail ecx, then edi); and retail's collision test materialises a sete before its
-// branch. The strength add flips with the i add: every form that gives retail's i add gives the
-// loaded strength, and the earlier 93 form had the strength but not the i add.
-// Round 100 (on the 56 form): j/k sums without the double cast 56 (same code); the no-lights arm
-// first (`count <= 0`) 184 (all three adds as retail, strength still loaded; the arm moves ahead of
-// the loop); the zero-vector start copied field by field 198 (all adds as retail, the copy becomes
-// SSE moves); `strength = power + strength` 56; strength updated before the blend call 191;
-// strength declared first 59; a named power local for the test, divide and add 171.
-// The direction adds follow first-assignment order: retail's form needs direction's fields assigned
-// before the contribution's. Earlier (93 form and before):
-// frame 0x8c and first trig/product sum agree; two x87 add operands, blend address ownership, strength-add destination/copy and collision normalization remain.
-// Earlier: the frame, the sky/count homes, the trig temporaries, the blend registers and the
-// color0 store match. Left: the three x87 direction adds load the direction first where retail adds
-// it as the memory operand, 0x131c20's `&color` is formed in edi and copied to ecx where retail
-// forms it in ecx and then edi, and the collision test's sete. The fast check also leaves two of
-// retail's global references unresolved in the reduced image, so part of this diff may be noise.
-// and the color0 store now match. Left: the three x87 direction adds load the direction first
-// (retail adds it as the memory operand), 0x131c20's `&color` is formed in edi and copied to ecx
-// (retail ecx, then edi), and the collision test's sete.
-// the frame, the sky/count homes, the trig temporaries, the blend registers and the
-// color0 store match. Left: the j and k x87 direction adds load the direction where retail loads the
-// contribution (the adds follow which field is first assigned earlier in source: assigning direction's
-// fields before the loop gives retail's adds), the strength is loaded, added and copied back where
-// retail adds the entry's strength to it in place (it flips with the i add), 0x131c20's `&color` is
-// formed in edi and copied to ecx where retail forms it in ecx and then edi, and the collision test's
-// sete (only a bool set in a test and tested afterwards gives it).
-// Round 99 (lane 6), on the double-cast adds: the cast on the other operand, on the direction, or
-// `+= (double)` 56 each (identical code); contribution as a real[3] 56; existing direction_from_angles
-// for the contribution 167 (the angles are loaded first); `strength = strength + entry` 56;
-// `(double)strength + entry` 210.
-// Earlier (round 93 form):
-// Round 69: `direction.i = contribution.i + direction.i` written out, or contribution declared
-// before direction, 93/93 (identical code: the add operands are reordered); the collision test as
-// an inline/forceinline bool helper (call && no-object) 93/93 (folded); the per-light count test as
-// an early `continue` 93.
-// Lane 8 r64 (93 form = count read at each use, lights pointer in the loop, a contribution vector
-// with double products cast once, the blend through the returning clamp, color0 first): three scalar
-// terms 179/184 (sunk into the adds); terms written into the adds 186; contribution renamed/array/
-// declared first, explicit `a = a + b` or `b + a` adds 95; existing direction_from_angles 171;
-// aggregate initializer 162; adds in k/j/i order 109; color declared before direction 99 (frame
-// slots swap); typed light-entry struct 162; strength spelled `entry + strength` or declared first
-// 162/165 (float products); one bool from an `&&` collision test 95; the flag form gives the sete
-// exactly (aligned 9) but 825 bytes, 160.
-// Earlier at 150: the selector join and esi/edi saves match (the sky lookup helper returns the tag
-// data, NULL by default, so the NONE join is not threaded).
-// Lane 5 r77 on the kept form: count without volatile 191 (804 bytes); light contribution vector
-// with fields read at each use 209 (837 bytes), with a plain count 166, plus the lights pointer
-// read in the loop 161, plus the count read from the field at each use 159 (sky/count homes and the
-// temporaries' homes then match retail; the adds still load the direction first, 4 bytes long),
-// plus color0 stored first 160; direction_from_angles for the contribution 173; pin_real for the
-// blend and colors 161 (same code); a pointer add helper and contribution array/initializer/
-// declaration-order forms keep the direction-first adds (screened); color0 first alone 149.
-// Earlier 213: frame 0x8c agrees; selector/count saves, sentinel join and pending trig/color homes remain.
-// Frame 0x8c agrees; selector/count saves, sentinel join and pending trigonometric/color homes remain.
-// Earlier 213 (was 213): frame 0x8c agrees; selector/count saves, sentinel join
-// and pending trigonometric components differ. Native sky fields 213; native
-// light/value fields 213; both views 213; frame pointer 296; status enum 213.
-// selector complete validation 213; selector result join 213; collision value initialization 238; direct
-// component lifetimes 231; component lifetimes ordinary count 225; native contribution vector 246; size
-// preference 380; float consistency 302.
-// Selector failing-range returns 213; explicit selector context 213; direct collision predicate 213;
-// ordinary while light traversal 213; independent blend bounds 213; constant output first 213.
-// Round 116: Direction initialization only with lights 213; color initialization only with lights 213; both 213; light-table field at each access 213; result from record validity 230. Opening code and inherited count qualifier restored.
-// Round 122: Query-only collision lifetime 230; validated-record collision lifetime 217; byte status
-// 217; strength lifetime inside light branch 211; parallel conditional channel clamps 213.
-// Native contribution aggregate with cached/direct angles 236/235;
-// native direct component fill 235; cached component orders ikj/jik/jki/kij/kji 219/212/221/216/219.
-// Existing scalar color/blend/both 213/213/213; existing color helper and helper plus blend 213/213;
-// entry strength snapshot alone/with scalar clamps/with color helper 225/225/225. All restored.
-// Round 181 complete data-pointer selector, guard returns, full selector, const data, explicit context and definite pointer arms 213/213/213/213/213/213; ordinary inline 256; validated data output 228 (fast); all restored. Frame 0x8c agrees; selector/count saves and pending trigonometric/color homes remain.
-// Native ray/fallback/both component loops with long ordinals 218/217/217; dword 218/217/217;
-// both with short/byte ordinals 244/244. Original body restored; selector and pending homes remain.
-// Round 246: direction seed/color seed/direction publication library-copy combinations,
-// seven at 213; all three plus every whole-color replacement 213. Original copies restored.
-// Round 191: Blend/pack/collision ordinary-inline declarations, singly, all pairs
-// and together, each 213; all three separate noinline declarations 213.
-// Original declarations, count qualification and executable body restored.
-// Round 193: Scenario/data/both/value/data+value/scenario+value/all source pointers
-// read at each use, then all plus light table: 213/192/192/213/231/213/231/247.
-// Data-only plain 192 adds reloads and has a farther aligned sequence; original restored.
-// Round 202: Native direction accumulation with long/dword/short/byte ordinals, direction/contribution/paired cursors, contribution-first indexed adds, complete updated-direction publication and the shared vector setter 106/106/192/192/205/195/171/106/182/93 fast.
-// Original executable source restored. Frame 0x8c agrees; x87 accumulator operand order, blend-address reuse and collision predicate remain.
-// Round 215: native light cursor 224; cursor with const light/value views 224;
-// cursor with positive-light strength lifetime, mutable/const views 223/223;
-// plain count with cursor, const views, scoped strength or both 233 each.
-// Original indexed traversal, strength lifetime and inherited count qualifier restored.
-// Round 360: Complete trig factors, existing contribution setter, returning color-result copy,
-// all pairs and all three 162/162/179/162/180/180/180; original real-narrowed terms
-// in double scalar carriers 186. Original contribution and color ownership restored.
-// Round 183: shared vector add, either input owner, and unit add-scaled in place 93/93/93/93; separate native sum output, plain/scaled and either owner, 188/188/188/188. Original accumulation restored.
-// Round 68 (lane 9, fast): colour first alone is retail's code everywhere except the post-call add (ours
-// reloads the power, adds the strength to it and copies back: 3 instructions, +7 bytes) and the ecx/edi
-// pair; an opaque call (volatile function-pointer diagnostic, reverted) after 0x131c20 or `&color` escaping
-// before the loop does not change that add. Trials:
-// a power value read once with the entry pointer (strength = power in the first-light arm; test, divide
-// and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
-// `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
-// strength declared inside the lights branch 139.
-// Round 85 (m3 lane 9, fast; compile-only screen of the add on the colour-first body): colour first re-measured 121 (828 bytes); strength
-// first with the entry used after the copy (diagnostic) 187: the movss stays first, so the scheduler does not sink it and retail's source
-// order is colour first. Strength read into a local before the copy 30 (same code); pinned_real by value 30 and colour first 121; a typed
-// collision result 30 and colour first 121; colour first with both arm stores in a forceinline pointer helper 121; colour first with a power
-// local for the test and divide 121. Screen, colour first: the add turns strength-first with one added pointer read at offset 0 (point, sky,
-// record, the zero vector) or one store through record before the first-light arm, and a second added read turns it back; a dead read, global
-// reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
-// locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
-// value, pointer or reference strength, a const entry, nested else and `<=` tests.
-// Round 95 (m3 lane 12, fast; colour first alone 121, only the post-call add and the ECX/EDI pair differ): on it, strength
-// declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
-// seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
-// Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
-// Round 96 (m3 lane 16, fast control 30; colour first re-measured 121 at 828 bytes, only the post-call add and the
-// ECX/EDI pair differ): colour first with the power bound through a const reference before the first-light test
-// (assign, test, divide, add) 121, through a const pointer 121; the reference with strength first 134 (829 bytes);
-// no entry local (the light's entry field read at each use) colour first / strength first 178/193 (834 bytes);
-// an entry local per arm, colour first, 178 (831 bytes). Compile-only (no LTCG) keeps the strength on the stack
-// here, so it does not model this add.
-// Round 143 (m3 lane 7, fast): colour first re-measured 121; the blend through a forced-inline in-place
-// wrapper (colour, other colour, ratio) 254, with colour first 299; the constant colour0 store ahead of the
-// loop 214, with colour first 207 (the store stays at the top); colour first with a library copy 121.
-// Round 91 (m3 lane 11, fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI
-// pair differ): retail's latch is `inc ebx` as ours, so the add's only cause is its operand order (ours loads the
-// power as the destination and moves the sum to XMM7). Real trials (the round 85 screen of these was compile-only,
-// which does not model this add): {count, address} block views of the lights and the entries, singly or both,
-// same code on either arm order; the light count in a local 34, colour first 125; the lights array in a local 39,
-// colour first 130; an entry-colour pointer for the copy and the blend call 168, colour first 166; the no-lights
-// fill through vector3f_assign 32, colour first 120; the clamps through pinned_real 66 at 821 bytes (the clamp
-// joins change), colour first 121. Kept: the ray through the existing vector3f_scale (same code on both arm orders;
-// the hand-written ray was its body).
-// Round 111 (m3 lane 16, fast; colour first re-measured 121): a plain-inline in-place blend wrapper (colour, other
-// colour, ratio) 253, colour first 298 (plain too: LTCG then inlines 0x131c20's body); a power local read before the
-// first-light test for the first-arm assignment, the test and the divide, with the add re-reading the field, 158 (824
-// bytes, the load hoists above the branch); colour first with each of the six aggregate copies as memcpy 121 each;
-// with {count, address} pointer locals for the lights, the entries or both 121 each (30 each strength first, same
-// code); with `i++` or `i += 1`, nested entry tests, `if (sky)`, the blend as a repeated-expression PIN macro or the
-// sky helper without its count local 121 each (same code); the result declared before the collision sentinel 123; the
-// sky helper without its scenario local 142, with early returns 223; the post-call add re-reading the entry through
-// the light 154 (the entries pointer is reloaded after the call and the add stays load-first: it is a fresh load, so
-// only the add's operand order differs). Diagnostics on colour first (not source forms): one store through `record`,
-// or one read at offset 0 of `point` or `record`, anywhere ahead of the add in source order (function entry or the
-// first-light arm) gives retail's in-place add at 821 bytes; two of them cancel; reads at +4, +8 or +0x10, and
-// statements after the loop or after either arm's strength assignment, change nothing. The ECX/EDI pair never moved.
-// Round 101 (m3 lane 1, fast): n = 0..7 `long dead_n = n;` placeholders at entry (the symbol-count phase lever) on
-// colour first 121 x8 and on strength first 30 x7, identical code at every n; `vector3f_add(&contribution, &direction,
-// ...)` 30/121 (strength/colour first, same code). Colour first with the contribution's fields assigned directly (no
-// vector3f_assign) 160 (825 bytes): the first-light arm and the post-call `addss xmm7, [ebp+0x10]` are retail's, but
-// all three x87 direction adds load the direction first; strength first so 170. On that body the accumulation through
-// the swapped vector3f_add, as `+=` rows, as `contribution + direction` rows 160/160/160; the no-lights arm first 191.
-// vector3f_assign with `+=` rows, colour/strength first 169/161.
-// Round 183 (m3 lane 6, fast; strength first / colour first): the pitch cosine named once as a double for both
-// products 30/121 (same code); guard returns for the flag, NONE and sky tests 243/251 (838/844 bytes); the sky index
-// as a short local 30/121 (same code); color declared before direction 36/127; a 600 s permuter run on the 30 form
-// (65 tries), none below its baseline.
-// Round 185 (m3 lane 6, fast; colour first re-measured 121, only the post-call add and the ECX/EDI pair differ): colour first
-// with the sky index read once ahead of the flag test 143 (830 bytes, the load moves above the test), with the index assigned
-// inside the test 131 (the sky lookup's registers swap), with the scenario's sky block read through the shared tag-array type
-// in the sky helper 131 (a real build; earlier rounds only screened it compile-only), with the sky index passed straight from
-// the global 121 (same code), with the light entry typed as reals (`entry[4]`, `entry + 1`) 121 (same code).
+// Matched with 0x131c20 taking its result first (result, a, b, flags, t): retail forms the `&color` pair in ecx
+// and copies it to edi, which only that order gives; 0x131c20, 0x131d60 and 0xc0c80 stay matched.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -314,21 +61,22 @@ long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_
                     if (*(long *)(light + 0x2c) > 0)
                     {
                         byte *entry = *(byte **)(light + 0x30);
+                        real const *power = (real const *)(entry + 0x10);
                         vector3f contribution;
                         vector3f_assign(&contribution, (real)(cos(*(real *)(light + 0xc)) * cos(*(real *)(light + 0x10))),
                             (real)(sin(*(real *)(light + 0xc)) * cos(*(real *)(light + 0x10))), (real)sin(*(real *)(light + 0x10)));
                         vector3f_add(&direction, &contribution, &direction);
                         if (i == 0)
                         {
-                            strength = *(real *)(entry + 0x10);
                             color = *(color3f *)(entry + 4);
+                            strength = *power;
                         }
-                        else if (*(real *)(entry + 0x10) > 0.0f)
+                        else if (*power > 0.0f)
                         {
-                            real blend = pinned_real(1.0f - strength / *(real *)(entry + 0x10) / ((real)i + 2.0f),
+                            real blend = pinned_real(1.0f - strength / *power / ((real)i + 2.0f),
                                 0.0f, 1.0f);
-                            function_131c20(&color, (color3f *)(entry + 4), 0, blend, &color);
-                            strength += *(real *)(entry + 0x10);
+                            function_131c20(&color, &color, (color3f *)(entry + 4), 0, blend);
+                            strength += *power;
                         }
                     }
                 }
@@ -1380,7 +1128,37 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
+// score 529 (was 529): Frame 0x2c versus retail 0x28. The selection byte spills across the lighting calls, and the block and query ingress registers are swapped.
+// MiniMax A (11-19): no new form, no lower score (529 plain, 602 on the reduced image): retail takes the block in
+// EAX, the type in ECX and the query in EDX, and this build takes the block in EDX and the query in EAX, so the
+// entry's register roles, the frame (0x2c against retail's 0x28) and every later register differ; the parameter
+// order is fixed by the rules, so retail's order is reported here. The base and lightmap arguments exchanged at
+// the definition and at the call compile to the same bytes, so the exchange cannot be measured from this file;
+// the body is unchanged.
+// Earlier detail: The 0x2c frame has an extra word. The selection result spills and the block and query use exchanged registers.
+// Previously noted: frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
+// MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
+// own - a single-address reduced image reads 602 and 2139 bytes where the wider reduced image and the full image
+// read 529 and 2189 - so this round's forms were judged on the full check. The one that lowers the reduced score,
+// returning the result from the found block instead of from a stored byte, gives retail's frame (0x28) and retail's
+// length (2189) and reads 566 on the full image, which is worse than the 529 the kept body reads there, so it was
+// dropped and the body restored. What still differs is the entry: retail keeps the block in EAX and the query in
+// EDX where this build has the block in EDX, and the count is tested twice around the scan.
+// MiniMax H (11-18): score 529 (was 529): no new form, no lower score; retail hands this function its block in
+// EAX and its query in EDX where this build has the block in EDX and the query in EAX, the frame stays 0x2c
+// against retail's 0x28, and the selection result still spills where retail keeps it in a register; the
+// parameter order that would fix the swap is retail's and the callers' declarations are in files this lane
+// may not edit.
+// MiniMax C (11-19): no new form, no lower score (529): the frame is 0x2c against retail's 0x28, the selection result still spills where retail keeps it in a register, and the block and the query still arrive swapped (ours block EDX and query EAX, retail EAX and EDX); retail's own parameter order is (type, query, block), which this lane may not change.
+// Earlier score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
+// Earlier status line, merged in r127 (529, was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
+// MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
+// MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
+// MiniMax C (11-16): 529, was 529: no new form, no lower score; the call boundaries agree with retail's
+// (0x117c80 and 0x13b390 four times), but the frame is still 0x2c against retail's 0x28, the selection
+// result still spills where retail keeps it in a register, and the selection root's three components are
+// still stored in the other order (retail stores the x and the y before the z).
+// Earlier status line (529, was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax I (11-15): no new form, no lower score (529): retail hands this function its block in eax and its query in edx
 // while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where
 // retail keeps it in a register; the parameter order is retail's and the callers are in files this lane may not edit.
@@ -1722,6 +1500,241 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // and record leaves EBP; 0x3db00 lost, 8; 0xd4080 503); `-0.75f < direction0.k` 529; `1.4f *` leading scale0 529;
 // the first luminance's `* 2.0f` last 529; direction2 through a `turned` local negated and rotated into the record (0xd4080's
 // form) 580 (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
+// P572: Existing curve-mapper range-byte admission, positive/complementary
+// bool/byte/short/long: 529/529/529/529/529/529/529/529. NOT kept: no native
+// frame/result or block/query-home recovery. Original mapper, four curve calls,
+// observation boundaries and complete body restored.
+// M3 lane 1 r112 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; the kept form also plain with the file's
+// 30 other functions): kept the length through the existing magnitude3d at the same place (identical instructions, 529).
+// Tried: on lane 5 r182's lead patch (re-measured 452, 0xd4080 449) the length as `real length = record->length =
+// magnitude3d(input_normal);` after the two copies 547 (2216 B), ahead of them 490 (2214 B); the lead's body and helpers
+// with main's 0xd4080 body (only its call reordered, scales through the lead's helper) 452 with 0xd4080 479; on main the
+// chained length 562.
+// MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// Round 179 (m3 lane 8, fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542, all unchanged): retail's exits
+// are a false hoisted into the entry block for the count test, a fresh false for the not-found test and a true at the
+// end. On main's count test, `if (!parameters) return false;` with `return true;` at the end 568 (2168 B, first +0xc);
+// the count guard and the loop reading `block->count` (no count local) 567 (2176 B); the query's normal pointer declared
+// at the top 529 (same code); the block and the found parameters `const` 529 (same code); the scan through an entry
+// pointer stepped with the index 568 (2175 B). Block EDX / query EAX against retail's EAX / EDX still.
+// M3 lane 15 r94 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/442): the
+// scan's guard written `if (0 < count)` 568 (520/441): the guard merges with the loop's own test (one count test as
+// retail), the block moves to EBX and the query to EDI and the flags reuse EBX, all as retail, but the block still arrives
+// in EDX and the query in EAX; that plus (type, query, block) at the definition and 0xd4080's call 570 (523/445): retail's
+// incoming EAX block / EDX query and homes, 0xd4080 380 (the order alone is the listed 529 with 0xd4080 455). On that:
+// `if (parameters) { ... return true; } return false;` 574 (2174 B, frame 0x28; 503/397); `bool result = false;` first with
+// `return true;` closing the found block and `return result;` 571 (2189 B, first difference +0x9; 508/402); `bool result =
+// false;` first with `result = true;` closing / opening the found block 570 / 563 (both lose 0x3db00, 0xd4080 504); the
+// result declared after the scan with `result = true;` closing / opening the block, or `return parameters != NULL;`, 588
+// (0x3db00 lost) / 580 / 579; the 571 and 574 forms with lane 5 r182's statement order (length, lightmap copy, normal copy,
+// bias local added in place, square after the direction1 negate, lightmap pin first) 586 / 587 (2206 B, 0x3db00 lost).
+// Lead: `0 < count` with (type, query, block) is the first form giving retail's whole entry convention on main's order.
+// AC570: Both length curves before the color stores, with tested selection,
+// success exit, failure guard or late success, then early attenuation with
+// those results: 539/577/554/569/529/573/553/579. NOT kept: failure guards restore frame and length
+// but still swap block/query and regress. Late success loses 0x3db00.
+// The scan result still spills and the incoming block/query registers are exchanged.
+// Publish and read length 562, read published length after the primary direction 583, publish and read before normal copy 560.
+// Ordinal sentinel scan 573, count predicate updated with selected entry 561, empty scan early false 540,
+// selected/missing completion assignments 572, missing/selected completion assignments 589.
+// NOT kept: the count-predicate form reaches the retail frame but grows to 2194 bytes. Late readback and both
+// completion assignments lose a matched caller.
+// Primary clamp-only/full-output scope 529/529; reflected clamp-only/full-output
+// scope 529/529; joined and separate output scopes 529/529; scoped curve outputs
+// with separate luminances 530; with the normal scope ending at its final copy 530.
+// The 0x2c frame and selection spill remain.
+// Round 422: Sole-exit missing-selection branch, success after/before the record stores: guarded index 573/547,
+// one-test index 586/586, consumed-count cursor 568/565, end cursor 578/577.
+// The selected result and incoming register homes still differ.
+// Indexed rejection by combined/nested tests 529/529, with a single flags read 530/530.
+// Counted entry cursor with either rejection test 541/541, with a single flags read 578/578.
+// The cursor forms reach frame 0x28 but leave the result spill and shorten the body.
+// m3 lane 10 r121 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned / stack-masked 527 / 503 by
+// this round's counter). Both builds end `ret 0xc`; the convention difference is only block EDX / query EAX against retail's
+// EAX / EDX. Re-measured as a base: (type, query, block) with `if (0 < count)` 570 (523 / 500; 0xd4080 380): retail's incoming
+// registers. On it: `bool result = false;` first with `return true;` closing the found block 571 (508 / 497): frame 0x28, first
+// difference +0x9, where retail keeps the count in EDX and the mask in EAX and clears AL for the result ahead of the count test
+// (ours count EAX, mask EDX, one false at the shared exit); the result declared after the pointer and set true at the end of
+// the block with one return 570 (559 / 540): the false is then cleared at entry and the count sits in EDX as in retail, but in
+// CL, with the query arriving in ECX and the type from the stack (0x3db00 lost, 8; 0xd4080 504); that with the count read
+// declared first 565 (2193 B; same losses, the result spilled); `if (!parameters) return false;` with `return true;` at the end
+// on the reordered parameters 575 (2166 B; 516 / 498); lane 5 r182's order (length, whole lightmap and normal copies, bias local,
+// square after the negate, lightmap pin first, result set true at the end) without its helper changes 599 (2222 B; 0x3db00
+// lost). So the form that hoists the false as retail does is the one that moves the incoming registers: what keeps the type in
+// ECX and the query in EDX while the result is live from the top is not found.
+// MiniMax G (11-18): no new form, no lower score (529): this build's frame is 0x2c against retail's 0x28 and the
+// selected result still spills; retail's own parameter order is (type, query, block), with the block in EAX and the
+// query in EDX, and this lane may not change the parameter order, so the lead that needs it stays blocked.
+// M3 lane 7 r184 (fast with 0xd4080, 0x3db00, 0x3dfe0; control 529, aligned 365, masked 176): the caller's unread
+// parameter passed on as an unread first parameter (every declaration and call) 530; that with the block moved last
+// (flag, type, query, record, base, lightmap, block) 530; the block last without the flag 529 (same code: the
+// convention follows the body); `bool result = false;` first with `if (parameters)` and `result = true;` last 573
+// (0x3db00 lost), `result = true;` first 547 (frame 0x30, 0x3db00 lost); those without the count wrapper (mask before
+// a `for (i < block->count)` loop) 585 (2160 B, frame 0x28, 0x3db00 lost) and 567 (0x3db00 kept).
+// M3 lane 13 r114 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21; aligned/masked [365/176]): the lightmap pin
+// ahead of the base pin 560 (2193 B) [362/151]; the square right after the direction1 negate 555 [373/173]; `real
+// bias = parameters->bias;` for the three adds 559 (0x3db00 lost, 8; 0xd4080 508); (type, query, block) with
+// 0xd4080's call to match and the guard `0 < count` 570 (0xd4080 380) [359/179]; that with the lightmap pin first
+// 559 [354/152], with the square moved too 565 [336/142], plus `if (!parameters) return false; ... return true;` 581
+// (2171 B) [329/138]. Every retail-order form lowers the masked count and raises the positional one. Body unchanged.
+// Conditional last-row selection 529, with an entry receiver 530, combined mask 571, or general bit first 531.
+// Return true in the selected branch 566, with the entry receiver 563; explicit empty-block
+// failure with the receiver 560 or combined mask 571. The selection spill and register homes still differ.
+// M3 lane 7 r186 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/401):
+// (type, query, block) alone 529 (same code; 0xd4080 455, masked 293 -> 277); + `if (!parameters) return false;` and
+// `return true;` 568 (2168 B, frame 0x28, 518/377); + one count test (mask in the test) 564 (2153 B, 514/372); on that the
+// square after the direction1 negate and the lightmap pin ahead of the base pin 588 (2158 B, 475/344, best aligned); that
+// with `if (parameters) { ... return true; } return false;` 576 (2166 B, 466/331); on the one-test form `color3f adjusted =
+// *lightmap;` with the bias added in place 569, `vector3f normal = *input_normal;` after magnitude3d 586, both with the bias
+// local 568, all with retail's order 585 (2204 B): each aggregate copy moves `parameters` to EBP and `record` to ESI, so
+// record becomes a register parameter (`ret 8`), 0x3db00 is lost (8) and 0xd4080 rises to 495-504. Diagnostic (not
+// keepable): retail's order with record read once through its address 586 (2215 B; block EAX -> EBX as retail, record on
+// the stack but homed in ESI, parameters EBP; 0xd4080 380). Retail homes parameters ESI, query EDI, block EBX, record EBP:
+// with retail's statement order this build ranks record above parameters.
+// Lightmap copy before normal and length 555, length before lightmap and normal copies 552, lightmap copy between
+// normal and length 552, lightmap copy between length and store 555, early lightmap copy with shared bias 559,
+// channel initializer after length 562, early lightmap copy with clamp scope 555, early lightmap copy with branch
+// returns 556. NOT kept: All early adjusted-color forms raise the score and move the record argument into a
+// register. They lose the matched 0x3db00 caller.
+// Workspace order for the three addressable 12-byte locals, all six name orders 529 each;
+// both orders of the two color declarations at the start of the selected block 529/529.
+// The entry still reserves 0x2c and spills the selection byte. Original body restored.
+// Last applicable ordinal through indexed block entries, a captured array, an
+// advancing cursor, or an exclusive end. Result before publication 591/571/601/577;
+// constant result on each exit 611/587/609/572. NOT kept: all grow past retail;
+// the 0x28 frame on the direct-index forms still leaves different entry roles.
+// Signed indexed do/while latches with tested outcome, literal branch returns,
+// early failure or late success assignment: do 569/580/583/580, while
+// 529/566/568/573. NOT kept: the 569 form recovers frame and length but
+// regresses. Late success changes the matched upstream caller.
+// Success default true at entry or after selection, present or missing arm first,
+// 563/565/564/568. Failure default false in the same forms 589/574/575/569.
+// NOT kept: entry success default recovers frame 0x28 but the native register setup still differs.
+// M3 lane 13 r127 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/275; the
+// second stacked score line above merged into the note). Lane 5 r182's retail-order lead rebuilt on this tree (its 0xd37f0
+// part, the in-place colour-scale helper, the rotation reading the axis through the pointer and (type, query, block) with
+// 0xd4080's call to match): 452 [448/187], entry and scan retail's but for `test ebx, eax` (retail `test eax, ebx`);
+// 0xd4080 493, so it stays a lead. Its pieces: without the live axis 549 (2229 B; 0xd4080 380), without the helper 561
+// (0x3db00 lost), with neither 599 (0x3db00 lost); the live axis alone on main's body 610 (2132 B; 0x3db00 lost, 0xd4080
+// 515). On the lead: both length scales taken before either is applied (retail holds the first in the lightmap argument's
+// slot across the second call) 582 (2205 B; 0x3db00 lost), with the falloff named ahead of the last luminance as well
+// (retail stores it in that slot before the call) 572 (2198 B; 0x3db00 lost) [497/171], that with `return true` closing
+// the block 575 (2204 B) [390/173]; the length chained `record->length = length = magnitude3d(...)` ahead of the copies
+// 465, after them 517 (2191 B); the length stored to the record and read back into the local (defined after the record's
+// first read) 490 (2214 B) at either place: the length still takes the frame's low slot and the normalize's magnitude the
+// record argument's home, the reverse of retail; the mask named ahead of the loop 533 (2192 B); the bias local right after
+// the lightmap copy 568 (2176 B: it loads early as retail's, but the query then stays in EDX); the normal copied per
+// component 461 (2193 B), through the existing vector3f_assign 457 (2191 B) [408/173]; the length from the cast query with
+// the normal's pointer declared after the lightmap copy 452 (same code: the pointer folds into the query's EDI, retail
+// copies it to ECX for the normal); direction0 as `0.0f - normal.i` per component (retail's form) 478 (2162 B) [348/182];
+// one to four unused locals at the top 488, 487, 489, 489 (first difference +0x19; no count gives retail's j/k normalize
+// sides). Body unchanged.
+// M3 lane 7 r202 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21; control 529, aligned 527, masked 281). New lever: the
+// three colour scalings through an in-place `lighting_scale_color(color3f *, real)` on the plain scan loop (`for (i = 0; i <
+// block->count; i++)` with the mask in the test), `bool result = false;` declared after the parameters pointer, `result =
+// true` last and (type, query, block): record's direct uses drop, it is homed in EBP and stays a stack argument, and the
+// entry is retail's instruction for instruction (`mov ebp, [record]; mov ebx, eax; mov edi, edx; mov edx, [ebx]; xor esi,
+// esi; xor al, al`), 0x3db00 still MATCH: 565 at 2231 B (aligned 467, masked 177; 0xd4080 380). Without the helper the same
+// body gives 585 (record arrives in ESI, block homed EDI, query EBX, parameters EBP); the declared order (type, block,
+// query) or (block, query, type) on it 585 / 585 (the order sets the incoming registers only). On main's `0 < count` loop
+// the retail-order rewrite 605 (result in CL, type on the stack, 0x3db00 lost), `return true` closing the block 592, the
+// result declared after the count 603, no result variable 593, the found block nested in the count test 605, a walked entry
+// pointer 610, a flags local 599. On the 565 form: the mask written first in the test 565 (same code); the normal's square
+// as (j*j + k*k) + i*i 566 (aligned 455: retail's k, j, i x87 order); the bias local named right after the lightmap copy
+// (where retail loads it into XMM2) 579 (frame 0x24, block ECX / query EAX; 0xd4080 455); the shared rotation reading its
+// axis through the pointer 518 at 2191 B (aligned 422; 0xd4080 493 at 1830 B). Normalize spellings on main: j and k as `*=`
+// or through n[] 529 / 529 (same code), through references 574. A 110-form grid of loop, result, copy, pin-order, helper
+// (one or both functions), live-axis and parameter-order options: best 500 at 2170 B (plain loop, result variable,
+// per-field copies with the bias at each use, retail pin order, helper, live axis; 0xd4080 493 / 479), then 505, 518; at
+// 2189 B 526 and 532; without the live axis 554 at best. A second grid of 0xd4080's own options on the two best forms
+// (direction2 in place, the square after the negate, three normalize orders, select stores): 0xd4080 445 to 496 (445 at
+// its retail 1870 B). Every form under 521 raises 0xd4080 above 378, so none is kept; leads saved as
+// build/r202/lead-0xd37f0-500.patch and build/r202/lead-0xd37f0-entry-565.patch. Body unchanged.
+// M3 lane 16 r166 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21 unless noted; control 529, aligned 521 by this
+// round's counter). Retail ends the found block with its own epilogue (`mov al, 1` among the pops) and has one false
+// tail (`xor al, al` at 0xd4071, the empty-block jump landing just past it with AL cleared at the top). On main's
+// parameter order: two early `return false` (empty block, nothing selected) with `return true` last 579 (aligned 526);
+// the found block ending in `return true` and `return false` after it 566 (aligned 510), without the count wrapper
+// 580 (2162 B, aligned 503), with the entries table named once ahead of the scan 566 (aligned 496); that named table
+// on main's result variable 565 (aligned 514); the scan as a counted-down `do` over a walked entry 581 (2161 B,
+// 0xd4080 380). Body unchanged.
+// primary shared negate 569, secondary shared negate and copy 591, ambient shared negate and copy 552,
+// primary shared negate and secondary shared negate and copy 549, primary shared negate and ambient
+// shared negate and copy 606, secondary shared negate and copy and ambient shared negate and copy 622,
+// primary shared negate and secondary shared negate and copy and ambient shared negate and copy 613, all
+// shared negates with separate rotation input 634.
+// NOT kept: All eight forms shorten away from the retail extent and raise the score.
+// The 0x2c frame exceeds 0x28. The selection byte still spills and the block and query arrive in exchanged registers.
+// M3 lane 2 r129 (h2m fast with 0xd4080, 0x117c80, 0x13b390, 0x3db00, 0x3dfe0; control 529, 0xd4080 378, 0x3db00 MATCH;
+// this build already returns `ret 0xc`): the input normal pointer and the normal copy moved ahead of the count test 532
+// (2189 B; the block then arrives in EAX and the query in EDX as retail, 0xd4080 380, 0x3db00 still MATCH, but the copy
+// runs in the entry block); that with `if (parameters) { ... return true; } return false;` 567 (frame 0x28 as retail,
+// 2190 B); the mask written into the loop test (no named mask) 575 (2172 B; the mask still takes EDI); that with the
+// constant returns 569 (frame 0x28, block EDX and query EAX again); the normal copy placed between the loop and the found
+// test 565 (2193 B; block EDX, query EAX). Reading: the query's convention follows a read of it in the entry block; the
+// mask takes EDI ahead of the query in every form where the copy stays in the found block.
+// Default-false with late success and primary/reflected/ambient/all curve scopes 573/573/573/573.
+// Constant exits with those scopes 566/566/563/563, frame 0x28.
+// NOT kept: the default forms lose the matched caller; constant exits recover the frame but raise the score.
+// M3 lane 8 r217 (h2m fast with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10; controls 529 / 378; letters as in 0xd4080's note). New
+// pair: a file-local in-place colour scale helper (each channel `scale * channel`) for the six scalings of both functions,
+// together with lighting_rotate reading its axis through a `vector3f const *` from g_4687b0, keeps record on the stack and
+// 0x3db00 MATCH (the live axis alone loses it): on main's bodies 606 (2137 B) with 0xd4080 at 316 (its N D0 IP ES SS). On the
+// pair, 104 combinations of this body: best natural rows 510 ((type, query, block), the scan without its guard block, the
+// lightmap copied whole with a bias local, normalize3d), 511, 513 (`count > 0` kept, the normal and the lightmap as aggregate
+// copies, the bias read from the record, normalize3d; check.py --fast agrees); with order moves 491 to 496. All need 0xd4080's
+// moved square (ES): without it 0xd4080 reads 427 to 486 in all 16 subsets of N/D0/IP/SS, so 513 / 316 is a lead only
+// (build/r217/lead-d37f0-d4080-316.patch in the m3-lane8 worktree). Body unchanged.
+// M3 lane 16 r174 (h2m fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0, 0xd1e10, 0x117c80, 0x13b390; control 529, aligned
+// 521): the found test through a `bool const &` to the result 530 (same code); a `const &` second name for the selected
+// block in the found block 530 (same code); the length ahead of the normal copy with the lightmap copied whole and biased
+// in place 537 (2199 B, aligned 550); the entry flags read once into a local in the scan 530 (same code); the result
+// started false at the top and set true at the start of the found block 547 (0x3db00 lost, 0xd4080 508). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged; control 529). Retail's found
+// block copies the lightmap colour whole into the adjusted colour and adds the bias in place, and returns constants
+// (`mov al, 1` / `xor al, al`, the entry's `xor al, al` serving the empty-block exit). The adjusted colour as
+// `= *lightmap` then three `+= bias` 538 (2199 B); constant returns (`if (parameters) { ... return true; } return
+// false;`) 566 (frame 0x28 as retail, first difference +0xc: the block and query registers stay exchanged); both 587
+// (2213 B); the scan without its `count > 0` guard 579 (2172 B), with the constant returns 570 (2164 B), with both
+// forms 575 (2198 B). Retail's caller sets the block in EAX first, then EDX = query, ECX = type: the declared order
+// (block, type, query) is the one its setup implies, so the exchange is the body's. Body unchanged.
+// Shared flag predicate on the default bit, category mask, or both 577/529/577;
+// default bit compared with its set value 529. One flag word with both predicates
+// 530, separately named decisions 530, reject before selection 530, conditional
+// category/fallback 564. NOT kept: the result spill, 0x2c frame, and exchanged
+// block/query registers persist.
+// M3 lane 7 r216 (H2M_FAST with 0xd4080, 0x3db00 and 0x3dfe0; control 529, 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21): lane 2
+// r129's input pointer and normal copy ahead of the count test re-measured 532 (0xd4080 380); on it the adjusted colour
+// copied whole from the lightmap with the bias added in place 553 (2205 B), the bias read once into a named real 562
+// (2193 B; 0xd4080 504, 0x3db00 lost), the whole lightmap copy at the top of the found block with the bias added after
+// the normalize 558 (2197 B; 0x3db00 lost); that last form on main's entry 552 (2191 B; 0x3db00 lost); on main, the scan
+// through a per-iteration entry pointer local 530, the mask typed `long` 529 (same code). Retail's loop keeps the mask
+// in EAX and the flags in EBX (the block's home), ours the mask in EDI: the query then takes EBX here and EDI in
+// retail, which is the block/query exchange at the entry. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21, all unchanged; control 529): the mask as `long`
+// 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
+// with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
+// allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
+// M3 lane 4 r252 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged; control 529). Reading: both
+// builds give one local the dead `record` argument slot ([esp+0x40] after the pushes): ours the spilled result byte,
+// retail the length, so the extra frame dword is the length's own cell. On constant returns (566, frame 0x28): the
+// length stored to the record and read back from it 560 (2193 B); `if (count <= 0) return false;` 561; a per-entry
+// pointer in the scan 563; the mask written inside the test 569 (2172 B); the mask inside the test on the plain
+// result 575 (2172 B). Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21 unless named; control 529, aligned 527, masked
+// 281). Reading: VC packs locals into dead argument homes; ours puts the spilled result byte in record's argument slot
+// (`mov [esp + 0x40], al`) where retail, returning constants, keeps the length there (`fst [esp + 0x3c]`). Forms: the
+// normal as `= *input_normal` 578 (2172 B; 0x3db00 8, 0xd4080 508); constant returns with no result local 566 (frame
+// 0x28, first +0xc: the block and query still arrive exchanged); the mask computed ahead of the count read 569; both
+// 570 (2172 B); `result = false` at the top and `result = true` closing the found block 590 (2157 B; 0x3db00 8, 0xd4080
+// 508).
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both lighting_rotate calls (this function's and 0xd4080's) through include/axis_rotation.h's helper, sine and
+// cosine of a named angle, 605 (2136 B; 0xd4080 470). Restored.
+// M3 lane 2 r143 (h2m fast with 0xd4080 378 and 0x3db00 MATCH unless noted; control 529): the colour2 blend reading
+// the `primary` local instead of the record's colour1 566 (2176 B); `real length = record->length = magnitude3d(...)` 562;
+// the selection scan through an entry pointer stepped with the index 568 (2175 B); the primary blend with `if (parameters)
+// { ... return true; } return false;` 571 (2176 B); direction2 rotated from a negated copy straight into the record 580
+// (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1742,7 +1755,7 @@ bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color
 	{
 		vector3f const *input_normal = (vector3f const *)query;
 		vector3f normal = { input_normal->i, input_normal->j, input_normal->k };
-		real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
+		real length = magnitude3d(input_normal);
 		record->length = length;
 		lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.j * normal.j) + normal.i * normal.i);
 		color3f adjusted;
@@ -1798,6 +1811,13 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax R (11-17): no new form, no lower score (378): the normalize's k product with the inverse first measures 372, the same as
+// the squared length summed as (k, i, j), both under the keep bar; the frame is still 0x4c against retail's 0x40 and retail still
+// clears the mobile flag byte in the entry block where this build clears it after the first branch, so the body is as it was.
+// MiniMax I (11-17): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears the mobile flag byte in the entry block where this build clears it after the first branch, the four query components still reach the x87 stack in the other order and the three colour scales still multiply in the other order; the normalize's squared length summed as (k, i, j) measures 372, six points and under the keep bar, and the flag as a test-set measures 362 but is kept only with a byte match, so the body is as it was.
+// MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
+// MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
+// MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.
 // MiniMax I (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the 0xd37f0 call
 // still hands its block and query over in the other order; the callee's own file is not this lane's.
 // MiniMax C (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 (three stack slots
@@ -1828,7 +1848,21 @@ real function_30bf0(vector3f *vector);
 // root, and the three components are stored in the other order (retail stores the x and the y before the z).
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax H (11-13): no new form, no lower score (378); the frame is 0x4c against retail's 0x40 and the normal copy and the limited, rotation and colour homes are elsewhere.
-// score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// MiniMax C (11-16): score 378 (was 378): no new form, no lower score; the frame is still 0x4c against retail's
+// 0x40 and the normal copy and the limited, rotation and colour homes are still in other slots.
+// MiniMax H (11-18): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears
+// the mobile flag byte in the entry block where this build clears it after the first branch, and the query's four
+// components still reach the x87 stack in the other order; retail's 0xd37f0 takes the block in EAX and the query in
+// EDX where this build has them the other way round, and that callee's parameter order is fixed in a declaration.
+// MiniMax G (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the normal
+// copy and the limited, rotation and colour homes are still in other slots; the permuter over 300 s made ten tries and
+// reached no lower score than its own 370, and the test-set mobile flag measures 362 (kept only with a byte match).
+// score 378 (was 378; MiniMax B's 356 not kept at review, see below): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// M3 lane 13 r148 (h2m fast, 0x3db00 matching unless noted): the shared normalize's j/k products as `*=` 378 (same code);
+// the shared normalize as an in/out helper, every call passing the same vector, 378 and 0xd37f0 529 -> 530 (once inlined
+// the two pointers are known equal, so retail's per-component load/multiply/store order is not from that); `mobile`
+// declared first 405 with 0x3db00 lost; the dead read of `flag` through its address removed 455 with 0x3db00 lost (that
+// read holds 0x3db00); the final pin bounds as const locals 378 (same code).
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
 // Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
@@ -1970,6 +2004,101 @@ real function_30bf0(vector3f *vector);
 // sine/dot interleave, the normalize's j/k operand order and direction0 written through a pointer register.
 // MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
 // 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
+// MiniMax I (11-17) measured the mobile flag cleared in its own store ahead of the length (362)
+// and the squared length summed as (k, i, j) (356), neither kept (see below); left are the frame (0x4c against retail's 0x40), the zero and
+// the one constant in other registers and the normalize's j and k operand order.
+// NOT kept (review 11-17): the mobile flag as a test-set (bool mobile = false; if (...) mobile = true;) took 378
+// -> 362, but a test-set flag is kept only with a byte match; the squared length summed as (k, i, j) took 362 ->
+// 356, under the 8-point keep bar on a function still over 30. Both measured, code back to main.
+// M3 lane 7 r176 (fast with 0xd37f0, 0xd1e10, 0x3db00, 0x3dfe0 and the file's functions; control 378; aligned = difflib
+// count, 320 at 378). Three causes found, none keepable under the one-caller helper rule; the chain is saved as
+// build/r176/lead-d4080.patch (243, 1870 B, frame 0x40).
+// (1) Retail's normalize block (first product scale-first, the other two loaded and then multiplied, stores in sequence) and
+// its frame come out when the local normal is reached only through inline helpers: the shared normalize3d(&normal) in place
+// of the file's ordered helper, and direction0 written by an in/out negate helper (out = 0 - in) instead of three field
+// statements. Any direct field read of the normal (the squares argument, `0.0f - normal.i`) or an aggregate copy out of it
+// (`record->direction0 = normal;` then the in-place negate) puts the folded products back. Found with a compile-only screen.
+// (2) Retail's typed value table at 0x47137c holds the addresses of both angle globals (rows 0x471e94 and 0x471eb4, type
+// code 6), so retail reloads the rotation angle after the pointer stores where ours hoists its `fld` above the blend. Two
+// table rows defined beside the globals put the load where retail has it.
+// (3) The rotation reads its axis through g_4687b0 and uses the 1.0 register; a live-axis copy of the rotate helper for this
+// function only keeps both conventions. Changing the shared helper, or any line of 0xd37f0, moves 0xd37f0's parameters and
+// then this function's (0x3db00 lost).
+// Scores: normalize_inline 378 (same code); normalize3d alone 483 (1894 B); in-place rotation 460 (re-measure); in-place +
+// early square 472, + select stores 458, + (k, i, j) 452, + tag fallback as a ternary 475 (0x3db00 lost; alone 394, 0x3db00
+// lost); in-place + select stores 450; in-place + normalize3d + in/out negate 456 (retail's normalize block), without
+// in-place 476, + early square + select stores 329 (aligned 242: zero xmm4, square xmm5, one xmm6 and the pin block as
+// retail); + the table rows 330 (aligned 235; rows alone 381); + scales applied as computed, direct 336, through an in/out
+// colour scale helper 347, with the scale expressions as its arguments 352 (aligned 217), with the rows 337 (aligned 212);
+// + the shared rotate reading the axis live 485/481 (0x3db00 8, 0xd37f0 610); + a live-axis rotate copy for this function
+// 259 (aligned 191, 1870 B), with dot3f for its projection 272; + the mobile flag as a test-set 243 (aligned 189, first
+// difference +0x57); the blend through an in/out helper 334, with the test-set 318. Subsets with no new helper: direction0
+// as an aggregate copy and the in-place negate, with normalize3d, in-place rotation, early square and select stores, 371
+// with the rows and 370 without; without the select stores 401; without the early square 491; direct field direction0 470.
+// The negate helper generalised to in/out for every call: 0xd37f0 529 -> 574, this function 333; with 0xd37f0's direction0
+// through it 0xd37f0 608 and 0x3db00 lost; with normalize3d there too 607, with an aggregate copy of its normal 545; the new
+// in/out negate at both functions' direction0 only: 0xd37f0 552, this function 508 to 524, 0x3db00 lost. 0xd37f0 with early
+// constant returns 568 (frame 0x28), with a result flag cleared first 573 (0x3db00 lost): its block and query registers
+// stay swapped in both.
+// Left on the 243 form: the squares' term order (ours k, j, i; retail i, k, j), the tag table load hoisted above the NONE
+// test, the 0xd37f0 call (BLOCKED-BY 0xd37f0's body: block EAX, query EDX), the blend's first two products, the rotation's
+// product operand order (retail loads axis i and k first, then the vector, axis j last), each scale applied as computed
+// (colour1 through its address), and the final pins' compare order.
+// Round J264: The frame is still 0x4c against retail 0x40. The mobile store and 0xd37f0 argument registers differ.
+// reflected color through RGB pin 449, reflected destination pinned in place 499, reflected pin with const bounds 449, in-place reflection pin and rotation 522.
+// primary color from secondary 489, type test before magnitude 405, tag table snapshot 395, branch-owned lookup 505.
+// NOT kept: the reflected clamps recover the frame at higher scores. Primary color reuse, early type classification and the table snapshot lose 0x3db00.
+// M3 lane 6 r202 (fast with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10; 0x3db00 matched in every row; control 378, aligned 202):
+// the block read through a `s_tag_instance const &` to the table element 379; the base limited through lighting_pin_color
+// with two const bound colours 580 (1742 B). Diagnostic, dead initialised longs at the top: K = 0, 1 and 32 keep this code
+// (frame 0x4c), K = 2 to 30 give frame 0x40 and 1870 B (445, aligned 219), so the frame size is a referenced-symbol-count
+// state, not a slot problem. On direction2 copied, negated and rotated in place (as 0xd37f0 writes it; retail evidence):
+// K = 0 460, K = 1, 2, 7, 8, 9, 16 377 (aligned 167, the closest shape: frame 0x40, 1877 B), K = 3, 4, 10, 11, 12 459,
+// K = 5, 6, 13, 14 463; plus the colour2 positive checks as select stores K = 0 450, K = 1, 2 445, K = 3 451. So the
+// in-place rotation wants one more referenced symbol (mod ~7) than this body has; no natural one-symbol form was found:
+// the in-place rotation through a named `vector3f *turned = &record->direction2;` used four times 482 (1892 B).
+// M3 lane 1 r125 (fast with 0xd37f0, 0x3db00, 0x3dfe0; control 378; ours already ends `ret 4` as retail): the final
+// pins' bounds as function-scope `static color3f const` tables 446 (1870 B and frame 0x40 as retail: the bound aggregates
+// leave the frame, but the pins still store before the next compare and the blocks move); the same with the two colours
+// unpacked lightmap first 446; with the mobile flag as a test-set (match-only) 430 (1870 B, first difference +0x57); the
+// bounds as `color3f const` locals 378 (same code); the mobile test written into the `k` ternary (no `mobile` local) 487
+// (0x3db00 drops to 12, 0x3dfe0 to 45).
+// Static lower bound 446, static upper bound 446, implicit zero-fill aggregate 464, chained bound
+// stores 378, reversed bound declarations 378, destination address table pins 641, member table pins
+// 648, destination table with input snapshot 648. Either static bound recovers frame 0x40 and 1870
+// bytes at a higher score. The input snapshot changes both checked callers in the reduced image.
+// MiniMax H (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, so the whole
+// prologue differs before the body starts; the forms tried by the earlier rounds are recorded above and none of them
+// brings the frame back to retail's size without losing 0x3db00 or 0x3dfe0.
+// MiniMax B (11-20): the mobile flag is now a false store followed by a true store in the three comparisons, and the squared length's terms are spelled (k, i, j), so the squares are emitted i, k, j as retail does: 378 -> 356. What still differs: the frame is 0x4c against retail's 0x40, and the flag's blocks are not laid out as retail lays them.
+// Review (m3, 11-20): not kept: the flag started false and set under the test, and the squared length's terms in another
+// order, are both match-only forms (a flag set by a test; operand order chosen by score). Code back to main's; a lead
+// for a match only.
+// MiniMax C (11-20): no new form, no lower score (378): the mobile flag as a false-first if/else measures 362 but is a test-set
+// flag, kept only with a byte match (review 11-17), so the body is as it was; the squared length summed as (k, i, j) measures
+// 356 (six points, under the keep bar), the early square 457, the colour2 positive checks as select stores with the in-place
+// rotation 436, the limited colour as three scalars 434 and the normalize through three temporaries 429; left: the frame is
+// 0x4c against retail's 0x40, the normal copy's components are stored in the order (k, i, j) against retail's (i, k, j), the
+// normalize's j and k products are commuted, and the 0xd37f0 call hands its block and query over in the other order.
+// M3 lane 8 r217 (h2m fast with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10; control 378). Letters: N the first normalize through
+// normalize3d; D0 direction0 as an aggregate copy of the normal negated by lighting_negate; IP direction2 copied, negated and
+// rotated in place; ES `real square` right after the direction1 negate (a moved declaration, so match-only); SS colour2's
+// positive checks as select stores. N D0 IP ES SS 370 (1914 B, frame 0x40); without SS 399; without ES 485; N D0 IP 496;
+// IP ES SS 458; N D0 514; IP alone 460 (1870 B); D0 IP ES SS 507; the set with (type, query, block) 509; with the live axis 426
+// (0x3db00 lost). With 0xd37f0's colour-scale helper and live-axis pair: N D0 IP ES SS 316 (1877 B, aligned 215: left are the
+// entry flag store, the normal copy's square order, the hoisted tag-table load, the call's query/block registers, the rotation's
+// sine interleave and the final scales); without ES all 16 subsets 427 (N D0 IP SS) to 486, the pair alone 477. Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both lighting_rotate calls through include/axis_rotation.h's helper (the negated copy turned in
+// place, then stored) 470 (1844 B; 0xd37f0 605). Restored.
+// M3 lane 4 r254 (H2M_FAST with 0xd37f0 529, 0x3db00 MATCH, 0x3dfe0 21; aligned = difflib rows with stack offsets masked,
+// control 313). IP = direction2 copied from direction1, negated and rotated in place (0xd37f0's own form, no `turned`
+// local: retail's 0x40 frame and 1870 B): IP 460 (aligned 286; the 0.0/1.0 constants move to xmm5/xmm4); the shared
+// rotation reading the axis through a pointer to g_4687b0 (retail reads it live) 515 (1837 B; 0x3db00 lost, 8; 0xd37f0
+// 610), with IP 496; IP + mobile ahead of the length 475 (main 394); IP + the query cast at each use (no input_normal
+// local) 376 (1876 B, aligned 252; under the bar; main 378); IP + bounds declared at the top 449 (aligned 245; main 379);
+// IP + cast + bounds 377. Match-only diagnostics on IP + cast: squares spelled (k, i, j) 370, mobile false then set 360,
+// both 354 (aligned 248); left there the 1.0f constant in xmm5 (retail xmm6), the colour2 blend schedule and the
+// rotation's stack copy of the axis.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2320,309 +2449,16 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
-// MiniMax I (11-15): no new form, no lower score (542): the frame is retail's 0x90, but the status, mesh, colour and sample
-// homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it; that
-// helper lives in another file.
-// MiniMax B (11-13): no new form, no lower score (542): aligned the two listings instruction by instruction: the frame is
-// retail's 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's
-// 0x13da30 lookup expands here where retail calls it; moving the declarations does not move the homes, and that helper
-// lives in a file this lane may not edit.
-// MiniMax B (11-12): no new form, no lower score (542); the frame is retail's 0x90, but the status, mesh,
-// colour and sample homes sit 0xc bytes lower than retail's (the status at 0x24 against retail's 0x30 and
-// the sample pointer at 0x20 against retail's 0x2c), and the second arm's 0x13da30 lookup expands here where
-// retail calls it; both helpers live in files this lane may not edit.
-// MiniMax S (11-11): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it (that helper lives in another file).
-// MiniMax D (11-10): no new form, no lower score (542); the second arm's 0x13da30 lookup expands here where
-// retail calls it, and that helper lives in another file.
-// MiniMax S (11-10): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh,
-// colour and sample homes sit 0xc bytes lower than retail's (the status at 0x24 against retail's 0x30 and the
-// sample pointer at 0x20 against retail's 0x2c), so the stores and the loads that name them differ throughout
-// the body; the calls and their arguments are in retail's order.
-// MiniMax C (11-06): no new form, no lower score.
-// MiniMax H (11-13): no new form, no lower score (542); the locals sit in other stack slots and the indexed compare uses the other operand order.
-// score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
-// w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
-// no logic difference (offsets, constants, condition directions, call arguments, result values and the
-// final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
-// Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
-// the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
-// set in a test (`if (call) dynamic_valid = true;` in both format arms) 553. Retail after 0x24490 holds
-// zero in ebx, reads the format into dl, scales only vertices[0] by 5 before the format branch, and after
-// 0x241c0 stores result 0/valid 1 or result 1/valid bl per arm (`cmp al, bl`).
-// Earlier: frame 0x90 agrees and the first arm matches retail instruction for instruction
-// except its stack homes (lightmap +0x20 versus +0x34, mesh +0x2c versus +0x20, result/part, normal,
-// u/v/bsp/material slots: retail packs them jointly with the second arm's colours and normals); the
-// direct sample pointers are pushed as built (retail builds a, b, c in order, sharing vertices[0] * 5
-// with the unpack arm), the zero constant is not held in ebx for the result/valid stores, and one of
-// the two 0x24590 lengths is inlined. per_vertex is assigned in each arm because retail stores its
-// false (`mov byte [esp+0x13], 0`) after the two entry reads and threads the second index test; the
-// single bool expression stored the false first and re-tested the index (without it the rest scores 788).
-// Round 36 (lane 1; aligned/shape = difflib counts over the listing, base 1007/355): triangle u/v/index
-// read at each call, as retail and 0xd16d0, 782 (986/289, frame 0x90); plus material lookup before the
-// default copies 782 (951/270); plus `if (section_index != NONE) {...}` for the early return 786
-// (944/261); plus 0x241c0 called in each sample-format arm 788 (953/205); plus per_vertex assigned in
-// both arms of the index/word test (threads retail's second index test) 623; plus palette read before
-// bitmap 617 (kept); plus the colours stored before the -1.0 614; plus the zeroed outputs declared
-// before bsp 616, both 613, declared base_v, base_u, v, u 612 (kept); plus `if (dynamic_valid) result = 0;
-// else result = 1;` 595 (kept). On the 612/595 forms: the direct sample pointers as one-use locals 626
-// (aligned 489; not kept); bsp renamed, u/v names swapped: identical; final rescale through
-// vector3f_scale 619 (3142 bytes), all three scalings 648 (3081 bytes, a pin block tail-merges); with
-// the result branch 614/624; lightmap declared first, second-arm base/normal declared with the dynamic
-// outputs 595/595 (identical); `result = 1` before the block lookup, cleared on success 601.
-// Round 39 (lane 1, fast): retail calls 0x24590 for both lengths and 0x13da30 in both arms (27 calls);
-// ours inlines the second length and the second-arm material lookup (25 calls), so its scaled normals stay
-// in registers where retail stores and reloads them. Sample strides as `vertices[k] * 5` on real/short
-// pointers 595 (identical); the colour pair cleared as two statements 595; base_valid set inside an `if`
-// on the first call 555 (3130 bytes, but aligned 874 -> 1011, the flag held in bl; a flag set in a test);
-// the 0.5 fallback as three statements 596; normal declared before base in the second arm 595.
-// Earlier (761): Frame 0x98 versus 0x90; status +0x40 versus +0x24, mesh
-// +0x24 versus +0x20, sample homes and material/magnitude expansion remain.
-// Earlier: Frame 0x90 agrees; result +0x3c versus +0x24, mesh +0x2c versus +0x20, and helper expansion
-// remain. Existing scalar clamp output pointer 811; weight loop 819; native sample table 819;
-// block-success samples 831; parallel running luminance 818; clamp plus narrow samples 799; with
-// Boolean/word/byte capability 790/802/790.
-// the long per-vertex flag and the sample points declared at the top of
-// the long per-vertex flag and the sample points declared at the top of
-// their scope; mesh, UV and color homes and helper expansion still differ (frame 0xa8 versus 0x90).
-// Native bitmap word 835; palette byte 852; both 852; UV role names 835; inline depth zero 2009;
-// metadata dispatch 847; long per-vertex alone 831; dynamic entry lifetime 835; model sample
-// lifetime 825; depth one 835; material noinline 870/866.
-// shared cross-path normal 820; shared cross-path base color 825; native scale helper 853;
-// texture carrier name 819; first sample lexical position 819.
-// Dynamic validity long 863; base validity short 819; accumulated sampled color 828;
-// weighted normal loop 892; both lengths before scaling 837; one broad sample scope
-// with the other two narrowed (first/second/third) 831/831/831.
-// frame 0xa8 versus 0x90; mesh, UV and sample homes remain.
-// Only third/second/first sample narrowed 828/828/828 (frame 0x9c);
-// byte per-vertex capability 825; function-scope samples 819. Original body retained.
-// frame 0xa8 versus 0x90, mesh/sample/UV homes and helper expansion remain.
-// Presence-branch samples 831 (frame 0x90); later vertex pointer 853; common base/normal outputs 825;
-// direct static material use 859; base-only fallback first 818. Original body retained.
-// Native packed input record 819; unpack output first 819; decoded sample value return 945;
-// color value contract 1350; native color reference output 819. Frame/mesh/sample/color/UV
-// homes and helper expansion remain; original complete body and both helpers restored.
-// Native part/index/section records 790/790/790; part/index, part/section, index/section 790/790/790;
-// all three 790; all three with result declared first 790. Real metadata layouts canonicalize.
-// Decoder output reference 790; decoder output pointer result 823; ordinary decoder/color/both
-// 1143/1084/1478; separate noinline decoder/color/both 1140/1597/1958.
-// Frame agrees; status/mesh/sample homes and shared external call boundaries remain. All restored.
-// Late model texture outputs/sample color/combined color at model entry 790/790/796;
-// texture plus sample/texture plus combined/sample plus combined/all three 790/796/796/796;
-// all three at function entry 793. Frame/result/mesh and external helper boundaries remain.
-// Round 181 material noinline 807; native status/mesh, vector, color, barycentric sample and combined role homes 790/790/790/790/790; single result exit 834; combined homes with material noinline 807 (fast); all restored. Frame 0x90 agrees; result/mesh/sample/UV homes and material/magnitude expansion remain.
-// Round 327: status tests 800; phase failure default 796; current group/index/data fields
-// 801/811/819; status tests with group/index 802/816; phase default with group and indices 815.
-// Round 331: magnitude noinline/inline/force-inline caller declarations, alone and
-// with material noinline, plus magnitude noinline/material inline: all seven 790f;
-// requested magnitude boundary with all shared vector scales 824f (3069 bytes).
-// Caller-local contracts do not resolve the expansion; all declarations and scales restored.
-// Cross-path shared mesh/texture coordinates/material/mesh-texture/mesh-material/texture-material/all
-// 790/787/790/787/790/787/787; all with result first 787. Shared texture coordinates with
-// short/word/signed-byte/byte status 790/790/820/820. Three-point gain rejected; all restored.
-// Round 251: separate per-path long/dword/short/word status lifetimes
-// 809/809/812/812; the same lifetimes after admission 809/809/812/812. All use
-// frame 0x8c; original shared status, frame 0x90 and complete body restored.
-// Round 255: native short component counters base/dynamic/output 784/789/782;
-// base-dynamic/base-output/dynamic-output/all 784/797/784/804; all byte 804 (fast).
-// Only the final rescale counter is short, range 0..3; ordinary 782 at 3133/3130.
-// Round 391: Existing color-sum, special default-vector setter and weighted-vector
-// scale/add helpers in seven subsets 782/782/782/828/828/828/828;
-// all three with chained default colors 827. Frame 0x90 and displaced status/mesh homes
-// remain; original body, all loops, sample lifetimes and helper bodies restored.
-// Round 395: Nested/failure-first luminance decisions 782/810; dynamic-first
-// validity with original/nested/failure-first luminance 782/782/786; base-first
-// validity with those decisions 783/783/797. Original native output graph restored.
-// Round 177: Native vector setters base/dynamic/output/weighted 784/781/790/782;
-// base+dynamic/all scales/weighted+output/all four 795/824/790/824. One-point gain
-// rejected; original loops and outputs restored; status/mesh homes remain in frame 0x90.
-// Round 268: native existing vertex-buffer, actual model-input record and native three-word
-// triangle views in all seven subsets 782 each; all with read-only buffer/data 782.
-// Original views restored; frame 0x90, displaced status/mesh homes and external expansion remain.
-// Round 253: Direct component-array cursor loops base/dynamic/output/base-dynamic/
-// base-output/dynamic-output/all/all with ordered end tests 856/841/785/809/840/819/810/911.
-// Original ordinal loops, short final counter, frame and complete body restored.
-// Native interpolation pointers with decoded/raw defaults at producer, before-samples,
-// dynamic-phase and function declaration scopes: 784/796 in each pair. Original
-// two-arm source selection, independent sample objects and complete body restored.
-// Guarded pointer values after decoding at producer/before-samples/dynamic-phase/
-// function declaration scopes 806 each (3072 bytes). Raw-default diagnostics are
-// rejected; original format-dominated address arithmetic and full body restored.
-// Round 257: Scalar color-pin lower/upper independent, upper exclusive and lower/upper
-// guard returns 782 each; native lower/upper scalar results 828/828; existing returning pin
-// 843. Original conditional stores, helper and complete body restored.
-// Round 207: structure/model UV, ordinal, both UV, structure-ordinal/model-ordinal/all/entry
-// captures 838/790/787/866/773/776/803/807. One-path UV caching is match-only; restored.
-// Complete captures with late-structure/early-model/both phases 761/803/761; early-structure
-// with original/early model 772/772; readonly late-structure/early-model/both 761/803/761.
-// Consistent reused UV and ordinal inputs at the natural structure phase kept, plain 761.
-// Round 420: Cross-path shared UV inputs/ordinal/both/mesh/UV-mesh/ordinal-mesh/all/all with status first:
-// 807/761/807/760/807/760/807/807. UV sharing grows frame to 0x9c; mesh sharing gains one only. Original
-// independent captures, mesh homes and status order restored.
-// Round 44: complete default normal/base/lightmap initializations after material, individually/
-// paired/all, then all after native input captures 761/761/761/759/759/759/759/759.
-// Original default observations and body restored; frame 0x98/0x90 and homes remain.
-// Reused magnitude results before RGB construction, after pin/before packing and after
-// packed publication, base/dynamic or dynamic/base: 628/628/622/622/622/622;
-// base-only/dynamic-only before RGB 614/628. Frames 0x8c versus 0x90; original
-// producer phases, calls, complete body and matched caller controls restored.
-// Round 473: all three five-value sample element offsets shared across real/short formats; long/dword,
-// ascending/reverse declarations and model/entry validity lifetime: 603/821/555/773/603/821/555/773.
-// sample_offset names 555; plain 555 kept. Each offset has both format consumers; all sample objects,
-// helper bodies, call roles and arithmetic grouping stay fixed.
-// Round 231: structure/model/both admission guards 817/618/642; the same guards with
-// test-produced shared status 817/798/776; both guards with special-material single
-// completion and test-produced/original status 816/797. Original admission and body restored.
-// Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
-// native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
-// producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
-// Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
-// with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
-// restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
-// Round 329: Three-entry sample-offset table, long/dword entries with initializer,
-// ascending assignments, descending assignments and plain indexed loop,
-// 603/603/555/575 each. No exact match; independent offset locals and full body restored.
-// Round 273: Complete encoded decoder input value/reference-copy/library-copy/native
-// five-short array copy 687 each; weights-first value/pointer-copy/reference-copy/library-copy
-// 699 each. Original decoder, separate samples, shared offsets and complete body restored.
-// Frame 0x90 agrees; status +0x30 versus +0x24 and mesh +0x2c versus +0x20 remain.
-// Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
-// with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
-// restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
-// Round 296: Per-format a/b/c/ab/ac/bc/abc sample offsets, then bc offsets with long dynamic validity.
-// Scores 589/600/593/598/588/597/606/627. Original complete body restored.
-// Round 231: structure/model/both admission guards 817/618/642; the same guards with
-// test-produced shared status 817/798/776; both guards with special-material single
-// completion and test-produced/original status 816/797. Original admission and body restored.
-// Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
-// native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
-// producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
-// Round 234: Decoded/encoded/both scalar roots at branch/data production, readonly data and native block controls 554 each (eight forms); first/middle/last samples 555; complete status/mesh/sample/vector/color role names 555. One-byte gains rejected; original complete body restored. Frame 0x90 agrees; status/mesh homes and selective helper expansion remain.
-// Round 363: Native four-weight decoder loop, long/short/word/byte ordinal with sample index first
-// 554/795/795/795; index last 550/775/775/775. Original decoder and complete body restored; status/mesh/sample
-// homes and helper expansion remain.
-// M314: First-path normal/base/both/lightmap/normal-lightmap/base-lightmap/all output declaration
-// lifetimes at entry 555/590/590/573/573/677/677; all with constant result first 677.
-// Every initializer stayed at its producer. Original complete body restored; status/mesh homes remain.
-// M321: Dynamic-status-owned validity, phase/absent-block failure and ternary/branch status; direct/post-phase validity
-// 640/584/640/584/609/608/609/608. Original flag/result graph and full body restored; status/mesh/sample homes and helper expansion remain.
-// M335: First-sample-owned base validity, admitted overwrite/failure clearing,
-// bool/byte/short/long: 667/667/660/661/604/604/608/603. NOT kept: unmatched state/carrier forms;
-// original complete body restored; status/mesh/sample homes and helper expansion remain.
-// N336: Independent first-path mesh/part declaration scopes before the input view or after
-// status, individually and both pointer orders: eight forms 555. Every acquisition stayed at
-// its producer; original complete body restored. Status/part/mesh homes and helper expansion remain.
-// Round 64 (m3 lane 1, fast): `result = !dynamic_valid` 687 (3040 bytes); the result as a ternary 687; the
-// validity test inverted 555; the data base's two loads swapped 555; sample offsets written per arm at each
-// argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
-// (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
-// pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
-// Round 79 (m3 lane 9, fast with 0x24590): the final rescale's counter as long instead of short 542 (kept, 3130
-// bytes: that loop now unrolls exactly as retail's). On 542: the dynamic normal normalized first 622; one scale
-// local for both normalizations 542; the weighted sums with the base term first 542; the first arm's outputs
-// declared u, v, base_u, base_v 543; the second arm's material lookup before the u/v call 608. Before: one
-// base/normal pair at function scope for both arms 574; the record arm's u/v at its top 555; the first arm's
-// mesh renamed (diagnostic) 555, no slot moves. Left: frame homes, and our inlined second 0x24590 length.
-// Round 64 (m3 lane 1, fast): `result = !dynamic_valid` 687 (3040 bytes); the result as a ternary 687; the
-// validity test inverted 555; the data base's two loads swapped 555; sample offsets written per arm at each
-// argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
-// (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
-// pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
-// B396: One shared test-produced long/dword/short/word status, original special exit 832/832/836/836;
-// actual single completion 824/824/711/711. Original entry default and complete body restored;
-// frame/status/mesh homes and selective expansion remain.
-// N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
-// conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
-// NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
-// AC509: Existing decoder returns mutable/readonly output references through pointer/reference
-// formals: four ignored results 542, four directly consumed interpolation results 545. Original
-// decoder and three samples restored; status/mesh/sample homes and helper expansion remain.
-// Round 404: Actual decoder input/output/paired-input/paired-output cursors 1100/756/984/855 with
-// ordered ends, 826/756/763/855 with equality ends. Original decoder, three independent samples and body
-// restored; native status/mesh/color/UV homes and selective expansion remain.
-// P308: Existing five-value decoder as a native decoded/encoded member, void/reference
-// results with forced expansion 542/542/542/542; ordinary expansion 1039/1039/1039/1039.
-// NOT kept: ties/outlining regressions; original free decoder, samples, offsets and body restored.
-// P310: Shared combined-fallback/single-valid color-normal publication and final packed-color
-// result, subsets 1..7: 714/720/1012/601/749/758/1051; complete conditional receivers 1029.
-// NOT kept: all regress; original publication paths, independent samples and body restored.
-// M351: Immutable existing first/second/third sample offsets, all seven subsets, then all with
-// fixed model metadata/mesh/index/data bindings: 542 each. Original body restored; native
-// status/mesh homes and selective material/magnitude expansion remain.
-// DH326: Branch-owned bitmap UV, texture-region base UV and publication-ended combined color,
-// subsets 1..7 then all with aggregate color initialization: 629/677/798/542/629/677/798/798.
-// Original output lifetimes and full body restored; status/mesh homes and helper expansion remain.
-// DH330: Native three-sample output array with long/dword/short/word indexed decoding,
-// encoded-format scope 656/656/877/877; model scope 664/664/877/877.
-// NOT kept: unmatched grouped outputs; original independent samples and body restored.
-// DH338: Complete RGB pin index loops in long/short/word/byte 542/1111/1111/1111;
-// advancing-channel loops 542/1111/1111/1111. Narrow loops remain rolled and shorten
-// away from retail; original helper/body restored, status/mesh/sample homes remain.
-// J253: Coordinated ordinary inline contracts for mesh lookup, both UV outputs, normal,
-// vertex color, bitmap/base samplers and dynamic interpolation: 542 each. Original
-// declarations/definitions restored; status/mesh homes and selective expansion remain.
-// P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
-// subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
-// stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
-// B448: Complete structure/model shading-path providers, query pointer/reference and forced/ordinary inline:
-// 880/880/1676/1676/805/805/3015/3015. NOT kept: no byte match; complete original body restored.
-// M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
-// then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
-// original copies and body restored; status/mesh/sample homes and selective expansion remain.
-// MiniMax C (11-15): no new form, no lower score (542): the frame and the extent agree, and what is left is the
-// status, mesh and sample homes plus the two helpers this link expands where retail calls them (0x24590 and 0x13da30);
-// the forms for the homes are in the notes below and none of them lowers the score, and the callees' own files are not
-// this lane's: BLOCKED-BY 0x24590 and 0x13da30.
-// P347: Actual twice-consumed dynamic-brightness result, bool/byte/short/long, positive/complementary truth:
-// 542/542/542/542/542/542/542/542. NOT kept: All eight tie 542 at native extent and frame; status/mesh homes and selective helper expansion remain. Original complete body restored.
-// M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,
-// then all with double final length: 726/658/640/708/663/648/676/697. NOT kept: nonexact precision
-// forms; original body restored, native status/mesh and output homes remain.
-// AC558: Persistent positive dynamic/base validity bool/byte/char pairs except
-// original bool/bool: eight at 542, native frame/extent. NOT kept: no exact match;
-// original domains, providers, shared offsets, separate samples and body restored.
-// Y605: Actual query direction member with native/shared-setter/CRT-copy/CRT-move
-// publications, existing then direct weighted receiver: 542/611/542/613/542/611/542/613.
-// NOT kept: no byte match; original query declaration, helpers, publications and body restored.
-// F397: Existing color pin owns packed return/output, color pointer/reference and forced/ordinary
-// expansion: 667/667/1456/1456/667/667/1457/1457. NOT kept: all regress; original helper/body
-// restored, native status/mesh homes and selective expansion remain.
-// M395: Component aggregate default normal/base/lightmap families 1/2/4/3/5/6/7, then complete member assignment construction:
-// 623/621/618/621/621/621/666/666. NOT kept: no exact native-shape candidate; native status/part/mesh homes and selective helper expansion remain.
-// Original complete body restored.
-// N395: Actual dynamic-failure bool/byte/short/long outcomes 589/589/609/610;
-// actual base-failure outcomes 542/542/550/548. NOT kept: no native status/mesh
-// home recovery or equality; original positive validity and complete body restored.
-// Round 63 (m3 lane 2, fast; control 542): retail calls both 0x24590 lengths and both 0x13da30 lookups; ours still
-// expands the last call of each (25 calls against 27). `result` renamed `status` 542 (same slots: names do not
-// order these homes); u/v and base_u/base_v declared u first 543 (same slots); the second arm's part pointer before
-// its UV call 542; both lengths taken before the base scaling 635 (3092 B; both 0x24590 calls then stay out of
-// line, but retail scales the base normal between them, as main does); the larger length chosen before the
-// 0x30bf0 call 606 (3144 B); the final rescale as three statements 542; the larger length as
-// `base_length < dynamic_length ? dynamic_length : base_length` 542. (u-first and lengths-first re-measure listed
-// forms.) BLOCKED-BY 0x24590 (src/unknown_023540.cpp, avoid list) and 0x13da30 expansion.
-// Round 143 (m3 lane 7, fast): 25 calls against retail's 27 in every form but the two helper ones (as
-// observed, the first 0x24590 call site stays a call and the later one inlines, and the second-arm 0x13da30
-// lookup inlines); an extra pin in either arm 643/864 (diagnostic,
-// still 25 calls); the two lengths swapped 622; one forced-inline normalize helper for both 652 (24 calls),
-// as plain inline 754 (26 calls); offsets declared a, b, c 587; `vertices[k] * 5` in each argument 614;
-// only the first offset before the branch 614; per-branch offset locals 631; per-branch sample pointers
-// (`real *` in the float branch, `short *` in the packed one, a, b, c) 625 at 3147 B, but with retail's
-// registers through the first arm and the sample setup (difflib with registers 287 against 974, registers
-// and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
-// extra instructions shift the tail).
-// MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
-// M3 lane 5 r182 (fast with 0xd37f0, 0xd4080, 0x3db00, 0x3dfe0): the hand-written `for (component < 3)` scaling loops raise
-// the estimated frequency of the calls after them, so LTCG inlines the later 0x24590 length and the second arm's 0x13da30;
-// as straight statements both stay calls as retail. Base scaling as three `*=` 606 (3108 B, 26 calls), through the existing
-// vector3f_scale 568 (3131 B, 26 calls); both normalizations as statements 606, through vector3f_scale 624 (3119 B); all three
-// loops as statements 657 (3057 B, 27 calls); all three through vector3f_scale 675 (3068 B, 27 calls; listed form, 648 before).
-// Per-arm a, b, c sample pointers re-measured 625 (3147 B, 25 calls); with all loops as statements (match-only, one-use
-// pointers) 641 at 3075 B, 27 calls, masked aligned 292 -> 84: retail's head-merged vertices[0] * 5 appears. Left there:
-// retail's EBX zero from the 0x24490 test through the per-path result/validity stores (result at +0x24, ours +0x30), the
-// luminance and normal homes, and the base length stored then compared from memory.
-// MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
-// status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
-// still expands here where retail calls it.
+/* the colour query for a surface: a structure triangle samples its lightmap (per vertex or from the bitmap) and
+   base colour, a model section blends its dynamic and base lighting by luminance */
+// Matches retail byte for byte. What its bytes need: every vector scaling goes through vector3f_scale (a
+// `for (component < 3)` loop in front of a call raises that block's estimated frequency, and the link-time inliner
+// then expands the magnitude and material lookups that retail calls); each format arm forms its three sample
+// pointers up front (retail scales vertices[0] once ahead of the format test and builds a, b, c in order); the
+// block lookup's definition is named as at the other 0x24490 callers (retail loads it and copies it to EDI); the
+// result block stores the flag again in both arms (retail's zero in EBX, 1 / EBX after the result); the blend is
+// two scalings and an add; the weights are written red first; and the instance test reads the triangle's
+// instance index itself (the local copy flips the address's base and index registers).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
@@ -2653,7 +2489,7 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
             long bitmap_index = NONE;
             long palette_index = NONE;
             bool per_vertex;
-            if (index != NONE && *(word *)(*(byte **)((byte *)g_4e0348 + 0x144) + index * 0x58 + 0x56) != 0)
+            if (index != NONE && *(word *)(*(byte **)((byte *)g_4e0348 + 0x144) + triangle->instance_index * 0x58 + 0x56) != 0)
                 per_vertex = true;
             else
             {
@@ -2709,20 +2545,19 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
             vector3f dynamic_normal;
             if (*(long *)(definition + 0x74) > 0)
             {
-                byte *block = (byte *)function_24490(*(long const *)(record + 8),
-                    *(s_24490_definition **)(definition + 0x78), section_index);
+                s_24490_definition *resource = *(s_24490_definition **)(definition + 0x78);
+                byte *block = (byte *)function_24490(*(long const *)(record + 8), resource, section_index);
                 if (block)
                 {
                     byte *data = *(byte **)(block + 0xc) + *(long *)(block + 4);
                     // Each format stores five values per sample.
-                    long sample_offset_c = vertices[2] * 5;
-                    long sample_offset_b = vertices[1] * 5;
-                    long sample_offset_a = vertices[0] * 5;
                     if (block[0] != 0x39)
                     {
+                        s_sample_point *sample_a = (s_sample_point *)data + vertices[0];
+                        s_sample_point *sample_b = (s_sample_point *)data + vertices[1];
+                        s_sample_point *sample_c = (s_sample_point *)data + vertices[2];
                         dynamic_valid = function_0241c0(*(long const *)(record + 8), *(long const *)triangle->unknown2c,
-                            &dynamic_normal, *(long const *)(record + 0x1c), (s_sample_point *)(data + sample_offset_a * sizeof(real)),
-                            (s_sample_point *)(data + sample_offset_b * sizeof(real)), (s_sample_point *)(data + sample_offset_c * sizeof(real)),
+                            &dynamic_normal, *(long const *)(record + 0x1c), sample_a, sample_b, sample_c,
                             triangle->u, triangle->v, (vector3f *)&dynamic_color);
                     }
                     else
@@ -2730,18 +2565,27 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                         s_sample_point point_a;
                         s_sample_point point_b;
                         s_sample_point point_c;
-                        surface_sample_unpack((short *)(data + sample_offset_a * sizeof(short)), &point_a);
-                        surface_sample_unpack((short *)(data + sample_offset_b * sizeof(short)), &point_b);
-                        surface_sample_unpack((short *)(data + sample_offset_c * sizeof(short)), &point_c);
+                        short *sample_a = (short *)data + vertices[0] * 5;
+                        short *sample_b = (short *)data + vertices[1] * 5;
+                        short *sample_c = (short *)data + vertices[2] * 5;
+                        surface_sample_unpack(sample_a, &point_a);
+                        surface_sample_unpack(sample_b, &point_b);
+                        surface_sample_unpack(sample_c, &point_c);
                         dynamic_valid = function_0241c0(*(long const *)(record + 8), *(long const *)triangle->unknown2c,
                             &dynamic_normal, *(long const *)(record + 0x1c), &point_a, &point_b, &point_c,
                             triangle->u, triangle->v, (vector3f *)&dynamic_color);
                     }
                 }
                 if (dynamic_valid)
+                {
                     result = 0;
+                    dynamic_valid = true;
+                }
                 else
+                {
                     result = 1;
+                    dynamic_valid = false;
+                }
             }
             color3f base;
             vector3f normal;
@@ -2749,8 +2593,8 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                 && function_d31c0(mesh, triangle->u, triangle->v, triangle->lightmap_part_index, &normal);
             if (dynamic_valid && base_valid)
             {
-                real dynamic_weight = dynamic_color.blue * 0.11f + dynamic_color.green * 0.59f + dynamic_color.red * 0.3f;
-                real base_weight = base.blue * 0.11f + base.green * 0.59f + base.red * 0.3f;
+                real dynamic_weight = dynamic_color.red * 0.3f + dynamic_color.green * 0.59f + dynamic_color.blue * 0.11f;
+                real base_weight = base.red * 0.3f + base.green * 0.59f + base.blue * 0.11f;
                 if (dynamic_weight > 0.0001f && base_weight > 0.0001f)
                 {
                     color3f combined;
@@ -2763,24 +2607,21 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                     if (base_length > 0.0001f)
                     {
                         real scale = 1.0f / base_length;
-                        for (long component = 0; component < 3; ++component)
-                            normal.n[component] *= scale;
+                        vector3f_scale(&normal, scale, &normal);
                     }
                     real dynamic_length = magnitude3d(&dynamic_normal);
                     if (dynamic_length > 0.0001f)
                     {
                         real scale = 1.0f / dynamic_length;
-                        for (long component = 0; component < 3; ++component)
-                            dynamic_normal.n[component] *= scale;
+                        vector3f_scale(&dynamic_normal, scale, &dynamic_normal);
                     }
                     vector3f *out = (vector3f *)query;
-                    out->i = dynamic_normal.i * dynamic_weight + normal.i * base_weight;
-                    out->j = dynamic_normal.j * dynamic_weight + normal.j * base_weight;
-                    out->k = dynamic_normal.k * dynamic_weight + normal.k * base_weight;
+                    vector3f_scale(&normal, base_weight, &normal);
+                    vector3f_scale(&dynamic_normal, dynamic_weight, &dynamic_normal);
+                    vector3f_add(&dynamic_normal, &normal, out);
                     function_30bf0(out);
                     real length = dynamic_length > base_length ? dynamic_length : base_length;
-                    for (long component = 0; component < 3; ++component)
-                        out->n[component] *= length;
+                    vector3f_scale(out, length, out);
                 }
                 else if (dynamic_weight > 0.0001f)
                 {

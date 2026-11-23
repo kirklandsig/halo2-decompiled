@@ -18,7 +18,8 @@
 
 /* Light pool queries and the shapes copied from definitions and placements. */
 s_record_pool *g_4e030c;
-long g_4e0308;
+#include "light_marks_storage.h"
+s_light_marks_storage g_light_marks_storage;
 
 
 // @retail 0xc0a50
@@ -799,111 +800,9 @@ byte g_55e708;
 
 #define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-// score 38 (was 38): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
-// count in the fallback arm, the loop's amount/index loads, the single-marker arm, the opacity reload). 0x2dba0's order is
-// now applied: earlier BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
-// index, marker_index, position, direction, color, alpha, amount, scale) at its definition and every call (0x2dba0 and
-// its other callers unchanged) the marker loop anchors on the position pointer as retail (the cursor anchors on the
-// address evaluated last) and this is 45 at retail's 607 bytes, 38 with the opacity through the PIN macro; the
-// direction after the colour 38, last 153 (0x2dba0 56), tag after alternate/position/direction 141 each.
-// Earlier (was 109): 0x2dba0 now takes the tag in ECX and the direction in EDI as in retail; the marker loop
-// walks the forward pointer in EDI (position = edi + 0x24, index in EBX) where retail walks the position pointer
-// in EBX, derives the forward with `lea edi, [ebx - 0x24]` and keeps the index and count in memory (frame 0xf0
-// against 0xec); the opacity clamp stores the product first. Earlier: BLOCKED-BY 0x2dba0: it took the position in
-// ecx and the tag on the stack where retail
-// passes the tag in ecx and the position on the stack, so the marker loop keeps its index in ebx and
-// spills the position where retail walks the position pointer in ebx with index and count in memory.
-// Round 70: indexed loop with a marker pointer per pass 109; single-marker case first 146; object
-// index local at every use 157; the field read at every use 109; the file's clamp_light helper for
-// the opacity 109 (retail's clamp shape, the rest unchanged).
-// Round 56: indexed loop without the marker pointer 109; opacity clamp as if/else-if 109; short count
-// and short index 125 (607 bytes, aligned diff 86 -> 55: the single-marker arm moves after the loop as
-// in retail, but the loop counts down in registers); short index only 114; short count only 128.
-// Round 141: bool warning flag 109; `count = 1` before the flag test 126; `count == 0` fallback test
-// 109; colour pointer local 109.
-// Round 39: count before markers 109; count/index before markers 109; cursor before the count clamp 109;
-// const cursor 109; pointer for loop 109; marker_count/marker_index names 109/109;
-// cursor after the array declaration 109. Fast preview 131 with caveats; plain all 109; original restored.
-// Round 175 (plain): the absolute index written at each use 109; the effect tag read into a named local
-// for the test and both calls 163 (retail's 607 bytes, but a 0xf4 frame and every register moved).
-// Round 45 (lane 10, plain): an indexed for loop over `&markers[i].matrix` 128; a position pointer local in the
-// indexed loop 128, in the pointer loop 128; the product and the clamped opacity as two locals 128 (aligned
-// 99 -> 96); short count and index 145 (582 bytes). Compile-only (it reproduces the forward-pointer IV): a matrix
-// pointer, both address locals and a marker pointer in the for loop all keep it; a walked position pointer
-// gives two pointer IVs, not retail's one.
-// Lane 12 r72 (plain; --fast builds this function differently, 189): the opacity as the file's PIN macro
-// on the product (the macro moved above this function) 128 (retail's clamp stores, no count change);
-// `g_55e708 = true` same code. Compile-only (reproduces the forward-pointer IV): a forward pointer
-// local, an indexed loop with it, a position pointer local: same code. BLOCKED-BY 0x2dba0 (parameter
-// order): compile-only, with 0x2dba0 declared with the direction after the position (the call passing it
-// last) the loop's pointer IV becomes the position and the forward is derived (`lea reg, [iv - 0x24]`) as
-// in retail, as matched 0xc6fb0 does for 0xc9040 (position before forward); not built: 0x2dba0's
-// definition sits in src/unknown_0350e0.cpp (left alone), and whether LTCG keeps the direction in EDI
-// after that reorder is unverified.
-// Round 47 (lane 10; fast with 0x31520 and 0x3e9c0 listed agrees with the plain check): the opacity through the
-// PIN macro 128 (plain; aligned 99 -> 96); the clamp as if/else-if 128; an indexed for loop 128; object_index for
-// every object read in the marker arm 152; the first-person count as a ternary initialiser 128. Compile-only: a
-// forward/position/matrix pointer local, both locals in either order, the 0x3e9c0 result as a local, a do-while,
-// a for over both cursors keep the forward anchor; mixing `markers[i]` with the walked pointer gives two cursors.
-// Round 50 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the marker array and count declared before the object
-// and marker-name reads 128; the object_index local also as the loop's 0x3e9c0 argument 148 (587 bytes); the
-// fallback count as a ternary 128; the first-person test as nested ifs 128; the cursor advanced before the
-// index 128. Still BLOCKED-BY 0x2dba0's parameter order.
-// Round 52 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the 0x3e9c0 result as a named bool in the loop
-// 111 (607 bytes: frame 0xf0 as retail, but the bool is stored to the frame and the loop still walks the
-// forward pointer; a one-use call result, not kept); a do-while under `count > 0` 128; the flags tested as the
-// word field 128; the definition looked up inside the outer test 150; the clamp before the flag test 139 (592
-// bytes); the first-person test as a named bool 128.
-// Round 133 (lane 6, fast with 0x2dba0/0x31520/0x3e9c0/0xb8c40/0xb8d30/0x1662a1/0x42850 listed, which agrees with
-// the full build; the file alone does not): the direction read into a pointer local before the call, indexed loop
-// 128, pointer loop 128 (copy-propagated: identical code); a transform4x3f pointer local per pass in the real build
-// 128 (identical); a pointer loop to `markers + count` with `marker - markers` as the index 161 (642 bytes); a
-// guarded do-while 116 (607 bytes only by padding: the count clamp stores immediates and EBX is reloaded after
-// 0xb8d30 as retail, but the forward anchor stays; a hand-inverted loop, not kept).
-// Round 136 (m3 lane 5, fast with 0x2dba0/0x31520/0x3e9c0/0xb8c40/0xb8d30/0x1662a1/0x42850 listed, plain confirmed):
-// 0x2dba0's order applied (retail pushes scale, amount, alpha, color, position, marker index, index, kind, then the
-// 0x3e9c0 result, tag in ECX, direction derived from the position cursor) 45, the opacity through PIN 38. On 38: indexed
-// while 38; for with marker pointer 40; indexed for 38; count/array declared first 38; object_index for all object reads
-// 132, for the 0xb8c40 argument 135; no object_index local 38 (kept); count ternary 38; count if/else 38; `count == 0` 38;
-// marker pointer declared with count 38; i before marker 38; marker stepped first 40; count = 1 before the flag test 107;
-// PIN as call argument 38; named product 38; assignment inside the test 38; nested first-person test 38; short-cast count
-// argument 38; amount local in the single arm 97; alpha local in the loop 114, both arms 115; colour pointer local 143;
-// typed light/definition/object fields, singly and all together 38 each; direction after the colour/alpha/amount 38/38/38;
-// the count arms in an inline helper 178 (stays a call), forced inline 146; a named fallback count 38. The picks do not
-// move with symbols here (unlike 0x17d9a0): retail's fallback arm takes EAX for the object and EDX for the count, then
-// `mov eax, edx`; ours takes EDX then EAX, coalesced.
-// Round 29 (lane 18, fast with the same list): the fallback count accumulated (`count += ...`) 38 (same code);
-// the fallback test `count <= 0` 38; the marker index as a for-loop counter 40; the marker index declared
-// before the count 50; the absolute index computed inside the outer test (the light lookup masking the
-// parameter itself) 38. In the loop retail loads the absolute index early (EDX) and the marker index after
-// three pushes (ECX), the amount in EAX; ours loads the marker index early (EDX), the absolute index late (EAX).
-// Round 92: early shared query/output cursor 38; separate long draw count 113; short raw count with long draw count
-// 115; short count 131; short index 51; both short 77 (610 bytes); per-pass amount local 118 (613); const
-// light/definition 38. Original body restored; fallback/count scratch, loop load schedule, single-marker arm and
-// opacity reload remain.
-// Round 64 (m3 lane 1, fast with the same list): dword absolute index 38 (same code); count zeroed in an else of the
-// first-person test 38; unsigned loop index 39; unsigned count 39; count = 1 before the flag test 107. Permuter
-// (600 s, annealing): reduced image scores this body 141 (frame 0xec), nothing better in 47 tries.
-// Round 131 (m3 lane 8, fast with the same list): the flag test as an early return inside the 0x31520 test 38; the
-// count clamped before the warning flag 107 (retail stores it after); the fallback test `count < 1` 42; the absolute
-// index computed after the light and definition 38 (same code); the clamp test `count >= 2` 38. The rotations left
-// (fallback object EAX/count EDX, loop amount EAX/absolute EDX/index ECX, single-arm amount ECX/colour EDX/position EAX,
-// opacity ECX) do not move with any of these.
-// Round 160 (m3 lane 5, fast with the same list), each on the current form: no absolute-index local (the mask at the lookup and both
-// calls) 38; the opacity clamp as if/else-if in place of PIN 45; the first-person count as a ternary initialiser 38; the fallback as
-// `count = count ? count : ...` 38; the single-marker arm first 107.
-// m3 lane 2 r71 (fast with the same list): the loop index declared at the top of the function, before or after the
-// absolute index, 38/38; the marker array declared at the top of the function 38 (all three the same code: the loop's
-// load order does not follow declaration order here).
-// Round 112 (m3 lane 16, fast with the same list): the first-person count assigned inside the fallback test
-// (`if (type != 2 || ... || !(count = ...)) count = ...`) 38; the clamp as two tests on `count > 1` 38; the outer
-// test as an early return 38; the outer test as nested ifs 38 (same code each); the second tag read into a named local
-// for its test and call 40.
-// M3 lane 9 r126 (fast with the same list, control 38): retail computes the fallback count into EDX and copies it to EAX
-// for the join (ours computes it straight into EAX), and every later scratch pick follows that rotation. The first-person
-// count in its own variable with `count = first_person_count ? first_person_count : <fallback>` 106; one object-index local
-// for the two marker queries only 128 (618 B); the fallback result in a `short` local copied to count 38 (same code); the
-// fallback query written in both arms of the first-person test (count zero-initialised or not) 156/156 (639 B, not merged).
+/* for a light whose flag is set: the definition's first tag at each of its object's markers (at most one)
+   or at the light itself, then its second tag with the clamped opacity; the object marker query reads the
+   object index again into its own local */
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -924,7 +823,10 @@ void __stdcall function_c3340(long light_index, long unused)
                     count = first_person_weapon_get_markers(*(long *)(light + 0x4c), marker_name,
                         (s_first_person_marker *)markers, 1);
                 if (!count)
-                    count = function_b8d30(*(long *)(light + 0x4c), marker_name, markers, 2, false);
+                {
+                    long object_index = *(long *)(light + 0x4c);
+                    count = function_b8d30(object_index, marker_name, markers, 2, false);
+                }
                 if (count > 1)
                 {
                     if (!g_55e708)
@@ -1040,14 +942,6 @@ extern box2f *g_4687dc;
 void function_11f5f0(box2f *bounds, point2f const *points, long count);
 void function_141590(transform4x3f const *in, transform4x3f *out);
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result);
-
-/* result = -vector */
-PRIVATE inline void vector3f_negate_ab(vector3f const *vector, vector3f *result)
-{
-    result->i = 0.0f - vector->i;
-    result->j = 0.0f - vector->j;
-    result->k = 0.0f - vector->k;
-}
 
 PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vector3f const *point, point2f *result)
 {
@@ -1310,6 +1204,169 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // copy 305; the element cleared through `&entries[i]` before the pointer is named 628 (2821 B); the cone scale written at
 // both uses with no scale local 580 (2797 B); the cone arm without `entry = entries;` 721 (2744 B: the reassignment is
 // retail's); the two true flags as one chained store 290 (same code). Body unchanged.
+// M3 lane 11 r109 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the cone arm
+// `entry = entries;` ahead of its memset, cleared through `entry` 290 (same score); in light_projection_point_ab the
+// pre-scale reciprocal renamed `inverse` (it shared the name `scale` with the perspective factor) 290 (names do not
+// move it); the three transformed rows as named scalars (no `transformed` vector) 539 (2801 B); the sphere arm's
+// reference copy declared at the arm's top, ahead of the radius and the tables, 418 (2831 B); the radius read at the
+// loop top ahead of the entry pointer and its memset 304. Body unchanged.
+// m3 lane 1 r115: no form run. Checked against this note: retail's left normalize reloads each component from memory after
+// the length test (0x30bf0's code, whose declaration on main is noinline; its private copy was the same code as normalize3d,
+// m3 lane 2 r79), and the projection rows, sums, store orders and helper forms are all listed above.
+// m3 lane 5 r195 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290, aligned 273, register-masked
+// 122): the two listed leads together, to see whether they add up. The helper's scale statements as vk, vj, vi (r168's
+// 281, re-measured 281 at 2840 bytes) is not a real gain: its aligned count rises to 303 (masked 167). With `entry`
+// declared before `bounds`, the cone arm's `entry = entries;` ahead of its clear and the cone bounds stored after the
+// points as x0, y0, x1, y1 on top: 279 at 2840 bytes (aligned 278, masked 151: still worse aligned than the kept body);
+// that with the projection storing y first 289 (aligned 288); that with the rows computed up, left, forward 313 (aligned
+// 269, masked 137); that with a `0 < *count` guard around the loop 605 (2816 bytes, first difference +0x0). None kept:
+// the positional gains ride on retail's length only. Diagnostic: light_projection_point_ab's parameters as (point,
+// matrix, result) and as (result, matrix, point) at the definition and its five calls 290 each (same code: the helper's
+// own symbol order does not move the rows). Body unchanged.
+// M3 lane 8 r184 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; control 290): a matrix pointer for every matrix
+// access in the sphere arm 588 (2788 B); light_projection_point_ab's pre-scale through the existing vector3f_scale on a copied
+// vector 715 (2962 B); the sphere bounds call given the constant 4 600 (2777 B); the cone depth as `origin_offset +
+// far_distance` 290 (same code); a const up-vector pointer for both cross products 530 (2815 B). Body unchanged.
+// M3 lane 13 r111 (fast, base 290; the one-file harness gives 2815 B here, not faithful): the negate helper returning
+// its result pointer 290, the projection helper returning its result pointer 290, both 290 (same code: an unused pointer
+// return adds no symbol); the projection storing y first re-measured 299 (2840 B), with those returns 299; named x and
+// y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
+// first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
+// 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
+// M3 lane 12 r146 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the sphere arm the
+// up vector negated into a local copy used by both crosses and stored to the matrix 646 (2783 B); the left vector crossed
+// and normalized in a local copy, then stored 611 (2811 B); both 639 (2865 B); the reference as a const reference to the
+// selected global vector 698 (2751 B); in the cone arm the origin offset read once into a local for has_plane and the
+// plane offset 484 (2809 B). Re-measured: the plane distance as dot(normal, plane point) 315.
+// M3 lane 1 r123 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0x31c80; base 290): the loop-top clear as
+// value-initialisation 648 (2840 B, a temporary and a new prologue), also in the cone arm 649 (2846 B); the bounds copied
+// with memcpy 290 (same code); the sphere arm's two flag clears swapped 292; the sphere depth after the flag clears 352.
+// A register-masked alignment puts the 10 missing bytes in operand folding (retail loads the matrix element and
+// multiplies by the point register) and in the cone arm's reciprocal, which retail divides after the centre projection,
+// reusing the projection's 1.0 in XMM6. Body unchanged.
+// m3 lane 3 r262 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290): the sphere arm written through
+// `entries[i].` with no entry pointer 592 (2786 B); the projection's result products as `transformed.i * scale` 290 (same
+// code); the cone direction copied into a local vector before the centre projection 603 (2816 B); the sphere vertices as a
+// point3f table filled through the existing real_point3d_set 566 (2807 B); the vertex table as `real [8][3]` 290 (same
+// code). Diagnostic: dead initialised locals at the top of the cone arm, k = 1..8: 479/480/480/484/483/483/479/479
+// (2809-2814 B): no phase, every extra local costs ~190. Body unchanged.
+// M3 lane 3 r272 (fast with 0x11f5f0/0x141590/0x163db0/0x30bf0/0xc1a80, all matched; control 290, aligned 273, masked
+// 103): the loop under a redundant `if (0 < *count)` 604 (2815 B); the sphere arm's up vector bound by `vector3f const &`
+// for both crosses 530 (2815 B); the left vector bound by `vector3f &` for the cross, normalize and second cross 632 (2791
+// B); the reference axis as one `vector3f const &` chosen by a conditional 698 (2751 B); the sphere radius as a `real
+// const &` to the shape field 612 (2816 B). Each new frame symbol again shifts the whole body (~15 bytes shorter).
+// M3 lane 16 r139 (fast with 0xc1a80; control 290): a `plane3f *plane = &entry->plane;` for the cone plane's normal copy,
+// dot argument and distance store (retail's `[ecx + 0xc]` store) 543 (2810 B; the sphere arm's constant setup moves too),
+// with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the
+// loop top instead of in their arm: the plane point 290, the centre 290, the sphere radius 290, the cone scale 290 (same
+// code each).
+// M3 lane 12 r148 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the projection
+// helper the rows computed forward, up, left 491 (2809 B) and left, forward, up 295 (2832 B); the sphere arm as a forced-inline
+// helper taking (shape, entry, i, bounds) 479 (2814 B); the cone arm as a forced-inline helper taking (frame, shape, entry,
+// bounds) 485 (2812 B); the two arms swapped with the kind test negated 630 (2810 B). Reading: the cone arm's projection rows
+// already sum in retail's order (forward (k, j), i; left (k, j), i; up (k, j), i); only the sphere arm's differ, and the
+// left normalize there is 0x30bf0's code inlined by the linker, which its noinline declaration in src/unknown_030290.cpp
+// (another lane's file this round) prevents: BLOCKED-BY 0x30bf0's noinline. Body unchanged.
+// m3 lane 4 r224 (one-object LTCG screen with the reduced link's objects and the ballast: 0 rows from the full build,
+// 199 aligned rows from retail; rows 140-235 are the left cross, its normalize and the forward cross, 34 of them off):
+// 0x30bf0 called for the left normalize with its noinline declaration removed (a scratch copy of its file) is inlined at
+// link time and gives exactly this body's code, also across dead-local counts K = 1..39 odd (the block stays 33-35 rows
+// off), with the noinline kept it stays a call (424 aligned), `__forceinline` on its definition 316: the noinline is not
+// what blocks the normalize. Dead initialised longs at the top, K = 21..40 and 44..64 step 4: 184-217 aligned, K = 31 330,
+// K = 32 178 (masked 68), the cross block wrong in every state. Left cross/normalize helpers x K = 0/24/26/32 (block rows):
+// normalize_inline 40-43, cross3f 35-38, cross3f + normalize_inline 37-39, direction_normalize_c0840 and the file's
+// cross_product_c1a80 for the left cross the same code as the body; a named unused length 34. The forward cross through
+// cross_product_c1a80(up, left, forward) puts that block right but for 13 rows (retail's left-first loads) and moves the
+// projection rows (164 -> 196 rows off after the block): 433 (2821 B, aligned 210) on the fast check, 258-280 aligned
+// at K = 1..40 in the screen. Body unchanged.
+// M3 lane 11 r125 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned 273, masked 122): in the
+// projection helper the forward row written j, i, k 290; all three rows written i, j, k 290; all three as `vi * row.i +
+// vj * row.j + vk * row.k` 290 (the same code each: without parentheses the sums are reordered by operand, not by source);
+// the forward row as `(j * vj + i * vi) + k * vk` 561 (2815 B: the grouping holds, but in both arms); the four corner
+// projections as a plain loop over the face's corners 528 (2810 B, not unrolled as retail); re-measured the reference as a
+// ternary copy 643. Retail's sphere-arm forward row sums (j, i), k where its cone arm sums (k, j), i, so the two arms do
+// not compile one source order the same way. Body unchanged.
+// M3 lane 4 r227 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290; a/s/r = LCS-aligned
+// unmatched lines exact / stack-masked / register-masked, control 199/196/77). Re-measured: the forward cross through
+// cross_product_c1a80(up, left, forward) 433 (2821 B, 210/208/78); lane 5 r195's four-piece statement-order form 279
+// at 2840 B (185/183/89: register-masked worse). New: that cross with the projection helper's scaling as vk, vj, vi
+// 433 (2822 B, 222/220/81); the cross on round 84's 288 lead (entry first, cone `entry = entries;` before its clear,
+// cone bounds after the points) 431 (2821 B, 189/188/68); r195's form with the cone reciprocal from
+// `entry->plane_offset` 558 (2816 B); the projection helper computing the up row (its depth) before the forward and
+// left rows, on main 491 (2812 B), on r195's form 484. Retail loads the left vector's component first in every product
+// of the forward cross; no helper or row order tried moves that. Body unchanged.
+// M3 lane 13 r125 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned 273, masked 114): the cone
+// plane through a file-private inline taking (plane, normal, point), as the code base's plane-through-a-point helper, re-measured
+// 563 (2795 B; listed above), with the dot's operands the other way 563, the same inline computing the point from the matrix
+// position and the offset itself 560 (2795 B); at the tail a frustum pointer named before the flag stores 479 (2814 B,
+// masked 111), the flags and both calls through a fresh `&entries[i]` 672 (2782 B). Body unchanged.
+// M3 lane 8 r202 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 273, masked 126): in
+// light_projection_point_ab the three rows through the file's dot_product_c1a80 on a copied, pre-scaled vector, row first 624
+// (2877 B, the copy changes the prologue), vector first 623, with the scaled scalars gathered into a vector initialiser 606
+// (2778 B); the left cross through the shared cross3f with the forward cross through cross_product_c1a80(up, left, forward)
+// 554 (2817 B, masked 176); the left cross through cross3f alone 532 (2796 B).
+// M3 lane 2 r120 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned/register-masked unmatched
+// lines 199/81): the four sphere projections through a second, parenthesised copy of the projection helper (rows
+// (fj vj + fi vi) + fk vk, (li vi + lk vk) + lj vj, (uk vk + ui vi) + uj vj) and the cone projection through the existing
+// one 243 at 2830 B (145/61): the sphere rows then sum in retail's tree; every spelling inside the groups (operands swapped,
+// products as `v * row`, the single term first) is the same code, since each pair is re-sorted; that with y stored first 267
+// (161/70); with lane 1 r84's 288 lead on top 241 (124/47). Not kept: a second copy of an existing helper differing only in
+// grouping is a steering form (kept only with a match); left on that form: the pair and product operand order inside every
+// row, both crosses, the normalize's x87 sum, the cone arm's 1.0 register (XMM4 against XMM6) and plane point. Diagnostic:
+// 1 to 8 and 16 unused locals at the top 479/480/480/484/483/483/479/479 and 466 (2809-2814 B): no count returns to 2830 B,
+// so the symbol count is not a periodic phase here and a clean phase scan is not available. Body unchanged.
+// M3 lane 4 r233 (h2m fast), at 290: one matrix pointer for every matrix use in the sphere arm 588 (2788 B); the two true
+// flags as one chained assignment 290 (same code); the reference axis as an if/else of the two copies 574 (2822 B);
+// `orthogonal = (short)shape->kind == 1` 599 (2778 B); the cone depth from `entry->plane_offset` 291.
+// M3 lane 7 r197 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199, masked 77): the
+// projection helper's rows through the existing 0x1427f0 inverse transform (the same k, j, i rows) re-measured 1273 (2143 B,
+// out of line); with `inline` on 0x1427f0's definition 495 (2799 B: expanded, but its rows are not retail's, and matched
+// 0x210770 then inlines it too, 48), `inline` alone (diagnostic) 290 here with 0x210770 at 48; the cone plane point through
+// vector3f_add_scaled re-measured 290 (same code); the cone bounds as a box2f initialiser assigned after the corner points
+// 579 (2840 B). Retail's cone arm stores the corner points first and the bounds after them in x0, y0, x1, y1 order, and
+// forms the reciprocal after loading the cone's width and height.
+// M3 lane 12 r162 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): in the cone arm the bounds
+// stored after the four corner points 290; the corners computed x0, y0, x1, y1 (retail's arithmetic order) 290; the
+// half height computed before the half width 290 (the same count each); the reciprocal computed ahead of the centre
+// projection 597 (2780 B); in the sphere arm the depth from the radius local 531 (2831 B). Retail keeps 1.0 in XMM6 and
+// divides a copy after the centre (`movaps xmm2, xmm6; divss xmm2, [ebx+0x28]`), ours hoists the divide into XMM4
+// mid-projection; retail's tail reloads the entry into ECX for the flag stores, ours EDI. Body unchanged.
+// m3 lane 15 r120 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 396, register-
+// masked 160): every sphere row sums its products in exactly the reverse order of ours (x (fj vj + fi vi) + fk vk against
+// (fk vk + fi vi) + fj vj, likewise y and z). The projection helper through forward/left/up axis pointers 604 (2780 B); y
+// stored first with the pre-scale statements k, j, i 291 at 2840 B (aligned 430); the rows computed up, left, forward 318
+// (2831 B); the cone half extents as `width / origin_offset * 0.5f` (one repeated divisor, no scale local) 515 (2813 B: the
+// reciprocal still forms early); assumes at the top on count, shape and entries (1/2/3 of them) 562/600/554.
+// M3 lane 8 r214 (h2m fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned/masked/frame-blind
+// 273/126/122): the cone half extents as `width * 0.5f * scale` 290; the projection helper's scale test written
+// `1.0f != matrix->scale` 479 (2815 B); the helper returning the depth (ignored) 290 (same code); the reference-axis test
+// as `i == 3 || i == 1` 565 (at retail's 2840 B); the sphere radius bound as `real const &` to the shape field 612 (2816 B).
+// M3 lane 16 r164 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199/196/77): the
+// cone arm copying the left axis first 300; round 148's lead (`entry` declared before `bounds`, the cone arm's `entry =
+// entries; memset(entry, ...)`) with the cone bounds stored after the four corner points 288 (aligned 178/176/67, the closest
+// shape yet; a gain of 2); the point count stored before the fourth sphere projection 548 (2808 B); the projection helper's
+// scale test as `!(matrix->scale == 1.0f)` 290 (same code); the projection helper without `inline` 290 (same code).
+// M3 lane 1 r149 (H2M fast; control 290): in light_projection_point_ab the three scalars declared first in each of the six
+// orders and assigned i, j, k afterwards: with the scales i, j, k 290 each, with the scales k, j, i 281 each (2840 B,
+// lane 8 r168's form): the declaration order is inert, only the reads and the scale statements number the row leaves;
+// the point as a whole vector copy scaled per component (scales ijk/kji/jik/kij) 623/583/577/576 (2891-2904 B: the copy
+// goes through the frame); a vector local filled per field 484 (scales ijk) / 489 (kji) (2809 B).
+// M3 lane 7 r208 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0xc0840, all MATCH; control 290, aligned 273,
+// masked 122): the left normalize through the file's existing direction_normalize_c0840 290 (same code); that with the
+// projection storing y first 299 (2840 B, the listed y-first code); the cone reciprocal from `entry->plane_offset`
+// re-measured 562 (2815 B), with y stored first 560 (2817 B); the sphere arm's bounds call given the literal 4 for the
+// point count 600 (2777 B). Retail's cone arm holds 1.0 in XMM6 from the scale store
+// through the reciprocal (ours XMM4, the divide hoisted into the centre projection). Body unchanged.
+// M3 lane 6 r229 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the cone corners'
+// four x0..y1 locals dropped (bounds stored, the points read back from the bounds) 486 (2809 B: the sphere arm's cross
+// products reorder, so the operand ranking follows the symbol numbering); the half extents written into the four corner
+// expressions 576 (2800 B); the projection helper in 0x1427f0's own spelling (x, y, z, `inverse * x`, rows k, j, i) 290
+// (same code); the face row named for the four projections 481 (2814 B); the entry's point array named for the four
+// projections and the bounds call 555 (2798 B).
+// M3 lane 8 r228 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the sphere left
+// axis crossed and normalized in a local vector, then assigned 590 (2822 B); the up axis negated into a local vector
+// 625 (2862 B); the forward cross into a local vector 585 (2857 B); the cone half extents as `0.5f * (width * scale)`
+// 600 (2777 B); the cone reciprocal computed before the centre projection 597 (2780 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1501,6 +1558,10 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // the one-use weapon-marker bool removed alone 156 (1007); the marker declared in the else arm 8
 // fast (the forward load moves ahead of the position copy); the parameter-address local declared
 // before the marker 2 plain (the same tie).
+// M3 lane 16 r181 (each fast MATCH unless marked, then plain): the flags read declared ahead of the definition 2; the
+// marker aggregate declared after the flags 2; the weapon-marker bool ahead of the marker-name call 2 (same code); the
+// definition local renamed to sort after `light` 2; 0xc28b0's argument read through the parameter-address local 151
+// fast, 153 plain (1013 bytes). The reduced image's CAVEAT names callee 0x16a8e0 as building differently there.
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
@@ -1702,7 +1763,7 @@ void function_c09c0(long mode)
 
 bool __stdcall function_bab40(long object_index, long name, real *value);
 bool function_bad50(long object_index, long index, point3f *out);
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result,
     color3f const *tint, real t);
 long function_baf80(long object_index);
@@ -1778,10 +1839,8 @@ void __stdcall function_c0c80(long light_index)
         real duration = (real)g_510c54->field_2_3 * *(real *)(definition + 0xb0);
         real fraction = function_17ca10(elapsed / duration, *(short *)(definition + 0xb6));
         light->fraction = (1.0f - fraction) * light->scale;
-        function_131c20((color3f *)(definition + 0x58), (color3f *)(definition + 0x64),
-            *(dword *)(definition + 0x34), light->fraction, &light->colour);
-        function_131c20((color3f *)(definition + 0x40), (color3f *)(definition + 0x4c),
-            *(dword *)(definition + 0x34), light->fraction, &light->pair_colour);
+        function_131c20(&light->colour, (color3f *)(definition + 0x58), (color3f *)(definition + 0x64), *(dword *)(definition + 0x34), light->fraction);
+        function_131c20(&light->pair_colour, (color3f *)(definition + 0x40), (color3f *)(definition + 0x4c), *(dword *)(definition + 0x34), light->fraction);
         real blend = light->fraction;
         light->intensity = (1.0f - blend) *
             *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * blend;

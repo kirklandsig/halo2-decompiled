@@ -8,6 +8,7 @@
 #include "unknown_211060.h"
 #include "vector_products.h"
 #include "normalize3d.h"
+#include "axis_rotation.h"
 #include <math.h>
 
 // Layouts follow the pool and tag accesses in the retail callback group.
@@ -234,11 +235,17 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// MiniMax S (11-14): no new form, no lower score (171): the body is still retail's length and the first difference is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and then in ECX, so only the branch targets and the block layout after it differ; the segment's base, its ownership and the frame's homes are the rest of the difference.
-// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 144 (was 144; r251 unchanged): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
+// earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
+// Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
+// Earlier score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
+// MiniMax R (11-16): no new form, no lower score (171): re-measured in this round's nine-address set, the body is retail's 1368 bytes and the frame 0xa4 with the attachment homes agreeing; what is left is the carrier rotation (the segment's axis load keeps the value in EDI where retail keeps it in EDX and the segment pointer follows in ECX where retail keeps EDX), the scalar spill at +0x1c against retail's +0x14, and the previous/rest-offset and axis/scalar homes exchanging at +0x28 and +0x2c.
+// MiniMax S (11-14): no new form, no lower score (171): the body is still retail's length and the first difference is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and then in ECX, so only the branch targets and the block layout after it differ; the segment's base, its ownership and the frame's homes are the rest of the difference.
+// MiniMax E (11-16): no new form, no lower score (171): the segment base and the segment pointer take EDI/ECX where retail uses EDX for both, and the low stack slots are in another order.
 // MiniMax B (11-12): no new form, no lower score (171): the body is retail's length (1368 bytes) and the first difference
 // is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and
 // then in ECX; the permuter on this address was killed by its time limit without a result.
@@ -671,6 +678,9 @@ void __stdcall function_1160c0(real dt)
 // scale and target declared at the loop body's top 171 (same code); the whole prediction (axis, normalize, offset copy,
 // vertical, angle, sine/cosine, predicted) as one forceinline helper 171 (same code: inlining moves no home); the segment
 // as a pointer to const 171 (same code). Body unchanged.
+// MiniMax R (11-16): no new form, no lower score (171): the segments base and the segment pointer sit in edi and ecx
+// where retail uses edx for both, and the low slots come out in the other order (here the axis at 0x10-0x18 against
+// retail's cosine at 0x10), which moves the whole rotation block.
 // MiniMax I (11-15): the rotation written into a named vector and the position added to it afterwards scores 165 (was
 // 171, 1368 bytes): the three rotation rows keep their expressions and the position addition becomes its own statement.
 // The dot stays the shared helper; written out in retail's k, j, i order it gives the same 165. The segment index as a
@@ -680,6 +690,352 @@ void __stdcall function_1160c0(real dt)
 // reversed (here the axis at 0x10-0x18, the segment and the scale at 0x1c and the cosine at 0x20; retail the cosine at
 // 0x10, the segment and the scale at 0x14 and the axis at 0x18-0x20), which moves the whole rotation block.
 // MiniMax I (11-15), NOT kept: 165 (was 171), a 6-point gain, under the 8-point bar for a function above 30.
+// P567: Standard bounded-segment minimum, long/int, both argument boundaries,
+// implicit/explicit ordering provider: 280/280/309/309/280/280/309/309. NOT kept: no
+// native EDX/segment/axis/previous homes or exact match; original complete body restored.
+// b9A (11-17) walk against retail, fast build on r839: statement by statement, no behaviour difference found. Checked:
+// the 0x116750 call (record EDI, forward EAX, three pushed: 0x11621b); the fixed/dt guard (0x116225
+// jne, 0x11623a jbe: NaN dt skips, as `dt > 0.f`); bound count + 1 (0x116248, 0x11671e); 1/dt and the {0,0,1} vertical
+// hoisted (0x116263, 0x116280); node stride 0x20 from +0x1c, segment stride 0x80, stiffness = definition +0x64 times
+// segment +0 (0x1162b6-0x1162c2); last-node pick (0x1162a5-0x1162ad); the 0x211060 arguments (0x116350-0x11638b); delta
+// sum k, j, i and length / sqrt rounded to float (0x1163c8-0x1163f9); blend rows (0x116434-0x116479); axis (k*0 - j,
+// i - k*0, j*0 - i*0: 0x1164bc-0x1164eb) with the 1e-4 / ==0 fallback to g_4687ac (0, 1, 0) (0x11651b ja, 0x11652f
+// ucomiss, 0x11655d jp: NaN keeps the scaled axis); rest-offset copy (segment +0x74, 0x116578); sine before cosine
+// (0x1165af, 0x116600); dot k, j, i, each rotation row's grouping and trailing + position (0x1165c9-0x1166ca); velocity
+// rows times 1/dt, node and previous stores (0x1166ce-0x116731). Callers 0x116010, 0x1160c0 and callee 0x116750 stay
+// MATCH. Only allocation differs: segment base and pointer in EDX (0x1162b0-0x1162c0) and the low slot order.
+// Round 189 (m3 lane 6, fast with the file, 0x73360 and 0x54590; control 171, masked 56): the rows through bound
+// references (`real &x = predicted.x`, built as the cosine part, minus the cross term, plus position) 227 (1374 B);
+// `if (0 < definition->segment_count + 1)` around the node loop 180; the velocity rows through `vector3f &velocity =
+// node->velocity` 178; the definition's stiffness read once ahead of the loop 301 (1374 B); the vertical set by
+// component stores (`vertical.i = vertical.j = 0.f; vertical.k = 1.f;`) 173. Same code (not counted): the prediction
+// in its own `{}` block; the segment through a forceinline accessor. Diagnostic dead volatile loads (reverted at
+// once) before the node, after the node, after the segment and before the velocity rows: none moves the segments
+// base out of EDI, so that base is not a scratch-rotation step.
+// P595: The selected segment still needs EDX and the scalar/axis and previous/offset homes. for with
+// refreshed count, original selector/branch index/terminal decrement/index plus base 171/171/175/171,
+// while with refreshed count, same four selectors 171/171/175/171. NOT kept: the refresh and selection
+// forms leave the segment register and stack allocation unresolved.
+// m3 lane 10 r115 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 171; body unchanged). Reading
+// from retail's operand orders: VC 7.1 puts the younger of two fields first in each float product, and here retail has
+// every axis component ahead of every offset component, the reciprocal ahead of axis i but behind axis j and k, the
+// projection ahead of axis i but behind axis k, and the cosine ahead of the offset. That fits an axis reached only
+// through helper addresses (never named component by component in this function), an offset named directly in this
+// function, and a projection and cosine that live inside an inlined helper: the axis built by cross3f(&vertical,
+// &direction, &axis), normalize3d, and the rest offset copy rotated in place by a helper of 0x170d70's shape (v, axis,
+// angle; sine and cosine taken inside), then `predicted.x = offset.i + position.x` rows here. LEAD, not kept (a new
+// helper with one caller; the same-shaped existing helper is file-private in src/unknown_170d70.cpp, held this round):
+// that form with the helper's statements projection, cross_k, cross_j and cross_i written in row i 113 (1369 B; every
+// stack home then agrees with retail, the normalization block agrees, and the rotation starts as retail does: dot,
+// `axis.j * offset.i` in place, sine and cosine, projection; left are the segment base in EDI/ECX for retail's EDX with
+// the ECX/EDX swap it carries through the first node's copies and the 0x211060 set-up, retail finishing cross_j ahead
+// of cross_k, and its component load order axis k, offset j, offset k, axis j, axis i with offset i loaded late). The
+// patch is build/r115/lead-1161f0-113.patch in the m3-lane10 worktree. Other statement orders of that helper (all with
+// cross_j and cross_k named, which an in-place rotation needs): cross_k, projection, cross_j 122 (1369 B); projection,
+// cross_j, cross_k (0x170d70's order) 144 (1371 B, with cross_i named first the same code); cross_j or cross_k ahead
+// of the projection with the other after it, or both ahead, 147 (1371 B). Sine and cosine as the call's arguments the
+// same code as taking them inside; as locals of this function ahead of the call 169 (1373 B: the cosine is then older
+// than the offset and `offset * cosine` comes out). New components held in three locals before the stores 213. A
+// helper that takes the three offset components as reals and writes position + rotation through a pointer 202 (1381
+// B; its expression trees are retail's, its schedule is not). Not usable: cross_j or cross_k written in their rows of
+// an in-place helper read the already rotated components (126 at 1368 B, wrong arithmetic). On the lead: the segment
+// as `segment = definition->segments; segment += index` 274 (1368 B, retail's length; aligned 109 against the lead's
+// positional 113: the base takes EDX but loads ahead of the ternary); the index named first then base and `+=` the
+// same code as the lead; `position.x + offset.i` rows and the vertical declared after the axis the same code. On main:
+// the index named, then `segment = definition->segments; segment += index` 171 (same code as the body). A compile-only
+// screen of this file reproduces the rotation block of the fast build (but for the angle's reload), and 1,200 helper
+// forms on it (statement sets and orders, sine/cosine order, a named dot, dot3f either way, row groupings) never give
+// retail's schedule, so the helper's shape is not the whole cause. Also on the lead: the cross terms through
+// cross3f(v, axis, &cross) inside the helper 143 (1368 B); the cosine taken ahead of the sine 121 (1369 B); the helper
+// writing a separate `rotated` vector that the rows add to position 164 (1368 B); the cosine complement named, or the
+// dot named ahead of the sine and cosine, the same code as the lead.
+// M3 lane 8 r181 (fast; base 171): the projection as `(1.f - cosine) * dot3f(&axis, &offset)` 171; the cross terms
+// as `sine * (...)` in all three rows 171; the dot named ahead of the complement (`projection * (1.f - cosine)`) 171;
+// a `vector3f const` vertical 171; a `vector3f const` rest offset 171 (all the same code). The segments base still
+// takes EDI and the segment ECX where retail uses EDX for both.
+// Round 563. The selected segment still uses EDI/ECX and +0x1c against EDX and +0x14. point setter for the
+// anchor position 356; vector setter for the anchor direction 306; point setter for the interpolated position
+// 171; point setter for the predicted position 171; vector setter for the node velocity 175; point setters for
+// the committed and previous positions 359; vector setter for the angle reference 171; point and vector
+// setters for both attachment outputs 380. NOT kept: the anchor-position and commit setters shorten the body
+// and demote the update caller.
+// terminal decrement of default ordinal 175; replace default ordinal at terminal node 171; terminal
+// ordinal as default then interior 275; velocity member throughout node step 256; position member
+// throughout node step 171; position and velocity members throughout step 256; early rejection before
+// node traversal 171; early rejection with decremented terminal ordinal 175. NOT kept: the original
+// ordinal and member access score as well as or better than all trials. The segment spill and rotation
+// schedule remain.
+// Round 415. target-owned blend 329, shared in-place target scale/add 323, indexed target-owned blend 332,
+// weighted correction point 234, shared unit-scale displacement 278, scalar target with in-place blend 329,
+// indexed velocity displacement 193, target blend with shared velocity difference 332.
+// m3 lane 13 r109 (fast with 0x116750, 0x116010 and 0x1160c0, all MATCH; plain confirmed): kept 171 -> 144 (1371 B): the
+// rotation of the rest offset through the shared axis rotation of include/axis_rotation.h (the inline 0x2551f0 and 0x117dd0
+// use, given sin and cos of the angle) with `predicted = offset + position` per row, and the axis as cross3f(&vertical,
+// &direction, &axis) (the vertical declared ahead of it). Every call now sits at retail's instruction index and the axis
+// block is retail's but for its home (+0x14 for retail's +0x18); left: the segment base in EDI/ECX for retail's EDX, the
+// 4-byte cell shared by the segment, the scale and the sine at +0x20 above the axis (retail +0x14 below it), and the
+// rotation's schedule (retail loads axis k, offset j, offset k, axis j, axis i and finishes cross_j and cross_k before the
+// rows). Measured: the shared rotation alone, axis written out as before, 216; sine and cosine named ahead of the call 169
+// (1373 B); the rows written `position + offset` 144 (same code); the angle call and the rotation in their own `{}` block
+// 144 (same code); the scale written into the vector3f_add_scaled call 144 (same code); the rest-offset copy after the angle
+// call 180 (1375 B).
+// Conditional segment pointers from one base 291; ordinal minus terminal test 285;
+// terminal pointer relative to block end 304; segment/axis/offset names 144;
+// recurring point and rotation names 144; shared in-place displacement add 214;
+// conditional default axis pointer 304; default axis pointer assigned after normalization 294.
+// The segment still uses EDI/ECX and +0x20 against EDX and +0x14.
+// The widened addressing ordinal leaves the segment spill at +0x20 and the low rotation slots differ.
+// Shared node ordinal with direct count, captured count, terminal decrement, captured count plus pointer advance, and decrement plus advance 144/146/147/146/147.
+// Using the widened ordinal at the anchor test as well, with direct count, captured count plus advance, and decrement plus advance 283/283/170.
+// The segment EDX carrier and low scalar home still differ. Base-node identity 267, interior-node identity 275,
+// terminal-node identity 306, both node identities 305. Position-derived ordinal for root 300, terminal test 307,
+// full segment selection 292, and root plus segment selection 295. NOT kept: the address-based tests regress and
+// change the loop comparison.
+// M3 lane 15 r101 (fast with 0x116750, matched throughout; base 144): the node as `record->nodes + i` 144 (same code); the
+// last segment chosen as `i - 1` 145 (1369 B); the stiffness product written segment first 144; `++node->ticks` ahead of
+// the stiffness 148; `predicted` through vector3f_add(&position, &offset, &predicted) 204 (retail's 1368 B, but aligned 151
+// against the body's 109). Diagnostic (not counted): 1-8 dead initialised locals at the top 144/144/146/146/146/144/144/144,
+// so the homes and the rotation are no symbol-count tie on this body either. Body unchanged.
+// The segment address still uses EDI/ECX and spills at +0x20 rather than EDX and +0x14.
+// Direct displacement reused as the scaled-add target 162, scaled then added in place 238,
+// scaled into a separate vector before addition 238. Shared point difference followed by
+// those three target forms 273/270/223. Native vector target 144, with direction used for
+// the unclamped displacement 298. NOT kept: the separate vector target ties, and forms
+// that shorten the target workspace change the frame from retail's 0xa4.
+// The segment still needs EDX and +0x14. Conditional attachment point by value/address/interior first
+// 304/304/304, segment reference with named ordinal 144, terminal-predicate subtraction 285,
+// conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
+// shared prediction add 204, predicted z after the node update 157.
+// NOT kept: the retail-length forms still raise the score and leave the segment and rotation homes different.
+// M3 lane 3 r265 (fast with 0x116750, matched throughout; base 144): the segments base named at the loop top 145; the
+// segment bound as `s_chain_segment const &` 144; vertical, axis, the rotation and the predicted rows in their own `{}`
+// block 144; the segment count named at the loop top for the selection 144; the stiffness product written segment
+// first 144 (all four the same code). Retail's ECX/EDX roles run one step behind ours from the segments base on (base
+// EDX for our EDI, segment EDX for our ECX, the loop end's definition reload EDX for our ECX). Body unchanged.
+// Separate physics point 314, with shared difference 311, reused for the constraint 304, with direction
+// workspace 272, or with complete corrected point 409; in-place length quotient 144, compound stiffness
+// product 144, and default attachment direction with separate physics point 312.
+// NOT kept: the separate physics point expands the frame or worsens the register schedule at retail length.
+// The scalar forms preserve the EDI/ECX segment and the displaced shared spill.
+// The segment still needs EDX and the +0x14 spill. Separate array and signed ordinal,
+// used directly for stiffness, length and rest offset. Ordinal first, terminal count,
+// terminal ordinal, interior first and terminal decrement 272/269/272/269.
+// Array first, same selectors 275/273/275/273. NOT kept: direct indexing
+// moves the stiffness read ahead of the address addition and raises the score.
+// Separate physics point with fields, point setter or shared point difference 314/361/311.
+// Updating the physics point before publication, same forms 391/391/406. Early tag index
+// with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
+// M3 lane 4 r221 (fast with the file's ten matched functions): the axis renamed to sort after the segment and scale
+// (`turn_axis`) 144; the scale renamed `ratio` 144, `along` 144; the segment renamed `used_segment` 144; the axis declared
+// ahead of the vertical 144 (all five the same code: the segment/scale/sine cell stays at +0x20 above the axis, so the
+// cell's place follows neither names nor declaration order). A compile-only build lays this frame out differently from
+// the link-time build, so it cannot screen the homes.
+// M3 lane 10 r126 (fast with the file's ten other functions, all MATCH; control 144, aligned 159): round 115's lead
+// re-measured on this base, the rest offset rotated by a file-local forceinline helper taking the angle (sine and cosine
+// inside; projection, cross_k, cross_j, cross_i written in row i) 113 (1369 B, aligned 138; a one-caller helper, match
+// only). On that lead: the 0x211060 call through a file-local wrapper doing the tag lookup inside, or taking the looked-up
+// settings, 113 each (same code); the segment selected before the node pointer 286 (aligned 126: the segment and its base
+// then take retail's EDX and the first node's copies ECX, but i and the count swap EAX/ECX and the loop top reorders);
+// `i < count ? i : count - 1` 114; ticks before the stiffness 117; inverse_dt above the loop 123; ticks before the segment
+// 293; the index as a local set by an if 113; `!i` 113; a segments-base local 114; a ternary of two addresses 303; node
+// before inverse_dt 113; `nodes + i` 113; `i != count ? i : count - 1` 113. Retail's 0x17c540 (another owner, 34) shows
+// the same late tag lookup and early EAX set-up at its 0x211060 call. Also on the lead: the rest offset copied before
+// the vertical 162; after the angle call 204 (1373 B); `!normalize3d(&axis)` 113; the arms of `i == 0` swapped 217
+// (1371 B). The delta through the existing vector3d_from_points3d 259 on main's body and on the lead (1368 B).
+// Round 639 forms: traversal node array base or fixed extent 301/301, shared node velocity 241,
+// double constraint distance 260, spring segment or reach ratio name 144/144,
+// explicit sine or cosine 144/172, completed constrained point 336.
+// NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
+// and leave the selected segment in EDI/ECX and at +0x20.
+// Reserve segment, node and stiffness in solver scope, seven subsets and a reordered
+// full declaration, 144 each. NOT kept: the segment stays in EDI/ECX and spills at
+// +0x20, while retail uses EDX and +0x14.
+// M3 lane 5 r210 (fast with 0x116750, 0x116010, 0x1160c0, 0x73360, 0x54590; control 144, register-masked 54): the
+// rest offset rotated by a trial copy of 0x146320's file-private rotation taking the axis as three reals (projection
+// k, j, i first, cross_j and cross_k named, cross_i in row i) 221 (1368 B); with sine and cosine named before the call
+// 167 (1368 B, masked 50: the segment cell moves to +0x10, the base still EDI); that plus the node pointer ahead of
+// `inverse_dt` 167; on the body the node pointer ahead of `inverse_dt` 144 and the first-node test as `!i` 144 (both
+// the same code). Retail's scratch choice is one step off ours at both ends of the loop (segments base and segment EDX
+// for our EDI/ECX at the top, the definition reload EDX for our ECX at the bottom).
+// Round 642 forms: branch-owned segment offsets 289, typed rest-vector copy 273, physics
+// index before the node snapshot 145, tag entry reference 144, named constraint length 144,
+// widened offset scope 144, loop-owned axis 144, terminal selection by node count 181.
+// NOT kept: the near-length rest copy changes the saves and the ties retain the EDI/ECX carrier.
+// Vector storage for prior, prior/target, prior/predicted, predicted, target/predicted, and
+// all three 332/332/332/144/144/332. All three with aggregate prior copy 144 and
+// prediction setter 332. NOT kept: the vector forms tie or move the frame and extent
+// farther from retail, with the segment spill still different.
+// M3 lane 16 r152 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged): the
+// segment through a file-local inline accessor taking the definition and the index (`(byte *)segments + index * size`)
+// 144; that accessor doing the last-segment clamp on its own index parameter 144; `segment` declared ahead of the node
+// pointer and assigned after it 144; the non-initial position read as `record->nodes[i].position` 144 (all four the
+// same code); the tick increment as `++record->nodes[i].ticks` 275 (1372 B) and the physics call's velocity as
+// `&record->nodes[i].velocity` 276 (1372 B): both keep `record + i * 32` in EDX and the segments base then takes EBP;
+// the last-segment index named ahead of the node pointer 280 (the base still takes EDI although EDX is unused in that
+// block). In every form here the base goes to a free callee-saved register (EDI, else EBP) ahead of ECX and EDX, so
+// its register is not a scratch-rotation step and does not come from EDX being busy.
+// Shared rotation first cross at its store 144, with the later crosses staged k then j 113.
+// Complete vector, axis or both inputs 216/144/216. Staged projection 143, complete output
+// before stores 213, three cross products staged j/k/i 144.
+// NOT kept: the 113 form gets within one byte of retail, but raises three shared users’ scores
+// and loses two matches. The selected segment and length-ratio spill still differ.
+// M3 lane 13 r126 (fast with 0x116750, 0x116010, 0x1160c0 and 0x115ff0, matched throughout; control 144): the dt test
+// as `0.f < dt` 144 and `node->ticks++` 144 (both the same code); the first node's copies with the direction first 152;
+// the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
+// Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
+// so the one-step scratch rotation is not set by a temporary at the base's own load).
+// M3 lane 12 r159 (fast, control 144 at 1371 B), re-measured on the 144 body: the redundant `if (0 < count + 1)` loop
+// guard 153; `segment = definition->segments; segment += index` 272 (1369 B: the segment then takes EDX and every later
+// scratch register and the i == 0 / node-copy registers are retail's, but the base load sits ahead of the branch and the
+// add folds into the stiffness load); the index computed into a local first, then base, then `+=` 144 (same code: the
+// base copy is propagated); the ternary of two element addresses 304 (1387 B). New: the selected pointer read through a
+// `s_chain_segment *const &` binding 144 (same code). Reading: retail's segment variable takes EDX with ECX free; ours
+// takes ECX unless the variable is already live where ECX holds the count.
+// Squared separation first, reach first, root first and root after reach all 144;
+// with rest-offset components through the vector setter all 273.
+// NOT kept: the ratio stages tie. The setter changes the entry saves while retaining
+// the 0xa4 frame. The segment carrier and ratio/sine home remain.
+// Chain stiffness before the node, after the node, or before the split ordinal 277 each; stiffness after the split
+// ordinal 144; both inputs after the addresses 144, before segment selection 277, between selected ordinal and
+// address 144, or before the node 277. NOT kept: the early read forms grow to 1375 bytes and the other forms tie.
+// Node position reference and both references 144 each, short selected segment ordinal 252,
+// rest-vector reference with late copy 246, fixed-record exit and separate exits 144 each,
+// node base plus advance 144, final node point setter 335, signed tick assignment 144.
+// NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
+// The frame agrees and the selected segment still needs EDX and its +0x14 spill.
+// MiniMax A (11-20): no new form, no lower score (144); the first difference is the loop head's alignment padding (the three-byte lea esp, [esp]), so the body is 1371 bytes against retail's 1368 and every later jump target is off by three; retail keeps the selected segment in EDX and spills it at +0x14 where ours holds the segments base in EDI and the segment in ECX and spills at +0x20, and the 113 lead needs a file-local one-caller helper, which is match-only and raises three shared users.
+// Direct node indexing at input, physics and publication 275/276/242; paired boundaries 281/243/243;
+// all accesses via the record or named array base 167/280. NOT kept: these forms do not recover
+// the EDX segment and low spill at retail length.
+// Coordinate-array loops for interior position, anchor position, anchor direction and
+// both anchor values 161/161/161/643; either anchor with interior or all three
+// 161/161/643; one combined anchor pass 169. NOT kept: all regress and shift
+// attachment output homes. The segment still needs EDX and the +0x14 spill.
+// M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
+// EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
+// formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the
+// first-node arm 264, in the other arm 249, or after the tick 265, the segments base and the segment both take EDX (`mov edx,
+// [ebx+0x9c]; add eax, edx; mov edx, eax`), the first-node copies and the node-position copy use ECX and the loop end reloads
+// the definition into EDX, all as retail (the spill cell stays at +0x20 and the 0x211060 set-up keeps the index in EAX);
+// stored ahead of the tick 291 (base EBP) and after the if/else 321 (count callee-saved). So one value living in ECX across
+// the segment's definition is the whole ECX/EDX difference; retail shows no instruction for it. Natural spellings that do
+// not hold ECX (144, same code, unless a count is given): the tick as `node->ticks = node->ticks + 1`, `(short)(node->ticks
+// + 1)`, `+= 1`; `!i`; `i <= 0` 145; `i < 1` 291 (1373 B); `bool first = i == 0` ahead of the tick; ahead of the segment 290
+// (1376 B: the flag takes a register, segment EDX, base EBP); `bool last = i == count` for the selection; a count local for
+// the selection; a named long index; the tick written in both arms 291 (1373 B); a long copy of `i` for the node, the
+// selection and the first-node test 283 (retail's 1368 B: `i` then stays in ECX to a `test ecx, ecx`, the count in EAX,
+// segment EDX, base EBP); the physics index in a local read ahead of the first-node test 160, ahead of the tick 162, ahead of
+// the segment 270 (1370 B), at the top of its arm 145 (base EBP in the first three, segment still ECX: the physics index is
+// not what holds ECX). The segment through accessors taking (count, base, index) by value in three parameter orders, the
+// definition and index, or clamping inside 144/144/144/144/145; the count and base as a by-value two-field block local 282
+// (1375 B), passed by value 309 (1384 B), by const reference 144; `segment = base; segment += index` re-measured 272 (1369
+// B). Diagnostics on the 0x211060 site: no call 418 (1261 B), the call without its test 295, a constant tag 262 (base EDI,
+// segment ECX in each).
+// M3 lane 11 r138 (fast with 0x116750 and 0x1160c0, matched throughout; control 144): the delta length through the
+// existing magnitude3d 144 (same code: it expands); through distance3d(&previous, &position) 313 (1408 B, a call);
+// `inverse_dt` declared at the velocity rows 292; the loop counter declared ahead of the loop 144 (same code); the
+// stiffness computed in the non-initial arm after the target 303 (1356 B).
+// MiniMax B (11-20): no new form, no lower score (144): the selected segment still sits in EDI and ECX at +0x20 where retail keeps it in EDX at +0x14; this round's permuter (76 tries in 604.8 s) found nothing below its baseline of 141 on the reduced image.
+// Last-ordinal clamp, branch clamp or bound reference 151/151/151. Indexed fields through
+// a carried array and clamped index 280/280. Array-end selection, pointer step-back or
+// end-selected reference 301/296/301. NOT kept. Bounds and pointer tests regress.
+// M3 lane 11 r142 (fast with 0x116750/0x116010/0x1160c0, all MATCH; control 144, aligned 159, masked 86, frame-blind 41):
+// retail is this body with ECX and EDX exchanged from the segment on (segment EDX, here ECX with its base in EDI; then the
+// first-node copy, the position copy, the physics index and the offset copy each take the other register), plus the low
+// slots. The physics index read once into a `long` local 144 (same code); `1.f / dt` ahead of the loop 154; the vertical
+// ahead of the loop 299; the segment selected ahead of the node pointer 278; the last-segment test as
+// `definition->segment_count == i` 145; the rotation through the existing rotate_vector_170d70 (k read at each use) 144
+// (same code), and every include/axis_rotation.h variant measured for 0x29b2e0 (k local or not, dot or cross order) 144.
+// Body unchanged.
+// The segment base and address still use EDI and ECX and spill at +0x20.
+// Anchor selection by value with test before node/before segment/after segment 185/182/177,
+// point source address 182. Segment scope ending at the rest-offset read 144, offset declared
+// first in that scope 144, offset declared before segment selection 144, constraint-and-blend
+// scope 144. NOT kept: the anchor forms restore length but move the first difference earlier.
+// The scope forms tie.
+// M3 lane 12 r167 (h2m fast with 0x116750 and 0x1160c0, MATCH in each; control 144): the axis through the existing
+// normalize_inline 172 (1368 B, first difference +0xc1: its x87/SSE interleave differs); through cross3f_staged 144 and the
+// vertical through vector3f_assign 144 (same code each); `predicted` through vector3f_add 204 (1368 B); the node velocity
+// through vector3d_from_points3d and three `*= inverse_dt` 196 (1400 B). Retail's cell shared by the segment, the scale and
+// the sine sits at +0x14 below the axis (+0x18..+0x20), ours at +0x20 above it (axis +0x14..+0x1c); retail's rotation
+// keeps all three axis components in XMM5/XMM4/XMM6 where ours reloads axis.i and axis.j. Body unchanged.
+// The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX
+// and +0x14. Tried rest offset at constraint join 176, rest offset after vertical setup 176, rest
+// offset after cross product 186, rest offset produced by both constraint exits 290, rest offset
+// produced before reach by each constraint arm 322, segment base advanced with offset at constraint
+// join 272, segment base advanced with offset after cross product 267, selected arm advances segment
+// base with arm-owned rest offset 335. NOT kept: Every rest-offset schedule raises the score. Advancing
+// the base recovers EDX, but the stiffness read stays folded into the address and the spill remains at
+// +0x20.
+// Tick read ahead of segment as short or long 288/289, increment computed first 292/291.
+// The same four forms after selecting the ordinal 144 each.
+// NOT kept: the early read consumes EDX and adds a separate load and store. With a selected ordinal
+// the memory increment returns and the segment still spills at ESP+0x20.
+// M3 lane 3 r290 (H2M_FAST, control 144): the segment count read once into a `long` ahead of the loop for the bound and the
+// selection 304 (first difference +0x2); the selection as `i > last ? last : i` with `long last = count - 1` 151 (1370 B);
+// `segment` declared in the outer block and assigned in the loop 144 (same code); `segments + i`, then reassigned to the
+// last segment when `i == count`, 274 (1368 B, first difference +0x6); a `long index = i` lowered by an `if` for the last
+// node 144 (same code). Retail's loop end reloads the definition into EDX and the count into ECX, ours both into ECX.
+// Displacement before position publication with velocity setter 150, existing point
+// difference 150, or component stores 150. Complete velocity before commit 346, scaled
+// difference output before commit 343, saved old position 346, next prediction after
+// commit 175, and coordinate loop for the staged velocity 170. NOT kept: all regress,
+// and the segment carrier and +0x20 spill persist in the closest forms.
+// Joint velocity/position coordinate pass alone, with prediction, with previous point,
+// and with both 363/375/370/393; with the reused coordinate 337/350/349/363.
+// NOT kept: the joint pass changes the frame and shortens the function.
+// Round 666. Segment selection still uses EDI/ECX and spills at +0x20.
+// Immutable segment pointer 144, immutable node and segment pointers 144, terminal segment
+// as the fallback arm 144, immutable reciprocal and stiffness 144, segment-stiffness name 144,
+// typed point setter at the target 144, at the blend 144, and at both boundaries 144.
+// M3 lane 12 r174 (h2m fast with 0x116750 and 0x1160c0, MATCH throughout; control 144). Shared rotation helper forms
+// screened on all four users (0x2551f0 and 0x1ff360 MATCH, 0x117dd0 130): cross terms declared up front (i/j/k or k/j/i)
+// and assigned i, j, k 144; declared k, j, assigned j, k with cross_i in row i 144; declared ahead of the projection 144
+// (same code each: declaration order is inert); any form that assigns cross_k before cross_j 113 (1369 B; 0x2551f0 15,
+// 0x1ff360 60, 0x117dd0 158); crosses then projection 147; cross_i, projection, cross_j, cross_k 144 (0x117dd0 152);
+// k/j/i then projection 147; j/k/i then projection 147; projection, j, i, k 144 (same code); rows j/i/k 138, i/k/j 143
+// (1368 B), k/j/i 174 (every row order loses both matched users). All 64 operand orders of the six cross products 144
+// (same code). Trial copies of other files' rotations: the angle-taking one with crosses in each row 320 (1442 B), the
+// result-vector one with mixed operand orders 399 (1457 B), the scalar-axis one written with an axis pointer 144. Body
+// statements: the angle call ahead of cross3f 320 (1353 B); the tick after the if/else 231, at the loop end 263.
+// M3 lane 4 r246 (H2M_FAST with 0x116750 and 0x1160c0, MATCH each time; control 144): the selected segment through a
+// file-local inline element getter taking the definition and the index 144, through a forced-inline one 144 (same code: the
+// base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as
+// `i < count ? i : count - 1` 145; the tick increment ahead of the selection 285 (1376 B). Retail also ends each pass with a
+// store of the rotated offset's middle term to +0x70 from XMM5 where this build stores it inside the rotation. Body unchanged.
+// M3 lane 16 r177 (h2m fast with 0x116750 and 0x1160c0, MATCH each; control 144): the name-order lever for the shared
+// cell at +0x20 (retail +0x14, below the axis): `axis` renamed `turn_axis` 144 and `unit_axis` 144, `scale` renamed
+// `along` 144 (same code each: names do not order these homes); the normalise test as `!normalize3d(&axis)` 144 (same
+// code); sine and cosine named ahead of the rotation call 169 (1373 B, first difference +0x2). Body unchanged.
+// M3 lane 15 r133 (h2m fast; control 144 at 1371 B, aligned 159 unmatched rows of 322; every rotation form below was a
+// trial copy of the shared helper, measured and removed: a second spelling of an existing helper is not keepable). The
+// rotation has three states here whatever the dot's spelling (written out i, j, k; through the existing dot3f either way
+// round) and with or without the k local, 30 forms: the three cross terms named i, j, k, or the i term at its row with j
+// then k named, 144 (1371 B, aligned 159: main's code); the cross through the existing cross3f or cross3f_staged into a
+// local vector 143 (1368 B, retail's length, aligned 138: the shared cell moves to +0x1c and the axis to +0x10); the i
+// term at its row with k then j named 113 (1369 B, aligned 138: retail's frame with the shared cell at +0x14 and the
+// axis at +0x18, all six inputs in registers as retail, but each in another XMM register and the segment still in
+// EDI/ECX). Also 144 (same code): the dot written k first; the axis components read into three locals. On the 113 form
+// 1..32 dead initialised locals at the top give 113, or 115 for 3, 4 and 5 modulo 8: no state nearer retail.
+// Segment selection, with aligned rows: `segment = definition->segments; segment += <the ternary>` 272 (1369 B, aligned
+// 134); the index set by an `if` into a local, then the base, then `+=` 144 (same code); that index with the element
+// address 144 (same code); the base with `+=` written in both arms of the test 289 (1381 B, aligned 193). Diagnostic,
+// the first of those with the 113 rotation: 274 at retail's 1368 B, aligned 108 (the base load still sits ahead of the
+// branch and the XMM registers stay permuted). Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0x116750 and 0x1160c0, MATCH throughout; control 144): the prediction rows after the
+// velocity, position and previous stores 175 (1380 B); the axis declared ahead of the vertical 144 and `predicted`
+// declared ahead of `previous` 144 (same code each); the sine and cosine named ahead of the rotation call 169 (1373 B);
+// the blend weight `1.f - stiffness` named once for the three rows 262 (1355 B).
+// M3 lane 13 r147 (h2m fast with 0x116750 and 0x1160c0, MATCH each run; control 144, difflib-aligned 35 groups): the
+// velocity rows through the existing vector3d_from_points3d and vector3f_scale 195 (1399 B); the predicted point through
+// the existing vector3f_add 204 (1368 B, retail's length, aligned 46); the chain delta through vector3d_from_points3d in
+// place of its initializer 259 (1368 B); `previous = node->position = position;` 144 (same code); vector3f_add with the
+// helper delta 282 (1355 B). Body unchanged.
+// M3 lane 15 r139 (h2m fast with 0x116750 and 0x1160c0, MATCH each; control 144). Reading: retail's integer registers are
+// this build's moved one step along EAX, ECX, EDX (physics index ECX for EAX, node copy pointer ECX for EDX, segment EDX for
+// ECX, base EDX for EDI). Forms: the node through a file-local inline getter 144 and the tick through a file-local inline
+// setter 144 (same code each: neither shifts the rotation); the node as a reference 144 (same code); the node position
+// copied member by member 198 (1384 B); the segment pointer declared const 144 and register 144 (same code). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
@@ -718,18 +1074,17 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 				position.z = (1.f - stiffness) * target.z + predicted.z * stiffness;
 				vector3d_from_points3d(&previous, &position, &direction);
 			}
-			vector3f axis = { direction.k * 0.f - direction.j, direction.i - direction.k * 0.f, direction.j * 0.f - direction.i * 0.f };
+			vector3f vertical = { 0.f, 0.f, 1.f };
+			vector3f axis;
+			cross3f(&vertical, &direction, &axis);
 			if (normalize3d(&axis) == 0.f)
 				axis = *g_4687ac;
 			vector3f offset = segment->rest_offset;
-			vector3f vertical = { 0.f, 0.f, 1.f };
 			real angle = function_11ce20(&vertical, &direction);
-			real sine = (real)sin(angle);
-			real cosine = (real)cos(angle);
-			real along = dot3f(&axis, &offset) * (1.f - cosine);
-			predicted.x = (along * axis.i + cosine * offset.i) - (axis.k * offset.j - axis.j * offset.k) * sine + position.x;
-			predicted.y = (along * axis.j + cosine * offset.j) - (axis.i * offset.k - axis.k * offset.i) * sine + position.y;
-			predicted.z = (axis.k * along + cosine * offset.k) - (axis.j * offset.i - axis.i * offset.j) * sine + position.z;
+			function_x84d9e8(&offset, &axis, (real)sin(angle), (real)cos(angle));
+			predicted.x = offset.i + position.x;
+			predicted.y = offset.j + position.y;
+			predicted.z = offset.k + position.z;
 			node->velocity.i = (position.x - node->position.x) * inverse_dt;
 			node->velocity.j = (position.y - node->position.y) * inverse_dt;
 			node->velocity.k = (position.z - node->position.z) * inverse_dt;

@@ -266,6 +266,10 @@ void c_window_channel::v9()
 	dispose();
 }
 
+// Matched with the new request built through its own `build` member (unknown_234c64.h): after the builder retail
+// forms the request's address again (`lea eax, [ebp - 0x20]`), where a caller that hands `&request` to the free
+// builder and then calls the local's own load (0x2358c3) copies ECX. An inlined member's `this` stays apart from the
+// later `&new_request`, which gives that second `lea`; with the free builder called here the address is one value.
 // score 3 (was 3): after the call to 0x149f49, retail recomputes the
 // request's address (lea eax, [ebp - 0x20]); ours uses mov eax, ecx. The
 // callee leaves ecx unchanged, and retail's 0x2358c3 in this file reuses it
@@ -371,6 +375,31 @@ void c_window_channel::v9()
 // return with the type cleared after the builder 12; the pending request read through a const reference for the
 // builder's arguments and the load 10; the new request declared ahead of the type test with the load result straight to
 // set_next 28. Still BLOCKED-BY 0x149f49 (round 100's member-builder lead).
+// Round 188 (m3 lane 5, fast with the file's 54 functions, which stay matched; ours `mov eax, ecx` after the builder,
+// retail `lea eax, [ebp - 0x20]`): the new request declared at function scope ahead of the plain type test 13; the load
+// given the request through the builder's message type 3; the load and set_next in their own block after the builder 3;
+// every channel access through a named copy of `this` 3; the load procedure argument read as the field's raw dword 3. The
+// member-builder lead still needs 43 of the 110 builder calls changed in the held 0x2b10a3 files, so it stays HELD.
+// Round 93 (m3 lane 15, fast with v9, 0x2354aa and 0x2358c3, which stay matched): a non-const reference to the pending
+// request for the test, the clear, the builder's arguments and the load 3; that with an early return 3; a const pointer to
+// the new request for the load and set_next 3; that pointer bound before the type clear and used for the builder too, with
+// the load result passed straight to set_next 25 (76 bytes); the load procedure read into a local at the function's top,
+// used for the builder's argument and the call, 28 (79 bytes). Still HELD on round 100's member-builder lead.
+// Round 103 (m3 lane 13, fast with v9, 0x2354aa and 0x2358c3, which stay matched): v10 moved below 0x2358c3 in the file
+// (source order) 3; a base-type reference to the pending request for the clear, the builder's arguments (its type as the
+// cleared field) and the load 3; one same-type reference to the new request for the builder, the load and set_next 3; the
+// type cleared before the declaration with a base-type reference for all three uses 5; re-measured by mistake, the load
+// result straight to set_next 25 (round 152); an early return with the clear first and the load result straight to set_next
+// 24 (76 bytes). Still HELD on round 100's member-builder lead (BLOCKED-BY 0x149f49's free-function form).
+// M3 lane 15 r96 (fast with v9, 0x2354aa and 0x2358c3, which stay matched): v10 placed above v9 in the file 3; the builder's
+// message argument through a typed cast 3; the id as the cast array and the load procedure through a typed cast 3; an
+// early return with the type clear ahead of the declaration and the load result passed straight to set_next 24 (76 bytes);
+// the builder's user flags, a, b and load procedure read into named locals after the type clear 3. Still HELD on round 100's
+// member-builder lead (BLOCKED-BY 0x149f49's free-function form).
+// M3 lane 2 r99 (plain, diagnostic, restored): 0x149f49's body moved from its own file to the end of this one, after every
+// caller here, 3 (v9, 0x2354aa, 0x2358c3 and 0x149f49 stay matched): the re-formed address is not a compile-order effect.
+// Retail's 0x149f49 keeps ECX (only EAX, EDI and ESI change, the last two saved), so the copy is legal; the member-builder
+// lead still needs the call spellings in contributor bodies v9 (0x2352d3), 0x2354aa and 0x2358c3 changed, so it stays HELD.
 // @retail 0x23531c
 void c_window_channel::v10()
 {
@@ -378,7 +407,7 @@ void c_window_channel::v10()
 	{
 		s_screen_request new_request;
 		request.type = 0;
-		function_149f49((s_message *)&new_request, 0, (dword *)&request.id, request.user_flags, request.a, request.b, (long)request.load);
+		new_request.build(0, (dword *)&request.id, request.user_flags, request.a, request.b, (long)request.load);
 		c_class_1473c9 *screen = request.load(&new_request);
 		set_next(screen, &new_request);
 	}

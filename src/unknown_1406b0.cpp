@@ -792,94 +792,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 	return function_1a0f10(file, buffer, size, offset, 7, read_priority, bytes_read, done);
 }
 
-// score 14 (was 14): only registers differ: ours keeps font_index in EBX and the bitmap
-// mask in EBP, retail the other way round. Tried: result flag from the header test (76);
-// found flag with break (14); if/else with a result variable (94); local copies of the
-// arguments or reading `.field_0` (14); the s_data_datum_iterator form (14); a separate
-// pointer for the new prediction (14); early `return true` (72); nested ifs in the loop
-// (14); plain `long` parameters with the caller's declaration changed (86, and 0x13eeb0
-// drops to 18). Round 41: only the character as a plain long 86 (0x13eeb0 18); only the font
-// as a plain long 88 (0x13eeb0 22); iterator and prediction at function scope 14; header
-// result in a pointer local 14; break out of the search and allocate only when not found 14.
-// Round 41 (lane 10): match test with the parameters on the left 16 (the font compare then
-// reads the field as its memory operand); iterator index set before its data 14; explicit
-// `(long)` conversions at the uses 14; prediction declared before the iterator 14; return
-// early when the allocation fails 14. Round 64: shared pool local 49; allocation pointer
-// arithmetic 14; null-initialized prediction 14; byte entry local 14; non-short-circuit
-// comparison 85; mismatch-continue loop 119; unsigned datum index 14; named masked index 14.
-// Round 72 (lane 9, fast): parameters renamed (font, zz_font, glyph, a_character) 14; font read
-// once through its own address 14; the shared iterator helper's mask as a named local or through
-// bit_vector_test 14 (diagnostic, restored); plain long parameters with `(void)&` (font in a
-// register, 0x13eeb0 18) 86; plain long parameters each read once through its address (stack
-// convention kept, but the character takes EBX and the font stays in memory) 69 in four placements;
-// font as such a long with the character struct 14, the reverse 69.
-// Round 156 (fast): the search in a forceinline helper with its own parameters 14; a long font copy for the search
-// and the store 14; the prediction's fields typed as the parameters' struct 14; the header call's flags in an inner
-// block with a found flag 14; a separate created pointer with a font copy 14.
-// Round 67 (fast): `__stdcall` with plain long parameters and the caller passing them directly 86 (still register
-// arguments, 170 bytes; 0x13eeb0 18); the character stored before the font 15; the allocation tested as an
-// assignment in the condition 14; const flags 14; const parameters 14. Diagnostic: one to eight unused locals at
-// entry leave the EBX/EBP swap (not a symbol-count tie).
-// Round 113 (fast): the header tested against NULL 14; `__stdcall` with the existing wrappers 14; wrapper parameters
-// swapped at the definition and call 17 (0x13eeb0 2); for and pre-tested loops 114/114; the iterator datum initialized
-// 14; allocation in iterator.datum_index 14; the allocation pointer through iterator.data 38; the allocation call
-// through iterator.data 14.
-// Round 136 (fast): both parameters as the file's two-long character key passed by value (0x13eeb0 building it) 14
-// (0x13eeb0 2); the match as a named bool 14; the character test nested under the font test 14; the iterator's datum
-// index initialized 14; the header compared with NULL 14. Diagnostics: without the font store 77, with a zero font
-// store 70, comparing only the character 76, without the character store 45: whichever parameter stays in a register
-// takes EBX and the mask EBP, whatever its use count.
-// Round 77 (lane 10, fast): the iterator step as a forced-inline copy over the shared scan 14, over the
-// existing data_find_index scan 14, over a scan with the bit test either way round 14/14 (diagnostics, the
-// scan's shape is not the tie); the flags set field by field 71; the iterator and prediction declared ahead
-// of the flags 14; one exit with `result = true` first, a break and allocation only when not found 73 (187).
-// Round 95 (m3 lane 16, fast): the font read as `.field_0` at all three uses 14; the character compared first 17; the search
-// pointer declared in the while condition 14; a const search pointer with a separate pointer for the new prediction 14; the
-// datum-iterator form of matched 0x1406b0 (prediction from `iterator.datum`) 14; a `predictions` pool local for the iterator and
-// the allocation 14; the iterator in its own block 14; `return true` in an explicit else 14. Diagnostics: the header call's font read through
-// its address 14; without the header call 87 (the mask still takes EBP: it is allocated after the parameter in every form).
-// Round 175 (one-file LTCG harness with 0x13eeb0's and 0x16b840's files, exact at 14): the flags as a `static const`
-// aggregate 15; the datum-iterator walk with the character compared first 17. Diagnostics: plain long parameters 86 (LTCG
-// passes the character in EBX, the font stays on the stack, the mask EBP); plain long parameters with the function's
-// address taken keep the declared convention: fastcall 76, `__stdcall` 14 (the font still EBX); a forced-inline copy of
-// the scan with the mask as `2 <<` or `0x80000000u >>` 14/14. So neither the convention nor the mask's constant decides
-// it: the allocator colours the font before the mask, retail the mask first (bits ESI and count EDI in both).
-// Round 175: the iterator as an aggregate initializer `{ g_54d578, NONE, NONE }` 14; the allocation inside a `for (;;)`
-// search when the walk ends, `break` on a match, 14 (harness); a 600 s permuter run (75 tries) none below 14.
-// Round 106 (lane 9, fast): the search test in the while condition with an empty body and the allocation under
-// `if (!prediction)` 14; a font mismatch `continue` before the character test 14; the header result in a pointer
-// local with one `return header != NULL;` exit 79. Retail's matched scans that keep a stack parameter across the
-// loop (0x13d950, 0x1ff7d0, 0x204b20, 0x23f260) also give it EBP and the mask EBX; ours gives the parameter EBX.
-// No untried natural form is left in this note; the caller's declaration sits in another lane's file this round.
-// Round 157 (m3 lane 8, fast; the caller's file was open this round): the wrapper's field and conversion as `dword` 14
-// (same code); the iterator declared and initialised ahead of the header call 84 (202 bytes: the pool is held across the
-// call). Only called from 0x13eeb0 (no address taken in retail), yet its parameters stay on the stack. Caller-side forms
-// cannot reach the callee's colouring: the listed plain-long, `__stdcall`, by-value key and wrapper forms cover them.
-// Round 78 (m3 lane 15, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each): a non-null `__assume` on
-// iterator.data after it is set 14; `__assume(font_index.field_0 != NONE)` at the top 14, the same on the character 14;
-// `__assume(prediction != NULL)` on the new prediction 14 (all the same code); the same assume at the top of the loop
-// body 58 (195 bytes). Reading: retail 0x140900 saves EBX itself, so no callee convention keeps the font out of EBX;
-// in matched 0x13d950 the mask's EBX is the iterator index's own register, free during the scan, which this
-// function's index (EAX throughout) does not offer.
-// Round 177 (m3 lane 6; one-file LTCG harness with unknown_13e8a0.cpp and unknown_16b570.cpp, exact at 14): the existing
-// out-of-line iterator step (0x16bb70) 71 (it stays a call); the header's calling iterator copy 70 (0x16bc00 out of line); the
-// key wrapper's conversion returning `long const &` 14 (diagnostic, header restored); the match test as two mismatch
-// `continue`s 14; a local key aggregate for the call, the test and the stores 14 (the 14s are the same code).
-// Round 106 (m3 lane 1, fast): `register` on the font parameter does not build (the checker's generated cast); the
-// whole body in a forced-inline helper with plain long parameters 14; the datum-iterator walk with the prediction read
-// in the body 14; a long return 20 (189 bytes; the font still EBX). Diagnostics: the iterator as a scalar index over
-// data_next_absolute_index_inlined 88 (203 bytes); `iterator.index = NONE` ahead of the header call 60 (191 bytes: the
-// index takes ESI across the call, the font EBX, the mask EBP); without the search loop 173, where the font takes ESI
-// and the character EDI. Reading: the hoisted bitmap pointer and count are coloured first (ESI, EDI), then the font
-// (EBX), the mask last (EBP); retail colours the mask before the font, as if its mask were a cross-block value.
-// Round 108 (m3 lane 1, fast with 0x13eeb0, which matched in each): the new prediction through a typed pool accessor
-// macro 14; a long copy of the font declared in the not-found branch for the test and the store 14, copies of both
-// parameters there 14; the wrapper type made non-POD by an empty inline destructor (diagnostic, header restored) 14;
-// the search as a do/while that stops on a match, then `if (prediction) return false;` 14 (all the same code). Retail
-// 0x13d950 for comparison: its pointer parameter takes EBP at entry and the mask EBX (shared with the iterator index).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
+	bool result = false;
 	s_font_cache_flags flags = { false, true };
 
 	if (!font_cache_get_character_header(font_index, character, flags))
@@ -893,20 +809,25 @@ bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 		{
 			if (prediction->font_index == font_index && prediction->character == character)
 			{
-				return false;
+				break;
 			}
 		}
 
-		long datum_index = record_pool_allocate(g_54d578);
-		if (datum_index != NONE)
+		if (!prediction)
 		{
-			prediction = (s_font_prediction *)&((s_font_prediction *)g_54d578->data)[datum_index & 0xffff];
-			prediction->font_index = font_index;
-			prediction->character = character;
+			long datum_index = record_pool_allocate(g_54d578);
+			if (datum_index != NONE)
+			{
+				prediction = (s_font_prediction *)&((s_font_prediction *)g_54d578->data)[datum_index & 0xffff];
+				prediction->font_index = font_index;
+				prediction->character = character;
+			}
 		}
-
-		return false;
+	}
+	else
+	{
+		result = true;
 	}
 
-	return true;
+	return result;
 }

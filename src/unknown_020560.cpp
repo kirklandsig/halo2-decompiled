@@ -54,91 +54,8 @@ PRIVATE __forceinline long texture_floor(real value)
     }
 }
 
-// score 4 (was 4): Frame agrees; the final slot-bit clear uses EDX instead of EAX. Tried unsigned slot bit 4;
-// signed traversal mask 4; unsigned slot index 4; toggle selected bit 14; subtract selected bit 16; assign
-// remaining mask 4; pending slots name 4; for mask traversal 4; named slot bit 4; bias declaration first 4;
-// slot index name 4; texture frame name 4; lowest-bit clear 19;
-// early clear 111; entry lifetime 4; scan-index lifetime 4; level lifetime 4; integral
-// level clamp 86; short bitmap 4; typed texture entry 4; guarded do continuation 4; reversed mask
-// assignment 4; complement by -1 xor 4; masked xor clear 4; short stage 4; entry tag local 4;
-// existing bit setter 132; callee inline declarations 4; ternary bitmap 104; one-expression level
-// 202; one conditional bias 115; bitmap set on both arms 90; named frame time 108. Compile-only
-// screens: only removing the whole bitmap block gives EAX; ~450 forms of that block keep EDX.
-// Round 206: update noinline contract 4; level clamp arms 4; adjusted clamp arms 4; both clamps 4;
-// real remainder 4; double remainder 4; integral bias floor 4; both floor boundaries 4.
-// Explicit floor result 85; native SSE floor helper 124. Original helper restored.
-// Round 69: bitmap/bias at function scope 4/4; reversed level compare 4; `>=` magnitude test 90;
-// tag local for the NONE test 4. Harness: EAX only when the bitmap is a constant zero; a constant
-// bitmap in the arm, an unconditional bitmap or a call without it keep EDX.
-// Round 123: bit scan in an inline index helper 4; bit scan split into two asm statements 4;
-// bias assigned in the arm without its zero default 65; ignored call result named 4; bitmap
-// narrowed to short at the floor 16. Harness: the second floor's asm decides it (an asm copy
-// that clobbers EDX in place of ECX gives EAX here).
-// Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
-// clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
-// Round 71: the entry body in a helper keeping (state, entry, index) 415 (90 bytes, out of line), (state, index)
-// 431, the part after the NONE test 409; the same three forceinline 4/4/4; forceinline bitmap getter 114 (379
-// bytes), bias getter 114 (379), level helper 4, bitmap and bias getters 114, all three 114.
-// Inline call-and-store helper with evaluated arguments 4; mask-without-bit helper 4; single-bit helper 4; both 4.
-// Round 85: scan index initialized 53; masked shift index 18; const entry pointer 4; count declared outside
-// its arm 4; adjusted value declared outside its arm 8; implicit floor conversion 4; split level initialization 4;
-// named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
-// Round 138: the bit-scan asm through EAX or EDX 6/6 (clear still EDX); index declared before the loop 4;
-// `while (remaining != 0)` 4; remaining declared, then assigned 4.
-// Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
-// of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
-// the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
-// Round 132 (m3 lane 7, fast): the call's short arguments without casts 4; the level truncated in the
-// clamp statement 4; an explicit return after the loop 4; the level test as `level < entry level` 4;
-// bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
-// scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
-// may be one hidden allocation off retail rather than a property of the clear.
-// Round 155 (m3 lane 5, fast): the floor's asm split after cvttss2si 4; floor parameter `real const` 4; one-line asm
-// statements 4; adjusted bias as a ternary 65 (399 bytes). Permuter (600 s, 41 variants) found nothing below 4.
-// Round 141 (m3 lane 8, fast with 0x143c0 and caller 0x16b90): the call cast to void 4; the remainder in a named
-// local 4; the bias arm as one combined test without `adjusted` 65 (400 bytes); the entry as `&state[0x1320] +
-// index * 0x40` 4; the frame value named for the magnitude test and the remainder 108 (406 bytes); a pointer to
-// the entry's level used for the test and the store 4. Caution: the compile-only harness is not faithful here
-// (non-LTCG /Gr passes the bitmap to 0x143c0 in EDX, so EDX is natural there; LTCG passes it in ECX), so its
-// screens of the bitmap block say nothing; retail 0x143c0 itself clobbers EDX.
-// Round 79 (m3 lane 11, fast): the NONE test as an early clear plus `continue` 107; the global bias at +0x2c read
-// into a local before the loop 126 (414 bytes); 0x143c0's two size stores through a short pointer (callee form;
-// 0x143c0 still matches) 4; the bit computed at the loop top and cleared at the end 108 (398 bytes); bitmap as dword 4. Diagnostic
-// (reverted): a probe load stored to a global in the latch takes ECX and the clear keeps EDX, so EAX is held off
-// at the latch rather than one rotation step behind. A one-file LTCG link with 0x143c0's file reproduces EDX but
-// not 0x143c0's register convention.
-// Round 165 (m3 lane 5, fast with 0x143c0 and 0x16b90): `fabsf` for the magnitude test 4; `fmodf(frame, (real)count)`
-// for the frame 4 (same code). Diagnostics on the LTCG image (reverted): the clear keeps EDX with the bitmap block
-// removed, the second floor removed, the call removed, a zero bitmap in the call, a void callee in place of 0x143c0,
-// and with the loop body cut to one 0x143c0 call (the cut-down bodies also changed this function's frame or homes:
-// `state` moved into a register, `remaining` into EBP, so they do not isolate the latch); matched 0x18e80's latch takes EAX after a call that leaves EAX
-// unused. No untried natural form of the latch or the frame block is left in this note.
-// Round 189 (m3 lane 4, fast with 0x16b90 and 0x16b10): the shift count as `(byte)index` 111; the render reset state
-// typed (slot fields, +0x2c bias, +0x1420 slot mask) with per-use slot indexing 51 (419 bytes), with a slot pointer 4;
-// an inline pin function for both clamps 4; a short stage local at the loop top 4; the floor result named as an
-// integral before the clamp 4. Diagnostics: a cut-down loop (bsf, NONE test, a call, the clear) keeps EDX with an LTCG
-// or XDK callee, called conditionally or not; a second use of the mask (0x18e80's state clear) gives EAX, `mov ecx` first.
-// Round 78 (m3 lane 15, fast with 0x143c0, 0x16b90 and 0x16b10): `__assume(state != NULL)` at the top 4; `__assume(index
-// >= 0 && index < 4)` after the bit scan 4; `__assume(entry != NULL)` ahead of the NONE test 4 (all the same code);
-// `__assume(count > 0)` after the count read 89 (405 bytes: the count goes through a stack home); `__assume(bitmap >= 0)`
-// ahead of the call 106 (413 bytes: the bitmap gets a stack home). Reading with round 79's latch probe: the clear's
-// temporary is a next-fit choice (the probe took ECX, the clear then EDX), so ours enters the latch one step after
-// EAX (the tag argument's load) and skips the shift's ECX, where retail enters it at EAX. Diagnostic (reverted): 0x143c0's
-// stage parameter as `long` (definition, the six declarations and the three `(short)` call casts; every caller passes a
-// long) 4, with 0x143c0 and its matched callers unchanged: the stage conversion is not the extra step. Probes (reverted):
-// one or two copies between globals ahead of the 0x143c0 call leave the clear in EDX; one after the call takes ECX and
-// the clear EDX; two after the call take ECX and EDX and the clear takes EAX. So the rotation restarts at the call (its
-// result's EAX) and retail has two more steps than ours between the call and the clear, with no code left for them.
-// Round 240 (m3 lane 3, fast with 0x143c0 and 0x16b90): the entry as `state + (index << 6) + 0x1320` 4; the clear as a
-// plain assignment 4, with a `1L` shift 4; `level` declared at loop scope after the entry 4; the mask declared in a
-// `for` header with an empty step 4.
-// Round 106 (m3 lane 1, fast): the clear's count masked, `~(1 << (index & 31))`, 18 (400 bytes: the `and` stays); the
-// entry's current level in a named local for the test 4; `long index` outside and the clear as the step of
-// `for (; remaining; ...)` without a `continue` 4. Diagnostics: the level store ahead of the 0x143c0 call 38, the bitmap
-// declared once outside the loop and not reset 109: the clear keeps EDX in both. Retail 0x143c0 does not read EDX.
-// Round 108 (m3 lane 1, fast): the floor helper `__stdcall` 4, `__cdecl` 4; a `void *` parameter cast to the byte
-// pointer in a local 4; the count as a `real` 4; the truncation written at the compare and the store, no truncated
-// local, 4 (the clear stays EDX in each); the level store re-derived from state and index 51 (419 bytes, no CSE).
+/* The mip level is an integer index: the floored bias pinned to 0..2 and truncated. Comparing
+   and storing it as that index, converted where the float is needed, is what matches. */
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -169,12 +86,11 @@ void __stdcall function_1b0a0(byte *state)
                 bias = adjusted;
             }
             real level = (real)texture_floor(bias);
-            level = PIN(level, 0.0f, 2.0f);
-            level = (real)(long)level;
-            if (*(real *)(entry + 0x10) > level)
+            long level_index = (long)PIN(level, 0.0f, 2.0f);
+            if (*(real *)(entry + 0x10) > (real)level_index)
             {
                 function_143c0(*(long *)entry, (short)bitmap, (short)index, bias);
-                *(real *)(entry + 0x10) = level;
+                *(real *)(entry + 0x10) = (real)level_index;
             }
         }
         remaining &= ~(1 << index);
@@ -849,8 +765,9 @@ bool function_022710(void)
 	return result;
 }
 
+/* inline: both retail callers (0x22850, 0x22cf0) keep the fraction in memory and reload XMM0 before every call */
 // @retail 0x22750
-void function_022750(const real *a, long size, const real *b, real *out, real t)
+inline void function_022750(const real *a, long size, const real *b, real *out, real t)
 {
 	long count = size * size;
 
@@ -907,6 +824,7 @@ real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, dword order, real red, real green, real blue,
     real *red_result, real *green_result, real *blue_result);
 
+real distance_sq3f(point3f const *a, point3f const *b);
 PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte order, real *red, real *green, real *blue, vector3f *direction)
 {
     long bytes = order * order * sizeof(real);
@@ -916,6 +834,26 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// score 418 (was 418; 439 earlier): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
+// MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
+// Earlier header (merged r240): 418 (was 418, 439 earlier):
+// Earlier header (418, was 418, 439 earlier):
+// Earlier score 418 (was 418, 439 earlier):
+//
+// Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
+// offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
+// Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// MiniMax A (11-18): no new form, no lower score (547): retail opens a 0x2c frame with homes for the opposite sample,
+// the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where this build opens
+// 0x18 and keeps the count in edx with no home, and retail takes the position pointer as its third parameter (edx)
+// while this build takes it in eax - a parameter order that may not change here.
+// Earlier (547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// Earlier header (merged r139): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// MiniMax S (11-17): no new form, no lower score (547): retail opens a 0x2c frame with homes for the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where ours opens 0x18 and keeps the count in edx with no home; retail's nearest scan is a four-wide unrolled pass over the samples with two induction pointers and the closest index in edi, where ours walks a pointer and keeps the closest sample.
+// MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
+// offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
+// pointer in scan 2, and retail's EBX/EAX pair against our ECX/EDX stays. The permuter (30 tries,
+// annealed) found no better form.
 // MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
 // pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
 // 0x18 against retail's 0x2c.
@@ -953,7 +891,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // dead store at 0x23013 each pass, and delta.k at +0x38), nearest kept in EDI in the unrolled part, one pass counter
 // at +0x18, and the hoisted entries pointer in scan 2; dot3f/length_sq3f are not used for the projection and distance
 // because their sums run i, j, k where retail's run k, j, i.
-// score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// Earlier: Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
@@ -1172,6 +1110,327 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // N393: Native nearest/anchor/opposite coordinate-difference double residency, seven
 // subsets 648/640/730/645/731/665/753; all plus projection 753. NOT kept: larger,
 // unmatched storage domains; original scalar graph restored. Frame/query/vector homes remain.
+// M3 lane 12 r136 (fast with 0x24550, 0x22c30, 0x22750, 0x146020 and the caller 0x23690; the plain check agrees on the kept form):
+// kept at the same count, 547 (2122 B): delta through the existing vector3d_from_points3d, and scan 2's offset, projection and
+// distance through vector3d_from_points3d, dot3f and length_sq3f, in place of their bodies written out as scalars (the emitted sums
+// are (y*dj + z*dk) + x*di and (z*z + y*y) + x*x, the same values as retail's; 0x23690 stays 330). Scan 1 through distance_sq3f on
+// this body 552 (2111 B), with the other three as well 552; the delta alone 547; scan 2 alone 547 (other registers).
+// The retail-shaped index body re-measured 654 (2033 B; register-masked aligned 118 against this body's 397): its first differences
+// are `nearest` kept in memory (retail EDI with a home at +0x14) and one zero register shared by the count test, `nearest` and the
+// index. On it: `nearest` and `opposite` as a two-long array 654 (same code, frame 0x18); `if (0 < count)` around scan 1 635
+// (2039 B); `nearest` through a reference 654 (same code); scan 1 in an inline helper returning the index 1130 (1572 B, the scans
+// are no longer unrolled); dot3f with its arguments swapped 654 (same code).
+// F417: Remaining-count cursor in nearest/opposite/both passes 575/594/662.
+// Postfix admission in nearest/opposite/both 922/1279/1633. Shared remaining count
+// 662, shared count and cursor 662. NOT kept: the 0x18 frame remains and postfix
+// admission removes the four-wide expansion. Original passes and body restored.
+// Round 622: inclusive nearest cursor 590; inclusive indexed nearest 614; opposite ordinal with cursor 792;
+// indexed opposite result 727; shared inclusive bound with cursors 770; shared inclusive bound with indices 699;
+// cursor searches with ordinal exclusion 779; index searches with ordinal exclusion 684.
+// All eight inclusive-bound forms regress. Each inclusive opposite scan shortens the body by at least 130 bytes.
+// Two indexed scans with ordinal exclusion get a 0x1c frame and retain four-wide strides at 1992 bytes. The
+// baseline query register, vector homes and 0x18 frame remain.
+// Round 625: typed sample-position copies at nearest/anchor/opposite and nearest+anchor/
+// nearest+opposite/anchor+opposite/all 742/589/701/781/873/729/900; nearest copy through the
+// squared-distance helper 892. Existing sample record for active BSP count 547.
+// Opposite distance with current bound as conditional/default/explicit fallback 605/645/605.
+// NOT kept: the native copies expand the extent or remove the four-wide scan, and the
+// candidate-result forms add work to the rejected projection path. The 0x18 frame remains.
+// Fraction inside opposite-ordinal/resolved-pointer admission; lower-then-upper tests
+// 560/568, upper-then-lower 561/562, partial-before-endpoint 560/569,
+// shared selected-endpoint copy 673/672. Frame stays 0x18.
+// M3 lane 15 r99 (fast with 0x24550, 0x22c30, 0x22750, 0x146020 and the caller 0x23690; [n] = aligned differing lines, this
+// body 547 [961]). The index body re-measured (entries read at each use, scan 1 and scan 2's distance through distance_sq3f
+// with the sample first, delta and offset through vector3d_from_points3d, dot3f, a `nearest` index, the ternary second, then
+// `fraction = 0; if (second)`): 577 (2094 B) [234], 0x23690 330 -> 354. On it: scan 2's offset through the by-value
+// vector3f_assign with the three differences as arguments 761 (2289 B, frame 0x30) [623]: the offset gets a home, but the
+// subtractions are no longer shared with the distance (the same code as the offset written out); the delta through
+// vector3f_assign as well 761 (same code); the delta alone 577 (same code as the index body); the fallback vector through
+// vector3f_assign 578 [247] (on this body 547, same code: the fallback is already float stores); `dword` indices 484 (2110 B)
+// [244], a positional accident (unsigned jb/jae where retail has jl/jge), not kept; an index per loop 577 (same code); `first`
+// as `&source->entries[nearest]` 577 (same code). Retail read again for the homes: nearest is written to +0x14 only after
+// each part of scan 1 and reloaded in scan 2 (once inside the remainder loop's update, at 0x232c3), opposite is stored at
+// every update, the offset's x is stored each pass and never read, and the delta's k is the only delta component with a
+// store (reloaded into XMM7 after each unrolled pass); the fallback vector is float stores with two `push 0` immediates,
+// so the integer zero our index body shares between the count test, nearest and the index does not come from the fallback.
+// Round 630: direct opposite winner with indexed records, nearest pointer/ordinal 742/712;
+// with a count-bounded cursor 830/781. Convert the winning pointer once after the walk,
+// pointer-bounded 711/735, count-bounded 766/762. The frame and query register differences remain.
+// M3 lane 12 r146 (fast with 0x24550, 0x22c30, 0x22750, 0x146020 and the caller 0x23690, which stays 330): on this
+// pointer body the entries field read at each use (no samples local) 592 (2150 B); only in scan 2 and for the second
+// sample 615 (2145 B); the samples local read again after scan 1 547 (same code); the first sample's position in a named
+// pointer for the delta 547 (same code); the position's components read into locals before scan 1 605 (2081 B). A `/Gd`
+// first-pass compile (the pass LTCG takes register arguments from) keeps the position pointer in a callee-saved register
+// in each of these, where retail's EDX needs a scratch register there.
+// M3 lane 1 r123 (fast with 0x23690, 0x24550, 0x22750, 0x22c30, 0x146020): retail's two calls push source, red, green,
+// blue, order and direction and pass the position last in EDX; the position parameter first, second or sixth (the
+// definition, the declaration in src/unknown_023540.cpp and both calls together) 547 each (same code, still EAX), so the
+// arrival register follows the body (the index-scan bodies receive it in EDX), not the slot. The fallback as an early
+// return 591; the override copies as an early return 584. All restored.
+// Round 262 (m3 lane 3, fast with 0x24550, 0x22c30, 0x22750 and the caller 0x23690): the index body (entries read at each
+// use, both distances through distance_sq3f, delta and offset through vector3d_from_points3d, dot3f, the ternary second,
+// `fraction = 0; if (second)`) re-measured 576 (2094 B): scan 1 is retail's but `nearest` stays in memory (retail EDI,
+// stored to +0x14 at the loop exits) and the limit takes EDI; on it the count == 1 copy as an if/else arm with no return
+// 576 (same code); `opposite` declared with `nearest` before scan 1 564 (2089 B: the limit moves to retail's EBP, but
+// red is then loaded into EDI at the entry and `nearest` stays in memory); that with scan 2's distance as
+// length_sq3f(&offset) 660 (2020 B). On this body: `opposite` declared before scan 1 634 (2159 B); the count == 1 copy
+// as an if/else arm 547 (same code).
+// M3 lane 16 r139 (fast with 0x24550 and the caller 0x23690): the index body (`source->entries[i]` at each use, scan 1 and
+// scan 2's distance through distance_sq3f(sample, position), delta and offset through vector3d_from_points3d, dot3f, the
+// ternary `second`, `fraction = 0; if (second)`) re-measured 576 (2094 B, frame 0x20; 0x23690 330 -> 354). Its head is
+// retail's but for the frame and the shared zero; scan 2 matches retail's shape except that delta.j and delta.k are spilled
+// where retail spills only delta.k and gives the offset its own 12-byte home (offset.i stored each pass, never read): that
+// home is the 0x2c frame's missing 12 bytes (retail: opposite +0, nearest +4, pass counter +8, count +0xc, samples +0x10,
+// offset +0x14, delta +0x20 shared with the fallback vector; other_distance reuses the source argument's slot). On it: the
+// offset through a pointer local to it with length_sq3f 654 (2033 B), with distance_sq3f 576 (same code: the pointer folds
+// and the offset still has no home); the nearest index renamed so that it sorts after `opposite` 576 (same code: names do
+// not move these slots); the fraction as a ternary on `second` 576 (same code); opposite and its distance declared ahead
+// of `first` 576 (same code).
+// M3 lane 14 r116 (fast with 0x22750, 0x22c30, 0x24550, 0x23690 and 0x22850; kept body confirmed plain): retail's index
+// shape with scan 1 through distance_sq3f (0x24550), `nearest` from 0, delta through vector3d_from_points3d, scan 2 on
+// `i != nearest` with offset through vector3d_from_points3d and dot3f, `second` as a ternary and the fraction under
+// `if (second)`: with the distance as length_sq3f(&offset) 550 (2005 B; the dot then sums (k + i) + j, retail (k + j) + i);
+// with the distance as distance_sq3f(sample, position) 459 (2070 B, not kept: it sums (k + i) + j where retail's scan 2 sums
+// (k + j) + i, a rounding difference); the distance staged k, j, i on offset 550; the distance as length_sq3f of a second
+// difference vector 455 (2070 B: the dot and the distance both sum (k + j) + i as retail, position in EDX as retail's
+// caller passes it); then `inline` on 0x22750's definition 435 (2088 B; kept: both retail callers spill the fraction and
+// reload XMM0 before every 0x22750 call, and 0x22850 also falls, 226 -> 209 at retail's 987 B). On that body: dot3f
+// operands swapped 435 (same code); both difference vectors formed before the dot test 451; the dot written out i, j, k
+// 439 (diagnostic); scan 2, first and second through `source->entries` 571 (retail's two-pointer scan 2 and pass counter
+// at +0x18, but one shared zero register at the top and `nearest` in memory); scan 2 alone through `source->entries` 549
+// (same, frame 0x20); that with `opposite` defined before scan 1 533; offset declared before scan 2 435 (same code);
+// delta assigned k, i, j 457 (diagnostic); a named sample pointer in scan 2 456. The caller 0x23690 moves 330 -> 354
+// because both its calls now set EDX as retail's do (the only change in its code).
+// Self-review: the same body with the distance as length_sq3f(&offset) (no second vector) 531 (2023 B), but its projection
+// then sums (k + i) + j where retail and the previous pointer body sum (k + j) + i, so the second vector stays.
+// Coordinator review (11-19): the second difference vector (435) recomputes offset by hand, so scan 2's distance goes
+// through distance_sq3f(&samples[i].position, position) like scan 1 instead: 439 in the fast and the full check (2088 B),
+// 0x22850 209, nothing lost. Retail's scan 2 still sums (k + j) + i, as a vector's length_sq3f would.
+// M3 lane 14 r118 (fast with 0x22750, 0x22c30, 0x24550; difflib-aligned counts in brackets, this body 439 [285]):
+// scan 2's distance as dot3f(&offset, &offset) 531 [317] (2023 B, the same code as length_sq3f(&offset)); as
+// length_sq3f(&offset) 531 (its distance sums (k + j) + i as retail's, its dot (k + i) + j); that with
+// dot3f(&offset, &delta) 531 (same code); scan 2 through `source->entries` 554 [220] (2112 B: retail's two pointers,
+// pass counter at +0x18 and loop latch, but `nearest` lives in memory in both scans and delta.j is spilled); that with
+// length_sq3f(&offset) 635 [296]; that with `if (i == nearest) continue;` 554 (same code). Dead-local scan K = 1..12 on
+// the length_sq3f form: 531 at every K, so its dot order is not a symbol-count tie.
+// The frame remains 0x1c versus 0x2c, with two induction addresses and the offset spill still missing.
+// First sample at the scan exit 439, after the second sample 418 (kept, plain), nearest position
+// reference 439, late first record reference 439, candidate position reference/pointer 439/439,
+// candidate reference with late first sample 460, with nearest position reference 439.
+// Opposite-scan record cursor for projection/distance/both with a count bound
+// 590/591/513, or an end bound 1234/1234/1187. A direct winning pointer with
+// a count-bounded projection or distance cursor 605/605. NOT kept: all regress;
+// the offset spill and independent induction addresses still differ.
+// M3 lane 4 r228 (fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at 2094 B; masked aligned rows in brackets,
+// control [276]): scan 2's distance as length_sq3f(&offset) 646 (2039 B) [310], with the dot named `projection` 646 [310],
+// with a named sample pointer 646 [298]; the dot named on this body 418 (same code). Scan 2 reading source->entries for
+// the offset and the distance: 549 at retail's 2122 B [149]: retail's two pointers, pass counter at +0x18 and latch, but
+// nearest then leaves EDI in both scans (spilled at +0x10, opposite at +0x14, retail the reverse), delta takes y, z, x
+// with y spilled (retail z, x, y with z spilled), no offset.x store, and the distance sums (k + i) + j (0x24550's order,
+// retail (k + j) + i). On that body: the distance as length_sq3f(&offset) 628 (2057 B) [139], as dot3f(&offset, &offset)
+// 628 [139], as length_sq3f of a second difference vector (diagnostic only, the reverted hand recompute) 544 (2122 B)
+// [129]; on that last body opposite declared before scan 1 583 (2097 B) [137], the delta from source->entries with
+// samples named after scan 2 561 [341], the delta declared before scan 1 544 (same code). Lead: the two-pointer scan 2
+// needs source->entries, and nearest has to keep EDI across both scans.
+// Nearest/opposite/both pre-tested while loops 418 each. Positive-domain do loops
+// in the nearest/opposite/both scans 971/1092/1612. With the other scan pre-tested
+// while, 971/1092. NOT kept: the post-test forms suppress four-wide expansion,
+// shorten the body and leave the vector spill and extra induction address unresolved.
+// Nearest, opposite and both cutoff scopes 418 each. Reset shared cutoff 418 or 419 before the delta.
+// The reset cutoff or separate scopes with live table reads in scan two 549/549. One table snapshot
+// across both scans 623. NOT kept: the live table forms reach retail length but retain a short frame
+// and miss the candidate x store. The snapshot shortens the body, and the other forms tie or regress.
+// M3 lane 3 r280 (fast with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418 at 2094 B, frame 0x1c; [n] =
+// aligned differing rows, control [273]). Reading: retail computes the scan-2 offset y, z, x and stores only x to the
+// offset's 12-byte home each pass, loads the delta k, i, j and stores only k (at +8 of the home it shares with the
+// fallback vector), so both vectors keep their homes; the i product of retail's projection is `delta.i * offset.i`
+// where the j and k products have the offset first. A difference helper returning its output pointer (a local
+// one-caller copy of the difference helper, diagnostic), chained into dot3f, as a statement or through a pointer local:
+// 418 each with the helper distance, 646 with length_sq3f (all the same code as the void helper: the pointer folds, no
+// home). The offset's fields assigned directly in place of the difference helper (match-only, a helper body written
+// out), with dot3f and the helper distance: i, j, k 433 [255]; j, i, k 435 [253]; j, k, i 435 [265]; i, k, j 427 [268]
+// (all 2122 B, frame 0x28: the offset then has its home and its x is stored each pass whatever the field order, the
+// delta loads k, i, j with only k stored as retail, the samples pointer keeps its home; still one induction pointer
+// and the pass counter in ESI, which is the missing frame dword); k, j, i 469 [241] and k, i, j 469 [251] (2086 B).
+// With the distance as length_sq3f(&offset) every order 649 (2039 B, the home is gone again). On the j, k, i form: the
+// delta's fields assigned directly too 422 [222] (2094 B); the projection written `offset.k * delta.k + offset.j *
+// delta.j + delta.i * offset.i` 428 [268]; the distance written k, j, i on the offset 649; both 649. On the helper
+// offset: that written projection 575 (2135 B), with the written distance 646. Scan 2 through `source->entries[i]`:
+// helper offset 549 [219] (2122 B, frame 0x20, listed; no samples local at all gives the same code), with length_sq3f
+// 628 [286]; with the offset's fields assigned directly 848-859 (2357-2366 B: each field store makes the entries field
+// be read again), with length_sq3f 572 (2109 B) in all six orders. Lead: the offset keeps its home when its fields are
+// stored directly and the distance repeats the subtractions through the helper; no form here combines that with
+// retail's two induction pointers.
+// Later in r280 (a compile-only screen first, then the fast check): the induction pointers follow the base's kind, a
+// named samples local gives one pointer in either scan, the entries field read gives two; the samples bound as
+// `s_light_sample const *const &` to the entries field (same code as the field at each use, 549) with the offset's
+// fields assigned directly and the helper distance reaches retail's frame 0x2c with two pointers, the pass counter
+// and the offset's x stored each pass, but the distance then repeats its subtractions from the second pointer: 691
+// (2228 B) for j, k, i and i, j, k, with dot3f's arguments swapped 691 (same code), with the written projection 696
+// (2233 B); with length_sq3f(&offset) 650 (2038 B, frame 0x1c), the helper offset with length_sq3f 628 (2057 B).
+// On the samples local, dot3f(&offset, &delta) with the j, k, i fields 435 (same code as the other order).
+// Nearest or opposite distance scratch at scan scope 418/418, projection scratch at scan scope 418,
+// offset declared before ordinal exclusion 418. Nearest cutoff, zero projection limit, or opposite cutoff
+// on the left of its comparison 418/418/418. Both opposite-scan scratch values at scan scope 418.
+// All tie. The 0x2c retail frame, second induction address and offset.i store remain unresolved.
+// Reused offset norm as square accumulation or grouped sum 646/646. Candidate setter with either
+// norm 649/649. Both setters with either norm 649/649. Anchor setter and accumulated norm 646.
+// Candidate setter with offset-first dot and accumulated norm 649. NOT kept: 2039-byte extent
+// and 0x1c frame, with the candidate-X store still missing.
+// Conditional nearest/opposite state assignments, alone or paired, and named projection
+// alone or with nearest 418 each. Named projection with opposite or both 1236 each.
+// Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
+// one-point gain, extent grows past retail, and the separate frame homes remain.
+// Opposite scan with projection continue inside the ordinal arm, separate ordinal/projection guards,
+// all rejecting guards, grouped rejection in the ordinal arm, or distance continue inside either
+// set of admission arms: 418 each. Split ordinal ranges with positive or rejecting projection 600/600.
+// NOT kept: the single scans retain the missing offset and pass-counter homes, and the two ranges regress.
+// M3 lane 3 r284 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH; [n] = aligned rows, control [205]): after
+// scan 2 retail threads opposite == NONE straight to the first sample's copy (`cmp esi, -1; je 0x2330c`) and tests
+// `second` on the add's flags (`add esi, ecx; mov ebx, esi; je`), where ours materialises the NULL (`xor ebx, ebx` ...
+// `test ebx, ebx`). `second = NULL; if (opposite != NONE) second = ...;` 422 [208] (2092 B); `if (opposite != NONE) {
+// second = ...; if (second) fraction = ...; }` 440 [205] (2088 B: retail's tail exactly, but a repeated test); `first`
+// and `fraction` declared ahead of the ternary `second` 439 [208] (2088 B, plain fast check agrees: retail's threaded tail
+// without the repeated test, but `opposite` then takes ESI through the remainder loop where retail keeps it at +0x10);
+// `fraction` ahead of `first` 418 (same code); `second` as an if/else 418 (same code), with `first` and `fraction` ahead
+// of it 439. The threaded tail needs nothing between `second` and its test.
+// Search-role names for the vectors, winning ordinals and pass counters in all seven subsets,
+// then all with both cutoffs renamed: 418 each. These names leave the frame and second induction unchanged.
+// One direction workspace for anchor and fallback 419, with scan-scope offset or a shared candidate
+// position 419/419. One candidate position with aggregate or shared setter offset 433/418. Shared
+// direction and aggregate or setter offset 433/419, or with a candidate read from the live table 550.
+// The aggregate recovers retail length and the candidate-X spill, with a 0x28 frame.
+// The aggregate recovers the candidate-X spill and retail length. Candidate offset named before
+// delta 433, reset distance limit 433, separate scan indices 433, named nearest/opposite ordinals
+// 433, named sample count 433, opposite scan state declared before delta 417, loop-top ordinal
+// skip 433, candidate point pointer 433. NOT kept: the best form gains one, keeps the 0x28 frame
+// and lacks retail's second induction address.
+// M3 lane 4 r240 (fast with 0x22750, 0x22c30, 0x24550; control 418): scan 2 with the samples bound as a const reference to
+// the entries field and the distance taken from the offset: helper offset with length_sq3f 628 (2057 B); fields assigned
+// directly i, j, k with dot3f and length_sq3f 650 (2038 B), with the projection and distance written in retail's k, j, i
+// order 650 (same code), fields assigned j, k, i 650 each way; helper offset with the written sums 626; plain samples
+// local with length_sq3f 646. Retail's distance `(k*k + j*j) + i*i` reuses the offset registers; distance_sq3f sums k, i, j.
+// M3 lane 15 r123 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418, [276] aligned rows).
+// Reading: scan 1 of this body is retail's byte for byte. In the all-direct form (549, 2122 B [223]: retail's scan-2 pointer
+// pair and pass counter home) `opposite` owns EDI outside scan 2, scan 1's unroll limit takes EDI (`lea edi, [ebx - 3]`,
+// retail EBP) and `nearest` has no register in either scan; retail keeps `nearest` in EDI through both scans and spills it
+// only around the scan-2 latch, as this body does. Diagnostic: with scan 2's skip test removed `nearest` gets EBP in scan 1
+// (628), so its scan-2 use is what costs it the register there. On the all-direct form: every entries read through a
+// file-local inline accessor 549 (same code); the accessor with `first` ahead of the delta, a named scan-2 sample pointer,
+// dot3f(&offset, &delta) and length_sq3f(&offset) 635 (2051 B), the same without the accessor 635 (same code), the accessor
+// with length_sq3f only 628 (2057 B); scan 1 in a file-local helper returning the index, `inline` 1018 (1649 B, stays a
+// call), forceinline 549 (same code); scan 2 in a helper taking the nearest index by value, `inline` 1413 (1251 B),
+// forceinline 584 (2086 B); both helpers, `inline` 1969 (726 B), forceinline 584, with length_sq3f(&offset) 628;
+// `opposite` and its distance declared ahead of or right after `nearest` 583/583 (2097 B); `second` as NULL then
+// `if (opposite != NONE)` 541 (2122 B [268]: the count moves to EDI, `nearest` still in memory); the skip as
+// `if (i == nearest) continue;` 549 (same code); a second, redundant `i != nearest` in the update 549 (folded,
+// diagnostic); `second` kept as a pointer set in the loop 563 (2122 B [339]); `first` ahead of the delta with the delta
+// through it 554 (2112 B [216]); that with the skip as a pointer compare against `first` 593 (2066 B). Re-measured: the
+// offset's fields assigned directly 433 (2122 B [259]), with a const reference to the entries field 691 (2228 B), with
+// length_sq3f(&offset) 649/650. Body unchanged.
+// Anchor record bound once 439, candidate position before ordinal test 593, both 439,
+// or both with live entry-field indexing 554. Opposite scan unequal or preincrement
+// latch 1236/418. Complete distance before the projection gate 668, or through the
+// live candidate position with bound anchor 665. NOT kept: the last form reaches
+// frame 0x2c but grows to 2218 bytes and regresses. The second induction and its
+// offset.i spill remain unresolved at the opening extent.
+// M3 lane 5 r226 (h2m fast screen with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418; "pass" = scan 2's
+// first unrolled pass compared instruction by instruction with retail's 29, registers included; control 7 of 28).
+// Reading: in retail's pass the y and z products have the offset first, the x product the delta first, both sums end
+// on x, x is stored to the offset's home just ahead of the `jb` and never read back, and delta.j keeps XMM6: the
+// offset's x behaves as a member stored directly into an address-taken vector, its y and z as values stored through
+// a pointer. Diagnostic (a pointer to the whole local that the body writes through, not kept): `offset.i = ...`
+// written directly with j and k through `vector3f *out = &offset`, dot3f(&delta, &offset) and the helper distance:
+// 417 (2112 B, frame 0x28), pass 18 of 29: the whole dot block is retail's, registers included (offset XMM2/XMM3/
+// XMM1, delta XMM5-7, temporaries XMM4/XMM0, the x store ahead of the `jb`); the 11 left are the distance, which sums
+// (k + i) + j as 0x24550 does where retail sums (k + j) + i, and it still walks one pointer. The same with x stored
+// last 559 (2122 B). With length_sq3f(&offset) both lose the home again (649, 2039 B, frame 0x1c), though both sums
+// then run k, j, i with retail's operand sides: the store survives only while nothing after the `jb` reads the
+// offset. With the delta's i direct as well 418 (the helper form's code: the store is gone). Forms that do not give
+// the mix: all three members through the pointer local 418 (same code as the helper); the difference helper as a
+// local copy that is plain, forceinline, takes a reference, returns its pointer (statement or chained into dot3f)
+// 418 each, stores j, k, i 422, returns the vector by value 654 (2306 B, frame 0x30); `(&offset)->i` spellings 433
+// and a `real n[3]` local indexed 0..2 433 (both the same code as direct members, pass 3 of 29); direct members in
+// the orders ijk/ikj/jik/jki/kij/kji 433/427/435/435/469/469 (pass 3/3/3/2/3/0: all three products delta first).
+// Reads do not matter: the dot and the length written out with `offset.i` direct and j, k through the pointer, on
+// direct, mixed or helper stores, 649/649/646 (418 with the helper distance). On the entries-field scan (549, 2122 B,
+// two pointers, pass 8 of 28): the mixed stores with the helper distance 760 (2320 B, frame 0x2c: each direct x
+// store makes the entries field and the samples be read again), with length_sq3f(&offset) 572 (2109 B); direct
+// members 859 (2366 B) / 572; three named differences then the members 859 / 572. Lead: retail's scan 2 needs a
+// direct store of the offset's first member that does not make the entries field be read again, with j and k as
+// plain values; no source form here gives both.
+// Exclude nearest by sample or position address, winner bound before/after anchor
+// delta, captured/indexed candidate forms 615/615/639/615 for either address.
+// All shorten the body and reserve 0x14. The second induction address and offset.i
+// spill remain unresolved.
+// Candidate offset squared directly, accumulated, or as three named squares
+// inside or before the projection test: 646 each with either square-sum order.
+// NOT kept: the second scan shortens to 2039 bytes and still omits the offset
+// spill and second induction address.
+// Absolute four-record chunks for nearest/opposite/both 626/577/669, relative chunks 635/669/761.
+// Advance the next ordinal before the nearest/opposite reduction 947/1190. NOT kept: the closest
+// chunk frame is 0x28 at 2224 bytes, and advancing the ordinal suppresses unrolling.
+// M3 lane 12 r170 (h2m fast with 0x24550 in the image; control 418): `vector3f offset` declared beside `delta` outside
+// scan 2 with the distance as length_sq3f(&offset) 646 (2039 B), with the distance helper kept 418 (same code); scan 2
+// inside a redundant `if (0 < count)` 585 (2100 B); on the entries-read scan 2 (549 re-measured) that guard 557; scan 2's
+// skip test through a const reference to `nearest` 549 there and 418 here (same code each). Body unchanged.
+// M3 lane 2 r133 (h2m fast with 0x24550, 0x22750, 0x22c30, all MATCH; control 418): the distance from a second
+// difference vector (`vector3d_from_points3d(&samples[i].position, position, &difference)` then length_sq3f) 416
+// (2094 B: the distance now sums (k + j) + i as retail, but the dot keeps delta.j/k spilled and its i product
+// offset-first, and the offset.i store and second pointer are still missing); that with dot3f(&offset, &delta)
+// 416 (same code); that with `first` declared ahead of the delta and the delta formed from it 435 (2088 B); the
+// dot test as `if (dot3f(...) > 0.0f) continue;` 432 (2099 B); the outer tests as early returns (count <= 0
+// fallback, then the flag copies, then the main path unnested) 606 (2082 B). Body unchanged.
+// M3 lane 16 r174 (h2m fast with 0x24550, 0x22750, 0x22c30, all MATCH; [n] = aligned rows, control 418 [273]): scan 2's
+// candidate read from the entries field (both reads) 549 [219] (2122 B: retail's two induction pointers and the pass
+// counter at +0x18, frame 0x20, but `nearest` in memory and delta.j/k spilled); on it `first` formed ahead of the delta
+// and the delta built from it 554 [216] (2112 B), the projection compare written `0.0f >= dot` 549 [219], the skip as
+// `nearest != i` 548 [216]; on it the delta written out in all six component orders (diagnostic) 549 to 581 [219 to
+// 233], none gives retail's delta.i/j in XMM5/XMM6 with only delta.k spilled. Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0x24550; control 418): the vector difference and dot as plain functions in another
+// of this machine's files, so only link-time code generation inlines them (diagnostic, helpers removed) 418 (same code:
+// the homes retail keeps do not come from link-time inlining); the offset read through a `vector3f const &` in the dot
+// 418; the delta the same way 418; one `long i` shared by both scans 418; that with the delta declared beside it 418
+// (all the same code). Retail's delta home is the fallback direction's slot (frame offset 0x20 in both paths). Body unchanged.
+// Both strict reductions through one updater. Reference/pointer state outputs 419/419,
+// accepted-result outputs 418/418, returned ordinal 608/608, returned cutoff 545/545.
+// The 0x2c frame and separate candidate spill still differ.
+// The second scan still needs its first-coordinate offset spill and second induction address. Horizontal
+// pair written before or after the depth component 563/460, horizontal pair with aggregate or setter
+// 433/437, depth pair before or after the first component 540/540, and depth pair with aggregate or setter
+// 601/557. NOT kept: the 433 form reaches 2122 bytes and frame 0x24 but raises the score and still lacks
+// eight frame bytes.
+// M3 lane 8 r223 (h2m fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418): the entries field read at each
+// use (549 re-measured, 2122 B: in scan 2 `nearest` sits at frame 0 and is reloaded into EBX for each skip test with EDI
+// as the pass temporary, where retail keeps `nearest` in EDI with its home at frame 4 and `opposite` at frame 0); that
+// with `opposite` renamed to sort ahead of `nearest` 549 (same code: names do not move these slots); that with the delta
+// written out k, i, j (retail's load order) 624 (2182 B); the compare sides swapped (`0.0f >= dot`, `other_distance >
+// distance`, both scans' `closest > distance`) 418/418/418 here and 549 on the entries-at-each-use form (same code).
+// M3 lane 12 r176 (h2m fast with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 273): the fraction as one
+// conditional expression 418; `first` declared ahead of `second` 439 (2088 B); the opposite scan's update as `other_distance >
+// distance` 418; one scan index declared once for both scans 418 (same code each); `nearest` declared after the closest
+// distance 416 (a declaration move under the bar, not kept). Retail's scan 2 runs four passes with a second index (i + 2)
+// in a stack cell and two record pointers, and sums both the projection and the distance from the offset registers.
+// Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x24550, 0x22750 and 0x22c30, all MATCH; control 418, aligned 273): scan 2 reading the
+// entries field at both uses 549 (2122 B, aligned 219); that with the distance as length_sq3f of a second difference vector
+// 544 (2122 B, aligned 194, masked 103: retail's (k + j) + i sum and both induction pointers, frame 0x20 against 0x2c,
+// `nearest` in memory); with length_sq3f(&offset) instead 628 (2057 B); the 544 form with `dot3f(&offset, &delta)` 544 and
+// with the offset declared ahead of scan 2 544 (same code each). Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418): scan 2's distance through a
+// file-local inline helper that forms the difference vector and takes its length_sq3f (the form several other files use)
+// 417 (2094 B; its distance then sums (k + j) + i as retail; a one-caller helper, one point, not kept); that with dot3f's
+// arguments swapped 417 (same code); that with scan 2 reading `source->entries[i]` 545 (2122 B, two induction pointers,
+// frame 0x20). Diagnostics, not keepable (a pointer to the whole offset written through): lane 5 r226's mixed store (x
+// direct, y and z through the pointer) with that helper distance 417 (2112 B, frame 0x28: delta loads k, i, j and the
+// distance's (k + j) + i are retail's, x stored before the `jb`; the projection sums (j + k) + i where retail sums
+// (k + j) + i, one pointer, no pass counter); with the entries-field scan 761 (2320 B, frame 0x2c, every x store makes the
+// entries field be read again). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 273, masked 262): scan 2's
+// distance as distance_sq3f(position, sample) 541 (2122 B, frame 0x18, `nearest` then lives in memory); scan 1's the same
+// way 448 (2094 B); both 553 (2122 B); scan 2's distance as length_sq3f(&offset) re-measured 646 (2039 B); scan 2's
+// distance from `source->entries[i]` with the offset from the samples local 645 (2199 B, masked 191: two induction
+// pointers as retail); the offset from `source->entries[i]` with the distance from the local 644 (2193 B). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1181,72 +1440,61 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
     {
         if (!g_5093f4)
         {
-            s_light_sample const *samples = source->entries;
             if (count == 1)
             {
-                copy_light_sample(samples, order, red, green, blue, direction);
+                copy_light_sample(source->entries, order, red, green, blue, direction);
                 return;
             }
-            s_light_sample const *first = samples;
+            long nearest = 0;
             real closest_distance = 1048576.0f;
-            s_light_sample const *nearest_sample = samples;
             for (long i = 0; i < count; ++i)
             {
-                real x = position->x - nearest_sample->position.x;
-                real y = position->y - nearest_sample->position.y;
-                real z = position->z - nearest_sample->position.z;
-                real distance = z * z + x * x + y * y;
+                real distance = distance_sq3f(&source->entries[i].position, position);
                 if (distance < closest_distance)
                 {
                     closest_distance = distance;
-                    first = nearest_sample;
+                    nearest = i;
                 }
-                ++nearest_sample;
             }
+            s_light_sample const *samples = source->entries;
             vector3f delta;
-            delta.i = position->x - first->position.x;
-            delta.j = position->y - first->position.y;
-            delta.k = position->z - first->position.z;
+            vector3d_from_points3d(&samples[nearest].position, position, &delta);
             long opposite = NONE;
             real other_distance = 1048576.0f;
-            for (s_light_sample const *opposite_sample = samples;
-                 opposite_sample < samples + count; ++opposite_sample)
+            for (long i = 0; i < count; ++i)
             {
-                if (opposite_sample != first)
+                if (i != nearest)
                 {
-                    real x = position->x - opposite_sample->position.x;
-                    real y = position->y - opposite_sample->position.y;
-                    real z = position->z - opposite_sample->position.z;
-                    real projection = delta.k * z + delta.j * y + delta.i * x;
-                    if (projection <= 0.0f)
+                    vector3f offset;
+                    vector3d_from_points3d(&samples[i].position, position, &offset);
+                    if (dot3f(&delta, &offset) <= 0.0f)
                     {
-                        real distance = z * z + y * y + x * x;
+                        real distance = distance_sq3f(&samples[i].position, position);
                         if (distance < other_distance)
                         {
                             other_distance = distance;
-                            opposite = opposite_sample - samples;
+                            opposite = i;
                         }
                     }
                 }
             }
-            real fraction = opposite != NONE
-                ? function_022c30(&first->position, position, &samples[opposite].position) : 0.0f;
+            s_light_sample const *second = opposite != NONE ? &samples[opposite] : NULL;
+            s_light_sample const *first = &samples[nearest];
+            real fraction = 0.0f;
+            if (second)
+                fraction = function_022c30(&first->position, position, &second->position);
             if (fraction <= 0.0f)
                 copy_light_sample(first, order, red, green, blue, direction);
+            else if (fraction >= 1.0f)
+                copy_light_sample(second, order, red, green, blue, direction);
             else
             {
-                s_light_sample const *second = samples + opposite;
-                if (fraction >= 1.0f)
-                    copy_light_sample(second, order, red, green, blue, direction);
-                else
-                {
-                    function_022750(second->red, order, first->red, red, fraction);
-                    function_022750(second->green, order, first->green, green, fraction);
-                    function_022750(second->blue, order, first->blue, blue, fraction);
-                    direction->i = (second->direction.i - first->direction.i) * fraction + first->direction.i;
-                    direction->j = (second->direction.j - first->direction.j) * fraction + first->direction.j;
-                    direction->k = (second->direction.k - first->direction.k) * fraction + first->direction.k;
-                }
+                function_022750(second->red, order, first->red, red, fraction);
+                function_022750(second->green, order, first->green, green, fraction);
+                function_022750(second->blue, order, first->blue, blue, fraction);
+                direction->i = (second->direction.i - first->direction.i) * fraction + first->direction.i;
+                direction->j = (second->direction.j - first->direction.j) * fraction + first->direction.j;
+                direction->k = (second->direction.k - first->direction.k) * fraction + first->direction.k;
             }
         }
         else

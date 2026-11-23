@@ -510,12 +510,33 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax A (11-20): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below
+// retail's (sweep +0x38 and collision +0xa4 against +0x44 and +0xb0), and the reflection block still keeps the
+// perpendicular's i and k in registers and spills its j, where retail keeps the perpendicular's i and j in
+// xmm5/xmm6, spills its k at +0xac and spills the tangent's i and j at +0x38/+0x3c; the dot's three products are
+// still summed in the other order; the velocity read at each use and the dot written as three statements both
+// measure worse, and the permuter made five tries over this body without beating its baseline of 93 differing
+// instructions.
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged.
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged; the dot's three products written the way retail adds them measures 103, the same sum written with explicit parentheses measures 191, the tangent kept as three scalars instead of one vector3f measures 188, and a 300-second permuter run over the body (15 tries) found nothing below the baseline, so all of them were reverted and the body stands.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
 // the rebound coefficient named once for the three final rows 102 (same code); keep computed after the tangent 197
 // (1536 B, frame moves); the +0x34 scale ahead of the three rows 103; the normal pointer declared before the coefficient
 // loop 102 (same code).
+// MiniMax B (11-18): no new form, no lower score (102): this build still reassociates the dot product's three products to (n.k*v.k + n.j*v.j) + v.i*v.i where retail sums them as (v.i*n.i + n.k*v.k) + n.j*v.j (writing the sum with += restores retail's order but measures 103), and retail's sweep still sits at [esp+0x44] with the collision record at [esp+0xb0] where this build has [esp+0x38] and [esp+0xa4].
+// MiniMax R (11-17): no new form, no lower score (102): the dot product's three products are still summed in the other order and the perpendicular vector's slot still sits below the sweep's where retail keeps it above the collision result; MSVC canonicalises the sum and allocates the slots by liveness, so neither the operand order nor the declaration order moves them (three forms tried and reverted).
+// MiniMax E (11-16): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below retail's and the body is still twelve bytes longer; retail's dot product adds its terms in another order, a spelling the coordinator has already reverted.
+// MiniMax I (11-17): no new form, no lower score (102): retail adds the dot's three terms as
+// (v.i*n.i + n.k*v.k) + n.j*v.j while this build reassociates the same sum to (n.k*v.k + n.j*v.j) + n.i*v.i;
+// writing the sum with += restores retail's order but measures 103, and the sweep and collision homes still sit
+// twelve bytes below retail's, so the first difference stays at +0xfe.
+// MiniMax H (11-18): score 102 (was 102): no new form, no lower score; the sweep and collision homes still sit
+// twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0) and the dot's three products are still summed
+// in the other order; the position set through the existing real_point3d_set was measured again at 245, so the
+// plain stores stay. Nine spellings of the dot's three terms compile to the same instructions (102), the typed
+// particle record is the same code (102), and the velocity read through a pointer measures 194.
 // MiniMax G (11-10): no new form, no lower score (102): the sweep vector and the collision record both sit twelve bytes lower here than in retail (sweep +0x38 against +0x44, record +0xa4 against +0xb0), so retail's frame holds twelve bytes more before the sweep; the aggregates this body declares do not account for that gap.
 // MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
 // sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
@@ -818,6 +839,222 @@ real g_55e618;
 // allocation order, which the rules bar me from reshaping.
 // MiniMax A (11-14): no new form, no lower score (102); retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, and retail's dot product still adds its three terms in another order than ours; the permuter (5 tries, 311 s) found nothing below the baseline.
 // MiniMax S (11-14): no new form, no lower score (102): retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, a twelve-byte allocation-order difference, and retail's dot product still adds its three terms in another order than ours.
+// M3 lane 9 r132 (fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102): round 75's base rebuilt without
+// the typed fields (normal locals, velocity pointer, position setter, the dot written at each product) 64 (1537
+// bytes, re-measured); on it the dot computed once: a named local 187 (1533 bytes), a `real const &` bound to the
+// expression 179 (1537 bytes), a `real const` local from the existing dot3f 179, a `real const &` bound to dot3f's
+// result 179. In all four the three products come first with a copy of the normal component as the destination
+// (retail copies the dot, interleaves the tangent rows and multiplies the k row in place), so the perpendicular gets
+// no home and the frame is 0x118: a reference-bound temporary behaves as a named local here. Body unchanged.
+// DH397: Existing i/k/j dot with velocity snapshot, field pointer or direct field, using grouped rows, interleaved rows or the scale helper 103/211/103/194/195/194/200/201.
+// NOT kept: The snapshot with grouped rows or the scale helper scores 103 at the original frame and length. The field forms change the frame and regress. None recovers the retail sweep, collision and reflection spill homes. The original body is restored.
+// M3 lane 7 r179 (fast with 0x2ba3e0, 0x2b8da0 and 0x2b8e10, all MATCH each time; control 102). On the coordinator's lead (a
+// once-computed dot that keeps the written-out form's code): round 75's base rebuilt (normal locals, velocity pointer, position
+// setter, the dot written at each of the three products) 64 at 1537 bytes (aligned with addresses masked 14); on it the dot
+// computed once: a named real from the existing dot3f 180; a function-scope real assigned in the block 189 (1533 bytes); a real
+// declared ahead of the normal locals and assigned after them 189; the dot held in perpendicular.i with j and k from it and i
+// scaled last 193; the named real renamed to sort after or before the normal locals (`speed_along_normal`, `a_dot`) 189 each
+// (the same code: names do not order the product's operands). Every once-computed form multiplies a copy of the normal by the
+// dot (frame 0x118, first difference +0x2); only the compiler's own temporary for the repeated expression is copied and scaled
+// in place as retail does. Body unchanged.
+// M3 lane 7 r184 (fast; control 102, aligned 60, masked 22): the projection as an inline split helper (dot written
+// v.j*n.j + n.k*v.k + v.i*n.i, the along part as the normal times the dot, the across part as the velocity minus it)
+// called on the particle's velocity 109 (1539 B, frame 0x118, aligned 79), with the across part behind an
+// `if (across)` 109 (same code); called on the velocity copy 101 (1548 B, frame 0x124, aligned 60); on that the across
+// part through vector3d_from_points3d 102, the along part through vector3f_scale 102, both 101; 1..7 dead locals
+// (diagnostic) on this body 102-103 and on the copy-helper form 101-102: the homes do not move.
+// M3 lane 2 r102 (fast; control 102). Reading: with any named dot ours copies each normal component and multiplies it by
+// the dot (three copies, the dot kept to the end); retail copies the dot for perp.i/j and multiplies it in place for
+// perp.k, which is what the compiler does only for its own temporary of a repeated expression. On the current body: the
+// velocity pointer, the position setter and the dot written in each product 75 (1536 B; lead only, as before); the
+// same with the dot named once 188 (frame 0x118); that with one to seven dead initialised locals 188/186/186/186/188/189/
+// 189 (diagnostic: the dot's first term turns to retail's side, the products do not); the products written normal first
+// 188 (same code); the normal components in named locals declared ahead of the named dot 190. Body unchanged.
+// M3 lane 3 r263 (fast; base 102). LEAD: an early-evaluated value argument. On round 75's 44 form (re-measured 44 now that
+// 0x1697c0 matches, so its match did not lift the block), passing the value through an inline accessor that returns the value
+// type by value, or as an explicit temporary `c_placement_value(*(c_placement_value const *)&...)`, moves its load to the
+// block's top and the position stores after impact.index, as retail; with the value type two bytes the load is a word into a
+// temporary (accessor 211, temporary 207); with a second short member (four bytes, made up) the load is retail's dword:
+// accessor 114 (1539 B), temporary 59 (1535 B, masked 46), but in EAX where retail has EDX, so every later block rotates one
+// step (round 158's named short did the same). Two probe copies between dummy globals ahead of the block leave the value in
+// EAX (the probe takes EDX). On the accessor form: direct position stores before/after the index 241/241 (frame changes),
+// named sums 116, the setter as its own statement 165, `keep * field` 114 (same code). On lane 3 r194's 179 form: `real dot;`
+// declared ahead of the normal locals 179, the dot bound to vector3f_scale's scale 179 (same code: the dot * normal operand
+// sides follow neither); 1..7 dead locals 179/179/181/181/190/189/179; on the body 102/102/103/103/103/102/102.
+// M3 lane 11 r120 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): on the velocity pointer with the position
+// setter, the dot written at each product re-measured 75 (1536 B, aligned 24; with plain position stores 121 at 1549 B); dot
+// once: a named real 188 (1536 B, frame 0x118), from dot3f either operand order 188, with the perpendicular through the
+// existing vector3f_scale 188, as vector3f_scale's argument (dot3f or the written-out sum, no named dot) 188 each; with
+// plain position stores 194 (1541 B). Diagnostic (reverted): K initialised dead locals at the top of the named-dot form, K
+// = 1..6, 8, 10, 12, 16, 20, 24, 28, 186 to 189 each: the copied-and-scaled normal is not a symbol-count effect.
+// M3 lane 14 r118 (fast with 0x2ba3e0, 0x2b8e10 and 0x246cd0; aligned 84): the velocity copied as one aggregate
+// (`vector3f velocity = particle->velocity;`) 223 (1556 B, first difference +0x48, aligned 136), with the dot through
+// dot3f 223; the final rows written coefficient-first 102 (same code); the tangent after the position stores 102 (same
+// code); the tangent as a copy of the velocity minus the perpendicular in place 283 (1598 B). Retail reads v.j/v.k from
+// memory in both the dot and the tangent and loads v.i twice, spilling tangent.i/j to the 12 bytes below the sweep.
+// M3 lane 15 r106 (fast with the file's ten other functions, all unchanged): the velocity copy as one aggregate initialiser
+// 223 (1556 B); displacement/sweep and perpendicular/tangent each in one declaration 102 (same code); the final rows as
+// `keep * tangent - coefficients[1] * perpendicular` 102 (same code); perpendicular and tangent interleaved per component
+// 209 (1550 B, frame changes); no velocity copy, the particle's velocity field read at each use 199 (1543 B). Homes on the
+// base: ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100; retail tangent +0x38 (i, j spilled), sweep
+// +0x44, perpendicular +0xa4 (k spilled), collision +0xb0. All restored.
+// M3 lane 1 r130 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH each time; control 102, aligned 60/60 instructions unmatched
+// ours/retail, masked 22/22; body unchanged, all forms match-only). Reading: retail loads velocity.i twice from [ebp + 0x28]
+// (the second is a reload of the dot's destroyed first term, not another access path), reads j and k through the velocity
+// pointer in the dot and in the tangent rows, and multiplies the dot's copy by each normal component. On the velocity
+// pointer with normal locals, the dot written at each product, named position sums and plain stores after the impact
+// index: 81 (1535 B, aligned 22/22); tangent rows interleaved with the perpendicular rows 76; the dot's first term read
+// as particle->velocity.i with the tangent's through the pointer 61 (1537 B, first difference +0x2e7, aligned 23/23:
+// retail's two velocity.i loads), interleaved 60; the tangent's first term direct instead 81, interleaved 76; both direct
+// 174 (1541 B), interleaved 173. Without the normal locals (normal->i at each use): 77 (1538 B, aligned 20/20),
+// interleaved 79, with the position sums unnamed before or after the impact index 123 each (1550 B). Through existing
+// helpers: the perpendicular by vector3f_scale with the written-out dot as its scale 188 (frame 0x118), with dot3f as its
+// scale 189, the tangent by vector3d_from_points3d as well 189; `dot3f(velocity, normal) * normal->i` at each row 172
+// (1540 B, but aligned 18/17, the closest block: the i term is then the normal's copy times memory and the j term the
+// loaded one, where retail has them the other way), with normal locals 176; the dot in dot3f's i, j, k order with the
+// first term direct 176 (tangent direct) and 77 (tangent through the pointer); dot3f at each row with the tangent's first
+// term direct 172; dot3f(&particle->velocity, normal) with no pointer local 269 (1597 B). A compile-only build of this
+// file does not reproduce the block (the particle takes another register and nothing survives the placement call in
+// XMM), so forms here need the real build. Left on the 61 form: the normal components' registers (retail i XMM1, k XMM2,
+// j XMM4, loaded as needed), the position sums' order with `lea ebx` among them, the value argument's load at the block
+// top, and the flags test ahead of the final rows.
+// AC597: Typed placement output; surface construction at call, construction before position, and copy
+// before position; typed output with call construction or early copy; initialization before position
+// with call or early construction: 102/102/242/242/102/242/102/242.
+// M3 lane 12 r155 (fast; control 102): the dot through the existing basis_dot_xzy (i, then k, then j, retail's order)
+// on the velocity copy 103 (same length); on a `vector3f const *velocity = &particle->velocity` pointer (tangent read
+// through it) 194 (1541 B); with the position through real_point3d_set 188 (1536 B); on the copy with the setter 245 (1570 B);
+// the perpendicular through the existing vector3f_scale with the dot as its argument (no named dot): basis_dot_xzy on the
+// pointer 108 (1538 B, frame 0x118: the perpendicular loses its home), with the setter 188 (dot3f the same 188), on the
+// copy 103. All restored.
+// Miss guard, distant-hit guard and both guards score 231/196/225. Miss-first chains with
+// the positive or negative distance test score 231/225. A saved hit with a joined failure
+// store at the tail or before the response scores 141/141. Both guards with a query-local
+// hit record score 274. NOT kept: sweep and collision homes remain displaced and scores rise.
+// Sweep and collision homes still sit twelve bytes below retail. Complete surface offset through
+// scale with separate stores 217, with vector addition 220; aggregate offset and point setter 279;
+// early complete offset 261; scale offset and point setter 279. Sweep workspace reused for tangent
+// 243 or perpendicular 261; displacement workspace reused for perpendicular 102.
+// NOT kept: the contact-offset and sweep reuse forms raise the score. The displacement reuse ties.
+// M3 lane 2 r116 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): perpendicular and tangent declared at the
+// countdown block's top beside displacement and sweep 102 (same code); displacement and sweep declared at the function's
+// top beside the cache 110; keep computed just ahead of the final rows 138 (1534 B, frame changes); the velocity copy as
+// three scalar reals 102 (same code); the final rows as a plain component loop 102 (unrolled, same code). Ours still
+// spills perp.j (+0x48) and tangent.i (+0x100), retail tangent.i/j (+0x38/+0x3c) and perp.k (+0xac).
+// M3 lane 13 r128 (screened with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): the dot as `real const` 102; the velocity
+// copy ahead of the normal pointer and keep 102; the perpendicular as a three-term aggregate initialiser 102 (all the
+// same code); the +0x34 scale ahead of the three final rows 103; the tangent through the existing vector3d_from_points3d
+// (perpendicular to velocity) 102.
+// One vector for the displacement and sweep, seeded from the scaled
+// components or with the shared scaler. Back up and extend per coordinate
+// 247/247. Back up then extend by component stores, the in-place particle
+// scaler or the point setter and shared scaler 246/246 in all three forms.
+// NOT kept: all reach 1541 bytes but leave the sweep and hit record displaced.
+// M3 lane 2 r121 (fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH unless noted; control 102, aligned/masked 60/43).
+// Round 75's form rebuilt 44 (1537 B, aligned/masked 9/8); on it the value as an explicit temporary of a four-byte value
+// type 59 (1535 B, 30/9): its load is early but in EAX and every later scratch register is one rotation step off, so that
+// temporary is not a rotating scratch value, where retail's EDX is one. Reading: retail's block is what main's plain
+// body gives when the collision record does not count as captured. Diagnostics on main's body, all restored: the
+// collision query 0x1697c0 handing a scratch record to both callees that take one (0x244980 and 0x169510) 380 (1540 B:
+// frame homes at retail's offsets, the value pushed ahead of the position stores, x stored through the position pointer
+// and y, z through the particle, as retail); only the 0x244980 call cut 102, only the 0x169510 call cut 102 (same code
+// each); with the 0x169510 call cut, 0x244980's ray-cast callback given no record 380, the callback not handed to the
+// cast 374; with the 0x244980 call cut, 0x169510's call to itself given no record 380, its transform helper given none
+// 102, its record as a reference parameter 102 (0x169510 still MATCH); a never-taken call from 0x244980 back to the
+// particle dispatcher, so that this function and the query sit on one call cycle, 104. So in this build the record is
+// captured through exactly two statements: 0x244980 storing the record pointer in the callback it hands to the cast, and
+// 0x169510 passing the record to itself. A compile-only build of this file orders the position stores first too, so an
+// unknown callee is the pessimistic case. Retail's 0x169510 also pushes its own record parameter at the recursive call,
+// so what frees retail's block is still open. BLOCKED-BY 0x169510 (a contributor's) and 0x244980.
+// M3 lane 16 r162 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102). LEAD 42 (1537 B, first difference +0x2e7,
+// aligned 26; match-only; build/r162/lead-0x2b9060-42.patch in m3-lane16's worktree): lane 1 r130's 61 form rebuilt from
+// its note (velocity pointer, normal components in locals, the dot written at each product with its first term read as
+// particle->velocity.i, named position sums stored after impact.index), then (a) the normal locals declared k before j
+// (orders kji/kij/ikj 59, ijk/jik/jki 61: n.k takes retail's XMM2), (b) the final rows stored as `particle->velocity.x =`
+// (59, aligned 32 -> 28: retail's [ebp + 0x2c] stores and the hoisted 0x34 product), (c) the flags word read at each of
+// its 14 uses as `*(word *)((byte *)particle + 2)` with no `flags` pointer (42: the `test byte ptr [ebp + 2], 2` then
+// hoists above the rows as retail; a pointer local blocks it). (c) alone on this body 99. Left on 42: the dot's
+// association (ours (j + k) + i, retail (i + k) + j), the value argument's load at the block top with the position
+// stores after impact.index, one `mov word ptr [esp + 0xec], bx` slot earlier in the collision setup. Diagnostics:
+// the five other dot term orders and both operand orders 61 each (same code); 1..8 dead initialised longs ahead of the
+// normal pointer 42/42/42/47/47/47/47/47 (from 4 on the i term goes first); with the normal locals declared j, k, i and
+// 4 dead longs 47 at aligned 18: retail's whole dot/perpendicular/tangent block (only the load order of v.i, the value
+// load and the position sums' order differ; build/r162/diag-0x2b9060-47-retail-dot.patch); other declaration orders
+// with 4 dead longs 44/42/44/42; `real x, y, z;` and/or `vector3f perpendicular, tangent;` declared at the block top
+// in place of the dead longs 44/44/44 (k, i, j: 42); keep/velocity/normal declaration orders 59 each; the value
+// argument copied into a local at the block top 210 (on the 47 diagnostic) / 218 (a word load, as lane 3 r263 found).
+// Later, LEAD 39 (1537 B, first difference +0x36a, aligned 24; build/r162/lead-0x2b9060-39.patch): on 42,
+// `collision.value.unknown24 = NONE;` ahead of `start.x -= displacement.i;` (the collision setup's word store then
+// schedules as retail's); the same store ahead of the displacement block 79, after the first sweep row 75, after the
+// second displacement row 74. On 39 with the normal locals j, k, i and 4 dead longs (diagnostic) 44, aligned 16: only
+// v.i's load order, the value argument's load at the block top and the position stores after impact.index left. The
+// value copied into a local ahead of the block: with the word-sized value type 208 (1545 B, word load into a temporary);
+// with a made-up second short member (four bytes) 59 (1535 B): the dword load and the position stores then sit where
+// retail has them, but the value takes EAX for retail's EDX, later scratch registers rotate one step and the miss arm's
+// flag store tail-merges with the countdown arm's (two bytes short); that copy moved after the velocity pointer, among
+// the normal locals, ahead of the perpendicular or of impact 59 each (same code), ahead of the coefficient loop 250.
+// M3 lane 16 r166 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH each run; control 102; round 162's lead re-measured 39 at
+// 1537 B, aligned 24 by this round's counter; everything below is on that lead and match-only). Retail stores x through
+// the position pointer (`movss [ebx], xmm1`) and y, z through the particle, the code of the existing real_point3d_set
+// given `&particle->position`: that setter nested as the call's third argument 39 (aligned 23), with the sums written
+// in its arguments 40, with the impact index set ahead of the sums 39, as its own statement 39, its result named 39
+// (same code each: the three stores still run ahead of the value's load and all go through the pointer register).
+// The value type with a second short (four bytes; retail copies a dword) passed directly 39 (same code); copied into
+// a local at the block top, after the normal pointer or after `keep` 70 each (1535 B, aligned 52: the dword load and
+// the stores then sit where retail has them, but the copy takes EAX for retail's EDX and every later scratch register
+// is one step off, as rounds 162 and lane 3 r263 found); the two-byte type copied there 214. An inline tail helper
+// taking the value by value (index store, setter, placement call; eight parameters) 68 (aligned 54, the value in EAX
+// again), with the value as its first parameter 68, with the normal locals declared j, k, i 66; a five-parameter helper
+// with the setter nested at its call 39 (same code as the nested setter), with j, k, i 42. Reading: with the value
+// passed directly its load is retail's EDX (the scratch rotation is in step) but late; any earlier copy is a named
+// value that takes EAX. Retail's early EDX load is an argument's own load made before the position stores. Body unchanged.
+// M3 lane 8 r213 (H2M_FAST with 0x2ba3e0/0x2b8da0, both MATCH; control 102): the velocity copy as one aggregate
+// assignment 223 (1556 B); impact.index set ahead of the position stores 102 (same code); `collision.value.unknown24 =
+// NONE;` ahead of the displacement block 134; the tangent rows after the position stores 102 (same code); the tangent rows
+// interleaved with the perpendicular rows 209 (1550 B, frame moves). The record's capture (0x244980's callback field, which
+// reaches the cast through 0x2df720 and 0x301800's virtual callback, and 0x169510's self call) still decides the block.
+// Component walks for velocity capture, perpendicular, tangent or contact position 605/605/605/600;
+// perpendicular and tangent in separate or paired walks 599/591; paired with indexed velocity
+// capture, and also indexed contact publication 600/595.
+// NOT kept: The closest component walk pairs the projection and tangent at 591 and 1715 bytes.
+// The first mismatch moves into the prologue at +0xc.
+// M3 lane 2 r129 (h2m fast with 0x2ba3e0, 0x2b8da0 and 0x2b8e10, all MATCH; control 102): the displacement scoped in its own
+// block inside the countdown arm 102 (same code); the final rows written `keep * tangent - coefficients[1] * perpendicular`
+// 102 (same code); both coefficient loops through one forceinline helper taking the remaining mask by pointer 103 (the
+// matched sibling 0x2ba100 writes its loop out); `collision.value.unknown24 = NONE;` ahead of the three start rows on this
+// body 100 (-2); the countdown as a long 247 (1538 B). BLOCKED-BY 0x169510 and 0x244980 (the record's capture), as above.
+// M3 lane 8 r217 (h2m fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102). Match-only forms on lane 16 r162's lead,
+// re-measured 39 at 1537 B: the dot through the existing basis_dot_xzy at each product (retail's i, k, j term order) 54 (1538 B,
+// first difference back at +0xfe); with &particle->velocity as its argument 260 (1593 B); with the normal locals i, j, k or j, k, i
+// 54/54; with the tangent's first term read through the particle 54; the position through real_point3d_set nested in the call 39
+// (same code). Left on 39: the dot's first term (ours n.j*v.j, retail v.i*n.i) and the value argument's early EDX load,
+// BLOCKED-BY 0x169510 and 0x244980 as above. Body unchanged.
+// M3 lane 8 r219 (h2m fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102): retail's dot term order (i, k, j) is the
+// existing basis_dot_xzy's: through it on main's copy 103 (the `+=` order); on `&particle->velocity` with the copy kept for the
+// tangent 201 (1557 B); no copy, the tangent from the particle 200 (1543 B); a velocity pointer for the helper and the tangent
+// 194 (1541 B); no copy, the tangent through the existing vector3d_from_points3d 198 (1543 B). Retail reads v.i twice from the
+// particle and v.j, v.k through a pointer to the velocity. Body unchanged.
+// Back up the sweep origin with the shared point difference or point setter.
+// direct particle position 254/254, position snapshot 102/103.
+// With the shared sweep scale, direct 256/256 and snapshot 129/130.
+// Frame stays 0x124 and the sweep/collision slots remain displaced.
+// M3 lane 3 r297 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH unless noted; control 102, aligned [exact, stack masked,
+// registers masked] 84/69/40; body unchanged). The velocity through a pointer with the dot named once: v.i read from the
+// particle for the dot and the tangent, v.j and v.k through the pointer, the pointer handed to the placement call 197
+// (1542 B, the frame changes) [103/75/50]; every component through the pointer 194 (1541 B) [102/75/52]; the pointer for
+// the dot with the copy kept for the tangent 202 (1557 B) [68/57/46]; no pointer and no copy, the particle's fields at each
+// use 199 (1543 B) [110/83/54]; the pointer typed const and not handed to the call 197 (same code as the first).
+// Diagnostics, removed at once: the collision call given a scratch record, so that the record local is never handed to a
+// callee, 342 (1535 B) [129/113/53]: the value's early EDX load and the tangent.i home at +0x38 are then retail's, the
+// position rows still store x and y ahead of the call setup; the call's point and vector arguments cut 524 (1385 B; the
+// sweep setup folds away, so it says nothing about them). BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands;
+// 0x1697c0 also reads its point and vector parameters through their addresses, which captures a caller's local in the
+// same way (measured on 0x1fe620 this round), and its file is on this round's avoid list.
+// M3 lane 1 r159 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): the perpendicular through the existing
+// vector3f_scale 102; the contact position through the existing vector3f_add_scaled 102; the tangent through the existing
+// vector3d_from_points3d with the velocity copy kept 102; the scale and the point difference together 102; the impact
+// record declared at function scope 102 (the same code each: the homes do not follow these). BLOCKED-BY 0x169510 and
+// 0x244980 (the record's capture) stands. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

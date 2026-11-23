@@ -222,8 +222,8 @@ short __stdcall function_272af0(s_match_globals *arg_0, point3f const *arg_1);
 void function_1e3b00(long arg_0, long arg_1, point3f const *arg_2,
     void const *arg_3, void const *arg_4, point3f *arg_5);
 long function_baf40(long arg_0);
-short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
-    point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+short __stdcall function_1c8df0(short arg_2, point3f const *arg_1, point3f const *arg_4, short arg_3,
+    long arg_0, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
 // @retail 0x1b0400
 bool function_1b0400(long arg_0, s_follow_search_state *arg_1)
@@ -250,8 +250,8 @@ bool function_1b0400(long arg_0, s_follow_search_state *arg_1)
             if (!local_8[0xaa] && *(long *)(local_8 + 0x14) != NONE)
                 local_7 = *(long *)(local_8 + 0x14);
             local_7 = function_baf40(local_7);
-            short local_9 = function_1c8df0(entry->cluster_index, state->location.cluster_index,
-                (point3f const *)((byte *)state + 0x30), local_7, &local_6, 1, false,
+            short local_9 = function_1c8df0(entry->cluster_index, &local_6,
+                (point3f const *)((byte *)state + 0x30), state->location.cluster_index, local_7, 1, false,
                 local_0->unknown26c != NONE, false, NULL);
             if (local_3->unknown24 >= 1)
                 local_1 = local_9 == 0;

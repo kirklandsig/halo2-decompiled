@@ -98,298 +98,28 @@ bool function_143120(vector3f const *forward, vector3f const *left, vector3f con
 quaternionf *g_4687cc;
 extern transform4x3f *g_4687d0;
 
-/* rotates a vector by a unit quaternion */
+/* rotates a vector by a unit quaternion: the vector form of quaternion_rotate_point
+   (src/unknown_11cb00.cpp), with the same terms; here w squared is named and the doubled
+   w comes after the dot, the order retail computes them in (w2 from a fresh 2.0) */
 static inline void quaternion_transform_vector(
 	quaternionf const *q,
 	vector3f const *v,
 	vector3f *out)
 {
-	real dot = (q->i * v->i + q->j * v->j + q->k * v->k) * 2.f;
+	real square = q->w * q->w;
+	real m = square * 2.f - 1.f;
+	real d = (q->j * v->j + v->i * q->i + v->k * q->k) * 2.f;
 	real w2 = q->w * 2.f;
-	real s = q->w * q->w * 2.f - 1.f;
-	vector3f cross;
+	real cx = q->j * v->k - v->j * q->k;
+	real cy = v->i * q->k - q->i * v->k;
+	real cz = q->i * v->j - q->j * v->i;
 
-	cross.i = q->j * v->k - q->k * v->j;
-	cross.j = q->k * v->i - q->i * v->k;
-	cross.k = q->i * v->j - q->j * v->i;
-	out->i = v->i * s + q->i * dot + cross.i * w2;
-	out->j = v->j * s + q->j * dot + cross.j * w2;
-	out->k = v->k * s + q->k * dot + cross.k * w2;
+	out->i = cx * w2 + v->i * m + q->i * d;
+	out->j = q->j * d + cy * w2 + m * v->j;
+	out->k = v->k * m + cz * w2 + d * q->k;
 }
 
 /* the rotation that takes one unit vector to another */
-// score 205 (was 200; fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
-// Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
-// Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
-// the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
-// lands in the matrix parameter's home slot [esp+0x38], so the halves are two separate locals and not a struct.
-// Tried: the halves as plain locals 290 and with the clamp in place 290 (the sine half does take the parameter
-// home, but our frame then shrinks to 0x18 and the transform spills one slot instead of retail's three); the axis
-// components as named locals 282 and 325; a result vector in the transform helper 367 (frame grows, code grows).
-// Frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
-// Earlier (237, was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
-// Earlier 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
-// the sine half in the matrix parameter's home slot ([esp+0x38]) and the cosine half at the bottom local
-// ([esp+0x10]), while ours keeps both halves in the two-member struct at [esp+0x14]/[esp+0x18]; retail holds the
-// quaternion in xmm2/xmm1/xmm0 (i/j/k) where ours uses k/i/j. Tried: cross products with the vector operand first
-// 237 (identical - VC commutes the products); the axis components as named locals 344; the scale before the
-// crosses 325.
-// Earlier (237, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
-// Earlier 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
-// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
-// Lane 6 r85: helper with `s` computed first 302 (s and the doubled scalar hoisted above the matrix copy,
-// the doubled scalar spilled twice as retail, frame 0x20, constants one xmm lower); with vector-first
-// products 302 (identical code); with plain half-angle locals 291; doubled scalar after the cross 301;
-// scalar cross terms 281 (retail's 0x24 frame and first difference +0x71, doubled scalar in the parameter
-// home and [esp+0x10] as retail; quaternion registers permuted); scalar cross with `s` first 306.
-// frame 0x1c versus 0x24 and quaternion/cross-term spill reuse differ;
-// quaternion scale loop 302; shared axis scale loop 294.
-// shared rotation cross 241; shared cross scale loop 294.
-// shared cross both phases 281; identity library copy 237.
-// per component scale ratio 290; scaled axis before stores 289.
-// Frame 0x1c versus 0x24 and quaternion/cross-term spill reuse remain.
-// rotation output ikj 283; rotation output jik 287; rotation output jki 288; rotation output
-// kij 290; rotation output kji 290.
-// Frame 0x1c versus 0x24 and quaternion/cross spills remain; construction scope 237; vector-first helper 240; output-middle helper 290; cross i/k/j 284, j/i/k 235 (only -2), k/i/j 284. Both helpers restored.
-// Sine-branch construction j/k/i 327, k/i/j 240; initial dot products
-// named 324; both half-angle radicands named 251; orthogonal early exit 237.
-// Native vector input contract 403; quaternion/vector reference formals 237/237;
-// projection sum named 246; both half-angle sum/difference parts named 281. Body and helpers restored.
-// Per-row projection terms 311; scaled-input terms 282; scaled-cross terms 292; named direct sums 278; named
-// scalar square 288. Frame/half-angle/quaternion spill sharing remains; both original helpers restored.
-// Native quaternion snapshot 458 (frame 0x24); all dot products named 288; all cross input products named 292;
-// sine-branch construction j/i/k 310, i/k/j 240. Frame/quaternion spill reuse remains; body and both helpers
-// restored.
-// Axis orders flu/ufl/ulf/lfu/luf 301/237/237/301/238;
-// flu/ufl/ulf with sine-half first 301/240/240.
-// Separate quaternion axis/scalar inputs: axis-first/scalar-first/reference
-// 246/246/246; native axis value 353; the actual output-pointer return gives
-// 246/246/246/353 respectively. Original helpers and body restored; frame
-// 0x1c/0x24 and half-angle/quaternion/cross spill overlap remain.
-// Native quaternion i/j/k observations, with vector/scalar cross storage 282/294;
-// with native input components 348/284; complete i/j/k/w observations 282/302;
-// complete quaternion and input components 346/284. Original helpers restored.
-// Round 172: Dot/scalar/doubled-scalar and doubled-scalar/dot/scalar schedules 285/240; first
-// schedule with input+projection/input+cross/projection+cross/all row parts 281/291/299/281; second
-// schedule with all parts/direct sums 281/283. Every row stays symmetric; original helper and body
-// restored. Frame 0x1c versus 0x24 and half-angle/quaternion/cross spill sharing remain.
-// Lane 8 r58: plain half-angle locals 291 (sine half then in the parameter home as retail);
-// cross term first in the sums 291; helper result through a local vector 367 (plain 361);
-// helper in 0x11cb00's rotate-point operand/statement form 272 at 1317 bytes (retail's
-// cross/scalar spills and doubled w2 copies, quaternion registers permuted); with plain
-// halves 280; with sine-branch i/k/j, j/i/k, k/j/i 274/263/295; swapped state 272.
-// Round 94: retail never reuses the quaternion's 16 bytes for the transform spills (ours spill the
-// cross terms into it) and keeps the clamped cosine, sine half and doubled scalar in the matrix
-// parameter's slot. Plain half-angle locals in place of the two-member struct 291 (frame 0x18);
-// transform cross orders jki/kji/jik/kij 286/290/235/284; transform into a result vector 367, with
-// jik 367. Body and helpers restored.
-// Round 356: Existing inline point-rotation producer 272; independent half angles 280;
-// shared axis cross 251; independent halves/shared axis 239; with shared repair crosses
-// the same four forms 272/280/251/239. Original helper, paired halves and both cross phases restored.
-// Round 253: Cosine half owned by the quaternion scalar, cosine/sine-first 291/293;
-// with shared cross 265/267; shared double-factor scale 311/311 (1317 bytes);
-// both shared products 327/327. Original body and helpers restored.
-// Round 210: Scalar crosses with coefficient orders dot/s/w2, w2/dot/s, w2/s/dot,
-// s/dot/w2, s/w2/dot: 274/274/272/306/235; cross-first schedules 282/297/304.
-// Best 235 gains two, rejected; original helper/body restored.
-// Round 80: plain half-angle locals 291 (sine half in the parameter home; frame 0x18). The existing
-// quaternion_rotate_point for the three transforms 272 (1317 bytes, frame 0x20, xmm numbering one
-// lower than retail's from entry: 1.0 in xmm6 not xmm7); with the axis scaled at construction 342;
-// with `0.f > cosine` 272; with rotation.w assigned before the axis 257 (1317 bytes). Original body
-// and helpers restored.
-// Round 82: sine-branch axis k/j/i 327; transform scalars s/w2/dot 289, s/dot/w2 302; w assigned
-// before the axis 302; scale computed before the axis 301. Original body and helpers restored.
-// Round 259: Complete native cross-vector initializer with all six coefficient
-// schedules 237/285/240/240/302/289; immutable cross with dot/w2/s and s/w2/dot
-// 237/289. Original helper/body restored; frame and quaternion/cross spill reuse remain.
-// Round 25: paired native point storage 237; independent scalar crosses on it 281;
-// shared axis construction with scalar crosses 237 (frame 0x24, first +0x7d);
-// pre-copy doubled scalar/quadratic scalar 302/347; scalar-first construction 272;
-// shared input dot and shared repair crosses on the shared-axis base 237 each.
-// Original body and both helpers restored.
-// Round 258: output/vector/quaternion contract with original/scalar-cross/scale-first/
-// both forms 237/281/302/306; vector/output/quaternion contract with those forms
-// 240/237/298/311. Original helper, three call roles and body restored.
-// Round 228: two-argument in-place helper with pointer/reference quaternion and vector
-// contracts 290/290/290/290; each with independent cross scalars 313/313/313/313.
-// Original helper contracts and complete body restored.
-// Round 242: Complete shared scale/add-scaled output pipeline with staged-cross/shared-dot/
-// independent-half subsets 0..7 363/363/358/361/355/356/349/350. Native half storage recovers frame
-// 0x24 but grows code; original helper and body restored, quaternion/cross spill overlap remains.
-// Round 255: shared real construction scale with independent-half/scalar-cross/staged-axis masks
-// 0..7 237/291/281/293/200/267/265/252. Staged axis plus real scale kept: 200 plain,
-// 1321/1317 bytes. Five further coefficient orders 256/205/205/257/260; scalar before
-// cross/ratio/scale 310/200/200. Frame and quaternion/cross spill homes remain.
-// Round 50 (lane 1, fast; score/bytes/register-blind aligned, base 200/1321/210): retail computes
-// s = 2w*w - 1 above the identity copy, the doubled scalar after the dot (2.0 reloaded) and spills two
-// copies each of the doubled scalar and s (frame 0x24). A copy of 0x11cb00's quaternion_rotate_point
-// (a contributor's file) 258/1303/180, with plain halves 201/1324/115; plain halves alone 267/1297.
-// This file's helper (used here only) as s, w2, dot with rotate-point operand forms and scalar crosses,
-// plain halves 247/1317/90 (closest code: entry and transform-1 registers right, frame 0x20); retail's
-// row sum order the same 247; vector3f cross 270/1297; struct halves 273/1296; s, dot, w2 248/1305/183
-// (entry xmm numbering then matches); s, dot, crosses, w2 245/1312/185; `2.f * q->w` 248; doubled
-// scalar inline at each use 326/1245, with the doubled dot inline too 336/1285; `cross * q->w * 2.f`
-// 269/1326; dot, w2, s 252 (frame 0x24, nothing above the copy); dot, s, w2 250/1317/94; s, w2,
-// crosses, dot 253/1304; s, crosses, dot, w2 247/1308/229; crosses inline in the rows 345/1222.
-// Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
-// native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
-// frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
-// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, score
-// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, scoring
-// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
-// each gave 332. Original clamp, native identity assignments, staged construction and real scale restored;
-// 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
-// frame 0x1c/0x24 and quaternion/cross spill sharing remain.
-// Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
-// with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
-// 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
-// Round 49 (lane 11): retail computes the transform scalar s = 2w*w - 1 interleaved with the identity copy's
-// setup (before rep movsd) and 2w in place on w after it; its first row sums cross*2w + v*s + q*dot, the other two
-// v*s + q*dot + cross*2w, and its dot sums i, k, j. Fast: only the first row written cross-first 200 (identical
-// code: VC reassociates); the helper computing s first, then dot and 2w, 257 (1305 bytes; s and 2w both hoisted
-// above the copy); s first and 2w after the cross 277 (1331 bytes). Plain: the three transforms through the
-// existing quaternion_rotate_point on the staged-cross/real-scale construction 258 (1303 bytes). 0x11d000 writing
-// through a named result pointer (still matched) 200: its summary does not keep the quaternion's slots unshared.
-// Round 285: Native direct-plus-projection vector with final shared scaled-cross addition,
-// ordinary/shared dot and ordinary/staged cross, cross-first/direct-first:
-// 305/349/309/336/295/338/321/330. Frame and quaternion/cross spill overlap remain; complete helper and
-// body restored.
-// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
-// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
-// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
-// spill overlap remain.
-// Round 30 (lane 2, fast): retail computes the transform's scalar (w*w*2 - 1) before the identity copy and the
-// doubled w after the first dot, and gives the cross terms slots of their own (ours spill them into the dead
-// quaternion). Transform dot in i/k/j text order 200 (same code); scalar cross terms 265 (1300 bytes, frame
-// 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
-// 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
-// computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
-// Round 34 (m3 lane 2, fast): plain halves named `w` and `sine_half` 267 (1297 bytes); the struct's members
-// swapped 200 and the struct renamed `halves` 200 (both the same code: these names do not move its slots);
-// `2.f * sine_half * cosine_half` 200 (same); the scale computed before the cross product 252 (1317 bytes,
-// retail's length, stack-masked aligned 259 against 229).
-// Round 46 (lane 14, fast): retail's rows group as i (cross + scalar) + dot, j/k (scalar + dot) + cross; only the
-// i row written cross-first 200 (same code: the sums are reordered by the compiler), with the i/k/j dot 200 (a
-// repeat of round 30's form), with s/dot/w2 order 257 (1305 bytes); state declared before rotation 200; rotation
-// renamed quaternion 200; state renamed halves 200; its members swapped (sine half first) 200; both 200.
-// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
-// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
-// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
-// spill overlap remain.
-// Round 289: existing complete vector assignment output with staged-cross/shared-dot/independent-half
-// masks 0..7 gives 333/346/340/351/344/360/333/368. Paired halves recover frame 0x24 but grow code;
-// independent halves give 0x20. Original helper/body restored; quaternion/cross spill sharing remains.
-// Round 118: transform helper taking the quaternion by value 436 (1429 bytes); rotation declared after the
-// halves/dot/cosine 200; half-angle struct members sine-first 200; the dot clamped in place (no cosine local)
-// 241 (1318 bytes); the axis crossed into its own vector then scaled into the quaternion with cross3f /
-// cross3f_staged 241/240 (1317 bytes, frame still 0x1c). Retail never reads the quaternion's slot after loading
-// it (0x1418d5-0x1418f8) yet gives the transform spills five slots of their own; ours overlay two on it.
-// Round 294: Complete rotated-vector memcpy/memmove publication with staged-cross/independent-half
-// combinations 334/311/334/311 and 348/383/348/383. Original helper/body restored; frame and
-// quaternion/cross spill sharing remain.
-// Round 267: result-component loop on staged-axis/real-scale construction,
-// long/short/byte/word ordinals with paired halves 266/1023/1023/1023,
-// independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
-// transform at 596 bytes; original helper, halves and complete body restored.
-// Frame 0x1c/0x24 and quaternion/cross spill overlap remain.
-// DL228: plain forward/up/left field-table traversal, long/dword/short/word ordinals,
-// ordinary and forced existing helper: 279/279/745/745/279/279/745/745.
-// Original three in-place calls, helper and body restored; quaternion/spill homes remain.
-// M292: Staged dot/doubled-scalar/quadratic coefficient subsets 1-7, then all with independent
-// cross components:
-// 200/200/200/249/249/249/249/261. Original executable body restored.
-// P260: Independent half-angle lexical homes before/between/after rotation, four
-// forms 267 each; with independent transform cross scalars 252 each. The latter
-// reaches frame 0x24 but grows to 1336/1317; original helper and body restored.
-// Round 523: Actual quaternion/matrix identity transfers native/memmove, memcpy/memmove,
-// memmove/native, memmove/memcpy, memmove/memmove 285/285/319/319/306; both memmove with
-// independent halves/cross components/both 316/321/317. Matrix transfer alone gives frame
-// 0x20; original identities, paired halves, transform helper and full body restored.
-// Round 312: Alias-conditioned native/CRT vector input capture in the existing rotation helper,
-// original/staged cross and paired/independent halves: 347/347/340/340/340/340/320/320.
-// Independent halves recover frame 0x24 and first +0x163 but grow code; original helper,
-// paired halves and complete body restored. Quaternion/cross spill overlap remains.
-// M3 lane 4 r155 (fast): retail never reuses the quaternion's 16-byte home (+0x24) for the transform spills (its five spill
-// slots sit below it), ours packs two cross-term spills into the dead quaternion home. New: the zero-sine arms first (`if
-// (sine == 0.f) { cosine test } else { construction }`) 299 (1342 bytes); the identity matrix copy at entry 315 (1325 bytes),
-// right after the sine 315; the sine half computed before the cosine half 205; `cosine_half * sine_half * 2.f` 200 (same
-// code); the existing quaternion_rotate_point with plain half-angle locals 1023 (calls out of line). Linkage diagnostics only:
-// the transform helper `static` or a plain global 1028 (out of line, /Ob1 file), `__forceinline` 200. Re-measured: the
-// existing quaternion_rotate_point for the transforms 258 (1303 bytes), plain half-angle locals 267 (frame 0x18).
-// N329: Actual half-angle outputs own cosine/sine/both-sequential/both-early radicands: paired storage
-// 253/253/249/289, independent halves 270/270/258/258. All regress; original root expressions, paired
-// storage, helper and full body restored; frame and spill overlap remain.
-// DH304: Cosine/zero/default-quaternion/common-scalar construction results, paired/independent halves, 277/283/244/300/246/308/243/241.
-// NOT kept: moved stores/observations or common one-use scalar without a match. Original construction restored; quaternion/spill homes remain.
-// N333: Plain indexed quaternion dot reductions, long/dword/short/word ordinals
-// 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
-// Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
-// NOT kept: indexed reductions regress and fail the exact-match gate.
-// M336: Transform dot/quadratic/doubled-scalar accumulators, seven subsets then all with
-// a positive-validation return: 251/249/253/196/219/210/243/243. NOT kept: four-point
-// combined gain below margin; original helper/body restored, frame 0x1c versus 0x24 remains.
-// N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
-// independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
-// paired halves and complete body restored; frame/quaternion/cross homes remain.
-// Round 85 (m3 lane 12, fast): the initial dot as the existing dot3f(a, b)/dot3f(b, a) 205/205 (1326 B); the transform
-// helper's dot as dot3f(q, v) * 2/dot3f(v, q) * 2 246/246 (1308 B); the clamp as one nested ternary 297 (1317 B, first
-// +0x0); the halves through sqrtf 249 (1309 B). Original body and helper restored.
-// N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
-// with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
-// NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
-// M3 lane 7 r126 (fast): retail stores the doubled scalar to two homes (the matrix parameter's +0x38 and +0x10) as if
-// each inlined transform kept its own copy. Named forward/left/up row pointers for the transforms, the 0x143120 test
-// and the repair 322 (1294 bytes); `rotation.w = 0.f` before the 0x11d000 call 213 (1324); plain cross3f in the
-// repair path 238 (1322); `cross` declared ahead of the helper's scalars 200 (same code); the helper's scalars `const`
-// 200 (same code). Body restored.
-// N346: Immutable transform dot/doubled-scalar/quadratic coefficient masks 1..7, then complete
-// immutable coefficients/cross: 200/200/200/200/200/200/200/200. Original helper and all three users restored;
-// NOT kept: unmatched lifetime/combination forms. Native frame/quaternion/cross spill homes remain.
-// N361: Half-angle root-input double addition/factor/both/post-addition promotion, paired
-// outputs 211/202/211/202, independent real outputs 278/269/278/269. Original root inputs,
-// paired storage and body restored. NOT kept: unmatched precision-only forms; native spill homes remain.
-// N363: Existing shared scaled-add owns final cross contribution, crossed with shared
-// initial scale/projection/staged cross: 352/352/351/325/307/307/309/311. Original private helper and body restored;
-// NOT kept: unmatched staged stores. Native frame/quaternion/cross spill homes remain.
-// N365: Existing complete vector setter output with staged-cross/shared-dot/independent-half
-// masks 0..7, 333/346/340/351/344/360/333/368. Paired output restores frame 0x24
-// but grows code. Original helper/body restored; NOT kept: unmatched output ownership.
-// N368: Caller initial-dot/sine/axis-scale adjacent producers, seven family subsets
-// 263/253/253/221/221/249/214; all with entry declarations 214. Original producers restored.
-// NOT kept: unmatched storage/producer forms regress; native half/quaternion/transform homes remain.
-// N374: Paired root division, doubled helper-scalar addition and doubled
-// half-angle-product addition, masks 1..7 and all with independent halves:
-// 200/200/200/252/252/252/252/254. Original roots, factors, halves, helper and body
-// restored; NOT kept: no native frame/spill recovery or byte match.
-// N376: Actual quaternion vector-prefix construction/all transform reads/staged cross,
-// seven subsets then shared prefix dot, 200/200/252/200/252/252/252/254. NOT kept: no exact frame/spill
-// recovery; original union, helper, input safety and complete body restored.
-// m3 lane 1 r71 (one-link harness, control 197 for the real 200; masked = aligned count with registers and esp offsets masked, control 187): retail's three transforms
-// all compute the crosses j, k, i and compute s above the identity copy. Plain half-angle locals 266/1297 (masked 132, retail's two half homes; w and the sine swap xmm4/xmm5);
-// with scalar crosses s, w2, dot 248/1315 (84, frame 0x20); dot, s, w2 251/1315 (87); s, dot, w2 in any cross order 248/1305 (151); dot term order, cross order on that base
-// no change (canonicalised). The matched 0x11cb00 helper's exact operand and row forms on plain halves 198/1324 (99), on the struct 258/1303 (155); s computed before the identity copy as a
-// helper parameter, plain halves 308/1262 (170) and 302/1270 (163), on the struct 309/1262 (139) and 305/1270 (107). Three annealed searches over statement order, operand
-// forms and row orders, about 700 forms, none under 198 or below masked 84. None plain-confirmed, none kept. The two-member half struct stays until a form beats it.
-// N399: Destructive scalar/cross-scale/cross-result ownership, families 1..7 then
-// independent cross scalars: fast 256/306/253/313/333/333/312/306. Original ordered output trees and all three
-// in-place users preserved. NOT kept: unmatched storage/result forms; original helper/body restored.
-// Round 90 (m3 lane 16, fast): the doubled sine product written 2.f first 200 (same code); the clamp testing the
-// cosine copy 200 (same code); the construction scale computed before the axis cross 252 (1317 bytes); the cosine
-// arms swapped (`cosine >= 0.f` takes the identity) 210; rotation.w stored between the cross and the scale 200.
-// Walk b6K (fast build, base 32fb6007d), statement by statement against retail: no logic or structure difference left. Checked: the dot sum
-// 0x1417b3-0x1417e1, the clamp 0x1417ed-0x141807, both halves (fld ... fstp dword at 0x14182a and 0x141846, so both round to float as ours),
-// the sine test 0x14185b-0x141862 (equal takes the zero-sine arm; NaN takes the construction as `!=` does), the cross scaled by sine_half / sine
-// 0x141864-0x1418bc with w = the cosine half, the 0x11d000 arm 0x1418c2-0x1418cb (cosine < 0, w = 0), the identity arm 0x1418d5-0x1418f7, the
-// 13-dword matrix copy 0x141929, the forward/up/left transforms (field offsets and cross terms), the 0x143120 test 0x141c0c and the repair
-// 0x141c19-0x141cc6. Retail never stores w in the construction arm; it keeps it in xmm5. Left: the compiler's term orders in the transforms.
-// Retail adds cross*2w first in every i row (0x1419b9-0x1419d5, 0x141ab3-0x141aca, 0x141ba7-0x141bbc), cross + q*dot then v*s in the up j/k rows
-// (0x141ace-0x141af5, 0x141b0c-0x141b24) and sums the dot as i,k,j (forward 0x14192b-0x14194d, up 0x141a43-0x141a5f), k,j,i (left 0x141b2d-0x141b5e);
-// ours compiles other associations (the C order does not decide them: VC reassociates, cross-first i row 205 same code). Retail also stores 2w twice
-// (0x141966, 0x14196c) and s to a slot nothing reads (0x1419e6). Initial dot: the shared dot3f(a, b) (a helper this file did not use before) 205 (1326 bytes),
-// written out 200 (1321), dot3f(b, a) 205. With dot3f the forward dot is retail's i,k,j. On the dot3f base: transform dot via dot3f((vector3f const *)q, v)
-// 240, cross via cross3f 239, both 237 (1317 bytes); plain halves 267; cross3f for the construction 250; helper statement order s,dot,w2 250 /
-// s,w2,dot 252 / w2,s,dot 207 / dot,s,w2 248 / w2,dot,s 208. Not used: the clamp is PIN_126660's expression (unknown_124f90.h, needs a new include);
-// quaternion_transform_vector repeats quaternion_rotate_point (unknown_11cb00.cpp, not in a header, other term orders).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -397,7 +127,6 @@ void matrix4x3_rotation_between_vectors(
 	vector3f const *arg_bc44c6)
 {
 	quaternionf rotation;
-	struct { real cosine_half, sine_half; } state;
 	real dot = dot3f(arg_5f338b, arg_bc44c6);
 	real cosine = dot;
 
@@ -410,16 +139,16 @@ void matrix4x3_rotation_between_vectors(
 		cosine = 1.f;
 	}
 
-	state.cosine_half = (real)sqrt((cosine + 1.f) * 0.5f);
-	state.sine_half = (real)sqrt((1.f - cosine) * 0.5f);
-	real sine = state.sine_half * state.cosine_half * 2.f;
+	real cosine_half = (real)sqrt((cosine + 1.f) * 0.5f);
+	real sine_half = (real)sqrt((1.f - cosine) * 0.5f);
+	real sine = sine_half * cosine_half * 2.f;
 
 	if (sine != 0.f)
 	{
 		cross3f_staged(arg_5f338b, arg_bc44c6, (vector3f *)&rotation);
-		real scale = state.sine_half / sine;
+		real scale = sine_half / sine;
 		vector3f_scale((vector3f *)&rotation, scale, (vector3f *)&rotation);
-		rotation.w = state.cosine_half;
+		rotation.w = cosine_half;
 	}
 	else if (cosine < 0.f)
 	{
@@ -878,16 +607,6 @@ vector3f *function_1427f0(
 inline bool function_a0190(vector3f const *vector);
 __declspec(noinline) bool function_a0200(real a, real b);
 
-static __forceinline real basis_dot_xzy(vector3f const *a, vector3f const *b)
-{
-	real result = a->i * b->i;
-	result += b->k * a->k;
-	real side = a->j;
-	side *= b->j;
-	result += side;
-	return result;
-}
-
 static __forceinline real basis_dot_xzy_vertical(vector3f const *a, vector3f const *b)
 {
 	real result = a->i * b->i;
@@ -942,7 +661,18 @@ void function_143250(
 	}
 }
 
-// score 1333 (was 1333): frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
+// score 939 (was 939): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// M3 lane 2 r107 (fast = plain 939): the build already has retail's convention (rotation in EAX, ret 4). With registers and
+// numbers masked 352 lines still differ, most in third-band entries 21-28 (retail evaluates entry 23's first product
+// first and keeps 0.071428575 in a register for entries 23 and 25; ours evaluates the subtracted product first and
+// multiplies from memory); retail's extra 4-byte cell sits among the scalar spill homes (both use their top cell for
+// the same value). Entry 23's first product in parentheses 939 (same code); the order tests as nested `if (order > 2)`
+// / `if (order > 3)` blocks with one return 939 (same code); the second-band block unscoped 939, the third-band
+// block unscoped 939 (same code); the nine rotation reads `real const` 939 (same code). Diagnostic only: one to seven
+// dead initialised locals 1231/1231/1095/1226/1226/1415/1226 (frame stays 0x2fc, ret 4 kept).
+// Earlier status line (939, was 1333): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// Previous 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
+// frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
 // g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
 // constants from the XBE kept) against this body: all 83 values handed to the three function_143250 calls (3x3, 5x5, 7x7) are identical,
@@ -1322,6 +1052,234 @@ void function_143250(
 // Band two's `s15 * s5` 1333 and band three's `s2 * s35` 1333 (same code: products re-sorted); band one's four negatives
 // as unary minus 1333 (same code: compiled as 0 - x); band three's sqrt(7) declared after s21_s35 1535 (10748 B); band
 // two's root product as one `(real)sqrt(5.0) * (real)sqrt(15.0)` 1729 (10712 B).
+// P566: Actual positive-root input/result tables, second/third/both bands through
+// long for/while, then third/both short for: 1671/1671/1592/1592/1751/1751/1748/1771.
+// NOT kept: grouped root-pipeline storage is unmatched and regresses; native paired
+// scalar homes and missing frame word remain. Original polynomial and full body restored.
+// P580: Current-polynomial reused rotation scalar memcpy, seven complete-row subsets,
+// then all scalar memmove: 1559/1754/1148/1770/1768/1582/1790/1865. NOT kept: no exact paired-home/frame recovery;
+// the 1148 transfer moves the frame farther from native 0x300 to 0x2f8; unmatched self-address storage restored.
+// original nine captures, polynomial, publications, helper calls and full body restored.
+// M3 lane 8 r175 (fast with 0x143250 matched; control 1333 at 10752 B, `ret 4` on both sides, frame 0x2fc against 0x300; the
+// listing is retail's instruction stream almost line for line, the count is stack-home placement): band three's r6_r0 written into
+// its two products 1656 (10698 B); band three's r6_r3 the same 1663 (10700 B); band two's entry 18 stored last, just ahead of its
+// 0x143250 call (retail stores it after the call's pushes) 1544 (10755 B); r5_r2_s105_s2_s21 and r5_r5_s21_s35 written at their uses
+// 1333 each (same code). Body unchanged.
+// M3 lane 1 r114 (fast with 0x22850/0x23690, both at their baseline): the convention is already retail's (rotation EAX,
+// coefficients ECX, result ESI, order on the stack, ret 4); the 49-entry matrix tops the frame in both, so retail's
+// extra 4 bytes are one more scalar spill home below it (0x23c bytes against 0x238). s5 folded into `s5_s15 =
+// (real)sqrt(5.0) * s15` 1728 (10712 B); the nine rotation reads as `real const` 1333 (same code); band one's negatives as
+// unary minus 1333; the matrix declared after the rotation reads 1333; band three's s2 declared beside s35 1333.
+// Round 96 (m3 lane 2, fast with 0x22850/0x23690; control 1333, register/stack/global-masked aligned 171): every scalar
+// local renamed so the names sort in the reverse order 1333 (same score: names do not order these homes); a table per
+// band declared in its band's block 1420 (10716 B); band three's table alone in its block (bands one and two sharing a
+// 25-entry table) 1333; the ten products bands two and three share declared once ahead of band two 2031 (10475 B: retail's
+// paired stores go); `result[0] = coefficients[0]` after band one's table fill 1333 (re-measured: the matrix declared
+// after the rotation reads 1333). Diagnostic: `#pragma optimize("s", on)` around the body 3394 (9134 B, an EBP frame), so
+// retail's source-order schedule is not the size preference either. Retail's band-three entry 8 is the source's
+// left-to-right sum, with its partial sum spilled once to a scalar home.
+// Named scalar prefixes for third-band entries 8 1376.
+// Named scalar prefixes for third-band entries 25 1379.
+// Named scalar prefixes for third-band entries 28 1333.
+// Named scalar prefixes for third-band entries 8, 25 1411.
+// Named scalar prefixes for third-band entries 8, 28 1376.
+// Named scalar prefixes for third-band entries 25, 28 1379.
+// Named scalar prefixes for third-band entries 8, 25, 28 1411.
+// Compound-assignment prefixes for third-band entries 8, 25, 28 1303.
+// Compound-assignment prefixes for third-band entries 8 1315.
+// Compound-assignment prefixes for third-band entries 25 1337.
+// Compound-assignment prefixes for third-band entries 28 1333.
+// Compound-assignment accumulation through the entire third-band entry 8 939.
+// Kept the complete six-term accumulation for entry 8, which restores the separate multiplies and the four-term spill. NOT kept: the prefix-only forms tie, regress or still fold the final pair.
+// Weighted squares produced together 1556; both cubic consumers at each
+// weighted square 1612; paired sqrt(35) components 1498, with derived squares
+// 1566; named entry-27 weighted product 939; const weighted products 939;
+// two-step weighted-component consumers and weighted cubic consumers 939/939.
+// The dedicated weighted product homes and the extra frame word still differ.
+// M3 lane 3 r263 (fast; base 939; with stack offsets masked 219 of 1768 lines differ): running sums like entry 8's for entry 12's
+// six products 939, entry 36's six triples 939, entry 40's eight terms 939, entry 22's seven terms 939 (all the same code: sums
+// with constant factors already run left to right); entry 29's seven terms 1253 (10821 B).
+// Third-band shared weighted mixed/first cube/axial component/axial pair/axial square/second cube products
+// 1517/1477/1357/939/1314/1554; both cubes 1589; all independent factors 1629.
+// NOT kept: the mixed product and the two individual cube forms recover frame 0x300 with displaced
+// spill homes and higher scores.
+// M3 lane 14 r115 (fast with 0x143250 matched, 0x22850 226 and 0x23690 330 unchanged; control 939 at 10777 bytes, `ret 4`
+// with rotation in EAX on both sides; aligned 650, 122 with the stack offsets masked, so the count is almost all home
+// placement): entry 25 as a running sum like entry 8's 1095 (aligned 638), entry 28 the same 1496 (10804 bytes), both
+// 1494; the nine rotation reads declared in retail's load order (4, 1, 5, 6, 8, 0, 2, 3, 7) 1749 (10827 bytes), in reverse
+// order 1716 (10791 bytes).
+// Diagnostic: a one-object LTCG link of this file (scratch copy, an entry calling the function, no other objects) gives
+// this build's 1768 instructions exactly and names every home. The homes are 4-byte slots shared by locals with disjoint
+// lifetimes, stacked from the bottom roughly by memory-reference count. Retail's slots follow ours one cell lower up to
+// the r6_r6 slot; retail then has the s21/s21_r2 slot (ours ranks it far higher, at -656), which is the extra frame word;
+// above r2_r2 the offsets agree again until the band-three terms, which retail interleaves in a different order.
+// M3 lane 16 r144 (fast, control 939): the nine rotation reads declared in retail's load order (r4, r1, r5, r6, r8, r0,
+// r2, r3, r7) 1749 (10827 B); `matrix` declared after the reads 939 and band two's roots s5 first 939 (both the same
+// code); one exit with bands two and three nested under `order > 2` / `order > 3` 1902 (10607 B); unused initialised
+// locals after `matrix` (diagnostic only) 1-7: 1231 (10744 B)/1231/1095 (10777 B)/1226/1226/1415 (10756 B)/1226.
+// Band two's braces dropped (its names at function scope, band three's block shadowing them) 939 (same code).
+// M3 lane 15 r109 (fast with 0x143250 matched; control 939): retail reads s21's home eight times (0x4c: s105_s2_s21 multiplies
+// from memory, then band two's eight copies, then s21_s2 loads it again), ours seven (one load in XMM6 serves s105_s2_s21 and
+// s21_s2, and the copies move behind it). s21_s2 declared after s7_s2_s21 1104 (10780 B); right after s105_s2_s21 1021
+// (10775 B); beside s21_s35 1299 (10774 B); band three's r6_r3/r6_r0 as `r3 * r6`/`r0 * r6` 939 (same code); band two's r6_r3
+// and r6_r0 written into their four uses 1718 (10752 B). Body unchanged.
+// M3 lane 15 r111 (fast with 0x143250 matched in every form; control 939, `ret 4` on both sides, 214 rows differ once the
+// stack offsets are masked). A symbolic trace of both listings (m3-lane15 build/r111/trace.py and order.py: every xmm
+// and home value as a product of r0..r8 and the roots) gives the row at which each band-three local is first defined:
+// 139 of the 154 are defined in the same order on both sides. The 15 that are not: around band three's copies of
+// band-two products retail defines r4_r2, r6_r4, r3_r2, s105_s2, r6_r5, s7_s105, s105_s2_s21, r6_r1, r6_r2 ... r8_r8, s21_s2
+// (its copies r6_r4 and r6_r5 go through XMM7 ahead of s7_s105, the later ones through XMM6 once s105 is spent), where
+// ours loads s7 into XMM7 twelve rows early, defines s7_s105 first and s21_s2 thirteen rows early; r6_r3_r8 comes after
+// s21_r5 in ours (before it in retail); and retail's order r7_r7_r0, r0_r0_r0, r3_r3_r0, r4_r4_r0 is r0_r0_r0, r7_r7_r0,
+// r4_r4_r0, r3_r3_r0 in ours. Declaration moves taken from that (each kept only with a match, so all restored):
+// r6_r5 declared right after s105_s2 880 (10776 B; masked rows 216); on it s105_r0_r0_r6 after r1_r0_r7 807 (frame
+// 0x300, first difference +0x3b, masked 217), r7_r7_r0 after r0_r0_r0 892, r3_r3_r0 after r1_r1_r0 868, r2_r1 after
+// r5_r4 881, those four together 797 (masked 223), r3_r3_r0 ahead of r4_r4_r0 900, r6_r1 ahead of s105_s2_s21 1484,
+// r6_r4 ahead of s7_s105 1424. On the control: r3_r3_r0 ahead of r4_r4_r0 955; r6_r4 and r6_r5 both ahead of s105_s2
+// 1422; r6_r4 after r4_r2 with r6_r5 after r3_r2 1422; r6_r4 after r4_r2 with r6_r5 after s105_s2 1424; r6_r4 after
+// r4_r2 alone 1423; r6_r4 ahead of r3_r2, r6_r5 after s105_s2 and r6_r1 ahead of s105_s2_s21 1556. The positional
+// count falls with these moves while the masked count does not (214 at best on the control), so they move the homes,
+// not the schedule. 0x143250's parameters in the orders its three call setups could imply, definition, declaration
+// and calls together, the callee matching in each: (n, out, a, b) 939, (n, a, out, b) 936, (a, b, n, out) 935,
+// (a, out, n, b) 936, (out, a, n, b) 939, (a, n, out, b) 936. Body unchanged.
+// First-band matrix carries r0/r1/r4 into the higher-band computations:
+// singles 1736/1739/1657, pairs 1770/1732/1750, all 1782 before or after
+// the order guard. NOT kept: the reloads regress and retail uses independent scalar homes.
+// M3 lane 1 r133 (fast with 0x143250, matched unless said; control 939, 82 rows differ with registers and stack offsets
+// masked). Lead with retail evidence, not kept (4 points, under the bar; build/r133/lead-0x143600-helper-params.patch in the
+// m3-lane1 worktree): 0x143250's parameters declared (n, matrix, coefficients, out) instead of (out, n, matrix,
+// coefficients), definition, declaration and the three calls: 935 with 0x143250 still matching. Retail's three call sites
+// then come out exactly: the out argument's `lea eax` ahead of the matrix push, and the scratch registers ECX/EDX at the
+// 5x5 call and ECX at the 7x7 call (EAX is already taken by out when the two stack arguments are formed; with out
+// declared first ours takes EAX/ECX and EDX there). (n, matrix, out, coefficients) 936 (the lea order only, registers as
+// before); (matrix, n, coefficients, out) and (matrix, coefficients, n, out) 935 (same code); (coefficients, matrix, n,
+// out) 957 with 0x143250 at 4 (the pushes swap). The order of the stores into the matrix is retail's in bands one and
+// three; in band two retail computes entry 18 in place but stores it last, with the call's pushes (after entry 23), which
+// shifts some 45 rows by one: entry 18's statement moved after entry 23 on the lead 1517 (its products move with it); its
+// value named where retail computes it and stored after entry 23 1597 (10747 B: the one-use local is written back into
+// the store); that value held through a reference and stored after entry 23 1221 (10744 B, diagnostic).
+// The home of sqrt(21) is read once more in retail (a memory multiply for s105_s2_s21 and a second
+// load for s21_s2, after the eight copies): ours loads it once into XMM6 for both, so the eight band-two copies go
+// through XMM7 where retail has XMM6; that follows from s7_s105 being scheduled earlier here, a
+// schedule difference like the others (the block is scheduled as a whole, so every remaining difference moves the rest).
+// Body unchanged.
+// The sqrt(21) home and inter-band spill schedule still differ.
+// first mixed-root accumulation 939, later mixed-root accumulation 939, both mixed-root accumulations 939,
+// four root-product accumulations 939, weighted component and square accumulations 939, root-product names 939,
+// separate root assignments 939, axial squares and cubic accumulations 1848.
+// NOT kept: The axial accumulations shrink the frame to 0x2f8 and raise the score. The other forms retain 0x2fc.
+// Second-band axial weight named at first use, with the other products, or by compound multiplication
+// 1231/1296/1231. With named transverse products, transverse accumulations, or named up products
+// 1095/1095/1095. With all four products or the diagonal half-square terms 1226/1226. NOT kept: All
+// eight raise the score and leave the frame four bytes short.
+// Input/output/both coefficient slices advanced after admission 1652/1706/1723.
+// Input/output/both slices advanced after the calls 1625/1725/1701.
+// Shared coefficient offset advanced after admission or the calls 1231/1231.
+// NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
+// 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
+// NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// Third-band products declared at their first coefficient: initial/later/both
+// mixed roots 1548/1497/1556; third mixed root 1515; component-weight families
+// at entries 23/25/both 1669/1689/1655; all product groups 1671. NOT kept:
+// the first three recover frame 0x300 but displace the scalar homes and
+// regress. The other forms retain the short frame.
+// The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
+// transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
+// outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
+// NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
+// Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
+// Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
+// Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
+// NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// capture with matrix store for r1 1740; capture with matrix store for r4 1721;
+// capture with matrix store for r1, r4 1748; capture with matrix store for r0 1717;
+// capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
+// capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
+// NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
+// M3 lane 8 r207 (fast with 0x22850 209 and 0x23690 354 unchanged each run; control 939 at 10777 B, `ret 4`, rotation in
+// EAX): of 1766 listing lines 600 differ only in a stack offset and 352 in the instruction; the matrix and everything
+// above it sit 4 bytes lower than retail's, the scalar homes from +0x48 to +0x240 are permuted. The matrix declared after
+// the nine rotation reads 939; r0..r8 renamed (diagnostic: slot order does not follow these names) 939; `s5_s15` as
+// `s15 * s5` 939; every band temporary but the accumulator `real const` 939 (all the same code); the third band's
+// accumulated diagonal sum as one expression stored to matrix[8] 1333 (10752 B).
+// Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
+// Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
+// Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
+// NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Stage the mixed/axial/square weights at coefficients 23 and 25, singly 1213/939/1213,
+// paired 1213/939/1213, all weights 939, and complete mixed terms through the final
+// factor 1154. NOT kept: no form recovers frame 0x300 and the shorter forms move
+// away from the retail extent.
+// One recalculated product local across the two higher bands, for r6*r0/r6*r3/both 1216/1231/1238,
+// transverse mixed pair 1282, axial squares 1281, diagonal squares 1296, off-diagonal squares 1205,
+// and the r0 mixed pair 1280. NOT kept: the off-diagonal squares reach frame 0x300 and first +0x39,
+// but all forms shorten the body past retail and raise the score.
+// Direct accumulation into the matrix, third-band rows 1 through 7 independently, then all seven
+// rows.
+// Scores 1472/1380/1608/1324/1632/1220/1203/1611.
+// NOT kept: Row 1 reaches retail length and row 2 restores frame 0x300. Both raise the score. The
+// previous scalar spills remain.
+// Separate third-band copies of the second-band axial/horizontal mixed products
+// 1697/1721 and axial/horizontal squares 1751/1791. Both mixed sets 1792, both
+// square sets 1866, all products 1959, all immutable copies 1959.
+// NOT kept: the explicit copies shorten past retail and raise the score.
+// Separate third-band declarations for the up/forward pair, root-35/forward
+// component, both or both symmetric families 939/939/939/939.
+// Band-specific mixed names, root-35 axis names, both root axis families,
+// and all those role names 939/939/939/939. The scalar spill frame stays 0x2fc.
+// M3 lane 8 r214 (fast with 0x143250 matched and 0x22850 209 / 0x23690 354 each run; control 939, frame-blind aligned
+// count 154): this function's parameters in retail's call-setup order (result, rotation, coefficients, order; the callers
+// set up ECX, EAX, ESI after pushing the order), definition, declaration and the seven calls 939 (same code; 0x23690 357);
+// 0x143250 as (n, matrix, coefficients, out) re-measured 935 (its three call setups then retail's; 4 points); both
+// reorders 935 (0x23690 357); on that 935 form one array per band declared in its band's block (9, 25 and 49 reals)
+// 1195 (10744 B, frame 0x320) and the first coefficient copy after band one's stores 935 (same code).
+// M3 lane 14 r135 (fast, control 939; `ret 4` in both builds): entry 23's first product with `r6_r3 * r8` for r6_r3_r8 1601
+// (10732 B); entry 23 as `-(subtracted product) + first product` 1221 (10762 B); entry 23's first product named just above
+// it 939 (same code: the order is set after the homes); its subtracted product with `s21 * r5` for s21_r5 1147 (10783 B);
+// entry 37's r6_r3_r8 written `r6_r3 * r8` 1571 (10765 B). Retail keeps 143 scalar cells under the workspace, this build
+// 142; 428 of the 935 differing lines differ only in stack offsets.
+// Second-band named products for sums, ordinary differences, zero-minus differences, or all paired coefficients
+// 1226/1415/1226/1226. Running accumulators for the same groups 1229/1095/1226/1229. NOT kept: all retain the
+// 0x2fc frame and raise the score.
+// M3 lane 2 r128 (H2M_FAST with 0x143250, MATCH; control 939, aligned 777, register/offset-masked 154; the convention is
+// already retail's: rotation in EAX, ret 4): third-band entries 23-25 in another statement order (value trees kept),
+// 25 first 1113 (10773 B), 24 first 942, 23 last 1114 (10773 B); entry 23 accumulated in place over four statements 939
+// (same code); entries 23 and 25 both accumulated 1095. Reading: the masked rows are scheduling and spill placement
+// spread over the body (retail keeps 0.071428575 in XMM5 for entries 23 and 25), and retail's one extra spill cell
+// sits below the 49-entry matrix (frame 0x300 against 0x2fc).
+// Higher bands read back first-band entries for r0/r1/r4: 1754/1741/1658;
+// pairs r0-r1, r0-r4, r1-r4 1770/1767/1743; all three 1785; all five positive entries 1816.
+// NOT kept: the forms regress and move the scalar frame away from 0x300.
+// M3 lane 2 r131 (H2M_FAST with 0x143250 MATCH; control 939, aligned 777, masked 154; aimed at the s21/s21_r2 cell): s21_r2
+// written into its three uses 1507 (10747 B); s21_r5_r6_r6 as `r6_r6 * s21_r5` 939, s7_s2_s21 as `s21 * s7_s2` 939 and entry
+// 25's last product with s7_s2 first 939 (each the same code); s21_s35 from its own root with s21 declared after it 1491
+// (10773 B, frame still 0x2fc). Body unchanged.
+// M3 lane 1 r155 (H2M_FAST; control 939): entry 23's first product as `r6_r3 * r8 * ...` with the named product kept for
+// its other use 1601 (10732 B); entry 25's as `r6_r0 * r8 * ...` 1517 (10757 B); both 1592 (10743 B); the matrix declared
+// after the nine rotation scalars 939, the band-two constant product as `s15 * s5` 939 (same code each).
+// M3 lane 16 r175 (H2M_FAST; control 939): outside the matrix our cells hold 59/63/16/4 values with 1/2/3/4 stores, retail's
+// 60/64/15/4: one cell of ours is shared by three values (a band-two square, a band-three product and a later value) that
+// retail keeps in two cells, so the short frame is a cell our packer reuses, not a missing value. Band two's three unnamed
+// squares named like its other six (entries 12 and 14) 1095; r8's square alone 1231 (10744 B); r2's and r5's alone 1231
+// (10744 B); its three unnamed mixed products named (entries 10, 11, 13) 1710 (10816 B); all six 1648 (10792 B).
+// M3 lane 11 r156 (H2M fast with 0x143250 MATCH, 0x22850 209 and 0x23690 354 unchanged; control 939, aligned 777): `s5`
+// declared ahead of `s15` 939; band one's negations as unary minus 939 (same code each); the order tests as `order < 3` /
+// `order < 4` 894 (10776 B, aligned 781: positional only, the first test becomes `cmp ebp, ebx; jb` on the call's 3 where
+// retail has `cmp ebp, 2; jbe`, so not kept); 0x143250 as (n, matrix, coefficients, out) re-measured 935, with `s5`
+// declared first 935. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x143250, MATCH; control 939): our cell +0x8c holds band two's r5 square, band three's
+// r2-square-times-root-105 product and a later value; retail keeps the second in its own cell under the matrix (+0x234).
+// Band three's r2_r2_s105 declared ahead of r5_r5_s105 939, r5_r5 ahead of r2_r2 939 (both the same code); r2_r2 and
+// r5_r5 at the top of band three 1569 (10780 B); r8_r8 after r5_r5 944 (10781 B); band two's s5 and s5_s15 declared
+// just ahead of entry 0 1134 (10763 B, frame 0x2f8). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x143250 MATCH; control 939): retail's extra cell (+0x234 under the matrix) holds band three's
+// root-105 times r1-square product alone (stored once, read once for its r6 product); ours shares that product's cell
+// with two other values. That product's r6 product declared right after its r7 product 1567 (10728 B); the product
+// written into its two uses 1226 (10744 B); its operands as `r1_r1 * s105` 939; entry 0 of band two as
+// `r3 * r1 + r4 * r0` 939; the three band calls with `&result[n]` / `&coefficients[n]` 939 (same code each); band three
+// nested in band two's block reusing band two's ten shared products (no redeclarations) 1994 (10500 B: retail keeps the
+// second home of each shared product, so band three's redeclarations are retail's). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
@@ -1564,7 +1522,13 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 		real r4_r0_s105_s35_s2 = r4_r0 * s105_s35_s2;
 		matrix[7] = r4_r3 * s105_s35_s2 * r5 * 0.014285714f - r3_r1 * s105_s35_s2 * r2 * 0.014285714f
 			- r5_r0 * s105_s35_s2 * r1 * 0.014285714f - r4_r0_s105_s35_s2 * r2 * 0.014285714f;
-		matrix[8] = r3_r2 * r7 + r5_r1 * r6 + r5_r0 * r7 + r4_r2 * r6 + r4_r0 * r8 + r3_r1 * r8;
+		real second_diagonal_sum = r3_r2 * r7;
+		second_diagonal_sum += r5_r1 * r6;
+		second_diagonal_sum += r5_r0 * r7;
+		second_diagonal_sum += r4_r2 * r6;
+		second_diagonal_sum += r4_r0 * r8;
+		second_diagonal_sum += r3_r1 * r8;
+		matrix[8] = second_diagonal_sum;
 		matrix[9] = r6_r4 * s105_s2_s21 * r8 * -0.023809524f - s105_s2_s21 * r8 * r7 * r3 * 0.023809524f
 			- r6_r5 * s105_s2_s21 * r7 * 0.023809524f;
 		matrix[10] = s7_s105 * r8 * r7 * r6 * 0.14285715f;

@@ -64,7 +64,7 @@ PRIVATE inline long swizzle_log2(dword value)
 // them differs: this build widens the third argument into EDI and the second into ESI at the entry where
 // retail copies the third into SI as a word and widens the second only where it is used.
 // MiniMax S (11-06): no new form, no lower score: the two coordinates still arrive in the other registers (retail x in EDX, ours in CX), so the widened copies, the two table lookups and the common count keep different homes; retail's minimum branches once and stores the common count after the join.
-// score 57 (was 82): both logarithms now have retail's loop and the common count is
+// score 57 (was 57): earlier 82. Both logarithms now have retail's loop and the common count is
 // taken by retail's branch, so the height count sits in ebx as in retail; left: the row
 // coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
 // widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
@@ -311,6 +311,33 @@ PRIVATE inline long swizzle_log2(dword value)
 // long-dword/dword-dword/word-dword/dword-word, signed interpretation at every use:
 // 120/136/150/57/57/57/120/136. NOT kept: word forms enlarge and lose the exact caller;
 // whole-width forms tie. Original captures, signed arithmetic, helper, contract and body restored.
+// Round 99 (m3 lane 13, fast with 0x136140): long bit counts with x and y used directly 128 (300 bytes, 0x136140
+// 28); the tail shifts done in place on the copies (`x_value >>= common_bits;`) 57 (same code); one forceinline
+// per-coordinate spread helper holding the mask branch, x and y used directly 151 (0x136140 125); the minimum through a
+// forceinline helper written at each use, no common local, 132 (237 bytes); x-first copies with the parameters
+// declared (width, y, x, height, out) and the call changed 54 (0x136140 65). A compile-only /Gd harness of this file
+// reproduces the 57 body exactly apart from the argument registers; in it the four minimum spellings give the
+// memory-homed common count in EBP (both if forms) or cmov (ternary, if/else), long counts or mask give cmov or EBP
+// again, and the bits locals declared before or after the copies change nothing. Retail's common count shares ECX
+// with the width count and is stored once after the join, like a spilled temporary, which no spelling of the
+// named local gives here. Original body restored.
+// P574: Immutable width/height/mask producers, seven subsets then complete
+// immutable minimum graph: 57/57/57/57/57/57/57/80. NOT kept: no exact delayed
+// coordinate promotion or native common-count join; original full body restored.
+// N408: Mask both coordinates before branch (long/short) 117/95. High-arm intersection split
+// (long/short/dword) 67/81/67. High index from the intersection at use 57. Mask from full-width
+// unsigned or signed-short span 57/57. NOT kept: ties or regressions. Coordinate promotions and the common-count home differ.
+// Round 625: unsigned word/dword table coordinates in the wide arm for the high band
+// 63/81, or both bands 125/81; word/dword after shifting the high band 90/57;
+// word/dword table coordinates before the branch 132/81. Signed suffixes retained in all forms.
+// Restored. The full-coordinate widenings still precede the logarithms and the common
+// count still spills from a different register.
+// M465: common signed high mask with short low mask 99; common signed high mask with long low mask 96;
+// high bands first and short low mask 88; high bands first and long low mask 134; branch-owned bands
+// and short low mask 103; branch-owned bands and long low mask 89; per-axis conditional high band and
+// short low mask 168; per-axis conditional high band and long low mask 165.
+// NOT kept: table-band forms grow the body and leave the early coordinate promotions.
+// The long low mask after high bands also loses both matched callers.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

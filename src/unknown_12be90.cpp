@@ -77,30 +77,42 @@ void function_12ba90(void)
    revert instead kills the bl register entirely (test al, al and immediate
    stores), so the two constraints can't both be met from this source shape;
    the permuter's floor is this one instruction. */
+// score 5 (was 5): the two-byte `mov al, bl` before the shared `pop ebx; ret` on the false paths.
+// b14C (11-17) walk against retail, fast build on r847: logic, branch senses and stores agree with retail (0x12bad0
+// load, 0x12badc/0x12bae0 compares against bl, call 0x12bae5, stores 0x12baf2-0x12bb07); the only difference is the
+// return. Retail leaves the loaded/inverted revert value in al on every false path (0x12bb14 ret after je 0x12baf8
+// or 0x12bb0e), ours copies bl (result) into al. Tried: a `zero` local compared with != and stored (21, the compiler
+// folds it and drops bl); `return revert` with `revert = true` in the branch (21); result kept for the stores of
+// false and true but `return revert` (23); `return result | revert` (19, 6 bytes longer). No better source form found.
+// Matched in a full build with stand-in SDK headers (was 5): the function returns revert (set in the taken arm), and
+// main_globals.unknown72 is cleared in both arms of the second test.
 // @retail 0x12bad0
 bool function_12bad0(void)
 {
-	bool result = false;
 	s_510c50_view *state = (s_510c50_view *)g_510c50;
 	bool revert = state->revert_requested;
 	if (revert)
 	{
 		if (state->revert_checked)
 			revert = !function_163b60();
-		main_globals.unknown72 = false;
 		if (revert)
 		{
+			main_globals.unknown72 = false;
 			main_globals.unknown75 = false;
-			result = true;
+			revert = true;
 			main_globals.unknown6f = true;
 			main_globals.unknown74 = true;
+		}
+		else
+		{
+			main_globals.unknown72 = false;
 		}
 	}
 	else
 	{
 		main_globals.unknown72 = false;
 	}
-	return result;
+	return revert;
 }
 
 // @retail 0x12bf00

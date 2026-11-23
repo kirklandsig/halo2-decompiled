@@ -53,8 +53,23 @@ PRIVATE inline void rotate_scalars_146320(vector3f *v, real axis_i, real axis_j,
 	v->k = v->k * cosine + projection * axis_k - cross_k * sine;
 }
 
+// score 66 (was 106): fast build on r848
+// b15D (11-17) walk against retail, fast build on r848: no logic difference found. Checked against
+// 0x146320-0x14653f: the seed advance (0x146339 once for the unit vector; 0x146422 once more, only on the rotated
+// path, inside the inlined function_259d0), cross-product operand order, the x87 sum of squares (k, j, i at
+// 0x1463b2-0x1463c8), the fabs test (0x1463dc `ja`: NaN falls through), the `> 0` test (0x1463f0 comiss, 0x14641c
+// `jbe`: NaN skips), min + r * (max - min) at 0x146450-0x146470, the shared 1.0 (1/magnitude and 1 - cos), the (k,
+// j, i) dot sum and each component's `v*cos + proj*axis - cross*sin` order all agree; constants 1.0, 0.0, 1e-4 and
+// 1.5259022e-05 read back as expected. Left: retail loads the three axis values into xmm1-3 first and scales them in
+// registers (0x1463f7-0x146418); ours folds each load into its multiply (scale copied first), so the axes take
+// xmm3-5 after 1.0/magnitude in xmm1/xmm2 and the rotation differs only in register numbers (bytes 548, retail 546).
+// Scores: scaled values as new locals (old form) 106 (0x20 frame, axis_k spilled); in place with a local scale 88
+// (544 bytes; any operand order, `*=`, k-j-i order the same); scalars for the cross terms 91/97/77; in place with
+// the division written per statement (kept) 66; same inside the `> 0` block 73; after the angle 81; helper taking
+// the axis by pointer 66.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): rotate_scalars_146320 through include/axis_rotation.h's helper on the axis local 93 (552 B). Restored.
 // @retail 0x146320
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle)
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle)
 {
 	vector3f random_vector;
 	vector3f axis;
@@ -70,17 +85,16 @@ void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *see
 
 	if (!(fabs(magnitude) < 0.0001f))
 	{
-		real scale = 1.0f / magnitude;
-		real axis_i = axis.i * scale;
-		real axis_j = axis.j * scale;
-		real axis_k = axis.k * scale;
+		axis.i = axis.i * (1.0f / magnitude);
+		axis.j = axis.j * (1.0f / magnitude);
+		axis.k = axis.k * (1.0f / magnitude);
 		if (magnitude > 0.0f)
 		{
 			real angle = function_259d0(seed, __FILE__, __LINE__, min_angle, max_angle);
 			real s = (real)sin(angle);
 			real c = (real)cos(angle);
 
-			rotate_scalars_146320(result, axis_i, axis_j, axis_k, s, c);
+			rotate_scalars_146320(result, axis.i, axis.j, axis.k, s, c);
 		}
 	}
 }

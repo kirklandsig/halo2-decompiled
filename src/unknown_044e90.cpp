@@ -11,12 +11,27 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
+// score 430 (was 430): r239, r275 and lane 11 r145 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
+// MiniMax E (11-20): no new form, no lower score (430): the frame 0x74a4 agrees with retail's, but the head still differs - retail forms the entry address with a lea into EBX from the scaled index and keeps the tag table in ESI from there to the bottom arm, while this build reads the tag through a displacement from the scaled index and hoists the table into ECX at the top, with the entry spilled at [esp+0x48] against retail's [esp+0x30]; making the header's geometry lookup take the caller's entry pointer leaves 0x458d0 and 0x45a80 matched but gives 449 here, so the lookup stays index-based.
+// MiniMax E (11-16): no new form tried this round, no lower score (443): the frame still agrees with retail's, and the first
+// difference is still at +0x10, where retail forms the entry address with a lea into ebx from a sign-extended index before the
+// register saves and this build forms it with a shifted copy added to the table after them; the part centre's body is inlined
+// from 0x142570, whose file this lane may not edit.
 // MiniMax H (11-13): no new form, no lower score (443).
 // MiniMax I (11-11): no new form, no lower score (443): the first difference is at +0x10, where retail forms the entry address as a sign-extended index scaled by the entry size and added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail then keeps the tag table in esi and spills the entry at [esp+0x30], we keep the entry in a register.
 // MiniMax I (11-11): reading the entry's flags in each arm instead of through the `flags` local (retail loads
 // them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
+// M3 lane 15 r124 (H2M_FAST with 0x458d0 and 0x45a80, both MATCH each run; control 430): the entry index read through
+// its address for the entry and the lookup (the spelling of 0x458d0/0x45a80) 430 (same code); a redundant `if (0 < view
+// count)` guard around the view loop 499 (1792 B); a redundant `if (0 < part count)` guard around the part loop 454 (1765
+// B); the part bit written at both uses instead of the local 456 (1767 B); the entry pointer declared `*const` 430 (same
+// code). Lane 11 r133's lead re-measured 396 at 1742 B (first difference +0x57). Body unchanged.
+// MiniMax S (11-17): no new form, no lower score (443): the frame 0x74a4 agrees with retail's and the first
+// difference is still at +0x10, where retail forms the entry address with a lea into ebx from an index in eax
+// before the register saves and we form it with an add into edi after them; the part centre's body is inlined
+// from 0x142570 in another file.
 // MiniMax E (11-11, run 80): no new form, no lower score (443): a named local for the entry index gives the same
 // code (443) and reading the entry's flags at each of its three uses instead of once at the top scores 465; the
 // frame 0x74a4 agrees with retail's and the difference sits in the head, where retail forms the entry address with
@@ -32,9 +47,23 @@ struct s_visibility_bound_record
 // register saves and this build forms it with a shifted copy added to the table after them; the part centre's body
 // is inlined from 0x142570, whose file this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (443): retail still forms the entry address as a sign-extended index scaled by the entry size and added to the table, and the part centre is still 0x142570's body inlined from another file.
-// score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
+// MiniMax R (11-16): no new form, no lower score (443): the zero constant in EBX (retail keeps the entry there), the
+// list-start stores, the two-step frustum source pointer, the plane cursor at .k and the j/k register naming, the tag table
+// reloaded in the bottom arm and the bound centre copied with integer moves (retail loads it into xmm0-2 and scales in place,
+// which is 0x142570's body in a file this lane may not edit) all remain; the permuter (29 tries in 306 s, annealing) reached
+// 399 in the full image against its 429 baseline with a variant built on a volatile entry pointer, a volatile visible
+// pointer, a constant-only local and a one-use pointer local, so it was reverted, and the same variant without the two
+// locals measures 441 on the reduced image.
+// MiniMax S (11-16): no new form, no lower score (443): the body is still 1760 bytes against retail's 1742 and the first difference is
+// still at +0x10, where retail forms the entry address as a scaled index added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`,
+// `lea ebx, [eax + table]`) and this build forms it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail then
+// loads the tag table into esi and spills the entry at [esp+0x30] while this build keeps the entry in a register, the flags are read
+// ahead of the tag test where retail reads them in each arm, and the parts calls' pushes are hoisted where retail sets up each arm;
+// the permuter (annealing, 420 s) found no variant below 443 - the best it wrote ties the baseline and only respells the constants and
+// adds a volatile entry pointer, so it was reverted.
+// Earlier 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
-// score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
+// Earlier 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
 // unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag
 // table in a local read at entry (retail's ESI). Left: the entry in EDI (retail EBX via `lea`), the flags read ahead of
 // the tag test (retail in each arm), the parts calls' pushes hoisted (retail sets up each arm), register rotations.
@@ -420,33 +449,219 @@ struct s_visibility_bound_record
 // (232/103). Left on that: the zero constant in EBX (retail keeps the entry there), the list-start stores, the two-step frustum source
 // pointer, the plane cursor at .k and the j/k register naming, the tag table reloaded in the bottom arm, the bound centre copied with
 // integer moves (retail loads it into xmm0-2 and scales in place: 0x142570's body, /Ob1 file).
+// Geometry/query/fallback entry scope, seven nonempty subsets, then all with direct fallback visibility mark: 449/457/449/449/449/449/449/449.
+// NOT kept: seven forms come within two bytes of retail at 449 differences. All eight preserve the first entry-address difference and increase the score.
+// Original executable body restored.
+// MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// Re-measured at 443. MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// against retail's 1742): the first difference is still at +0x10, where retail forms the entry address as a scaled index
+// added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and this build forms it
+// as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`), and retail then loads the tag table into esi and
+// spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the
+// allocator's choice of live ranges, not a source shape, and the forms the earlier rounds list (the tag table local, the
+// entry and the two views in five declaration orders, the release masks, the chained counts and capacities, the query data
+// read in the arms, the plane loop as a plain `for`) all measure 443 or worse.
+// MiniMax C (11-17): no new form, no lower score (443): this build is 1760 bytes against retail's 1742 and the first difference is at +0x10, where retail forms the entry address as a scaled index added to the entry table (movsx, shl, lea) where this build forms it as a shifted copy added to the same table (shl, add), and retail then loads the tag table into esi and spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the allocator's choice of live ranges, not a source shape - this round's named entry-offset local (the entry taken from the table with an index held separately) gives 443, unchanged, and the earlier rounds' forms measure 443 or worse.
+// Y616: Shared section ordinal 467, common entry tag 443, indexed entry at
+// every use 469, shared instance bit 481, fallback base and offset 443, signed
+// range grid 443, conditional query displacement 460. NOT kept: geometry
+// field read at the join 438 is below the gate and grows to 1764/1742.
+// The entry address and register-save order still differ.
+// Fallback base plus displacement 443, fallback geometry-address join 460, same-base structure reads
+// with a displacement join 464, one tagged/fallback address join 452, per-path flags with the
+// displacement join 462, displacement before the base 464, address join with the bool selector 441,
+// displacement join with the entry by reference 443. NOT kept: 441 saves two points. The entry
+// address and tag-table saves still differ.
+// M3 lane 13 r107 (fast with 0x458d0, 0x45a80, 0x44720, 0x44940, 0x449e0, 0x45560, 0x460d0, all MATCH unless noted; control 443,
+// difflib-aligned 336, masked 148): KEPT 443 -> 430 (plain, 1751 B; aligned 267, masked 129): the hand-written geometry lookup
+// replaced by the existing visible_entry_geometry(short) of 0x458d0/0x45a80, moved from src/unknown_03f2b0.cpp into the header
+// the two files share (both callers stay matched); the flags local goes with it and the table is read where the bottom arm
+// uses it (a table local kept for that one use is the same code). On that: a state local for the views and active reads 434;
+// the query data as `if (!parts) ... else ...` with the +0x2c read in each arm 456 (1763 B). Lead, not kept (it raises this
+// count): 0x458d0's and 0x45a80's index parameter as `long` (retail's two callers show it: this function pushes `movsx eax,
+// word [ebp + 8]` and 0x45560 pushes its long index register) keeps 0x458d0, 0x45a80 and 0x44720 matched with a plain
+// `(short)index` in place of the read through the parameter's address, and 0x45560 too once its call passes `index` without
+// the cast; this function is then 458 (1776 B, first difference +0x14, aligned 254, masked 107): the entry is formed with
+// retail's `lea` from the scaled index and the two call arms come out separately with retail's `movsx` pushes, but in source
+// order (retail lays the !parts arm first at both parts tests). Left on the kept form: the entry in EDI (retail EBX), the
+// table in ECX (retail ESI from entry to the bottom arm), the views and zero in EBX, the plane copy's j/k registers and the
+// plane cursor (0x1428b0's inlined body), the visible-mask read after the node loop (retail before it).
+// Also on the kept form: the +0x30 count as a named local for its two tests 430 (same code).
+// M3 lane 4 r213 (fast with 0x458d0, 0x45a80, 0x44720, 0x44940, 0x449e0, 0x45560, 0x460d0, all MATCH each run; control 430,
+// difflib-aligned 215 exact / 73 masked). Nothing kept. Lane 13's lead re-measured on today's base: 0x458d0's and
+// 0x45a80's index parameter as `long` with `(short)index` in their bodies and 0x45560 passing its long index 458 (1776
+// bytes, first difference +0x14, aligned 211 / 64; the three callee-side functions stay matched); with the call arms as
+// `if (!parts) 0x458d0 else 0x45a80` 458 (211 / 63). On that: the frustum address as a pointer local with the planes
+// at +0x78 (retail's two `lea`s) 458 (same code); the query data read in each arm, !parts first, 484 (1792 bytes,
+// 207 / 65); both 484. On the kept body: the frustum pointer local 430 (same code); the arms !parts first 430 (216 / 73).
+// Reading of the head on the long-index form: retail keeps the entry in EBX, the tag table in ESI (loaded after the tag
+// compare, kept to the bottom arm) and the geometry in EDI, with the views and the state pointer in ECX/EDX; ours gives
+// EDI to the entry, ESI to the state pointer and EBX to the views and then to a zero that serves the count test, the
+// active test and the four count stores, where retail tests with `test` and has a zero (EDI) only for the count stores
+// and the view counter. The geometry sitting in EDX is what pushes the state pointer into ESI.
+// M3 lane 12 r146 (fast with 0x142570, MATCH): the view counter declared ahead of the list setup (`long view = 0;`, the
+// loop without an initializer) 430 (its store joins the EBX zero); the query count named once for the outer test and
+// the parts test 430 (same code); the outer test inverted with the node-transform arm first 463 (1758 bytes); the outer
+// test as `>= 1` 453 (1760 bytes: the active test then also takes a register zero); the state pointer named for the
+// views read and the active test 434. A compile-only screen shows the early zero (`xor; cmp eax, reg; cmp [state +
+// 0x2a78], reg`) for per-list setup in three orders, separate count stores, `active == 0`, the parts flag set by an if,
+// the flags tested first, and even with the active test removed: the `> 0` count test alone joins the store zero.
+// MiniMax A (11-18): no new form, no lower score (430): retail forms the entry address with a lea into ebx from the scaled
+// index after the first register save and reads the tag through that pointer, while this build reads the tag through a
+// displacement from the scaled index and only then materializes the entry pointer; retail loads the tag table into esi
+// after the tag compare and this build hoists it into ecx at the very top, and the entry's spill is at [esp+0x48] here
+// against retail's [esp+0x30]. The geometry lookup goes through the header's visible_entry_geometry, whose own
+// &g_4ba138[index] is what the based-pointer folding applies to; the source permuter's best variant was one differing
+// instruction better and carried a declaration split and a pointer-to-a-local.
+// M3 lane 1 r127 (fast with 0x142570/0x1428b0/0x165010/0x2dd930/0x45a80/0x458d0, all MATCH; control 430): the entry local
+// renamed 430 (same code: the names do not move its [esp+0x48] home); the entry as a reference-bound local (`entry.` at
+// each use) 430 (same code); a redundant `if (0 < node_count)` around the node loop 430 (one `lea` operand order only); the
+// entry declared after the geometry and views 430 (same code); diagnostic: the geometry through a copy of the pointer-taking
+// (entry, flags) helper that src/unknown_044720.cpp keeps private 449 (1760 B: the entry is then formed before its reads,
+// `add edi, table`, but stays in EDI and the tag table moves to EDX). Body unchanged.
+// M3 lane 5 r208 (fast with 0x458d0, 0x45a80, 0x44720, 0x45560, all MATCH each run; control 430, difflib-aligned 215,
+// masked 126). Nothing kept. Aimed at the zero register (ours creates one in EBX ahead of the count test and uses it for
+// both tests and the count stores; retail tests with `test reg, reg`, and its zero starts at the count stores, in EDI,
+// where it also serves the view counter): the count test held in a named bool 430 (same code); the parts flag started
+// false and set under three nested tests 438; the active flag read into a named local ahead of the count test 430 (same
+// code); the query count named once with the bool count test 430 (same code); the count test as `!(count <= 0)` 430
+// (same code). Aimed at the byte both arms share at [esp + 0x1b]: one function-scope flag for the parts test and the
+// containment output 430 (same code); with the query data picked in two arms, each reading the geometry's +0x2c field,
+// `!parts` first, 456 (1763 B); the two-arm query data alone 456 (re-measured on this body). Reading: the zero is a
+// consequence, not the cause: retail gives EBX to the entry (until the node loop), ESI to the tag table (from the head
+// to the bottom arm) and EDI to the geometry (both arms; its home [esp + 0x20] is the slot the top arm reuses for the
+// query data), ours gives EDI to the entry, ESI to the state pointer and leaves EBX free for the zero. The `long` index
+// lead for 0x458d0/0x45a80 was not re-measured: their file was another lane's this round.
+// M3 lane 13 r122 (fast with 0x458d0/0x45a80/0x44720/0x44940/0x449e0/0x45560/0x460d0, all MATCH each time; control 430,
+// difflib-aligned 213/215): retail loads the tag table into ESI before the tag test (matched 0x458d0 and 0x45560 load it
+// inside the tag path), so 0x44e90 reads it once for both the lookup and the bottom arm; a table local read at the top
+// for the bottom arm is sunk to its one use (430, same code; 458 on the long-index lead). The query data through a
+// `byte *const &tree` bound to the geometry's +0x2c field (0x45560's spelling) as `parts ? tree + aligned size : tree`
+// 426 (1760 bytes, aligned 212/212: each arm reads the field, as retail, but the parts arm comes first), as `!parts ?`
+// 426 (aligned 209/209, the arm swap is match-only), with the field written out at each read 456 (1763 bytes), with an
+// if on `query_data = tree` 430 (same code); the first form on the long-index lead 489 (1792 bytes). Diagnostic: 1-12
+// dead initialised locals at the top 430 each (flat: the inlined plane transform's product order is no symbol-count
+// state here). The long-index lead re-measured 458 (1776 bytes).
+// M3 lane 3 r275 (fast with 0x458d0/0x45a80/0x165010/0x1428b0/0x2dd930 MATCH; control 430, difflib-aligned 215,
+// stack-masked 184): the query data as an if/else reading the field in each arm 449 (1760 B, aligned 217: the parts
+// bool is then threaded into the arms where retail re-tests its stack byte); as a ternary 449 (same code); the
+// plane copy as `planes[j].n = p.n;` 418 (1744 B) but aligned 253 and masked 230 (the inlined plane transform
+// loses retail's shape: not kept); the frustum base named before the +0x78 source 430 (same code); 0x1428b0's
+// loads ordered i, k, j (retail's inlined copy names k before j) 430 here and 0x1428b0 lost (16): restored. LEAD,
+// not keepable (a memory read moved ahead of calls): the bottom arm's visible-bits pointer read at the top of the
+// arm, before the node loop, as retail does ([ebx+0x14] read beside the tag) 397 (1778 B, aligned 193, masked 167).
+// M3 lane 1 r132 (fast with 0x458d0/0x45a80, both MATCH each time; control 430): ours already loads the tag table at the
+// top (ECX) but only for the tag path; retail keeps it in ESI to the bottom arm, keeps the entry in EBX in the outer
+// region (reloading it from its home after the frustum loop's call) and the geometry in EDI. A tag-table local read
+// before the geometry lookup and used by the bottom arm 430 (same code). Retail's bottom arm reads the tag, then the
+// visible-mask pointer (+0x14, stored to a home), then the object: the mask pointer read right after the tag, ahead of
+// the node loop, 397 (1778 B: the geometry then takes EDI as retail; a read moved past the loop's calls, match-only, the
+// lead); on 397: the tag-table local 397 (same code), the query data read in each arm (!parts first) 469, view_ranges
+// computed just before the view loop 479, the state pointer named for the views read and the active test 441 (1762 B,
+// the state then in EAX near retail's EDX; the early EBX zero remains). Diagnostic on 441: the geometry through a
+// pointer-taking copy of the lookup 417 (1776 B: the entry is formed first, `add ecx, table`, but stays in ECX).
+// M3 lane 11 r133 (fast with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH each run; control 430, difflib-aligned 267,
+// register-masked 195, frame-blind 129; body unchanged). LEAD, match-only, saved as build/r133/lead-0x44e90.patch: 396 at
+// retail's 1742 B and 456 lines, first difference +0x57, aligned 153, masked 108, frame-blind 55. Its parts, each on the one
+// before: the mask pointer read right after the tag in the bottom arm (lane 1 r132's form, 397; matched 0x45560 reads it
+// at the top of its bottom arm too); 0x45560's opening (`long index = entry_index;`, the geometry through a copy of the
+// pointer-taking lookup that src/unknown_044720.cpp keeps private, then `entry = &g_4ba138[index]`) 444 (the entry is then
+// formed by retail's `lea` from the scaled index; with `entry` formed first and passed 416); the query data as `byte *const
+// &tree` on the geometry's +0x2c field with an if/else, `!parts` first, 399 (each arm reads the field and the flag byte is
+// stored and re-read as retail; as a conditional expression 399, the same code); the four lists set up one list at a time
+// in the order second, first, third, fourth 399 (aligned 221, frame-blind 96: from here the whole head up to the list
+// setup is retail's instruction for instruction, entry in EBX, tag table in ESI from the entry block to the bottom arm,
+// geometry in EDI, state and views in EDX/ECX, `test` for the count and the active flag; only the homes differ); the part
+// centre in 0x142570's shape (x, y, z reals, `scale * x` under the test, rows up, left, forward, position) 396 (retail's
+// length; but an early zero returns in EAX for the count test, the active test and the four count stores, and the query
+// data's two arms share one store again); the list setup through a four-caller start helper (list, storage, capacity)
+// with the plane query declared ahead of it 396 (aligned 155: the capacities then come out as retail's two loads with a
+// register copy each, `mov esi, ecx` / `mov eax, edx`); the containment flag declared inside the visibility test 396
+// (aligned 153, frame-blind 55: its clear then sits after the scale compare as retail's).
+// On the way, not in the lead: the query data as a plain if/else with the field read in each arm 422 (the flag test is
+// then threaded away; with the flag read through a `bool const &` 422, with the field written out in the second arm 422,
+// `parts` arm first 429); the view counter declared ahead of four separate count stores 378 on the reference form but
+// with the head's registers gone again (first difference +0x17), 412 on the plain form; renaming the six dword locals
+// so their names sort in retail's slot order, and in the reverse order, 399 each (same code: names do not order these
+// homes); the frustum address as a pointer local with the planes at +0x78 399 (same code); the call arms `!parts` first
+// 399 (same code); the scale step as `x *= transform->scale` or `x = x * transform->scale` 396 (same code), with a named
+// scale 397 (458 lines); a named active flag 396 (same code); the view counter declared ahead of the list starts 400; the
+// plain two-arm query data on the lead 401; counts, starts and capacities grouped by field 396 (frame-blind 68). On this
+// body alone: the start helper in retail's order 457, in the present order 459.
+// Left on the lead: the early zero (retail makes its zero in EDI after the plane query's address, for the four count
+// stores and the view counter's home); the homes (retail, upward from +0x1c: view ranges, geometry and query data, inner
+// counter, view counter, views, entry at +0x30 below the plane copy; ours has the entry at +0x4c in the gap under the
+// planes and the others in another order); the frustum address in two `lea`s; the two call arms laid out separately with
+// their own pushes; the part loop's counter and bit (retail ESI/EBX, ours EBX/ESI) and its scale products (retail `x *
+// scale` in place with the scale held in XMM3, ours `scale * x` with a reload); the bottom arm's first reads.
+// M3 lane 4 r234 (fast; 0x44720, 0x44c90, 0x45560, 0x458d0 and 0x45a80 MATCH throughout; control 430): the pointer-taking
+// geometry lookup of src/unknown_044720.cpp moved into include/unknown_044e90.h and called here with the entry and its first
+// word 449 (1760 B); on that, the entry formed from a `long` copy of the index first 449, 0x45560's opening exactly (the
+// lookup on the indexed element, then the entry) 440 (1751 B), the same without the `long` copy 443; header and both files
+// restored. On main's body, the part centre in 0x142570's shape (x, y, z reals, `scale * x` under the test, rows up,
+// left, forward, position) 432 (1744 B, first difference +0x12). Retail keeps the tag table in ESI from the head to the
+// bottom arm and the entry in EBX; ours still loads the table into ECX for the lookup only.
+// M3 lane 1 r136 (fast with 0x458d0 and 0x45a80, both MATCH each run; control 430): the plane copy declared once at function
+// scope 430; the query aggregate declared ahead of the plane array and filled by two stores 430 (same code each); each plane
+// stored as an aggregate copy with d negated after it 431 (1767 B); the transform arm writing into the copy from the source
+// with an else-arm aggregate copy 440 (1760 B); the containment flag declared inside the visibility test 430 (same code).
+// Reading: retail's plane copy sits 8 bytes higher (+0x34, ours +0x2c) and the query count at +0x44 (ours +0x3c), with the
+// tag table held in ESI from the head to the bottom arm (ours in ECX). Body unchanged.
+// M3 lane 1 r141 (fast with 0x458d0, 0x45a80 and 0x1428b0, all MATCH each run; control 430 at 1751 B, aligned 267, register-
+// masked 129). New reading of the inner plane loop: the order in which the copy after the transform reads the plane's
+// components sets the XMM numbers of the inlined 0x1428b0 (its loads ahead of the scale test and its first sum's operand
+// sides) and the member the loop's output pointer is anchored on. Retail reads i, k, j (XMM4 / XMM5 / XMM6, the distance
+// sum as y * j + z * k), anchors the pointer on k (`lea edx, [esp + 0x58]`) and stores i, j, k, -d upward. LEADS, not
+// kept (statement order or one-use locals with no match): the copy written i, k, j, -d 427 (aligned 241, masked 122:
+// the whole inlined transform is then retail's instruction for instruction and the pointer is anchored on k; left in the
+// loop only the j and k stores in the other order); the components read into three locals in the order i, k, j and
+// stored i, j, k, -d 427 (aligned 243: retail's registers and store order, but the pointer anchored on j). Other
+// forms: the normal as an aggregate copy then d 418 (1744 B, aligned 336, masked 162: the copy goes through integer
+// registers and the transform loses retail's shape, as lane 1 r132 found; not kept); d first 430; k, j, i, -d 430
+// (aligned 275); d negated in the copy and the whole plane assigned 431; the normal through the existing vector3f_assign
+// then d 430 (aligned 274: arguments are read k, j, i, pointer anchored on k, stores i, j, k), with d stored first 430,
+// with the normal's own members as arguments 430; i, j, then d, then k 430; a named negated d ahead of the three
+// stores 430 (same code); a plane temporary filled i, j, k, -d or i, k, j, -d and assigned whole 464 / 461 (1783 B, each
+// member goes through the stack). Diagnostics, removed at once: the four reals through an SSE set intrinsic in
+// either argument order 446 / 446 (1767 B: built on the stack and copied with movaps), through the existing four-real
+// vector's set member 430 (as vector3f_assign), i stored and then j and k through a two-real setter 427 (pointer
+// anchored on i). Body unchanged.
+// M3 lane 11 r145 (H2M fast with 0x458d0 and 0x45a80, both MATCH each run; control 430): the geometry pointer bound to a
+// `byte *const &` and read through it 451; the entry pointer bound to an `s_44940_entry *const &` 430 (same code); a redundant
+// `if (0 < frustum count)` guard around the frustum loop 467 (1776 B); the plane stores through `query.planes[j]` 441 (1760 B,
+// first difference +0x7). The part centre through the existing transform4x3f_apply_point (0x142570) 633 (1539 B, a call);
+// with `inline` on 0x142570's definition as well (diagnostic) it is inlined here, 432 at 1744 B, but 0x1396c7 (48) and
+// 0x24e59f (42) then stop matching (retail calls it there), so 0x142570 stays out of line. Body unchanged.
+// M3 lane 12 r169 (h2m fast with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH; control 430): the geometry lookup
+// ahead of the entry pointer 430 (same code); the part-count test as `>= 1` (diagnostic of the EBX zero) 453 (1760 B); the
+// four list counts as separate stores 430 (same code); `view_ranges` computed inside the parts arm 451; the parts bit as
+// `(entry->unknown00 >> 12) & 1` 430 (same code). Retail keeps the tag table in ESI from above the tag test to the bottom
+// arm and has no function-level zero; ours loads the table into ECX for the lookup only and keeps a zero in EBX.
+// M3 lane 5 r229 (h2m fast with 0x458d0 and 0x45a80, both MATCH; control 430): the view ranges as a `short *` read by
+// element (`view_ranges[view + 1]`, `view_ranges[7 + view]`) 430; the bound index held in a `dword` 430; the geometry
+// count test as `0 < count` 430; the part loop test as `count > part` 430 (same code each); the part-centre scale test
+// as `1.0f != transform->scale` 436 (1755 B).
+// M3 lane 16 r170 (h2m fast with 0x458d0, 0x45a80, 0x44720, 0x45560, 0x1428b0, all MATCH; control 430): the query data as
+// a plain if/else with the field read in each arm, `!parts` first (retail's fall-through arm) 456 (1763 B, first +0x12),
+// `parts` first 449 (1760 B); the geometry lookup ahead of the entry pointer 430 (same code); the bottom arm's node transforms
+// named once from the tag 436 (1749 B); the visibility word as a `dword *` formed once per part for the test and the set 430
+// (same code).
+// M3 lane 16 r180 (H2M_FAST with 0x458d0, MATCH each run; control 430): the plane copy written i, k, j 427 (re-measured,
+// lane 1 r141's form); the plane local declared ahead of the plane loop and assigned in it 430 (same code); the frustum index
+// as `short` 440 (1760 B); the view counter as `short` 455 (1760 B); the copy through a `plane3f &` to the element 430 (same
+// code); the transform reading the frustum plane straight into the local with the copy in an else arm 440 (1760 B, aligned
+// 339). Body unchanged.
+// M3 lane 5 r239 (H2M_FAST with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH; control 430): the shared geometry
+// lookup reading the tag table into a local ahead of its tag test (retail's hoisted ESI load) 430 (same code: the load
+// still sinks into the arm; header restored); the four index pointers set second, first, third, fourth 430 (same code);
+// each list set up whole in that order 457 (1760 B); the plane copy as a `for` with `++j, ++source` 2599 (3481 B: a
+// constant-count `for` is unrolled, the do-while is what keeps retail's loop), as a `for` over `source[j]` 2599.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
     s_visibility_query_workspace workspace;
     s_44940_entry *entry = &g_4ba138[entry_index];
-    s_tag_instance *tags = g_4e3b44;
-    dword flags = entry->flags;
-    byte *geometry;
-    if (entry->tag != NONE)
-    {
-        byte *definition = tags[entry->tag & 0xffff].bytes;
-        byte *sections = *(byte **)(definition + 0x28);
-        geometry = *(byte **)(sections + ((flags >> 9) & 0x1ff) * 0x5c + 0x34);
-    }
-    else
-    {
-        byte *section;
-        if (!((entry->unknown00 >> 12) & 1))
-            section = *(byte **)((byte *)g_4e0348 + 0xa0) + ((flags >> 9) & 0x1ff) * 0xb0;
-        else
-        {
-            byte *instances = *(byte **)((byte *)g_4e0348 + 0x144);
-            short index = *(short *)(instances + ((flags >> 18) & 0x7ff) * 0x58 + 0x34);
-            section = *(byte **)((byte *)g_4e0348 + 0x13c) + index * 0xc8;
-        }
-        geometry = *(byte **)(section + 0x50);
-    }
+    byte *geometry = visible_entry_geometry(entry_index);
     byte *views = *(byte **)g_4c0b78.state->unknown00;
     byte *view_ranges = views + section_index * 0x1a + 0xa6e;
     if (*(long *)(geometry + 0x30) > 0) {
@@ -499,7 +714,7 @@ void __stdcall function_44e90(short entry_index, short section_index)
         release_visibility_list(&workspace.first.list);
         release_visibility_list(&workspace.second.list);
     } else {
-        byte *tag = tags[entry->tag & 0xffff].bytes;
+        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
         long object_index = **(long **)entry->unknown10;
         byte *object = (byte *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
         long node_count = *(short *)(object + 0x114) / sizeof(transform4x3f);

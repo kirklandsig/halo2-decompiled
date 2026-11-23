@@ -23,6 +23,12 @@ struct s_sector_edge
 	word sectors[2];
 };
 
+struct plane2f
+{
+	vector2f n;
+	real d;
+};
+
 static inline real dot_product2d(point3f const *point, vector2f const *vector)
 {
 	return point->x * vector->i + point->y * vector->j;
@@ -126,7 +132,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
-// score 244 (was 244): earlier 410; the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
+// score 244 (was 244): The return and first-edge bytes use exchanged slots, and the two cutoffs miss retail's shared tail.
+// Earlier 410; the held 34 form (see below) with its two goto exits written as breaks.
 // MiniMax G (11-12): no new form, no lower score (244); a plane2f line with the cross written out gives retail's normal/offset homes but grows the body to 1612 bytes (300), and the two-level exits reach the shared tail only through the held form's goto, which is match-only.
 // MiniMax G (11-11): no new form, no lower score (244); retail gives the function scope locals the lower homes and the
 // inner scope ones the higher (the current sector 0x30, the line distance 0x34, the success flag 0x0e, the first-edge
@@ -589,6 +596,146 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // or shared-tail repair; original count test, edge/query observations and complete traversal restored.
 // MiniMax E (11-15): no new form, no lower score (244): the permuter over the body found nothing lower, and the goto form
 // that reaches 32 needs a goto, which is kept only with a byte match.
+// P571: Actual backward-progress rejection/admission result, bool/byte/short/long:
+// 244/244/244/244/244/244/244/244. NOT kept: no exact byte/line/sector-home or shared-tail repair. Original
+// progress comparison, traversal, helpers and complete body restored.
+// b7C (11-17) walk against retail, fast build on r829: statement-by-statement walk of all 1605 bytes, no behaviour
+// difference found, source unchanged, score stays 244 (fast; 1593 bytes against retail's 1605). Checked: the entry
+// guard order (pathfinding null 0x26c5e3, sector == target 0x26c5e9, sector >= 0 0x26c5f3, sector < node count
+// 0x26c5fb) and the result stores (FLT_MAX 0x44aed4 at 0x26c5ae, -0.1f 0x445630 as last_distance at 0x26c5dd); the
+// cross (0x26c611-0x26c63d) and that normal.k is never stored or rounded, only squared on the x87 stack
+// (0x26c63f-0x26c641, ours the same); the magnitude test against the double 1e-5 (0x45e138, 0x26c659-0x26c665: proceeds
+// when magnitude > 1e-5); the sector loop (previous := current 0x26c6d4, node flag 0x10 at 0x26c6dd, first := 1 at
+// 0x26c6e1, next := NONE 0x26c6ea, the unknown1c/unknown20 admission with the edge flag byte [edge+5] & 2 = 0x200 at
+// 0x26c6f6-0x26c70a, target exit 0x26c70f); the two 2-D dots (y*normal.j + x*normal.i, minus the line distance in
+// float, 0x26c7bc-0x26c7da, 0x26c812-0x26c827, 0x26c864-0x26c86c), the first-edge arm (forward picks vertices[1], else
+// vertices[0], at 0x26c7f3-0x26c806, first := 0 at 0x26c82b) and the carried distance1/point1 arm (0x26c832); the
+// call's argument order and register arguments (edx pathfinding 0x26c89f, edi origin 0x26c89d, cl forward 0x26c893);
+// the hit test (blocked || next != previous else hit := 0, 0x26c8b2-0x26c8bd); the doubles -0.1 (0x45e130, 0x26c8e7),
+// 0.0001 (0x45def8, 0x26c914) and 0.01 (0x45ddb0, 0x26c9b2), each compared in the direction ours uses, with word
+// compares of count at 0x26c8f3 (> 0) and 0x26c957 (> 200) then `inc dword` at 0x26c964; last_distance :=
+// result->distance before the 0.0001 test (0x26c90e); the three over-distance tails (0x26c9a8 sector := next, 0x26ca22
+// distance 0 and blocked, 0x26ca86 neither) and the target/NONE test order (0x26c98e-0x26c9a4); the blocked exit
+// (0x26cae7 returns true, no stores), the location exit (flag byte & 0x80 at 0x26c93f, 0x270600 called with edx
+// location and ebx the iterator's edge word 0x26c941-0x26c946, then blocked := 1 and return true at 0x26caf2); the
+// no-edge and no-hit tails (0x26cb76, 0x26cb72, blocked := 1, sector := current, return true); the final tail
+// (0x26cb14, sector := current, blocked := 0). Retail's xmm0 holds `distance` at every tail entry, reloaded at
+// 0x26c96a, so no register-passed value differs. The only non-register differences are the ones already listed:
+// retail's success byte is written only at entry (0x26c5bc) and at 0x26cb08, the two-level exits (0x26c8f9, 0x26c95e
+// both jump to 0x26caff) reach the final tail without testing hit, and the magnitude sums k, j, i (0x26c643-0x26c655)
+// where ours sums k, i, j in the private helper, which only moves an x87 extended-precision rounding before a 1e-5
+// test. Helper rule: the private dot_product2d (point, vector), magnitude3d and function_x697631 are not written-out
+// bodies of a shared helper that this file may include (magnitude3d's shared form needs slot_handler.h, a new include;
+// recorded above at 244); no new local, helper, double or include.
+// One accepted-edge break, cutoff/advance first 244/244; qualified hit and
+// narrowed raw hit 413/469; qualified hit with either shared break 413/413;
+// edge exhaustion with original/shared break 386/386. NOT kept: ties or
+// regressions. Success/first-byte homes and the common final tail still differ.
+// M3 lane 17 r45 (fast with the file's other functions and 0x15f3a0, all MATCH throughout; control 244; goto form = the held form
+// rebuilt on this body with lane 2 r82's tail orders, 32 at 1605 B, the held form itself 34). On the goto form: the line as one
+// 12-byte aggregate, written as a local plane type {vector2f n; real d} or as a vector3f whose i, j hold the planar normal (copied
+// through the planar view) and whose k holds the offset, 304 at 1612 B each (the same code: nested or flat makes no difference). On
+// either, the slots are retail's (previous sector 0x30, normal 0x34/0x38, offset 0x3c) and the cross's row j then loads direction.i
+// first as retail does, but the magnitude still sums k, i, j, the three loop registers stay normal j, normal i, offset (retail:
+// offset, normal j, normal i, the descending order of the aggregate's fields) and the second distance loads point1.x instead of
+// multiplying normal i in place. The vector3f line with its normal copied by members 390 (1593 B); the line as a copy of the whole
+// normal with k then overwritten by the offset 393 (1621 B). A compile-only screen (no LTCG) is not usable here: its
+// floating-point stream is 130 lines from the fast build of the same source. Retail's exit block is laid out as: the two
+// two-level exits enter at 0x26caff (reload distance, success = 0), the four entry guards at 0x26cb0d (reload direction), the
+// failed magnitude test and the loop's own exit at 0x26cb14, so only the two-level exits run the success store. Body unchanged.
+// Initial-point availability 245; shared planar dot 244; typed sector edge 244; staged
+// magnitude 262; iterator-loop rejection guards 244; conditional hit acceptance 336;
+// shared terminal point addition 244; combined blocked-result exit 493.
+// NOT kept: ties or regressions. Success and first-boundary homes still differ.
+// First-edge and return-byte role names 244/244, return initialization alongside
+// the first blocked store 383, first-edge initialization at sector selection 245,
+// carried endpoint arm first 262, separate location query guard 244. Target
+// selection stored into the return byte 236 (NOT kept: conditional flag and
+// earlier true return materialization than retail). Failed edge test supplies the
+// no-hit result 237 (NOT kept: seven-point gain and wider length gap).
+// Dedicated carried endpoint/distance/both 522/390/537. Iterator first-edge
+// identity alone/with endpoint/with distance/with both 336/279/398/392.
+// Nullable carried endpoint with dedicated distance 348. Success and first-edge
+// stack homes and the common progress/limit finalization still differ.
+// The success and first-edge byte homes and the shared cutoff finalizer still differ. Tried: for-loop edge
+// retrieval 244; continue on rejected edge 244; shared cutoff 202; shared cutoff with rejection continues 202;
+// loop-scoped next sector with and without shared cutoff 202/244; positive endpoint state with and without
+// shared cutoff 203/245. NOT kept: shared cutoff still tests hit and next sector at the shared exit and
+// shortens from 1593 to 1588 bytes. Accepted crossing processed after the edge scan 483.
+// Counting at the outer-loop boundary leaves the return and first-edge byte homes exchanged.
+// Post-scan increment and outer for increment 231/231, for-owned count 270; zero-based visit
+// number before iterator setup or at sector entry 364/198; loop-carried previous sector
+// after the scan or in the for increment 384/384; history with post-scan count 362.
+// NOT kept: the lower scores shorten the body further, and the entry-count form changes the prologue.
+// M3 lane 10 r119 (fast; all on the held goto form rebuilt from this body, re-measured 34 at 1605 B): tail C stored
+// blocked, edge, distance without its `success = false;` 60 (1607 B: success moves to a high stack home); the line
+// offset from `(vector2f const *)&normal` after the planar copy 359; `while (next_sector_index != NONE)` 34 (same code);
+// the planar normal declared, then assigned 34 (same code); normal and offset as one vector3f line (`.k` the offset)
+// 304 at 1612 B (as plane2f). Reading: in both builds XMM1/XMM2/XMM3 reload from the +0x3c/+0x38/lowest homes, so the
+// XMM rotation and the line/previous-sector slot swap are one difference. Body unchanged.
+// Direction indexes the vertex pair in the previous-surface case 294, ordinary
+// first-edge case 527, or both 337. Previous edge recorded after count 406, at
+// crossing classification 400, or after no-hit handling 341. Common departing
+// endpoint 660, common entering and departing endpoints 648. The after-scan
+// edge reaches retail length with the same byte-slot difference. The original
+// body retains the first-edge and success bytes in the exchanged homes.
+// First-edge clear after the pair or at the endpoint 254/473; preserve the
+// first state across surface edges 450; positive carried-endpoint state
+// 245, set after the pair 254; combined acceptance with rejection arm 407;
+// cap and increment with a common break 208; ordinary edge count 354;
+// hit initialized after the first fetch 244. NOT kept: the 208 form leaves
+// the swapped byte homes and widens the length gap to 17 bytes.
+// Traversal-local distance history alone or with edge history, crossing count, or both:
+// inside the admitted path 261/410/384/431; inside the projected line 289/289/290/424.
+// NOT kept: each changes allocation before the return-byte initialization. Moving both
+// histories and the count also risks the matched callers.
+// The success and first-edge bytes still occupy exchanged homes. The two cutoff exits still differ.
+// Tried shared result read at the sole return 566; direct result reads at the existing terminal branches 565;
+// constant return for each distance overrun 434; blocked field return for each distance overrun 559;
+// common clear-distance tail with the result local 335; common clear-distance tail with direct returns 480;
+// terminal blocked branch returns true directly 387; terminal blocked branches return the field directly 386.
+// NOT kept: The merged tail shortens the body and leaves its flag placements. The direct returns move the opening zero register.
+// M3 lane 16 r137 (fast with 0x26c380; control 244): the up-vector global read into a named pointer at entry 430
+// (1616 B); the magnitude test as `1e-5 < magnitude3d(...)` 244, the line distance's dot with its operands swapped 244,
+// `normal` declared at function scope 244, `line_distance` declared ahead of the planar normal 244 (all the same code).
+// Edge exhaustion as the crossing outcome with while, for, or early rejection
+// 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
+// and prior-crossing edges with while, for, or early rejection 382/382/382.
+// NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// Nested node or marker gate 244/244; marker first 310; predecessor before node 315;
+// predecessor veto after node admission 297, early predecessor eligibility 392;
+// first-edge or first-edge/hit initialization after the target test 265/265.
+// The two byte homes stay exchanged. Nested transition guards reproduce the opening code.
+// Return default after sector clear, both index clears, requested distance,
+// transition distance, all output defaults or both distance defaults:
+// 386/387/388/388/389/390. False result before/after unobstructed finalization
+// 385/386. NOT kept: the two byte homes and shared cutoff tail remain different.
+// M3 lane 5 r200 (fast with 0x26c380 and 0x270600, both MATCH; control 244): `success = false;` before each cutoff's
+// `next_sector_index = NONE; break;` 229 at retail's 1605 B (not kept: success is already false there, a redundant store; but
+// retail stores it too: `mov byte ptr [esp + 0xe], 0` at 0x26cb08 is reached only from the two cutoffs, so retail's cutoff
+// source assigns success; ours emits the store but returns to the loop tests rather than jumping into the tail); each cutoff
+// writing the clear-result tail with `success = false; goto done;` 696 (1302 B); the up cross through cross3f_staged 244 (same
+// code); a `stop` flag tested after the edge loop 374 (1613 B); the redundant store with the post-loop test as `!edge` 437.
+// Trace success and first edge or either order 305/305. Per-sector first edge and crossing or
+// either order 305/305. Trace success and crossing or either order 305/305. All three with
+// success or first edge first 363/363. NOT kept: the paired records move the result byte outside
+// its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// Inverted clear-path result 412; result initialized after trace fields 389; paired obstruction
+// publication 419; hit-conditioned scan 451; first flag after target check 265; combined crossing
+// result 413; per-edge vertex base 608; nested pathfinding guard 244. The nested guard preserves
+// the opening code. The two byte homes and shared cutoff exit still differ.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build: 1 row; aligned rows against retail,
+// this body 109, the held goto form 43 = positional 34): on the goto form, the up cross written out member by member
+// (diagnostic only: a helper body by hand) 41, the cross's row j and the magnitude's sum order then retail's but row i's
+// subtracted product loads the direction first; the same with row j's products written operand-swapped either way 41
+// (identical: the text order of the products is ignored). Body unchanged.
+// Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
+// byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
+// at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
+// Matched in a full build with stand-in SDK headers (was 244): see the pull request for the table of retail address
+// against source change. In short: the two count exits leave by `goto finish` with success false, the first-edge
+// distance is one dot product after the forward arms, the line is a plane2f struct, the magnitude test is written
+// out, and two reference-bound locals on &iterator and two one-use locals set the operand order of the products.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
@@ -612,10 +759,12 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 		vector3f normal;
 
 		cross3f(g_4687b0, direction, &normal);
-		if (magnitude3d(&normal) > 1e-5)
+		if ((real)sqrt(normal.i * normal.i + normal.j * normal.j + normal.k * normal.k) > 1e-5)
 		{
-			vector2f line_normal = *(vector2f const *)&normal;
-			real line_distance = dot_product2d(origin, &line_normal);
+			plane2f line;
+
+			line.n = *(vector2f const *)&normal;
+			line.d = dot_product2d(origin, &line.n);
 			long next_sector_index = sector_index;
 
 			while (NONE != next_sector_index)
@@ -629,7 +778,9 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 
 				current_sector_index = next_sector_index;
 				next_sector_index = NONE;
-				if (!(pathfinding->nodes[current_sector_index].flags & 0x10) && !result->unknown1c &&
+				s_pathfinding_node const *current_sector = &pathfinding->nodes[current_sector_index];
+
+				if (!(current_sector->flags & 0x10) && !result->unknown1c &&
 					(edge == 0 || (((s_sector_edge const *)edge)->flags & 0x200)))
 				{
 					result->unknown1c = true;
@@ -640,17 +791,20 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					break;
 				}
 				edge_iterator_new(&iterator, pathfinding, current_sector_index, true);
-				edge = function_1fa720(&iterator);
+				s_edge_iterator *first_iterator = &iterator;
+				s_edge_iterator *const &kept_first = first_iterator;
+				edge = function_1fa720(kept_first);
 				while (edge)
 				{
 					bool forward = iterator.forward;
 					point3f const *point0;
 					real distance0;
 
-					if (iterator.previous_surface_index != NONE)
+					long previous_surface_index = iterator.previous_surface_index;
+
+					if (previous_surface_index != NONE)
 					{
-						long tmp3 = iterator.vertex;
-						point1 = &pathfinding->vertices[tmp3];
+						point1 = &pathfinding->vertices[iterator.vertex];
 						{
 							long entry_vertex;
 
@@ -660,8 +814,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								entry_vertex = edge->vertices[0];
 							point0 = &pathfinding->vertices[entry_vertex];
 						}
-						distance0 = dot_product2d(point0, &line_normal) - line_distance;
-						distance1 = dot_product2d(point1, &line_normal) - line_distance;
+						distance0 = dot_product2d(point0, &line.n) - line.d;
+						distance1 = dot_product2d(point1, &line.n) - line.d;
 					}
 					else
 					{
@@ -670,14 +824,12 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							if (forward)
 							{
 								point0 = &pathfinding->vertices[edge->vertices[1]];
-								distance0 = dot_product2d(point0, &line_normal);
 							}
 							else
 							{
 								point0 = &pathfinding->vertices[edge->vertices[0]];
-								distance0 = dot_product2d(point0, &line_normal);
 							}
-							distance0 -= line_distance;
+							distance0 = dot_product2d(point0, &line.n) - line.d;
 							first = false;
 						}
 						else
@@ -686,7 +838,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							point0 = point1;
 						}
 						point1 = &pathfinding->vertices[iterator.vertex];
-						distance1 = dot_product2d(point1, &line_normal) - line_distance;
+						distance1 = dot_product2d(point1, &line.n) - line.d;
 					}
 					hit = function_26c380(pathfinding, origin, forward, current_sector_index, iterator.edge_index,
 						direction, &next_sector_index, distance0, distance1, point0, point1, result);
@@ -696,8 +848,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 						{
 							if (result->distance - last_distance < -0.1 && count > 0)
 							{
-								next_sector_index = NONE;
-								break;
+								success = false;
+								goto finish;
 							}
 							last_distance = result->distance;
 							if (result->distance - distance > 0.0001)
@@ -706,8 +858,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								{
 									if (next_sector_index == target_sector_index && result->distance - distance < 0.01)
 									{
-										result->sector_index = next_sector_index;
 										result->blocked = false;
+										result->sector_index = next_sector_index;
 										result->edge_index = (word)NONE;
 										result->distance = distance;
 										function_x697631(origin, direction, distance, &result->point);
@@ -727,8 +879,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								else
 								{
 									result->blocked = false;
-									result->distance = distance;
 									result->edge_index = (word)NONE;
+									result->distance = distance;
 									function_x697631(origin, direction, distance, &result->point);
 									success = false;
 									goto done;
@@ -747,15 +899,17 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							}
 							if (count > 200)
 							{
-								next_sector_index = NONE;
-								break;
+								success = false;
+								goto finish;
 							}
 							++count;
 							break;
 						}
 						hit = false;
 					}
-					edge = function_1fa720(&iterator);
+					s_edge_iterator *iterator_pointer = &iterator;
+					s_edge_iterator *const &kept_iterator = iterator_pointer;
+					edge = function_1fa720(kept_iterator);
 				}
 				if (!hit)
 				{
@@ -770,6 +924,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 			}
 		}
 	}
+finish:
 	result->blocked = false;
 	result->edge_index = (word)NONE;
 	result->sector_index = current_sector_index;

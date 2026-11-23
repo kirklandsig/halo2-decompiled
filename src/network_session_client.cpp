@@ -830,6 +830,215 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // existing get_value_49c8() getter 142 (503 bytes, session ESI, both callers lost); `if (session->state != 5) return false;`
 // with `return true;` at the end 142 (a second epilogue for the early return); the machine mask in a named local 22 (same
 // code); a walked output pointer in the copy countdown 26; a member base pointer for the copy source 22 (same code).
+// Round 168 (m3 lane 7, fast with the inlined callees and both callers; control 22): the build block (summary, buffers,
+// copy, player loop, set_data_4f24) as a `__forceinline` helper taking the session 218 (361 bytes: the two address
+// tests fold away), as a plain `inline` helper 530 (kept out of line); the opening as a `stored` bool set from the flag
+// and the two addresses 218 (361 bytes); the tail's 0x5dd0 test ahead of the live test 29; the address copy through
+// walked member and address pointers 102 (477 bytes). Both callers are lost in the 218 and 530 forms.
+// Round 102 (m3 lane 14, fast with 0x6e500 and 0x72700): diagnostic probes (a global load and store, reverted): between
+// the opening test and the summary getter (before or after the variant) the summary and mask temporaries take retail's
+// registers; at the top, before the opening or after the summary they do not, so one expression temporary is missing
+// there. Forms: the two stored addresses named before the three-test opening 22 (same code); the preset pair with the
+// variant between the pair and its test 152 (495 B, session ESI); the summary's result named before its cast 22; the
+// machine copy through memcpy 22; the copy loop as `while (members_remaining-- > 0)` with its own index and no guard 100
+// (477 B: session EBX, callers match, the copy loop and its spill are retail's; left the opening lea, the summary/mask
+// rotation, the folded mask read and the player loop's argument temporaries); that loop with the preset pair 108 (every
+// instruction up to the player loop retail's but the session ESI, both callers lost), with the variant before the pair
+// 108, plus a members base pointer 108, a players base pointer 109, walked member and address pointers 110.
+// M3 lane 8 r177 (fast with 0x6e910, 0x5c5c0 and both callers; control 22; aimed at the missing scratch temporary
+// between the opening and the summary): the variant through a new inline accessor returning `session->data4db0` 22;
+// the opening's two addresses through new inline accessors 22; the summary through a reference to a named result 22
+// (all three the same code: address accessors fold before allocation); the summary through a new inline wrapper of
+// get_data_4a00 154 (461 B, the getter stays a call; both callers lost); a plain `for` copy loop over a member count
+// bound through a `long &` 100 (477 B, both callers kept).
+// Round 194 (m3 lane 5, fast with 0x6e500 and 0x72700; control 22): the preset NULL pair set under the flag 46 (session
+// ESI, both callers lost); on it the call's 0x49c8 value through a new inline accessor 46 and the mask test through a
+// new inline `session_player_present(session, index)` 46 (accessor copies are propagated before the ranking); a const
+// preset pair with the variant named after the summary getter 46; the three-test opening on the arrays
+// (`!session->data4f24.data`) 22 (same code).
+// Round 138 (m3 lane 12, fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22): as a member of the session class
+// (`this` the session, the header declaration moved into the class, both calls `a->function_06e720()`) 22 (same
+// code: the session stays EBX), the member with the preset stored pair 46 (session ESI, both callers lost), so the
+// `this` symbol does not break the tie; on the preset pair with the `while (remaining-- > 0)` copy (108, 477 B): the
+// pair as two flag ternaries 147 (493 B, session EBX, callers match), a redundant `if (0 < member_count)` around the
+// copy 108, the variant passed straight as `session->data4db0` 108 (both the same code).
+// Round 198 (m3 lane 5, fast with the inlined callees and both callers; control 22): a hand countdown over walked
+// address and member pointers with the count declared last (`*address = ...; member++; address++;`) 102 (477 bytes: the
+// count spill follows the two leas as in retail, the mask read folds, callers match), the same on the preset pair 109
+// (session ESI, both callers lost); the stored pair through a new inline getter returning bool with the outputs set only
+// under the flag 46, with a `for` copy 108 (the preset pair's code in both); the variant through a new inline accessor
+// with the live-state test (0x6ec80's idiom) before the summary getter 22 (same code), with a `for` copy 100.
+// Compile-only screens (build/r198): the fold goes with the copy loop's scratch registers, not its spelling. Every copy
+// loop that ends with retail's registers (output EDX, source EAX, count ECX: `for`, `while`, the walked countdown above)
+// folds the player loop's mask read; the ones that end otherwise (the countdown on main with the output in ECX, the
+// walked countdown with `address++` before `member++` and the output in EAX, `*address++ = ...`) keep it unfolded; a
+// 16-trip or deleted copy loop keeps it unfolded with the session in ESI. Player-loop spellings on the `for` copy
+// (do-while, `!= 0`, `1u`, an explicit continue, the slot test first, a player reference, plain `i` for the team
+// argument) all fold; the variant accessor after the summary, before the count or between the loops gives ESI. So
+// retail's unfolded read after its own copy registers needs one more scratch temporary between the copy loop and the
+// mask test than any of these forms creates.
+// Round 200 (m3 lane 5, fast with both callers; control 22): the 0x49c8 value named before the player loop on this body
+// 130 (493 bytes); a named player pointer for the test and the call 25 (the loop step moves to ECX); the copy counters
+// declared count first 22, a const reference to the copy source 22, the variant at the top of the state block 22 (all
+// the same code).
+// Round 202 (m3 lane 5, fast with 0x6e500, 0x72700, 0x5b080, 0x6d380, 0x5c5c0 and 0x6e910; control 22): the inlined
+// summary getter 0x5b080 with its state read once into a local 22, with its two tests merged into one `&&` 22 (both the
+// same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
+// 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
+// buffer clears swapped 26; the player buffer declared and cleared first 26.
+// M3 lane 5 r207 (fast with 0x6e500 and 0x72700; control 22): the preset stored pair under the flag alone 46 (re-measured
+// with the live test 46): register-masked it is retail but for one line, the copy loop's count spill ahead of the two
+// leas, and the callee-saved permutation (ours session ESI, index EDI, player pointer EBX; retail index ESI, pointer EDI,
+// session EBX); 1-7 dead initialised locals on that form 46 each (not a symbol-count tie); the pair set in both arms of
+// the flag test 46; the opening's condition held in a named bool 218 (361 B: the address tests fold inside `&&`); the
+// pair as two flag ternaries on the countdown copy 156 (499 B, callers match); the variant named between the pair and
+// its test with the summary inside 152 (495 B).
+// Round 116 (m3 lane 13, fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22): the NULL-preset stored pair with a
+// `const dword *` mask pointer named before the summary 46, with the member count read above the pair 136, with the
+// summary fetched above the pair 55, with the variant and the summary above the pair 55; the summary fetched above the
+// three-test opening with the variant after it 59 (session ESI and both callers lost in each). Re-measured: the variant
+// and the summary above the opening 32. Compile-only first pass (lane 5's round 175 harness): a 0-16 dead-local sweep on
+// the preset pair keeps ESI, and mask or 0x49c8 pointer locals named before the summary are propagated back (ESI), so
+// the preset pair's flip is a ranking change, not a symbol-count tie.
+// M3 lane 11 r129 (fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22), aimed at retail's second opening `lea`
+// placed ahead of the first branch: the two stored addresses passed to a new inline presence test taking both pointers
+// 22, the same test in result style 22 (the address arguments fold before allocation, same code), the flag and both
+// addresses through one such test 218 (361 bytes, both callers lost); the member count read ahead of the variant and the
+// summary 126; the copy's output pointer declared with the machine buffer ahead of the summary 22 (same code).
+// M3 lane 5 r210 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22, register-masked 2): the two buffers declared
+// at function scope 22 (same code); the NULL-preset stored pair in the state block re-measured 46 (masked 1, session ESI),
+// with a plain `for` copy 108; the plain `for` copy alone 100 (477 B: its copy loop is then retail's exactly with the
+// session in EBX; left one scratch step at the summary lea, at the player loop's mask/bit and argument temporaries and at
+// the final players lea, plus the folded mask read and the opening's second lea), with the mask read into a loop local
+// 100 (same code); a 600 s permuter run (context 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; without the callee
+// contexts its reduced image scores the body 137) 58 tries, best 22.
+// M3 lane 13 r125 (fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22; the NULL-preset stored pair 46, aligned 51,
+// register-masked 2): on the preset pair, the player loop's index renamed `player_index` 46, the copy index `member_index`
+// 46, the pair renamed to sort first or last 46/46 (names do not move the session register); the member count bound by
+// `long const &` 46; the slot test ahead of the mask test 59 (479 B). The opening as an out-parameter getter in this
+// class's getter idiom (state range test, then the flag, the two addresses stored through the out pointers, bool result),
+// called as `!get(&machines, &players) || !machines || !players` 46, with a NULL preset and the result ignored 46, with
+// the live-state inline for the range test 46, without the range test 46 (the folded range test does not move it).
+// M3 lane 16 r158 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22), no-code forms aimed at the scratch
+// rotation, each 22 (same code): the member count through a new trivial inline accessor; the machine mask through a
+// new inline `(1 << count) - 1` helper; the mask stored through a new inline setter taking the machine buffer; the
+// summary argument through a trivial inline identity; the summary passed through a `const &` to it; the copy
+// countdown started from a `long const &` to the member count.
+// M3 lane 8 r204 (fast with 0x6e500 and 0x72700; control 22): the summary read directly under its flag (the getter's body
+// without its folded range test) 22 (same code), with a plain `for` copy 100; the opening's two addresses through two
+// one-address inline getters in 0x5b080's shape (result preset 0, range test, flag, address) tested as `!first() ||
+// !second()` 48 (483 B: the second flag test folds and the summary lea and mask temp take retail's EAX/EDX, but the second
+// lea stays after the je and the session moves to ESI; both callers lost), with a `for` copy 110 (477 B), without the range
+// test 48, with session_state_is_live() as the range test 48; on that getter opening the variant named at nine positions
+// (top, state block, after the summary, the buffers, the clears, the count, the mask store, the address pointer) 48 each.
+// The player loop through a copy of src/unknown_054fe0.cpp's present-player getter (pointer or NULL from the mask, then
+// `player && player->unknown14 != NONE`, the call taking `player`) 110 (487 B), with a `for` copy 98 (483 B), on the getter
+// opening 117 (487 B), on the getter opening with a `for` copy 107 (callers lost on the getter opening only).
+// M3 lane 14 r127 (fast with 0x6e500 and 0x72700; control 22): a redundant `result = false;` at the top of the state arm
+// 22; the opening as `!(flag && &machines && &players)` 22; the NULL-preset pair declared at the function top ahead of
+// `result` 46; on the preset pair the first pointer read through a `const &` bound to it 46; the variant as a
+// `const byte *const &` bound to the field 22 (the 22s the same code; both callers lost in each 46).
+// M3 lane 6 r215 (fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22): on the NULL-preset stored pair (re-measured
+// 46: register-masked 2, the opening, the summary lea and every scratch register retail's, the session in ESI so both
+// callers lost): the pair assigned players first 46; preset in an else arm instead of the initialisers 46 (both the same
+// code); the 0x49c8 argument through the class's existing getter 136 (503 B: its range test re-reads the state in the
+// loop); the variant read at the call with no local 49; a named player pointer for the test and the call 49 (the session
+// stays in ESI in each). On the current body the scratch registers follow the opening: once the second address is formed
+// in the first test's block (as retail and the pair form do), the rest of the rotation is retail's.
+// M3 lane 8 r209 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22): the variant preset to 0 and set
+// under SESSION_STATE_IS_LIVE (0x64d70's in-place spelling) 22 (same code); the mask from the field with the member count
+// read after it 22; the member count read ahead of the two clears 124; the countdown started from the field 22; the
+// output pointer named ahead of the mask store 22 (all the 22s the same code).
+// M3 lane 8 r211 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22). LEADS, not kept (both need a parameter
+// of 0x6e910 that its body never reads, and neither matches): (1) the plain `for` copy (100, 477 B: its copy loop is retail's)
+// plus one more parameter of 0x6e910 fed `session->player_mask` 8 at 483 B, 0x6e910 and both callers matched: the link
+// drops the unread argument, but the mask then has two uses in the loop body, so its read stays unfolded as in retail
+// (`mov eax, [ebx + 0x111c]` ... `test eax, edx`), and the call's temporaries and the last players lea follow; left are
+// the opening's second lea after the je and the summary lea / mask temp one scratch step off (build/r211/
+// lead-6e720-8.patch). (2) That with the NULL-preset stored pair 36: every instruction is retail's but for the
+// callee-saved permutation (ours session ESI, index EDI, player pointer EBX; retail EBX, ESI, EDI; both callers lost;
+// build/r211/lead-6e720-36.patch); without the tail's live block the same form keeps the session in EBX with everything
+// up to the tail retail's (diagnostic, 321 B), so the session and the loop index are one use-count step apart.
+// On (1): the unread parameter fed the index 22 or the session 22 on main's countdown copy (a dropped argument does not
+// move the ranking); also fed `&session->data4f24`, `&session->data4f90` or both 8 (an address is not hoisted by a second
+// use); the mask through a new inline accessor 100, the bit through a new inline 100, the test through a new inline (mask,
+// index) 100, `(1 << i) & mask` 100; a second mask test through a pointer-or-NULL getter at the call 100, as the test 98,
+// at all three places 98, at the unknown14 read 100 (inline second uses fold before they count); a getter local for the
+// test and the call 98 (483 B, a null test of its own). Openings on (1): only the second address named under the flag
+// with the flag tested again (`if (flag) players = &...; if (!flag || !&machines || !players)`) 134 (session EBX, callers
+// matched: retail but for an `xor ecx, ecx` preset and the summary lea in ECX), without the mask parameter 74 (477 B);
+// the same for the first address 134; that local declared bare 149 (495 B); both addresses named unconditionally 8, with a
+// named flag 8, in a `stored` bool set inside the flag arm 8, through a named base pointer to the flag byte 8 (all
+// propagated: main's opening); the pair in an if/else 36, declared players first 36, with the flag tested again 153
+// (495 B), from a named base pointer 36, as a bool getter with two out pointers 108 without the mask parameter; one
+// named address tested first with the other direct 39/39; a third preset address 150 (495 B). On (2): the mask through a
+// loop local for the test and the argument 36; a player pointer local 39, both 39; the session's player array named
+// before the loop 37, beside the variant 37; the variant named after the summary 36, not named 39; one index for both
+// loops 36; the variant named ahead of the pair in the state block 36, at the function top 36; the member array named
+// before the copy 36; no addresses pointer (the cast at both uses) 36, that with no variant local 39; the member count
+// read from the field at each use 132 (495 B) (none moves the session off ESI).
+// M3 lane 16 r165 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22): the two address tests joined with a
+// non-short-circuit `|` 152 (495 B: both leas come ahead of the test, as negate/sbb flag arithmetic); the variant and
+// the summary above the opening (round 75's 32, re-measured 32) with a plain `for` copy 109 (477 B, the mask read
+// folds); the typed flag-only stored pair with the variant above it and a `for` copy 108 (both callers lost); the pair
+// through a new inline getter that returns the machine address and stores the player address through an out pointer
+// (live and flag test) 46; through one taking both out pointers with both preset NULL inside, the result ignored 46
+// (register-masked 1 in both: only the session ESI against retail's EBX, both callers lost).
+// M3 lane 15 r126 (h2m fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22, NULL-preset stored pair 46): the
+// opening's addresses as the arrays themselves (`!session->data4f24.data`) 22; the two addresses grouped as
+// `!(&a && &b)` 22 (both the same code); the opening as `flag ? !&a || !&b : true` 218 (361 B: the address tests fold);
+// one stored-players pointer from `flag && &a ? &b : NULL` 215 (361 B); the machine-limit helper's live test through
+// session_state_is_live() 22 on this body, 46 on the preset pair; that helper reading the state once 46 on the preset
+// pair (the tail's helper text does not move the session register).
+// M3 lane 4 r243 (h2m fast with 0x6e500 and 0x72700; control 22): on the NULL-preset stored pair (re-measured 46: the
+// opening and every scratch register retail's, the session ESI against retail's EBX, both callers lost): its test as
+// two `== NULL` compares 46, as `!(machines && players)` 46, players tested first 46; the two buffers declared in the
+// state block ahead of the pair 46. Diagnostic: a third, never-true term in the pair's test 152 (499 B).
+// M3 lane 1 r151 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; controls 22, `for` copy 100, NULL-preset pair 46,
+// preset + `for` 108): `inline` on 0x6e910's definition 22/100/46 and `static` on it 22/100/46 (same code each); the
+// machine-limit helper moved beside 0x5c490 in 0x5c490's shape (only the link inlines it) 22/46/108; the preset pair with
+// the summary as `flag49fd ? data4a00 : NULL` 130, with the variant passed at the call 130; a chained pair (`machines =
+// flag ? &a : NULL; players = machines ? &b : NULL;`) 48, as nested ifs on a NULL preset 48 (session ESI, both callers lost).
+// M3 lane 6 r227 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, both callers lost): early returns in place of `result` (`if (state != 5) return false;`, `return true`)
+// 142, on the pair 143; the pair tested positively with the work in an else arm 46; the summary declared ahead of the
+// variant on this body 52 (the session moves to ESI, both callers lost: the session register is a declaration-order tie),
+// on the pair 46; the pair under `session_state_is_live(session) && flag` 46, with the variant preset NULL and set under
+// the same live test 46. Grid of the variant and summary declarations over the eight positions of the work block's first
+// nine statements (63 forms each): on this opening 22 (5 forms, the same code), 120 to 132 otherwise (52 whenever the
+// summary precedes the variant with the session in ESI); on the pair 46 at best (23 forms), 62/123/131 otherwise, every
+// one with the session in ESI and both callers lost.
+// M3 lane 7 r214 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080, all MATCH; control 22; the plain `for` copy
+// re-measured 100 at 477 B: its copy loop is retail's, but the player loop's mask read folds into `test [ebx + 0x111c],
+// eax` and the bit takes EAX): on the plain `for` copy, one index declared ahead of both loops 100; the mask test written
+// `(mask & bit) != 0` 100; the player record named at the top of the player loop's body 100; the copy loop under main's
+// `if (member_count > 0)` guard 100; the player loop as a do-while on a `player_index` 100 (all 477 B, the fold kept).
+// M3 lane 8 r227 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost): on the pair, 1 to 7 initialised dead locals at the top 46 each; the pair
+// declared at the function top 46, players declared first 46, the variant declared ahead of the pair 46; a 15-form grid
+// of summary before variant, one shared loop index, the addresses pointer before the clears and the member count before
+// the clears 46 (or 127 with the count before the clears); without the variant local 49, without the addresses pointer
+// 46, without both 49; a bool getter in 0x5b0d0's shape (both out pointers written under the live and flag tests) with
+// its result tested ahead of the two pointers 46 (inline or forceinline). On this body the two address tests through an
+// inline `a && b` helper 22, arguments swapped 23 (the addresses sink: the second lea stays after the `je`).
+// Diagnostics (removed): `value49c8` read into a local before the player loop puts the session back in EBX with both
+// callers matched (124 on the pair, 130 here, 493 B each), the player mask so 133 (493 B): the session's register
+// follows its loop uses.
+// M3 lane 4 r250 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost): on the pair, the pair re-pointed at the two new buffers and passed to
+// the setter 46; the pair declared at the function top ahead of `result` 46, after it 46, that with the variant at the
+// top too 46; the variant declared inside the player loop's call block 49.
+// M3 lane 13 r146 (h2m fast with 0x6e500, 0x72700; control 22): an identity forceinline pointer view (no code of its own)
+// around one read at a time, aimed at the one-step scratch rotation: the member count's session read 133 (495 B), the mask
+// store's machine buffer 130 (495 B), the summary getter's session 165 (511 B, both callers lost), the variant's session
+// read 157 (506 B), the opening's flag read 150 (495 B), the copy loop's member read 132 (495 B); every placement grows the
+// body by 12 B or more, so it changes more than the rotation.
+// M3 lane 11 r159 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, all MATCH unless noted; control 22): `result`
+// initialised from the state test (`bool result = session->state == 5; if (result)`, no `result = true`) 169; the player
+// loop skipping by `if (!mask || index == NONE) continue;` 22; the opening as a positive test with an empty arm and the
+// work in its else 22; the opening's address tests as `== NULL` 22; its flag test as `== false` 22; the machine mask as
+// `(1u << member_count) - 1` 22 (all 22s the same code); re-measured the `short` player index 127 (0x6e500 69, 0x72700
+// 94). Body unchanged.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1194,6 +1403,214 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // retail's frame: `and esp, -8`, 0x154): the state stays in EBX and the count is spilled (`[esp+0xc]`), where retail
 // keeps the state in ESI and the count in EBX; the three callers stay matched. The fast check's MATCH is a
 // reduced-image result only (the reduced image gives 212 with the marker). Not kept; this body stays at 9.
+// M3 lane 4 r204 (fast with 0x6fcc0, 0x6f940, 0x6fa60): identities as `XUID identities[16]` (no align declaration; the frame
+// still self-aligns with the marker) filled by `identities[count] = *(XUID const *)&current->players[i].user_id; count++;`
+// 195 (the state takes EBX at +0xd, the count is spilled), the same with `identities[count++] = ...` 195; on that form an
+// unsigned `dword` player index 192 (721 B); a byte array filled by `memcpy(identities + count * 12, ...)` (0x6fa60's
+// matched spelling) 195; the indexed form with the else arm, the call's arguments and the final store through a typed
+// view of the state (`entry_count`, `entries`, `part`, `unknown104`) 195.
+// Round 102 (m3 lane 14, fast with 0x6fcc0, 0x6f940, 0x6fa60): the player loop as a `static inline` helper returning
+// the count 464 (453 B, not inlined under /Ob1); as a `__forceinline` helper with the indexed copy 209 (704 B), with the
+// walked destination 209; a `__forceinline` helper taking the destination and the count by reference 195; the
+// destination declared bare at the top and assigned in the branch 195 (state EBX, count spilled).
+// M3 lane 8 r177 (fast with 0x6fcc0, 0x6f940, 0x6fa60): the copy's source through a new inline accessor
+// `&session->players[index]` on the indexed form 195, on the `[count++]` form 40 (the copy still forms the
+// destination first); the destination named from `identities[count]` before the copy with `count++` after it 195;
+// identities declared ahead of the count on the indexed form 195; the indexed form's count through a `long &` bound in
+// the branch 195. Reading of the 195 listing: the count lives in memory for the whole function (`inc [esp+0xc]`), the
+// copy's two temporaries take EBX and EDI and the state is reloaded into EBX after the loop; retail splits the index
+// around each copy instead.
+// Round 194 (m3 lane 5, fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): `memcpy(identities[count], ...); count++;`
+// re-measured 195; on it the mask test through a new inline `session_player_present(session, index)` 195, plus the
+// source through a new inline `&session->players[index]` accessor 195; `count += 1` 195; `long index = count;` copy
+// then `count = index + 1` 195; `long index = count++;` before the copy 205 (727 B); the else arm reading the entry
+// count again for the copy size 195; `memcpy(identities[count++], ...)` re-measured 40. Reading: only the forms whose
+// count step comes before the copy in the source keep the count in EBX; retail's copy has the step after it.
+// Round 138 (m3 lane 12, fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9, the indexed `memcpy(identities[count], ...);
+// count++;` form re-measured 195): on the indexed form the NONE arrays and the session id declared at the top 195;
+// the outer branch inverted (else arm first) 204; the tail's live test through the existing `session_state_is_live()`
+// inline (0x6fa60's spelling) 195, on the current form 9 (same code); the else arm through a named entry count copied
+// into the count after the copy 195 (copy-propagated); no `joining` local (read through the owner at both calls) 209
+// (715 B).
+// m3 lane 14 r109 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): the destination declared in the branch, re-measured 195
+// (state in EBX for the whole function, `current` in ESI, the count spilled and stepped as `inc [esp+0xc]`); on it the
+// else arm's count assigned after its copy (the size read from the field) 195, a const base pointer formed before the
+// branch and copied into the destination inside it 195 (the base folds back to the frame address), the destination
+// indexed by the zero count 195, the pointer step before the count 216 (728 B); the current form with the destination
+// indexed by the zero count 9 (same code). Retail places the destination's lea in the loop preheader after the mask
+// store; every form that defines it inside the branch flips the colouring.
+// M3 lane 16 r137 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): `[count++]` with the source as
+// `&current->players[i].user_id` 40; `[count++]` with a player pointer named at the top of the loop body (before the
+// mask test) 40; the indexed copy with that player pointer 195; `long count = 0;` declared between `current` and
+// `joining` 11; the flag parameter read once through its address 9 (same code).
+// M3 lane 10 r124 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): all with the destination declared in the branch
+// (re-measured 195: the state in EBX for the whole function, `current` in ESI at the top and its spill slot above
+// `joining`'s, the count spilled): the tail's live test and mode call through `state->owner->session_a` 168 (725 B); the
+// call's session read through the owner instead of `joining` 210 (715 B); the session close after the identity clear
+// 201; no `current` local before the tail (the branch reading the session through the owner) 213; `current` declared
+// in the branch and again for the tail 213.
+// M3 lane 16 r139 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): a single-exit `bool result` (assigned true on the
+// call's success, the live test and the store in the else arm) 9 (same code); with it the indexed copy 195, the
+// `[count++]` copy 40, the destination declared in the branch 195; identities without the align(8) attribute 9 (same
+// code: the marker still self-aligns the frame).
+// M3 lane 8 r193 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): reading: retail's `lea eax, [esp + 0xa0]` sits in the
+// loop preheader right before the player pointer's `add edx, 0x125c`, beside the compiler's other induction start, so the
+// destination there is a strength-reduced index rather than a pointer defined ahead of the branch. Re-measured: the
+// destination declared in the branch 195 (the state takes EBX, the count is spilled), `[count++]` 40 (the destination
+// captured before the source). New: the destination defined between the identities declaration and the clear 216 (697
+// B), ahead of the close call 191 (704 B, the destination takes ESI); identities as a 16-element array of a three-dword
+// aggregate filled by `identities[count++] = *(aggregate const *)&current->players[i]` 195; the branch inverted (`if
+// (!all_players)`, else arm first) on this body 209 (701 B); the count declared bare and zeroed at the top of the true
+// arm 201.
+// M3 lane 2 r112 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): a redundant `count = 0;` at the top of the true arm
+// on the indexed copy, on this body, and with the destination declared after it in the arm 201/201/201 (the first zero
+// is then dead and dropped, as the bare-count form); a row pointer `dword (*)[3]` declared before the branch and copied
+// through `memcpy(dest++, ...)` or `memcpy(*dest++, ...)` 53/53. Re-measured the indexed copy 195 (the state takes EBX
+// from the top, `current` stays in ESI up to the preheader and its spill slot swaps with `joining`'s, the count is
+// spilled).
+// M3 lane 12 r151 (fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9; re-measured: indexed 195, `[count++]` 40):
+// `count++;` then `memcpy(identities[count - 1], ...)` 203 (704 B); the count typed `dword` 9 (same code); a slot pointer
+// named from `identities[count++]` ahead of the copy 40; identities as a byte array filled by `memcpy(identities + count++
+// * 12, ...)` 40; the walked destination filled by three dword stores from a source dword pointer 225 (684 B). Reading of
+// the indexed listing: the state takes EBX for the whole function (reloaded after the loop) and `current` ESI at the top,
+// so count, state and `current` compete for the two callee-saved registers that survive the close call and the clear.
+// M3 lane 7 r193 (fast with 0x6fcc0, 0x6f940, 0x6fa60 and the callees 0x5a520, 0x59e50, 0x5a220, whose files the reduced
+// image otherwise leaves out; control 9): with the callees in the image the indexed copy re-measures 195, the full build's
+// result, so this image is the faithful screen (a caller-only fast check is not). On the indexed copy: the arm reading the
+// session through a second named pointer 195; the session id zeroed by `= {0}` 197; the player array named in the arm 196;
+// the copy as a `continue` arm 195; a list pointer formed before the branch and passed to the call 195.
+// M3 lane 12 r156 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the parameter as `self`
+// with the state read through the joining view (0x6fa60's opening: entry_count, entries, part, unknown104) 9 (same
+// code); on the view the destination declared in the branch 195, the indexed copy 195, `[count++]` 40 (the copy forms
+// the destination in ECX before the source), the indexed copy with an owner local 195. Diagnostics in this image
+// (reverted): the indexed copy plus a global store of the count after the if/else gives retail's code up to the probe
+// (44, first difference +0x263; the store sinks to just before the call, so one more use of the count is what retail's
+// colouring needs); the destination declared in the branch plus that probe 48 (the lea then sits before the mask
+// stores); a constant store at the end of the else arm 113 (round 53's else-arm finding does not hold here).
+// M3 lane 16 r158 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the indexed copy with
+// the call's count through a `long const &` bound at the top 195; the indexed copy with `current` read in the loop
+// through a `const &` bound in the branch 195; that reference on this body 9 (same code); the walked destination
+// copied through a `dword *const &` bound beside it 194 (first difference +0x1e); the indexed copy into a separate
+// count declared in the branch and copied to `count` after the loop 209 (704 B), the same with the walked destination
+// declared in the branch 209 (704 B).
+// M3 lane 2 r118 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9, the indexed copy re-measured
+// 195: state EBX from the top, the loop index kept in ESI with no spill, the count spilled; retail spills the loop index
+// around each copy and keeps the count in EBX). On the indexed form: every later state use through a `*const &` bound
+// to the parameter 195; the call's five part arguments through a const reference to the state's part 195; `joining`
+// declared after the close call (the close reading the owner) 166 (714 B); `current` declared after the identity clear
+// 210 (713 B); the count declared after the close call 201.
+// M3 lane 8 r204 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): `register` on the count, on
+// the indexed copy 195 and on this body 9 (same code each); on the indexed copy the player loop as `while (i < 16) { ...;
+// i++; }` 195, the count declared after the close call 201, the source as `current->players + i` 195.
+// M3 lane 6 r215 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; re-measured: the destination
+// declared in the branch 195, `[count++]` 40): the destination declared in the branch with identities declared first in the
+// function 195; the destination in the branch with the mask test as an early `continue` 195; the destination in the branch
+// with `count++` ahead of the copy 203 (704 B); the destination before the branch with `count++` ahead of the copy 21; the
+// `[count++]` copy in a do/while loop (0x6fa60's loop) 382 (527 B, the loop is no longer unrolled four times), the indexed
+// copy with the step after it in that do/while 357 (559 B). Reading of the 40 listing: the preheader's `lea eax` and the
+// count/index colouring are retail's there; only the inline copy's two pointers swap (destination copy in ECX and source in
+// ESI, where retail forms the source in ECX and copies the destination to ESI). In the 195 forms the count is spilled
+// and the loop index kept in ESI (retail spills the index and keeps the count in EBX).
+// M3 lane 8 r209 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): on this body the else
+// arm copying into `dest` 9 (same code); the player mask read into a named local at the top of the true arm 359 (559 B, no
+// unrolling); `dest` also used by the else arm's copy with `dest = identities[0];` again at the top of the true arm 195
+// (the first definition is dropped, the colouring of the branch form); the destination declared in the branch as
+// `identities[count]` 195; the pointer step ahead of the count step on this body 17 (the scheduler moves `inc ebx`
+// after the step). Re-measured: the destination declared in the branch with the step first 216 (728 B).
+// M3 lane 4 r240 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9), all on the indexed copy
+// (195) with a byte pointer to a state offset named at the top: +0x70 with the call's three pushed addresses derived
+// from it 14 (first difference +0x245, retail's code through the NONE fill; the base is materialised at the call where
+// retail forms each address from the reloaded state); the key id bound by a const reference 49; the typed part pointer
+// for all five operands 195. Sweep of the base (+0x6c, +0x70, +0x78, +0x88) by the operands read through it, 64 forms:
+// +0x6c 195 each, +0x70 14 to 199, +0x78 best 11, +0x88 best 3 (the identity pushed as the base, the +0x6c mode read as
+// `*(long *)(base - 0x1c)`: left that load's base, `[eax - 0x1c]` against `[edi + 0x6c]`, and the state reload one store
+// later; steering spelling, match-only); the +0x88 base used only for the push 51 (retail's instructions, not its
+// schedule). On the 3: the base's second use in the tail store, the else arm's count, its source, both, all three 230 /
+// 51 / 228 / 194 / 196; declared after the close call or the clear 3 / 3, after the if/else 196, before the call 195.
+// M3 lane 2 r125 (H2M_FAST with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9, the indexed
+// copy re-measured 195, `[count++]` 40): the indexed copy with the count typed `dword` 195; the indexed copy with a
+// player array pointer (`current->players`) formed before the branch 196; the indexed copy with the loop index typed
+// `dword` 192 (721 B); this body with the loop index typed `dword` 194 (721 B). Diagnostic, reverted: the `[count++]`
+// copy through a file-local inline memcpy wrapper 357 (559 B, the loop is no longer unrolled).
+// M3 lane 8 r211 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; re-measured: indexed 195,
+// `[count++]` 40): a second index `slot` for the destination beside the count (`memcpy(identities[slot], ...); count++;
+// slot++;`), declared in the true arm 195 or ahead of the branch 195 (the start address then sits in the preheader as in
+// retail, but the state takes EBX and the count is spilled, as every form without a pointer live across the flag test),
+// with the slot step ahead of the count step 216 (728 B); the indexed copy with the session id as a zeroed 64-bit local
+// and no align declaration 197; the indexed copy's source through a new inline pointer-or-NULL player getter
+// (src/unknown_054fe0.cpp's shape) 214 (724 B), the same with `[count++]` 214 (727 B).
+// LEAD (not kept, worse than 9): on the indexed copy, one of the join call's three state addresses named at the top of
+// the function (the +0x70 key-id address in a `kid` pointer local declared ahead of the count and passed by name) 49, first
+// difference +0x178: the whole head, the preheader (the start address after the mask store) and the loop are retail's,
+// the state in ESI and the count in EBX; left are the NONE fill's store interleave (one slot late) and the call's
+// argument temporaries (the named address is formed in EAX, off the EAX/ECX/EDX rotation). The key so 51, the host
+// identity so 51, two of them 56/56/56, all three 53; the same names declared after the if/else 196/195/194 (no
+// effect), all three after the identity clear 237 (743 B). Other state addresses named at the top on the indexed copy:
+// the final status field 195, the entry count 195, the call's mode field 195 (all folded into their load or store), the
+// else arm's stored identities 223 (725 B); the call's five arguments through a `const s_parameters_part *` to the
+// state's part named at the top (three positions) 195, on this body 9 (propagated). So only an address that is pushed
+// as a value makes a web that lowers the state below the count. Diagnostics, restored at once: 0x59e50 given a
+// fifteenth parameter that its body never reads (the link drops it: 0x59e50, 0x70ea0 and 0x71e00 stay matched), fed 0,
+// the +0x104 status address, or that address named at the top, on the indexed copy 195 each (a dropped argument makes no
+// such web).
+// M3 lane 15 r129 (H2M_FAST with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination
+// replaced by an unstepped base indexed `dest + count * 3` 195 (the base folds back to the frame address); the indexed
+// copy with the loop index initialised at the top (`long i = 0;` before the close call, `for (; i < 16; i++)`) 195 (the
+// zero is propagated, no crossing web); `[count++]` with the named key-id address 89; the copy as a 64-bit id store and
+// a flags store through `dest` 225 (684 B); the destination declared in the branch with the named key-id address 53.
+// M3 lane 1 r147 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): on this body the +0x70
+// key-id address named at the top and passed by name 58, the +0x88 host identity so 60; the destination assigned again
+// at the top of the true arm with the else arm copying through it, stepping it by the count and the call passing
+// `dest - count * 3` 129 (721 B); a source player pointer stepped beside the index 202; `[count++]` with the key-id
+// address named at the top 89 (first difference +0x82). Re-measured: the indexed copy with `long identity_count =
+// count` at the call 195.
+// M3 lane 1 r151 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination
+// as a `dword (*)[3]` row pointer stepped by `dest++` after the count 9; as a `byte *` stepped by 12 9; the mask test as
+// `(1 << i) & current->player_mask` 9; the copy size `sizeof(identities[0])` 9 (the four the same code); the player-loop
+// index typed `short` 341 (577 B, the loop no longer unrolled).
+// M3 lane 6 r227 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; the indexed copy
+// re-measured 195): on the indexed copy one, two and three redundant parenthesis pairs around the else arm's size 195/195/195
+// (no paren phase on this integer colouring); the player loop under a redundant `if (count == 0)` guard 195 on the indexed
+// copy and 9 on this body (the guard folds before allocation), under `if (count < 16)` 195; `current` renamed `session`
+// (sorting after `joining`) 195 on the indexed copy, 9 here; `joining` renamed `incoming` 195; both renamed to sort the
+// other way 195; the destination renamed `z_dest` / `a_dest` 9/9 (slot and register choice ignore these names).
+// M3 lane 2 r137 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): lane 8
+// r211's lead rebuilt (indexed copy, the +0x70 key-id address named at the top ahead of the count and passed by name)
+// 49: every instruction retail's up to the NONE fill, where our `or ecx, -1` comes one store late, and the call loads
+// the +0x6c mode and `joining` earlier (the named address is rematerialised at the call, `lea eax, [edi + 0x70]`); on it
+// the name declared after the count 49, the fill's stores second array first 50, the arrays filled by two loops 50; the
+// key-id name on this body 58.
+// M3 lane 7 r214 (h2m fast with 0x5a520, 0x59e50, 0x5a220; control 9): the walked destination declared bare and set in
+// each arm (the else arm copying through it) 195; `[count++]` with the source held by a `void const *const &` 40; a
+// `dword (*)[3]` row pointer declared in the true arm and stepped inside the copy (`memcpy(dest++, ...); count++;`) 48,
+// with the source named first 48; the walked destination in the true arm stepped from memcpy's return (`dest = (dword
+// *)memcpy(dest, ...) + 3;`) 216 (728 B). Reading of the 48 listing: a destination defined in the true arm keeps retail's
+// colouring (count EBX, the index spilled, `current` reloaded) when its step sits inside the copy's arguments, and flips
+// to the 195 colouring when the step follows the copy; a step inside the arguments evaluates the destination before the
+// source, so the copy's two pointers swap (ECX/ESI) as in the `[count++]` 40.
+// M3 lane 8 r227 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): the else
+// arm through a named `const byte *` to the state's entry list (count, then entries) 9 on this body, 195 on the indexed
+// copy, 195 with the destination declared in the true arm, 40 on `[count++]` (the pointer folds each time); the true arm
+// reading the session into a fresh local from `state->owner->session_a` instead of `current` 159 (713 B), on the indexed
+// copy 155 (713 B); lane 7 r214's row pointer declared in the true arm with `memcpy(dest++, ...)` re-measured 48, the
+// same with `count++` ahead of the copy 44 (first difference +0x4a, the copy's pointers still swapped).
+// M3 lane 4 r250 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; re-measured
+// `[count++]` 40 and the indexed copy 195): a `dword (*)[3]` row pointer declared before the branch and stepped by one
+// 9 (same code); that row pointer in the true arm with `count++;` ahead of `memcpy(dest++, ...)` 44 (the copy's two
+// pointers still swap); a walked destination in the true arm stepped ahead of the copy (`dest += 3; memcpy(dest - 3,
+// ...)`) 194; the step as `dest = &dest[3];` 9; the player-loop index declared at function scope ahead of the
+// destination 9 (same code).
+// M3 lane 13 r146 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): a new forced-inline
+// 12-byte copy helper (dest, source) called with a `dword (*)[3]` row pointer declared in the true arm and stepped in the
+// call's arguments (`copy(dest++, ...); count++;`) 216 (728 B), with `count++` ahead of the call 203 (704 B), with
+// `copy(*dest++, ...)` 216; a plain `static inline` copy helper with `identities[count++]` re-measured 195; the true arm
+// through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
+// 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
+// colouring (that needs memcpy's own argument order).
+// M3 lane 6 r236 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; the indexed copy
+// re-measured 195): the identities zeroed by a `= {0}` initialiser in place of the memset 14 (first difference +0x2d); the
+// copy source as `current->players + i` 9; the player loop as a `while` stepping its index at the body's end 9; the
+// destination as `&identities[0][0]` 9 (the three the same code); the count declared bare and zeroed after the clear 15.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

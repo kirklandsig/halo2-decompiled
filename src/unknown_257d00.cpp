@@ -11,18 +11,41 @@ static __forceinline long real_to_long(real value);
 #include "unknown_2551c0.h"
 #include "swarm.h"
 #include <string.h>
+#include "vector2f_products.h"
+
+/* the command a command script runs (0x2c bytes, at +0x4 of a command
+   script): its type, a per-type selector, two values and two references
+   (most types pack a point set in the high word and a point in the low word);
+   the datum also names these fields directly */
+struct s_cs_order
+{
+	short type;
+	short selector;
+	real unknown04;
+	real unknown08;
+	byte unknown0c[0x24 - 0xc];
+	long reference;
+	long second_reference;
+};
 
 /* a command script (0xd4 bytes) */
 struct s_cs_datum
 {
 	short salt;
 	byte unknown02[2];
-	short type;
-	byte unknown06[2];
-	real unknown08;
-	byte unknown0c[0x28 - 0xc];
-	long unknown28;
-	long unknown2c;
+	union
+	{
+		struct
+		{
+			short type;
+			byte unknown06[2];
+			real unknown08;
+			byte unknown0c[0x28 - 0xc];
+			long unknown28;
+			long unknown2c;
+		};
+		s_cs_order command;
+	};
 	short state;
 	byte unknown32[2];
 	long script_index;
@@ -703,6 +726,8 @@ short hs_thread_run_if_due(long thread_index); /* unknown_209520.cpp */
    it has no thread */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// Matched in a full build with stand-in SDK headers (was 2): the thread index is read through a pointer taken
+// before the three stores, so its load is ordered after them, and the second barrier is gone.
 // @retail 0x258880
 short function_258880(long actor_index, long cs_index)
 {
@@ -729,12 +754,12 @@ short function_258880(long actor_index, long cs_index)
 			g_50242c = 0xc3e703e7;
 		}
 		g_50240c = actor_index;
+		long const *thread_index = &cs->thread_index;
 		cs->type = NONE;
 		cs->unknown28 = NONE;
 		cs->unknown2c = NONE;
 		g_502410 = cs_index;
-		_ReadWriteBarrier();
-		result = hs_thread_run_if_due(cs->thread_index);
+		result = hs_thread_run_if_due(*thread_index);
 		g_502428 = NONE;
 		_ReadWriteBarrier();
 		g_50240c = NONE;
@@ -1590,728 +1615,262 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
-// reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
-// a swap of the arguments of the call to 0xcccd0 that puts the constant 1 where the unit index belongs; retail's call
-// sets the unit index in eax, the record's word in edx and the constant 1 on the stack, so the swapped call would change
-// what the function does. Measured without those two: the field or written as an assignment 270, the same with the bool
-// cast and the reversed comparison 270, and with the one-use local on top 272, so nothing of the search is kept.
-// MiniMax B (11-13): no new form, no lower score (270): retail's prologue loads the actor table global first and the
-// cs global later, while the cs lookup is the first statement here; the two initializers swapped measure 487 and the
-// output pointer declared first gives the same code, so the prologue is left as it is, and the table-first lookups in
-// cases 7 and 13, case 10's clear after the selector load and case 5's store order are the differences that remain.
-// MiniMax I (11-15): score 261 (was 270): the 1/19 arm sets field_3 |= 0x40 before it copies the point into the output, so the
-// flag byte is stored before the point copy where retail stores it after; the body stays 1848 bytes long and the other
-// functions in this file keep their scores.
-// score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
-// last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
-// 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
-// clear after the selector load and case 5's store order.
-// MiniMax G (11-12): no new form, no lower score (270): the two initializers swapped give 487 and the output pointer declared first the same code; the argument slots for the actor index and the cs index agree with retail.
-// Earlier 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
-// MiniMax E (11-10): no new form, no lower score (301); retail reads the actor pool global before the datum pool and takes the actor index into ebp among the pushes, this build reads the datum pool first and takes the actor index into esi after the four pushes, and retail puts both return tails (the zero result and the shared 2) at the end of the function where this build leaves the 2 inline in the middle.
-// Lead (round 91, m3 lane 9): at the 1/19 site, the `field_3 |= 0x40` store written before the point copy (a store through the
-// output ahead of the reference re-read) gives retail's arg_0 EBP and output ESI and the reload `mov edi, [edi + 0x28]`, 297
-// (fast, 1824 bytes, aligned 112); the store then sits ahead of the copy where retail has it after, and the join
-// still falls into the shared `mov ax, 2` block where retail falls into `xor ax, ax` and keeps the failure block last.
-// Earlier summary: (MiniMax E run 26) retail keeps the object index in EBP and the scaled actor base in EBX and reads the case word through EBX, ours keeps the index in ESI and the base in EDI, so the whole dispatch prologue and the case bodies are four bytes out; the forty-byte length deficit and the pool/actor/output ownership remain.
-// Earlier (471): No allocated frame; actor/pool/output acquisition, dispatch layout and forty missing bytes remain.
-// the body is 40 bytes short; retail loads the actor and cs-datum
-// table globals before the actor index and keeps the actor base in EBX, ours loads the
-// index first and keeps the actor base in ESI.
-// Actor/output registers, dispatch layout and rounding homes still differ.
-// Actor/output registers, dispatch layout and rounding homes still differ.
-// Actor/output registers, dispatch layout and rounding homes still differ.
-// No frame; actor/output entry carriers, dispatch layout and rounding homes remain.
-// Actor/output registers, dispatch layout and rounding homes still differ.
-// Actor/pool/output entry carriers and rounding homes still differ; selection case result retained.
-// Earlier: Actor/output registers, dispatch layout and rounding homes still differ.
-// Actor/output acquisition, dispatch layout and forty missing bytes remain.
-// Earlier 482 (was 482): Actor/output registers, dispatch layout and rounding homes still differ; eight source trials restored.
-// Earlier: actor/output and dispatch registers still differ; multi-use actor handle kept.
-// actor/output registers, branch layout and rounding homes differ;
-// direct entry guard 631 fast; notification ranges 642 fast; selection-result field 597 plain
-// (only three lower, rejected); actor pointer name 618 fast; tail case order 639 fast;
-// observed selector with a case scope 611 fast, same as the selection-result form.
-// Native orientation/point/entry/movement results 641/623/622/642 fast; invalidity in
-// the real default case 572 fast, 547 plain (entry full 604, unchanged fast 620).
-// Entry 550; formal role names/native initial conversion/sine first 572 fast; shared motion angle 592 fast.
-// Size optimization 775 fast; depth two 561 fast, 532 plain, 1808/1848 bytes.
-// Command type short/long 530/533; actor object snapshot 482 plain (kept);
-// single-result completion 588; shared entry failure 515 (fast; existing depth two).
-// Native actor/command/both references 482; state and state+actor/command/both 473,
-// rejected without an exact match; output direction reference 534. Canonical state type
-// and canonical direct output 482/482 (companion 478/478). All ten forms restored.
-// Native unsigned object bits 482; initial/command/location point memcpy 482/482/482;
-// both table/all native point copies 482/482; native clear/set updates 482; movement outcomes 530.
-// Copies and bit updates preserve the complete executable prefix; original body restored.
-// Existing actor/command/both lookups 482 each; direct output uses alone and with
-// each/both lookups 482 each; actor-object value begun at its producer 524.
-// Four explicit pool/data orders 482 each; native pool headers in either order 482/482; headers plus native
-// offsets in either data order 480/480. Two-point gains and match-only memory snapshots rejected; original
-// body restored. Pool/actor/output acquisition and forty missing bytes remain.
-// Velocity-first native dot loads 476 plain (kept); two-use motion angle 502; radius 491;
-// dot/angle 502; angle/radius and all motion values 498; separate duration 493;
-// all motion values and separate duration 507. Native dispatch/register gap remains.
-// Native state flag fields point/orientation/moving/directed and paired/all groups 476 each;
-// all flags with native selector field 476. Pool/actor/output schedule and forty-byte gap remain.
-// Shared duration conversions, moving/direct/combined/point/moving+point/direct+point/all 493/482/491/482/491/480/493;
-// two-use rate at duration producer 540. Two-point combined conversion gain rejected; original conversions restored.
-// Native command scalar, command point, state point variant and command location
-// point 476 each; scalar+command point, scalar+state point, both point destinations
-// and all four native payloads 476 each.
-// Notification, point-test and movement inline/inline-noinline declarations, separately and combined, 476 each;
-// all restored. Notification contracts lose reduced matched controls; restored-context losses distinguished.
-// Results within movement/selection/both/recording/movement+recording/selection+recording/all cases
-// 526/466/519/474/515/468/518; native-width outcomes in all three cases 518. Selection-only short result
-// 466 plain (kept), without a shared function exit. Validity initialized before selection 536; native selection
-// outcome 466; both 536; selection outcome begun after dispatch 467. Entry carriers and rounding homes remain.
-// Round 161: movement/selection/recording completion 533/528/529; paired movement-selection/movement-recording/selection-recording 524/523/533; all outcome completion 528; orientation branch store 525. All restored.
-// Round 145: Native counted character table, promoted lookup result, repeated command index reads
-// and both 466 each; corresponding actual-record table forms 466/466/466/466. Original type and
-// body restored.
-// Round 151: Shared success return with explicit default failure, empty arms plus complete
-// orientation/motion/point payload masks 0-7, all 466/1812. No result carrier added; original returns and
-// complete dispatch restored.
-// Round 240: complementary query result bool/byte/short/long 520/520/469/525;
-// with complete complementary locomotion at the same widths 520/520/470/525. All restored.
-// Round 138: shared rounded-tick outputs moving-direct/moving-point/direct-point/all
-// 468/468/468/466; shared all tick products 474; all products and outputs 470;
-// moving-only/other-case products 466/466. Original scratch declarations restored;
-// pool/actor/output acquisition, dispatch layout and conversion homes remain.
-// Consistent actor-object field reads 530; one point-selector publication 472; both 532;
-// shared object-update notification 466; field reads/notification 530, point/notification 472,
-// all three 532; field reads with positive point-production admission 530. Original body restored.
-// Complete core-group orders ACB/BAC/BCA/CAB/CBA 474/544/534/478/532;
-// B/A with point case before/between/after the groups 522/546/549. All original case bodies restored.
-// Round 223: shared initial truncation 509; complete direction assignment helper 477;
-// both 509; named-entry inline declaration 471; with truncation/direction/both
-// 509/477/509; separate named-entry noinline declaration 471. All restored.
-// Cross-case same-object comparison result bool/byte/short/long 536/536/527/532;
-// complete complementary result at the same widths 536/536/527/532. Added storage
-// regresses acquisition and dispatch; original comparison observations restored.
-// Round 226: Per-use actor pool/getter 501/501; command pool/getter 786/787; both direct/getters 798/793;
-// mixed direct/getter acquisitions 798/793. All original acquisitions and body restored.
-// Round 159: Nine/eleven action tables with range admission 656/695 and switch dispatch 646/690;
-// notification membership table 534; membership with eleven/nine ranged action tables 772/738 and eleven
-// switched actions 771. All restored.
-// Round 253: success-first selection result short/long/byte/word 472/472/482/472;
-// actual-default failure production at those widths 488/488/508/488.
-// Original selection test and full executable body restored.
-// Round 245: First admission predicate in positive bool/byte/short/long and
-// complementary bool/byte/short/long carriers, 471 each. All restored; pool/actor/output
-// entry allocation and forty-byte deficit remain.
-// Round 175: inner selector groups DNAB/NABD/BAND/ANBD/BNAD/NBAD/ABDN/DBAN
-// 470/470/470/471/471/470/471/470; A=0..4, B=5..8, N=9/10, D=default.
-// One-count reductions rejected; original inner and outer dispatch restored.
-// Round 174: coordinated input-settings/playback inline and noinline contracts,
-// each boundary and all four paired forms, 471 each; original declarations restored.
-// Pool/actor/output acquisition and the forty-byte deficit remain.
-// Round 392: Shared angle producer/direct point publication/native word range-result stores, paired/all,
-// then all with the word destination defaulted first: 504/473/501/505/501/503/503/504. Original producer and dispatch lifetimes restored.
-// Round 247: complete terminal cases 9/13/9+13/20/9+20/13+20/all before the core
-// fallthrough groups 524/525/517/520/510/540/513; all in reverse order 513. All regress;
-// original case order, actor/output acquisition, rounding and complete body restored.
-// Round 280: Isolated duration producer scope 471; delay default 482; independent end ticks 483; both 482;
-// coherent scratch names 471; names with delay/end/both 482/483/482. Original conversion destinations,
-// case graph and actor-object observation restored.
-// Round 188: Coordinated state/location/both inline contracts 471 each; producer-local motion completion alone/with state/with location/with both 527 each; both with literal recording completion 527; isolated recording completion 471. State-inline forms lose 22 matched reduced controls. All declarations, result producers and full body restored.
-// Consistent first/second command references and actor-action observations, subsets 1-7,
-// 544/514/532/520/532/526/530; all before notification 509. All original observations and
-// complete body restored; pool/actor/output ownership and the forty-byte gap remain.
-// Empty-success leaf group before outer cases 0/4/7/8/10/5/9/13: 471 each, 1808/1848 bytes.
-// All eight have the original masked instruction prefix through the first table; full original case order, return graph and callback restored.
-// Round 322: Coupled movement-query publication with positive/negative success-or-fallback admission, bool/byte/short/long: 539/531/533/534 each. Original stores, returns, dispatch and body restored; entry actor/output carriers and length deficit remain.
-// Typed-array actor/command/both acquisitions, original/early actor-object observation, then both acquisition
-// orders: 471/471/471/470/470/470/477/478. Original complete executable source restored.
-// Round 260: Bounded notification bitset with entry/admitted short/long selector: mask shifts
-// 543/559/539/552, bit shifts 542/555/542/549. Original membership, selector observations, cases and
-// full body restored.
-// Round 145: retail reads the actor object field at each use (actor base EBX, arg_0 EBP, datum EDI, output
-// ESI), lays the 17/15/16 group out before 3/2/1/19 and repeats the wait call's head on the 1/19 path, and
-// tests the wait result with branches. Actor object read at each use 525 (1812 bytes: actor EBX, datum EDI
-// as retail, arg_0 ESI); `if (local_4) return 0; return 2;` 527 (1800); `if (!local_4) return 2; return 0;`
-// 527; both 541 (1796); the wait block as a forceinline helper called from the 1/19 and 15/16 paths in
-// place of the goto 513 (1872: the call is repeated as retail, but each copy keeps its own tail).
-// Round 327: Shared movement-query tail after dispatch, success-first bool/byte/short/long
-// 470/470/493/492; failure-first 473/473/490/494. Original case flow and body restored; entry
-// carriers and length gap remain.
-// Round 329: Independent movement/direct/point conversion workspaces declared at callback
-// scope, subsets 1-7 and all with coherent product/tick names, 471 each. Original
-// declaration scopes, conversion operations and complete executable body restored.
-// Round 331: Common case-thirteen notification with branch/conditional flag values and
-// orientation/point result stores: 471/483/512/521/471/493/519/528. Original terminal cases, output
-// producers and complete body restored; actor/pool/output allocation and length gap remain.
-// Round 223: Native orientation/motion/direct planar values in subsets 1-7
-// 502/470/508/459/495/469/500; all with explicit component construction 500.
-// The direct-field temporary at 459 is exact-only; intrinsic/native direct copies
-// without that temporary both 471. Original producers and complete body restored.
-// Round 335: Whole countdown case zero before 17/4/7/8/10/5/9/13 gives
-// 470/471/485/524/526/526/528/528 (fast control 471). The one-point reduction
-// is rejected; original complete case order and body restored. Pool/actor/output
-// ownership and the forty-byte length gap remain.
-// Round 27 (m3 lane 18, fast, plain-confirmed; register-masked aligned 117 before): actor field at each use, no goto, group 17/15/16 before 3/2/1/19 with the wait
-// written in both, output read at each use, flag-first case 10, and one success test after the switch: 471 (1848 bytes, retail's length) [69]; datum before actor with the
-// output local first: 471 -> 306 [same shape, top of the function now close]; existing real_to_long and one object pointer in case 13: 300 (1840); wait arm before the point
-// arm in 1/19: 301 (1824) [59] (kept). Tried: per-arm success returns 518 (1724), `return r ? 0 : 2` 554/734, assigned success with arm branches 563/567; output local at other
-// positions 306-308 (same registers); only the 1/2/3 arms through the local 471; exit as `if (!success) return 2` 311/322, result short 476; failures as breaks 301 [59];
-// case 7 rounding by hand 300-312, default-zero rounding 378; object flags as a dword or bitfield at 0x108 293 (1832, not retail's byte OR).
-// Round 341: Consistent actor-object fields with a shared short/long/byte/word completion,
-// failure-first 502/495/565/502, success-first 535/536/548/535. The long failure form reaches
-// 1848 bytes but worsens allocation; original callback and observations restored.
-// Round 286: Native actor/command/both array elements, command-first then actor-first, original
-// elements actor-first, both with output at use: 301/301/301/487/487/487/487/487. Original recovered case/result graph
-// and body restored; pool-first acquisition, actor/output carriers and 24-byte gap remain.
-// Round 517: On the current case-result graph, direct admission/enclosed execution/named admission
-// 332/332/334; repeated selector short/long 334/334; direct guard with short/long selector 466/500;
-// enclosed short selector 466. Original admission, selector observations and complete body restored;
-// entry carriers and the 24-byte deficit remain.
-// Round 324: native record memmove boundaries, subsets 1-7 and all with direct output uses,
-// 472/309/487/309/486/323/499/499. All regress; complete callback and transfers restored.
-// Round 471: Completion before acquisitions/admitted, bool/byte/short/long,
-// 301/301/465/449 and 301/301/465/449. Original completion lifetime and type restored.
-// Round 75 (m3 lane 9, fast): 301 -> 246 at retail's 1848 bytes and 487 instructions (masked aligned 37). Retail's table sends cases 6/12/14/18/21 to the return-0 block right after the success
-// test, and the failure return is one block at the very end: actor local first 487 (1836), first exit through `goto done` with actor first 298, word flags at +0x10a (retail's `or byte ptr`,
-// alone 309, 1816), empty cases as `success = true; break;` 301 alone, `if (!success) return 2; return 0;` 311 (1820), if/else returns 317 (1820), inverted 322 (1808), `short result` if/else 269
-// (1848; retail's join layout), `short result = 2` 475, long result with a cast 267, then every other failure as `break` 246, long result 244 (cast). Without actor first 278;
-// without the empty cases 269; without word flags 282. No gain: `inline` on 0x25ab50 301 (same code), a byte bitfield 301 (same code), 0x25ab50 defined after this function 246, dot arguments
-// swapped 248, by-value forceinline point getter 244, by-pointer 246, plain inline getters 561-582 (stay calls), a one-read named reference 298-301, point arm first 301 (1860), re-derived
-// datum for the point read 483-506 (1864-1876). Diagnostics (volatile, reverted at once): a volatile point read at the 1/19 site alone 241 with retail's object index EBP and output ESI and the
-// whole prologue exact (masked aligned 25); at case 5 alone 253 with no role change. So our CSE of the point reference across 0x25ab50 at the 1/19 site takes ESI from the object index; retail
-// reloads there and at case 5, though 0x25a380 and 0x259430 keep such reads across the same call. Also left: `xor eax, eax` for retail's `xor ax, ax` in the join, the case 7 dot's i term sides, case 10's
-// store before the selector load.
-// NOT kept (coordinator, round 75 review): the 246 form needs its first exit as `goto done` (a goto is kept only with a match); the same form with that exit as `return 2` gives 485 with
-// the actor local first and 493 with the datum local first, so the body is restored at 301 and +0x10a stays a byte cast. Lead: the goto form with the point reload at the 1/19 site above.
-// Round 525: Shared case-seven/eight admission, either payload first, native bool/byte/short/long
-// moving result: 473/473/473/473/476/476/476/476. Original separate admissions, result widths, cases and
-// complete callback restored; pool/input/output ownership and the 24-byte deficit remain.
-// F327: Complete single-exit zero/two storage before/after acquisitions,
-// short/long/byte/dword 457/457/543/457 in either position. Original callback
-// restored; actor/output entry carriers and the 24-byte deficit remain.
-// Round 200 (m3 lane 3, fast control 301): fully single-exit form (every `return 0` as `success = true;
-// break;`, every `return 2` as `break;`, the pre-switch exit the one goto to the only return, if/else
-// short result) 467 (1852 bytes: retail's `je fail`/return-0 layout and arg_0 in EBP, but `xor eax, eax`
-// for `xor ax, ax` and the cs index keeps ESI through the reference CSE across 0x25ab50); ending
-// `return success ? 0 : 2;` 639 (1696); actor first 466; empty cases grouped 466; `short result = 2`
-// then `if (success) result = 0;` 640 (1692). All restored.
-// B384: Native packed-reference low/high/both indices at the initial point only,
-// recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
-// NOT kept: the 290 recording high-word form uses narrower loads than retail and
-// shortens away from 1848 bytes. Original reference observations and callback restored.
-// Round 84 (m3 lane 12, fast): at the 1/19 site ours keeps the datum's point reference in ESI across the
-// 0x25ab50 call where retail reloads it after the actor test (`mov edi, [edi + 0x28]`); the point arm
-// first under `unknown018 == NONE` 300 (1840 bytes); case 4's slot as a ternary 414; case 13 with the
-// shared 0xb7360 call after the if/else 301 (same code); case 5's slot as a ternary over 0 304; case 20
-// with the unknownac store before the point copy 301.
-// P290: Existing completion produced only by its actual case/default, bool/byte/short/long,
-// 301/301/465/449; direct default failure at those widths 471/471/463/467.
-// Original startup initialization, complete callback and inherited boundary restored;
-// actor/output entry carriers, retained point reference and 24-byte deficit remain.
-// F364: Native point-set/collection accessor ownership, pointer/reference returns and
-// ordinary/forced boundaries: 301/301/301/301/553/303/553/303. NOT kept: shared users regress.
-// Original accessor and callback restored; actor/output carriers and 24-byte deficit remain.
-// Round 40 (m3 lane 18, fast): whole body inside `if (perception == NONE || type == 1 || type == 4)` with every failure as
-// `break`, empty cases as `success = true; break;`, word flags at +0x10a and a `short result` if/else (lane 9's 246 form without
-// its goto) 307 (1852 bytes; the `||` test is `cmp cx, 1/4`, not retail's `dec/sub 3`), actor first 305; case 13 word flags with one
-// shared 0xb7360 call 309 (1816); success declared at the main switch 301; cs_point_get as an inline function 561 (breaks
-// 0x259ec0 and 0x25a380), as forceinline 303 (0x259ec0 still breaks under inline_depth(0)); the wait result tested directly
-// with `success = true` in its arm 630 (1700). Diagnostic, reverted: volatile reference reads at the 1/19 copy and case 5 289
-// (arg_0 EBP, output ESI as retail).
-// Y568: Positive recording/lookup/moving/direct payload-admission scopes, singly and
-// paired/complete: 301/301/301/301/301/301/301/301. All tie at 1824/1848 bytes;
-// original rejections, cases, observations and full body restored. Pool-first acquisition,
-// actor/output ESI/EBP versus EBP/ESI and retained point-reference ownership remain.
-// Y570: Full-width initial/recording point and set indices 303/303/301/303/303/301,
-// both complete 301, both with one full reference capture 301. Original whole
-// callback restored; pool/actor/output carriers and the 24-byte gap remain.
-// B420: Existing completion receives secondary/primary/recording validations,
-// subsets 1/2/4/3/5/6/7, then all as short: 301/301/301/479/301/301/479/526.
-// NOT kept: no exact match; original complete body restored.
-// B423: Both bounded orientation/recording slot admissions classified as valid/invalid
-// bool/byte/short/long, 301 each at 1824/1848. NOT kept: no exact match;
-// original word tests, slot publications, case graph and complete body restored.
-// B426: Complete complementary completion state bool/byte/short/long, original/entry
-// lifetime: 593/593/594/594/593/593/594/594. NOT kept: no byte match; original completion, all
-// producers/consumers and callback restored. Pool/actor/output and retained reference remain.
-// B428: Totalized callback result through the only return, no goto, positive admission,
-// short/long/byte/word with default/explicit rejection: 590/479/590/479/569/596/590/479.
-// NOT kept: no exact match; original callback restored. Actor/output entry ownership,
-// retained reference and the 24-byte length deficit remain.
-// B430: Selection-owned common validity publication, bool/byte/short/long, default
-// invalid/admitted-arm production 358/358/487/487; default valid/explicit rejection
-// 355/355/345/357. NOT kept: no byte match; original stores, result and callback restored.
-// M3 lane 13 r63 (fast, restored): lead for a ruling. The reloads at the 1/19 and case 5 sites are 0x25ab50's IL effect on its callers: on lane 9's goto form (246, 1848 bytes, masked aligned 67), one store through a
-// non-parameter pointer in 0x25ab50 (a pointer to a local, or a reference to a member of a local record; 0x25ab50 still matches) gives 91 at 1848 bytes, masked 10, with retail's arg_0 EBP and output ESI. A full check of
-// that store loses only 0x1b13b0 and 0x25a380, which hold the reference across the call. An array element in 0x25ab50 or a by-value struct helper there have no effect (246; 0x25ab50 itself 47 with the helper). Left on 91:
-// `xor eax, eax`/`mov eax, 2` for `xor ax, ax`/`mov ax, 2` from the short result, case 7's dot sides, and the 0x8c, 0x99 and 0x9a constant stores one line later than retail. On it: `if (success) return 0;` tails 159 (1816),
-// if/else returns 177 (1820), `if (!success) return 2;` 169 (1812), unknown06 as a real short field 91 (same code). Without the store: the empty cases 301 (same code), with actor first 487, word flags 309, all three 497;
-// per-arm returns with no join `if (success) return 0;` 582/478 with actor first (1724), `if (!success) return 2;` 581/478, ternary 528/538 (1800); all with actor first and word flags 491/491/544, with the store 632/632/542.
-// Y590: Standard bounded byte-copy publications at initial/recording/current-state
-// point records, seven subsets then complete backward copy: 454/309/309/481/472/319/489/489.
-// NOT kept: native ownership is unrecovered and all extents shrink away from 1848;
-// original complete callback and transfers restored.
-// Y595: Shared secondary/primary reference-validation phase, positive/complementary bool/byte/short/long results:
-// 472/472/465/461/500/500/499/498. NOT kept: no byte equality; original complete body restored.
-// J254: Existing notification/reference/movement inline then forced contracts, one provider at a time
-// then all: 301/507/301/919/301/1893/301/2376. Ordinary target code ties through the ret-16
-// prefix; forced extents 1872/2200/3008/3380 versus 1848. NOT kept: shared-user regressions and
-// native outlined-call/length mismatch. Original complete body and all declarations restored;
-// actor/output carriers and packed-reference retention remain.
-// B432: Original notification switch produces a positive/complementary classification
-// in bool/byte/short/long: 303/303/303/303 in either polarity. NOT kept: no exact
-// condition-storage form; original callback restored, pool/input/output homes remain.
-// B443: Separate original byte clear/set producers at orientation/moving/directed
-// payloads, seven subsets then all with set before clear: 301/301/301/301/301/301/301/301.
-// NOT kept: no equality or gain; original byte expressions/full callback restored.
-// Pool/input/output ownership, retained point-reference carrier and 24-byte gap remain.
-// P339: Selected case-seven delay in short/word/int/dword, exhaustive branch
-// then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
-// byte match; original full callback restored. Entry actor/output roles,
-// reference retention and 24-byte deficit remain; all calibrated peers unchanged.
-// Round 66 (m3 lane 14, fast): actor local first 487 (1836 bytes: our prologue then pushes three registers and inlines the
-// first failure return); output local first, success first, both 301 each (same code); in the 1/19 point arm the 0x40 flag
-// stored before the point copy 297 (not kept: four points and retail stores the flag after the copy), but the store makes
-// ours reload the reference after the 0x25ab50 call as retail does and that arm then takes retail's output ESI: retail's
-// reload there comes from a cause before the copy (retail reloads right after the call at case 5 too, before 0xcccd0).
-// Diagnostic: inline depth one 301. On 301: 0x25ab50 splitting the reference through an inline out-parameter helper
-// 301 (and 0x25ab50 itself 25, 82 bytes); case 5's two tests split 301; the 1/19 reference in a local used for the test
-// and the point 303; the 1/19 point through a pointer local after the actor test 303; the empty-success cases as one
-// label list 301.
-// Round 91 (m3 lane 9, fast; plain for the 289): case 5's two failures as separate ifs 301 (same code); the first test as
-// `perception != NONE && type != 1 && type != 4` 332 (1828 bytes); the empty cases listed before case 0 301 (same code);
-// at the 1/19 site the flag store before the point copy 297 (roles as retail, see the lead above); the wait test inverted
-// (`unknown018 == NONE` arm first) 300 (1840). On the 297 form: actor local first 476 (1836); empty cases as `success =
-// true; break;` 297; the tail as `short result` if/else 289 plain (1860 bytes, `xor eax, eax`/`mov eax, 2` for retail's ax
-// forms, case 9's failure gets its own epilogue; not kept: a tail-only result while the other returns stay); `if
-// (!success) return 2; return 0;` 307 (1820); if/else returns 317 (1828); `short result = 2; if (success) result = 0;`
-// 490; that result with the empty cases 289; case 9's/case 5's/both failures as `break` 297/297/297 (same code). The
-// tail alone as the `short result` if/else 300 (1860). Case 13's flag RMW stays `mov dl; or dl; mov` where retail ORs
-// the byte in memory (lead: a real byte field at +0x10a in the object view, a shared-header change).
-// Also: the first switch's `default: return 2;` listed before `case 1: case 4:` 301 (same code), on the 297 form 297, that
-// with `if (!success) return 2; return 0;` 307 (1820).
-// M3 lane 11 r71 (fast; masked = aligned with registers and stack offsets ignored). The point-set getter as a real
-// inline function in 0x25ab50, forceinline or static inline, 301, same code, no reload at the callers; with the point
-// getter built on it 301, loses 0x259ec0 (238). Lane 9's goto form rebuilt 246 (1848); with the diagnostic store in
-// 0x25ab50 91 (1848, 0x25a380 lost, not kept), where the real causes left are the returns' width, case 7's dot sides
-// and the stores in cases 10, 5 and 9, the rest being jump offsets from the width.
-// Tails on the 91: `if (success) return 0; return 2;` 159 (1816: the empty return-0 block merges into case 20's tail,
-// so `mov ax, 2` follows the test), inverted 169 (1812), if/else 177 (1820), ternary 603 (1728), `short result = 2`
-// 599 (1732), a goto to a `failed:` label 169/159, word result 91, an inline status helper 89 (1848, still `xor eax,
-// eax`), a ternary into a short 603, the empty cases back to `return 0` 159/169, with the helper 91.
-// Per-arm `if (success) return 0; break;` with `return 2;` after the switch, over actor order, flag width and store:
-// 601, 609, 504, 513, 591, 605, 620, 628 (1696-1708). Per-arm `if (!success) return 2; return 0;`, empty cases last
-// or falling through after case 15/16: 491 clean, 632 with the store. One shared result test with the empty cases
-// falling through and other arms using `goto`: 485, 503, 494, 496 (1812-1824). The store lead still needs a ruling.
-// B453: Complete motion pair before orientation, reversed motion pair, full orientation/motion group
-// after cases 10/5/9/13/20, then motion pair after case 20: 410/380/450/451/449/449/448/419. NOT kept:
-// no byte match; original complete body restored. Pool/input/output carriers and retained point
-// reference ownership remain.
-// Round 66 (m3 lane 14, fast): actor local first 487 (1836 bytes: our prologue then pushes three registers and inlines the
-// first failure return); output local first, success first, both 301 each (same code); in the 1/19 point arm the 0x40 flag
-// stored before the point copy 297 (not kept: four points and retail stores the flag after the copy), but the store makes
-// ours reload the reference after the 0x25ab50 call as retail does and that arm then takes retail's output ESI: retail's
-// reload there comes from a cause before the copy (retail reloads right after the call at case 5 too, before 0xcccd0).
-// Diagnostic: inline depth one 301. On 301: 0x25ab50 splitting the reference through an inline out-parameter helper
-// 301 (and 0x25ab50 itself 25, 82 bytes); case 5's two tests split 301; the 1/19 reference in a local used for the test
-// and the point 303; the 1/19 point through a pointer local after the actor test 303; the empty-success cases as one
-// label list 301.
-// MiniMax B (11-06) round 2: no new form, no lower score (301); the permuter's rewrite of the
-// field update as an explicit or of its own gives the same score (301), and its argument swap on
-// the recording call lowers this function to 292 on its own (0x259430 stays at 469) but is not
-// kept: retail's call site is `mov ecx, eax; mov eax, [esp + 0x18]; push 0; call`, which the
-// original call reproduces byte for byte, so the swap would replace an exact call with one that
-// passes the unit index as zero and truncates the recorded index; with the field update rewritten
-// as well the score of 0x259430 rises to 485, so that pair is dropped and the body is unchanged.
-// MiniMax B (11-06): no new form, no lower score (301); the entry still computes the cs datum
-// pointer before the actor pointer (retail computes the actor pointer first, keeps the actor
-// index in EBP and the actor pointer in EBX, and reads the cs index only after the four
-// register pushes), and the case that returns 2 still spells the value `mov ax,2` where retail
-// uses `xor ax,ax`; the actor local first stays at 487 and the function is unchanged.
-// Walk b4J (11-06), every block against retail 0x258cf0-0x259380 (dispatch tables 0x259384 / 0x25938c /
-// 0x2593a4 / 0x2593fc): the perception test (types 1 and 4 pass), the 0x259e70 byte table (types 1-4, 6-9,
-// 14-19, 21), all 22 jump-table targets (type 11 and out-of-range go to the failure block, 6/12/14/18/21
-// return 0), the 0x25ab50 checks and their order in 17 -> 15/16 and 3 -> 2 -> 1/19, the wait test and the 0x77/0x76
-// updates, the point copy and the 0x40 flag, case 4 (0..3 range, 0xfd/1 flag, 0x1f86a0 on the wait object),
-// cases 7 and 8 (0x26c test, 0xe7|4 and 0xf7|0x14 masks, delay 0.33 and 2.0 read from the XBE, the
-// velocity.forward sum k+j+i and the `> 2.0` test, cos/sin of the unrounded product), the case 10 table,
-// cases 5, 9, 13 and 20 (cccd0 arguments, point copy sizes, store order, the 0x10a bits): fields, widths,
-// conditions, callees, constants and returns all agree with the draft; no behaviour difference found.
-// Left as layout: ours puts `mov ax, 2` inline and `xor ax, ax` last where retail shares the success tail
-// (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
-// on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
-// `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
-// Lane 3 r230 (fast, base 301 at 1824 bytes): case 13 through the existing swarm-object flag5/flag6 bitfields 309 (1816;
-// retail's direct `or byte ptr`, a repeat of the listed word-flags result); arg_0 and the output renamed by role so the
-// output's name sorts first 301 (byte-identical: names do not pick ESI/EBP here); `success` declared first 301 (identical);
-// case 7's delay as a ternary 301 (identical); case 9 reading the scenario global at each use, no local, 301; case 13
-// with the object looked up in each arm, no local, 313.
-// m3 lane 8 r146 (fast; aligned/masked base 151/107): case 13's 0xb7360 call once after the if/else 301 (same code); case 4's
-// range result as a ternary 437 (1820 bytes); case 5's clamp as a ternary 304; case 7's mask as `&= ~0x18; |= 4;` 301 (same code);
-// case 13's OR value as a ternary with one store 319 (1808). Ours already cross-jumps the 0x259ec0 blocks as retail does.
-// M3 lane 10 r89 (fast; positional, stack-masked/register-masked aligned 158/107): the `#pragma inline_depth(2)`
-// that wrapped this function removed, 301 (same code; not kept: a compiler-setting change with no gain); the 1/19 point arm as an explicit else 301;
-// its destination as the address of field_8 301; case 0 as `success = true; break;` 301 (same code); case 4's range
-// as `local_6 < 4` 480 (1828 bytes); case 5's as `local_16 <= 2` 480 (1828). Re-measured: local_1 through the
-// existing cs_get 301 (same code); the 1/19 point read through a re-derived datum, `cs_get(arg_3)->unknown28`
-// (round 75's 483-506), 480 now at 1848 bytes, 146/76 (the reference is reloaded as in retail, but the scaled cs
-// index then stays live in ESI from the entry). The wait block as a two-site helper is round 27's 513 form. Retail reloads the reference after 0x25ab50 at
-// this site and at case 5, where 0x25a380 and 0x1b13b0 keep it across the same call, so the cause is in this caller.
-// Round 68 (m3 lane 15, fast): a second datum pointer from the same lookup expression, used for the two cs_point_get
-// reads, on this body 490 (prologue reorders); case 9 reading g_4e0350 at each use (no scenario local) 301 (case 9 then
-// has retail's test/jl/load order). Lead (match-only forms): lane 9's round-75 246 form plus that second pointer at the
-// 1/19 and case 5 point reads 107 at 1848 B with retail's arg_0 EBP/output ESI and both reference reloads after 0x25ab50
-// (what lane 13 got from a store inside 0x25ab50, without touching it); with case 10's selector and case 5's selector
-// read through it (loads and stores through different pointer variables keep their order: retail's +0x8c/+0x99/+0x9a
-// clears before the selector loads) and case 9 as above 100. Left on 100: the prologue (the duplicated lookup leaves a
-// shared offset temp, `lea edi, [ecx+edx]`, where retail computes the datum in EDI in place), the join's `xor eax, eax`/
-// `mov eax, 2` from the `short result` tail (retail `xor ax, ax`/`mov ax, 2`; the 1-byte shift moves every jump-table
-// entry) and case 7's dot sides. On 100: `if (success) return 0; return 2;` 169 (1816), `if (!success) return 2;` 179
-// (1812), with a failure label 179, failures back to `return 2` 174 (with those tails 169/179), dot3f arguments swapped
-// 102, the second pointer declared before the datum/before the actor 104/132, a plain copy of the datum pointer 244.
-// m3 lane 11 r88 (fast, 270 plain-confirmed): on 301 the post-switch `return 0` and the empty cases jump into case 20's tail,
-// so the success test falls into `mov ax, 2` mid-function and the jumps to it are short (the 24 missing bytes). Case 20
-// ending `success = true; break;` 301 (they jump into case 13's tail instead), with case 13 too 305 (case 8's tail). Kept:
-// every `return 0` in the main switch as `success = true; break;` and every `return 2` there as `break;`, with the guard's
-// `return 2` and the `if (success) return 0; return 2;` tail, 290 (1860 bytes, masked 73; the guard as a goto to that tail
-// gives the same code), then case 13 through s_swarm_object's flag6/flag5 bits with one 0xb7360 call (0x28e2b0's form,
-// retail's `or byte ptr`) 270 (1848, masked 68). On it: actor local first 504; the lookups through object_header_get 270,
-// the 1/19 point arm as an explicit else 270, case 13 with a call in each arm 270 (all the same code); case 9 reading
-// g_4e0350 at each use 270 (masked 66); the guard as a goto to one `return success ? 0 : 2;` 651 (1684 bytes), to a
-// `short result` if/else 465 (1840), to `short result = 2; if (success) result = 0;` 651 (1684); the tail as
-// `if (!success) return 2; return 0;` 319 (1812).
-// M3 lane 15 r76 (fast with 0x25ab50, its other callers and this file's functions; aligned/masked in brackets, control 270
-// [133/68]): an inline helper returning a cs datum's target point (`cs_point_get(cs->unknown28)`) at the 1/19 copy and case 5
-// 556 (1772 bytes: LTCG leaves it a call), at the 1/19 site only 517 (1812), at case 5 only 316 (1808); the same helper
-// `__forceinline` at both, either one 270 each (same code: the inliner substitutes the parameter, so the read stays CSE'd).
-// Diagnostics: 0x25ab50's indices through an out-parameter decode helper 270 (0x25ab50 itself 25); lane 13 r63's store through a
-// pointer to a local in 0x25ab50 re-measured 107 (0x1b13b0 364, 0x25a380 364), and with named reference locals at 0x25a380's two
-// and 0x1b13b0's two call sites 107 with 0x25a380 matched again but 0x1b13b0 398 (1448 bytes against 1463).
-// After that: local_0 and local_1 through the existing actor_get and cs_get (their bodies were written out here) 270, byte-identical,
-// kept; actor_get alone 270 (same code); case 13's object held as an s_swarm_object pointer (no casts at the two flag stores) 270 (same
-// code); the datum's +0x9c record typed as s_type_c3b527 so case 5's copy needs no cast 270 (same code).
-// T91: complete terminal tail orders 9/20/13, 13/9/20, 13/20/9, 20/9/13,
-// 20/13/9 give 270/287/475/283/475; complete 9/13/20 block before cases
-// 10/5/8 gives 318/287/339. Every entry prefix through notification dispatch
-// is unchanged after addresses are masked. NOT kept: no equality or gain;
-// original complete cases, fallthroughs, inputs, copies and callback restored.
-// M3 lane 10 r97 (fast with the file's 28 other functions and 0x1b13b0, all unchanged; base 270): nothing kept. The parameters and
-// locals renamed to the declaration's names (actor_index, object_index, state, cs_index; actor, cs, output) 270 (same code: names
-// do not swap EBP/ESI); success declared first 270; the output pointer declared first 270 (same code). Round 68's second datum
-// pointer (declared after the actor) for the 1/19 and case 5 point reads and both selector reads, with case 9 reading g_4e0350 at
-// each use, re-measured on this body 495 (1856 bytes: arg_0 then takes EBP as retail, but the shared `lea edi, [ecx + edx]` and
-// the prologue order follow); the second pointer for the case 10 and case 5 selector reads alone 490 (1856). Retail keeps the +0x8c
-// and +0x9a clears ahead of the selector loads (ours sinks each store below its load) and reloads +0x28 after 0x25ab50 at both sites.
-// M3 lane 5 r177 (fast, 0x259e70, 0x259ec0 and 0x25ab50 matched each time): case 7's dot as `dot3f(forward, velocity)` 276;
-// case 7's actor unit index named for its two tests 333 (1852 B); case 7's moving test as one ternary with the object
-// looked up in the arm 364 (1860 B); the five `success = true` cases under one label list 270 (same code); case 5's
-// selector read at each use (no local_16) 270 (same code).
-// P423: Complete case four before 0/17/3/8/10/5/9/13/20/6 on the 1848-byte graph:
-// 344/337/335/367/390/425/427/428/428/427. Earlier core-only orders predated this result graph.
-// NOT kept: no gain; original complete callback restored.
-// P433: Independent complete case eight before 0/17/3/4/7/5/9/13:
-// 437/426/424/394/358/328/332/335. NOT kept: all regress; original callback restored.
-// Pool/input/output ownership and retained point references remain.
-// T99: Both movement-query publications on the native-length completion graph:
-// admitted query value / independent fallback / failure-first / reject-then-publish /
-// fallback as completion / admission expression / separate stores with admission /
-// negative fallback admission: 619/601/467/619/463/466/460/270.
-// NOT kept: no equality or gain; original complete callback restored.
-// P448: Original-site orientation/per-case movement/source/parent/property/lower-bound/lookup-result/final-mode decisions:
-// 272/270/272/272/272/272/272/272. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
-// P451: Independent recording/selection/current-point cases before zero 465/472/476;
-// orientation default store 412; recording exhaustive stores 219; parent-owned moving result 270;
-// direct branch delay stores 290; orientation selector at every use 270. NOT kept: the 219
-// form moves the zero store away from retail and grows to 1852/1848; other forms tie or regress.
-// M3 lane 12 r121 (one-file LTCG harness with the callee files, 1848 bytes, 257 for the plain 270; fast where given): the
-// perception guard as one `&&` test with an early return 309 (1852 bytes); the 1/19 point arm through a named point pointer
-// 259 harness; round 91's lead (`field_3 |= 0x40` before the point copy) re-measured on this body 261: every instruction
-// from the prologue's end through the 1/19 arm is then retail's (arg_0 EBP, output ESI, +0x28 reloaded after 0x25ab50),
-// but it reverses retail's store order (retail reads the reference before any store through the output), so not kept;
-// that with the actor looked up first (retail's prologue order, as in 0x259430) 495 harness: ESI is then unused early and
-// the guard's `return 2` gets its own shrink-wrapped epilogue where retail jumps to the shared failure tail; both pools
-// read into locals first (0x259ec0's idiom) with the lead 495, without it 505. Diagnostics: the 1/19 reference read
-// through a dword or as two word halves 446/432 harness. Left: retail treats 0x25ab50 as opaque at the 1/19 site and case 5.
-// P467: Complete 17/15/16 validation-and-movement family before 4/7/8/10/5/9/13/20,
-// on the native-length result graph: 318/350/413/437/471/471/474/470. NOT kept:
-// all regress and grow to 1860 or 1856 bytes; original complete callback restored.
-// Complete point-validation family before cases 8/10/5/9/13/20/6 on the native-length
-// completion graph: 401/420/455/460/461/461/461; existing actual property-record
-// input for recording 270. NOT kept: no equality or gain; placements grow to
-// 1864 bytes. Original whole callback and includes restored; pool/actor/output homes remain.
-// P494: existing shared byte-bit interface at complete orientation/moving/directed
-// payloads, masks 1/2/4/3/5/6/7: 410/390/343/342/423/392/422; point flag 277.
-// NOT kept: all regress; most payload forms grow past 1848 bytes. Original callback
-// and includes restored; native pool/actor/output homes and retained reference remain.
-// M3 lane 7 r162 (fast with 0x259e70, 0x259ec0, 0x25ab50 matched): the 1/19 arm in a block with a `long reference` local
-// for the check and the copy 272; the actor through actor_get(arg_0) at each use, no actor local 519 (1900 bytes); the 1/19
-// reference local with the actor looked up first 487 (1852); reference locals at the 1/19 arm and case 5 461 (1852); both
-// with the actor first 460 (1852). The actor-first order alone re-measured 487 (retail's pool load order, arg_0 still ESI).
-// M3 lane 3 r246 (fast with 0x259e70, 0x259ec0, 0x25ab50 matched): case 5's point pointer computed after the 0xcccd0 call 275;
-// the 1/19 reference read once into a `long reference` (block-scoped arm) for the test and the point 272; the 1/19 point
-// through a block-scoped const point pointer 272; case 5's two failures as `local_14 == NULL` and the 0x25ab50 test in
-// separate ifs 270 (same code); the tail as `short result = 2;` set to 0 on success 642 (1692 bytes). Retail's reload of
-// +0x28 after 0x25ab50 at both sites looks like a reload in place of a spill: all four saved registers are held there
-// (actor EBX, cs EDI, arg_0 EBP, output ESI), where ours evicts arg_0 from ESI to keep the reference.
-// P519: complete countdown case before 4/7/8/10/5/9/13/20 on the native-length
-// completion graph: 310/348/410/430/465/469/469/469. Earlier countdown placements used
-// the shorter completion graph. NOT kept: no exact source-order match; original
-// dispatch, point-reference observations and complete callback restored.
-// MiniMax I (11-15), NOT kept: 261 (was 270) moved the point store below the flag set (field_3 |= 0x40), a
-// statement order picked by score; kept only with a byte match. Code back to main, notes kept.
-// M3 lane 11 r106 (fast, base 270): every selector read as `*(short *)((byte *)local_1 + 6)` (the later functions'
-// form) 270 (same code); case 7's object read at each use (no local_8) 364 (1860 bytes); case 13's object read in each arm
-// 282; case 7's ratio index as one ternary 270; the actor looked up after the perception guard (guard through
-// actor_get) 270; the output parameter used directly with a cast at each use (no local_2) 270. Both inlined object
-// lookups (cases 7 and 13) load the pool's data pointer before the index in retail (EBX/EDX), after it here.
-// The two point reads (1/19 arm, case 5) through `cs_get(arg_3)` in place of local_1 506 (1876 bytes); that with the
-// 1/19 arm's test through it too 523 (1888 bytes).
+// The command fields are read through `command` and the two reference validations through the datum
+// itself: retail reloads the reference after each validation call instead of keeping it across.
+// HELD (needs the owner's OK): the datum's command fields as one `s_cs_order command;` member read as
+// `cs->command.x` everywhere (no union) also matches, but renames five field reads in 0x258880 (same code).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
-	s_cs_datum *local_1 = cs_get(arg_3);
 	s_actor_view *local_0 = actor_get(arg_0);
+	s_cs_datum *local_1 = cs_get(arg_3);
 	s_258cf0 *local_2 = (s_258cf0 *)arg_2;
+	s_cs_order const *command = &local_1->command;
 	bool success = false;
-	if (((s_handler_actor_view *)local_0)->perception_index != NONE)
+	bool allowed = true;
+	long perception_index = ((s_handler_actor_view *)local_0)->perception_index;
+	if (perception_index != NONE)
 	{
-		switch (local_1->type)
+		switch (command->type)
 		{
 		case 1: case 4: break;
-		default: return 2;
+		default: allowed = false; break;
 		}
 	}
-	switch (local_1->type)
+	if (allowed)
 	{
-	case 1: case 2: case 3: case 4: case 6: case 7: case 8: case 9:
-	case 14: case 15: case 16: case 17: case 18: case 19: case 21:
-		function_259e70(arg_3);
-		break;
-	}
-	switch (local_1->type)
-	{
-	case 0:
-		local_2->field_0 = (short)local_1->unknown08;
-		success = true;
-		break;
-	case 17:
-		if (!function_25ab50(local_1->unknown2c))
+		switch (command->type)
 		{
+		case 1: case 2: case 3: case 4: case 6: case 7: case 8: case 9:
+		case 14: case 15: case 16: case 17: case 18: case 19: case 21:
+			function_259e70(arg_3);
 			break;
 		}
-	case 15:
-	case 16:
-		if (!function_25ab50(local_1->unknown28))
+		switch (command->type)
 		{
+		case 0:
+			local_2->field_0 = (short)command->unknown04;
+			success = true;
 			break;
-		}
-		{
-			success = function_259ec0(arg_0, arg_3);
-			if (success)
+		case 17:
+			if (!function_25ab50(local_1->command.second_reference))
 			{
-				local_1->unknown77 = true;
+				break;
 			}
-			else if (local_1->unknown76)
+		case 15:
+		case 16:
+			if (!function_25ab50(local_1->command.reference))
 			{
-				local_1->unknown77 = false;
+				break;
+			}
+			{
+				success = function_259ec0(arg_0, arg_3);
+				if (success)
+				{
+					local_1->unknown77 = true;
+				}
+				else if (local_1->unknown76)
+				{
+					local_1->unknown77 = false;
+					success = true;
+				}
+				break;
+			}
+		case 3:
+			local_2->field_0 = 0;
+		case 2:
+			if (!function_25ab50(local_1->command.second_reference))
+			{
+				break;
+			}
+		case 1:
+		case 19:
+			if (!function_25ab50(local_1->command.reference))
+			{
+				break;
+			}
+			if (local_0->unknown018 != NONE)
+			{
+				success = function_259ec0(arg_0, arg_3);
+				if (success)
+				{
+					local_1->unknown77 = true;
+				}
+				else if (local_1->unknown76)
+				{
+					local_1->unknown77 = false;
+					success = true;
+				}
+				break;
+			}
+			*(s_type_c3b527 *)((byte *)local_2 + 8) = cs_point_get(command->reference)->point;
+			local_2->field_3 |= 0x40;
+			success = true;
+			break;
+		case 4:
+			{
+				function_b9dd0(arg_1, &local_2->field_18);
+				real local_5 = command->unknown08 * 0.01745329238474369f;
+				local_2->field_c.k = 0.f;
+				local_2->field_c.i = (real)cos(local_5);
+				local_2->field_c.j = (real)sin(local_5);
+				short local_6 = command->selector;
+				if (local_6 >= 0 && local_6 <= 3)
+				{
+					local_2->field_8 = local_6;
+				}
+				else
+				{
+					local_2->field_8 = NONE;
+				}
+				if (local_0->unknown018 == arg_1)
+				{
+					function_1f86a0(arg_0);
+				}
+				local_2->field_3 = (local_2->field_3 & ~2) | 1;
 				success = true;
+				break;
 			}
-			break;
-		}
-	case 3:
-		local_2->field_0 = 0;
-	case 2:
-		if (!function_25ab50(local_1->unknown2c))
-		{
-			break;
-		}
-	case 1:
-	case 19:
-		if (!function_25ab50(local_1->unknown28))
-		{
-			break;
-		}
-		if (local_0->unknown018 != NONE)
-		{
-			success = function_259ec0(arg_0, arg_3);
-			if (success)
+		case 7:
 			{
-				local_1->unknown77 = true;
-			}
-			else if (local_1->unknown76)
-			{
-				local_1->unknown77 = false;
+				if (arg_1 == local_0->unknown018 && local_0->unknown26c != NONE)
+				{
+					break;
+				}
+				local_2->field_3 = (local_2->field_3 & ~0x18) | 4;
+				bool local_7;
+				if (arg_1 == local_0->unknown018)
+				{
+					local_7 = local_0->unknown5d0 && *(short *)((byte *)local_0 + 0x5d6) == 0;
+				}
+				else
+				{
+					s_slot_object_view *local_8 = object_get(arg_1);
+					local_7 = local_8->parent_index == NONE && dot3f(&local_8->velocity, &local_8->forward) > 2.f;
+				}
+				long local_9;
+				if (local_7)
+				{
+					local_9 = 0;
+				}
+				else
+				{
+					local_9 = real_to_long(g_510c54->field_2_3 * 0.33f);
+				}
+				local_2->field_8 = (short)local_9;
+				local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
+				local_2->field_c.i = (real)cos(command->unknown04 * 0.01745329238474369f) * command->unknown08;
+				local_2->field_c.j = (real)sin(command->unknown04 * 0.01745329238474369f) * command->unknown08;
 				success = true;
+				break;
 			}
+		case 8:
+			{
+				if (arg_1 == local_0->unknown018 && local_0->unknown26c != NONE)
+				{
+					break;
+				}
+				local_2->field_3 = (local_2->field_3 & ~8) | 0x14;
+				local_2->field_8 = 0;
+				local_2->field_c.i = command->unknown04;
+				local_2->field_c.j = command->unknown08;
+				local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
+				success = true;
+				break;
+			}
+		case 10:
+			local_1->unknown8c = false;
+			switch (command->selector)
+			{
+			case 0: local_1->unknown8c = true; local_1->unknown90 = 0x700002c; break;
+			case 1: local_1->unknown8c = true; local_1->unknown90 = 0xe00002a; break;
+			case 2: local_1->unknown8c = true; local_1->unknown90 = 0xd00002b; break;
+			case 3: local_1->unknown8c = true; local_1->unknown90 = 0xa00002d; break;
+			case 4: local_1->unknown8c = true; local_1->unknown90 = 0xb00002e; break;
+			case 5: local_1->unknown8c = true; local_1->unknown90 = 0xa000010; break;
+			case 6: local_1->unknown8c = true; local_1->unknown90 = 0x9000011; break;
+			case 7: local_1->unknown8c = true; local_1->unknown90 = 0x9000012; break;
+			case 8: local_1->unknown8c = true; local_1->unknown90 = 0xa000013; break;
+			case 9: case 10: local_1->unknown90 = NONE; local_1->unknown8c = true; break;
+			}
+			success = local_1->unknown8c;
 			break;
-		}
-		*(s_type_c3b527 *)((byte *)local_2 + 8) = cs_point_get(local_1->unknown28)->point;
-		local_2->field_3 |= 0x40;
-		success = true;
-		break;
-	case 4:
-		{
-			function_b9dd0(arg_1, &local_2->field_18);
-			real local_5 = *(real *)&local_1->unknown0c[0] * 0.01745329238474369f;
-			local_2->field_c.k = 0.f;
-			local_2->field_c.i = (real)cos(local_5);
-			local_2->field_c.j = (real)sin(local_5);
-			short local_6 = *(short *)local_1->unknown06;
-			if (local_6 >= 0 && local_6 <= 3)
+		case 5:
 			{
-				local_2->field_8 = local_6;
+				byte *local_14 = (byte *)function_1e5380(arg_0);
+				if (!local_14 || !function_25ab50(local_1->command.reference))
+				{
+					break;
+				}
+				s_cs_point *local_15 = cs_point_get(command->reference);
+				function_cccd0(local_0->unknown018, *(short *)(local_14 + 4), 1);
+				local_1->unknown99 = false;
+				*(s_type_c3b527 *)local_1->unknown9c = local_15->point;
+				local_1->unknown9a = 0;
+				short local_16 = command->selector;
+				if (local_16 >= 0 && local_16 < 3)
+				{
+					local_1->unknown9a = local_16;
+				}
+				local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
+				success = true;
+				break;
 			}
-			else
+		case 9:
 			{
-				local_2->field_8 = NONE;
+				long local_19 = command->reference;
+				if (local_19 < 0 || local_19 >= *(long *)((byte *)g_4e0350 + 0x198))
+				{
+					break;
+				}
+				short local_21 = named_entry_find((s_named_entry_owner *)g_4e0350,
+					*(char **)((byte *)g_4e0350 + 0x19c) + local_19 * 0x28);
+				if (local_21 == NONE)
+				{
+					break;
+				}
+				success = function_1fb360(arg_1, local_21, 0);
+				break;
 			}
-			if (local_0->unknown018 == arg_1)
+		case 13:
 			{
-				function_1f86a0(arg_0);
+				s_slot_object_view *local_object = object_get(arg_1);
+				if (command->selector == 1)
+				{
+					((s_swarm_object *)local_object)->flag6 = true;
+				}
+				else
+				{
+					((s_swarm_object *)local_object)->flag5 = true;
+				}
+				function_b7360(arg_1);
+				success = true;
+				break;
 			}
-			local_2->field_3 = (local_2->field_3 & ~2) | 1;
+		case 20:
+			function_26c180(arg_0);
+			local_1->unknownd1 = false;
+			((s_25a380 *)local_1)->field_c0 = local_0->unknown27c.point;
+			local_1->unknownac = true;
+			function_1f86a0(arg_0);
+			success = true;
+			break;
+		case 6:
+			success = true;
+			break;
+		case 12:
+			success = true;
+			break;
+		case 14:
+			success = true;
+			break;
+		case 18:
+			success = true;
+			break;
+		case 21:
 			success = true;
 			break;
 		}
-	case 7:
-		{
-			if (arg_1 == local_0->unknown018 && local_0->unknown26c != NONE)
-			{
-				break;
-			}
-			local_2->field_3 = (local_2->field_3 & ~0x18) | 4;
-			bool local_7;
-			if (arg_1 == local_0->unknown018)
-			{
-				local_7 = local_0->unknown5d0 && *(short *)((byte *)local_0 + 0x5d6) == 0;
-			}
-			else
-			{
-				s_slot_object_view *local_8 = object_get(arg_1);
-				local_7 = local_8->parent_index == NONE && dot3f(&local_8->velocity, &local_8->forward) > 2.f;
-			}
-			long local_9;
-			if (local_7)
-			{
-				local_9 = 0;
-			}
-			else
-			{
-				local_9 = real_to_long(g_510c54->field_2_3 * 0.33f);
-			}
-			local_2->field_8 = (short)local_9;
-			local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
-			local_2->field_c.i = (real)cos(local_1->unknown08 * 0.01745329238474369f) * *(real *)local_1->unknown0c;
-			local_2->field_c.j = (real)sin(local_1->unknown08 * 0.01745329238474369f) * *(real *)local_1->unknown0c;
-			success = true;
-			break;
-		}
-	case 8:
-		{
-			if (arg_1 == local_0->unknown018 && local_0->unknown26c != NONE)
-			{
-				break;
-			}
-			local_2->field_3 = (local_2->field_3 & ~8) | 0x14;
-			local_2->field_8 = 0;
-			local_2->field_c.i = local_1->unknown08;
-			local_2->field_c.j = *(real *)local_1->unknown0c;
-			local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
-			success = true;
-			break;
-		}
-	case 10:
-		local_1->unknown8c = false;
-		switch (*(short *)local_1->unknown06)
-		{
-		case 0: local_1->unknown8c = true; local_1->unknown90 = 0x700002c; break;
-		case 1: local_1->unknown8c = true; local_1->unknown90 = 0xe00002a; break;
-		case 2: local_1->unknown8c = true; local_1->unknown90 = 0xd00002b; break;
-		case 3: local_1->unknown8c = true; local_1->unknown90 = 0xa00002d; break;
-		case 4: local_1->unknown8c = true; local_1->unknown90 = 0xb00002e; break;
-		case 5: local_1->unknown8c = true; local_1->unknown90 = 0xa000010; break;
-		case 6: local_1->unknown8c = true; local_1->unknown90 = 0x9000011; break;
-		case 7: local_1->unknown8c = true; local_1->unknown90 = 0x9000012; break;
-		case 8: local_1->unknown8c = true; local_1->unknown90 = 0xa000013; break;
-		case 9: case 10: local_1->unknown90 = NONE; local_1->unknown8c = true; break;
-		}
-		success = local_1->unknown8c;
-		break;
-	case 5:
-		{
-			byte *local_14 = (byte *)function_1e5380(arg_0);
-			if (!local_14 || !function_25ab50(local_1->unknown28))
-			{
-				break;
-			}
-			s_cs_point *local_15 = cs_point_get(local_1->unknown28);
-			function_cccd0(local_0->unknown018, *(short *)(local_14 + 4), 1);
-			local_1->unknown99 = false;
-			*(s_type_c3b527 *)local_1->unknown9c = local_15->point;
-			local_1->unknown9a = 0;
-			short local_16 = *(short *)local_1->unknown06;
-			if (local_16 >= 0 && local_16 < 3)
-			{
-				local_1->unknown9a = local_16;
-			}
-			local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
-			success = true;
-			break;
-		}
-	case 9:
-		{
-			long local_19 = local_1->unknown28;
-			byte *local_20 = (byte *)g_4e0350;
-			if (local_19 < 0 || local_19 >= *(long *)(local_20 + 0x198))
-			{
-				break;
-			}
-			short local_21 = named_entry_find((s_named_entry_owner *)local_20,
-				*(char **)(local_20 + 0x19c) + local_19 * 0x28);
-			if (local_21 == NONE)
-			{
-				break;
-			}
-			success = function_1fb360(arg_1, local_21, 0);
-			break;
-		}
-	case 13:
-		{
-			s_slot_object_view *local_object = object_get(arg_1);
-			if (*(short *)local_1->unknown06 == 1)
-			{
-				((s_swarm_object *)local_object)->flag6 = true;
-			}
-			else
-			{
-				((s_swarm_object *)local_object)->flag5 = true;
-			}
-			function_b7360(arg_1);
-			success = true;
-			break;
-		}
-	case 20:
-		function_26c180(arg_0);
-		local_1->unknownd1 = false;
-		((s_25a380 *)local_1)->field_c0 = local_0->unknown27c.point;
-		local_1->unknownac = true;
-		function_1f86a0(arg_0);
-		success = true;
-		break;
-	case 6:
-		success = true;
-		break;
-	case 12:
-		success = true;
-		break;
-	case 14:
-		success = true;
-		break;
-	case 18:
-		success = true;
-		break;
-	case 21:
-		success = true;
-		break;
 	}
 	if (success)
 	{
@@ -2359,16 +1918,25 @@ __forceinline s_handler_object_view *cs_creature_iterator_next(s_ai_object_itera
 	if (iterator->next_index != NONE)
 	{
 		s_object_ai_data *creature;
-		long next_index;
 
 		object = handler_object_get(iterator->next_index);
-		next_index = NONE;
-		if (!object->flags134 && (creature = (s_object_ai_data *)((byte *)object + object->ai_offset)) != NULL)
-		{
-			next_index = creature->next_creature_index;
-		}
 		iterator->index = iterator->next_index;
-		iterator->next_index = next_index;
+		if (!object->flags134)
+		{
+			creature = (s_object_ai_data *)((byte *)object + object->ai_offset);
+		}
+		else
+		{
+			creature = NULL;
+		}
+		if (creature != NULL)
+		{
+			iterator->next_index = creature->next_creature_index;
+		}
+		else
+		{
+			iterator->next_index = NONE;
+		}
 	}
 
 	return object;
@@ -2379,6 +1947,9 @@ __forceinline s_handler_object_view *cs_creature_iterator_next(s_ai_object_itera
    finished or failed, then 2 when more finished than failed, else 1 */
 // score 21 (was 100): the loop keeps the next index in esi and the creature data in edi where retail swaps them,
 // and ours steps the next index through edx where retail writes edi directly.
+// Matched in a full build with stand-in SDK headers (was 21): the creature iterator step stores index first and
+// then next_index in an if/else (retail's shape), and at both sites the ai data pointer is set in each arm of the
+// flags134 test and tested for NULL after it.
 // @retail 0x258b60
 short function_258b60(long actor_index, cs_iterate_proc proc, long cs_index)
 {
@@ -2400,7 +1971,15 @@ short function_258b60(long actor_index, cs_iterate_proc proc, long cs_index)
 			while ((object = cs_creature_iterator_next(&iterator)) != NULL)
 			{
 				byte *data;
-				if (!object->flags134 && (data = (byte *)object + object->ai_offset) != NULL)
+				if (!object->flags134)
+				{
+					data = (byte *)object + object->ai_offset;
+				}
+				else
+				{
+					data = NULL;
+				}
+				if (data != NULL)
 				{
 					short outcome = proc(actor_index, iterator.index, (s_cs_state *)(data + 0x28), cs_index);
 					*(short *)(data + 0x2c) = outcome;
@@ -2472,7 +2051,51 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 479 (was 479): m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
+// score 429 (was 429; m3 lane 2 r139 unchanged, its lines just above the marker; m3 lane 5 r233 unchanged; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier header line, a stack merged here in m3 lane 2 r139: 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 429 (was 429; m3 lane 13 r147, m3 lane 5 r233, m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; two stacked header lines merged here, r147): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
+// Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier note: r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// still differ. The 0x1c frame and entry register ownership agree.
+// r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
+// differ. The 0x1c frame and entry register ownership agree.
+// Earlier: The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
+// Earlier score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
+// MiniMax I (11-19): no new form, no lower score (433): the case-13 body still returns through its own 16-bit move instead of
+// retail's shared 32-bit return-1 block, the turn-facing sum is still added in the other order, and the case-4 dot product is
+// still computed with the vector helper from the other file where retail inlines it.
+// Earlier note (433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
+// MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
+// MiniMax H (11-18): score 433 (was 479): the switch's cases now sit in retail's order and case 13 returns 1;
+// what still differs is the shared return-1 block, which this build keeps at the end of the function where retail
+// places it after case 0's body at the case-13 slot, the case-13 body, which returns through a 16-bit move
+// where retail's is the shared 32-bit one, the turn-facing sum, which is added in the other order, the case-4
+// dot product, which this build computes with another file's helper where retail inlines it, and the facing
+// and colour copies, which choose the other registers. The turn-facing sum written with its terms in the other
+// order measures 431, a gain of two, which is below the keep bar.
+// m3 lane 14 r111 (fast with 0x110ab0; control 433 = full; aligned counts with the jump table cut off, control 126).
+// What differs: the `if (local_3)` test sits after case 20 where retail places it after case 0, falling into case
+// 13's return-1 epilogue (retail joins the two return-1 blocks there); case 20's else arm stores and reloads the flag
+// where retail loads it into AL and jumps past the reload; case 5's `field_0 == 0` is one join where retail repeats it
+// (with the EBX/EDI reloads) in each arm and shares case 0's `sete`; case 4 copies the facing; case 2 copies the turn
+// facing as floats; case 6 folds its two flag sets into `or 0x69`; case 7/8's flag is normalised. Forms: case 4 reading
+// the state's facing directly 611 (2400 B: actor EDI, state EBX); case 2's copy as an aggregate assignment 611; both
+// 623 (2384 B); case 18's targets in nested two-use locals 583 (flipped too), with case 4 direct 609; those three
+// together 616, with every form below 630 (2368 B; with EBX/EDI swapped back the rest is aligned 136); case 13 as the
+// shared `local_30 = 1; goto` exit 481 (2404 B: the joined epilogue moves to the end with the test), as `break` 481,
+// removed 481; case 0 moved after case 20 525, with case 13's goto 447; case 7/8's flag as `arg_1 == unknown018 ?
+// unknown264 : true` 493 (case 7/8 then exactly retail's; match-only, as listed); case 5 as `!function_e70e0(arg_1) ? 0 :
+// rate` 404 (retail's arm order, AX reused; NOT kept: arms swapped with the condition negated, match-only), as an
+// if/else 592; the two together 494, with case 13's goto 474; the turn-facing products' operands commuted 433 (same
+// code), the two terms swapped 431 (NOT kept: two lower); the 0x465 flag through a long cast 433 (2420 B); case 20's
+// else as `&& !d1` / nested `if (!d1) local_3 = false;` 537/537 (2440 B); the flag as bool 433 (same code); case 21's
+// target in a two-use local 433 (same code); case 20's iterator as data, index, datum_index 433; plain `return 1;` /
+// `return 0;` exits 485 (2400 B), with the case 7/8 and case 5 forms 485.
+// m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
+// frame 0x1c and entry agree. Dispatch span, planar copy and request flag stores differ.
+// Earlier m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // / `return 0;` 483 (re-measured on this base); one `turn_facing` pointer for case 2's copy and publish (same code); case
 // 2's aggregate copy, case 4's facing reads and case 18's and case 21's targets held across 0x25ab50, together 636
 // (re-measured), with the plain returns 640; case 2 + case 4 only 639; cases 18 + 21 only 619. Each still gives the
@@ -2789,7 +2412,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 479/479/479/479/479/479/479/479. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P449: Primary countdown, actor, animation release/index, facing, turn, delay and motion decisions:
 // 479/479/479/479/479/479/483/479. NOT kept: no exact scratch-register or completion-tail repair.
-
+//
+// Earlier note: the body gives the actor EBX and the state EDI as retail but is 20 bytes long (case 2's facing
+// copy, case 4's facing reads, case 7/8's flag, the +0x465 byte); the 2396-byte forms exchange the two registers unless
+// case 21's state use after the 0x1c1080 call reads the parameter's stack home (r238 below).
 // M3 lane 16 r114 (fast with the file and 0x110ab0; control 479, aligned 215; all restored): the +0x465 flag as `c ? 1 : 0` or
 // through a long cast 482 (2408 bytes: retail's `mov eax, 1` / `xor eax, eax`, aligned 214, four bytes longer); case 18's two
 // references in two-use locals under nested tests 619 (2400 bytes; actor EDI, state EBX); case 21's reference in a two-use local
@@ -2839,6 +2465,378 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20) 481 (the case 14 block then sits where retail's does; case
 // 18's registers rotate and an alignment pad appears), with cases 9 and 11 as `local_0->unknown018 == arg_1` 481; the result
 // flag `local_3` as `bool` 479 (same code).
+// M3 lane 15 r92 (plain unless marked; the fast image is not faithful here: fast control 474 at 2400 B against the full
+// 479 at 2404 B): case 4 with the facing read from the field at each use, no aggregate copy, 627 (2384 B; fast 467 at
+// retail's 2396 B: the copy is retail's missing 8 instructions, but the full build then gives the actor EDI and the
+// state EBX from +0x9); the facing through a const pointer 627; that with `displacement` declared first 627; case 4 as
+// `dot3f(&local_2->field_c, &displacement)` 627 (retail's k, j, i product order); dot3f with the operands swapped 627.
+// M3 lane 16 r129 (fast with 0x110ab0, confirmed plain with the file; control 479, aligned 199, register-masked 146).
+// Kept (behaviour, count unchanged): case 4's dot and case 20's two squared distances written i, j, k. VC emits these
+// three-term float sums in the reverse of their written order, so the k, j, i spellings compiled to (i + j) + k
+// where retail computes (k + j) + i (0x259771-0x2597ad, 0x259ae5-0x259b2b, 0x259b93-0x259bde); written i, j, k all
+// three now round as retail's, and case 20's two blocks are retail's instructions and registers: 479 (aligned 172,
+// register-masked 131; the case 20 change alone 168/133). The walk above that called these sums retail's order read
+// the source, not the compiled code. On the case 2 aggregate copy (610, re-measured, actor EDI and state EBX): case 18's
+// targets in nested two-use locals 612 (2400 B); case 21's target in a nested local 610 (same code); the +0x465 flag
+// as `c ? 1 : 0` 610; cases 9 and 11 as `local_0->unknown018 == arg_1` 610; case 6 with g_5023fc read at each use 610
+// (same code); case 1's point at function scope 610 (same code); case 4's facing read from the state's fields 639 (as
+// listed). Every one still gives the actor EDI and the state EBX.
+// Two-field planar initializers at the animation release, turning and fallback sites 501/488/494;
+// release+turning/release+fallback/turning+fallback 502/509/503; all three 510; separate component assignments
+// at all three 510. NOT kept: component transfers grow the body to 2412 to 2440 bytes against retail's 2396;
+// the first difference is still the dispatch displacement at +0x51.
+// cases 7/8 fall through to 0 479;
+// cases 7/8 else-break then fall through 479;
+// grouped timer cases 611;
+// case 1 commits completion first 619;
+// case 1 commits pending first 619;
+// case 5 falls through to 0 479;
+// cases 7/8 fall through with direct case 1 completion 619;
+// case 5 falls through with direct case 1 completion 620;
+// Original body restored.
+// The 0x1c frame and entry ownership agree. The default branch span, animation
+// copy registers and post-dispatch completion placement still differ.
+// Case 20 inactive guard 488; existing target first 484; missing-target
+// continue 479; missing-target and distance continues 479; for with a
+// result-tested iterator and missing-target guard 479; inactive and missing
+// guards 488; inactive guard with existing target first 487; clear completion
+// from active-search or wait state 479. NOT kept: tied or longer forms.
+// N408: Planar input transfers into animation/turn/fallback workspaces, memcpy 474/474/474,
+// memmove 578/507/491. Animation pair through its named actor field 474. All three memcpy 474.
+// Request bit setter for 0x29/0x48/both 453/445/452. NOT kept: copy forms tie or regress versus the
+// reduced control 474. Setters increase length to 2416-2432/2396 bytes and give different store sequences.
+// MiniMax R (11-17): no new form, no lower score (479): the switch's jump table still lays the case blocks out in the source's order rather than retail's (1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20), so the actor takes edi where retail keeps the state in ebx, and the rounds above record that no case order or arm spelling moves them.
+// guarded pending tail 657; three facing branches 474; delayed facing first 578; negative delay admission
+// 474; fallback point selection 478; carried turn admission 474; separate active timer paths 481; selected
+// animation ticks 627. NOT kept: The delayed-facing branch forms tie the reduced control at 474. Selecting
+// the fallback point by address reaches 2396 bytes at 478 in that image, but changes the load boundary and
+// scores above the reduced control. The other variants regress.
+// The dispatch span, state-bit completion layout and animation copy registers still
+// differ. Shared subtype flags 479; subtype completion from the flag 618; incomplete
+// subtype guard 479; signed tick-reset value 477; shared countdown/facing flags 479;
+// retained selected object 479; facing scalars 627; playback admission guard 479;
+// committed turn flags 475. NOT kept: the tick and turn forms shorten to 2400 bytes,
+// but gain only two and four points and leave the dispatch span different.
+// DH406: Direct completed returns for case 1 distance, case 4 facing, or the clear timer flag in cases
+// 7/8 at 574/452/482. The three pairs 559/574/451; all three 559; all three with the default and case
+// 13 sharing a return 619. NOT kept: every form regresses at 2416 bytes. The native full-width
+// completion tail and dispatch span still differ.
+// M3 lane 4 r215 (fast with the file and 0x110ab0, control 433, aligned/masked 111/75): kept, the selector read as the new typed
+// command field (`local_1->command.selector`, three sites) and the 0x4d5 flag and the 0x6d4 vector through the actor view's typed
+// fields, 433 each (same code). Measured: the command fields through an `s_cs_order const *` (0x258cf0's matching form), all of
+// them 433 (same code), all but the two validation arguments 433 (masked 94); the result local as `long` 433 (same code: the
+// returns stay `mov ax, 1` where retail has `mov eax, 1`); one to four extra referenced locals (diagnostic) 433 each (case 2's dot
+// keeps its reassociated order); cases 9 and 11 as `local_0->unknown018 == arg_1` 432 (aligned 109, masked 73; one, not kept).
+// Retail evidence for a lead: case 18 reads every value (unknown04, selector, both references, held across the two validation
+// calls in [esp+0x38] and ESI) before the first store into the record, as an inlined setter taking them as arguments would;
+// ours re-reads the references after the byte stores. Case 6's two ORs stay separate in retail (0x29, then 0x48 from the copy).
+// M3 lane 4 r217 (fast; control 433, aligned 111, masked 75): case 2's turn vector as an aggregate copy with case 4's facing
+// read from the state at each use 624 (2384 B, masked 61: retail's code there, actor EDI / state EBX); that with plain
+// `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
+// checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
+// 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
+// M3 lane 6 r203 (fast with 0x110ab0/0x258b60/0x258a00; control 433, aligned 117/118): retail sends case 13 and the
+// default to one return-1 block that follows case 0 with the post-switch test, and cases 5 and 10 jump into case 0's
+// `sete`. That reads as the test and epilogue copied into each case and merged back into the first copy. Ours places
+// the test after case 20, whose else arm stores the flag and falls into the reload. Retail's short sibling 0x258cf0
+// returns through `xor ax, ax`, so the 32-bit `mov eax, 1` here comes from the merged result path, not the type.
+// Tried: a long return type (declaration, definition and the 0x258a00 call cast) with the result gotos 481 (2404 B:
+// case 13 merges into the end block), the same with plain returns 481; case 20's else arm as one assignment
+// `local_3 = unknownb0 == NONE || unknownd1` 527 (2432 B); local_2 declared ahead of local_0 433 (same code), and on
+// the case 2 aggregate copy + case 4 direct facing base 623 (same as that base, 623: actor EDI / state EBX; with the
+// two registers swapped back it is aligned 131 against the baseline's 117, so those forms are not retail's alone).
+// The frame and entry ownership hold, with a longer dispatch branch and different
+// copy-carrier registers. Release-direction assignment 433; requested and settled
+// direction snapshots 519/433; release and delayed workspace names 433; inverted
+// turn decision 433; byte turn decision 433; fallback value selection 589; named
+// delay mode 518; staged turn-direction test 433.
+// NOT kept: the equal scores leave the copy schedule and dispatch span different;
+// the regressing forms disturb the entry register roles or lengthen the tail.
+// M3 lane 5 r204 (fast with 0x110ab0; control 433; all restored): case 6's second OR through a signed char view 433
+// (same code: still `or 0x69`); case 4 reading the state's facing at each use 611 (2400 B, re-measured on this base:
+// actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a
+// symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
+// 13's `return 1` 613 (2416 B).
+// Further forms on the 433 base:
+//
+// MiniMax B (11-20): no new form, no lower score (480 measured, the line below still reads 433): the
+// dispatch-default branch span, the return placement and the timer and request scheduling still differ. The
+// selector orders tie at 433, the direct acknowledged return gives 477, and the case 2 turn vector as an
+// aggregate copy with case 4's facing read from the state at each use measures 624 (2400 bytes, masked 84 in an
+// earlier round). No form found this round.
+//
+// Further forms (433 base):
+// Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
+// busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
+// fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
+// The dispatch and timer paths still reach the late completion block.
+// Selector case order 0-2-1 433, Selector case order 1-0-2 433, Selector case order 1-2-0 433, Selector case
+// order 2-0-1 433, Selector case order 2-1-0 433, Selector acknowledgement exits directly 477, Reverse selector
+// order with direct acknowledgement exit 477, Unsupported selector exits as completed 433. NOT kept: The selector
+// orders and unsupported-selector return tie. The direct acknowledged return shortens the body to 2400 bytes at
+// 477. The checked callee stays at 164.
+// Early pending returns for a busy actor 586, disabled delayed facing 565, or both 590. Timer and
+// turn-start exits 588 with nested admission, 567 with admission guards. Separate mode guards 566.
+// Conditional settled or pending facing 599/618. NOT kept: All scores rise. The shortest form
+// leaves the dispatch and planar transfer different.
+// M3 lane 5 r209 (fast with 0x110ab0 at 164; control 433, aligned 151, register-masked 130). Retail's jump table sends
+// type 13 to the same return-1 block as the default (`ja`) target, after the post-switch result test that retail lays
+// out right after case 0 (cases 7/8, 0, 5 and 10 cross-jump into its `sete`). On retail's case order: case 13 removed
+// 481 (2404 B), as `break` 481, through the shared exit 481, removed with case 7/8 falling into case 0 481 (all with
+// the test moved to the end after case 20); case 13 moved after case 20 as `return 1` 515 (2432 B), as the shared exit
+// 447 (2420 B, aligned 139, masked 97: the result test then sits after case 0 as in retail, case 20's first arm jumps
+// back to it where retail has its own return-1 epilogue, and its else arm still stores the d1 flag; a case moved by
+// score, match-only), `default: return 1` last 613, with case 13 613, `default:` through the shared exit last 641.
+// The dispatch default and shared success target still span different blocks.
+// Direct type-19 release 475; direct ordinary release 473; direct returns in both release arms 474.
+// Direct completion at the unit request 679, playback 493, animation 405, object mode 438, all four 622.
+// NOT kept: The animation form adds a short-return epilogue where retail joins the shared completion test.
+// M3 lane 12 r155 (fast with 0x258a00 matched; control 433, aligned 151). Retail's jump table keeps this case order and lays
+// the post-switch test (`mov al, [esp+0x3c]; test; je tail`) between case 0 and case 13's return-1 block, which the `ja`
+// default shares; the tail sits after case 1. Forms: `case 13: default: return 1;` in case 13's place 608 (aligned 205);
+// `case 13: default:` through the shared exit 645 (2372 B); `case 13: default: break;` 478 (2400 B, aligned 178); only the
+// post-switch test as a plain `return 1;` 478 (2400 B, aligned 154); case 7/8 breaking early when bit 4 is clear and
+// falling into case 0 (case 13 kept) 480 (aligned 153). All restored.
+// The dispatch bounds branch still targets a late completion block. Signed type guard 671;
+// direct active-search completion 494, also with inactive-target guard 494; shared publication
+// for 18/21 604, 21/14 609, or all four request cases 626; shared dispatched type 626;
+// pending assigned on request admission 433. NOT kept: the shared requests shorten past
+// retail and move the dispatch or entry. The other forms tie or raise the score.
+// M3 lane 2 r116 (fast with 0x110ab0, 0x258cf0 and 0x25a130; control 433): case 6 through a typed slot-0x4c record (the
+// layout the slot-0x4c setters elsewhere use: element, seat, flags byte at +0x22, two reals) 433 (same code: the two
+// ORs still fold to `or 0x69`), with the 0x29 set ahead of the two 1000.f stores 433; case 20's first arm as a
+// conditional clear of the result (`if (ac || d0) result = false`) 433 (same code); that arm as a direct return 1
+// through the shared exit with the result cleared after it 502 (2432 B); its else arm as a conditional clear 537
+// (2440 B). Retail compares the actor field first in cases 9 and 11 only (`cmp [ebx + 0x18], reg`; cases 5, 6, 7/8
+// compare arg_1 first); listed above at 432. All restored.
+// M3 lane 11 r137 (fast with the file and 0x110ab0, plain-confirmed; control 433, aligned 152): kept, 433 -> 431: case 2's
+// turn test through the existing dot_product2d in place of the 2-D dot written out (either operand order, same code). On
+// it: the turn vector as an aggregate copy through `turn_facing` 611 (2404 B); case 4 as `dot3f(&displacement,
+// &local_2->field_c)` with no facing copy 611 (2400 B); both 623 (2384 B, register-masked 120 against 137: each is
+// retail's code there, but the actor takes EDI and the state EBX); both with case 6's flags through a named byte and two
+// stores 623 (masked 118); both with `long local_30` 623.
+// M3 lane 5 r217 (fast with 0x258cf0, 0x25a130, 0x258a00; control 433 at 2416 B, aligned 151 rows, 130 with registers
+// masked; each form given as score / bytes / masked rows). Read from retail, block by block: case 7/8's flag is a
+// conditional (`jne; mov al, [actor + 0x264]; jmp; mov al, 1`, no normalising test); the turn-side byte at +0x465 is
+// set from a 32-bit 1 or 0 (`mov eax, 1` / `xor eax, eax`, then `mov [x + 0x465], al`); case 2 copies the facing as
+// three dwords through `lea ecx, [actor + 0x424]`; case 4 reads the state's facing at each use; case 18 holds both
+// references across the two validation calls (one in the state argument's dead home, one in ESI); case 6 keeps two
+// ORs with a store between them and loads the flags byte ahead of the first store.
+// Single forms: case 7/8's flag as `arg_1 == actor->unit ? actor->flag264 : true` 493 / 2416 / 103 (retail's code
+// there), as an if/else 493 / 2416 / 103 (same code), as `!= ? true : flag` 494 / 2416 / 131, started true with an
+// `if` 493 / 2416 / 113 (`mov al, 1` ahead of the jump); the +0x465 byte as `comparison ? 1 : 0` 433 / 2420 / 129
+// (retail's 32-bit pair); the tail's hold flag as a long 516 / 2416 / 107 (`test eax, eax` where retail tests AL);
+// cases 9 and 11 comparing the actor field first 432 / 2416 / 128; case 13 through the shared exit 481 / 2404 / 138;
+// case 6 with the 0x29 OR right after the first store 433 (same code, still one `or 0x69`), through an inline
+// request-fill helper ending in the 0x29 OR 433 (same code: the helper boundary does not stop the fold); case 18's
+// references in two named locals tested one at a time 583 / 2416 / 125 (actor EDI / state EBX); the case 2 aggregate
+// copy 611 / 2404 / 136 and case 4's direct facing 611 / 2400 / 155, each alone exchanging the actor and state
+// registers, both 623 / 2384 / 112.
+// LEAD, not kept (the score rises): the conditional flag, the `? 1 : 0` byte, the actor-first compares, the
+// aggregate copy and the direct facing together give retail's 2396 bytes, 604, masked 111 (107 with stack offsets
+// masked); with case 18's named references 604 / 2396 / 106 (100). Everything left on it follows from one exchange:
+// ours gives the actor EDI and the state EBX, retail the reverse, so ours reloads the actor around the 0x210b60 and
+// 0x1c1080 calls and homes case 1's point at +0x1c, where retail shares +0x10 with the actor's spill. The register
+// references are equal in number in both builds (actor 59, state about 46), so the choice is not a use count.
+// Tried on the lead for the exchange, all still exchanged: the state read as the parameter at every use, or only
+// in case 1, or only at the 0x25a130 call (same code each); the datum declared ahead of the actor 618; the result
+// byte and the state declared first 629 / 2376; a pointer local for the turn facing 622 / 2376; one to three
+// parenthesis pairs in case 4's dot 622 / 2376 (regrouped, no phase effect). The switch as an inlined predicate
+// with the tail on the caller's own locals 645 / 2384 (frame changes, aligned 532).
+// m3 lane 4 r238 (fast with 0x110ab0 at 164, 0x258cf0, 0x25a130, 0x258a00; brackets = aligned / register-masked
+// counts; control 431 [109 / 82]; lane 5 r217's lead rebuilt on today's file 604 at 2396 B [191 / 64], actor EDI /
+// state EBX). The exchange is a use-count threshold after all, and one statement decides it. Diagnostics on the lead,
+// reverted: case 21's `field_3 |= 0x20` (the state's one use after the 0x1c1080 call, where EDI carries that call's
+// argument) removed gives retail's registers (440 at 2376 B, first difference back at +0x51); so does that statement
+// reading the state through a re-read of the function's own state parameter (`*(T *const volatile *)&arg_2`):
+// **421 at 2396 B [84 / 51]**, with case 18's two references in named locals 425 [82 / 46] (patch
+// build/r238/lead-259430-425-own-param.patch, m3-lane4; match-only, the function does not match, so not kept).
+// Retail does the same there: `mov eax, [esp + 0x38]; or byte ptr [eax + 3], 0x20`, and again in case 1 (`mov eax,
+// [esp + 0x38]; add eax, 8`) and at the end of each arm of case 5 (`mov edx, [esp + 0x38]; cmp word ptr [edx], ..;
+// mov edi, edx` with the actor reloaded from +0x10, although the arm's own store just before still goes through EDI).
+// Four extra actor uses in the tail (probe reads) flip the lead the same way, three do not; one or two do not.
+// On the lead, still exchanged (604 unless given): the tail's or the hold block's flag byte in a two-use local (same
+// code, also on main 431); the request cases' `|= 0x20` and type store through an inline helper taking the state, all
+// four cases or only case 21 (same code), on main 453 (2420 B); case 5's timer store through a pointer or a reference
+// to the field, declared at the case's top or in the arm (same code); the state read once through the parameter's
+// address (`T *const *home = &arg_2`) forwarded, same code, on main 431; case 18's named references 604 [183 / 61].
+// Diagnostic: the register copy made opaque (an added global offset) with case 21 reading the parameter gives the
+// actor EBX with frame 0x20 (624), with case 21 on the copy the exchange again (626).
+// Left on the 421: the tail's scratch rotation one step off from the first aggregate copy on (ECX/EDX for our
+// EAX/ECX), the 2-D dot's operand sides, case 4's first product (retail multiplies the displacement in place), the
+// post-switch test's place with the shared `sete` and `mov eax, 1`, case 5's reloads, case 6's two separate ORs and
+// global re-reads, the iterator's setup order and case 20's last arm.
+// M3 lane 16 r160 (fast with 0x110ab0; base 431 at 2416 B, difflib-aligned 165; each form as positional / bytes / aligned).
+// Layout cause: the post-switch `if (local_3)` block is placed after the first predecessor that leaves the flag in AL;
+// with case 20 last its else arm falls into it (the base), otherwise it follows case 9's call-result store. Retail has
+// it after case 0. Diagnostics (wrong code): case 9 removed puts it after case 0 and gives retail's case 5 (compare in
+// each arm) and case 10 (jump into case 0's `sete`); case 0 as a call result puts it after case 0; a byte from CL does
+// not. Case 9 spellings (field first, `== false`, `? 0 : 1`, `? : true` ternary, early break, named bool, inline
+// helper) all keep it after case 9. Forms: case 20 before case 14 419 / 2400 (case 20's else arm becomes retail's
+// `mov al, [d1]; jmp` into the test); case 13 as `break` or `default: break` after case 20 479; case 13 as the shared
+// exit placed after case 20 445 / 2420 / 144 (test after case 0, cases 5, 9, 10 exactly retail's; a case moved by
+// score, match-only), as `return 1` there 513; on that base: case 7/8's flag as `arg_1 == unknown018 ? unknown264 :
+// true` 492 / 2420 / 142; case 20's main arm as `if (!ac && !d0) { local_30 = 1; goto local_31; } local_3 = false;`
+// 503 / 2428 / 134 (retail's own return-1 epilogue there; `!(ac || d0)` and the conditional clear 492, `ac ? false :
+// !d0` 464 / 2396 / 165); its else arm as `else local_3 = b0 == NONE || d1;` 504 / 2424 / 150 (retail's AL form, the
+// tail's scratch rotation moves), `d1 != 0` 501; plus `? 1 : 0` at +0x465 and cases 9 and 11 field first 509 / 2428 /
+// 147; plus case 5 as `!function_e70e0(arg_1) ? 0 : rate` 385 / 2416 / 130 (arms swapped, match-only); plus the
+// second facing publish in the first's order (0x456, 0x458, 0x454) 384 / 2416 / 129 (that order alone on the base 429).
+// LEAD, not kept (case moved and arms swapped, match-only): the 384 form. Adding case 2's aggregate copy or case 4's
+// direct facing reads (retail's code at both) gives retail's 2396 bytes but exchanges actor and state again (518 /
+// 2384 / 207 with both; 504 / 2396 / 183 with case 18's targets held); the margin is two or three references (removing
+// case 14's two state references, wrong code, restores actor EBX). Not flipped by: case 4's facing through a pointer
+// local or a const reference, case 2 member by member (no exchange, but not retail's `lea` copy, 494 / 2416 / 184),
+// declarations state first 518, flag first 540, datum first 584, `arg_2` for `local_2` at both uses 518, a repeated
+// actor read in one condition (folded) 518, case 7/8 falling into case 0 518.
+// The dispatch bounds branch still reaches a later completion block.
+// Early pending assignment, joined or split motion exits, motion-result clear with nested or early guards,
+// inactive animation guard, named admission and switch-joined release 431 each. NOT kept: all tie.
+// One completion result through the sole return, byte/bool/short/long 708/708/672/669;
+// the same result guarding the whole pending tail 708/708/672/669.
+// NOT kept: every form lengthens the callback and loses the agreeing dispatch prefix.
+// Animation and base timers with case admission 556, Animation and base timers with shared rejection
+// 628, Turn and base timers with case admission 627, Turn and base timers with shared rejection 647,
+// Animation, turn and base timers with case admission 688, Animation, turn and base timers with shared
+// rejection 709, Timer object guard and separate animation start tests 431, Timer object guard and
+// branch stores 592.
+// NOT kept: Grouping the timer cases adds subtype tests and changes the agreeing entry. The separate animation start tests tie, and branch stores disturb allocation.
+// The bounds branch still reaches the late success epilogue and the countdown tests have different joins.
+// M3 lane 5 r223 (H2M_FAST with 0x110ab0 and 0x258a00; control 431 at 2416 B, aligned 149 / register-masked 128).
+// Retail loads the result pointer global right before its store in cases 6 and 18 where ours loads it at the top of
+// the case; diagnostic, reverted at once: that global's address held in a file-scope pointer 427, but 0x258a00 then
+// stops matching (7: it stores both globals ahead of the state byte read), so the global is not address-taken in
+// retail and the late load is scheduling. Lane 5 r217's lead (case 7/8 conditional flag, `? 1 : 0` byte, actor-first
+// compares, case 2 aggregate copy, case 4 direct facing) re-measured 604 at retail's 2396 B (aligned 245 / 109,
+// actor EDI and state EBX); on it: case 1's argument through `local_2` 604, the 0x25a130 argument through
+// `local_2` 604, both 604 (same code each: the two names are one value), the facing publish with the flag store
+// last 604; the lead without case 4's direct facing 593 (2404 B). Body unchanged.
+// The dispatch bounds branch still reaches a later completion block.
+// Compound playback pending test 486. Nested playback pending test 486.
+// Unit guard then playback pending test 486. Complete playback disjunction 499.
+// Inactive target pending test 535. Active search pending test 431.
+// Pending-only search results 535. Pending-only playback and search 531.
+// NOT kept: The active-search-only update ties the calibrated control. The other calibrated forms raise
+// the score. The playback disjunction reaches 427 on the single-address image and 499 on the calibrated
+// image, where it grows to 2432 bytes and changes the retail playback result sequence.
+// The 0x1c frame and entry register assignments agree. The first difference is the default branch span at +0x51. Test whether completion produced within each switch arm makes the default and case 13 share the retail completion block.
+// Arm-local completion defaults 596.
+// Arm-local Boolean defaults 596.
+// Arm-local defaults and direct case-13 default 630.
+// Arm-local Boolean defaults and direct case-13 default 630.
+// Arm-local defaults with exhaustive playback 596.
+// Arm-local defaults with exhaustive timer 596.
+// Arm-local defaults with exhaustive search 596.
+// Arm-local defaults with exhaustive subtype completion 596.
+// NOT kept: Every arm-local form swaps the actor and state registers at entry. Sharing the default with case 13 shortens the code by four bytes but scores 630. The original completion lifetime is restored.
+// M3 lane 2 r130 (h2m fast with 0x110ab0 and 0x258a00, control 431; without them the image gives 478): kept, the
+// post-switch result as an if/else (`local_30 = 1;`, else the tail then `local_30 = 0;`) in place of its two `goto local_31`
+// exits, 431 (same code). Measured: case 13 through the shared exit 479 (2404 B, re-measured); `default: return 1;` in
+// case 13's place with case 13 dropped 613 (the dispatch differs from +0x8); `long local_30` 431 (same code); on the kept
+// form, case 2's early exit as `return 1;` with the label dropped 474 (2400 B: both its epilogues become `mov ax, 1`).
+// Reading: retail's case 20 else arm loads d1 into AL and jumps to the test's `test al, al` (0x2597f2), an `if (d1)`
+// test cross-jumped into the post-switch test, and that test sits right before the return-1 block case 13 and the
+// default share, so case 0's `sete` falls into it and cases 5 and 10 jump to its `sete`.
+// M3 lane 2 r132 (h2m fast with 0x110ab0 and 0x258a00; control 431 at 2416 B, masked aligned 77/78 unmatched): case 9
+// as a conditional clear (`if (arg_1 == unknown018 && playing) local_3 = false;`) 486 (2416 B; retail computes `!call`
+// with neg/sbb/inc, so this is not its form); that with case 20's else arm as `else if (b0 != NONE && !d1) local_3 =
+// false;` 531 (2440 B); both with case 13 dropped 467 (2424 B); case 20's else arm clear with case 13 dropped 505 (2424 B,
+// aligned 65/63: the post-switch test then sits after case 0 with the shared `mov eax, 1` block after it and case 5's
+// reloads and jump into case 0's `sete` exactly retail's; left: case 7/8's normalised flag, case 5's zero arm, case 6's
+// globals, cases 2 and 4, case 20's main arm `je; jmp` for retail's `jne tail` + epilogue copy, and its else arm
+// `test al, al; jne` for retail's `mov al, d1; jmp` into the test); case 9's clear with case 13 dropped 475 (2400 B, test
+// after case 20). Diagnostic: case 13 dropped alone 479 (2404 B, test after case 20). Reading: the post-switch test
+// follows case 20 whenever case 20's else arm stores the flag (it falls through into the test); retail's arm never
+// stores it (AL is tested in place), so its test went to the first predecessor, case 0. Restored.
+// The 0x1c frame agrees. The default dispatch still spans to a late success exit.
+// Selector comparison chains 0/1/2, 0/2/1, 1/0/2, 1/2/0, 2/0/1 and 2/1/0:
+// 596/596/596/595/596/595. Long selector 615, pending flag arm first 596.
+// NOT kept: the chains reverse the retail entry allocation and raise the score.
+// M3 lane 8 r220 (h2m fast with 0x110ab0 and 0x258a00; control 431; without 0x110ab0 listed the image gives 477-484, so
+// list it): case 20's iterator set up data, index, datum_index (the order the matched player walks use and retail's stores
+// show) 431 (same score); that with cases 9 and 11 comparing the actor field first 430; that with the second facing publish
+// storing the flag ahead of the copy (retail's store order) 428 (three retail-evidenced changes, under the bar); case 6's
+// 0x48 OR written through the global (two stores as retail, but the global is reloaded) 484 (2432 B); case 4's dot terms
+// written k, j, i 431 (same code: the sum is re-sorted to i, j, k, where retail forms k*dz + j*dy first from the state's
+// facing read in place). Body unchanged.
+// M3 lane 12 r173 (h2m fast with 0x110ab0 and 0x258a00, both as before; control 431): kept, case 20's two squared
+// lengths through the existing length_sq3f in place of the written-out sums 429 (plain 429). On it: cases 9 and 11
+// comparing the actor field first 428; that with the iterator set up data, index, datum_index 428; that with the
+// second facing publish storing the flag ahead of the copy 426; the flag-first publish alone 427 (retail-evidenced
+// orders, together 3 under the kept body, not kept).
+// Use direct returns through the function, with search success on acknowledgement,
+// absence or acknowledgement, active completion, or both active and inactive paths
+// 521/517/494/540. Share the explicit default with case 13 on these forms
+// 653/565/633/666. NOT kept: the closest form still misses the retail dispatch
+// displacement. Three explicit-default forms also change the entry allocation.
+// The default completion remains late, and the animation copy uses EAX before forming its receiver. Native
+// planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
+// fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
+// 431. All retain the 0x1c frame and the existing copy schedule.
+// M3 lane 16 r177 (h2m fast with 0x110ab0; control 429; the r160 lead re-measured 403 at 2416 B, with case 2's aggregate
+// copy and case 4's direct facing reads 518 at 2384 B, actor EDI / state EBX). New forms, same code on both bases: case
+// 20's actor position named once for its two difference calls 429 / 518; the state local declared `const` 518; case 2's
+// two short stores ahead of the aggregate copy 518; case 21's 0x20 flag set through the parameter's own flags field 429 /
+// 518, and through one read of the parameter's address 518. The exchange is not a matter of names or order. Body unchanged.
+// M3 lane 5 r233 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, aligned 129/130, register-masked
+// 81/82; body unchanged). Case 2's record written as the matched siblings write it (0x1ac090, 0x1bd3b0, 0x1c10a0: type,
+// mode, vector, flag, typed fields) with the vector read straight from the actor (`actor->unknown424.vector = *(vector3f
+// const *)((byte *)actor + 0x4d8)`, no pointer local) gives retail's copy schedule exactly (two loads ahead of the first
+// store, the type and mode stores ahead of the copy's last store) but exchanges the actor and state registers 608
+// (2404 B); the same order through the `turn_facing` pointer 606, with vector3f_assign kept 431 (same code as main but
+// for the store order). 64 subsets of {case 13 dropped, case 20's else arm as a conditional clear, case 7/8's
+// conditional flag, case 5's swapped arms, case 18's held targets, the second publish flag-first} on that case 2 form
+// with case 4's direct facing: every one exchanged (first difference +0x9), best 551. A closing `default: local_3 = true;`
+// arm with case 13 dropped 477 (2404 B: the restated store goes before layout, case 20's else arm still falls into the
+// post-switch test). The state parameter as a by-value one-pointer aggregate (diagnostic) 429 (same code as the plain
+// pointer; it does not pin the parameter here).
+// DIAGNOSTIC LEAD, not keepable (it needs a volatile read): case 13 dropped, case 20's arms as conditional clears, case
+// 7/8's conditional flag, case 5's swapped arms, case 2 in the siblings' form above, case 4 as `dot3f(&displacement,
+// &local_2->field_c)` with no facing copy, case 18's two targets in named locals tested one at a time, `? 1 : 0` at
+// +0x465, cases 9 and 11 actor field first, the iterator set up data, index, datum_index, the second publish flag-first,
+// and case 21's `field_3 |= 0x20` reading the state through the parameter's own address with a volatile cast: 249 at
+// retail's 2396 B, first difference +0x171, aligned 58/64, register-masked 28/34 (with case 4's facing read member by
+// member 394; dot3f with its operands the other way round 394; without the volatile read 631, exchanged). On it the
+// prologue, dispatch, cases 1, 2 (but one product's operand side in the turn test), 4, 7/8, 0, 5, 9, 10, 12, 11, 21 and
+// 14, the post-switch test after case 0 with the shared return-1 block and the tail's first half are retail's. Left: the
+// turn test's first product (retail loads the copied x and multiplies by the actor's field; main's body has it right, so
+// it follows the function's local count), case 6's two ORs and late global load, case 18's selector read ahead of the
+// record pointer's load, case 20's subtraction and sum order in both arms and its arms' exits (retail `jne tail; jne
+// tail;` + its own return-1 epilogue, then `mov al, [d1]; jmp` into the test, ours `je; jmp` and `test; jne; jmp`), and a
+// one-step scratch rotation from the tail's 0x110ab0 argument on (retail EAX, ours EDX; the second publish and the
+// planar copy after it follow). Case 6's flags through a named byte with two stores on the lead 504 (exchanged again,
+// even with the volatile read). Case 14 placed after case 20 (a case moved, match-only; listed above as 419) 417 on
+// main: case 20's else arm is then retail's `mov al, [d1]; jmp` into the test and case 14's own block is retail's.
+// Reading: retail colours the actor before the state (the actor takes EBX, whose one conflict is the 0x1ffa30
+// argument; the state is left EDI with holes at the 0x210b60 and 0x1c1080 arguments, read from its home there); every
+// natural retail-shaped body here colours the state first, and only removing the state's use after 0x1c1080 turns it.
+// M3 lane 11 r152 (h2m fast with 0x110ab0 and 0x258a00; control 429): retail's jump table sends case 13 and the bounds
+// default to the shared `mov eax, 1` block after the post-switch test. On main: case 20's main arm returning 1 itself
+// (`{ local_30 = 1; goto local_31; } local_3 = false;`) 498 (2432 B); its else arm as `local_3 = b0 == NONE || d1;`
+// 523 (2432 B); `case 13: break;` 477 (2404 B); the first with it 490, the second with it 494 (2416 B each).
+// M3 lane 2 r139 (h2m fast with 0x110ab0 and 0x258a00; control 429, register-masked aligned 97). A 56-subset grid of
+// six retail-evidenced forms on main (cases 9/11 actor field first, iterator data/index/datum_index, second publish
+// flag-first, case 7/8's flag as `== ? flag264 : true`, `? 1 : 0` at +0x465, `case 13: return 1;` dropped): best 426
+// (the first, third and fifth together); every subset with case 13 dropped 470-477, with the case 7/8 flag 487-493.
+// Layout cause: the post-switch test stays after case 20 because that last case's else arm falls into it; with case 13
+// dropped and the else arm as `local_3 = b0 == NONE || d1;` (threaded: retail's `mov al, [d1]; jmp` into the test) the
+// test moves after case 0 with the shared return-1 block as in retail, 494 (2416 B, register-masked 82); on that base the
+// grid's forms 492-498 (masked 80-87). With case 13 dropped, the else arm as `d1 != 0`, `d1 ? 1 : 0` or `!!d1` 485 each
+// (a `setne` store that still falls into the test), `(bool)d1` 477; `d1 != 0` alone 481. The flag returned as the result
+// (`if (!local_3) { tail } return local_3;`, case 2's exits setting the flag) 734 on main, 743 on the 494 base (2496 B),
+// as a short 670.
+// M3 lane 13 r147 (h2m fast with 0x110ab0 and 0x258a00; control 429, difflib-aligned 59 groups): the tail's turn copy
+// (`local_20`) member by member 500 (2432 B); the second publish's facing copy member by member 570 (2420 B); case 6's
+// second OR written through the global (`((byte *)g_5023fc)[0x22] |= 0x48`, the reload mix: match-only) 482 (2432 B,
+// aligned 57: case 6 then has retail's two stores and `mov cl, dl; or cl, 0x48`, only the first store's schedule and
+// the 0x502400 load left; the extra bytes are a loop alignment pad before case 20); that with the 0x29 OR ahead of the
+// two 1000.f stores 482 (same code); every case 6 store through the global read at each use 428 (still one `or 0x69`).
+// Body unchanged.
+// M3 lane 1 r161 (h2m fast with 0x110ab0 and 0x258a00; control 429): case 6's 0x29 OR moved ahead of the 0x20 store
+// (the 0x48 OR after the 1000.f stores) 429 (same code: still one `or 0x69`); the 0x29 OR as the case's first statement
+// 605 (exchanged, first difference +0x9); case 9's test written actor field first alone 428; the tail's 0x1f57f0 target
+// named once for its test and call 429 (same code); case 14's type store ahead of the 0x20 flag 604 (exchanged). Body
+// unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2874,11 +2872,11 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			if (function_1f86f0(arg_0) || (function_1f8720(arg_0) && !local_1->unknown76) || local_1->type == 19)
 			{
 				bool local_5 = false;
-				if (*((byte *)local_0 + 0x4d5) && local_0->unknown270 == 0)
+				if (local_0->unknown4d5 && local_0->unknown270 == 0)
 				{
 					point2f local_6 = *(point2f *)((byte *)local_0 + 0x4d8);
 					if (normalize2d(&local_6) > 0.f &&
-						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
+						dot_product2d((vector2f const *)&local_6, (vector2f const *)&local_0->unknown290) < 0.984f)
 					{
 						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
 						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);
@@ -2909,9 +2907,9 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			vector3f displacement;
 			vector3d_from_points3d(&local_2->field_18, &local_7, &displacement);
 			vector3f facing = local_2->field_c;
-			local_3 = facing.k * displacement.k +
+			local_3 = displacement.i * facing.i +
 				facing.j * displacement.j +
-				displacement.i * facing.i > local_1->unknown08;
+				facing.k * displacement.k > local_1->unknown08;
 		}
 		break;
 	case 7: case 8:
@@ -2926,6 +2924,8 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 	case 0:
 		local_3 = local_2->field_0 == 0;
 		break;
+	case 13:
+		return 1;
 	case 5:
 		if (arg_1 == local_0->unknown018)
 		{
@@ -2945,7 +2945,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 		local_3 = !local_1->unknown8c;
 		break;
 	case 12:
-		switch (*(short *)((byte *)local_1 + 6))
+		switch (local_1->command.selector)
 		{
 		case 0: local_3 = local_0->unknown086 > 1; break;
 		case 1: local_3 = local_0->unknown086 >= 7; break;
@@ -2982,20 +2982,12 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			local_3 = false;
 		}
 		break;
-	case 14:
-		if (!(local_2->field_3 & 0x20))
-		{
-			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
-			local_3 = false;
-		}
-		break;
 	case 18:
 		if (!(local_2->field_3 & 0x20) && function_25ab50(local_1->unknown28) && function_25ab50(local_1->unknown2c))
 		{
 			byte *local_11 = (byte *)g_5023fc;
 			*(real *)(local_11 + 0x20) = local_1->unknown08;
-			*(short *)(local_11 + 0x1e) = *(short *)((byte *)local_1 + 6);
+			*(short *)(local_11 + 0x1e) = local_1->command.selector;
 			local_11[0x24] = 1;
 			*(long *)(local_11 + 0x28) = local_1->unknown28;
 			*(long *)(local_11 + 0x2c) = local_1->unknown2c;
@@ -3010,6 +3002,14 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			function_1c1080((s_slot_82 *)g_5023fc, local_1->unknown28);
 			local_2->field_3 |= 0x20;
 			*(short *)g_502400 = 0x82;
+			local_3 = false;
+		}
+		break;
+	case 14:
+		if (!(local_2->field_3 & 0x20))
+		{
+			local_2->field_3 |= 0x20;
+			*(short *)g_502400 = local_1->command.selector;
 			local_3 = false;
 		}
 		break;
@@ -3032,7 +3032,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 						function_b9dd0(local_14, &local_15);
 						vector3f local_16;
 						vector3d_from_points3d((point3f *)((byte *)local_0 + 0x238), &local_15, &local_16);
-						real local_17 = local_16.k * local_16.k + local_16.j * local_16.j + local_16.i * local_16.i;
+						real local_17 = length_sq3f(&local_16);
 						if (local_12 > local_17)
 						{
 							local_1->unknownac = false;
@@ -3057,7 +3057,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				vector3f local_19;
 				function_b9dd0(local_1->unknownb0, &local_18);
 				vector3d_from_points3d((point3f *)((byte *)local_0 + 0x238), &local_18, &local_19);
-				if (*(real *)((byte *)local_1 + 0xb8) > local_19.k * local_19.k + local_19.j * local_19.j + local_19.i * local_19.i)
+				if (*(real *)((byte *)local_1 + 0xb8) > length_sq3f(&local_19))
 					local_1->unknownac = false;
 			}
 			local_3 = !local_1->unknownac && !*((byte *)local_1 + 0xd0);
@@ -3068,65 +3068,68 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 
 	}
 	if (local_3)
-		{ local_30 = 1; goto local_31; }
-	if (local_2->field_0 > 0)
-		local_2->field_0--;
-	if ((local_2->field_3 & 4) && local_2->field_8 > 0)
-		local_2->field_8--;
-	if ((local_2->field_3 & 1) && (local_2->field_3 & 2))
-		function_25a130(arg_0, arg_1, (s_cs_facing *)arg_2);
-	if (!*((byte *)local_0 + 7))
+		local_30 = 1;
+	else
 	{
-		if (local_1->unknown8c && !function_1f50e0(arg_0))
+		if (local_2->field_0 > 0)
+			local_2->field_0--;
+		if ((local_2->field_3 & 4) && local_2->field_8 > 0)
+			local_2->field_8--;
+		if ((local_2->field_3 & 1) && (local_2->field_3 & 2))
+			function_25a130(arg_0, arg_1, (s_cs_facing *)arg_2);
+		if (!*((byte *)local_0 + 7))
 		{
-			if (local_1->unknown90 != NONE)
+			if (local_1->unknown8c && !function_1f50e0(arg_0))
 			{
-				point2f local_20 = *(point2f *)((byte *)local_0 + 0x6d4);
-				normalize2d(&local_20);
-				function_1f57f0(arg_0, local_1->unknown90, (long const *)&local_20);
-			}
-			local_1->unknown8c = false;
-		}
-		if (local_2->field_3 & 1)
-		{
-			local_0->unknown456 = true;
-			local_0->unknown458 = local_2->field_c;
-			*(short *)((byte *)local_0 + 0x454) = local_2->field_8;
-		}
-		if (local_2->field_3 & 4)
-		{
-			bool local_21;
-			if (local_2->field_3 & 8)
-				local_21 = local_2->field_8 > 0;
-			else
-			{
-				local_21 = local_2->field_8 != 0 || local_0->unknown264 || function_110ab0(local_0->unknown018);
-				if (!local_21)
+				if (local_1->unknown90 != NONE)
 				{
-					point2f local_22 = *(point2f *)&local_0->unknown290;
-					if (normalize2d(&local_22) == 0.f)
-						local_22 = *(point2f *)g_468778;
-					*((byte *)local_0 + 0x464) = 1;
-					*((byte *)local_0 + 0x465) = local_2->field_c.i * 0.7f > local_2->field_c.j;
-					*((byte *)local_0 + 0x466) = 1;
-					*(point2f *)((byte *)local_0 + 0x468) = local_22;
-					*(point2f *)((byte *)local_0 + 0x470) = *(point2f *)&local_2->field_c;
-					local_2->field_3 |= 8;
-					if (!(local_2->field_3 & 0x10))
+					point2f local_20 = *(point2f *)&local_0->unknown6d4;
+					normalize2d(&local_20);
+					function_1f57f0(arg_0, local_1->unknown90, (long const *)&local_20);
+				}
+				local_1->unknown8c = false;
+			}
+			if (local_2->field_3 & 1)
+			{
+				local_0->unknown456 = true;
+				local_0->unknown458 = local_2->field_c;
+				*(short *)((byte *)local_0 + 0x454) = local_2->field_8;
+			}
+			if (local_2->field_3 & 4)
+			{
+				bool local_21;
+				if (local_2->field_3 & 8)
+					local_21 = local_2->field_8 > 0;
+				else
+				{
+					local_21 = local_2->field_8 != 0 || local_0->unknown264 || function_110ab0(local_0->unknown018);
+					if (!local_21)
 					{
-						local_2->field_8 = (short)real_to_long(g_510c54->field_2_3 * 0.5f);
+						point2f local_22 = *(point2f *)&local_0->unknown290;
+						if (normalize2d(&local_22) == 0.f)
+							local_22 = *(point2f *)g_468778;
+						*((byte *)local_0 + 0x464) = 1;
+						*((byte *)local_0 + 0x465) = local_2->field_c.i * 0.7f > local_2->field_c.j;
+						*((byte *)local_0 + 0x466) = 1;
+						*(point2f *)((byte *)local_0 + 0x468) = local_22;
+						*(point2f *)((byte *)local_0 + 0x470) = *(point2f *)&local_2->field_c;
+						local_2->field_3 |= 8;
+						if (!(local_2->field_3 & 0x10))
+						{
+							local_2->field_8 = (short)real_to_long(g_510c54->field_2_3 * 0.5f);
+						}
 					}
 				}
-			}
-			if (local_21)
-			{
-				local_0->unknown458 = local_0->unknown290;
-				local_0->unknown456 = true;
-				*(short *)((byte *)local_0 + 0x454) = 0;
+				if (local_21)
+				{
+					local_0->unknown458 = local_0->unknown290;
+					local_0->unknown456 = true;
+					*(short *)((byte *)local_0 + 0x454) = 0;
+				}
 			}
 		}
+		local_30 = 0;
 	}
-	{ local_30 = 0; goto local_31; }
 local_31:
 	return local_30;
 }

@@ -130,7 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
-// score 378 (was 378): earlier 393; the extra frame word (0x5b8 against 0x5b4) is the side test's `local_9.i * local_13.i`
+// score 378 (was 378; m3 lane 2 r141 unchanged, its line just above the marker): earlier 393; the extra frame word (0x5b8 against 0x5b4) is the side test's `local_9.i * local_13.i`
 // CSE'd with the 0.9 block's `local_9.i * left_i`: the left vector's store is forwarded to the side test (likely because LTCG
 // sees our 0x299460 leave its sixth parameter alone; round 148's no-LTCG probe gives retail's frame), where retail reads the
 // left vector's home (+0x84) and keeps only
@@ -285,6 +285,83 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // initializer 378 [36]; the local_17 selection with its arms swapped and the test negated 378 (same code); the path offset named
 // as 0x29a190 writes it plus the local_16 dot through dot_product2d 380 [25] (both blocks then retail's); those two on the left
 // vector built `{-local_8.j, local_8.i, 0.0f}` 395 (2815 B) [21: frame 0x5b4 as retail, the two 12-byte vectors still swapped].
+// M3 lane 3 r255 (fast with 0x29c860/0x29cb10, both still matched; control 378): the left vector declared and built inside
+// the 0x299460 block just before the angle call 549 (2842 B); the side test written local_25 first 378; local_25 computed
+// before the 0x11cd20 call 378 (2814 B, first difference +0xab: frame 0x5b4 as retail, but the side test still reads
+// left_i's home, now +0x5c against retail's +0x54, and the products move); the side test through left_i itself 378; the
+// left vector stored component by component 378. Retail evidence: its side test reads the left vector's own home (+0x84),
+// so retail does not forward left_i into local_13 there (0x299460 receives &local_13; its retail body only reads it and
+// passes it to the matched 0x210770, as ours does).
+// m3 lane 10 r121 (fast, control 378; screen = this file compiled alone for LTCG and linked with chosen objects, which prints the
+// frame and each home by name, build/r121/lt29c.sh). The extra frame word is the side test's product kept across the 0x299460
+// call (named temporary in the screen; local_25 then loses the slot it shares with local_22 in retail), and it exists exactly when
+// the linker can see 0x210770 from 0x299460: the screen with every object of the fast image gives 0x5b8, and the same link with
+// only 0x210770 left out of its file gives retail's 0x5b4 at the same instruction count; leaving out only 0x2108a0 keeps 0x5b8.
+// So BLOCKED-BY 0x210770 as 0x299460 sees it (0x299460's own entry is BLOCKED-BY 0x2108a0 the same way: with 0x2108a0 opaque
+// 0x299460 is retail's 3372 bytes with its first difference at +0xd0). Both callees are matched LTCG code with register
+// arguments, so retail knew their conventions but not their summaries; what gives that is not found. Tried, all reverted:
+// 0x2108a0 declared __stdcall (retail's shape: its one caller pushes the argument and it ends `ret 4`) 378, 0x299460 unchanged;
+// 0x2108a0 in its own file without SSE 378; in a file that links after its caller 378; __stdcall in a file built without LTCG
+// 378 here (0x299460 gets retail's length, 0x2108a0 itself 36 as native code, so retail's is not native); the whole 0x20fe20 file
+// without LTCG: frame 0x5b4, first difference +0xab (626: every call into that file changes). Screen: 0x299460's vector parameter
+// non-const 0x5b8; 0x299460's file with /Ob1, /Ob0, /Oy-, /Oa or /Ow 0x5b8 each; a call from the 0x20fe20 file back into
+// 0x299460's file, or that object first on the link line: the callee is still known. The inlined flag setter 0x1e4290 is not
+// the cause: a plain body for it (the parameter re-assigned and re-tested, no pointer to it) leaves this function at 378 and
+// costs 0x1e4290 its own match (44: the flag then arrives in CL, where retail keeps it on the stack and stores back to it).
+// Retail's slot counts (stack-tracked) agree with ours everywhere else below +0x90; the actor offset's home has three
+// references in retail (one store, a reload at each tail setter) and two in ours (one reload into EBX).
+// M3 lane 6 r202 (fast with 0x29c860/0x29cb10, both stay matched; control 378 [aligned 107]): retail 0x299460 hands the
+// left vector only to 0x210770 as its read-only input (vector in EBX, out in EDI, as ours), so no retail write explains the
+// reload. Diagnostic, reverted at once: the 0x299460 call through a volatile function pointer 473 [124] (2837 B: the call's
+// convention changes). On the `{-local_8.j, local_8.i, 0.0f}` form (393 [53] re-measured, 2815 B): the side test through
+// dot_product2d 393 (same code); left_i declared after the left vector 393 (same code); with local_25 computed ahead of
+// the angle call 402 [102] (2825 B). Body unchanged at 378.
+// M3 lane 1 r140 (fast with 0x29c860/0x29cb10, both matched in every run; control 378, aligned lines with registers and offsets
+// masked [45]). The left vector through the existing vector3f_assign or real_point3d_set from left_i 378 [45], from `-local_8.j`
+// 393 [41] (the same code as the two initializers: the setters do not change the vectors' reference tie). Combined lead, match-only
+// (it needs the 0x44 setting read into a local ahead of the local_16 test): the left vector as `{-local_8.j, local_8.i, 0.0f}`, the
+// local_16 dot through dot_product2d, that early read and the path offset named: 380 (2815 B, frame 0x5b4 as retail) [29], with five
+// sites left: the second normalize's j product (retail loads j and multiplies by the inverse, ours copies the inverse), the two
+// 12-byte vectors' slots (ours left 0x78 / avoidance 0x84, retail the reverse) with the left vector's stores behind the fsqrt, the
+// left_i product in both steering blocks (retail loads left_i and multiplies by the component, ours copies the component and
+// multiplies by left_i's home), and the tail (retail reloads the actor offset from its home at each setter and pops before the last
+// one, ours reloads it once into EBX). On that lead: unused initialised locals 1-8 (diagnostic) 380 each but 382 at three, so the
+// sides are not a symbol phase; the first block's left term, both terms or all four products as accumulate statements (`x = a;
+// x *= b;`), the 0.9 block's left term that way, written left_i first, or both sums as one expression: 380 each (same code).
+// Diagnostic, reverted at once: 0x299460 called through a plain pointer global (no summary for the call) 471 on the lead and 483 on
+// this body, both at frame 0x5b4, but the two normalizes ahead of it then differ too (retail agrees with ours there) and the left_i
+// products do not move: retail's view of that call lies between ours and no summary. Body unchanged.
+// M3 lane 13 r132 (fast with 0x29c860/0x29cb10, both matched each time; control 378, 78 aligned lines with stack offsets
+// masked). `inline` on the definition of 0x210770 378 (same code here; its eight matched callers still match, 0x1f99d0 goes
+// 226 -> 194 and 0x299460's first difference moves from +0x14 to +0xd0 at 3349 B with its count up 569 -> 726, so not kept:
+// lead for those two, build/r132/lead-0x210770-inline.patch); with `inline` on 0x2108a0 as well 378; `inline` on 0x29cb10
+// 378; on 0x29c860 378; on both 378 (same code each: the keyword hides nothing this function reads). Diagnostics, reverted
+// at once: `inline` on 0x299460 378 (same code, so the frame word is not that keyword either); the second tail setter
+// removed: the actor offset is still reloaded into EBX at the end of the main arm, so the count of tail uses is not what
+// keeps it in a register; the 0x1f9760-success arm calling 0x29c860 directly (an EBX argument on that path) gives retail's
+// whole tail (the offset read from its home at both setters, the four pops ahead of the last one), the same change on the
+// `!0x5d0 || 0x5d2` arm alone does not, both arms likewise. Reading: retail's tail follows from EBX not surviving the
+// 0x1f9760-success arm, whose only instruction that could take it is the call to 0x29cb10 (it saves and restores EBX
+// around its own EBX argument for 0x29c860), so retail compiled this function without knowing that 0x29cb10 preserves
+// EBX, as it compiled it without knowing what 0x299460 does with the left vector: both are facts about callees that this
+// build has and retail's lacked. BLOCKED-BY 0x29cb10 and 0x210770 as this function sees them (no source form found).
+// Also tried on the 0x1f9760-success arm: `*arg_7 = true` ahead of the 0x660 store and the call 520 (2799 B, the two
+// short arms merge); that arm setting the flag and jumping into the other short arm's block 530 (2788 B).
+// M3 lane 4 r239 (fast with 0x29c860, 0x29cb10 and 0x210770, MATCH each time, and 0x299460 unchanged; control 378): 0x210770's
+// three fallback copies through memcpy (callee body, reverted) 378; the left vector's address taken into a pointer local at
+// its definition and passed to 0x299460 378, with the side test read through that pointer 378; the side test from `left_i`
+// and the 0.9 block's term from the vector 378 (same code each); the left vector stored member by member just before the
+// obstacle list is built 550 (2842 B). None of 0x29cbb0, 0x299460, 0x210770, 0x2108a0, 0x29cb10, 0x29c860, 0x1427f0 or
+// 0x210d10 lies on a direct-call cycle in retail's call graph, so the missing callee knowledge is not a cycle-entry effect.
+// M3 lane 11 r152 (H2M_FAST with 0x29c860 and 0x29cb10, MATCH each run; control 378): the 0.9 block's j as one
+// expression (`local_9.i * left_i + local_25`, or local_25 first) 403 at 2800 B: the frame is then retail's 0x5b4, but the
+// whole side-test sum is shared with the block (its +0x60 home holds the sum, where retail keeps local_25 there and
+// multiplies left_i's own home by local_9.i); the i as one expression 376, either term order (same code), with the j
+// form 403. Body unchanged.
+// M3 lane 2 r141 (H2M_FAST with 0x29c860 and 0x29cb10, MATCH each run; control 378): the 0x299460 block tested as
+// `if (local_17)` 379; the 0x664 store ahead of `*arg_6 = false` 377 (-1, not kept); local_12 declared after local_11 393;
+// the three output stores with `*arg_4 = 0` last 378; the local_26 test as `local_17 == 1 && local_4` 378. Still BLOCKED-BY
+// 0x210770 as 0x299460 sees it (the left vector's store forwarding). Body unchanged.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

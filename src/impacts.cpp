@@ -280,7 +280,7 @@ struct s_physics_model_material
 /* the sort routines (unknown_13dcd0.cpp); the third parameter is never read.
    impact_sort_compare returns a long (retail sets all of eax) */
 typedef bool (__stdcall *t_sort_4byte_compare_function)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_sort_4byte_compare_function compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_sort_4byte_compare_function compare, const void *context);
 void impact_type_update(long impact_index, long rigid_body_index_a, long rigid_body_index_b, s_impact *impact);
 long impact_new(s_impact_data const *data, long type);
 long __stdcall impact_sort_compare(long impact_index_a, long impact_index_b, void *context);
@@ -664,6 +664,13 @@ PRIVATE __forceinline void function_227814(vector3f const *arg_0, vector3f const
 // differences are the CALL alignment that follows the extra byte). One-line
 // multiplication, a named factor and the commutative order kept or worsened
 // the form. Permuter: 174 tries in 300 s (seed 999), no lower form.
+// b14I (11-17) walk against retail, fast build on r847: statements, constants, branch senses and callees all agree
+// with retail (no sort_4byte call here); the one real difference is the scale of the i component at 0x2278e4:
+// retail `movaps xmm1, xmm0; mulss xmm1, [edi]`, ours reloads `movss xmm1, [edi]; mulss xmm1, xmm0`. Measured and
+// not kept: all eight commutative orders of the three products, as separate `local_1` fields (7) or directly into
+// `arg_1->` (22), all six statement orders of the products (7, 10, 10, 11, 12, 12), and
+// `local_1.i = local_0 * arg_0->i` in one line (7: it also swaps the operands of the left component's first product
+// in the cross product). The commutative order does not reach the code, so there is no behaviour difference to record.
 // @retail 0x227810
 void impact_build_matrix(
 	long component_index,
@@ -976,6 +983,15 @@ void impact_orientation_get(
 }
 
 
+/* Squared length of a vector, with its components summed in the order k, i, j. */
+static inline real squared_length_kij(vector3f const *v)
+{
+	real sum = v->k * v->k;
+	sum += v->i * v->i;
+	sum += v->j * v->j;
+	return sum;
+}
+
 // score 241: walked against retail statement by statement (11-05): no logic difference (both switches, every branch,
 // constant and field; the pool constants at 0x45e294 and 0x45e298 are 1/3.95 and 2.4674013, as in the source). Not kept,
 // though closer to retail's structure (opcode alignment 0.84 -> 0.95): the angular velocity read and subtracted through a
@@ -991,6 +1007,9 @@ void impact_orientation_get(
 // Permuter, 35 minutes (11-05): full image 180 only with volatile locals and casts that change no value. Its plain
 // parts (rotation_threshold declared after physics_type, component->unknown20 read at each use, the sliding/rolling
 // else-if chain inverted, speed_ratio declared first, velocity k stored before j) give 239 fast at best (k before j).
+// Matched in a full build with stand-in SDK headers (was 241): see the pull request for the nine steps; the plain
+// ones are the angular velocity of body b read through a pointer and subtracted member by member, the third branch
+// as `maximum_speed = 7.0f; if (...) maximum_speed = 0.5f;` with the ratio as a ternary, and unknown91 as one store.
 // @retail 0x228f30
 void impact_type_update(
 	long impact_index,
@@ -1032,23 +1051,39 @@ void impact_type_update(
 	}
 	rotation_threshold = physics_type ? 0.5f : 1.0f;
 
+	vector3f const *body_angular_velocity;
+	s_havok_component_rigid_body const *first_body = &component->rigid_bodies.data[rigid_body_index_a];
+	angular_velocity = first_body->angular_velocity;
+	real rotation_speed = impact->unknown8c;
 	strength = 0.0f;
-	angular_velocity = component->rigid_bodies.data[rigid_body_index_a].angular_velocity;
 	if (impact->component_b != NONE)
 	{
-		s_havok_component_rigid_body const *rigid_body_b = &havok_component_get(impact->component_b)->rigid_bodies.data[rigid_body_index_b];
-
-		angular_velocity.i -= rigid_body_b->angular_velocity.i;
-		angular_velocity.j -= rigid_body_b->angular_velocity.j;
-		angular_velocity.k -= rigid_body_b->angular_velocity.k;
+		body_angular_velocity = &havok_component_get(impact->component_b)->rigid_bodies.data[rigid_body_index_b].angular_velocity;
+		angular_velocity.i -= body_angular_velocity->i;
+		angular_velocity.j -= body_angular_velocity->j;
+		angular_velocity.k -= body_angular_velocity->k;
 	}
 	impact->type = NONE;
-	if ((impact->unknown8c > rotation_threshold * rotation_threshold ||
-		length_sq3f(&angular_velocity) > 2.4674013f) &&
+	if ((rotation_speed > rotation_threshold * rotation_threshold ||
+		squared_length_kij(&angular_velocity) > 2.4674013f) &&
 		impact->unknown40 > minimum_impulse)
 	{
 		impact->type = 0;
-		strength = (MIN(impact->unknown40, maximum_impulse) - minimum_impulse) / (maximum_impulse - minimum_impulse);
+		real impulse;
+
+		if (impact->unknown40 > maximum_impulse)
+		{
+			impulse = maximum_impulse;
+		}
+		else if (impact->unknown40 < maximum_impulse)
+		{
+			impulse = impact->unknown40;
+		}
+		else
+		{
+			impulse = impact->unknown40;
+		}
+		strength = (impulse - minimum_impulse) / (maximum_impulse - minimum_impulse);
 	}
 	else if (impact->unknowne)
 	{
@@ -1068,8 +1103,8 @@ void impact_type_update(
 				s_impact *other = &((s_impact *)g_51ebfc->data)[other_index & 0xffff];
 
 				if (!other->unknowne &&
-					impact->material_a == other->material_a &&
-					impact->material_b == other->material_b &&
+					impact->material_a == c_type_47f957(other->material_a) &&
+					impact->material_b == c_type_47f957(other->material_b) &&
 					other->unknownd != NONE)
 				{
 					switch (other->type)
@@ -1113,12 +1148,8 @@ void impact_type_update(
 		if (impact->unknownd == NONE)
 		{
 			maximum_speed = 0.5f;
-			speed_ratio = 1.25f;
 		}
-		else
-		{
-			speed_ratio = 8.0f;
-		}
+		speed_ratio = impact->unknownd != NONE ? 8.0f : 1.25f;
 		rigid_body = component_a->rigid_bodies.data[rigid_body_index_a].rigid_body;
 		if (!rigid_body->m_fixed)
 		{
@@ -1178,14 +1209,7 @@ void impact_type_update(
 		}
 		impact->unknown10 = 0;
 	}
-	if (PIN(impact->type, 2, 3) == impact->type)
-	{
-		impact->unknown91 = MIN(impact->unknown91 + 1, 0x7e);
-	}
-	else
-	{
-		impact->unknown91 = 0;
-	}
+	impact->unknown91 = PIN(impact->type, 2, 3) == impact->type ? MIN(impact->unknown91 + 1, 0x7e) : 0;
 }
 
 // @retail 0x22a060
@@ -1378,6 +1402,30 @@ long impact_new(
 	return impact_index;
 }
 
+struct s_material_index_2285d0
+{
+	short index;
+	s_material_index_2285d0() : index(NONE) {}
+};
+
+static __forceinline s_impact_object *component_object_get_2285d0(long component_index)
+{
+	s_havok_component *component = havok_component_get(component_index);
+	s_havok_component *&barrier = component;
+	return impact_object_header_get(barrier->object_index)->object;
+}
+
+static __forceinline long component_tag_index_get_2285d0(long component_index)
+{
+	s_havok_component *component = havok_component_get(component_index);
+	s_havok_component *&barrier = component;
+	s_impact_object *object = impact_object_header_get(barrier->object_index)->object;
+	s_impact_object *&object_barrier = object;
+	byte *bytes = impact_tag_get(object_barrier->definition_index);
+	byte *&bytes_barrier = bytes;
+	return *(long *)(bytes_barrier + 0x58);
+}
+
 // @retail 0x2285d0
 void impact_material_effects_get_for_component(
 	vector3f const *normal,
@@ -1398,7 +1446,7 @@ void impact_material_effects_get_for_component(
 {
 	point3f point = *position;
 	long tag_index = NONE;
-	short material = NONE;
+	s_material_index_2285d0 material;
 	s_location location;
 	long index;
 
@@ -1411,15 +1459,15 @@ void impact_material_effects_get_for_component(
 	function_11bed0(&location, &point);
 	if (location.cluster_index == NONE)
 	{
-		location = impact_object_header_get(havok_component_get(component_index)->object_index)->object->location;
+		location = component_object_get_2285d0(component_index)->location;
 	}
-	if (function_11c120(&location, &point, &material))
+	if (function_11c120(&location, &point, &material.index))
 	{
-		material_b.m_index = material;
+		material_b.m_index = material.index;
 	}
 	if (component_index != NONE && unknownd == NONE)
 	{
-		tag_index = *(long *)(impact_component_definition_get(component_index) + 0x58);
+		tag_index = component_tag_index_get_2285d0(component_index);
 	}
 	switch (type)
 	{
@@ -2277,7 +2325,7 @@ void function_227280(void)
 	{
 		long temporary;
 
-		sort_4byte(g_50213c, count, &temporary, (t_sort_4byte_compare_function)impact_sort_compare, NULL);
+		sort_4byte(&temporary, g_50213c, count, (t_sort_4byte_compare_function)impact_sort_compare, NULL);
 	}
 	for (i = 0; i < count; i++)
 	{

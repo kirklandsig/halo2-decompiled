@@ -3,6 +3,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "vector_products.h"
 #include <math.h>
 
 real function_30bf0(vector3f *v);
@@ -92,29 +93,30 @@ bool function_11eed0(
 
 real function_50650(real cosine);
 
-// score 2 (was 2): one product of the cross product has its factors in the opposite order:
-// ours keeps the forward vector's k field in the register, retail the target's i field.
-// Round 100 (lane 7): the clamped arccosine through the existing 0x50650 2 (kept; LTCG inlines it as
-// retail does). All 64 operand orders of the cross compile alike; of 144 one-expression and 72
-// split-statement dot products only the i-and-j-first groupings flip that product, and they change
-// the dot itself (29-84). The named `double s` makes this function's LTCG callers keep 8-byte stack
-// parity (0x1197b0's early ESI save); retail has none: its code here (float quotient, then a double
-// multiply per component that keeps the quotient on the x87 stack) is also what a double parameter
-// of an inlined helper gives, without that effect (0x1197b0 73, this function 2); `real s` or any
-// float or cast form folds the last multiply (89).
+/* the position moved along a direction by a distance kept in double precision */
+static __forceinline void vector3f_add_scaled_by_double(vector3f *position, vector3f const *direction, double distance)
+{
+	position->i = direction->i * distance + position->i;
+	position->j = direction->j * distance + position->j;
+	position->k = direction->k * distance + position->k;
+}
+
+// The parameters in the order retail's callers set them up (0xc60c0 loads the position after pushing
+// the rate); the position step goes through a double-distance helper so that no double local pads
+// this function's frame (a named double here makes its LTCG callers keep 8-byte stack parity).
 // @retail 0x11f0d0
 void function_11f0d0(
-	vector3f *position,
 	vector3f *forward,
 	vector3f const *target,
 	real rate,
+	vector3f *position,
 	real max_angle,
 	real scale)
 {
 	vector3f axis;
 	vector3f diff;
 	real d;
-	double angle;
+	real angle;
 	real step;
 	real dist2;
 	real theta;
@@ -133,9 +135,7 @@ void function_11f0d0(
 	angle = angle + angle;
 	real limit = angle >= max_angle * max_angle ? max_angle : (real)sqrt(angle);
 
-	axis.i = target->k * forward->j - forward->k * target->j;
-	axis.j = target->i * forward->k - target->k * forward->i;
-	axis.k = forward->i * target->j - target->i * forward->j;
+	cross3f(forward, target, &axis);
 	function_30bf0(&axis);
 
 	axis.i = axis.i * limit;
@@ -159,10 +159,7 @@ void function_11f0d0(
 	}
 	else
 	{
-		double s = step / sqrt(dist2);
-		position->i = diff.i * s + position->i;
-		position->j = diff.j * s + position->j;
-		position->k = diff.k * s + position->k;
+		vector3f_add_scaled_by_double(position, &diff, step / sqrt(dist2));
 	}
 
 	vector3f rotation_axis = *position;

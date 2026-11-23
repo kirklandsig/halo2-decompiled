@@ -20,6 +20,7 @@
 #include "props.h"
 #include "object_queries.h"
 #include "unknown_1428b0.h"
+#include "unknown_1cec30.h"
 
 inline void point2f_set(point2f *point, real x, real y);
 
@@ -46,9 +47,9 @@ struct s_obstacle_object_flags_2c
 
 struct s_obstacle_unit_flags_2c
 {
-    byte : 2;
-    byte no_obstacle : 1;
-    byte : 5;
+    word : 2;
+    word no_obstacle : 1;
+    word : 13;
 };
 
 struct s_obstacle_definition_flags_2c
@@ -213,7 +214,42 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): earlier 920 (was 923), 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 925 (was 925): r130, m3 lane 8 r220, m3 lane 11 r151, m3 lane 1 r154 and m3 lane 13 r149 unchanged (r220, r151, r154 and r149 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// r132 (m3 lane 15, lead below), r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
+// previous-direction else and the no-actor else), which gives retail's frame 0x2cac and retail's homes for the four priority
+// shorts, the self-unit pointer and the actor pointer; the body is 3708 bytes against retail's 3731. Left: the entry's
+// registers (retail keeps the actor index in EBX and the zero in EBP, this build the other way round), the byte homes of the
+// two direction flags (this build's aligned and local_4d3867 sit at +0x12 and +0x23 against retail's +0x11 and +0x21), the
+// order of the three head byte stores, and the deferred type-0 second branch with the type 1/7/11 arms.
+// M3 review (11-20, MiniMax E): 849 came from `straight` declared without a value and set true in two added else arms (aligned,
+// beside it, keeps its initializer); statement placement is match-only, so code is back to main (925).
+// MiniMax S (11-20): no new form, no lower score (925): retail's prologue reads the first stack argument into EBX and compares it with -1 where this build reads it into EBP, and the frame is 0x2cb0 against retail's 0x2cac; the parameter order may not change, so retail's order is reported instead.
+// MiniMax R (11-20): no new form, no lower score (925 fast, 917 plain): the frame is 0x2cb0 against retail's 0x2cac and
+// the function-scope homes are not one uniform shift (retail's actor pointer at F+0x14, the range_min short at F+0x30,
+// the self-unit pointer at F+0x34, the range_max short at F+0x38, the block_priority short at F+0x48 and the ignore_priority
+// short at F+0x50 against ours four bytes further out), so dropping the one extra dword would not line the rest up; the
+// entry also keeps the actor index in EBP where retail keeps it in EBX and uses EBX for the zero that retail keeps in EBP.
+// Earlier at 917 (was 920): the frame is retail's 0x2cac since m3 lane 4 r229 (below); the body is 3676 bytes against 3731. Left: the entry's
+// registers (retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, reloaded at the loop head), the skip flag's home, the
+// deferred type-0 second branch and the type 1/7/11 arms. Earlier first line (920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// MiniMax D (11-19): no new form, no lower score (920 plain, 926 fast): the frame is still 0x2cb4 against retail's 0x2cac, the pool globals are still hoisted above the actor test and the actor address is still folded instead of being kept in EDX, so the actor, unit and byte homes stay where they are.
+// Earlier 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
+// MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
+// from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
+// the self-unit pointer at F+0x34, the range_max short at F+0x38, the location at F+0x40, the block_priority short at
+// F+0x48, the ignore_priority short at F+0x50, the actor pointer at F+0x14 and the two direction flags at F+0x01 and
+// F+0x03; ours puts the actor at F+0x04, the flags at F+0x03 and F+0x0b, the raised point at F+0x30, range_min at
+// F+0x40, the self-unit pointer at F+0x44, the location at F+0x48 and range_max at F+0x54.  The prologue clears the
+// same nine homes in the same order as retail (ignore, block, range_min, range_max, self-unit, actor, straight,
+// aligned, local_4d3867), so the declarations and their initialisation are already retail's; only the allocator's
+// placement differs, our scalar area running eight bytes longer (frame 0x2cb4 against 0x2cac), which carries the
+// query array and the marker arrays eight bytes up.  The permuter cannot search this one in the reduced image (916
+// reduced against 910 full) and a full build per trial is too slow for the time allowed, so the body is unchanged.
+// Earlier 920 (was 920): earlier 920 (was 923), 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
@@ -516,17 +552,385 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (straight takes a dword of its own here), 0x14 -> 0x1c, 0x1c -> 0x24, bools 0x21/0x22/0x23 -> 0x22/0x21/0x23, actor 0x24
 // -> 0x14, 0x28 -> 0x28, 0x2c -> 0x30, 0x30 -> 0x34, raised 0x34 -> 0x40, range_min 0x40 -> 0x50, self_unit 0x44 -> 0x54,
 // range_max 0x48 -> 0x64, location 0x50 -> 0x58, block 0x58 -> 0x4c, ignore 0x60 -> 0x60. Body unchanged.
+// M3 lane 15 r93 (plain, 0x2c0d00 matched each time): the object radius test as `distance_squared > object_radius *
+// object_radius` 920; the combined flags computed inside the non-blocking arm 919; the object radius sum written radius
+// first 920; the sphere counter `long` 919 (3723 bytes; retail's counter is a short, `movsx eax, ax`); both of the 919 forms
+// together 919 (3721 bytes); the block-priority test with `aligned` first 920; the range test with `type != 0` first 920.
+// Both 919s are under the keep bar. Retail tail-merges the two 0x2c0d00 calls as ours does. Body unchanged.
+// M3 lane 15 r95 (plain): the two component reads through the existing havok_component_get (as matched 0x22a110
+// reads its component) 920 (same code, kept); the unit and definition no-obstacle bitfields with word storage (a
+// compile-only screen: `(bool)` on a word-storage bitfield gives retail's `mov al, byte; shr al, n; test al, 1`, byte
+// storage gives `test byte`) 937 (3708 bytes: a loop pad and a jmp drop); that with both volatiles dropped 958 (3687
+// bytes; register-masked aligned 172 -> 152); `if (object_count > 0)` around the object loop 920 (aligned 173);
+// `enabled` declared after the four per-object defaults (retail sets `dl = 1` ahead of the settings test) 920 (aligned
+// 171). Retail reads the actor's team once per arm (`xor esi, esi; mov si, [actor + 0x24]`, compared `cmp cx, si`)
+// where the volatile actor makes ours read the pointer and the field twice.
+// M3 lane 13 r103 (plain, the file's other matched functions stay matched; [exact, register/stack-masked] aligned counts by
+// opcode, base 920 [480, 172]): a redundant `if (object_count > 0)` guard around the object loop 920 [480, 173] (match-only
+// steering form, no change); skip_classification as `byte` 920 (same code); the skip flag declared after the two sphere flags
+// 920 [479, 170]; re-measured on this base: no unit_index volatile 936 (3708 bytes) [473, 166], both volatiles dropped 972 (3671
+// bytes, frame 0x2cb0) [423, 152] (diagnostic), `else straight = true;` 929 (3722 bytes) [480, 172]. The last tested whether
+// retail's second straight store (an else block on the actor NONE path) is what stops ours hoisting the object-table global
+// load to the entry (ours `mov edx, [g_4e0300]` before the actor test; retail loads it in the actor block and again in the
+// location block): it is not, the hoist stays. Body unchanged.
+// M3 lane 13 r107 (fast, control 926f, 0x2c0d00 MATCH in each; aligned/masked by difflib 655/298): retail's frame has three
+// separate 32-marker buffers and loads position/direction into EBX/EBP in each marker loop's preheader, so the three marker scans
+// were tried as file-local helpers returning bool (each with its own buffer; three new one-caller helpers, match-only): declared
+// `inline` 1404f (3241 B: called out of line), `__forceinline` 924f (3724 B, frame still 0x2cb4, aligned 656, masked 307: the same
+// code as the written-out loops, direction still loaded at the prologue); with both volatiles dropped 984f (3659 B; the volatile-
+// free body alone re-measured 975f, 3671 B, frame 0x2cb0, aligned 512, masked 267). The outer counter declared at function scope,
+// the motion pointer declared at function scope, both: 926f each (same code), with both volatiles dropped 975f (same code as that
+// form): scope and declaration position place no home. Retail's cells from the listing (esp offsets after the four pushes): the
+// outer counter 0x4c and the object count 0x50 (the dead location's slot) sit among the function-level shorts (range_min 0x40,
+// self_unit 0x44, range_max 0x48, block 0x58, ignore 0x60) with the motion pointer at 0x5c; the definition pointer 0x2c later
+// holds the sphere counter, and the sphere flags 0x30 reuse the x87 dot temporary; retail has no home for the type (it re-reads the
+// byte) and packs straight with three other bools at 0x10-0x13, which is where ours spends its extra cells. The loop head
+// (0x2c0f68) reloads unit_index, self_unit and actor_index into EDI/EBP/EBX and the first entry jumps over it. Body unchanged.
+// Typed position and definition index 926, index only 926, position only
+// 926, both velocity reads 926, all named fields 926, shared point difference
+// 924, distance-local scope 926, typed selected unit 926 (reduced control 926).
+// NOT kept: shared difference gains two in the preview and leaves frame 0x2cb4.
+// Straight/aligned/both assigned in complete threshold arms 926/926/926 in the reduced image;
+// clear their prior true values on a failed threshold, straight/aligned/both 947/947/922;
+// start both false and set each on success 926; strict threshold first for both results 925.
+// NOT kept: the four-point reduced gain (926 to 922) shortens the body to 3702/3731 bytes
+// and retains frame 0x2cb4. The straight flag's dword-sized slot and actor and unit homes remain.
+// M3 lane 8 r184 (fast with 0x2c3550/0x29c860, both matched; fast control 926, plain 920): self_unit declared after the actor
+// pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
+// existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
+// code). Body unchanged.
+// Earlier stacked first line (925, was 925), merged here: the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier header (925, was 925; merged into the note above in r130): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// Earlier at 925 (was 925): the entry keeps actor_index in EBP and a zero in EBX (retail actor_index EBX, self_unit and
+// its zero in EBP), the frame is 0x2cb0 against retail's 0x2cac, the byte homes differ and the join is laid out in
+// source order; the rounds below. MiniMax B (11-18) at 920: no new form, no lower score (920 plain, 926 fast). The permutation
+// MiniMax B (11-18): 920 then (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
+// search over the body (300 s, one job, the full image because the reduced image misleads here) made two tries and
+// never beat its baseline of 910 differing instructions; read from the listing again: retail takes the actor's unit
+// field with the pool's data base and the scaled index kept apart ([edx + esi + 0x18] against our folded address),
+// holds the actor pointer in edx instead of the volatile home at +0x14, zeroes the cells at 0x40, 0x48, 0x58, 0x60
+// and 0x24 and packs its four bools at 0x11, 0x13 and 0x21 where ours spends 0x13, 0x1b and 0x22, so the frame is
+// still 0x2cb4 against retail's 0x2cac and the body is 3718 bytes against 3731.
+// The excess frame word pair and the actor/unit and priority/query homes remain.
+// Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
+// NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
+// M3 lane 15 r101 (plain unless marked; control 920 plain, 926 fast): `unit_index` without its volatile 936 (3708 B; fast 910
+// misleads again); the actor pointer without its volatile 969 fast (3671 B); the object type byte read at each of its seven
+// uses with no type local 936 (3740 B); the previous-direction dot as one expression 928 (3707 B); its products written
+// previous-direction first 920. Retail's entry keeps actor_index in EBX, the zero (self_unit's NULL) in EBP and unit_index in
+// EDI; ours keeps direction in EBX, settings in ESI and the zero in EDI. Body unchanged.
+// Typed object fields with a long/signed-byte category snapshot 920/949; category read
+// at each use 936, with switch dispatch 947, with the typed selected unit 936.
+// Direct category with ordinary actor/index/both 945/937/968; cached category with ordinary
+// actor 974; direct category with conditional ordinary actor initialization 944.
+// NOT kept: the 945, 968 and 944 forms recover frame 0x2cac but shorten the body and
+// still carry the incoming actor and unit in different registers.
+// Settings after actor evaluation by index or selected actor 920/919, per-action optional
+// settings tests 920, complete priority or range defaults within the gate 931/916,
+// nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
+// NOT kept: the four-point preview improvement leaves the eight-byte frame difference.
+// N421 previews: slot-object accessor with the existing field view 926; slot-object type field observed
+// through a signed byte reference 944; actor team observed once for the type-one comparison and call 910;
+// actor team observed once for the vehicle comparison and call 932; signed actor team observed once in each
+// comparison and call 913; word team pair observed once in each comparison and call 913; typed facing flags
+// and vectors on both actor paths 926; typed object fields with stable team pairs 913.
+// NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
+// The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
+// Opening body restored.
+// Chained limits together or in pairs, chained direction defaults, both combinations and
+// default assignments after declarations 920 each; settings-action mask with paired/original
+// defaults 918/918. NOT kept: two points below the retention threshold and frame 0x2cb4 persists.
+// M3 lane 10 r123 (fast with 0x2c2060 at 400 and 0x2c3030 MATCH; fast control 926, aligned 655): retail forms the actor
+// address once and reads its unit field from that address before storing the pointer to the actor home; ours stores
+// into the volatile home and reads it back. The actor fetched into a plain local that the head reads (unit field and the
+// target field) and that is stored into the volatile home 923 (3702 B, aligned 612: retail's address fold, `mov reg,
+// [index + data + 0x18]` then `add`); with only the unit field read through it 945; with the dot's products written
+// previous-first 923 (same code); with the home stored after the unit read 923 (same code); with the home not volatile 980
+// (3657 B, aligned 577). Not kept: a gain of 3.
+// Actor and unit registers and frame 0x2cac still differ. Typed actor datum for
+// unit alone or unit and state, pointer published before/after lookup:
+// existing pointer 945/923 and 919/923, ordinary pointer 980/980 and 987/987.
+// After lookup with ordinary incoming unit index, same pairs 879/880 and
+// 986/986. Reduced control 926. NOT kept: the delayed typed read recovers
+// the scaled unit-field access, but the 879 form retains frame 0x2cb4
+// and shortens the body to 3708 bytes against retail 3731.
+// M3 lane 10 r125 (fast with 0x2c2060 at 400 and 0x2c3030 MATCH; fast control 926, plain 920): retail stores straight = 1
+// a second time on the actor_index == NONE path, in a block just ahead of the join (0x2c0e9a), besides the head's store.
+// `else straight = true;` after the actor block gives that block and store: fast 919, plain 929 (3722 B); with the actor
+// fetched into a plain local first (r123's 923 form) fast 924; `else { straight = true; aligned = true; }` fast 936 (3708
+// B); straight left uninitialised and set true at the top of the actor arm and in the else arm fast 926; the NONE arm
+// written first (`if (actor_index == NONE) straight = true; else {...}`) fast 916 but plain 926 (3722 B; the store block
+// is then laid out at the head). The fast preview misleads here by up to 13. Body unchanged.
+// M3 lane 14 r118 (fast with 0x29a190, 0x2c0d00 and 0x2c3550, all matched; fast control 920 = plain; difflib-aligned in
+// brackets, control [687]): the type arms as `switch (type)` on the type local 926 [700] (3740 B); `long object_count` 925
+// [636] (3722 B); the combined flags as `moving | (sphere_flags | obstacle_flags)` 920 (same code, first plain-equivalent
+// measurement); the object fetched after the unit/ignore skip test, defaults kept ahead of it, 919 [673]; the defaults and
+// the fetch both after that test 926 [673]. Retail's layout puts the join (distance test, definition bit, classification
+// start up to its first `jmp`) right after the type-0 other-actor branch, with the type-0 `else if` branch and the type
+// 1/7/11 arms after it jumping back; every form here keeps source order.
+// M3 lane 5 r212 (fast with 0x2c0d00/0x2c3550/0x29c860, plus 0x29a190/0x29cbb0/0x2c41b0 for the signature trials, all stayed
+// as they were; fast control 926 [masked 171, exact 465]): the previous direction as the ninth parameter (definition, three
+// declarations, three calls) 928f (3707 B); both volatiles dropped 975f (3671 B, frame 0x2cb0); that with the ninth-parameter
+// order 983f, with `else straight = true;` 955f, with both 963f; the marker query word read once per object into a named local
+// for the three queries 932f (3702 B). Diagnostics on the volatile-free body (reverted): no second object lookup for the
+// location 982f; the settings block removed 1064f (actor_index then EBP, unit_index EDI at entry); the loop's four settings
+// reads removed 1024f, only unknown18 970f, only the three marker words 1021f: the loop's settings reads are what put settings
+// in EBX at entry here, where retail reads it into ECX in the settings block only and keeps actor_index EBX, unit_index EDI,
+// self_unit EBP. The object table global made address-taken (file-scope pointer, diagnostic) 966f main body, 926f volatile-free
+// (3734 B): its entry hoist stays, so that is not what keeps retail's per-block table loads. Body unchanged.
+// M3 lane 13 r121 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3030, 0x2c2060, 0x2c3550,
+// 0x29c860; this set's control is 920 = plain; [difflib-aligned] in brackets, control [680]): retail's call in 0x2c41b0
+// computes the previous-direction argument right after it pushes the ignore and unit indices and before the direction,
+// so the declared order is (actor_index, flags, settings, obstacles, blocking_obstacles, position, radius, direction,
+// previous_direction, unit_index, ignore_index). With that order at the definition, the four declarations and the three
+// calls, 0x2c41b0 goes 675 -> 661 and the two matched callers stay matched, but this body reads 928 [678] (3707 B), so
+// it is not kept: build/r121/lead-2c0d60-param-order.patch. On the present order: both qualifiers dropped 972 [541]
+// (3671 B, frame 0x2cb0); the type byte read at each use 936 [667]; both 968 [502] (3676 B, frame 0x2cac, 925
+// instructions against retail's 921). What is left on that base is the entry's registers (ours settings EBX, the object
+// table ESI, zero EDI; retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, held up to the loop head and
+// re-read on its back edge), the skip flag's home (ours BL; retail's byte at +0x12, packed with blocking, aligned and
+// straight) and the moved join block. On that base: the skip flag forced into memory with a qualifier (diagnostic) 889
+// [489] (3708 B; the four bools then pack as retail's, but its stores go through a register where retail has `sete byte
+// ptr`); the entry dot through dot3f in either order 975 [500]; the two type-0 inflation tails as one forceinline helper
+// with the inflation and the skip flag passed by address 968 (same code as written out; the first tail only 947 [496]);
+// the settings block as a forceinline helper with the four priorities by address 991 [487]; the new order 975 [493]. A
+// switch over the type local 926 [697], over the type byte 947 [683]; with the new order 889 [696] (3732 B: position
+// only, the aligned count is worse) and 937 [678]. Retail reads the type byte four times in the loop: once sign-extended
+// for the four arm compares (`movsx eax`, then `cmp eax, 1`, `7`, `0xb`), and as a byte at the range test, at the
+// `1 << type` and in the sphere loop.
+// MiniMax H (11-19): no new form, no lower score (920): retail lays the join out of source order, with the type 0
+// other-actor branch followed by the join and the remaining arms jumping back to it, and no form tried here changes
+// that layout; the plain and the fast score are the same (920), so the body is as it stands.
+// M3 lane 4 r229 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3030, 0x2c2060, 0x2c3550,
+// 0x29c860, unchanged in every run; control 920 = plain, aligned 480, register-masked 172). KEPT, plain 917 (3676 B, frame
+// 0x2cac as retail, aligned 366, masked 139): both qualifiers dropped (the actor pointer a plain NULL-initialised local,
+// unit_index a plain parameter), the unit's flag byte at +0x10a viewed as a word bitfield (retail's `mov dl; shr dl, 2; test
+// dl, 1`) and the object type byte read at each of its seven uses; the entry then reads the actor's unit field as retail
+// does (`mov eax, [index + data + 0x18]; add index, data`) and stores the actor home once. Steps (fast): the actor through a
+// file-local inline getter with a NULL-initialised result variable, called at the declaration 965 (3675 B, aligned 417), in
+// the block 980, with the unit field through its own lookup 932, with unit_index plain 945 (aligned 424, masked 153); the
+// plain actor local alone 974 (aligned 414, masked 147), with unit_index plain 972; the word bitfield alone on main's body
+// 930 (masked 170); getter + plain unit_index + word bitfield 925 (3687 B); that with the type byte at each use 910 (3692 B,
+// aligned 378, masked 150; the getter is a one-caller helper, so not kept), with the getter called after the three bools 918
+// (aligned 365, masked 142). On the kept form: self_unit declared ahead of the four shorts 917 (same code); the unit and
+// ignore index tests as two statements 917 (same code). Retail's type-0 arm passes `false` to 0x25d810 from the register
+// that holds the type (`movsx eax; test eax, eax; ... push eax`): the four arm compares share one sign-extended load. That
+// form (a long type local for the four arm tests, the byte read at the three later uses) 949 (3692 B); the kept form with the
+// flag byte back as a byte bitfield 968 (the word bitfield is what holds 917).
+// Scoped motion 926 reduced, scoped priority and enabled 926 reduced, scoped physics indices 926 reduced, scoped
+// object flags 926 reduced, scoped motion and priority 926 reduced, scoped motion and flags 926 reduced, scoped
+// early classification 926 reduced, all separate scopes 926 reduced. NOT kept: All eight scope forms tie the
+// reduced control at 926, with the same 0x2cb4 frame and 3718-byte extent.
+// M3 lane 5 r216 (plain; [masked, exact] aligned, base 925 [141, 403]): lane 13 r121's declared order (previous_direction
+// after direction) re-measured 933 [136, 394] (3714 B; 0x2c41b0 675 -> 661); `else straight = true;` on the no-actor path
+// (retail's second store of 1 at 0x2c0e9a) 906 [137, 325] (3724 B; lead, a redundant store); both 914 [132, 319]; one `bool
+// enemy` for both type-0 arms 925 (same code); straight with no initialiser: set first in the actor block plus the no-actor
+// `else` 921 [137, 325], set just before the previous-direction test plus that `else` 921, set in an `else` of the
+// previous-direction block and in the no-actor `else` 849 [134, 322] (3708 B, frame 0x2cac and retail's homes for the four
+// shorts, self_unit and actor; lead only: the initialiser moved into else arms). Retail's type-0 `else if` arm and the type-1
+// arm end in their own `sete`/`mov byte ptr [esp+0x12], 1` (skip flag in memory), where ours keeps it in BL.
+// M3 lane 5 r218 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3550, 0x29c860, 0x2c3030, 0x2c2060,
+// none of which moved; with that set the fast control is the plain 925, with this function alone the image differs, 920 at 3740
+// bytes; [aligned, masked] = difflib counts with addresses masked / registers and stack offsets masked too, control [519, 236]).
+// Read from retail: 0x2c0e9a is a second store of 1 to `straight`, reached only when actor_index is NONE; the type-1 arm stores the
+// skip flag on the passing path only (`je` / `call 0x1df560` / `jne` around one `mov byte ptr [esp+0x12], 1`, no store on the
+// other path); the definition's no-obstacle bit is tested as `mov cl, [eax+2]; shr cl, 3; test cl, 1`; the vehicle block compares
+// `[object+0x248]` with NONE in memory and loads it again for the lookup, and tests the vehicle's actor for NONE once, reading its
+// +0x5d0 byte through the folded address before it forms the pointer; the byte slots follow reference counts, with the skip flag
+// in memory at +0x12 between `aligned` and `straight`.
+// Not kept (m3 review: a field reread at each use and a repeated lookup are match-only; code back to main), 859: the definition's flag view as a word bitfield (the field's declared width; retail's shift-and-test), the vehicle index
+// read from the object at each use, the vehicle's actor through actor_get at both field reads (no NULL-initialised pointer, one
+// NONE test). Those three with the vehicle's actor as a named pointer used twice 927; the first two alone 923.
+// LEAD 514 (m3 lane 5 r218): the 859 form plus `else straight = true;` after the actor block and the type-1 arm's skip flag set
+// by an `if`, both match-only; with all five the frame (0x2cac), the entry registers and the byte homes are retail's. Left on it:
+// each lookup's scaled index (retail takes a fresh register), the i-term operand orders of the marker, vehicle and velocity dots,
+// the sphere loop's XMM numbering and loop padding.
+// The lead, step by step: `else straight = true;` 906 [419, 231] at 3724 B (frame 0x2cac and retail's homes for the four shorts,
+// self_unit, actor and straight); on it the type-1 arm as `if (team == ... || !function_1df560(...)) skip_classification = true;`
+// 708 [203, 84] at 3772 B, first difference +0x91 (the entry registers and the skip flag's home at +0x12 are then retail's); with
+// the word bitfield 568; with the vehicle index at each use 684; with the vehicle's actor through actor_get 692; those two 661;
+// all five 514 [170, 77] at 3740 B, plain-confirmed 514. The five without the `else` store 847 (first difference +0x4a); without
+// the type-1 `if` 914; the `else` store replaced by an `else` arm of the previous-direction test plus the no-actor `else`, no
+// initialiser, 884; by `straight = true;` at the top of the actor block plus the no-actor `else`, no initialiser, 851 (without
+// the type-1 `if` 940 and 859); the vehicle's actor as a named pointer on the five 537.
+// On the lead: a long type local for the four arm tests (retail's `movsx eax` and the `push eax` that passes false to 0x25d810)
+// 520 [154, 67] at 3756 B (it also turns the second marker dot's i-term to retail's unfolded form); `bool enabled = true;` with the
+// per-object defaults (retail's `mov dl, 1` ahead of the settings branch) 507; the object distance test distance-first
+// (`!(distance_squared <= r * r)`, retail squares the differences before it adds the radius) 520, the sphere test the same way
+// 505, both 511 [164, 63]; type + enabled 513; type + enabled + both tests 519 [146, 51] (the closest structure found), with one,
+// two or three redundant pairs around the entry dot's first product (diagnostic) 514 / 514 / 519; type + sphere test 520; type +
+// both tests 526; enabled + sphere test 498; the object offset through vector3d_from_points3d 559 (it loads i, j, k, retail k, j,
+// i), with the type 543, with enabled 552, with both 536; the offset assigned k, j, i 514 (emitted i, j, k); the distance declared
+// ahead of the radius 514 (same code); the combined flags as `moving | (sphere_flags | obstacle_flags)` or with moving last 514
+// (same code); the loop-top object lookup with the masked index in a local, through a header pointer, or as byte arithmetic in
+// either operand order 519 on the type + enabled + tests form (same code each). On the `else` store alone: the long type 911, with
+// the type-1 `if` 739. Retail's scaled lookup indices go to a fresh register each time (`lea edx, [eax+eax*2]` at the loop top,
+// `lea edx, [eax+eax*4]` for the component, `lea ecx, [eax+eax*4]` for the sphere) with the table loaded after them; its sphere
+// loop keeps the centre's z in XMM4 and 1.0 in XMM0 and subtracts k, j, i in that order.
+// Actor unit through the object header 925; query unit through header 926;
+// all object reads through headers 926; typed location 926; typed actor unit
+// category 925; direction defaults in branch arms 945 or at actor-block entry
+// 928; confidence and classification names 925. Both defaults forms recover
+// frame 0x2cac but regress, still using EBX for the entry zero.
+// Memberwise query location copy after the unit lookup 901, Whole query location through memcpy 925.
+// NOT kept: the memberwise copy uses two word transfers where retail uses one dword.
+// M3 lane 3 r287 (plain each; control 925, difflib-aligned 519 / register-masked 243): the definition's no-obstacle view as
+// a word bitfield (the flags field's declared width) 924 (aligned 519, same layout); with it: both radius tests written
+// distance-first (`!(distance_squared <= r * r)`) 924 (masked 331); one to three redundant paren pairs around the entry
+// dot's first product 927 / 927 / 924; the two one-use `velocity` pointer locals dropped (the field cast passed to dot3f)
+// 938 at 3692 B, aligned 393, masked 242: frame 0x2cac and retail's homes for the four shorts, self_unit and the actor
+// (aligned 519 -> 393, a positional rise, so not kept); on that, the vehicle's actor tested through its pointer
+// (`vehicle_actor && ...`) 937 (aligned 396). Retail reloads actor_index into EBX, self_unit into EBP and unit_index
+// into EDI at the loop's back edge and reuses EBP as NONE inside the type-0 arm.
+// M3 lane 11 r143 (plain checks; this function builds differently in the reduced image; control 925, difflib-aligned
+// 519, register/offset-masked 286). Retail evidence: on the no-actor path retail stores straight = 1 again (0x2c0e9a,
+// `mov byte [esp+0x13], 1`, falling into the join at 0x2c0e9f) although the prologue already stored it, so its source
+// has an `else straight = true;` on the actor test with the initialiser kept. That else alone 906 at 3724 B (frame
+// 0x2cac and the priority shorts, self-unit and actor homes all retail's; aligned 419, masked 281), a redundant store,
+// so match-only and not kept; with the skip flag declared at function scope as well 906 (same code); with a second
+// `else straight = true;` on the previous-direction test as well 849 at 3708 B (aligned 424, MiniMax E's code). The
+// self-unit test written as `self_unit = unit[0xaa] == 0 ? unit : NULL;` 890 at 3741 B (aligned 510), but it compiles
+// branch-free (setne/dec/and) where retail branches, so not kept; with the no-actor else 870 (aligned 415). Left on the
+// 906 form: actor_index in EBP for retail's EBX with the zero in EBX for EBP (ours hoists the object-table global into
+// ESI at the entry, retail loads it in each block), the skip flag in BL where retail keeps it at [esp+0x12] (sete to
+// memory), and the other-actor branch's layout.
+// Entry pool acquisition is still hoisted and the 0x2cb0 frame exceeds 0x2cac.
+// Havok and movement pool accessors at the actor-unit lookup, location lookup,
+// or both 925 each. Complete conditional unit selection with explicit or
+// conditional-expression type arms 942 each at 3741 bytes.
+// NOT kept: the accessor forms tie and the complete selections grow past retail.
+// M3 lane 2 r128 (H2M_FAST with 0x29a190/0x29cbb0/0x2c41b0/0x2c0d00, which did not move; control 925 = plain; [aligned,
+// masked] difflib counts): lane 5 r218's 514 lead rebuilt on today's file 514 [170, 77] at 3740 B (all five forms
+// match-only). On it: the entry dot's k and j products written previous-direction first 514 (same code); the entry dot
+// through the existing dot3f 503 [170, 74] at retail's 3731 B (only the sphere loop's XMM numbers and the padding move);
+// on that the object's squared distance through length_sq3f 503 (same code); `bool enabled = true;` with the per-object
+// defaults plus the sphere test written `!(squared <= r * r)` 498 [168, 64]; on that a long type local for the four arm
+// tests 495 [150, 52] at 3745 B (retail's `movsx eax`/`push eax`). Left on 495: the object-table and component-table
+// globals loaded ahead of the index where retail scales the index first (loop head, type 11, sphere node), the object
+// distance radius computed first (retail after the three differences), the marker-loop and sphere-loop dot term orders,
+// the location copy's scratch registers and the loop-entry `jmp` over padding. Body unchanged.
+// M3 lane 3 r292 (H2M_FAST with 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, which did not move; control 925 = plain):
+// the type-1 skip as `!(team != actor_team && function_1df560(...))` 925 (same code); the self-unit test with the
+// vehicle field compared first 925 (same code); self_unit declared first 925 (same code); the type-1 `if (team ==
+// actor_team || !function_1df560(...)) skip_classification = true;` alone 903 (3760 B). Diagnostics (semantics changed,
+// reverted at once): the type-1 arm without its 0x1df560 call (`if (team == actor_team) skip = true;`, or `skip = team
+// == actor_team;`) 883 at 3692 B, and the head is then retail's line for line up to +0x4a (frame 0x2cac, actor_index
+// EBX, the zero and self_unit EBP, unit_index EDI, the object-table global loaded in each block instead of hoisted to
+// the entry); the call alone (`skip = !function_1df560(team, actor_team)`) 879 and the call with (team, team) arguments
+// 868, first difference +0xb each: the call in the type-1 arm is what moves the entry allocation, not the skip flag's
+// store count. New form, match-only (a named bool used once): `bool enemy = team != actor_team && function_1df560(team,
+// actor_team); skip_classification = !enemy;` (the type-0 arms' spelling) 873 at 3740 B, first difference +0x46 (left
+// in the head: the 0x26c flag's byte home and the entry dot's operand order); with `else straight = true;` 755 (3756
+// B); with that and a long type local for the four arm tests 750; with the entry dot through dot3f(direction,
+// previous_direction) 741 (3745 B; previous first 743); all four 736 (3745 B). Left on 736: retail lays the shared
+// distance tail out right after the other-actor branch and defers the type-0 `else if` branch and the type 1/7/11 arms
+// behind it, the object pointer and index homes (+0x18/+0x1c), and scratch rotations. On the else-store base the listed
+// `if` form (708) still beats this one (755). Body unchanged.
+// M3 lane 2 r130 (h2m fast with 0x29a190, 0x29cbb0, 0x2c41b0 and 0x2c0d00; control 925 = plain): one `bool enemy = true;`
+// ahead of the type-0 branches, assigned in each, with one `skip_classification = !enemy;` after them 924 (3741 B);
+// `long object_count` 921 (3731 B); diagnostic (wrong code), the actor's unit read without the object table: still zero
+// EBX / actor_index EBP, settings then in ESI, 943 (so the hoisted table is not the cause). LEAD, not kept (declarations
+// moved, match-only): the four per-object defaults (inflation, skip and the two sphere flags) declared after the
+// unit/ignore `continue` 875 at 3776 B: retail's entry (actor_index EBX, zero EBP, no hoisted object table, the six
+// zero stores from EBP) with frame 0x2cb0 and bytes at +0x11/0x12/0x13/0x1b; with `else straight = true;` on the
+// no-actor path 788 (3772 B, first difference +0x41); with `long object_count` 956; with the shared skip 924. On last
+// round's 495 lead (all match-only) the moved defaults give 507.
+// Role names for the separate actor/vehicle/sphere centers 925, actor/candidate displacements 925,
+// marker offsets 925, sphere-size workspace 925, object/sphere indices 925, inflation and sphere radius
+// 925, marker counts 925, and object distance/radius 925. Frame 0x2cb0 and the entry register choice stay.
+// M3 lane 8 r220 (h2m fast with 0x29a190 and 0x2c0d00, both MATCH; control 925): reading of retail's head: EBP is the
+// self-unit pointer (NULL, so the six zero stores come from it, and it holds self_unit at the loop's 0x3dc test), EBX the
+// actor index and in the other-actor branch the `enemy` byte, with the skip flag in a stack byte; ours keeps skip and
+// enemy together in BL, the actor index in EBP and a separate zero in EBX. Forms: the type-1 arm and the vehicle block's
+// identical team test through one file-local inline friendliness helper (two callers) 963 (3676 B); the other actor's
+// 0x5d0 flag and 0x5ec facing through the typed actor-view fields 925 (same code); every `actor` null test in the loop as
+// `actor_index != NONE` 947 (3772 B); the reference test as `if (actor)` 921 (retail compares the index with NONE there:
+// `cmp ebx, ebp` with EBP = -1, so not retail's form); the actor and self-unit pointers declared ahead of the four
+// priorities 925 (same code). Body unchanged.
+// M3 lane 11 r151 (H2M_FAST with 0x29a190 and 0x2c0d00, both MATCH; control 925): in the loop retail gives EBX to
+// actor_index and EBP to self_unit (both reloaded on the back edge, EBP then reused for NONE in the type-0 block) and
+// keeps the skip flag in a stack byte; ours gives BL to the skip flag (also the zero for the device/restricted defaults)
+// and EBP to actor_index. Forms: the skip flag declared at function scope and reset per object 925 (same code); declared
+// just before the type tests 922 (3725 B; skip leaves BL and EBX goes to object_index); declared right after the
+// unit/ignore continue 917 (3760 B); inflation, skip and device defaults declared at the type tests 919 (all three are
+// declaration moves, match-only); the type-1 arm with a named `short actor_team` 925 (same code); the self-unit vehicle
+// compare with the field first 925 (same code); `bool enemy = false; if (actor) enemy = ...` 932 (3741 B). Body unchanged.
+// More r151 forms (same control): the skip flag declared last of the four defaults 921, first 925, just before the
+// hidden-object test 917 (3760 B; with the declaration after the unit/ignore continue the entry is retail's actor_index
+// EBX and zero EBP, frame 0x2cb0); the type-0 other-actor `if (!enemy) skip = true;` 932 (3741 B); the type-1 arm as
+// `if (team == actor_team || !function_1df560(...)) skip = true;` with the late declaration 903 (3760 B, the type-1 form
+// alone also scores 903). All declaration moves or a flag set in a test: match-only.
+// Three-level direction result, strict-first, broad-first, conditional and reversed levels
+// 909/903/909/898. NOT kept: retail stores two separate bytes and the best form shortens to 3712.
+// Both dot tests after location/query 934/931; direction scope after settings 928,
+// optional prior-direction pointer 940. The frame and actor/unit homes still differ.
+// Frame 0x2cb0 versus 0x2cac; actor index and self-unit zero still exchange registers.
+// Raw tracked-unit index with entry default, two complete arms, or conditional selection after actor setup:
+// 914/921/874 in both filter orders. Early raw capture with a later Boolean result: 921 in both orders.
+// NOT kept: the raw forms compare a dword with NONE at the sphere filter where retail tests a saved byte.
+// The 874 form grows to 3744 bytes. Late Boolean materialization grows the frame to 0x2cb4.
+// M3 lane 1 r154 (H2M_FAST with 0x2c0d00 and 0x29a190, both MATCH; control 925): the definition no-obstacle view as a word
+// bitfield alone 924 (retail's shift-and-test, re-measured); the type-0 other-actor test inverted (NONE arm first, the
+// other-actor branch in the else) 914 (masked aligned 125 -> 179: not retail's layout; an arm swap, match-only); the vehicle
+// block's dot as one expression 924 (3741 B); the vehicle dot through vector3d_from_points3d and dot3f 922 (3740 B); both
+// marker-loop up dots as dot3f(&offset, &up) 923 (3741 B). Body unchanged.
+// M3 lane 15 r132 (H2M_FAST with the three callers and 0x2c0d00/0x2c3550/0x29c860/0x2c3030/0x2c2060; control 925 = plain;
+// [aligned, register-masked] difflib counts, control [519, 491]): LEAD, not kept (a local copy at the four arm tests with the
+// field read directly at the three later uses is the reload mix, match-only): the four type tests through one `long type`
+// local (retail 0x2c1020 `movsx eax, byte ptr [esi+0xaa]; test eax, eax`, the chain `cmp eax, 1 / 7 / 0xb`, and `push eax`
+// passing the known-zero type as 0x25d810's false; retail re-reads the field at the later uses) 916 [507, 491], plain 916.
+// Tried: the type local at the three later uses too 920 [484, 455] (under the gate), with the object-flags casts 920, with
+// the velocity pointers dropped 923; self_unit as `unit[0xaa] == 0 ? unit : NULL` (redundant
+// NULL arm, match-only) 890 on main, 888 on 916 [508, 409] (self_unit then gets a register for the loop as in retail's EBP);
+// the two one-use velocity pointers dropped 940 on main (3692 B), 918 on 916; with the ternary 868 / 856; the object-flags
+// pointer as the cast at both uses 916 on the 916 lead (tie); the entry dot through dot3f(direction, previous_direction) 924
+// (3714 B) on it; the type-1 `if (...) skip_classification = true;` 903 (3760 B) on it, with the ternary 934. Retail lays
+// the type-0 `else if` branch and the 1/7/11 chain after the motion-disabled `jmp` (0x2c129e), each jumping back to the
+// distance test 0x2c11ad. Body unchanged.
+// M3 lane 15 r134 (H2M_FAST with the three callers 0x29a190/0x29cbb0/0x2c41b0 and the five callees above: without the
+// callers it builds 3741 B; control 925 = plain, [aligned, masked] [519, 236]): `straight` set true in the two else arms
+// (MiniMax E) re-measured 849 [424, 234]; the r132 `long type` local re-measured 916 [507, 236]; both together 887 (3724
+// B) [413, 235]; both with `straight = true` also kept at the declaration 849/887 (same code: that store is dead). 1, 2
+// or 3 unused locals at the top (diagnostic) 925/925/934: the actor index keeps EBP and the zero EBX (not a symbol-count
+// tie). Retail also reloads the object-table global in the actor and location blocks, where ours loads it once into ESI
+// at the entry. Body unchanged.
+// M3 lane 13 r147 (H2M_FAST with the three callers and 0x2c0d00/0x2c3550/0x29c860/0x2c3030/0x2c2060, unchanged in every
+// run; control 925, difflib-aligned 172 groups): the entry dot written previous-direction first in all three terms 925
+// (only the i term's loads swap, to previous first; the k and j terms load the previous direction first in both
+// spellings, where retail loads the direction first in all three); local_4d3867's store moved ahead of the
+// previous-direction block 931, after the self-unit test 928; both of those ahead of the previous-direction block 935;
+// the actor-index test read once through the parameter's address 925 (two other dots swap operand loads: the
+// load sides follow the symbol count, not the written order). Re-measured on today's body, lane 13 r121's retail-evidenced
+// parameter order (previous_direction after direction; definition, four declarations and three calls): 933 (3714 B),
+// 0x2c41b0 675 -> 661, the matched callers unchanged; the entry dot then loads the direction first in all three terms
+// as retail, but the zero/actor-index registers and the frame stay ours, so the body still rises. Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with the three callers and five callees as above, fast control 925 = plain): retail stores 1
+// to `straight` three times: the entry store, the dot test's own `mov byte ptr [esp+0x13], 1` ahead of its `ja`, and the
+// no-actor store at 0x2c0e9a. The 849 form (no initialiser, set in the previous-direction else and the no-actor else,
+// re-measured 849, frame 0x2cac) has the entry store (hoisted from the previous-direction else) and the no-actor store, but
+// its dot test stores only the 0. On that 849 base (match-only): the type-1 arm as `if (team == actor team ||
+// !function_1df560(...)) skip_classification = true;` 888 (3756 B); self_unit as `unit[0xaa] == 0 ? unit : NULL` 878 (3740
+// B); the skip flag declared just before the type tests 941; both of those skip forms 888; local_4d3867 also without an
+// initialiser, cleared in the no-actor else 922 (3724 B).
+// M3 lane 13 r149 (H2M_FAST with the three callers and five callees as above, unchanged in every run; control 925): retail
+// computes the object offset k, j, i and the radius last, ours the radius first. The radius declared after the distance
+// sum 925 (same code); the offset through the existing vector3d_from_points3d(position, center, &offset) 925 (then i, j,
+// k, further from retail); the actor's unit read straight into self_unit and set to NULL when its type byte is not 0 932
+// (3740 B: frame 0x2cac, retail's straight/aligned byte homes and the 0x26c field loaded into a register as retail, but
+// actor_index in EDX and the zero in EDI); the entry declarations as actor, self_unit, the three flags, then the four
+// shorts 925 (same code but two rows); both 932. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
-    point3f const *position, real radius, vector3f const *direction, volatile long unit_index, long ignore_index)
+    point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index)
 {
     short ignore_priority = 0;
     short block_priority = 0;
     short range_min = 0;
     short range_max = 0;
     byte *self_unit = NULL;
-    s_actor_view *volatile actor = NULL;
+    s_actor_view *actor = NULL;
     bool straight = true;
     bool aligned = true;
     bool local_4d3867 = false;
@@ -589,8 +993,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             continue;
         if (self_unit && self_unit[0x3dc] == 1 && object_index == *(long *)(self_unit + 0x448))
             continue;
-        long type = (char)object[0xaa];
-        if (type == 0)
+        if ((char)object[0xaa] == 0)
         {
             if (TEST_FIELD_BIT(((s_obstacle_unit_flags_2c *)(object + 0x10a))->no_obstacle))
                 continue;
@@ -640,7 +1043,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 skip_classification = !enemy;
             }
         }
-        else if (type == 1)
+        else if ((char)object[0xaa] == 1)
         {
             if (actor && actor->unknown26c == NONE)
             {
@@ -648,17 +1051,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 skip_classification = team == actor->unknown024 || !function_1df560(team, actor->unknown024);
             }
         }
-        else if (type == 7)
+        else if ((char)object[0xaa] == 7)
         {
             byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
             word device_flags = *(word *)(definition + 0x11e);
             if (!(device_flags & 1) || ((device_flags & 2) && (*(real *)(object + 0x140) == 1.0f || !(object[0x1cc] & 1))))
                 device_spheres = true;
         }
-        else if (type == 11)
+        else if ((char)object[0xaa] == 11)
         {
             long component_index = *(long *)(object + 0xb4);
-            if (component_index != NONE && *(char *)(g_51e9b8->data + (component_index & 0xffff) * 0xa0 + 0x1c) <= 1)
+            if (component_index != NONE && havok_component_get(component_index)->unknown1c <= 1)
                 continue;
         }
         vector3f offset;
@@ -692,7 +1095,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             {
                 long component_index = *(long *)(object + 0xb4);
                 if (component_index != NONE)
-                    priority = *(char *)(g_51e9b8->data + (component_index & 0xffff) * 0xa0 + 0x1c);
+                    priority = havok_component_get(component_index)->unknown1c;
                 if (!enabled)
                     continue;
             }
@@ -705,7 +1108,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                     obstacle_flags = 0x10;
                     blocking = true;
                 }
-                else if (range_min <= priority && range_max >= priority && type != 0)
+                else if (range_min <= priority && range_max >= priority && (char)object[0xaa] != 0)
                 {
                     obstacle_flags = 0x20;
                     blocking = true;
@@ -766,7 +1169,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                     }
                 }
             }
-            if (actor && actor->unknown26c != NONE && ((1 << type) & 3))
+            if (actor && actor->unknown26c != NONE && ((1 << (char)object[0xaa]) & 3))
             {
                 point3f center;
                 function_b9dd0(object_index, &center);
@@ -847,7 +1250,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             if (!(combined_radius * combined_radius >= squared))
                 continue;
             long moving = 0;
-            if (type == 0)
+            if ((char)object[0xaa] == 0)
             {
                 real dot = dot3f(direction, &difference);
                 if (dot > 0.0f)
@@ -1373,6 +1776,62 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax B (11-20): no new form, no lower score (400): the body's arithmetic already agrees with retail block by
+// block, so the whole gap is MSVC's own allocation of the loop's locals. Tried and reverted: the conversion fallback
+// respelled as an if/else-if pair, so that the source-point copy appears twice as in retail (468); the same pair with
+// the failed-call copy written component by component, which is the other shape retail uses (483); the found flag hoisted
+// out of the traversal loop (400, the same 1752 bytes); the direction and distance locals hoisted out of the candidate
+// loop (400, the same 1752 bytes: MSVC gives them the same homes either way). The permuter's two runs over this body
+// (300 s, then 600 s with seed 77, one job each, annealed) reached nothing below the baseline of 395 differing
+// instructions on the reduced image. What still differs is the frame and the homes in it: ours reserves 0x114 against
+// retail's 0x10c, so the two byte flags sit at +0x6 and +0x7 against retail's +0x2 and +0x3, the origin at +0x8 against
+// +0x4 and the next at +0x10 against +0xc, and retail's order (distance, sector, index, direction) is ours' (sector,
+// edge, distance, index, direction) with the edge in a stack slot where retail holds it in EBX; retail keeps the count
+// in SI and re-reads it from its parameter home in the scan loops, while ours keeps it in BX for the whole function.
+// MiniMax E (11-20): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so every home
+// sits low, and retail still keeps the zero in EBX at the head and the count in SI while this build keeps the zero in
+// EDX and the count in BX; the difference follows from the loop's own locals, whose slots MSVC lays out by liveness and
+// not by declaration order (the step pointer last, the edge after the link and the edge first all compile to the same
+// code), and from retail's inlined 0x210a30 in src/path.cpp, which has to stay inline or 0x1f45c0 loses its match:
+// BLOCKED-BY that file. The body stands.
+// MiniMax D (11-19): no new form, no lower score (400): every block's own arithmetic agrees with retail (the x87 chain of
+// the candidate loop, the corner calls, the attempt loop and the emit block are the same code, only their stack homes
+// differ), and what is left is MSVC's own allocation of the loop's locals: retail keeps the zero in EBX at the head, puts
+// the count in SI and reads it back from its parameter home in the scan loops and holds the edge in EBX, while this build
+// keeps the zero in EDX, the count in BX and the edge, the next and the step in stack homes, with the frame at 0x114
+// against retail's 0x10c; the declaration orders of the loop's locals (the step pointer last, the edge after the link and
+// the edge first) all compile to the same code.
+// score 400 (was 400): r141 unchanged. Frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
+// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
+// M3 lane 3 r272 (fast with 0x270930/0x2c3030/0x26ccb0/0x2c2a70, matched throughout; control 400, aligned 350, masked
+// 94): the count bound by `short const &` and read through it at its four loop uses 400 (same code); `edge = 0xffff` at
+// the scan hit 433 (retail's second store appears, the edge stays in a slot, as r169 found); the candidate search
+// under a guard on its own range 500 (1783 B); the corner results tested through `bool const &` references 400 (same
+// code); the trace's edge read through a `long const &` 400 (same code). Retail's distance block is 0x210a30's inlined
+// body (already listed: calls to it stay out of line here).
+// MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
+// one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
+// body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
+// home sits eight bytes off, the three homes the body uses are at +0x54/+0x58/+0x5c against retail's +0x64/+0x68/+0x6c and
+// the two byte homes are at +0x12/+0x13 against retail's +0xe/+0xf, and the first difference is the frame size itself.
+// MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
+// MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
+// and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
+// Earlier at 400 (r123, r125 unchanged; second score line merged into the note's first, r272): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// Earlier (400, was 400): r123, r125 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
+// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
+// M3 lane 11 r123 (fast with 0x2c3030/0x26ccb0, both MATCH): retail never holds the count parameter in a register (every
+// use reads [ebp+0xc]); a no-code address-take of it, diagnostic, 400 (same code). The emitted type from the `type`
+// local instead of the step 403 (1755 B; retail re-reads the step); `found` declared ahead of the edge 400 and the edge
+// as a dword 400 (same code each); the step pointer declared after the loop's NONE defaults 400 (same code).
+// m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
+// step pointer 473 (1758 B); `bool other_side = !side;` at the top of the attempt loop 435 (retail's 1746 B,
+// register-masked aligned 79 against 80); the center as `side ? corners[0] : corners[1]` 473 (1710 B); index, used
+// and copied_last declared ahead of the source pointer 399 (only the sector store moves after the zero stores: not
+// kept); the origin copied field by field 442 (1768 B). Diagnostic, reverted: the count read through a volatile
+// cast at its four loop uses 474 (the edge stays in a stack slot, so the count register is not the only cause).
 // MiniMax R (11-15): no new form, no lower score (400). The frame is 0x114 against retail's 0x10c, and the homes are
 // measured from ebp: the source radius sits at -0xe4 against retail's -0xe0, the expanded radius at -0xd8 against
 // -0xdc, the source pointer at -0xdc against -0xe4, the node table pointer at -0xe8 against -0xe0, the origin at
@@ -1387,13 +1846,13 @@ long function_1fa7f0(void);
 // moves the other homes and raises the score to 434 (403 differing instructions and 31 bytes short); the edge value
 // declared outside the loop (400, unchanged); the previous-point pointer written into the corner call (459). A
 // permuter run over this body (48 tries in 302 s) found nothing better.
-// score 400 (was 400): the frame is 0x114 against retail's 0x10c, the registers holding the count, the zero and the
+// Earlier at 400 (was 400): the frame is 0x114 against retail's 0x10c, the registers holding the count, the zero and the
 // step pointer are swapped with retail's, and the frame homes of the radius pair, the origin, the flags and the edge
 // differ.
 // MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
 // source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
 // +0x34, and retail keeps the count in ebx where this build holds it in esi.
-// score 400 (was 400): earlier 400, 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// Earlier at 400 (was 400): earlier 400, 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
@@ -1890,6 +2349,136 @@ long function_1fa7f0(void);
 // through the existing vector3d_from_points3d with the written-out sum 400 (other code), with length_sq3f as well 400 (kept: the
 // two existing helpers replace their written-out bodies, plain-confirmed, the file's other functions unchanged); on it a named
 // squared distance 400, start/end declared with delta 400.
+// b7F (11-17) walk against retail, fast build on r830 (control 400): every block compared statement by statement, no
+// behaviour difference found. Checked: entry (0x2c206c-0x2c20ad: 0x1fa7f0 inlined, radius = float of source + 0.05
+// double), the count <= 1 copy (0x2c26ff), the scan and candidate loop (0x2c217d-0x2c229c: direction, 1e-4 and 0 tests,
+// all 14 arguments of 0x26ccb0 in order, stop_at_goal on the last point), the edge/next tests (0x2c22b4-0x2c22da), the
+// two corner calls (left into corners[0] first, 0x2c2302/0x2c2326; `right && left` order, 0x2c232b-0x2c2339), previous
+// and endpoint (0x2c233f-0x2c2368), the attempt loop (side, other side, expanded radius in both tangent calls, the
+// 0x26c4e0 pair, sector from the first trace, output index from the next step; 0x2c23b8-0x2c24ef), emit
+// (0x2c253f-0x2c25b3), the 400.0 test (0x2c269d) and the tail (0x2c26e2); constants 0.05 (double), 1e-4, 0.0, 1.0,
+// 400.0 as in source. Left, none behavioural: retail's sum is (z*z + y*y) + x*x (0x2c268a-0x2c2699), ours compiles (x*x
+// + y*y) + z*z (six term orders give one code); the second `mov ebx, 0xffff` (0x2c219e: `edge = 0xffff` in the scan
+// 433, with the initialiser dropped 417) and the dead store of query+4 (0x2c22ed, 0x2c22f7) stay unreproduced;
+// 0x2c262d-0x2c2643 is 0x210850's inlined body, but a call to it stays out of line here (both conversions 514, 1680 B;
+// the end alone 474; the source alone 467), so the body stays written out.
+// M3 lane 8 r180 (fast, control 400; all restored): the emit reading the current step through points[index] with the step
+// pointer only at the top 473 (1758 B); the step pointer declared at the emit only 473 (1758 B); both corner queries
+// through a force-inline helper whose unused first argument is query+4 (retail's dead store) 452 (the store is not
+// produced); that helper reading the pathfinding pointer at +0x88 from its argument 400 (same code, folded); the
+// avoidance trace record at the loop-body scope 400 (same code). Diagnostics: `edge = 0xffff` at the scan hit 433 (the
+// second store appears, the edge stays in a slot); count's address taken, or count read through a pointer to it, 400.
+// Attempt-number orientation 431, Boolean difference 456, two-side loop 450,
+// two-side loop with in-place flip 461, retry inversion 449. Edge after the
+// forward scan 476, with the flipping loop 470. Separate fallback increment 400.
+// NOT kept: alternate orientation forms recover frame 0x10c and still regress.
+// M3 lane 8 r184 (fast with 0x270930/0x2c2a70/0x2c3030/0x2c2740/0x2c2910, all matched; control 400): the step bound by a
+// const reference 400 (same code); the typed scan as a `for (end = index; end < count; ++end)` loop 636 (1911 B); the
+// emitted type and link as two ternaries 521 (1795 B); type and link stored before next in the typed branch 400 (same
+// code); the emit's point written field by field instead of real_point3d_set 436 (1761 B). Body unchanged.
+// Forward result after condition or break 475/475, bound as presence 482,
+// next sentinel after forward scan 478, step pointer with short ordinal 419,
+// pointer range 520, next as forward cursor 502, next sentinel across both
+// phases 461. NOT kept: 419 reaches retail length with the larger frame and
+// the selected edge still in a slot.
+// M3 lane 15 r101 (fast; control 400, aligned 275): the copied last step as `points[end - 1]` (one fewer count use, to free
+// BX) 545 (1811 B); `dword edge` 400 (same code); the trace location passed as `(long)&query->location` at both 0x26c4e0
+// calls with no local 400 (same code); the data lookup ahead of the two radius locals 491 (1768 B); `found` declared ahead of
+// `edge` 400 (same code). Body unchanged.
+// Named sector-trace output for the first, second or both traces 400 each;
+// second trace scoped to the unblocked arm 400. Typed source/target/both
+// trace endpoints 441/441/469. Shared candidate step for direction and sector 400.
+// The aligned frame still reserves 0x114, and the count and edge retain their old homes.
+// Orientation flipped in place between tangents 440; edge initialized at the
+// reverse scan 476; both 418; intersection into trace target 458; target
+// constructed per attempt 445; positioned-point fallback, preceding or both
+// arms 400/400; fixed limit by equality 400.
+// NOT kept: the combined form restores 0x10c and the opening radius home
+// but scores 418 at 1737/1746 bytes.
+// Native point pointer/reference 400/400; native source record with point pointer/reference 400/400.
+// Shared source/emitted/both coordinate indices 400/488/488; stored type at emission 403;
+// shared terminal input ordinal 469. The 0x10c frame and selected edge register still differ.
+// M3 lane 10 r123 (fast with 0x2c3030 and 0x26ccb0, MATCH throughout; control 400, aligned 350): retail keeps the count
+// argument in a register only at the head and compares the loops against its stack home, and keeps the edge in EBX; ours
+// keeps the count in BX through the scan loops and the edge in a slot. A `short last = count - 1;` local for the candidate
+// test and the copied last point 469 (1765 B); the forward scan as a `for (end = index; end < count; ++end)` loop 636
+// (1911 B); the edge declared in the scan arm 481 (1769 B); the found flag declared there 481 (1769 B); both there 478.
+// Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
+// With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
+// with a candidate step address 470/481. The selected edge still spills.
+// M3 lane 10 r125 (fast with 0x2c3030/0x26ccb0, both MATCH; control 400, aligned 350): the second `edge = 0xffff` at the
+// scan hit re-measured 433 (1765 B: count still in BX through the scan, edge in its slot); the emit's z, unknown02 and type
+// read through points[index] (step pointer only in the typed branch) 473 (1758 B); the typed branch through points[index]
+// and the step pointer formed at the emit 473; the step pointer declared `const *const` 400 (same code); the attempt
+// counter as long 399 (1751 B); the copied last point as points[end - 1] 545 (1811 B). Retail keeps index in EDI and the
+// step pointer in a slot at the loop top where ours keeps the step pointer in EDI and count in EBX. Body unchanged.
+// Reuse scan success for the left corner with named/direct right 400/400,
+// then combine with Boolean AND 477. Reuse it for right 400, join after both calls 400,
+// or clear the saved left result on right failure 400. Right AND left 477,
+// or clear the saved right result on left failure 401. NOT kept: ties or regressions.
+// The aligned 0x114 frame and edge/count homes remain.
+// M3 lane 7 r188 (fast, control 400, aligned 350, register-masked 119): every read of the current step through
+// points[index] with no step pointer at all 473 (1758 B, masked 124); the next step through points[next] with no pointer
+// 400 (same code); the trace start through real_point3d_set 400 (same code); the origin copied member by member 442
+// (1768 B); the loop-top declarations in retail's store order (edge, next, found, link, type, step), with the edge first or
+// the step last 400 each (only the store order moves, masked 116-118). Reading: retail's tail has the existing 0x210a30's
+// body inline (same-index test first, `mulss xmm0, xmm0` on z), and round 169 saw the entry zero move to EBX when it
+// expands here; our build keeps 0x210a30 out of line unless its definition is marked inline, which loses 0x1f45c0:
+// BLOCKED-BY 0x210a30.
+// M3 lane 16 r154 (fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): `copied_last` declared
+// first of the block's locals 400 (same code); the first conversion of the distance block in 0x210850's nested shape
+// 452 (1765 B); the outer loop as a `for` advancing `index = next` in its header, `next` declared ahead of it 400 (same
+// code); the outer loop as `do { } while (index < count)` (it always runs once: count > 1) 467 (1735 B); the edge
+// declared and set to 0xffff inside the untyped arm 481 (1769 B). Body unchanged.
+// M3 lane 4 r233 (h2m fast; aligned/slot/register-masked counts for the control 275/178/56): the forward scan as
+// `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
+// (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
+// `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
+// Round 499: terminal address at path/search scope, one-past address at path/search scope, forward scan with the
+// terminal/one-past address, candidate and terminal pointers, and terminal status from scan end.
+// Fast scores in order 492/486/499/488/480/439/486/543.
+// NOT kept: All eight retain the 0x114 frame and raise the score. The one-past forward bound is closest at 439 and
+// 1744 bytes. All four matched controls stay exact.
+// The extra two frame words and the count, edge and opposite-orientation homes remain unresolved.
+// M3 lane 11 r139 (h2m fast with 0x270930 and 0x2c2a70, both MATCH throughout; aligned unmatched [exact/stack-masked/
+// register-masked], control 400 [275/178/56]): the side flipped in place ahead of the second tangent call re-measured 440
+// (1727 B, frame 0x10c) [223/160/52]; that with `edge = 0xffff` again at the scan hit re-measured 369 (1740 B, first
+// difference +0x14) [225/160/52], still not kept (the store repeats the value the edge holds, though retail has that store
+// at 0x2c219e). On the 369 form: the first conversion in the nested two-copy shape 424 (1762 B) [229/168/60]; the output
+// index read ahead of the origin in both fallback arms 383, between the origin and the sector 382, ahead of the origin in
+// the first arm only 370; the step pointer declared ahead of the loop 369 (same code), and without the second store 440
+// (same code as the flip alone). Reading on the 369 form: the frame, the attempt loop and the emit agree with retail but
+// for registers; retail's scan keeps the index in EDI, NONE in ESI and the scan cursor in EAX and reads the count from
+// [ebp+0xc], where ours keeps the count in BX, the cursor in ESI and the step pointer in EDI; retail's emit keeps the
+// output element in EAX, its point in ESI and the emitted count in EBX; the tail is 0x210a30's inlined body (BLOCKED-BY
+// 0x210a30, as above). Body unchanged.
+// M3 lane 8 r214 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked
+// 350/256): the edge left uninitialised at the loop top and set to 0xffff at the scan hit (retail stores it there,
+// 0x2c219e, as well as at the loop top) 417 (1765 B); that with the side flipped in place ahead of the second tangent
+// call (no other_side local) 389 (1755 B, frame 0x114; the initialiser moved into the hit arm, so steering: not kept);
+// the side negated in the second tangent call's argument and flipped at the attempt loop's end 434 (1715 B, frame 0x10c
+// as retail, first difference +0x24, aligned/masked 299/199: closer in shape, shorter); that with the edge set only at
+// the hit 418 (1743 B, frame 0x114), with the repeated hit store and the top initialiser 426 (1728 B, frame 0x10c).
+// M3 lane 3 r292 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): diagnostic,
+// reverted at once: `count` read through a volatile view at its four loop uses 474 (1762 B): count leaves BX but the
+// points parameter takes EBX and the edge still sits in a slot, so count is not the edge's only competitor. Forms: the
+// emit's z and +0x02 reads through `points[index]` instead of the step pointer 473 (1758 B); the origin copied from
+// `query->source.point` (retail reads y through the query base) 400 (same code); `used` as a long 495 (1783 B). Body
+// unchanged.
+// M3 lane 2 r130 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70; control 400): the end scan as `for (end =
+// index; end < count; ++end)` 636 (1911 B); a named `short last_index = count - 1;` for the candidate test and the copied
+// last point 469 (1765 B); the scan as `while (end < count && points[end].type == NONE) ++end;` then one `if (end < count)`
+// 475 (1765 B); `found` declared inside the scan branch 481 (1769 B); the circle centre as `corners[side ? 0 : 1]` 484
+// (1700 B). Retail's count stays in SI only at the head and is read from [ebp+0xc] at every loop compare, leaving EBX to
+// the zero, the edge and then the output count.
+// M3 lane 2 r141 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): re-measured the side
+// flipped in place 440 (1727 B) and with `edge = 0xffff` at the scan hit 369 (1740 B, frame 0x10c; the hit store is
+// redundant, match-only). New: the candidate's distance test as `distance <= 0.0f` 433; the copied last step as
+// `result[used] = ...; ++used;` 400 (same code); the pathfinding pointer named once for both corner queries 461; a named
+// candidate step pointer for its point and node 400 (same code); `target.z = 0.0f` declared ahead of `start` 398 (its
+// zero store moves between start's x and y as retail's; -2, not kept). Retail's tail is 0x210850's own code (the
+// zero-extended index and `cmp ax, 0xffff` of its retail body) inlined twice through 0x210a30, both in an /Ob1 file:
+// BLOCKED-BY 0x210a30 and 0x210850. Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -393,6 +393,10 @@ struct s_ai_scene_assignment
 	short variant_indices[10];
 };
 
+// Matched in a full build with stand-in SDK headers (was 12): the `limit` copy of the maximum is gone (the
+// parameter is used in both compares and in the recursion) and the iterator is passed to ai_actor_iterator_new
+// through a reference-bound local; the maximum then takes esi and is loaded as a dword as in retail.
+// Before:
 // score 12 (was 12): the maximum count lives in esi through the loop as
 // retail has it, the role index is reloaded from its argument slot at each use
 // as retail does, the assignment copy reads the previous assignment by index
@@ -524,6 +528,68 @@ struct s_ai_scene_assignment
 // block), actor, score, variant, name 16, name, actor, score, variant 15. Re-measured: the long next-role local with the
 // direct maximum 59 at 347 bytes; `*(long const *)&maximum_count` as the copy's source folds back to the direct form (59,
 // 350 bytes). A 1800 s permuter run (anneal, 249 tries, 8 restarts) found nothing below the baseline.
+// Round 128 (m3 lane 9, fast): on the int copy, a long next-role local for the flag and the recursion 61 (347 bytes: the
+// copy's movsx stays and the stores read the role with one movsx from its slot); that local for the flag only 12 (same
+// code); the flag as `role_index >= role_count - 1` 13; the scorer's two outputs declared at function scope 12. On the
+// direct maximum, the next-role local for the flag only 59 (350 bytes: the role keeps ESI). Re-measured: the direct
+// maximum with the next-role local for the flag and the recursion 59 at 347 bytes (retail's head exactly; the stores then
+// load the role with `movsx eax, word ptr` where retail reloads the raw dword into ECX for the movsx and the recursion's
+// `inc ecx`); the leaf copy as `*local_0 = local_0[-1]` 24 (347 bytes, the movsx stays).
+// Round 129 (m3 lane 9, fast, on the int copy unless noted): the found arm as `if (!(local_7 > 0.0f)) continue;` 12; the
+// head test as the while condition's second half 12 (both the same code); on the direct maximum, the scorer passed the
+// role through a const pointer to the parameter 59 (350 bytes, the read folds); no role-pointer local (the address
+// written at the switch and the scorer) 118 (363 bytes); the scorer's two outputs declared ahead of the head test 12.
+// Re-measured: the recursion passing the parameter with the compares on the int copy 76 (354 bytes).
+// M3 lane 16 r126 (fast; direct maximum control 59 at 350 B): the four role stores through a file-local static helper
+// (assignment, role, actor, score, name, variant) on the direct maximum 59 and on the int copy 12 (same code each); an int
+// copy of the role for the scorer argument only, on the direct maximum, 100 (the copy takes a callee-saved register); a
+// short copy of the maximum defined at the loop head for both compares and the recursion 59 (propagated); the maximum on
+// the left of both compares 59 (the head compare becomes `cmp ax, word ptr [ebx]`).
+// M3 lane 15 r94 (one-file LTCG harness, exact at 12 and 59; the 17 confirmed with --fast): the last-role flag typed long
+// 122 (367 B), on the direct maximum 122; the kind's three cases as an if / else-if chain on a short local 107 (364 B); the
+// leaf's next assignment address taken with the increment ahead of the bound test 17; that with the copy from
+// `local_0[-1]` 25 (347 B); a count test ahead of the iterator 105 (364 B), on the direct maximum 96. Same code: a
+// reference-bound maximum (59), a reference-bound role in the found arm, forceinline actor-index and role accessors, a
+// named count local in the leaf, the scorer outputs declared the other way round, a named short kind for the switch.
+// Diagnostics on the direct maximum: without the role's entry uses, with one or two of the four stores, or without the
+// role in the recursion the role still takes ESI (106/114/96/88/99); with the scorer's role argument read through a
+// volatile cast (reverted at once, not allowed) 2 at 347 B: the maximum takes ESI with retail's dword load and only the
+// found block's two loads stay swapped. Retail's scorer argument is a plain load of the role's slot that is not counted
+// as a use of the role; no natural form found that gives that.
+// Round 107 (m3 lane 14, fast with 0x291b40, which matched in each): the count bound by reference (`short &count =
+// *assignment_count;` at every use) on the int copy 12 (same code), on the direct maximum 59 (350 bytes); the stores
+// through a reference to the assignment row 12 (same code); the stores ordered name, score, variant, actor 17; actor, name,
+// variant, score 14; re-measured, not counted: the maximum bound by reference on the direct form 59.
+// M3 lane 11 r114 (fast with 0x291b40): on the direct maximum (59 at 350 bytes) the scorer given `(short)role_index` 59;
+// `__assume(role_index >= 0)` after the last-role flag 59; on the copy, an `unsigned short` copy 59 (propagated, as the
+// short copy); the maximum parameter 32-bit with a copy of the other signedness (`unsigned long` with an int copy, `long`
+// with an `unsigned long` copy, `dword` with a long copy) 59 each (every same-width copy is propagated, so the maximum
+// loses ESI to the role as on the direct form). Diagnostic, restored: the role index as a one-member aggregate by value
+// 94 (359 bytes; 0x291b40 173).
+// M3 lane 11 r116 (fast with 0x291b40 and 0x291800, both matched each time; base 12): the role index as a 32-bit
+// parameter with `(short)` at its entry uses, the scorer argument and the four stores and a raw `role_index + 1` for the
+// recursion (retail's stores load the slot's dword and sign-extend from CX, its recursion adds 1 to that dword): on the
+// direct maximum 59 (350 bytes, the role still takes ESI), on the int copy 12 (same code as the short parameter), with the
+// scorer given the raw 32-bit role 12 (same code); that parameter with the recursion given `(short)role_index + 1`, direct
+// maximum, 116 (364 bytes: the next role is kept across the loop, frame 0x40); the actor index and then a short role copy
+// named at the top of the found arm, the copy stepped (`++role`) for the recursion, on the int copy 12, on the direct
+// maximum 59 (same code each: the copy is merged with the parameter, its reload still heads the block). The int copy's
+// three differences are unchanged: the movsx, and the role's dword reload ahead of the actor index load.
+// M3 lane 15 r100 (fast with 0x291b40/0x291800; int-copy form 12, direct maximum 59 at 350 B): on the direct maximum,
+// `short const &role = role_index` at every use 59 (folds); a long next-role local for the flag and the recursion 59 at 347
+// B (re-measured as a base: retail's head, then the stores movsx the role from its slot and the variant store moves up);
+// the leaf and recursion arms swapped 65; the last-role flag declared ahead of the role pointer 103; the iterator loop as
+// `for (iterator_new; iterator_next; )` 59 (same code).
+// M3 lane 6 r196 (fast with 0x291b40/0x291800, both matched each time; int-copy base 12): the head test as `if (count <
+// limit) score...; else break;` 12 (same code); the leaf as `if (count < limit) { copy } else break;` 12 (same code); one
+// assignment-pointer update after both arms (the leaf copying by index) 128 (366 B); copy and parameter mixed, the leaf
+// test on the parameter with the head test and the recursion on the copy 18 (350 B); the head test and the recursion on
+// the parameter with the leaf test on the copy 70 (353 B).
+// Round 190 (m3 lane 8, fast with 0x291b40/0x291800; int copy 12, direct maximum 59 at 350 B): on the direct maximum
+// the iterator's actor index named in the found arm for the first store 59; the assignment pointer declared just ahead of
+// the iterator (after the switch) 95, on the int copy 51; the four stores through a forceinline helper taking the role by
+// const reference 59 (int copy 12) or by const pointer (`&role_index`) 59: the address taken through an inlined helper
+// folds, the role stays a register candidate (our direct form loads it into ESI after the head test, reloaded per pass).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
@@ -541,12 +607,13 @@ void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignm
 	}
 	if (local_3 == NONE)
 		return;
-	int limit = maximum_count;
 	s_ai_actor_iterator local_4;
-	ai_actor_iterator_new(local_3, &local_4);
+	s_ai_actor_iterator *iterator = &local_4;
+	s_ai_actor_iterator *const &kept = iterator;
+	ai_actor_iterator_new(local_3, kept);
 	while (ai_actor_iterator_next(&local_4))
 	{
-		if (*assignment_count >= (short)limit)
+		if (*assignment_count >= maximum_count)
 			break;
 		long local_5;
 		short local_6;
@@ -560,14 +627,14 @@ void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignm
 			if (local_2)
 			{
 				++*assignment_count;
-				if (*assignment_count >= (short)limit)
+				if (*assignment_count >= maximum_count)
 					break;
 				local_0 = &assignments[*assignment_count];
 				*local_0 = assignments[*assignment_count - 1];
 			}
 			else
 			{
-				function_2919e0(scene, assignments, assignment_count, limit, role_index + 1, role_count,
+				function_2919e0(scene, assignments, assignment_count, maximum_count, role_index + 1, role_count,
 					ai_index, ai_index2, ai_index3);
 				local_0 = &assignments[*assignment_count];
 			}

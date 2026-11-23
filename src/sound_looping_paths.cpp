@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
+#include "unknown_124f90.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include <math.h>
@@ -91,6 +92,8 @@ struct s_loop_path_override
 	real gain;
 };
 
+long looping_sound_new_attached(long tag_index, long object_index, short marker_index, long value);
+
 PRIVATE inline real loop_path_pin(real value, real lower, real upper)
 {
 	return lower > value ? lower : (value > upper ? upper : value);
@@ -133,20 +136,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	long index = NONE;
 	if (tag != NONE)
 	{
-		index = record_pool_allocate(pool);
-		if (index != NONE)
-		{
-			s_loop_path_datum *sound = loop_path_get(pool, index);
-			sound->tag = tag;
-			sound->state = 3;
-			sound->flags = 0;
-			sound->flags |= 0x100;
-			sound->field_6 = NONE;
-			sound->type = 0;
-			sound->decibels = 0;
-			sound->source = (char)0xff;
-			sound->cluster = NONE;
-		}
+		index = looping_sound_new_attached(tag, NONE, NONE, 0);
 		if (index != NONE)
 		{
 			loop_path_get(pool, index)->flags |= 1;
@@ -156,7 +146,21 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 837 (was 846; m3 lane 2 r142 as cut at review, its lines just above the marker): The entry zero uses EBP instead of ESI,
+// and the target count, primary source and query arrays receive different homes. The retail query keeps its
+// full-width count through the walk and reloads a sound entry before testing its tag.
+// MiniMax E (11-19): score 846 (was 846): no new form, no lower score. Read from the listing again: retail zeroes
+// ESI at the entry and keeps the primary at frame+0x18 while our body zeroes EBP and keeps the primary at frame+0x24,
+// retail's four query arrays start at frame+0xdc with the gains first and ours start at frame+0xe0 with the clusters
+// and the indices in the other two slots, and retail reads the query count as a full word from frame+0x00 where our
+// body narrows it. Reordering the four array declarations left every displacement unchanged, so the homes are not set
+// by the declaration order. This round made the query count and the choice count full words: 919 with the query count
+// alone, 964 with the choice count alone and 965 with both, all worse than 846, so retail's full-word count is not
+// reached that way. Read off the listing, the four array homes run gains, indices, portals, clusters in retail and
+// gains, clusters, portals, indices here, with the portals in the same slot in both.
+// Earlier score 846 (was 846): Frame 0x4e0 agrees. The entry zero uses EBP and the target count, primary source and query arrays have different homes.
+// entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
+// unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
@@ -171,6 +175,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax G (11-12): no new form tried this round, no lower score (866): the prologue still zeroes ebp where retail
 // zeroes esi, and the zeroed count still sits at esp+0x24 instead of esp+0x88, so the later frame offsets differ.
+// MiniMax S (11-15): 853 (was 866) on its base; 846 with lane 1 r109's forms (coordinator, fast): the six clamps of this function through the existing PIN_126660 macro
+// instead of the local pin helper; the body now has retail's length (3327 bytes) and 0x18bb80 stays matched. Left:
+// the prologue still zeroes ebp where retail zeroes esi, and the zeroed count's home differs (esp+0x24 here,
+// esp+0x88 in retail), so the later frame offsets differ.
 // MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
 // keeps the choice count and the two loop indices in ESI/EDI/EAX, while ours narrows the count to a word and holds the
 // outer index in EBP; taking the long count directly instead moves the frame offsets and scores 919. Retail's four
@@ -550,6 +558,371 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // On the kept 858 form (fast): the choice count as a long 965 (3268 B); the audible update with the `or` arm first
 // (`if (!target->audible)`) 858 (still one merged word RMW); the query count used directly at its three uses 913; the
 // fade time named once at both step sites 884 (3330 B); the decibel helper as a single-exit result 881 (above).
+// M3 lane 15 r92 (fast, control 846): the clusters array renamed (diagnostic: names do not move the array homes) 846
+// (same code); the query count read directly with a long choice count 965 (3264 B: the prologue's ESI zero and the
+// indices/clusters/portals homes become retail's +0x1f0/+0x3f0/+0x2f0, the count moves to +0x14 and the gains to
+// +0xf0); that with each choice filled through `&choices[choice_count++]` 972 (3287 B); the same pointer with the short
+// counts 967 (3275 B); the target count declared above the targets array 846 (same code).
+// P557: Bounded accepted-choice cap <2/<=1 with short/long query and choice domains:
+// 846/919/964/965/846/919/964/965. NOT kept: no equality or native entry/count/query-home repair;
+// original counters, equality cap, helpers and complete body restored.
+// P559: Declared sound/choice level vectors, paired storage and existing whole-copy/scale/default producers:
+// 846/846/846/938/916/850/925/868. NOT kept: unmatched record/producer shape; native entry zero/query/count
+// homes unresolved; original records, helpers and complete body restored.
+// P561: Original negative duplicate-search flag in char/signed-char/byte/short/word/int/long/dword:
+// 846/846/846/915/915/846/846/846 at 3327/3327 bytes. NOT kept: no native entry zero/count/query
+// residence or exact bytes; original bool flag, helpers and complete executable body restored.
+// P582: Original-site scalar memcpy at completed query count/paired query indices/existing
+// candidate, seven subsets, then complete scalar memmove: 846/846/846/846/846/846/846/1144. NOT kept: no exact native entry-zero,
+// count/query/primary-home recovery; original scalar producers, helpers and complete body restored.
+// P585: Immutable existing range/fraction/blend/current/delta/active gain/inactive step,
+// then the complete scalar graph: eight 846 at 3327/3327. NOT kept: no entry-zero,
+// count/primary/query-home change; original scalar declarations and entire body restored.
+// P588: Fixed bindings of original BSP/choice-sound/repair-sound/fade-table/
+// choice/target/override/pool receivers: eight 846 at 3327/3327 bytes. NOT kept:
+// no native ESI entry-zero or count/query/primary-home recovery; original body restored.
+// P590: Original incoming BSP/listener/point/cluster/override/elapsed fixed bindings,
+// complete input binding graph and six parameter role names: eight 846 at 3327/3327.
+// NOT kept: no exact ESI-zero/count/query/primary-home recovery; original body restored.
+// P592: Completed count before conversion/override/existing append, subsets 1/2/4/3/5/6/7,
+// then full-width query/choice on the complete append graph: 926/871/860/929/914/880/917/947. NOT kept:
+// no exact native entry-zero/count/query-home recovery; original body and helpers restored.
+// M3 lane 3 r255 (fast, control 846; aligned/register-masked lines 640/527): the listener tail with an early return
+// when the slot's sound already has the detail tag 846 (same code); the second loop's matched sound through a pointer
+// formed after the distance call 929 (3305 B); both fade times through a by-reference inline fade-time helper 846 (same
+// code); the definition table read inside the choice-to-target loop 927 (3309 B); on this base, the allocation through
+// the existing looping_sound_new_attached(tag, NONE, NONE, 0) 896 (3274 B). Diagnostic, reverted at once: 0x14b240
+// storing into its owner (its call then clobbers the bsp) 928, so retail's re-read of the sound table after that call
+// is not a callee summary. Nothing in retail takes 0x44a0b4's address (no immediate, no data pointer); the matched
+// 0x2195f0/0x2197f0 read it for a -64.0f literal, so its 14 reads are reloads of a literal, not an aliasing effect.
+// M3 lane 1 r114 (fast with 0x18bb80): retail's matched-sound overrides read the matched sound's address once after the
+// distance call (`mov ebp, [ebx+0xd8]` reloaded, one `imul`), because the choice count holds ESI and no callee-saved
+// register is left for the sounds base; ours keeps the base in EBP across 0x14b240. One `other` pointer to the matched
+// sound taken after the distance call and used by both overrides 929 (3305 B); a per-target pointer to the fade
+// definition used for both fade-time reads 885; long counts with `&choices[choice_count++]` and that `other` pointer
+// 981 (3255 B; long counts alone re-measured 965 at 3264 B); the inside/outside level named before the gain sum 846
+// (same code); that with the portal named too 905 (3337 B). g_44a0b4 should be a const global in .rdata (retail reads it
+// from memory 14 times), but its other declaration is in a held file.
+// M3 lane 9 r133 (fast with 0x18bb80, which stays matched; control 846): redundant guards that repeat a loop's own test,
+// meant to move callee-saved homes without code: `if (0 < query_count)` around the first loop 857, `if (0 < choice_count)`
+// around the choice-to-target loop 909 (3328 B), `if (0 < target_count)` around the target loop 850, `if (0 < existing_count)`
+// around the existing search 850; the first loop's new choice filled through `s_loop_path_choice &choice =
+// choices[choice_count]` with the increment last 925 (3288 B: the reference becomes a strength-reduced pointer, as the listed
+// pointer forms). Body unchanged.
+// The 0x4e0 frame agrees. Entry zero and the query/choice/target stack homes still differ.
+// count as for-loop ordinal 914; count as while-loop bound 913; per-target ordinal publication 930; completed
+// choice count 951;
+// target cursor 961; choice cursor 920; branch-produced ordinal 956; branch-produced completed count 939.
+// NOT kept: all eight target-count forms regress against 846. The two retail-length variants retain the entry
+// zero-register difference.
+// Entry zero stays in EBP in the usual form, with the choice, target and query homes displaced.
+// Complete source/default, default-first, initialized-default and common-predicate gain staging,
+// published before scaling 939/939/936/932 and after scaling 984/984/984/933.
+// NOT kept: all regress. The predicate with publication after scaling keeps 3327 bytes but changes the first load.
+// F408: Shared query-gain and existing-index buffer 846; full-width query 919, choice 967, both 968.
+// With the count also shared: 848/919/970/957 in the same order.
+// NOT kept: full-width choices recover the entry ESI zero but shorten the body and raise the score.
+// The target-count, primary and query-array homes remain.
+// B460: Completed matching-sound search with reloaded index/carried index/while ordinal/pointer range
+// 918/931/918/921, or with one first-choice tag for each scan 918/931/918/921.
+// Sound table held through the scan and matched row reacquired after the distance call,
+// with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
+// Original body restored.
+// F417: Shared gain after tag 900; two-use computed gain 851; target gain readback 900;
+// tag and decibels before shared gain 900; target entry before range 866; local gain with target-first
+// publication 852; named endpoint before shared gain 900; allocation before choice gain 900.
+// NOT kept: the entry zero and query array homes remain and the scores regress. Original body restored.
+// AC571: Full producer count in the first scan or in repair 915/856. Capacity checked on acceptance,
+// short/full-width count, 950/965. Count advanced before record stores and capacity checked afterward 964/984.
+// Primary set during first inside conversion or first target append 940/956. NOT kept: all regress.
+// The full-width acceptance check recovers ESI at entry but shortens to 3232 bytes and keeps the count-home differences.
+// Entry zero chains for target/choice, target/query, all three, or target/existing counts
+// 859/859/858/868. Choice and ordinal after the query or with its output before the call
+// 847/846. Existing count and bitmap chained before the scan or with target count at
+// entry 847/939. EBP remains the entry zero and the count and array homes differ.
+// Round 623: accepted-range cursor throughout, ordinal duplicate scan, ordinal conversion and
+// advance-before-fill 958/989/947/967 with the short query count, 956/958/948/966 with the full
+// query count. NOT kept: the ordinal duplicate scans put zero in ESI but keep other count and query
+// homes and lengthen the body.
+// Round 625: first query cursor over clusters/gains/portals with short count 988/987/945
+// (index cursor recheck 988); indices/clusters/gains/portals with long count 939/939/938/940.
+// Attenuation sampled before the indexed walk with short/long count 847/919.
+// NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
+// count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// First source retained from acceptance, record completion, collection end or inside selection:
+// 943/937/920/952. The same forms with full query count: 945/954/879/945. NOT kept: even the
+// 3327-byte form raises the score, and the entry zero and stack homes still differ.
+// Round 628: dword choice count through construction/repair, then short for later use 947/952.
+// Short construction and long count at repair/conversion 912/893. Full query bound in construction
+// with a short completed count 961, or in repair with a short conversion count 890.
+// Typed portal indexing 846, with the first two choice-count splits 947/952.
+// The dword construction forms recover the ESI zero but shorten the body and raise the score.
+// shared sound lookup in first query and primary repair 846; shared sound lookup in query and neighbor
+// repair 846; shared sound lookup through all BSP reads 846; shared sound reference through all BSP reads
+// 846; ordinary inline sound lookup through all BSP reads 846; shared sound lookup with full query count
+// 919; shared sound lookup with full choice count 964; shared sound reference with full query and choice
+// counts 965. NOT kept: the shared sound lookups tie at the original width. With a full-width choice count,
+// the entry zero and three query-array homes agree with retail, but the target-count and primary homes still
+// differ and the extent falls to 3264 bytes. The opening executable source is restored.
+// M3 lane 13 r110 (fast with 0x18bb80, which matched in each; control 846, aligned 1004): the literal -64.0f in place
+// of the global in both decibel helpers 846 (same code); with the linear helper pinning the long bit pattern through
+// an if/else result (0x2195f0's shape) 867 (3309 B, aligned 665); every helper in the shape of 0x2195f0/0x2197f0 873
+// (3309 B); only the logarithmic helper in 0x2197f0's shape 848; the fraction's test as `fabs(0.0f - range)` 846 and
+// its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
+// (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
+// rework of this function belongs with build/r110/held-0x18dc90.patch.
+// Definition bitfield gates: custom levels/scale/both 888/919/914,
+// original-source repair/neighbor level/both 913/846/913. All definition bits
+// 938; one initial flag snapshot with live repair bits 910. Entry zero,
+// query/count homes and the accepted-choice register remain.
+// Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
+// or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
+// NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
+// M3 lane 5 r200 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, frame-blind aligned 282 of 941/928
+// lines with registers and stack offsets masked): long query and choice counts, `&choices[choice_count++]` in retail's store
+// order with the 1.0f defaults as statements, and the first pool scan in the fade scan's while form with the salted index
+// named before its test 1020 (3231 B, fb 277); with loop_path_start allocating through looping_sound_new_attached(tag, NONE,
+// NONE, 0) and 0x18a5a0's second half 1000 (3238 B, fb 251: the four query arrays take retail's order, frame 0x4dc); plus
+// the choice/target/existing lists as {count, items} records 971 (3250 B, fb 238: the choice cursor is no longer
+// strength-reduced, but the zero is EDI and frame 0x4e8); without the existing record 984 (0x4e4), without the target
+// record 978; the indexed choice stores on that base 1013. Lead: the override's `+=` through the shared decibel value type
+// (include/unknown_21e230.h) gives retail's `movss xmm0, [eax]; mov [slot], edx; addss xmm0, [slot]` (984, fb 236, cast
+// diagnostic): retail's integer decibel constants and slot-copied right operands are that type's signature, so the
+// decibel fields here may be that type.
+// M3 lane 12 r145 (fast with 0x18bb80 and 0x18ab70, both MATCH): retail's override loop re-reads the target count from its
+// home each pass and the choice count is stored to its home after each increment with `&choices[count]` recomputed from it.
+// The override add through the shared decibel value type 846 (same code), with the gain as such a local built from its bits
+// 846 (same code); long query/choice counts with the query count read directly and each choice through
+// `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
+// (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
+// order 846 (code changes, score ties).
+// M3 lane 7 r187 (fast with 0x18bb80 and 0x18ab70, both MATCH; control 846, difflib-aligned 1004). Reading: retail forms the
+// choice as `&choices[count]` from the incremented count (`inc esi; mov [esp+0x34], esi; lea esi, [esi+esi*4]; lea esi,
+// [esp+esi*8+0x10]`), stores tag, source, decibels, cluster through it, and reloads the count into ESI after the distance
+// call; the count is never an induction pointer. Tried: long query and choice counts with `choice = &choices[choice_count++]`
+// up front, stores in retail's order, the 1.0f defaults as three statements 972 (3287 B; the pointer is strength-reduced
+// into [esp+0x18]); the same with the pointer formed from the count and `choice_count++` after the distance 966 (3264 B,
+// ESI is then the entry zero as retail), that with the loops bounded by `count` directly 966 (same code); that with a
+// short choice count 938 (3280 B, aligned 986); with a short query count 965 (3264 B).
+// M3 lane 10 r126 (fast with 0x18bb80, MATCH throughout; control 846, aligned 1004): g_44a0b4 as `real const` at its
+// definition and both extern lines 846 (same code) and it loses matched 0x2197b0 (the read folds to an immediate, 15)
+// and raises 0x18d730/0x18dc90 287/315 -> 400/452; re-measured lane 15 r92's long counts 965, with
+// `&choices[choice_count++]` 972, the pointer alone 967 (all as listed); new: the short count incremented first and
+// each choice filled through `&choices[choice_count - 1]` 965 (3271 B, aligned 1047).
+// Accepted ordinal captured at increment, after the header, or from the incremented count;
+// post-increment choice reference; full-width choice count with captured ordinal; full-width counts
+// with header increment; target count as conversion ordinal; target count published after conversion: 932/932/950/967/954/941/914/951.
+// NOT kept: The entry zero, accepted count register and the separate count and buffer homes remain displaced.
+// Inside from an accepted choice 927, or from a nonempty query 920;
+// first-choice reference through repair 913; matching neighbor through both repair stores 948;
+// shared neighbor gain 965; one post-distance repair-flags read 846;
+// primary published during conversion 953; shared neighbor record and gain 961.
+// NOT kept: The ESI count and the target, primary and query-array homes remain different.
+// M3 lane 12 r152 (fast with 0x18bb80/0x18ab70; control 846): the detail tag as a ternary initializer 845 (one point, not
+// kept); `bool inside` computed right after the query count 927; the override's logarithmic gain computed once ahead of
+// its loop 959 (3380 B); the pool global read at the function top 966 (3355 B); `primary` declared ahead of the target
+// count 846 (same code).
+// M3 lane 8 r201 (fast with 0x18bb80, 0x188f90, 0x18a5a0, 0x2195f0, 0x2197b0, 0x2197f0, all MATCH each time; control 846,
+// difflib-aligned 1004, register-masked 916, register- and frame-masked 473 = "fb" below). The kept body is a positional
+// optimum at retail's length; every form with retail evidence changes the length, so the score rises while fb falls.
+// New readings of retail's datum-flag code: the audible update is two byte operations (`or byte [eax+4], 0x80` under
+// `!audible`, else `and byte [eax+4], 0x7f`) where ours merges one word load, select and store; the first scan clears
+// 0x200 with a word AND against 0xfdff hoisted into EBP where ours narrows to `and byte [eax+5], 0xfd`; each start site
+// stores a zero word and then ors byte +5 with 1. Tried on main's body: both masks cast to the field's width 846 (same
+// code); the datum flags as a bit-field view of the word with the 0x200 clear and the audible update as bit writes 846
+// (same code). Compile-only probes of the 0x200 clear, all `and byte [eax+5], 0xfd`: `(word)~0x200`, `& 0xfdff`,
+// `(word)0xfdff`, `0xfdffu`, through a short view, `(word)(flags & ~(1 << 9))`, `~(word)0x200`, a mask local declared
+// outside the loop, a short field. Probes of the audible update: an inline setter taking the datum and a bool, either
+// sense, a ternary, two ifs, `== false` (all the merged word form); byte-wise access (a merged byte form); through
+// `word *flags = &sound->flags;` as matched 0x18a720 writes its flag (`if (!target->audible) *flags |= 0x80; else *flags
+// &= ~0x80;`) gives retail's two byte operations, 3 instructions shorter. The start's `flags = 0;` followed by an or of
+// 1 into the word's second byte gives retail's `mov word [ecx+4], reg; or byte [ecx+5], 1` (as does the existing
+// looping_sound_new_attached, lane 16 r118).
+// Composite, built up one form at a time (score / bytes / fb): long counts with each new element addressed from the
+// incremented count 969 / 3259 / 463; plus the first pool scan through the existing data_iterator_next_inlined 969 /
+// 3235 / 397; plus the fade scan through it 995 / 3224 / 302; counted lists alone (lane 16 r114's template) 919 / 3287
+// / 419; lists and both iterator scans 1013 / 3192 / 277; plus the pin helper's bounds as `real const &` (the -64.0
+// global is then read 14 times as in retail) 935 / 3268 / 270; plus the audible update through the flags pointer 949 /
+// 3254 / 265; plus the six clamps through the pin helper 942 / 3253 / 264; plus the start through
+// looping_sound_new_attached(tag, NONE, NONE, 0) with 0x18a5a0's second half (no pin helper) 930 / 3275 / 208; plus the
+// matched-sound overrides under one `flags & 4 || flags & 2` test with one other-sound pointer 932 / 3270 / 238; all of
+// these 913 / 3290 / 196, without the helper clamps 908 / 3294 / 191; plus lane 16 r114's target loop (the count copied
+// to the query count, definitions read inside, distance and portal named, the stores tag, decibels, gain, audible,
+// cluster, priority, source) 908 / 3290 / 185. Lead: build/r201/lead-0x18ae80.patch (the 185 form; 37 bytes and 16
+// instructions short of retail, frame 0x4e8 against 0x4e0, 130 aligned hunks left: the first loop's sound pointer and
+// flag loads, the fraction clamp's order, the step loaded once per target, the 0xfdff word AND). Not kept: every step
+// raises the score.
+// Nest valid index, valid tag, unique choice, or tag and uniqueness 846/846/846/846. Full-width accepted
+// count with these guards 964/964/964/964. NOT kept: the short forms tie. The full-width forms recover the
+// ESI zero but shorten the body and raise the score. The target-count and query-buffer homes still differ.
+// M3 lane 11 r133 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, difflib-aligned 1004, frame-blind 473;
+// body unchanged). On lane 8 r201's composite lead (counted lists, both scans through data_iterator_next_inlined, the pin
+// with `real const &` bounds, the start through looping_sound_new_attached; re-measured 908 at 3290 B, aligned 895, frame-blind
+// 185): the decibel helper as a single-exit result 924 (3265 B, aligned 382, frame-blind 168); that with the exponent written
+// `(bits * 0.05f) * 2.3025851f` (retail's two fmul; without the parentheses the two constants fold into one) 899 (3291 B,
+// frame-blind 157); that with the linear helper in matched 0x2195f0's own shape (a pin taking the long bits and returning a
+// result local, then a named `scaled` product) 879 (3291 B, aligned 305, frame-blind 155): the frame is then retail's 0x4e0
+// with every local on retail's home, because the pinned bits share one slot with the helper's argument. That is the lead
+// saved as build/r133/lead-0x18ae80.patch. On it: a named tag local in the first loop 883, a named flags local 879 (one line
+// worse aligned), both 879; the sound through an inline lookup helper 879 (same code); the duplicate flag set under an
+// `if` 924; the existing list appended with `elements[count++]` (retail's `mov eax, edx; inc edx`) 880 (aligned 304); the
+// allocation back through record_pool_allocate(pool) 909 (3262 B); the datum getter reading the pool global 885. On main's
+// body: the single-exit decibel helper with the unfolded exponent 853 (3327 B), the unfolded exponent alone 856 (3338 B).
+// Diagnostic, restored: the floor global defined in an existing file built without link-time code generation 846 (same code,
+// 5 reads: that does not make stores kill it). Left on the lead (36 bytes short): the first loop gives the callee-saved
+// registers to the query index and the tag where retail gives them to the index and the sound pointer (retail forms the
+// pointer with `lea ebp, [ecx + eax]` and keeps the tag in ECX); retail holds the pool in EDI from the first scan to the end
+// and copies it to EDX for each allocation, so EBP takes the target pointer and EBX a hoisted NONE for the whole target
+// loop (`cmp esi, ebx`, `mov word ptr [ecx + 6], bx`), where ours keeps the pool in EDX across the allocation (retail's
+// other callers of 0x16b840 do read EDX after it, so that is this function's allocation, not the callee's summary), and so
+// has no register for NONE and hoists 0x100 instead; retail hoists 0xfdff into EBP for the first scan's word `and` and loads
+// the type byte and the sign-extended source before testing them; retail reloads the sounds base after each 0x14b240 call
+// (lane 13 r110's reading); retail's used-bit zeros come from one zeroed register with the existing count's zero as an
+// immediate between them.
+// MiniMax E (11-20): no new form, no lower score (846): retail's head keeps the entry zero in EBP and gives the target count the home at +0x24 and the primary the home at +0x34, while this build zeroes ESI and puts the count at +0x88 and the primary at +0x28, so the two locals' homes are exchanged; the decibel constant is a writable global in another file, so its fourteen loads carry a different address than retail's read-only constant.
+// MiniMax B (11-20): no new form, no lower score (846): the entry zero is still EBP where retail uses ESI, the query
+// count is still read as a word where retail reads a dword, and the target count and primary still have other homes;
+// the permuter's best form is 842, under the 8-point bar. The decibel constant g_44a0b4 is a writable global in
+// src/unknown_2197f0.cpp, so its 14 loads carry a different address than retail's .rdata constant.
+// M3 lane 2 r122 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846; body unchanged). Lane 11 r133's lead
+// (build/r133/lead-0x18ae80.patch in the m3-lane11 worktree) still applies: 879 at 3291 B, difflib-aligned 305 against the
+// body's 1004, register- and frame-masked 157 against 476. On it, for the first loop's roles (retail forms the sound with `lea
+// ebp, [ecx + eax]` and reads the tag through it into ECX; the lead loads the tag into EDI with the indexed address and leaves
+// the sound in EAX): a named tag 883; the tag declared ahead of the sound 883; a named flags word read ahead of the count's
+// increment 879 (masked 160); the duplicate scan through a walking element pointer 883; through a file-local inline search
+// taking the list and the tag 879 (same code); the tag test ahead of the sound pointer 938; the choice's tag stored last 878;
+// the duplicate scan re-deriving the element from the index 888 (3306 B, aligned 293: the tag then takes EBP); the sound
+// declared at the loop top 879 (same code); the sound read through a const reference to a named element 885; the sounds base
+// in a named local 879 (same code). Diagnostic (a behaviour change, reverted): one read of the sound after the 0x14b240 call
+// 816 (3280 B) with the tag still in EDI, so a longer life alone does not give the sound EBP. None moves the tag out of EDI.
+// Signed query ordinal with advancing gains/portals/clusters 929/918/929;
+// gains and portals/gains and clusters/portals and clusters 853/931/853;
+// all auxiliaries 904 or all four streams 910. Every form recovers the ESI zero,
+// but the target and primary stores still differ and all scores rise.
+// m3 lane 6 r221 (H2M fast with 0x18bb80/0x188f90/0x18a5a0, all MATCH; control 846): the target's step named once for
+// both clamps 849; the used bit through bit_vector_set 912; the override target's decibels stored before its gain 880
+// (3305 B: retail stores decibels, the 1.0f gain, audible and priority in one tail after the three decibel paths, ours
+// duplicates them into each path), that with the single-exit decibel encoder 902 (3279 B), that with the targets and
+// their count as one local aggregate (count first, as retail's +0x88 count ahead of the +0x8c elements suggests) 933
+// (3305 B).
+// M3 lane 5 r222 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; without the three the reduced image builds
+// lane 11 r133's lead at 3216 B / 953 instead of 3291 B / 879, so screen with them). Retail evidence for that lead's counted
+// lists: the choices' count sits at frame+0x24 right below the elements, is incremented ahead of the stores and saved
+// (`inc esi; mov [esp + 0x34], esi`), and the element is addressed as `count - 1` after it. On the lead (879, aligned
+// 305), the fraction: retail tests `0.0001 > |range|` with the long path falling through, zeroes a scratch XMM in each
+// path and leaves the result in the quotient's XMM0; the lead hoists the zero into XMM2 and keeps the result there.
+// Fraction as an if/else 879 (same code); the long path through the file's const-reference pin 885 (3286 B), also as an
+// if/else 885, with `0.0f > distance` 885; the long path first under `>=` 861 (3302 B, aligned 343: retail's block order
+// but an `fxch` and the zero still hoisted); `0.0001f <= fabs(-range)` as an if/else or a ternary 862 (3303 B, the same
+// `fxch`). Main's body unchanged.
+// Direct prior-tag test with short query and short/long choice count 1013/1036,
+// long copied query 1030/1039, or provider count 1030/1039. Exactly one prior
+// choice with short counts 1013 or provider count and long choices 1044.
+// NOT kept: the forms replace the retail duplicate loop, shorten the body
+// and leave the entry zero and target/query homes different.
+// M3 lane 11 r146 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): the three 1.0f choice defaults
+// as three statements in member order (retail stores inside, portal, outside upward; the chained assignment stores them
+// downward) 846; that with the detail tag as a ternary initializer 845; plus the fade scan's datum index formed inside its
+// `if` 848 (3332 B); the defaults and ternary with the four choice stores in retail's order (tag, source, decibels,
+// cluster) 845; that with the audible update through a `word *` to the flags (0x18a720's spelling) 862 (3302 B).
+// M3 lane 14 r138 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846). Reading: retail's entry zero
+// in ESI is the choice count's own register (`cmp esi, 2` in the query loop, `inc esi; mov [esp + 0x34], esi` before
+// each choice is addressed), with the query count read as a dword; ours keeps both counts as shorts in memory and gives
+// the zero to EBP (the query index). Tried: both counts long re-measured 965 (3264 B); the long choice count with the
+// out count read directly (no query-count local) 965 (3264 B, same code); the choices alone as a counted list (count,
+// then the two choices; the count incremented first and the choice addressed through it) 975 (3268 B, first difference
+// +0x2); the query loop ending on `choice_count < 2` 846 (same code); the target count incremented after the target's
+// stores 923 (3305 B).
+// Long accepted count with short/word ordinals at selection or repair, short query bound
+// 937/937/939/946, full query bound 967/967/952/952.
+// NOT kept: all recover the ESI zero but shorten the body and leave the target and buffer homes displaced.
+// Choice cap at scan-body entry with short/short, short/long, long/short and long/long query/choice counts
+// 846/964/919/965. Cap after choice publication in the same width order 950/965/965/995. Widening the accepted
+// count restores the ESI zero but shortens the body and leaves the array homes displaced.
+// M3 lane 2 r135 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): the muted flag as `!g_509420`
+// 846 (same code); the choice distance as one conditional expression 852; the query loop's tests as `choice_count != 2 &&
+// i < query_count` 934 (3305 B); the override's suppression gain computed once ahead of its loop 959 (3380 B: retail
+// evaluates it per target); the fade scan's flag test as `!(sound->flags & 0x200)` 845 (under the bar, not kept); on that,
+// the fade scan as a head-tested for loop 899 (3369 B), the fade's flag set through the scanned datum 854 (3308 B: retail
+// looks the datum up again), the duplicate test as `if (equal) duplicate = true;` 908, the query loop's continues as nested
+// ifs 924 (3304 B), `clusters[0] == cluster` 845 (same code). Reading: retail forms the choice address from the incremented
+// count in ESI (`lea esi, [esi + esi*4]; lea esi, [esp + esi*8 + 0x10]`), spills the count to +0x34 and reloads it after
+// the store block, so its count is never strength-reduced. Body unchanged.
+// M3 lane 3 r294 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846): long counts with the query count
+// read directly, the choice count incremented right after the duplicate test and every choice store addressed
+// `choices[choice_count - 1]` 898 (3283 B: the entry zero is then ESI as retail and three query arrays take retail's
+// homes, gains 4 bytes off, but the choice address is strength-reduced into a pointer stepped by 0x28 where retail
+// recomputes it from the incremented count); that with one named `choice` pointer 960 (3267 B); with retail's store
+// order (tag, source, decibels, cluster) and the three 1.0f defaults as statements 898 (same code); with a short
+// choice count 930 (3304 B). The silence floor g_44a0b4 declared const where it is defined and in both files that read
+// it 846 (same code here), but matched 0x2197b0 falls to 15 and 0x18d730/0x18dc90 rise, so not kept.
+// M3 lane 6 r230 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, all MATCH; control 846; difflib-aligned / register- and
+// offset-masked 998 / 470): the existing-sound scan as a NONE-start while over data_next_absolute_index_inlined 893
+// (3268 B, 977 / 453); through the existing data_iterator_next_inlined (iterator from NONE, the list storing the
+// iterator's datum index) 860 (3296 B, 1022 / 415): the scan is then retail's exactly (`or esi, -1; mov ebp, 0xfdff;
+// inc esi; js`, one bit-search expansion with the index advanced in place, the 0x200 clear as a word AND from the
+// hoisted mask), retail evidence for the iterator, but the pool stays in EDX (retail EDI) and the score rises; that
+// with long query and choice counts 993 (3225 B, 1082 / 394); with the targets and the existing list as count-first
+// records (diagnostic: retail's homes put each count right ahead of its array) 905 (the frame differs); with `used` and
+// the existing count declared ahead of the list 860 (same code). Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, aligned 1004): lane 11 r133's
+// lead re-measured 879 at 3291 B (aligned 305, registers and offsets masked 152). On main's body: the decibel pin helper as
+// one conditional expression 905 (3337 B); `used` declared ahead of the existing count 846 (same code); the fade scan's
+// near-zero test with its arms swapped under `>=` 838 (an arm swap, match-only; retail places both arms after the listener
+// tail's `ret` and jumps back to the scan head, the record-pool iterator layout); the target level named ahead of the
+// current level in the target loop 857 (3332 B); the first scan's datum index formed ahead of its type and source tests 846
+// (same code). Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, aligned 1004, masked 473): the
+// target loop's search ending on `index == NONE` in its condition (no break) 857 (3338 B); the existing list appended as a
+// store then `existing_count++` 846 (same code); the gain sum written portal first 846 (same code); the override loop
+// through a named target pointer 850; the listener slot through a `long *` used for its three accesses 846 (same code).
+// M3 lane 16 r179 (H2M_FAST with 0x18bb80, MATCH; control 846): the repair loop's first-choice flags read through the
+// sounds table at both tests (no sound pointer) 873; the repair loop's matched sound as a named element pointer with a
+// `continue` on NONE 948 (3289 B); the query loop's tag read once into a named local 846 (same code); the choice
+// distance defaulted to zero in a local and stored once 924 (3304 B); the target's fade-time definition through a named
+// element pointer 885. Body unchanged.
+// M3 review of lane 2 r142: the 820 form below moves the definitions initialiser into the fade body, a placement kept
+// only with a match, so the fade scan stays main's; kept: the first scan through the iterator and the new start (837).
+// M3 lane 2 r142 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730 and
+// 0x18dc90 in the image, all but the last two MATCH each time: without the file that defines g_44a0b4 in the image the
+// screen builds this function differently). Kept, 846 -> 820 (3327 B, frame 0x4dc): both pool scans through the existing
+// data_iterator_next_inlined (retail's layout: one bit search per scan, the scan bodies out of line, the fade body after
+// the listener tail's `ret`, the datum index formed ahead of the type test), the fade scan's definitions read in its body
+// (retail hoists only the g_4e0348 load and reads the +0xd8 field after the scan's tests), and loop_path_start allocating
+// through the existing looping_sound_new_attached (inlined: retail's `mov word [ecx+4], dx; or byte [ecx+5], 1` start
+// sequence at both sites). Each was listed above as a rise on its own (860, 909); measured again on main's body: the
+// first scan alone 837 with the new start (863 with the helpers below), the fade scan alone 839 (848 with the new start).
+// The fade scan's definitions spelled other ways on the kept form: read at each use with no local 808 (3310 B, not kept:
+// the build loop still reads them through its own local, a mix), through a local ahead of the scan as main had it 861,
+// one iterator for both scans 821. On the 808 spelling: the blend's square named 807; the fade's two pins through the
+// existing approach_126660 820; the used bit through the existing bit_vector_set 898; the choice scale read once into a
+// local 897; the build loop's definitions read at each use 885 (3298 B); the target loop's pins through approach_126660
+// 850 to 855.
+// Lead, not kept (build/r142/lead-18ae80.patch, 830 at retail's 3327 B and 0x4e0 frame; difflib-aligned 292 unmatched
+// against 640 for main's body and 648 for the kept one, 107 with registers and offsets masked against 282 and 214): the
+// form that reproduces retail's frame and statement shape. Its parts, each read off retail: (1) the choices, the targets
+// and the existing list as count-first records (count, then the items; retail's homes F+0x24/F+0x28, F+0x78/F+0x7c and
+// F+0xdc/F+0xe0, the existing record laid over the gains array), the count incremented first and the item addressed
+// `items[count - 1]` for choices and targets (`inc esi; mov [count], esi; lea esi, [esi + esi*4]; lea esi, [esp + esi*8
+// + 0x10]`: a count in memory is not strength-reduced), `items[count++]` for the existing list; (2) the query count read
+// from its home at every use (no short copy) and set to the choice count ahead of the build loop (`mov [esp + 0x10], esi`,
+// re-read at that loop's latch); (3) the matched sound's two overrides under `flags & 4 || flags & 2` with one pointer to
+// the other sound (listed above, 906 alone); (4) loop_path_linear and loop_path_decibels in the shape of the matched
+// 0x2195f0 and 0x2197f0 (a long-to-long pin with one result, so the pinned bits stay in a register and share the
+// argument's home); (5) the silence floor's address taken (a const reference in the pin helper: retail reloads g_44a0b4
+// after every call and store through a datum pointer, 14 loads; the reference gives them, 3240 -> 3312 B; 0x2197b0,
+// 0x18d730 and 0x18dc90 unchanged; no code in retail takes the address, so the real taker is not found); (6) the target
+// loop's and the fade's pins through approach_126660 and the used bit through bit_vector_set (retail's `0.0f - step` and
+// the `lea` to the used word); (7) the range test as `fabs(-range) >= 0.0001f` with the division arm first; (8) the
+// targets' count set ahead of `primary`. Steps on the way (fast, lead forms cumulative): records for choices and targets
+// 927 (3277 B, frame 0x4e8), plus the existing record 902, plus the first scan's iterator 998 (3207 B), plus (3) 1000,
+// plus the new start 953, or the helpers of (4) 985, both 960 (frame 0x4e0), plus (7), (8), the fade scan's iterator and
+// the audible and muted flags as conditional expressions 931 (3240 B), plus (5) 853 (3312 B), plus (6) 842 (3327 B), the
+// flags and the choice scale read into locals 830. On it: the flags through the existing word_flags_set 858 (3307 B);
+// the fraction computed in place from a distance local 847 (3339 B); a tag local in the query loop 842 (same code).
+// Left on the lead: the query loop's roles (retail: sound EBP, tag ECX, index i EDI; ours sound EAX, tag EDI, i EBP; a
+// use of the sound after the distance call does not give them), the pool in EDX where retail has EDI and keeps NONE in
+// EBX through the target loop, the `movsx` source test of the first scan, the fade-time address formed for its second read.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -623,8 +996,8 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		{
 			s_loop_path_choice *choice = &choices[i];
 			real range = bsp->sounds[choice->source].range;
-			real fraction = fabs(-range) < 0.0001f ? (choice->distance < 0.0f ? 0.0f : 1.0f) : loop_path_pin(choice->distance / range, 0.0f, 1.0f);
-			real blend = loop_path_pin(fraction * fraction * 3.0f - fraction * fraction * fraction * 2.0f, 0.0f, 1.0f);
+			real fraction = fabs(-range) < 0.0001f ? (choice->distance < 0.0f ? 0.0f : 1.0f) : PIN_126660(choice->distance / range, 0.0f, 1.0f);
+			real blend = PIN_126660(fraction * fraction * 3.0f - fraction * fraction * fraction * 2.0f, 0.0f, 1.0f);
 			choice->gain = ((inside ? choice->inside : choice->outside) - choice->portal) * blend + choice->portal;
 			s_loop_path_target *target = &targets[target_count++];
 			target->tag = choice->tag;
@@ -661,13 +1034,16 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 	long existing[64];
 	long existing_count = 0;
 	dword used[2] = { 0, 0 };
-	for (long i = data_next_absolute_index_inlined(pool, 0); i != NONE; i = data_next_absolute_index_inlined(pool, i + 1))
+	s_record_pool_iterator iterator;
+	s_loop_path_datum *existing_sound;
+	iterator.data = pool;
+	iterator.index = NONE;
+	while ((existing_sound = (s_loop_path_datum *)data_iterator_next_inlined(&iterator)) != NULL)
 	{
-		s_loop_path_datum *sound = (s_loop_path_datum *)(pool->data + pool->size * i);
-		if (sound->type == 0 && sound->source != NONE)
+		if (existing_sound->type == 0 && existing_sound->source != NONE)
 		{
-			sound->flags &= ~0x200;
-			existing[existing_count++] = (sound->salt << 16) | i;
+			existing_sound->flags &= ~0x200;
+			existing[existing_count++] = iterator.datum_index;
 		}
 	}
 	for (long i = 0; i < target_count; i++)
@@ -694,7 +1070,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			s_loop_path_datum *sound = loop_path_get(pool, index);
 			real current = loop_path_linear(sound->decibels);
 			real delta = loop_path_linear(target->decibels) - current;
-			real gain = current + loop_path_pin(delta, -target->step, target->step);
+			real gain = current + PIN_126660(delta, -target->step, target->step);
 			sound->decibels = loop_path_logarithmic(gain);
 			sound->flags |= 0x200;
 			if (target->audible) sound->flags &= ~0x80;
@@ -703,7 +1079,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			else sound->flags &= ~0x10;
 			sound->listener = (char)g_4686c4;
 			sound->cluster = (short)target->cluster;
-			sound->gain += loop_path_pin(target->gain - sound->gain, -target->step, target->step);
+			sound->gain += PIN_126660(target->gain - sound->gain, -target->step, target->step);
 			sound->source = (char)target->source;
 		}
 	}
@@ -717,8 +1093,8 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		{
 			real step = elapsed / (fabs(definitions[sound->source].fade_time) < 0.0001f ? 2.0f : definitions[sound->source].fade_time);
 			real gain = loop_path_linear(sound->decibels);
-			gain += loop_path_pin(0.0f - gain, -step, step);
-			sound->gain += loop_path_pin(0.0f - sound->gain, -step, step);
+			gain += PIN_126660(0.0f - gain, -step, step);
+			sound->gain += PIN_126660(0.0f - sound->gain, -step, step);
 			if (fabs(gain) < 0.0001f) loop_path_get(pool, index)->flags |= 2;
 			else sound->decibels = loop_path_logarithmic(gain);
 		}

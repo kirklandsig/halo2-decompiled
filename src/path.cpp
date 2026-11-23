@@ -188,9 +188,8 @@ struct s_path_result_view
 	s_path_location_view location;
 };
 
-bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
-	s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
-	s_type_c3b527 const *parent_point, long parent_node_index,
+bool function_26f3f0(long actor_index, s_type_c3b527 const *entry, s_type_f17a25 *state,
+	s_pathfinding_data *pathfinding, long surface_index, s_type_c3b527 const *parent_point, long parent_node_index,
 	long *parent_node_index_out, s_type_c3b527 *out, long *out_node_index);
 void __stdcall function_2c2060(s_type_f17a25 *state, short count, s_path_step_view const *steps,
 	short *out_count, s_path_step_view *out, bool *complete);
@@ -375,12 +374,29 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// score 286 (was 286; m3 lane 11 r152 unchanged, its line just above the marker): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
+// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
+// MiniMax B (11-20): no new form, no lower score (286): the link count's increment split out of the copy's index
+// (`memcpy(&links[link_count], ...)` then `link_count++`) measures 298, so the post-increment form is the better one;
+// retail still counts the links in a dword (`inc dword ptr [esp + 0x1c]`) but compares it as a word (`cmp dx, word ptr
+// [esp + 0x114]`), which this build does not do, and the frame is still 0xe8 against retail's 0xe4.
+// MiniMax A (11-19): no new form, no lower score (286): rebuilt the body on retail's own listing (the rep stosd fill, the
+// split link copy, the walkable bit as a byte local, the dword previous/count homes, the node-index loop variable and the
+// per-arm distance through vector3d_from_points3d/length_sq3f): the two fill loops and the flag form reach retail's frame
+// and its `movsx`/`shr`/`and` walkable bit but score 403 and 362 (the byte local and the flag home move the whole frame),
+// the dword previous/count homes with the split copy reach 343, and a `data` pointer at function scope changes the caller's
+// convention (state leaves EBX) - all worse than the body as it stands, so the body is unchanged.
+// MiniMax R (11-17): no new form, no lower score (286): the node pointer at function scope with the previous pointer's NULL
+// initializer dropped gives retail's frame (0xe4) and the same parameter homes, but the body grows by three bytes and the score
+// rises to 357, so the body is as it was.
 // MiniMax C (11-14): no new form, no lower score (286): retail's frame is 0xe4 against this build's 0xe8 - retail keeps the edge's
 // walkable bit in a byte local written only on the "index in range" path and reuses it in the special test, while this build keeps
 // that bit in the flags and gives the frame an extra dword; the node depth is read at one address here and through a lea there.
 // MiniMax I (11-15): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4, retail keeps the edge's walkable bit in a byte local while this build keeps it in the flags, and the node depth is read through a lea here and at one address there.
-// score 286 (was 286; round 95 m3 lane 11 at the end): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
-// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
+// MiniMax R (11-16): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword is the
+// `previous` pointer, set to NULL here and left alone there; dropping that initializer gives retail's frame but the body grows
+// by two bytes and the score rises to 357), the node depth is still read at one address here and through a lea there, and the
+// prologue's saves and stores are in another order; the permuter (27 tries in 313 s, annealing) found no variant under 286.
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
 // (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
 // edge). On that 2, looking for retail's extra loop block that is gone after allocation: the projection clamp with the
@@ -393,6 +409,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax G (11-12): no new form, no lower score (286): frame 0xe8 against retail's 0xe4; the acquisition, the flags
 // and the scalar homes remain, and the geometry now uses shared differences.
 
+// Earlier at 286 (was 286): frame 0xe8 against retail's 0xe4, and from there the link test, the flag homes and the
+// scan differ; the two-flag form of round 71 below (match-only) gives 2 at 1388 bytes, left: two reloads at the scan
+// loop's latch in the other order (`mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]`). Rounds follow, newest last.
 // MiniMax A (11-14): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword
 // is the `previous` pointer) and the node depth is read at one address here and through a materialised node there;
 // dropping that pointer's initializer gives retail's frame but measures 357.
@@ -818,6 +837,225 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `if` with a body at the traversal's end gives retail's pair order (207 with its own lines), one between the loops does
 // not (202), as round 71 found. 0x26f3f0 (unmatched) writes ECX and EDX and makes calls in both builds, so its LTCG
 // clobber summary is not the cause. Body unchanged.
+// MiniMax H (11-18): no new form, no lower score (286): retail's frame is 0xe4 with the state in ebx and nine stack
+// words, ours 0xe8 with one local word more: the link output goes through a pointer that advances by eight (ours)
+// where retail indexes the array with the count (0x270e7f-0x270e96). A link count of 16 bits gives retail's frame,
+// its 16-bit compare and index (0x270e3f, 0x270e86) and retail's length, but scores 359; copying the two
+// layout-identical views as one assignment gives retail's indexed copy, but scores 361. Still differs: retail
+// materialises the node address with a lea before the depth load (0x270db1) where this build folds the whole
+// displacement into one load; retail keeps the link-flag byte in memory (0x270e79, 0x270eb8, 0x270f61) where this
+// build holds it in a register; retail zeroes the step count at the loop entry (0x270e16) where this build zeroes it
+// in the prologue; retail reloads the previous node at the loop head (0x270e07, 0x270e22) where this build reloads it
+// in the body. Original body restored.
+// Later in the same round: giving that flag a memory home and clearing it in the depth branch reproduces retail's
+// flag sequence (movsx, shr, and, the byte store) and its merge into the type test, but the extra copy decision
+// costs 67 (353) and duplicating the copy costs 93 (379); a 16-bit link count on its own scores 359 and the
+// retail-shaped root walk of 0x14df40 scores 109 against 43. Original body restored.
+// MiniMax S (11-16): no new form, no lower score (286): retail carries state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links), where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and a pointer to the node and a named node pointer compile the same way. Changing the parameter order is a form the rules forbid, so retail's order is reported instead.
+// MiniMax C (11-16): no new form, no lower score (286): retail still carries the state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail's parameter order differs and changing a parameter order is a form the rules forbid, so retail's order is reported instead.
+// MiniMax I (11-17): no new form, no lower score (286): retail carries the state in EBX through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and changing the parameter order is a form the rules forbid.
+// MiniMax I (11-17): no new form, no lower score.
+// b7I (11-17) walk against retail, fast build on r830: walked every block of 0x270d90 against retail statement by
+// statement (field offsets and strides, branch senses, callee and register arguments, loop shapes, local widths and
+// the float constants) and found no behaviour difference; the body is unchanged and the score stays 286 (1389
+// bytes, caller 0x270930 MATCH). Checked and agreeing: the entry depth, min and fill (0x270db8-0x270dc3,
+// 0x270de0-0x270e05: edge words, step +0, +8 and +2); the link test (0x270e50-0x270e7d: type NONE, else edge index
+// in range and flag bit 7); the 8-byte link copy (0x270e7f-0x270e96); depth gate (0x270e9e) with count
+// (0x270eb2-0x270ec2); step node, point and edge index stores (0x270ecf-0x270f3a); the special test and arm order
+// 1, 6, 5, special, 2 (0x270f42-0x270f7f); the 0x26f3f0 call (eax pathfinding, ecx index, edi entry point, seven
+// stack words from actor_index to the step node, 0x270fa3-0x270ffe); margin 1.2f (0x271031), 2.0f (0x271137),
+// 1600.0f (0x271286); clamp senses (0x271186, 0x271194); k, j, i sum order (0x271166-0x27117c); the two
+// conversions; the distance test before j < count - 1 (0x27128f-0x27129c); the outputs (0x2712c9-0x2712f9). Only
+// width differences, not observable: retail compares, indexes and stores link_count as 16 bits (0x270e3f, 0x270e86,
+// 0x2712e8) while incrementing a dword (0x270e96), and its vertex words are widened then compared with -1
+// (0x27109b, 0x2710ac: never equal), as the body already does.
+// M3 lane 15 r97 (fast with the file's 16 functions, 0x210a30, 0x2104b0, 0x26f3f0, 0x30bf0, 0x210850, 0x2c2060; base 286, LCS-aligned
+// 134): lane 11 r71's flag form applied to the current file from its saved patch is 2 again (aligned 1: only
+// `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back edge). On that 2, looking for the block
+// retail has and ours lacks: the cross-link step (the two stores and the 0x26f3f0 call) as an inline helper called from
+// the 1/6/5 arm and from the type-2 arm when its surface test passes, the plain type-2 stores in the else 353 (1388
+// bytes: the two copies merge, but the frame is 0xe8 and the traversal's homes move); a step pointer for the cross-link
+// arm 263 (1368 B), for the type-2 arm 230 (aligned 10), for both 264, for the current step's two stores 299 (1372 B);
+// the edge projection block as an inline helper taking the edge pointer 601 (stays a call), the edge index 610,
+// force-inlined 332 (1391 B) and 398 (1423 B, loses 0x270930). Plain, in the full image, the flag form is 2 as well.
+// The same kind of adjacent reload pair in 0x24cf66 (another file, no shared callee) swapped this round when a helper
+// was removed from src/unknown_223240.cpp, so such pairs follow whole-image state as well as this body. Body unchanged.
+// Carried start node with pointer or indexed predecessor, pointer-tested for update, and index-tested carried node:
+// 343/385/343/374 with long link count, 387/372/387/315 with short link count.
+// NOT kept: pointer-tested predecessor omits the retail predecessor-index check and shortens the body.
+// The index-tested form at retail length still has the extra frame word. Original node traversal restored.
+// M3 lane 1 r122 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, all MATCH unless noted, and 0x26f3f0 at 218;
+// base 286): lane 11 r71's flag form rebuilt on this body is 2 again at 1388 bytes (the diff is saved as
+// build/r122/lead-270d90-score2.patch in m3-lane1). The pair sits in the edge block from the scan body to its latch
+// (0x2712ac, 0x2712b0): both are reloads after the body's calls, and the paths that skip the body jump past both to
+// 0x2712b7. On the 2: the state as `this` (the function as a member, called on the state) 210 (aligned 14: the pair
+// stays swapped, the type-2 arm stores a literal 2 and the surface test's loads change); the loop step written at
+// the end of each arm of the depth test, or in the overflow arm with `continue`, 383 (1425 bytes, two copies kept,
+// 0x270930 260); the two step assignments swapped 4; the type-2 stores as a separate `if (type == 2 && !special)`
+// 258 (1400 bytes); the link copied by assignment 2; the count update after the node index store 294; the scan as a
+// while with its own increment 2; the edge test inverted with `continue` 2 (same code each at 2). Diagnostics on
+// the callee 0x26f3f0 (src/path_transitions.cpp, restored at once): one or two blocks added at its top through its
+// parameters 382/236, one to three register-free blocks on two undefined globals 236 each (1391 bytes, aligned 46,
+// the callee 385-421): this function's allocation follows that unmatched callee's code well beyond the pair, so
+// the pair may not be decidable here while 0x26f3f0 differs. BLOCKED-BY 0x26f3f0 (not shown to be the cause).
+// M3 lane 13 r117 (fast with the file's 16 functions, 0x210a30, 0x2104b0 and 0x26f3f0; the file's other functions
+// MATCH each time): the two-flag form rebuilt from the saved lead on the current file 2 again, fast and plain. On that 2:
+// one permuter run (fast, annealed, 84 tries in 905 s after a 112 s opening build) none below 2 (8 variants at 2,
+// 10 at 4); the traversal's two predecessor stores under `if (node_index != NONE)` 358; the traversal written
+// `if (node_index != NONE) do { } while (node_index != NONE);` 2 (same code); the whole scan in a new forceinline
+// inner function taking steps by value 189 (1395 bytes); the scan loop's body in one called per step 118 (1389
+// bytes); the scan through its own copy of the steps pointer 2 (same code, as listed). Body unchanged (286).
+// M3 lane 2 r110 (fast with 0x270930/0x270750, matched; base 286; both builds return with `ret 0x24`): the two-flag lead applied
+// from m3-lane1's saved patch is 2 again at 1388 bytes (the same reload pair). On it: the scan index pre-incremented 2 (same
+// code); the scan condition as `count > j` 4; the step's point pointer declared ahead of the previous point and the edge 332,
+// the edge first 25; a named `&steps[j]` pointer with the point taken from it 2 (same code); the truncation test nested with a
+// named `long last = count - 1` 2, as `if (!(distance > 1600.0f)) continue;` then the index test 2 (same code each); `real const
+// margin` 2 (same code); the delta block as a call to the existing 0x210a30 with `inline` on its /Ob1 definition 428 (1307
+// bytes: it stays a call; 0x210a30 and its six matched callers were listed, its file restored). Body unchanged.
+// The extra link-cursor word and flag homes remain. Short count and two flags with nested
+// conversion fallbacks 398. Start, end or both conversion results taken from the conjunction
+// 400/400/398, guarded success 400/400/398, guarded fallback 414/414. Later surface test
+// 396, also with the widened edge bit 396, then with one transition type read 332.
+// NOT kept: the 0xe4 forms lose the matched caller. The single type read recovers that
+// caller and restores the extra frame word. None matches or improves the opening score.
+// m3 lane 11 r130 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0; both builds end in `ret 0x24`): lane 1
+// r122's saved two-flag lead applied to this file is 2 again (the latch's two reloads, j from [esp + 0x10] and steps from
+// [esp + 0x104], in the other order). Retail's traversal latch stores `previous` into [esp + 0x10], the slot the scan's j
+// reuses, and previous_index into the margin's slot. On the lead: j declared at function scope, just before the margin
+// and just after it 2/2/2 (same code); the fill loop as main's pointer walk with the if clamp 235; `previous` without
+// its NULL initialiser 378 (1372 B).
+// M3 lane 16 r154 (fast with 0x270930 and 0x210a30, both MATCH; both builds end in `ret 0x24`, frame 0xe8 against 0xe4):
+// lane 11 r95's flag form re-applied to today's file 2 (only `mov ebp, [esp + 0x104]` / `mov edx, [esp + 0x10]` at the
+// scan loop's back edge in the other order; build/r154/lead-270d90-score2.patch in m3-lane16). On that 2: the traversal
+// reading its node through a second pointer local (`current`) instead of reassigning the entry `node` 210 (+0x8c); `usable`
+// declared at the top of the traversal body, outside the capacity test, 2 (same code); the step point copied from a
+// ternary-selected source with the edge-index record as its own `if` 388 (1357 B); the projected point written as three
+// rows in place of vector3f_add_scaled 2 (same code). Body unchanged.
+// scan completed-step count 287, distance-gated completed-step count 287, bounded link ordinal and scan
+// count 366, step frame across conversion 332, indexed fill with completed-step count 295, indexed fill
+// with completion update first 295, coordinate scope before scan latch 295, predecessor edge before point
+// 353, late surface with indexed fill 343, wide edge shift with indexed fill 290, late surface and wide
+// edge shift 344.
+// The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
+// The opening short scan and long link ordinal are restored.
+// M3 lane 16 r158 (fast with 0x270930, 0x210a30 and 0x26f3f0, which now MATCH, so the r122 BLOCKED-BY 0x26f3f0 reading is
+// gone; both builds end in `ret 0x24`): the two-flag lead re-applied from build/r154 is 2 again (only `mov ebp, [esp + 0x104]`
+// / `mov edx, [esp + 0x10]` at the scan latch). On that 2: the fill split into an edge loop then a step loop 385 (1405 B),
+// a step loop then an edge loop 368 (1404 B); the latch's `previous` stored before `previous_index` 4 (the two stores
+// swap, the pair stays); const on lookup/input, on the margin, on the origin pointer or on the link data pointer 2 each
+// (same code); the edge index read as `edge_indices[j]` at each test 2, and for the edge lookup too 2 (same code: extra
+// references of j do not move the pair); the previous point chosen after the step point 164; an exit test
+// `if (node->parent == NONE) break;` ahead of the latch statements 344 (1373 B), between them 344. Diagnostic (a probe
+// global, reverted): a test-and-store between the depth test's join and the latch statements gives retail's pair order
+// (312 with its own lines); after the latch statements, at the traversal's top or in the fill loop it does not.
+// Also on the lead: both step point copies as memcpy 2, only the previous-node copy 2, only the destination copy 2 (same
+// code each); the parent node pointer formed after the two cross-link stores (main's order) 237 (1392 B).
+// M3 lane 8 r204 (fast with 0x270930, MATCH): m3 lane 16's saved two-flag lead re-applied to today's file 2 again (the same
+// back-edge pair). On it: one `short i` shared by the fill loop and the scan loop, declared before the fill loop or at the
+// top 2/2 (same code); the scan index renamed (six names) 2 each (same code); an element pointer for the two-step arm's
+// `steps[node->depth - 1]` 264 (1366 B), for `steps[node->depth]` 299 (1372 B), both 389 (1358 B). Body unchanged.
+// The extra link cursor, predecessor homes and scan-latch reloads still differ.
+// Short-link test-set form with predecessor pointer alone/ordinal alone/unsigned word/parent first
+// 409/297/399/396; scan previous point/current step/both/previous ordinal 366/430/193/230.
+// Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
+// signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
+// NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
+// Earlier note. frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// count compared as a dword where retail compares it as a word, and the node depth read at one address here and
+// through a lea there.
+// m3 lane 4 r238 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0, all MATCH; both builds end in `ret 0x24`
+// in today's full build too; control 286): lane 16's saved two-flag lead on today's file 2 again at 1388 B, fast and
+// plain (full image), the same back-edge pair (`mov ebp, [esp + 0x104]` / `mov edx, [esp + 0x10]`). In the scan block
+// j's register is taken first (the previous point's address in EDX) and the steps' second (the step's point in EBP);
+// retail reloads them in that order, ours in the reverse. On the 2: the link flag as one direct bool expression 322,
+// the surface flag as one direct expression 130, as a ternary 188, both direct 338 (all at 1388 B with other homes:
+// only the test-set flags give the 2); the link flag as an if / else-if / else chain with an explicit false arm 321;
+// the parent read into a named short ahead of the latch's assignment 2 (same code). Diagnostics, reverted: one to
+// three dead initialised locals in 0x270750 (earlier in the file) or one or two in the caller 0x270930 leave the
+// pair as it is (2 each), so the pair does not follow the file's other functions' symbols.
+// Word-count reconstruction with a retained edge index 396, signed flag 396, joined edge predicate 384,
+// early parent read 396; completed-step count 390, nested long 394, nested short 343, short guard first 345.
+// NOT kept: seven forms recover frame 0xe4, but all grow and score higher.
+// Link-target reference before capacity, inside capacity, shared with step metadata, or with scoped edge admission:
+// long count 286/286/286/357; short count 359/359/359/356.
+// The short forms recover 0xe4, with the scoped admission at retail length, and all raise the score. Body restored.
+// Earlier note: frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// Initial node reference and ordinal-only predecessor, long/short link counts with fallback branch
+// 287/396 or selected point and separate edge test 360/362. Pointer-only predecessor in the same
+// forms 365/408 and 414/443. NOT kept: ordinal-only recovers the frame in three forms but raises
+// the score. Pointer-only forms also raise the caller score.
+// M3 lane 4 r240 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0; control 286; the two-flag lead rebuilt 2):
+// on the 2, the truncation as a nested test 2, the surface test nested in the type-2 test 2 (same code each), the edge
+// record ahead of the point copy 136, an `else if (true)` conversion arm 2 (folded). Retail's only cross-jumped copy tails
+// in the loops are the two conversion copies the lead already nests, so the extra vanishing block is not another copy.
+// M3 lane 15 r123 (h2m fast screen with 0x270930 and 0x270750, MATCH each time, and 0x210a30, 0x2104b0, 0x26f3f0 MATCH on the
+// first runs; both builds end in `ret 0x24`). Lane 16's saved two-flag lead applied to today's file is 2 again (build/r123/
+// lead-270d90-score2.patch here): only the two reloads ahead of the scan latch, ours steps ([esp + 0x104]) then j
+// ([esp + 0x10]), retail j then steps. The pair is not whole-image state: one to three unused globals, dummy functions
+// or extra declarations ahead of the function in this file 2 each (same code). On the lead: the traversal as
+// `for (; node_index != NONE; node_index = node->parent)` 2 (same code); a probe test-and-store on a new global ahead of
+// the traversal's latch statements (diagnostic) 210 with its own lines, the pair unchanged; one dead initialised long
+// at the function top 2, two to eight 210 (the type-2 arm then stores a literal 2 and the surface test's loads change;
+// the pair unchanged), one to eight ahead of the scan 2 each (same code); the step point declared second of the three
+// scan pointers 2 (same code), first 332 (the latch then compares j against the count in memory), the edge first 25 (the
+// edge lookup's order changes, the pair unchanged), the edge then the point then the previous point 164; j declared
+// first at function scope 2, with a copy of the steps pointer declared after it for the scan 2, the copy ahead of j 2,
+// one copy at the function top for all three loops 2 (same code each: the copies are propagated). Nothing found that
+// flips the pair. Body unchanged (286).
+// Bounded indexed fill through the first node 282, with short link count and
+// split copy increment 361, or target record lvalue 361. Short fill with link
+// and special flags 357, shared origin 404, relative scan step 321, held scan
+// successor 329, held node depth 432, or arm-local distance producers 401.
+// NOT kept: 282 gains four with the extra frame dword. Several narrow-link
+// forms recover 0xe4, and two reach retail length but regress.
+// M3 lane 8 r219 (h2m fast with 0x270930 and 0x270750, both MATCH; control 286; both builds end in `ret 0x24`). Lane 16's saved
+// two-flag lead applied to today's file is 2 again (the scan latch reloads EBP then EDX; retail EDX then EBP, ascending, as in
+// 0x254490 and 0x2548f0). On the lead: one vector for both distance arms 2; `real distance` after the origin pointer 2; the
+// margin declared at the top 2; `special` declared at the loop head 2; the edge and offset vectors declared together 2; the
+// distance test nested 2; `++j` 2; the usable flag at the loop head 2; the link copy as an aggregate assignment 2 (same code each);
+// the parent pointer ahead of the type chain 351 (1400 B); count declared at the top 348; the latch with `previous = node;` first
+// 4 (the two latch stores swap: retail keeps the source order); previous from the lookup by index 2; the parent read through
+// `previous` 2; the parent through `lookup->nodes[node_index]` 347 (1404 B); the depth test inverted 132; the link copy with
+// `link_count++` in its index 304; special with an explicit else 130; `j + 1 < count` 5 and `count - 1 > j` 4 (the compare
+// operands swap, the pair stays); the data pointer at the loop head 329; count as a ternary with a self-copy arm 288 (pair
+// unchanged); the previous point as an aggregate ternary 388 (1357 B); special as `? true : false` 130. Diagnostic: the scan
+// index renamed with 2 to 128 characters 2 each (no name-length effect). Body unchanged (286).
+// Signed-word link ordinal with guarded admission 357, exhaustive admission
+// 361, or a shared admission and transition target 361.
+// With a visit-owned predecessor 367, one reconstruction depth 421, or an
+// entry node receiver 361. Traversal-lifetime count with long/short link
+// ordinal 341/373. NOT kept: the forms regress even when the frame is 0xe4.
+// The entry depth load still folds and the predecessor/flag homes differ.
+// Traversal predecessor/count names, edge-vector names first, converted-endpoint names
+// first, and separate scan/history names with long link ordinal 286/286/286/286,
+// short ordinal 359/359/359/359. Names leave frame and allocation unchanged
+// at each width. The short ordinal removes the cursor but shortens to 1375.
+// M3 lane 13 r140 (H2M_FAST with 0x270930, MATCH each run; control 286; both builds end in `ret 0x24` with the state in EBX,
+// so the round prompt's `ret 0x28` was stale). Lane 15 r123's saved two-flag lead re-applied 2 at 1388 B (the scan latch's
+// steps/j reloads in the other order). On it: a redundant `if (count > 0)` guard on the scan loop 187 (1395 B, the test is
+// emitted); `if (node_index != NONE)` around the traversal `while` 2, around it as a `do ... while` 2 (same code each: the
+// guard block folds before allocation); the truncation test written in both distance arms 488 (1489 B, the tails are not
+// cross-jumped and the state leaves EBX); the truncation storing `complete` before `count` 4 (the two stores swap, the pair
+// stays); the previous point chosen by an if/else statement in place of the ternary 2 (same code). Body unchanged.
+// M3 lane 16 r173 (H2M_FAST with 0x270930, MATCH each run; control 286): the r154 two-flag lead re-applied to today's
+// file 2 again (the same back-edge pair). On it: `special ||` tested first in the type chain 341 (1372 B); the special
+// test as a one-case `switch (node->target.type)` 79; the scan's count read through `short const &` 2; the scan's steps
+// read through `s_path_step_view *const &` 2 (same code each); the truncation as `count = ++j;` 35 (1392 B). Body unchanged.
+// Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
+// short capped fill bound with the same guards 396/396/396. Separate seed node 390,
+// shared edge-table receiver 391. NOT kept: frame 0xe4 returns but the state is stacked
+// and the matched caller changes. The opening extra cursor and flag homes remain.
+// M3 lane 11 r152 (H2M_FAST with 0x270930, MATCH each run): the two-flag lead rebuilt on today's body 2 again (the same
+// scan-latch pair). On it: one file-local inline range predicate shared by the link test and the scan's edge test,
+// expression return 2, `if` with `return true; return false;` 2 (same code each: no vanishing block); the link test
+// through an inline edge getter returning the edge or NULL 314 (1389 B); the previous point as a default then
+// `if (j > 0)` 280 (1396 B, 0x270930 260); `*const steps` in the definition 2 (same code). Body unchanged.
+// M3 lane 2 r141 (H2M_FAST with 0x270930, MATCH each run; control 286): `previous` dropped, the predecessor read through
+// `lookup->nodes[previous_index]` 287 (1393 B, but frame 0xe4 as retail: first difference +0x19); the truncation test
+// as `j < count - 1 && distance > 1600` 287; the edge-index test with `!= 0xffff` first 286; the special test written
+// into the type chain (no named bool) 330. Round 110's saved two-flag lead re-applied to today's file 2 (the latch's
+// steps/j reload pair only); on it the truncation's two stores swapped 4. Retail's link test stores the edge bit to the
+// +0xf byte that the surface flag reuses (two block-scoped bools sharing a slot). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -879,9 +1117,8 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				steps[node->depth - 1].type = node->target.type;
 				steps[node->depth - 1].link_index = (short)node->target.index;
 				s_path_node_key_view *parent = &lookup->nodes[node->parent];
-				function_26f3f0((s_pathfinding_data *)state->pathfinding,
-					node->target.index, &node->entry_point, actor_index, state,
-					&parent->entry_point, parent->node_index, &parent->node_index,
+				function_26f3f0(actor_index, &node->entry_point, state, (s_pathfinding_data *)state->pathfinding,
+					node->target.index, &parent->entry_point, parent->node_index, &parent->node_index,
 					&steps[node->depth - 1].point, &steps[node->depth - 1].node_index);
 			}
 			else if (node->target.type == 2)

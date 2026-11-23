@@ -23,14 +23,26 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
     vector3f scaled = { arg_1->i, arg_1->j, arg_1->k };
     if (arg_0 != 1.f)
         vector3f_scale(arg_1, arg_0, &scaled);
-    real *output = arg_2->n;
-    for (long component = 0; component < 3; ++component)
-    {
-        *output = g_4b9e14.forward.n[component] * scaled.k + g_4b9e14.up.n[component] * scaled.j + g_4b9e14.right.n[component] * scaled.i;
-        ++output;
-    }
+    arg_2->i = g_4b9e14.right.i * scaled.i + g_4b9e14.up.i * scaled.j + g_4b9e14.forward.i * scaled.k;
+    arg_2->j = g_4b9e14.right.j * scaled.i + g_4b9e14.up.j * scaled.j + g_4b9e14.forward.j * scaled.k;
+    arg_2->k = g_4b9e14.right.k * scaled.i + g_4b9e14.up.k * scaled.j + g_4b9e14.forward.k * scaled.k;
 }
-// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// score 221 (was 221): Frame 0x20 versus retail 0x14. The second displacement and first rotation coefficients still have different homes.
+// Earlier 234.
+// MiniMax C (11-19): no new form, no lower score (221): the two offset loops written as explicit component assignments
+// reach 218 (1115 B) on the reduced image, three points under the keep bar, so the loops stay; no other new form lowers
+// the score.
+// MiniMax R (11-16): no new form, no lower score (206): re-measured in this round's nine-address set, the body is 1140 bytes against retail's 1136 and the frame is 0x18 against retail's 0x14; retail keeps the first point's three offsets in registers (XMM1, XMM3 and XMM5) and spills the second point's, where this build materialises both offset vectors in the frame, and the orthographic dot still runs i, j, k where retail runs j, k, i.
+// MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers
+// (xmm1, xmm3, xmm5) and spills the second point's (frame 0x14), where ours materialises both offset vectors and
+// both views in the frame (0x20); the orthographic dot still runs i, j, k where retail runs j, k, i, and no helper in
+// include/ offers that order, so the body stands.
+// MiniMax E (11-16): no new form, no lower score (206): the frame is still 0x20 against retail's 0x14 (retail keeps
+// the first point's three offsets in registers and the second point's in the frame, this build materialises both
+// offset vectors and both views in the frame), the orthographic dot product still runs i, j, k where retail runs
+// j, k, i, and the scale is still applied in place where retail copies the raw offsets before the test; the source
+// permuter's search on this function was cut at its time limit before it scored any variant.
+// Earlier 221 (was 234): see the last entry (one `scale` local for the blend weight and the segment length). Earlier 234 (was 304): see lane 17 r45 (each offset transformed in place). Earlier 304 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
 // MiniMax G (11-13): no new form, no lower score (206): the diff re-read this round puts the first difference in the frame size (ours 0x20, retail's 0x14), and the forms that change the two offset loops' order or the scale step measure at or above the body, so the body stands.
@@ -546,6 +558,264 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // producers, seven subsets and immutable all: 207/206/238/207/239/238/239/239.
 // NOT kept: no exact result or frame recovery; original math APIs, helper and full body restored.
 // MiniMax E (11-15): no new form, no lower score (206): the permuter over the body found nothing below 206.
+// P567: Standard transform pair/final/both sum boundaries, weighted-position sums,
+// their combinations and complete metadata sums: 277/277/328/432/454/454/501/485.
+// NOT kept: regressed native frame/input/coefficient residence; original complete helper/body restored.
+// b7L (11-17) walk against retail, fast build on r830: branch senses (0x5025e and 0x50324 scale != 1;
+// 0x503c3..0x50431 depth and cone tests; 0x5044a perspective split; 0x50556 radicand test; 0x505fa and 0x5061e
+// clamp), NaN sides, constants (1, 0.5, 2, 4, 0), field offsets and the dword copy at 0x50507, weight pairing, blend
+// and dot add order, fstp rounding and the eax set at 0x50598 all agree; the weights negated at 0x5043f and 0x50446
+// before the je and overwritten at 0x50461 and 0x50471 are retail's shape. One difference, retail's evaluation order
+// and not a behaviour fix: retail adds (forward*z + up*y) + right*x in every row of both views (first view i 0x502a4
+// and 0x502af, j 0x502c3 and 0x502d3, k 0x50301 and 0x5030f; second view i 0x50370 and 0x503c6, j 0x50387 and
+// 0x50399, k 0x503aa and 0x503bc); the loop form compiled i and j so but the depth row as (up*y + right*x) +
+// forward*z, so k rounded differently in both views. Writing the rows right, up, forward as matched 0x30290's
+// transform_vector does gives retail's tree in all six sums (checked on the symbolic trees of the fast build); loop
+// form 206, rows indexed through the output 213 (same k tree), the call of transform_vector itself 306 (gives
+// (right*x + up*y) + forward*z). Rows 304 (1084 B), 0x4f7e0 stays 325, 0x30290 and 0x30bf0 stay MATCH. The clamp at
+// 0x505fa..0x50626 is PIN_126660's body; its header needs a new include, so it stays written out. Not kept: the
+// segment and both offsets through vector3d_from_points3d, which this file doesn't use yet, 301 (no behaviour change).
+// Complete view aggregate 278; staged coordinate stores 304; staged coordinate aggregate 278;
+// scoped raw displacements with aggregate/staged stores/staged aggregate 278/304/278;
+// first/second displacement scoped to its transform with aggregate 279/270.
+// NOT kept: the lower scores have frame 0x2c versus 0x14, even at retail length.
+// M3 lane 17 r45 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; the kept form confirmed plain;
+// "sums" = the six view sums compared symbolically with retail's (forward*z + up*y) + right*x, build/r45/symtree.py). Kept: each
+// offset transformed in place by the unchanged helper, the views living in the offset vectors as in matched 0x30290, 304 -> 234
+// (1110 bytes, sums as retail). On it: the helper reading the camera's scale itself 231; scalar x, y, z copies in the helper 231,
+// with `scale * v->i` in the arm 231, with `*=` 231; the helper's rows written forward, up, right 231 but the sums become
+// (right*x + up*y) + forward*z; the depth limits in the condition 260; both offsets through vector3d_from_points3d 231 (with the
+// scale-reading helper; the same code as the loops); the second offset first 233 with other sums; each view right after its
+// offset 307; the orthographic segment in the second or the first vector 236/240 (frame still 0x20). Other in-place helpers: the
+// neighbour file's transform_vector declared here 260 with sums (right*x + up*y) + forward*z (an LTCG inline keeps the text
+// order of the sum, a same-file inline of direct globals reverses it); a camera-pointer parameter given &g_4b9e14 260, other
+// sums; a camera pointer that defaults to the global when NULL (0x30830's idiom) 286 at 1167 bytes with retail's 0x14 frame and
+// one coefficient held across both views, but other sums whichever way the rows are written; axis-pointer locals 280 (frame
+// 0x14, other sums). Diagnostic (not kept, the caller changed and restored): the camera as a fourth parameter of this function,
+// passed &g_4b9e14 by 0x4f7e0, 307: every first-view coefficient is then loaded before its product, as in retail (through EDX
+// where retail has absolute addresses), with retail's frame. Left: retail loads each first-view coefficient into a register
+// before multiplying where ours copies the variable and multiplies from memory, keeps right.i in XMM7 for the second view and
+// spills the second view's x and z.
+// M3 lane 7 r175 (fast with 0x30290/0x30bf0, both MATCH; plain confirmed, 0x4f7e0 stays 325). Kept: the orthographic arm
+// stores the normalized segment's length in the blend scale's local (renamed `scale`: in both arms the factor applied to
+// the width), 234 -> 221 (1112 B): retail keeps both in [esp] and the root argument in [esp+4], and the orthographic tail
+// now matches. On the 234 body: the camera passed as a pointer with forward-first rows 231; the blend terms written first
+// point first 234 (same code). On the kept body: the blend factors written local first 221 (same code); the depth limits
+// written in the condition 259; the camera-pointer helper with forward-first rows 218 (1115 B, -3); the existing
+// transform_vector of unknown_030290.cpp in place 218 (1115 B, -3, sums (right*x + up*y) + forward*z); `scale` declared at
+// function scope 221 (same code); scalar copies scaled in an if (transform_vector's shape) 221 (same code); the scale
+// step as three per-component ternaries 289 (1162 B: three tests, but retail's opening with the second offsets spilled
+// first, and forward.i and up.j then carried across both views in registers); the scale step as a pointer select
+// (`input = scale != 1 ? vector3f_scale(...) : v`) 312 (1183 B). Diagnostic (reverted): with no scale step at all the
+// first view's coefficients load into registers and up.i is carried into the second view, so the statement-level
+// scale branch is what keeps our coefficient loads from crossing into the second view; retail crosses it with one
+// test per view. The camera read from a separate plain global outside its storage aggregate (diagnostic) gives the same code.
+// Shared right-axis coefficient after offsets 266, Shared right-axis coefficient after offsets with one scale
+// read 292, Shared right-axis coefficient before offsets 266, Shared right-axis coefficient before offsets with
+// one scale read 292, Horizontal camera row after offsets 258, Horizontal camera row after offsets with one scale
+// read 276, Horizontal camera row before offsets 258, Horizontal camera row before offsets with one scale read
+// 276. NOT kept: Capturing the horizontal coefficient row reaches 1136 bytes in two forms at 258 but raises the
+// score. Sharing the scale shortens both forms and the original offset and transform layout is restored.
+// M3 lane 3 r263 (fast; base 221): separate view outputs (raw offsets kept) with the depth limits written in the condition 304
+// (1078 B); the limits in the condition on the in-place form 259 (1114 B); `i*i < limit` compares 221, `4.f * k * k` limits
+// 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
+// Point-to-view indexed/aggregate/shared-helper/copied-scale displacement, first endpoint first 335/333/315/331;
+// second endpoint first 328/327/308/330. All shorten away from retail; original helper and body restored.
+// M3 lane 12 r150 (fast with 0x30290 and 0x30bf0, both MATCH each time, 0x4f7e0 unchanged at 325; control 221): a helper taking
+// the camera as a pointer (given &g_4b9e14) with scalar x, y, z copies scaled under the test, as the neighbour file's
+// transform_vector: in place, rows forward-first or right-first, first offsets first 218/218 (same code: the pointer folds
+// and the coefficients stay memory operands), second offsets first 217/217; with separate view outputs 304/304 and
+// 303/303 (1083 B). The neighbour file's transform_vector itself, declared here and inlined at link time, in place 218
+// (1115 B, aligned 272 against the control's 249). One helper for both vectors (each scale step followed by its rows) in
+// place 218, with separate outputs 299 (1089 B); that helper with both scale steps ahead of both sets of rows 263 (1142 B):
+// retail's frame 0x14 and its first seventeen instructions up to register names (the second offsets stored at +8, +0xc,
+// +0x10, copy then scale), but 1.0 is held in XMM7 and the rows after it differ throughout (aligned 269); the three
+// axes copied into locals and passed by pointer to the helper 358 (1213 B). Reading retail again: every product of the
+// first view loads its coefficient and multiplies by the value's register, even at a value's last use, while the second
+// view copies y or loads z and multiplies by the coefficient in memory and only its x products load the coefficient, so
+// the two views do not come from one expansion with direct global operands; right.i alone is carried from the first
+// view into the second (XMM7), across the second scale test.
+// shared scale after offsets, both in place 306, second offset copied 290, first offset copied 287, both offsets
+// copied 266, entry scale, both in place 306, second offset copied 290, first offset copied 286, both offsets
+// copied 266. NOT kept: Every shared scale gate regresses. The lowest is 266 at 1152 bytes with both offsets
+// copied, and the opening frame mismatch remains.
+// Round 640: shared vector setter 221. Right/up/forward vector products through
+// scale and scaled-add, three scaled axes, two scaled axes, or a separate forward
+// product 281/256/267/271. Endpoint traversal in two passes, fused, or axis-first
+// 289/389/310. The second raw displacement and shared coefficient still have
+// different homes. Original view helper and body restored.
+// In-place transform pointer, direct scaled default 221.
+// In-place transform reference, direct scaled default 221.
+// In-place transform pointer, scaled default used by the scale branch 221.
+// In-place transform reference, scaled default used by the scale branch 221.
+// In-place transform pointer, separate raw input retained for the scale branch 355.
+// In-place transform reference, separate raw input retained for the scale branch 355.
+// In-place transform pointer, scale result chosen before the raw default store 310.
+// In-place transform reference, scale result chosen before the raw default store 310.
+// NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
+// A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
+// The original 0x20 frame, raw displacement homes and coefficient schedule remain.
+// First depth limit before the second transform 268, with both first lateral squares 274,
+// first cone predicate 265, first depth sign 250, independent first lateral predicates 262,
+// complete first visibility 274, paired cone predicates 264, and paired visibility 276.
+// NOT kept: all regress and preserve the extra frame space. The depth-sign form reaches retail length.
+// M3 lane 5 r211 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH; control 221). Slot count: ours uses +0x1c (the first
+// view's k spilled to the first offset's home) and keeps the second view in the second offset's home; retail's first
+// view never gets a home (XMM3/5/1 through the second view) and its 0x14 frame is the second offset at +8..+0x10 plus two
+// scratch slots. The orthographic segment written into the second offset vector 223; that with the second offset loop
+// first 222 (frame still 0x20); a scale-step helper with the rows in the caller (separate view vectors, limits in the
+// condition) 314 (1192 B); round 96's macro transform (out of place, limits in the condition) on this tail 252 (1136 B,
+// frame 0x14, the first view loads its coefficients as retail but the scale takes XMM7 where retail keeps right.i, the
+// scale in XMM6); that macro applied in place 301 (1180 B).
+// Paired indexed view rows with separate/common scale tests 329/297, with shared
+// coefficient values 465/448, direct paired rows 367/335, separate completed
+// view results 477/454. NOT kept: all enlarge the frame and score higher.
+// The second displacement spill and the live right-axis coefficient still differ.
+// M3 lane 8 r201 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221 at 1112 B,
+// difflib-aligned 249, register-masked 154). Lane 13 r96's macro lead rebuilt on this body (separate view vectors, the
+// rows written straight into them, the depth limits in the condition) 252 at retail's 1136 B and 0x14 frame, aligned 174,
+// masked 62: the positional score rises while two thirds of the masked differences go. Reading of what it leaves: retail
+// loads the scale after the last origin subtraction into XMM6 (the origin z's register) and gives XMM7 to right.i, which
+// it loads once and carries across the second scale test, so the second view's scaled x and z live in [esp+4] and [esp]
+// and its products take those from memory; ours gives XMM7 to the scale, which lets the scale test rise to the top of
+// the block, carries no coefficient across the test and keeps the second view's copy in registers. On the lead: the
+// depth limits as named locals 260 (masked 88); the second offsets computed first 249 (masked 65); the scale read
+// once into a local ahead of both views 256 (masked 93); the scale step written out per component in the macro 252
+// (same code). Lead saved as build/r201/lead-0x501e0.patch; nothing kept (every form is above 221).
+// Caller scale test at each view, its own scale sample, one shared test, or one shared sampled scale and
+// test 278/283/282/308. Selecting the complete scaled vector in the two arms on those forms
+// 311/319/310/306. NOT kept: all raise the score. The 0x20 frame, second displacement and coefficient
+// homes still differ.
+// M3 lane 11 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221, aligned 249,
+// register-masked 154; body unchanged). Lane 8 r201's macro lead re-measured 252 (1136 B, frame 0x14, aligned 174, masked
+// 62). On it: the second offset loop first 249 (masked 65); the orthographic segment written into the second offset vector
+// 253 (masked 70), with the second offset first too 250 (73); the macro's scaled copy as three reals set to `scale * input`
+// under the test 297 (1176 B, masked 119); the two offset loops as six component statements with the second point first
+// 226 (1136 B, masked 67). On this body: those six statements with the second point first 220, the first point first 218
+// (1115 B; three points, under the keep bar). Reading: retail computes the second point's offsets first through one
+// register and stores x and y at once, never carries a second-point offset in a register through the first view (ours
+// holds its x in XMM0 from the opening to the second view's default copy and stores it last), loads the scale only after
+// the last origin use (XMM6, the origin z's register) and gives XMM7 to right.i, loaded once in the first view (`movaps
+// xmm1, xmm7` before its product) and used up by the second view's first x product; the second view's scaled x and z then
+// live in [esp+4] and [esp] with y in XMM0. Every first-view product loads its coefficient first, and in the second view
+// only the three x products do: the nine coefficients behave as values shared between the views, of which only right.i gets
+// a register.
+// MiniMax E (11-20): no new form, no lower score (221): the frame is still 0x20 against retail's 0x14 - retail keeps the first point's three offsets in registers and spills the second point's, where this build materialises both offset vectors; the explicit-component form measured 218 and the swapped offset loops 220, both under the 8-point bar, so the body stands.
+// MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
+// offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
+// component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
+// Input-coordinate cursors for first, second or both displacements 221/221/226;
+// with destination cursors in those passes 222/221/222. A fused source-cursor
+// loop with indexed or cursor destinations 218/221.
+// NOT kept: the fused indexed form gains three and retains the 0x20 frame.
+// M3 lane 14 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the view helper taking the vectors by
+// reference 221 (same code); the scaled vector assigned in an if/else (`scaled = *in` when the scale is 1) 310 (1187 B);
+// the scaled vector initialised by aggregate copy 317 (1187 B); the weights as unary minus 221 (same code); the else
+// arm's memset as an aggregate zero assignment 227 (1120 B).
+// Paired coordinate displacements, first/second endpoint first, loop 218/218 and scalar
+// rows 216/217. Per-coordinate scaled selection with direct/shared scale tests,
+// aggregate 289/256 and loop 303/279. NOT kept: the four displacement forms gain at
+// most five. The frame stays 0x20, and the second displacement and coefficient homes differ.
+// M3 lane 16 r166 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221, aligned
+// 249). On lane 8 r201's macro lead (re-measured 252 at 1136 B, frame 0x14, aligned 172): the camera scale read into a
+// named local between the offsets and the views 256 (aligned 169; first difference +0x2); the first coefficient
+// (right.i) read into a named local there and used in both views 277 (1160 B, aligned 187); both locals, scale first
+// 250, coefficient first 250 (aligned 174 each); the lead with the second offset loop first re-measured 249 (aligned
+// 174), with both locals 249 (aligned 172). No named local makes retail's choice (scale loaded into the origin z's
+// XMM6 after the last origin use, right.i carried in XMM7 across both views). Body unchanged.
+// M3 lane 11 r143 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the two input points through
+// named `first`/`second` pointers for every use 220 (1114 B); the view helper as ordinary `inline` 221 (same code); one
+// shared loop counter for both offset loops 220 (1113 B); both offsets in one loop 218 (the paired form above,
+// re-measured); the second view written to a new vector (the first in place) 284 (1104 B).
+// First displacement initializer, in-place/separate view 220/219; second 218/217;
+// both first-endpoint first 218/217; both second-endpoint first 220/218.
+// NOT kept: gains of at most four, with frame 0x20 and different second-offset homes.
+// M3 lane 2 r129 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221): the second
+// offset loop first with the depth limits written in the condition 260 (1114 B); the else arm's weights set as local_5,
+// scale, then local_4 from local_5 221 (same code); the blend terms written first point first 221 (same code: the
+// operands canonicalise, ours still adds into the first point's product); the helper reading the camera's scale itself
+// (no scale parameter) on this body 218 (1115 B, -3); the origin copied once into a const local for both offset loops 262
+// (1136 B, retail's length, but the copy goes through the frame as dwords; frame still 0x20).
+// M3 lane 13 r139 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): both offsets through the existing
+// vector3d_from_points3d (origin as a point) 219 (1114 B), second point first 219 (1113 B); the view helper's default as an
+// aggregate copy scaled in place 289 (1162 B); the offset vectors declared second-first 221 (same code); separate view
+// outputs copied back 314 (1181 B).
+// M3 lane 8 r217 (h2m fast with 0x30290, 0x30bf0, 0x142640, all MATCH; control 221). On the macro lead (separate view vectors,
+// limits in the condition; re-measured 252, second offsets first 249, six offset statements with the second point first 226):
+// the orthographic segment kept in the second offset vector 227 (frame back to 0x20), with the first point first 225 (1137 B),
+// with the two offset loops 250; that segment form on this body 223; on the statement lead the rows right-first 226, the first
+// point first 224 (1137 B), the origin through a const point pointer 253 (1142 B), the scaled copy as three reals set under the
+// test 295 (1173 B), assigned in an if/else 285 (1164 B), three reals with right-first rows 295, the camera scale in a named
+// local for both views 250, the second point's rows k, i, j 250. Every form loads the scale fifth and tests it ahead of the
+// offset stores; retail loads it once the origin's z is dead (XMM6), which leaves XMM7 for right.i. Body unchanged.
+// Copied basis matrix with in-place, separate first, separate second, or separate views 379/306/359/301.
+// Copied transform matrix with the same output choices 335/306/292/301. NOT kept: the explicit axes
+// workspace grows the frame and all eight forms exceed retail length and raise the score.
+// M3 lane 12 r172 (H2M_FAST with 0x30290 and 0x30bf0, both MATCH; control 221, aligned 249): lane 8 r201's macro lead
+// rebuilt 252 (1136 B, aligned 174); on it, both offsets in one component loop with the second or the first point first
+// 251/252. On this body: the view helper taking its input vector by value 371 (1228 B); returning the view vector by
+// value 314 (1179 B); its rows written forward, up, right 221 (aligned 251).
+// Share basis values between views, right/up/both/forward/right-forward/up-forward/all
+// 307/307/384/298/382/382/473. Independent complete capture in each view 433.
+// NOT kept: all change the caller preview and enlarge the body. The shared right.i
+// register and the 0x14 frame remain unresolved.
+// Shared first-row right/up/forward coefficients individually 266/266/266, each pair
+// 265/265/265, and all three before the transforms or before the second displacement
+// 258/258. NOT kept: the complete shared row reaches 1136 bytes but raises the score.
+// Shared scalar origin with vector initialization, first or second endpoint first 218/219,
+// with a single scale read 256/261. Shared vector setter in the same four forms
+// 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
+// forms score higher, and the frame remains 0x20.
+// M3 lane 16 r177 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221, difflib-aligned 270, register-
+// masked 156): the perspective weight sum as `local_4 + local_5` 221; field_14 stored ahead of the blended position 220
+// (1113 B, one point); field_10 ahead of field_c 221; the depth limits as `4.f * k * k` 221 (same code each); the view
+// helper's scale test as `1.f != arg_0` 259 at retail's 1136 B (aligned 263, masked 168: it loads the scale fifth and
+// compares the constant from a register, not retail's shape). Body unchanged.
+// M3 lane 12 r175 (H2M_FAST with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the camera origin copied once
+// into a const point local for both offset loops 262 (1136 B, frame still 0x20); the second point's view transform called
+// first 218 (1114 B, three points, under the bar); that with the second offset loop first as well 219; that with the
+// helper's rows in 0x142640's order (+0x1c by z, +0x10 by y, +4 by x) 218; the two offset vectors declared in the other
+// order 221 (same code). Body unchanged.
+// M3 lane 12 r178 (h2m fast; control 221 at 1112 B; "masked" = difflib rows that differ with XMM numbers, stack offsets
+// and addresses masked, control 154). Dead-local scans (diagnostic, `long unused = 0;` lines, none kept), to see whether
+// the product orders and XMM ranks are a symbol-count state: K = 0 to 32 after the two offset vectors 221, 222, 222, 223,
+// 223, then 221 for K = 5 to 12, 218 for 13 and 14 (masked 156), 279 at 15 (1107 B), 287 at 16 and 17, 293 to 302 from 18
+// on (1095 to 1086 B); K = 1 to 16 between the two view calls the same values; K = 1 to 16 inside the view helper 221 at
+// every K (its locals are not counted); the helper with three scalar copies scaled under the test, K = 0 to 40, the same
+// values as the aggregate form at every K. So no count of locals gives retail's first view on this body. Lane 8 r201's
+// macro lead rebuilt on this body 252 (1136 B, frame 0x14, masked 62) and its six-statement form with the second point
+// first 226 (1136 B, masked 67); the statement form over K = 0 to 40: 226 at K 0, 251 at K 1 and 2 (1140 B), 270 for K 3
+// to 10 (1151 B), 272 at 11 and 12 (1116 B), 200 at 13 and 14 (1118 B, masked 112), then 1114 B falling to 1072 B with
+// masked 119 to 146: K 0 is its closest state. On the statement form: the clamp folded into the root's argument (one
+// named local fewer) 226, that and the radicand written at both uses 226, the rows written right, up, forward 226 (all
+// the same code); the view helper with separate outputs in place of the macro 260 (1114 B, masked 120). Left on the
+// statement form (first view: retail's shape; second view: retail holds right.i in XMM7 from the first view and the
+// scale in XMM6, loaded after the last origin subtraction, so the second view's scaled x and z go to [esp+4] and [esp];
+// ours gives XMM7 to the scale at the top and keeps all three in registers).
+// M3 lane 8 r229 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH unless stated; control 221, aligned 249, register-masked
+// 154; body unchanged). Diagnostics on the form retail's code points to, each reverted at once: matched 0x142640 itself expanded
+// here (an `inline` on its definition, which its /Ob1 file otherwise prevents; 0x16c2f0 then 107) in place through
+// `(transform4x3f const *)&g_4b9e14` 218 (1115 B, masked 144), with the depth limits in the condition 256 (1117 B, masked 115):
+// retail's first 33 instructions up to register numbers (second offsets stored at once, the scale loaded into XMM6 after the last
+// origin use, copy then scale), but every product copies the value and multiplies by the coefficient in memory and the sums run
+// x, y, z where retail loads the coefficient first and sums z, y, x; frame 0x20. On that form: 0x142640's scalar copies assigned
+// z, y, x 256 (the sums become z, y, x; 0x142640 itself 18), declared z, y, x but assigned x, y, z 256 (same code), so an expanded
+// helper's sum order follows the order its scalar copies are assigned and not the written sum; separate view vectors 310 (1075 B),
+// the first separate and the second in place 285 (1099 B); offsets through vector3d_from_points3d with the first/second point
+// first 256/257; all 36 orders of the six offset statements (first point first) 255 to 270 (i,j,k for the second point with
+// j,i,k / i,j,k for the first 255 / 256; none moves the sum order); the second view out of place with the segment kept in the
+// second offset vector 256 (first view in place) and 285 (both out of place), without that reuse 290 and 310. On lane 13 r96's
+// macro lead (re-measured 252 at 1136 B, frame 0x14, masked 62): the second view reading another global as its matrix
+// (diagnostic) 256 (masked 85) with the first view still loading its coefficients, so those loads do not come from sharing
+// between the views; the second view without its scale step 322 (1067 B), the first without 302 (1086 B), neither 375 (1012 B):
+// in none does this build carry a coefficient from the first view into the second, even inside one block, because all eight XMM
+// registers are held (the second offset's i keeps XMM0 through the first view), so retail's right.i in XMM7 needs the second
+// offsets out of the registers first; the scale step as three conditional expressions 320 (1188 B); the segment kept in the
+// second offset vector 253 (frame 0x20, the second offset's i still in XMM0 through the first view). On this body: the offsets
+// as component statements with the first/second point first 218/220, paired by component 216/217, through
+// vector3d_from_points3d 219/219, one fused loop 218; the helper reading the camera's scale itself with the offset loops 218 and
+// with those seven offset forms 218/220/216/217/218/218/219; the helper with three scalar copies scaled under the test the same
+// eight values. The small gains do not add up (floor 216, five under the control).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
@@ -555,42 +825,40 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
         local_0.n[component] = arg_0[0].field_0.n[component] - g_4b9da0.n[component];
     for (long second_component = 0; second_component < 3; ++second_component)
         local_1.n[second_component] = arg_0[1].field_0.n[second_component] - g_4b9da0.n[second_component];
-    vector3f local_2;
-    vector3f local_3;
-    world_vector_to_view(g_4b9e14.scale, &local_0, &local_2);
-    world_vector_to_view(g_4b9e14.scale, &local_1, &local_3);
-    real first_depth_limit = local_2.k * local_2.k * 4.f;
-    real second_depth_limit = local_3.k * local_3.k * 4.f;
-    if (local_2.k < 0.f && local_3.k < 0.f &&
-        first_depth_limit > local_2.i * local_2.i &&
-        first_depth_limit > local_2.j * local_2.j &&
-        second_depth_limit > local_3.i * local_3.i &&
-        second_depth_limit > local_3.j * local_3.j)
+    world_vector_to_view(g_4b9e14.scale, &local_0, &local_0);
+    world_vector_to_view(g_4b9e14.scale, &local_1, &local_1);
+    real first_depth_limit = local_0.k * local_0.k * 4.f;
+    real second_depth_limit = local_1.k * local_1.k * 4.f;
+    if (local_0.k < 0.f && local_1.k < 0.f &&
+        first_depth_limit > local_0.i * local_0.i &&
+        first_depth_limit > local_0.j * local_0.j &&
+        second_depth_limit > local_1.i * local_1.i &&
+        second_depth_limit > local_1.j * local_1.j)
     {
-        real local_4 = 0.f - local_2.k;
-        real local_5 = 0.f - local_3.k;
-        real local_6;
+        real local_4 = 0.f - local_0.k;
+        real local_5 = 0.f - local_1.k;
+        real scale;
         if (arg_1)
-            local_6 = 1.f / (local_5 + local_4);
+            scale = 1.f / (local_5 + local_4);
         else
         {
             local_4 = 1.f;
             local_5 = 1.f;
-            local_6 = 0.5f;
+            scale = 0.5f;
         }
-        arg_2->field_0.x = (arg_0[1].field_0.x * local_4 + arg_0[0].field_0.x * local_5) * local_6;
-        arg_2->field_0.y = (arg_0[1].field_0.y * local_4 + arg_0[0].field_0.y * local_5) * local_6;
-        arg_2->field_0.z = (arg_0[1].field_0.z * local_4 + arg_0[0].field_0.z * local_5) * local_6;
+        arg_2->field_0.x = (arg_0[1].field_0.x * local_4 + arg_0[0].field_0.x * local_5) * scale;
+        arg_2->field_0.y = (arg_0[1].field_0.y * local_4 + arg_0[0].field_0.y * local_5) * scale;
+        arg_2->field_0.z = (arg_0[1].field_0.z * local_4 + arg_0[0].field_0.z * local_5) * scale;
         arg_2->field_c = (arg_0[1].field_c + arg_0[0].field_c) * 0.5f;
         arg_2->field_10 = (arg_0[1].field_10 + arg_0[0].field_10) * 0.5f;
         arg_2->field_14 = arg_0[0].field_14;
         if (arg_1)
         {
-            real local_7 = (local_3.i * local_4 - local_2.i * local_5) * 2.f;
-            real local_8 = (local_3.j * local_4 - local_2.j * local_5) * 2.f;
+            real local_7 = (local_1.i * local_4 - local_0.i * local_5) * 2.f;
+            real local_8 = (local_1.j * local_4 - local_0.j * local_5) * 2.f;
             real local_9 = local_8 * local_8 + local_7 * local_7;
             if (local_9 >= 0.f)
-                arg_2->field_c = (real)(sqrt(local_9) * arg_2->field_c * local_6);
+                arg_2->field_c = (real)(sqrt(local_9) * arg_2->field_c * scale);
         }
         else
         {
@@ -598,11 +866,11 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
             local_10.i = arg_0[1].field_0.x - arg_0[0].field_0.x;
             local_10.j = arg_0[1].field_0.y - arg_0[0].field_0.y;
             local_10.k = arg_0[1].field_0.z - arg_0[0].field_0.z;
-            real local_11 = function_30bf0(&local_10);
+            scale = function_30bf0(&local_10);
             real local_12 = dot3f(&g_4b9dac, &local_10);
             real local_13 = 1.f - local_12 * local_12;
             real local_14 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
-            arg_2->field_c = (real)(sqrt(local_14) * arg_2->field_c * local_11);
+            arg_2->field_c = (real)(sqrt(local_14) * arg_2->field_c * scale);
         }
     }
     else

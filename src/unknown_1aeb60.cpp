@@ -499,14 +499,20 @@ struct s_1af5c4
 	byte *field_30;
 };
 
-struct s_1af5c6
-{
-	long field_0;
-	point3f field_4;
-	point3f field_10;
-};
+short __stdcall function_1c8df0(short arg_2, point3f const *arg_1, point3f const *arg_4, short arg_3,
+ long arg_0, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
-// score 20 (was 20): the index is masked in EAX where retail masks it in ECX; the argument is
+
+// MiniMax H (11-19): no new form, no lower score (5): the hit product still loads the hit fraction first where retail loads the distance, and the ignore index still loads after the first ray difference where retail loads it before; the product's order needs a one-use field copy and the early load needs the two-point probe inlined, so neither is kept.
+// MiniMax I (11-19): no lower score (5, as before): retail's hit product loads the magnitude out of its slot into
+// XMM0 and multiplies by the hit distance in its own slot, while ours loads the distance first. Reading the hit
+// distance into a local of its own before the magnitude is computed does give retail's order and measures 3, but
+// that is a one-use field copy, which is only kept with an exact match, so it is not kept; the 0x1697c0
+// ignore-index reload still lands after the first ray difference in ours.
+// score 5 (was 20): retail loads the 0x1697c0 ignore-index argument (`mov ecx, [esp + 0x14]`) ahead of the first ray
+// difference, ours after it, and retail's hit product loads the distance first (ours the hit fraction). Round 137
+// fixed the other sites (see its entry at the end of this note).
+// Before round 137, at 20: the index is masked in EAX where retail masks it in ECX; the argument is
 // passed in the other register.
 // Also: retail loads the 0x1697c0 object argument before the first ray difference, keeps the distance in
 // the slot at +0x14 (ours +0x10) and loads it first in the hit product.
@@ -598,8 +604,84 @@ struct s_1af5c6
 // `!flag && field != NONE` test 29 (the mask temp moves to ECX as retail's, but the flag byte goes to BL, as round 95's
 // copy); the product test as an if with returns 20 (same code); the leaf index named and the cluster chosen by a ternary
 // 20 (same code). Diagnostic (listed form): the distance renamed `distance` 20. Still BLOCKED-BY 0x1c8df0's call-site inlining.
+// Round 188 (m3 lane 5, fast with the file's functions, 0x1af810, 0x1b2770 and 0x1c8df0; control 20): the second lookup indexed
+// by the prop node's field with the object index assigned after it 20 (same code); the ignore index chosen by one combined
+// if/else (`!flag && field != NONE`) 123 (585 bytes); the 0x1e3b00 arm first (`(short)arg_3 != 0`) 39; the source record's
+// NONE store after the point copy 23; 0x2640c0 given the prop node's field directly 39. Still BLOCKED-BY 0x1c8df0's call-site
+// inlining (src/unknown_1c8df0.cpp is another lane's file this round).
+// Round 93 (m3 lane 15, fast with the file's functions, 0x1af810, 0x1b2770 and 0x1c8df0; control 20): the probe's source and
+// target points named once as const pointers for both differences and the probe 24 (only the magnitude's x87 order moves);
+// the tail as one short category started at 4 and set to 2 by a combined test 110 (604 bytes); the probe result in a named bool
+// 20 (same code); the mask local as `dword` 20 (same code); the two distance tests joined with `||` before `return 2` 35.
+// Re-measured by mistake: the second lookup indexed by `(word)` 132 (round 101). Still BLOCKED-BY 0x1c8df0's call-site
+// inlining (here this file is /Ob1; the files of the five callers retail calls it from out of line are /O2).
+// Round 103 (m3 lane 13, fast with 0x1af810, 0x1b2770 and 0x1c8df0, which read as the full build; control 20): the actor
+// pointer const 20 (same code); the actor's +0x26c bool read right after the actor lookup at the top 116 (first +0x2); the
+// result field's NONE store ahead of the cluster test 28; the prop node and derived lookups ahead of the actor lookup 34
+// (first +0x6); the result field's NONE store between the mask and the ray vector 27. Still BLOCKED-BY 0x1c8df0's
+// call-site inlining.
+// M3 lane 15 r96 (fast with 0x1af810, 0x1b0400, 0x1b2770, 0x1be120, 0x25f7b0 and 0x1c8df0; diagnostics on the inlining
+// cause, all restored): 0x1c8df0's noinline dropped with the tail as a plain call (no inline or forceinline declaration
+// anywhere) 69 (589 bytes): LTCG then inlines it here and into 0x1b2770 (656, lost), the two callers passing a constant
+// zero mode, and nowhere else; with this body unchanged it still inlines into 0x1b2770, so that decision does not depend on
+// this file. On the inlined call: this function returning `short` (as 0x1af810's `(short)` casts show; its declaration
+// there changed with it, 0x1af810 stays matched) 32 at 584 bytes, with retail's early ignore-index load and the
+// distance-first product, left the frame (0x8c, retail 0x80), the mask temp (EAX, retail ECX), the magnitude's sum order and
+// the distance home; the point copy and the motion buffer in a block 43 (frame 0x80, but the 12-byte copy sorts below the
+// 16-byte NONE/point pair); the NONE cell and source point as separate locals 159 (565 bytes, the NONE folds). 0x1b2770
+// given the existing magnitude3d for its hand-written length still inlines 0x1c8df0 (656). On the kept hand-written body a
+// `short` return type 56 (601 bytes). Still BLOCKED-BY 0x1c8df0's call-site inlining (0x1b2770 must keep it out of line).
+// Round 137 (m3 lane 9, fast with 0x1af810, 0x1b2770 and 0x1c8df0, then plain with the file's functions; control 20): the
+// 0xbaf40 call written in each arm of the header-type test (`type == 0 && field != NONE` passes the field, else the object
+// index) 5, kept: the second header mask moves to ECX and the distance to the +0x14 home, both as retail. On it: the hit
+// fraction read into a local after the test 3 (only the ignore index's load is then late; a one-use field copy, not kept
+// without a match); the product operands swapped 5; `<` compares 5 either operand order; the last test as an if with
+// returns 5; the distance declared at the top 5 (all the same code); the ray vector built in the call's argument list
+// through a helper returning its output 5 (same code), with the fraction local 3; a named copy of the ignore index ahead of
+// the ray vector 5 (the copy propagates); the mask chosen below the ray vector 22; the result's NONE store below the ray
+// vector 25; a two-point collision helper taking the vector's storage and the ignore index by value 9, with the fraction
+// local 7 (the magnitude's x87 order changes). On the fraction-local form (3): the mask as a ternary 26; no vector pointer
+// local 3; the NONE store ahead of the cluster test 12; the mask ahead of the NONE store 10 (the ignore index then loads at
+// the block's top, but the pushes run ahead of the first difference); the mask cleared with `&= ~0x20` 3; the ray vector
+// ahead of the mask 20, ahead of the NONE store 21. On the old body (20): the ignore index from an inline helper with
+// literal returns 123 (585 bytes), an inline header-type getter 20, the 0xbaf40 result in its own variable 20 (same code).
+// Reading: retail's early load is the by-value ignore-index parameter of the two-point probe 0x16a040, which retail
+// inlines inside the inlined 0x1c8df0 (0x16a040 and 0x1c8df0 are both kept out of line on main).
+// Diagnostics on that reading (a file-local inline copy of the two-point probe with its own vector, not keepable: an
+// inline twin of 0x16a040; all with the fraction local): on the kept frame 44 (frame 0x8c; aligned with registers and
+// stack offsets masked 3: only the frame size differs, the early load and the product order are retail's); with the
+// source cell and point as a 16-byte pair and the point copy at function scope 37 (frame 0x8c, the pair below the copy
+// as retail); with the copy in a block that ends before the cluster lookup 27 (584 bytes, frame 0x80, masked 0: every
+// instruction is retail's, but the 12-byte copy/vector home sorts below the 16-byte pair, retail has the pair lower);
+// that with the motion buffer in the block and the result in a block around the tail 27, the copy and the pair renamed
+// either way 27 / 27, the pair declared first in the function 27, the buffer declared last 27, the cell's NONE store
+// inside the block after the copy 27 (masked 2) or ahead of a bare copy 27; the cell as its own long or one-member
+// aggregate 158 (566 bytes: it folds, so retail's cell and point are one object); the first half as an inline helper
+// owning the copy 312 (439 bytes: it stays out of line).
+// M3 lane 12 r139 (fast with 0x1af810, 0x1b2770, 0x1c8df0 and 0x1c8df0's other callers; diagnostics with 0x1c8df0's separate
+// noinline declaration dropped, restored): whether an inline-level boundary at 0x1b2770's call keeps 0x1c8df0 out of line
+// there: 0x1b2770's visibility query in a static helper 957 bytes (the helper stays out of line with 0x1c8df0
+// inlined into it), the same helper forceinline 1425 bytes (0x1c8df0 inlined through it), the whole unknown040 block as a static
+// helper 148 bytes (out of line, 0x1c8df0 inside); LTCG inlines 0x1c8df0 at that call site at any nesting level. On this body:
+// the object index re-read through a fresh prop node lookup 178 (594 bytes); the ignore index bound by `long &` for the probe 20
+// (same code). Still BLOCKED-BY 0x1c8df0's call-site inlining.
+// Shared component setter for the ray 16, for the measured vector 5, for both 16; shared point setter
+// on the ray workspace 16. Set the mask bit from a cleared default 8, with the ray setter 19, with the
+// measured-vector setter 8, with both 19. The ray setters load the ignore index at retail's offset but
+// stage the vector components in another order. The hit product still loads the fraction first.
+// N421 previews: existing two-point collision call 207; typed collision result receiver retained from ray
+// setup 5; distance gate and hit product set a shared classification 97; successful collision owns the
+// distance and classification block 42; successful collision assigns a return value and both paths share
+// the return 81; explicit ordered hit-distance classification with a shared default 5; ray vector allocated
+// independently of the input point copy 45; existing two-point collision call with the shared
+// classification result 189.
+// NOT kept: the existing two-point collision call remains out of line, the dedicated ray grows the frame,
+// and the classification variants tie or regress. Opening body restored.
+// Matched in a full build with stand-in SDK headers (was 5): retail inlines function_1c8df0 here and nowhere else,
+// so this is a plain call of it and function_1c8df0 loses its noinline prototype; the point copy lives in its own
+// block so that its slot is shared with the inlined body's vector (frame 0x80).
 // @retail 0x1af5c0
-long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
+short function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
 	s_actor_view *local_0 = actor_get(arg_0);
 	s_prop_node_view *local_1 = prop_node_get(arg_1);
@@ -609,52 +691,29 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	s_ai_object *local_4 = local_3->field_8;
 	s_1af5c0 local_7;
 	long local_8;
-	s_1af5c6 local_9;
-	point3f &local_5 = local_9.field_10;
-
-	local_9.field_0 = NONE;
-	local_5 = *arg_2;
+	point3f position;
+	long cluster_index = NONE;
+	{
+	point3f local_5 = *arg_2;
 
 	function_2640c0(local_19, (s_object_motion_view *)&local_7);
 	local_19 = local_1->object_index;
 	local_3 = &((s_1af5c2 *)g_4e0300->data)[local_19 & 0xffff];
-	if (local_3->field_3 == 0)
-	{
-		local_8 = ((s_1af5c3 *)local_4)->field_14;
-		if (local_8 == NONE)
-			local_8 = local_19;
-	}
+	if (local_3->field_3 == 0 && ((s_1af5c3 *)local_4)->field_14 != NONE)
+		local_8 = function_baf40(((s_1af5c3 *)local_4)->field_14);
 	else
-		local_8 = local_19;
-	local_8 = function_baf40(local_8);
+		local_8 = function_baf40(local_19);
 	if ((short)arg_3 == 0)
 	{
-		local_9.field_4 = local_5;
-		local_9.field_4.z += 0.05f;
+		position = local_5;
+		position.z += 0.05f;
 	}
 	else
-		function_1e3b00(local_0->unknown018, arg_3, &local_5, NULL, NULL, &local_9.field_4);
-	long local_10 = function_14a280(g_4e033c, 0, &local_9.field_4);
-	if (local_10 != NONE)
-		local_10 = *(short *)(((s_1af5c4 *)g_4e0348)->field_30 + local_10 * 8);
-	else
-		local_10 = local_9.field_0;
-	bool local_11 = local_0->unknown26c != NONE;
-	short local_15 = local_2->field_2c;
-	if (!clusters_visible_11c010(local_10, local_15))
-		return 4;
-	local_7.field_24 = NONE;
-	long local_12 = 0x15808c2f;
-	if (local_11)
-		local_12 = 0x15808c0f;
-	vector3f *local_13 = (vector3f *)&local_5;
-	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, local_13);
-	if (!function_1697c0(local_12, &local_9.field_4, local_13, local_8, NONE, (s_collision_result_1697c0 *)&local_7))
-		return 0;
-	vector3f local_20;
-	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, &local_20);
-	real local_14 = magnitude3d(&local_20);
-	if (1.0f > local_14)
-		return 4;
-	return 1.0f > local_14 * local_7.field_4 ? 2 : 4;
+		function_1e3b00(local_0->unknown018, arg_3, &local_5, NULL, NULL, &position);
+	}
+	long leaf_index = function_14a280(g_4e033c, 0, &position);
+	if (leaf_index != NONE)
+		cluster_index = *(short *)(((s_1af5c4 *)g_4e0348)->field_30 + leaf_index * 8);
+	return function_1c8df0((short)cluster_index, &position, &local_2->field_30, local_2->field_2c, local_8, 0, false,
+		local_0->unknown26c != NONE, true, NULL);
 }

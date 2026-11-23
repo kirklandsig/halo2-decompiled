@@ -314,7 +314,7 @@ struct s_ai_script_clump_object
 	byte unknown3d[0x50 - 0x3d];
 };
 
-void __stdcall function_1e1a00(long index, long value);
+void __stdcall function_1e1a00(long index, bool value);
 
 /* an object, or NULL for NONE */
 inline s_slot_object_view *object_get_or_null(long object_index)
@@ -353,6 +353,11 @@ inline void ai_script_object_set_flag10a_14(long object_index, bool flag)
 
 /* sets a flag of the unit of every actor an ai index names, or of the objects
    of its perception when it has no unit */
+// score 7: the swarm loop's ECX/EDX trade places, as in 0x2732e0 (its note
+// lists the forms tried there, all tied). Ours keeps the object table base in
+// ECX and the creature in EDX; retail keeps the base in EDX and the creature
+// in ECX. Permuter on this function: 147 tries, best 7, no improvement; the
+// rest of the body is identical. Needs the callers and 0xdc310 in a fast check.
 // @retail 0x273200
 void function_273200(long ai_index, bool flag)
 {
@@ -1606,6 +1611,45 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // busy full-byte byte/signed-char/char/bool fields 29/29/29/29. The 29 forms recover
 // handle-before-scaling (first +0x255), but NOT kept: three-count gain and no equality.
 // Original 12-byte row, comparator, requests, slot stores and complete body restored.
+// P570: Twice-consumed iterator handle at walk entry or after ownership admission, before
+// capacity admission, long/dword/const-long/const-dword: 32/32/32/32/32/32/32/32.
+// NOT kept: no handle-before-scaling, departure-selector or request/slot-home recovery;
+// original observations, publication, requests and complete body restored.
+// P587: Eight independent original iterator-workspace identities with all original
+// receiver names and publication scopes: eight 32 at native 846-byte extent.
+// NOT kept: no handle-before-scaling or leave/request/slot-home repair; full body restored.
+// b13E (11-17) walk against retail, fast build on r846: logic agrees (every difference is scheduling or register
+// choice). Three spots remain, and two cancel in the byte count (ours leaves out retail's `mov ecx, eax` 0x274cc7 and
+// adds `mov eax, esi`, so 846 = 846 hides it): the append's `mov ecx,[esp+0x94]` 0x274aef sits before the movsx in
+// retail; retail computes the leave type in eax (0x274cb5-0x274cc7, `push ecx` after the setne, no other caller of
+// 0xe68c0 has that shape); the slot stores run seat 0x274d2c, vehicle 0x274d38, flags 0x274d41 with ax for the seat.
+// New: writing function_274a51's body out at the call with candidate_actor->unit_index passed directly gives retail's
+// append order (only the leave block, the unit load at 0x274ce0 after the seat reads, and the seat register ax remain)
+// but scores 72 (68 with the slot seat, vehicle, flags order; 67 vehicle, seat, flags): a 2-byte shift moves every
+// branch target. With the unit in a local before or after the type store it is 41/44 and the append order returns.
+// Not kept: no match, and Kirk undoes a written-out helper. Also 32 each: 0x1d + (load ? 1 : 0), (load != 0) + 0x1d,
+// 0x1d + !!load, a forced-inline leave wrapper (same bytes as the plain call).
+// Read the stored row identity for the busy query, as indexed fields or a row reference.
+// Original/branch-local walking slot/branch-local load request/both scopes:
+// 32/199/190/190 and 150/213/207/207. NOT kept: the indexed form ties with the original
+// scopes, and every other form regresses. Handle-before-scaling and request register placement remain.
+// Published handle for busy query, indexed/row reference/row pointer 32/150/150;
+// explicit busy outcomes 32/150/150; nested admission indexed/reference 32/150.
+// NOT kept: ties or regressions. Iterator-handle acquisition, leave selector
+// and request/slot publication still differ.
+// Round 462 full busy byte backed by short/word/long/dword bitfields 29/29/29/29,
+// with named query level 32/32/32/32. NOT kept: three-point gain. The unsigned
+// variants also regress the comparator. Short-backed byte with seat/vehicle first 38,
+// clear and set around seat/vehicle 48, default departure type 59, branch-assigned type 44.
+// The original busy field, requests and slot stores are retained.
+// DH391: Combined flag mask with all six flag/seat/vehicle store orders, 32/34/51/41/52/41;
+// split clear/set around seat and vehicle stores 51/52. NOT kept: tie or regression.
+// DH393: Departure gates split after parent, after attachment or into three tests 32/32/32.
+// Shared parent alone/with split gates 32/32. Selected seat bound after departure 93.
+// Full-byte busy field with nested gates/shared parent 29/29, first +0x255 at 846 bytes.
+// NOT kept: three-point prefix gain only. Departure type registers and request/slot stores remain.
+// DH397: Separate short append ordinal using indexed mutable/const, row reference/pointer, with original observations and one shared iterator handle 32/32/150/150/32/32/150/150.
+// NOT kept: The indexed forms tie; row aliases move the first difference earlier and regress, with the 846-byte extent intact. The iterator handle, departure selector and request/slot schedules remain. The original body is restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -1841,7 +1885,7 @@ inline short ai_random_range(short lower, short upper)
 
 /* gives the actors an ai index names a random number of grenades of their
    current type, by their character */
-// score 21 (was 21): only the grenade tail differs. Ours keeps actor->unit_index
+// score MATCH (was 21): only the grenade tail differs. Ours keeps actor->unit_index
 // (read once after the seed store) in esi through the count lookup and the add,
 // so g_4e0300->data is hoisted above the imul and the unit goes in ebp; retail
 // reads [actor+0x18] again for the add and keeps the actor in ebp. No store sits
@@ -1852,6 +1896,12 @@ inline short ai_random_range(short lower, short upper)
 // parameters (21), random_next() for the seed step (21), an early-return count
 // helper (21), no unit_index local (21), the tail as one inline helper (not
 // inlined, 257).
+// b13E (11-17) walk against retail, fast build on r846: logic already agreed (flag stores 0x27595e and 0x275979, seed
+// step 0x275989-0x2759a5, count lookup 0x2759cb, add 0x275a17). The 21 came from retail reading [ebp+0x18]
+// (actor->unit_index) a third time for the add (0x2759f6) with the actor kept in ebp, though no store sits between
+// that read and the count's (0x2759b7). A volatile read of the actor's unit for the add reproduces it: MATCH, with
+// 0x2a5720 and the three callees still MATCH. A plain read is shared with the count's, which frees ebp for the unit
+// and moves the data load above the imul. No other form was tried; the volatile is the match-only recipe.
 // @retail 0x2758b0
 void function_2758b0(long ai_index)
 {
@@ -1874,7 +1924,10 @@ void function_2758b0(long ai_index)
 				short count = ai_random_range(grenades->minimum_count, grenades->maximum_count + 1);
 				short current_count = unit_get_current_grenade_count(actor->unit_index);
 				if (current_count < count)
-					unit_add_grenades(actor->unit_index, grenades->grenade_type, (char)(count - current_count));
+					/* volatile: retail reads the actor's unit again for the add, keeping the actor in ebp, though
+					   no store sits between the two reads; the plain read is shared with the count's */
+					unit_add_grenades(((volatile s_actor_datum *)actor)->unit_index, grenades->grenade_type,
+						(char)(count - current_count));
 			}
 		}
 	}
@@ -2946,6 +2999,34 @@ struct s_scenario_scripting_view
 // actor/counter/selector or guarded-data repair; original shared header and full search restored.
 // P540: Shared difference/squared-length forced/automatic lowering, 80/140/80/90/80/140/90/193.
 // NOT kept: no exact native storage recovery; original complete source restored.
+// P572: Existing resolver/commit ordinary, inline and forced-inline declaration pairs,
+// eight nonoriginal pairs: 80/126/80/80/126/80/80/126. NOT kept: ordinary/inline forms
+// retain the actor/counter/selector homes; forced commit expansion grows to 399/367 bytes.
+// Original declarations, helper bodies and complete search restored.
+// P590: Original packed incoming parameter lexical priorities against native
+// local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
+// or guarded-data recovery; original input name and complete body restored.
+// Gate the scripting-data read on the packed sign, as nested admission or early exit.
+// Short/long selector with the original or search-owned counter: 96/98/98/101 in
+// each form. NOT kept: delayed data and the actor in EBP do not recover retail's
+// short comparison or counter and decoded-selector homes. All eight remain 367 bytes.
+// Round 611: guarded short-to-long selector with nested admission, negative exit,
+// original packed high word or narrow-selector commit 96/96/77/96; with the typed
+// candidate record 95/95/90/95. NOT kept: keeping the original high word broke
+// the wrapper, and the 77 form grew to 372 bytes. Actor and counter homes remain.
+// Round 462 admitted set pointer from nested or conditional bounds with success/failure
+// admission, early counter 77/77/77/77, search-owned counter 74/74/74/74. Loop-owned
+// counter with raw/typed point access 74/74. Availability in the loop bound 94/94.
+// NOT kept: best gain six with score above 30. The guarded data read and selector spill
+// improve in the 74-point forms, with the actor and counter still in the wrong registers.
+// DH391: Shared tag-array views for scripting data, point sets and points in seven
+// subsets, then all with a typed point payload, eight at 80. NOT kept: no actor,
+// counter or guarded-data scheduling change.
+// DH393: Unsigned word range/sign-bit admission with admitted selector or original high bits
+// 89/79 and 97/91. Dword counterparts 89/95 and 98/98.
+// NOT kept: 79 grows to 372 bytes and loses the exact wrapper. Actor, counter and selector homes remain.
+// DH397: Encoded set portion at decode/admission/selection/inside lower bound, each with final OR/sum 76/76/60/60/102/102/75/75.
+// NOT kept: The 60-point admissions spill the encoded value at retail length and preserve the wrapper, but shift before the search where retail shifts at submission. They also keep the actor in EBX and the counter in EBP. The original body is restored at 80.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

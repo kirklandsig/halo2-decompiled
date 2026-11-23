@@ -976,112 +976,9 @@ struct s_string_buffer
 };
 
 /* the player's name, team and the game engine's two scores */
-// score 13 (was 13): discrete 7/8 tests and the final 9 test after RET differ;
-// an earlier comparison at 65 (from 50) had the arguments pushed in the opposite order and the two
-// virtual calls made in the other order;
-// low/high partitions 59/56, conditional membership 57/53, classified result
-// 57/53, upper/lower range result 95/53 (plain scores).
-// Range in a bool local 13; both values under a repeated test 104; conditional
-// values 140; forced-inline mode predicate 50; one flag for both values 50 (fast).
-// r105 (fast): the plain six-way chain 65 (480 bytes, 9 in line); the chain without 9
-// and an `else if (== 9)` arm with the same loads 65 (the arms merge); the chain in a
-// bool, a long, or a flag set by an if 65; the score1 format call in both arms with the
-// chain 100 (483 bytes) or the range 104.
-// Independent final-mode if 63 (501 bytes); nested output guards with the range 13,
-// with the chain 50; score-widget declarations split 50; one value declaration 50;
-// upper-bound-first range 14; 7/9/8 chain 51; grouped final equalities 50 (plain).
-// Round 41 (lane 10, fast): retail's `cmp 9; jne <score1 format>; jmp <loads>` after RET
-// looks like a second copy of the loads cross-jumped into the first after layout. Six
-// separate else-if arms with the same loads 50 (merged, 9 in line); the 1/3/4/7/8 chain,
-// an `== 9` arm and a final else arm, each with its own score1 format call 95 (484 bytes,
-// the format string goes to EDI); the same as seven arms 95; the 1/3/4/7/8 chain with an
-// `== 9` arm whose loads are in the other order 50, the chain's loads reversed instead 50;
-// a multi-label switch (diagnostic) 100 (range compares).
-// Round 48 (fast here gives 34 at 475 bytes on the unchanged source: the reduced image passes
-// show_row's row on the stack; aligned counts against that): a 1/3/4/7/8 switch with case 9 as its
-// own identical arm, after or before, 101 (range compares, aligned 24); `>= 7 && <= 8` plus `== 9`
-// 65 (aligned 10); the 1/3/4/7/8 chain with the `== 9` test nested in its else 65 (aligned 9: only
-// the 9 test is in line); the chain and a separate `if (== 9)` 76, with `>= 7 && <= 8` 77 (500 bytes,
-// not threaded).
-// Round 52 (lane 14, fast; unchanged source 34 at 475 bytes): retail's other after-the-return test (0x25762a in 0x257320) is the
-// last test of an else-if chain; here the arm has to stay unmerged until after layout. The chain with a backward goto to the loads,
-// a goto past them, the negated chain, `!chain && != 9`, chain `|| == 9` and six arms 65 each (480 bytes, 9 in line); the `== 9` arm's
-// loads reversed 65; a row pointer in the `== 9` arm or in the chain's arm 90/90 (504 bytes: unmerged, but the test stays in line and
-// its arm precedes the loads); with that arm, the negated nested test 90, De Morgan 90, six arms 88, an empty `!= 9` arm 90, the
-// chain inverted with `== 9` tested again 102 (511 bytes). Lead: a form that lays the loads directly after the 8 test.
-// Round 100 (plain): membership assigned in the condition 50 (481 bytes); split low/final assignments 87 (486);
-// a two-use value pointer in the final or low arm 68 each (500), in both 63 (478); staged final values 50;
-// an inline two-output loader in the final or both arms 50 each (481). All leave 9 in line; range body restored.
-// Round 163 (plain): cross-jumping folds the first arm into the last (compile-only), so retail's `jmp <loads>` after RET suggests the
-// `== 9` arm sat past the return before the merge. Chain, `== 8` and `== 9` arms with differing loads 97 (525 bytes);
-// the negated chain holding the `== 9` arm, a row pointer in that arm, 81 (505); an explicit zeroing else arm 114 (504);
-// a `!= 9` empty arm with the loads in the else 50 (481); the negated chain with a goto past the loads 50 (481).
-// Compile-only, all 9 in line: multi-return, flag and switch inline predicates, gotos in and out of the arm.
-// Round 55 (m3 lane 2): only 0x1a391f and 0x257320 share the shape (`cmp; jcc back; jmp back` after RET), both from a test threaded
-// around by an earlier test of the same value, which suggests a second, correlated `mode` test. Plain: three-arm flag 50 (481 bytes,
-// aligned 5 against the range's 6), default-false flag 50, default-true with the chain negated 50, empty chain arm 50, long flag 50,
-// `!flag && == 9` 50, a separate `if (== 9)` 99 (491). Fast (unchanged source 34): value1 zeroed in an else arm 65, with value2 too 93
-// (482), the arms negated or swapped 65/65/65/93; each arm with its own score1 format call, or the else arm formatting 0, 99 (483),
-// one combined test with its own format calls 100 (483), the `== 9` arm and else sharing a call 84 (502). All leave 9 in line.
-// `__assume` (fast) at the head or tail of either arm, on the mode or the row, or in a flag form, nine placements 65 each; on the flag itself 100 (485).
-// Round 71 (lane 14, plain; compile-only reproduces this layout at 0.7 s per form): the values loaded under one chain of all seven
-// modes with 2 first, then `if (== 2)` time else `%d`, 96 (471 bytes); a switch with a separate identical arm per case 90 (475,
-// dec/je chain); a switch with case 2 and the six cases falling into the `%d` default 102 (475); the `== 9` else-if arm after a
-// chain whose 7/8 tests are a range 50 (481); the `== 9` arm's loads through byte offsets (to keep the arms apart) 50 (481).
-// Compile-only, all 9 in line: the `== 9` arm's loads reversed, through pointer arithmetic, `(long)(dword)` casts or a row
-// pointer; a separate-arm switch in descending order; a 1/3/4 + 7/8/9 two-arm switch; a 1/3/4/7/8 + 9 switch; speed preference.
-// Round 142 (m3 lane 8, plain): compile-only builds do not reproduce the after-return blocks of matched 0x257320/0x1a391f
-// (LTCG threading of a repeated identical test), so compile-only screens cannot show this layout. The 2 test first in a
-// seven-mode chain with the loads, then `if (== 2)` time else `%d` 94 (472 bytes); the six-mode chain written twice
-// (value1, value2) 104 (517); one named bool for the chain tested twice 50 (481, merged); a 1/3/4/7/8/9 switch holding the
-// loads 100; the 9 test through an inline multi-return predicate 50 (481).
-// Round 177 (m3 lane 4, plain): matched 0x257320's after-return block (0x257626) is a copy of its `else if (pointer)` test made
-// for a conditional branch that enters it from an earlier term, after the fall-through path (the previous condition's last term,
-// `|| !pointer`) was routed past the test; the copy even jumps past a reload in the arm's head. So a form is needed in which the
-// path that falls into the loads (mode 8) passes the 9 test's place already decided, while retail's loads reuse EAX (the mode is
-// dead there, so that is decided before allocation). New: that shape, `1/3/4/7 || (== 8 && != 9)` then `else if (== 9)` with
-// the same loads 50 (481 bytes: the `!= 9` term folds away); the chain arm with its own format call and an else holding
-// `if (== 9)` loads and the format call 71 (503); `if (!chain) { if (== 9) loads } else loads` 50 (481); the mode read once
-// into a local for every test, with the six-way chain 50 (481) or the five-way chain and an `else if (== 9)` arm 50 (481).
-// Re-measured: the five-mode chain and a separate `if (== 9)` 63 (501 bytes: the loads keep the mode in EAX and the 9 test
-// follows them, nothing routed past); three arms (chain, `== 9`, else) each with the score1 format call, the else passing the
-// value 95 (484) or 0 95 (484: merged, the format string in EDI, the values out of ESI/EDI). All leave 9 in line: identical
-// arms merge into the one that falls into the format call, which is the 9 arm in every order tried.
-// Round 95 (m3 lane 10, plain; fast gives 34 at 475 bytes on this body): the 2 arm with its time format, the rest
-// loading under a six-mode chain arm, then `if (!= 2)` the `%d` format 90 (493 bytes: the second mode test stays, not
-// threaded); separate 1/3/4/7/8 else-if arms then a separate `if (== 9)` 67 (501: the identical arms merge before any
-// threading and the mode stays in EAX for the 9 test); the same with the 8 arm's loads reversed 67 (normalised, merged);
-// with the 8 arm reading through a row pointer 85 (507: that arm stays apart and still falls into an in-line 9 test, so
-// LTCG does not thread equality facts here); an early return when either score text is missing 13 (same code).
-// Re-measured: chain, `== 9` and else arms each with the score1 format call 95 (484 bytes: merged at IL level, the 9
-// test jumps straight to the loads, the format string CSEd into EDI).
-// Round 115 (m3 lane 9, fast; the reduced image scores the unchanged body 34 at 475 bytes, so these show the layout
-// only): a named bool for the 1/3/4/7/8 chain tested with `|| == 9` 65 (480 bytes, 9 in line); the chain's last two
-// modes as `1/3/4/7 || (== 8 ? true : == 9)` 69 (489); the 1/3/4/7 chain with an else holding a two-case 8/9 switch
-// and the same loads 65 (480, 9 in line); the bool assigned `== 9` when the chain fails, then tested 100 (485); the
-// bool started as `== 9` and set by the chain 105 (487). Diagnostic, not kept: the `== 9` arm with its own copy of the
-// whole tail and a return 171 (541 bytes: the copy is not folded back and the 9 test stays in line). None places a
-// block after the return.
-// m3 lane 14 r90 (plain): the 7-9 range written first in the chain 18; the 3-4 pair as a second range beside the 7-9
-// range 15 (both ranges become jl/jle compares); the chain as 1/3/4/7 then an 8-9 range 50 (481 bytes); the time arm's
-// minutes and seconds named before the format call 13 (same code); the time arm's two loads after the format string's
-// load 79 (474 bytes). All leave the 9 test in line.
-// Round 105 (m3 lane 10, plain): the 1/3/4/7/8 chain and an `else if (== 9)` arm whose loads go through `(long)(dword)`
-// casts, in a full build (earlier only compile-only) 50 (481 bytes, merged); the six equalities grouped as
-// `... || 7 || (8 || 9)` 50; fully right-nested 50 (481, 9 in line: grouping is normalised); a named `timed` bool for
-// the 2 test used twice, the values loaded under a seven-mode chain led by it, then `if (timed)` time else `%d` 115 (478
-// bytes: the bool is materialised with `sete`, never threaded); the chain through an inline helper returning the row
-// pointer or NULL, tested for NULL 112 (452 bytes: this file does not inline it).
-// Round 125 (m3 lane 9, plain; fast scores the reduced image, 65/70 for the first two): the six-mode chain with a
-// `== 2` term (known false in the else) 50 (481 bytes: the term folds, 9 in line); the six-mode chain in descending
-// order 55 (481: source order kept, the last term 1 in line); the 9 term as `== 9 && != 2` 50 (folded); the chain
-// under a leading `!= 2` 50 (folded); a 1-9 range excluding 5 and 6 107 (470 bytes). VC keeps the chain's source order
-// and folds every implied term before layout, so none places the 9 test past the return.
-// M3 lane 9 r127 (fast used only as a layout screen; it scores this body 34): two if-arms with the same loads, 1/3/4
-// then 7/8/9 as equalities, 65 (480 bytes, merged, 9 in line); the loads under a seven-mode chain in numeric order (2
-// second), then `if (== 2)` time else `%d`, 105 (470 bytes); the same with 2 last 87 (466). Re-measured: the chain, `== 9`
-// and else arms each with the score1 format call 99 at 483 bytes: the else path becomes `push esi; jmp` into the merged
-// tail right after an in-line 9 test, where retail merges the push as well and moves the 9 test past the return.
+// The scores are read under one arm per game type, as the screen's other game-type chains are written, and
+// formatted under a second game-type test: retail's game-type 9 test sits after the return (LTCG threads
+// the second test along the earlier arms).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {
@@ -1120,16 +1017,44 @@ void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 		{
 			value1 = g_55caf0[row].value10c;
 			value2 = g_55caf0[row].value110;
+		}
+		else if (g_50224c == 1)
+		{
+			value1 = g_55caf0[row].value10c;
+			value2 = g_55caf0[row].value110;
+		}
+		else if (g_50224c == 3)
+		{
+			value1 = g_55caf0[row].value10c;
+			value2 = g_55caf0[row].value110;
+		}
+		else if (g_50224c == 4)
+		{
+			value1 = g_55caf0[row].value10c;
+			value2 = g_55caf0[row].value110;
+		}
+		else if (g_50224c == 7)
+		{
+			value1 = g_55caf0[row].value10c;
+			value2 = g_55caf0[row].value110;
+		}
+		else if (g_50224c == 8)
+		{
+			value1 = g_55caf0[row].value10c;
+			value2 = g_55caf0[row].value110;
+		}
+		else if (g_50224c == 9)
+		{
+			value1 = g_55caf0[row].value10c;
+			value2 = g_55caf0[row].value110;
+		}
+		if (g_50224c == 2)
+		{
 			format.load((c_widget *)get_screen(), 0xb000736);
 			function_1630e0(score1, format.text, value1 / 60, value1 % 60);
 		}
 		else
 		{
-			if (g_50224c == 1 || g_50224c == 3 || g_50224c == 4 || (g_50224c >= 7 && g_50224c <= 9))
-			{
-				value1 = g_55caf0[row].value10c;
-				value2 = g_55caf0[row].value110;
-			}
 			function_1630e0(score1, (const word *)L"%d", value1);
 		}
 		function_1630e0(score2, (const word *)L"%d", value2);

@@ -385,194 +385,41 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
-// MiniMax R (11-15): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5
-// factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0
-// still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not
-// edit.
-// score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
-// factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
-// 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
-// MiniMax E (11-15): no new form, no lower score (370): the distance's zero test against the float 0.0f
-// constant measures 370 (1518 bytes) as before, and dropping the variant's volatile pointer so that the frame
-// could reach retail's 0x30 measures 419 (1495 bytes); what still differs is unchanged: the frame 0x34
-// against retail's 0x30, retail's 1.5 factor in its own writable .data float, and the 0x4b2d0 call's
-// argument order, which is set in another file.
-// score 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
-// MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
-// third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
-// ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
-// another file, which this lane may not edit; retail also still reads its 1.5 factor from its own writable
-// .data float and still expands two contributor helpers in place.
-// MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
-// still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
-// against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
-// from src/unknown_01cf50.cpp, which this lane may not edit.
-// MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
-// MiniMax H (11-14): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail
-// still reads its 1.5 factor from its own writable .data float at 0x47ff94 and still expands two contributor
-// helpers in place, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX.
-// score 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
-// MiniMax G (11-10): no new form, no lower score (370); retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34 against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from a file this lane may not edit.
-// MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).
-// MiniMax I (11-05): no new form, no lower score. Retail's callee 0x4b2d0 takes the tag in edx, the
-// group in ecx and the variant in eax (src/unknown_01cf50.cpp, another lane's file), so retail loads
-// the variant into ebp at the entry and ours keeps it on the stack.
-// MiniMax B (11-04): no new form, no lower score.
-// Earlier 316 (was 316): the distance to the centre is now computed and compared in double, so the
-// MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
-// comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
-// Earlier 316 (was 316): Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
-// Lane 18 r37 (fast): retail passes 0x4b2d0 tag/first/second in EDX/ECX/EAX and third/fourth on the stack
-// (ret 8); ours passes tag/fourth in EDX/EAX and three on the stack (ret 0xc). In 0x4b2d0: dropping its
-// `(void)&` reads (one or both) changes nothing; the entry offset computed in place, or named just before
-// the entry, gives ret 8 but passes first in EBX and third in EAX (0x4b2d0 91, 239 B; here 413); with the
-// variant read directly here as well 413. All restored.
-// Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
-// the distance to the centre is now computed and compared in double, so the
-// float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
-// bound is still one product where retail has two and the frame is 0x34 versus 0x30.
-// Earlier at 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
-// the distance to the centre is now computed and compared in double, so the
-// Earlier 379: frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
-// Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
-// Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
-// Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
-// radius keeps retail's xmm3; our fade block is still one instruction shorter than
-// retail's, and the call to function_4b2d0 still passes three stack arguments.
-// Round 194: Named real radial denominator at division/loop boundary, with ternary/explicit
-// alpha bounds and long/dword UV ordinals, all 366; without the denominator local 416.
-// Ordinary 366 loses both callers at two differences each; all trial forms restored.
-// Round 184: native attribute header with captured/live signed count and short/word
-// elements: actual cursor 379 each; direct array indexing 374 each (five-point
-// gain rejected). Frame 0x34 versus 0x30 and protected call transport remain.
-// Round 226: ordinary variant/body pointer advance with native material/group/shader records,
-// every pair/all three, and all plus native context byte 432 each at 1480/1518 bytes.
-// Both matched callers become 2; every record, input observation and original body restored.
-// Round 32: BLOCKED-BY 0x4b2d0 (in a contributor's file): retail passes it the variant in EAX, the
-// group in ECX and the tag in EDX with two pushes; ours pushes three. Retail also parks the fade
-// denominator and alpha in dead argument slots (0x5c/0x58), which frees 0x14 for the colour
-// temporaries (frame 0x30). The fade bound as two products 402 (retail's fst and two mulss, but
-// xmm numbering rotates); a plain address read of the variant 423 and one volatile read 422 (both
-// frame 0x30, but the two matched callers lose); a named fade width before the loop 374 (our
-// compiler then multiplies by a reciprocal where retail divides; not kept); a vertex pointer 397.
-// Round 66: existing double-input distance helper at entry, entry+vertex and all three sites
-// 379/379/399; pre-loop counter, entry counter, entry wrapped index, entry predecessor and
-// a plain while loop 379 each. Both callers stayed matched; all executable forms restored.
-// Round 409: one emitted-position workspace 403; native tint copy 393; both 416; current-vertex
-// address 379; with position/tint/both 403/393/416; all with ordinary variant 466 and both
-// matched callers lose. Original complete body and output/parameter homes restored.
-// Round 272: ordinary variant and load-stepped cursor with entry declarations for
-// fade limit/spread/outer distance, every subset and complete role names
-// 416/416/416/416/416/416/416/416. Original parameter home, observations and body restored.
-// Round 415: ordinary variant/body cursor step with native current/previous vertices and
-// top-first declarations, seven subsets 429/416/396/432/429/416/396; all with CRT input copies 396.
-// Both matched callers lose two in every trial; complete executable body restored.
-// Round 132 (lane 6, fast): the variant parameter read directly, without the volatile reference,
-// 401 (both matched callers lose, 2 each); read once through a plain const address 400 (frame 0x30,
-// aligned 128 against 157, but pass moves to EDI and the callers lose, 8 and 11); the double distance
-// with `1.5f * radius` written at both uses 391; the attribute scan indexed as `types[i]` 395; the
-// material default as an if/else 316 (same code). Retail's colour temporary reuses the spread slot
-// (0x14) because its radial denominator sits in the dead perimeter slot; ours keeps a reciprocal in
-// the spread slot through the loop, which is the extra frame dword.
-// Round 122 (fast): retail also inlines 0x1ccb0(59)/0x1cd90 here (both in an /Ob1 contributor file; inline
-// declarations here 379). Ours keeps &vertices[index].y in EBP, so the step and fade denominator lose retail's EBP and
-// perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner
-// radius at its use 430; on the uv form: bottom by fields 374, bottom right after the index 375 (step in EBP,
-// pointer spilled instead), edge with one cast 374, top from the vertex 377, top.z assigned 375.
-// Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
-// results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
-// Original factor literal, bound, inherited parameter home, cursor and complete body restored.
-// Round 42 (lane 14, fast; "aligned" = differing lines after a sequence alignment, base 157): retail's 1.5 is
-// not a literal but a .data float at 0x47ff94 (between g_47ff90 and g_47ff98, read only here). With
-// `real g_47ff94 = 1.5f;`, the distance as `real distance = (real)sqrt(...) - radius;` and the bound written
-// as `g_47ff94 * radius` in the clamp and the divisor, the fade block is retail's (the global loaded once,
-// fst into the dead radius slot, the second product in place) but for the xmm numbering and the clamp's
-// arm order: 384 (aligned 144, 1501 bytes); with the radial denominator written in the division,
-// `/ (maximum_distance - spread)`, our compiler divides by the hoisted value as retail does (a named
-// denominator, in the loop or before it, becomes a reciprocal multiply): 389 (aligned 136, 1495 bytes).
-// Neither is kept: the base's longer x87 fade block happens to offset the missing inline of 0x1ccb0(59)
-// (retail inlines it; BLOCKED-BY 0x1ccb0 in a contributor's /Ob1 file), so every shorter fade block
-// raises the positional count. Also: the float distance with one bound local 374 (1501 bytes); with
-// `1.5f * radius` written twice 388, as `radius * 1.5f` 388 (same code: the literal is commuted);
-// the global with the original double distance 390; the inline denominator on the base 370 (aligned
-// 155); the alpha divided in double, on the base/on the global form 399/350 (hoisted in double);
-// diagnostic float-consistency pragma 500 (1605 bytes). Next: keep the global, float distance and
-// inline denominator once 0x1ccb0 inlines here.
-// Round 214: mixed-precision real result before tests 421; zero-first result 395;
-// separate distance/factor 316, with zero-first 395; upper-first result 316;
-// factor expression 316; explicit distance arms then factor 316; scalar role names 316.
-// Earlier selected count 316 from 379.
-// Round 287: Native homogeneous-position/RGBA/both/UV/position-UV/RGBA-UV/all emitted records
-// 426/319/426/316/426/319/426; all with top declared first 426. All record forms require an exact match;
-// complete original output storage, cursor, parameter home and body restored.
-// Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
-// results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
-// Original factor literal, bound, inherited parameter home, cursor and complete body restored.
-// Round 207 (lane 3, fast with both callers): the texture scale's second rounding read from the first
-// result 370; the top point as its own initializer with `center->z + height` 359; the alpha clamp as one
-// ternary 316 (same code); the wrapped index as `step < count ? step : 0` 316 (same code); the repetition
-// divisor as `1.2f * height` 316 (same code). BLOCKED-BY 0x4b2d0 and 0x1ccb0 as noted.
-// Earlier 370 (was 316): statement walk against retail (b3K, 11-06). Behaviour fix: the alpha is now
-// `(maximum_distance - sqrt) / (maximum_distance - spread)`. With the denominator in a named local the
-// compiler turned the loop's divide into a reciprocal multiply (1.0f / denominator hoisted, then fmul),
-// which rounds differently from retail's `fdiv dword [esp+0x5c]` at 0x19f997 (316 -> 370, callers 0x244470
-// and 0x2be5d0 stay MATCH). Walked and equal to retail: the fade (0x19f6d3-0x19f711: unrounded distance
-// tested against 0, float-rounded distance against 1.5 * radius, one divss), spread/maximum (0x19f71e-0x19f736),
-// the 4b2d0 arguments, material/group/variant/shader/attribute chain (0x19f75f-0x19f83e), the repetition
-// count and texture scale (0x19f8b3-0x19f927), the wrapped index (0x19f966), the alpha clamp (unrounded value
-// against 0 at 0x19f99f, rounded against 1.0 at 0x19f9be), the vertex records (0x19f9c9-0x19fbd0) and the
-// edge-length walk (0x19fbd7-0x19fc08: sqrt unrounded, scaled, subtracted, one fstp). Not fixable here:
-// retail reads the 1.5 factor from a writable .data float at 0x47ff94 (only this function uses it), ours
-// uses the literal; the `volatile` variant reads are a call-transport trick (retail reads it once into EBP).
-// Round 170 (m3 lane 6, fast with 0x244470/0x2be5d0, both matched in each row): 0x4b2d0 and the two callees retail
-// inlines here (0x1ccb0, 0x1cd90, src/unknown_01cf50.cpp) are now machine 3's. Their `__forceinline` or `inline` declarations
-// in this file 370/370 (same code: both still called); the two bodies written in place (diagnostic, not kept) 433, with
-// round 42's float distance and `g_47ff94 * radius` bound 378 (1530 B, register-masked aligned 138 -> 101). The fade form
-// alone re-measured 389 (1495 B). Through 0x4b2d0's body (its `ret 0xc` and stack/EAX arguments set this call): the selected
-// tag computed just before the 0x1bbf0 call 418 (0x4b2d0 91), the group read ahead of the selected tag 404 (0x4b2d0 78),
-// each with `first * 10` in place 412/427 (ret 8 there, but first in EBX and third in EAX); the previous vertex index as
-// `index != 0 ? index - 1 : count - 1` 406; the texture position as `-=` 370 (same code).
-// MiniMax A (11-11, second pass): no new form, no lower score (370); what still differs is unchanged: retail still loads its constant
-// before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers,
-// and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the
-// pass on the stack (that callee's convention is set in another file).
-// MiniMax A (11-11): no new form, no lower score (370); retail still loads its constant before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers, and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the pass on the stack (that callees convention is set in another file).
-// MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
-// third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
-// ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
-// another file, which this lane may not edit; retail also still reads its 1.5 factor from its own writable
-// .data float and still expands two contributor helpers in place.
-// MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
-// still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
-// against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
-// from src/unknown_01cf50.cpp, which this lane may not edit.
-// MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
-// M3 lane 3 r242 (fast with 0x244470 and 0x2be5d0, both MATCH; base 370): the centre distance as its own statement before the
-// radius subtraction 370 (same code: the x87 pops still follow the subtraction, retail pops first); that with the edge
-// distance a real compared with 0.0f 379 (1495 B: rounded through its slot before the compare); the top point initialised from
-// the vertex with `center->z + height` 406; the fade as `1.0f - fade * (1.0f / fade_limit)` 393; `top.z = bottom.z + height`
-// 410. Body unchanged; still BLOCKED-BY 0x1ccb0 (its file is /Ob1, retail inlines it here).
+/* how far past its radius a hill's ring fades out, as a multiple of the radius (retail's .data float
+   at 0x47ff94; only 0x19f680 reads it) */
+real g_47ff94 = 1.5f;
+
+#include "shader_storage.h"
+extern byte const g_43f408[63][21];
+PRIVATE inline real planar_distance_19f(point2f const *a, point2f const *b)
+{
+    double x = (double)a->x - (double)b->x;
+    double y = (double)a->y - (double)b->y;
+    return (real)sqrt(x * x + y * y);
+}
+
+// Matches: the three planar distances go through one inline routine, 0x1ccb0(59) and 0x1cd90 are written where they
+// are called (retail expands both here; the descriptor table g_43f408 has external linkage in src/unknown_01cf50.cpp),
+// and 0x4b2d0 takes retail's argument order (the variant in a register, ret 8).
 // @retail 0x19f680
-void function_19f680(long tag, long group, long pass, long variant, void *context,
+void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
     real perimeter, point3f const *color, real height)
 {
-    long const volatile *variant_reference = &variant;
-    long variant_value = *variant_reference;
     real inner_radius = radius - 0.0001f;
-    double delta_x = (double)center->x - (double)g_4b9da0.x;
-    double delta_y = (double)center->y - (double)g_4b9da0.y;
-    double distance = sqrt(delta_x * delta_x + delta_y * delta_y) - radius;
-    real fade_limit = 1.5f * radius;
-    real fade = distance < 0.0 ? 0.0f : ((real)distance > fade_limit ? fade_limit : (real)distance);
-    fade = 1.0f - fade / fade_limit;
+    real fade = planar_distance_19f((point2f const *)center, (point2f const *)&g_4b9da0) - radius;
+    if (fade < 0.0f)
+        fade = 0.0f;
+    else if (fade > g_47ff94 * radius)
+        fade = g_47ff94 * radius;
+    fade = 1.0f - fade / (g_47ff94 * radius);
     if (fade > 0.0f)
     {
         real spread = fade * radius * 2.0f;
         real maximum_distance = inner_radius + spread;
         function_1bd50(0);
         function_1cdd0(0, 0);
-        function_4b2d0(tag, group, (*variant_reference), ((byte *)context)[4], pass);
+        function_4b2d0(tag, group, ((byte *)context)[4], variant, pass);
         long material = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
         byte *reference;
         dword kind = *(dword *)&g_4e3b44[(short)material];
@@ -582,16 +429,15 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
             reference = polygon_pointer_19f(polygon_tag_19f(material), 0x24);
         byte *groups = polygon_pointer_19f(polygon_tag_19f(*(long *)reference), 0x5c);
         long group_offset = *(word *)(polygon_pointer_19f(groups, 4) + group * 10) & 0x1ff;
-        long variant_offset = *(word *)(polygon_pointer_19f(groups, 0xc) + (group_offset + variant_value) * 2) & 0x1ff;
+        long variant_offset = *(word *)(polygon_pointer_19f(groups, 0xc) + (group_offset + variant) * 2) & 0x1ff;
         long shader = *(long *)(polygon_pointer_19f(groups, 0x14) + (variant_offset + pass) * 10 + 4);
         byte *attributes = polygon_pointer_19f(polygon_tag_19f(*(long *)(polygon_pointer_19f(
             polygon_pointer_19f(polygon_tag_19f(shader), 0x20), 4) + 0x100)), 8);
         long attribute_count = *(long *)(attributes + 4);
-        short *types = *(short **)(attributes + 8);
         long uv = NONE;
-        for (long i = 0; i < attribute_count; ++i, ++types)
+        for (long i = 0; i < attribute_count; ++i)
         {
-            if (*types == 3)
+            if ((*(short **)(attributes + 8))[i] == 3)
             {
                 uv = i;
                 break;
@@ -599,8 +445,15 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
         }
         DWORD old_cull;
         D3DDevice_GetRenderState(D3DRS_CULLMODE, &old_cull);
-        function_1ccb0(59);
-        function_1cd90();
+        {
+            byte const *descriptor = g_43f408[59];
+            function_1c6b0(g_51f0f0);
+            *(byte const **)((byte *)g_51f0f0 + 0x8c) = descriptor;
+            if (*(byte const **)((byte *)g_51f0f0 + 0xcc) != descriptor)
+                *(bool *)((byte *)g_51f0f0 + 0x20c) = true;
+            function_1c710(g_51f0f0);
+        }
+        function_1c710(g_51f0f0);
         function_1cf50();
         D3DDevice_Begin(D3DPT_TRIANGLESTRIP);
         real repetitions = perimeter / (height * 1.2f);
@@ -611,9 +464,7 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
         for (long step = 0; step <= count; ++step)
         {
             long index = step == count ? 0 : step;
-            double vertex_x = (double)vertices[index].x - (double)g_4b9da0.x;
-            double vertex_y = (double)vertices[index].y - (double)g_4b9da0.y;
-            real alpha = (maximum_distance - (real)sqrt(vertex_x * vertex_x + vertex_y * vertex_y)) /
+            real alpha = (maximum_distance - planar_distance_19f(&vertices[index], (point2f const *)&g_4b9da0)) /
                 (maximum_distance - spread);
             if (alpha < 0.0f)
                 alpha = 0.0f;
@@ -630,8 +481,9 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
                 D3DDevice_SetVertexData2f(uv, texture_position, 0.0f);
             D3DDevice_SetVertexData4f(0, top.x, top.y, top.z, 1.0f);
             long previous = index != 0 ? step - 1 : count - 1;
-            double edge_x = (double)vertices[previous].x - (double)vertices[index].x;
-            double edge_y = (double)vertices[previous].y - (double)vertices[index].y;
+            point2f const *vertex = &vertices[index];
+            double edge_x = (double)vertices[previous].x - (double)vertex->x;
+            double edge_y = (double)vertices[previous].y - (double)vertex->y;
             texture_position = texture_position - (real)sqrt(edge_x * edge_x + edge_y * edge_y) * texture_scale;
         }
         D3DDevice_End();

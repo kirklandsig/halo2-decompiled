@@ -47,6 +47,30 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// score 268 (was 298; r286 and r239 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
+// MiniMax G (11-20): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is expanded here but called out of line in retail, so the optional-state homes stay four bytes off.
+// MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
+// expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
+// which this lane may not edit, so the optional-state homes stay four bytes off (ours [esp+0x2c]/[esp+0x3c] against
+// retail's [esp+0x30]/[esp+0x40]) and the direction block's two divisions stay.
+// MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
+// still expanded here where retail calls it out of line; that expansion boundary is settled in
+// src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes (ours [esp+0x2c]/[esp+0x3c]
+// against retail's [esp+0x30]/[esp+0x40]) and the colouring behind it stay as they are. Retail's direction block
+// (0x1d4c70-0x1d4d78) keeps the table entry's three floats and divides once, ours keeps two and divides twice;
+// the vector3f local for it measures 369, the magnitude2d restructures 312 and 331 and the operand swap 298 (same
+// code), so none of them is the form. The permuter found no better form either: an annealed search over this body
+// (600 s, 71 tries) lowered nothing, best 268 against a baseline of 298.
+// src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes and the colouring behind it
+// stay as they are. The permuter found no better form: an annealed search over this body (300 s) lowered nothing,
+// best 268 against a baseline of 268.
+// m3 lane 9 r134 (fast unless noted; the score line below moved to the top of this one note):
+// `inline` on 0x279740's own definition (src/unknown_279740.cpp) 418 plain and fast (2215 bytes: both releases then
+// expand the range check and 0x11bed0 still expands, so the expansion is not a per-caller budget); the loop counter
+// renamed to sort after the exclusion index (diagnostic for the name-ordered cells) 298 (same code); the upper bound
+// set before the lower 315; the padded radius written at each use 508; the bounds loop through
+// `m_quad.m128_f32[i]` in place of the `(real *)&m_quad` cast 298 (same code). Still BLOCKED-BY 0x11bed0's
+// expansion here: with it out of line (earlier diagnostics) the entry and the optional-state homes are retail's.
 // MiniMax H (11-14): no new form, no lower score (298): declaring the result flag before the two
 // optional-state homes, and between them, both measure 400 against the body's 298, so the flag's
 // declaration point is what sets the small homes' packing; the body is unchanged.
@@ -85,7 +109,8 @@ const dword g_455978[81] = {
 // MiniMax A (11-04): no new form, no lower score; the optional-state homes sit four bytes low (retail +0x30/+0x40, ours
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.
 // MiniMax E (11-11): no new form, no lower score (298): the aligned frame agrees; the optional bounds/exclusion homes and the selective helper expansion remain, and the helper 0x11bed0 is defined in its own file: BLOCKED-BY 0x11bed0.
-// score 298 (was 298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
+// MiniMax S (11-16): no new form, no lower score (298); retail still inlines 0x279740 at the first release and calls 0x11bed0 out of line, and both are set in files this lane may not edit.
+// Earlier (298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
 // Lane 18 r37 (fast): result flag declared at function entry 400; sample count declared before the FPU
 // setup 529; contact presence declared inside the sample loop 353 (2121 B); result flag declared after the
 // presence 356; exclusion index declared before the bounds volume 298. Ours keeps body/shape in ESI/EDI
@@ -330,6 +355,174 @@ const dword g_455978[81] = {
 // existing vector3f_add_scaled, the zero-length test ahead of the inverse. Retail's first release is 0x279740 inlined
 // (with its size getter) and its second a call; ours can inline neither from 0x279740's /Ob1 file, which leaves the
 // budget that inlines 0x11bed0 here (build flags: the user's decision; `inline` on its definition is listed above).
+// MiniMax D (11-17): no new form, no lower score (298): retail takes the first argument in a register
+// (EAX into EBX) and so keeps a 0x1d4 frame with its locals four bytes higher than ours, which still takes
+// that argument on the stack; that transport is decided by this function's callers in other files. The
+// first difference also puts retail's zero register before the load of the first bound and our version
+// after it, and our build still reads a different global and calls a different function at the first
+// dispatch point.
+// m3 lane 9 r136 (fast with 0x11bed0, 0x11be90, 0x14a280, 0x279740, 0xc5460, 0x21a100, 0x168f40, 0x1d43d0; control 298,
+// aligned rows 205; body unchanged). Retail expands the range check at two sites in the whole image (here and 0x1d01c0;
+// 59 functions call 0x279740, 14 of them twice or more with no expanded copy) and calls 0x11bed0 from all 41 of its
+// callers; ours expands 0x11bed0 here and in 0x21a100 only. Diagnostics on 0x11bed0's own body (src/unknown_11bed0.cpp),
+// none kept: it sits just under the link-time expansion limit, so one extra branch with a store, three arithmetic
+// statements or one more call in it keep it out of line at both sites (this function then 278 at 2049 bytes, and 0x14a280
+// keeps its match), while ten repeated stores, a one-line accessor for the collision tree and a guarded accessor do not.
+// Spellings of 0x11bed0 that leave its bytes alone, all still expanded here (298): both arms through the existing
+// function_11be90 (0x11bed0 still matches); the else arm through it with a file-local clearing helper; `inline` on
+// function_11be90's definition with either; a pointer local for the leaf table. Spellings that change its bytes: the leaf
+// as a ternary or preset to NONE then one function_11be90 call (0x11bed0 35/38, this 277/271), the level index read once
+// into a short local (0x11bed0 5, this 297), a short cluster local (0x11bed0 1), a leaf element pointer (0x11bed0 25, this
+// 295). One compiler-setting diagnostic: without the inline restriction on src/unknown_279740.cpp both releases expand the
+// range check (418 at 2215 bytes, as `inline` on its definition did), so that file's flags are not the lever either.
+// Still BLOCKED-BY 0x11bed0: the original has slightly more in it than ours when the expansion is decided.
+// M3 lane 9 r142 (fast with 0x11bed0, 0x14a280 and all 42 functions that call 0x11bed0): the same 278 (2049 B) comes from
+// the call site alone: an always-true `if (arg_11)` around the 0x11bed0 call emits no code but keeps 0x11bed0 out of line
+// with retail's setup (location in ESI, point in EDX, then `mov edx, esi; cmp word [edx+4], -1`); 0x11bed0, 0x14a280 and
+// every caller unchanged. A guard, so match-only and not kept. With 0x11bed0 called that way, `inline` on 0x279740's
+// definition expands both releases 306 (2141 B), and so does 0x279740's file built without its inline restriction
+// (diagnostic, restored) 306: the nested second release still expands. Guards that emit code: `if (arg_5)` 310 (2063 B,
+// 0x11bed0 called), `if (!local_0)` 309 (2061 B). The point copy through real_point3d_set 320 (2133 B); 0x11bed0's else
+// arm through the existing 0x11be90 298 (re-measured, 0x11bed0 still matches).
+// SDK exception-mask setter 298, exception-state clearer 298, both 298; one named control word,
+// read separately at setup and cleanup, 298. Axis loop seeding both bounds with explicit fourth
+// components 509, with either or both exception macros 509. The two optional-state homes
+// and the selective location and release expansions remain.
+// m3 lane 9 r145 (fast with 0x11bed0, 0x14a280, 0x21a100 and 0x11be90; control 298): retail calls 0x11bed0 from all its callers, ours
+// expands it here and in 0x21a100, so 0x11bed0 was respelled to look for a form with retail's bytes that the link-time inliner leaves
+// out of line (that file is this machine's): the leaf branch as if/else with the stores in each arm 298 (0x11bed0 8), the bsp index
+// read once into a short local 297 (0x11bed0 5), an early return for the no-bsp case 298 (0x11bed0 still matches, still expanded
+// here), the arms swapped 311 (0x11bed0 90 bytes), the cluster preset to NONE and set under `if` 295 (0x11bed0 76 bytes). 0x11bed0
+// restored. Still BLOCKED-BY 0x11bed0's expansion here and 0x279740's first-release expansion (its file's inline restriction).
+// M3 lane 14 r122 (fast with 0x11bed0, 0x14a280 and 0x29b990, all MATCH; control 298): the found flag carried by the loop
+// condition with no break keeps 0x11bed0 out of line here (no guard): `!local_0 && local_13 < local_6` 358 (2043 B),
+// `local_13 < local_6 && !local_0` 311 (2047 B); with the k-cleared planar copy and the sample-end copy 370 (2022 B) and
+// 310 (2026 B), the exit then tests after the increment where retail breaks before it. Diagnostic (an always-true guard,
+// not keepable): planar, sample-end copy and `if (arg_11)` around the 0x11bed0 call 324 at 2030 B, first difference
+// +0x54; what is left is mostly 0x279740's first-release expansion (53 bytes) and scratch-register rotation.
+// M3 lane 1 r129 (fast with 0x11bed0, 0x11be90, 0x14a280, 0x1d43d0 and 0x279740, all matched throughout, and 0x21a100 93;
+// control 298, aligned 144/136 = unmatched instructions ours/retail, masked 67/59; body unchanged). Lane 9 r142's
+// always-true guard keeps 0x11bed0 out of line, so natural spellings that put its call one level deeper were tried:
+// the rest of the loop body after the query under `if (!local_12.found) { ... }` in place of the `continue` 298, the
+// same for the ray test 298, both 298 (same code each: the nesting leaves the flow graph as it was, so the link-time
+// expansion does not move); the loop ended through its condition (`local_13 < local_6 && !local_0`, no break) 311
+// (2047 B, first difference +0xd: the result lives in memory and is tested at the loop top); the tail as
+// `if (cluster != NONE) { local_0 = true; break; }` 513 (2114 B, first difference +0x8). Still BLOCKED-BY 0x11bed0's
+// expansion here and 0x279740's first-release expansion.
+// M3 lane 13 r124 (fast with 0x21a100, 0x11bed0 and 0x14a280; 0x21a100 93 and the other two MATCH each time; control
+// 298): `inline` on 0x11bed0's own definition 298 (still expanded here; 0x127400 then expands it too, 484 -> 563); the
+// planar copy as the full table entry with normalize2d_fast on its first two members 369 (2132 B, a repeat of the
+// listed vector3f local); round 87's ray start copied from `*arg_11` with `arg_4` added in place 407 (2149 B on
+// today's body: the entry ESI/EDI swap and the homes stay off); the length test as `0.0001f > fabs(...)` 298 and the
+// radial height as `local_17 * 0.0f` 298 (same code each). With registers masked, what is left is the expanded
+// 0x11bed0, retail's expanded 0x279740 range check at the first release, the second length test and that ray copy.
+// M3 lane 4 r230 (fast, faithful here; base 298, difflib-aligned 205, register/offset-masked 108). Kept: the table entry
+// copied whole as a vector3f (retail copies three dwords at 0x1d4c97-0x1d4cb9) and normalised through normalize2d_fast
+// on its planar part, without the explicit `fabs(local_16) < 0.0001f` test (normalize2d_fast already returns 0 below
+// that length, and the `local_16 == 0.0f` test then continues): 268 (2085 B, retail's 486 instructions, masked 93; the
+// loop head and the single reciprocal are retail's). Tried: the upper bounds written `local_4 + arg_3->x` 298 (same code);
+// the copy with k cleared through normalize3d 323 (2094 B, masked 100), with vector3f_scale for the arg_6 scale 323,
+// with the commuted upper bounds 323; on 268: the radial as `local_17 * 0.0f` 268 (same code); the ray start copied from
+// `*arg_11` and moved by `+=` 350, the arg_6 test as `0.0f < arg_6` 268 (same code), through vector3f_add (either operand order) 350/350 (2111 B; the ray copy then sits at
+// retail's +0x1c and the direction block's homes become retail's +0x2c/+0x44/+0x48, masked 92, but arg_9/arg_10 and the
+// loop's table pointer swap ESI/EDI against retail). Left: retail's square order i then j in the planar length (ours j
+// first), its zero register reused for the radial product (ours reads 0.0f from memory), the 0x11bed0 expansion here and
+// retail's expanded 0x279740 range check at the first release.
+// M3 lane 1 r136 (fast with 0x11bed0, 0x14a280 and 0xc5460, all MATCH; 0x21a100 93 throughout; control 268): the always-true
+// `if (arg_11)` guard (diagnostic, 0x11bed0 then out of line) on today's body 373 (2011 B: the kept planar copy fits only the
+// expanded form; arg_11 then takes EDI where retail has EBX); the two direction copies' names swapped (diagnostic for
+// name-ordered homes) 268 (same code); a typed `directions` table pointer for both copies 268 and one `direction` entry pointer
+// for both 268 (same code each); 0x11bed0 given `&local_22.position` in place of arg_11 273 (2090 B). Body unchanged.
+// M3 lane 12 r159 (fast; control 268 at 2085 B, homes +0x24/+0x48 for retail's +0x30/+0x40): the direction count
+// declared with the two optional-state locals at the top 481; the transform volume pointer declared ahead of the transform
+// 268 (same code); the presence declared inside the loop body 311 (retail's 2083 B); the found test as `if (cluster !=
+// NONE) { result = true; break; }` 485 (2076 B); a redundant `if (0 < count)` around the direction loop 373 (2011 B:
+// 0x11bed0 is then called out of line as in retail, but the entry's EBX/EDI swap and the homes stay), which confirms the
+// expansion follows the loop site's estimated frequency; no natural no-code test was found that lowers it.
+// M3 lane 3 r286 (single-address fast, control 268): the found test as the loop condition (`!local_0 && local_13 <
+// local_6`, the break dropped) 403 (2003 B), the same with the count test first 392 (2007 B); the planar ratio computed once
+// ahead of the loop 336 (2099 B); the presence cleared ahead of the translation set 268 (same code); the two transforms
+// declared at function scope 268 (same code). All restored.
+// M3 lane 8 r206 (h2m fast with 0x11bed0 and 0x14a280, both MATCH unless noted; control 268): the loop's branch structure
+// up to the 0x11bed0 call is retail's jump for jump, so the expansion (and, with it, 0x279740's range check staying out of
+// line at the first release) follows 0x11bed0's own size. Diagnostic, reverted: 0x11bed0's else arm through the existing
+// structure_leaf_cluster_get (0x11bff0, whose file restricts inlining) leaves a real call: 0x11bed0 52 (58 B), 0xbf510 88,
+// 0x21a100 86, this 335. Tried here: the direction blend through vector3f_scale and vector3f_add with the radial term in
+// the planar copy's k 282; the sample point through vector3f_add_scaled 268 (same code); `bool local_0 = false;` declared
+// first 370 (its byte moves to +0x1f); the two optional-state locals renamed (bounds_volume, bounds_body_index) 268 (same
+// homes +0x24/+0x48). The planar length's squares come j first from the shared magnitude2d (retail i first); that header
+// serves about twenty files, so it was not changed. Still BLOCKED-BY 0x11bed0's inlinability at this site.
+// Bounds through the existing component reader 268, with one cached endpoint coordinate 341.
+// Clipped bounds before stores 480, each clipped edge per axis 491, and separate lower and upper passes 491.
+// Conditional edge values 481, clipped point pair into setters 478, and setters before conditional stores 486.
+// The optional-state homes and the selective location and release expansions still differ.
+// M3 lane 1 r144 (h2m fast, control 268): the hkTransform-to-matrix copy written through a file-local inline
+// vector3d-from-havok helper (the form 0x1d08e0 uses) 268; the planar copy taken from the direction copy instead of the
+// table 268; the zero-length test ahead of the reciprocal 268; the transform copied by aggregate assignment instead of
+// set() 268 (all the same code); 0x11bed0's else arm as a call of 0x11be90 268 (a repeat: 0x11bed0 stays matched and
+// still expands here). `inline` on 0x279740's definition 427 (2177 B: both releases expand, 0x1d01c0 207). Diagnostics,
+// reverted: eight dead real_point3d_set expansions just before the 0x11bed0 call 268 (no caller-wide inline budget
+// moves the expansion); 0x279740's file without /Ob1 427 (0x1d01c0 207), the same as `inline`, so retail's single
+// expanded range check is the helper's code (round 212's reading), not an auto-inlined 0x279740.
+// M3 lane 8 r212 (h2m fast with 0x279740, 0x11bed0 and 0x14a280, all MATCH; control 268, aligned 206, register-masked 130).
+// Retail expands 0x279740's range check in only two game functions: this one's first release and matched 0x1d01c0, whose
+// file writes it through a local rigid-body release helper (component_body_release, the check written out). Diagnostic:
+// the first release through a file-local copy of that helper gives retail's release block instruction for instruction
+// (`dec; mov ax; mov ebx, 1; jne; cmp edi, 0x80061000 ...`) but 367 positional (2131 B: 0x11bed0 is still expanded here),
+// aligned 187, masked 111; with the always-true `if (arg_11)` guard as well 331 (2057 B), aligned 171, masked 70 (lead
+// diff kept outside the tree). Tried: the first release under `do { } while (0)` 268 (same code, still a call); on the
+// helper form, the code after the query nested under `if (!found)` 367 (same code, 0x11bed0 still expanded), the direction
+// count as `arg_8 ? 27 : 18` 448 (2119 B), the helper forceinline 367 (same code). Diagnostics: the 0x11bed0 call removed
+// 382 (0x279740 still a call at both releases), the second release removed 534. So the first release's expansion is that
+// helper's code, not an inlining budget shared with 0x11bed0; what keeps 0x11bed0 out of line here is still open.
+// M3 lane 4 r242 (H2M_FAST with 0x11bed0 and 0x14a280, both MATCH each run; control 268): the planar length through the
+// existing planar_normalize of include/vector2f_normalize.h 268, with the radial as `local_17 * 0.0f` 268 (the same code
+// as normalize2d_fast, address-normalised listing identical); the transform's position copied from `*arg_11` (the values
+// the translation was set from) 305 (2072 B); the ray's difference taken from `arg_9` instead of its copy 315 (2074 B);
+// the ray end as a brace initialiser 268 (same code). Diagnostic, restored: magnitude2d's sum written j first 268.
+// M3 lane 15 r126 (h2m fast with 0x11bed0 and 0x14a280, both MATCH; control 268): the code after the query nested under
+// `if (!found)` instead of its `continue` 268, and also under `if (!ray_blocked)` 268 (two written levels, the same code:
+// 0x11bed0 stays expanded, so written nesting alone does not move this call); the call and the found assignment under
+// `if (!local_0)` (always true there, as retail's `&& !local_0` in the bounded test is) 360 (2023 B: 0x11bed0 out of
+// line, entry roles still EBX/EDI swapped and the two optional-state homes at +0x24/+0x48 for retail's +0x30/+0x40); the
+// call alone under it 367 (2028 B); with the break inside it 375 (2019 B).
+// M3 lane 8 r218 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH unless noted; control 268). Reading: retail
+// calls 0x11bed0 out of line at all 46 of its call sites (a raw call scan of retail matches the 46 calls in src); this build
+// expands it at the two loop sites only, here and 0x21a100 (whose `if (audible == 1)` loop call is a call in retail), while
+// matched 0x125920 keeps the same loop shape's call out of line. Tried: the exclusion index as a ternary with NONE 405
+// (2101 B); the sample rows written point first 268 (same code); a local location filled by 0x11bed0, copied to arg_5 and
+// tested (0x125920's shape) 311 (0x11bed0 still expanded); re-measured: the rest under `if (!local_12.found)` 268 (same
+// code), the call under the always-true `if (!local_0)` 360. Diagnostic, reverted: `/Ob1` on 0x11bed0's file 373 (a call
+// here, 0x21a100 156), but matched 0x11bed0 19 and 0x14a280 14. Still BLOCKED-BY 0x11bed0's expansion here.
+// M3 lane 7 r211 (h2m fast with 0x11bed0, 0x14a280, 0x279740, all MATCH; control 268): the direction loop ending through
+// its condition (`local_13 < local_6 && !local_0`, no break) 392 (2007 B), with `!local_0` first 403 (2003 B); the bounds'
+// upper corner as `local_4 + arg_3->x` (all three) 268 (same code); the found flag declared at the top with the two
+// optional-state locals 370; the direction count as `arg_8 ? 27 : 18` 412 (2073 B). Still BLOCKED-BY 0x11bed0's expansion.
+// M3 lane 16 r173 (H2M_FAST with 0x11bed0, MATCH each run; control 268, aligned 206, register-masked 130): the ray end
+// as retail's copy of `*arg_11` then `local_19.x += arg_4->i;` per row (round 87's form) 350 (2111 B); with the direction
+// loop as `long local_13 = 0; if (0 < local_6) { for (; ...) }` (0x11bed0 then called out of line, as with the always-
+// true guard) 323 (2037 B, first difference +0x54: the entry registers and both optional-state homes are retail's); with
+// the first release through a file-local copy of 0x1d01c0's release helper (diagnostic) 277 at retail's 2083 B, aligned
+// 121, register-masked 42 (lead saved as build/r173/lead-1d48f0-277.patch in m3-lane16). Left on it: the bounds block's
+// upper x (retail loads x again), one SIB operand order, the planar block's x87 square order (y first here) and its
+// products' XMM numbers (retail multiplies the reciprocal by the zero register, this build by a 0.0 constant), the ray
+// end's operand orders. On it: the upper bounds written `local_4 + arg_3->x` (all three) 277; the reciprocal and the
+// radial term after the zero test, written `local_17 * 0.0f`, 277 (same code each). The keepable route for the helper
+// is moving 0x1d01c0's helper into a header both files include. Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the cluster result and the break
+// as `if (arg_5->cluster_index != NONE) { local_0 = true; break; }` 485 (2076 B); the planar test as `0.0f < arg_6` 268; the
+// transform's three rotation rows through the existing vector3f_assign 268; the reciprocal and radial term after the zero
+// test 268; the direction counter declared ahead of its loop 268 (all the same code). Reading: retail's jcc/call skeleton
+// from the loop head to the 0x11bed0 call is ours test for test, so the expansion is not the site's written tests; the
+// lane 15 r126 diagnostic (0x279740 inlinable makes 0x11bed0 a call while both releases expand) points at a per-function
+// link-time inline budget that retail's first-release expansion used up. Body unchanged; still BLOCKED-BY 0x11bed0's
+// expansion here.
+// M3 lane 5 r239 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the direction loop as
+// `long local_13 = 0; do { ... } while (++local_13 < local_6);` 328 (2071 B: the first form without a redundant guard
+// that leaves 0x11bed0 a real call here, as retail has it; the layout is not retail's); the loop test as `local_13 !=
+// local_6` 268 (same code); the do-while with the first release through a file-local copy of 0x1d01c0's release helper
+// (diagnostic) 360 (2117 B); that copy alone 367 (2131 B); the count written into the loop condition, no local, 373
+// (2085 B). Body unchanged; still BLOCKED-BY 0x11bed0's expansion here.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
@@ -379,9 +572,8 @@ bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long
   vector3f local_14 = ((vector3f const *)g_455978)[local_13];
   if (arg_6 > 0.0f)
   {
-   vector2f local_15 = *(vector2f const *)((vector3f const *)g_455978 + local_13);
-   real local_16 = normalize2d_fast(&local_15);
-   if (fabs(local_16) < 0.0001f) continue;
+   vector3f local_15 = ((vector3f const *)g_455978)[local_13];
+   real local_16 = normalize2d_fast((vector2f *)&local_15);
    real local_17 = 1.0f / local_16;
    real radial_height = 0.0f * local_17;
    if (local_16 == 0.0f) continue;

@@ -113,6 +113,20 @@ long g_5093ac;
 dword **g_407488;
 
 
+// score MATCH (was 21; fast build 24):
+// b13B (11-17) walk against retail, fast build on r846: no logic difference. Format is a word (movsx at 0x158f4),
+// the flag byte as movzx (0x158f1), the table loads (0x158fe, 0x15909), the pushes into 0x3fde00 (0x1591e-0x1592f),
+// the 0x10000 test (0x15936), the header fill (0x1597c-0x159a2) and ret 0x10 match. Caller 0x1d000 sign-extends before
+// each push (0x1d0a5-0x1d0b5) and `out` travels in ebx (0x1d0b9), so the declared types stand: no type change.
+// Left: the failure tail. Retail makes the NULL in a register (xor ecx,ecx at 0x15971, mov [ebx],ecx at 0x15976) where
+// ours stores an immediate (the 2 bytes of size). Same tail in retail 0x15b10 (0x15b4c-0x15b51). Tried, fast scores:
+// the store as `*out = texture`, a result flag or pointer, a flag branch, a store helper (24); store before the test,
+// `return *out != NULL`, the SDK's HRESULT CreateTexture (35-53, `out` then leaves ebx: ret 0x14); no store on failure
+// (23, drops retail's store at 0x15976: behaviour change, rejected).
+// b16K (11-17) fast build on r852: the tail as 0x15a60's (b16A below), the result pointer and the flag assigned in
+// both arms of one if/else, then one store and one return: 184 bytes, retail's xor ecx,ecx (0x15971) and mov [ebx],ecx
+// (0x15976); only the 3 library-call targets differ in the fast image (they differ in its 24 as well). The parameter
+// order stands: 0x1d0e0 sets ebx, al, ecx (0x1d0ec-0x1d0f3), last to first in declared order. Caller 0x14850 MATCH.
 // @retail 0x158f0
 bool function_0158f0(
 	short b,
@@ -124,15 +138,31 @@ bool function_0158f0(
 	D3DTexture **out)
 {
 	D3DTexture *texture = D3DDevice_CreateTexture2(width, height, 1, levels + 1, g_43e8a8[usage_index], (D3DFORMAT)g_450768[a][b], D3DRTYPE_TEXTURE);
+	D3DTexture *result;
+	bool created;
 	if (texture == NULL)
 	{
-		*out = NULL;
-		return false;
+		result = NULL;
+		created = false;
 	}
-	*out = texture;
-	return true;
+	else
+	{
+		result = texture;
+		created = true;
+	}
+	*out = result;
+	return created;
 }
 
+// score MATCH (was 21; fast build 24):
+// b13B (11-17) walk against retail, fast build on r846: no logic difference. The edge arrives in eax (0x159e0), the
+// format in cx (movsx at 0x159c9), usage index and levels are dword stack reads (0x159b0, 0x159d8), the cube type
+// and pushes into 0x3fde00 (0x159bd-0x159de), the header fill (0x15a2d-0x15a49) and ret 8 match. Caller 0x1d000 loads
+// eax with the sign-extended width and ecx with the format (0x1d06b, 0x1d071): no type change. Left: the failure tail
+// (xor ecx,ecx at 0x15a22, mov [ebx],ecx at 0x15a27, ours an immediate store); forms tried are listed at 0x158f0.
+// b16K (11-17) fast build on r852: the tail as 0x15a60's, the result pointer and the flag assigned in both arms of one
+// if/else, then one store and one return: 169 bytes, only the 3 library-call targets differ in the fast image. The
+// parameter order stands: 0x1d0e0 sets ebx, ecx, eax (0x1d12a-0x1d134), last to first in declared order.
 // @retail 0x159b0
 bool function_0159b0(
 	long edge,
@@ -142,50 +172,102 @@ bool function_0159b0(
 	D3DCubeTexture **out)
 {
 	D3DCubeTexture *texture = (D3DCubeTexture *)D3DDevice_CreateTexture2(edge, edge, 1, levels + 1, g_43e8a8[usage_index], (D3DFORMAT)g_450768[0][b], D3DRTYPE_CUBETEXTURE);
+	D3DCubeTexture *result;
+	bool created;
 	if (texture == NULL)
 	{
-		*out = NULL;
-		return false;
+		result = NULL;
+		created = false;
 	}
-	*out = texture;
-	return true;
+	else
+	{
+		result = texture;
+		created = true;
+	}
+	*out = result;
+	return created;
 }
 
+// score MATCH (was 21; fast build 24):
+// b13B (11-17) walk against retail, fast build on r846: no logic difference. The format arrives in ax (movsx at
+// 0x15a79), the usage index in ecx (0x15a61), width/height/depth/levels are dword stack reads (0x15a6e-0x15a93), the
+// volume type, the header fill (0x15ae2-0x15afe) and ret 0x10 match. Caller 0x1d000 loads ebx/eax/ecx at
+// 0x1d093-0x1d097: the declared order and types stand, no change. Left: the failure tail (xor ecx,ecx at 0x15ad7,
+// mov [ebx],ecx at 0x15adc, ours an immediate store); forms tried are listed at 0x158f0.
+// b16A (11-17) walk against retail, fast build on r852: two real forms, both with retail evidence. (1) Parameter order:
+// retail's caller 0x1d0e0 loads ebx, then eax (mov eax,9 at 0x1d112), then ecx (xor ecx,ecx at 0x1d117), and 0x1d000
+// does the same (mov ebx,edi 0x1d093, mov eax,ebp 0x1d095, xor ecx,ecx 0x1d097); callers set register arguments last
+// to first in declared order, so usage_index (ecx) is declared before the format (eax); the stack words and the
+// callee's bytes are unchanged, both callers and the declaration in unknown_01cf50.cpp follow. (2) The tail: retail
+// keeps the NULL pointer and the false flag as two values (xor ecx,ecx 0x15ad7, xor al,al 0x15ada, mov [ebx],ecx
+// 0x15adc) stored/returned once after an if/else pair, which gives 174 bytes with only the 3 library-call targets
+// differing in the fast image (they differ in the 24 as well). Tried: `*out = texture` in the failure branch, success
+// branch first (24), flag set inside the test (24), result and flag preset then overridden (31), `return *out != NULL`,
+// ternary store (47), bool from the compare then null the pointer (35), flag + store (41); `out` leaves ebx in those.
+// 0x158f0, 0x159b0 and 0x15b10 share this tail and were not touched (out of this pair's scope): lead for them.
 // @retail 0x15a60
 bool function_015a60(
+	long usage_index,
 	short a,
 	long width,
 	long height,
 	long depth,
 	long levels,
-	long usage_index,
 	D3DVolumeTexture **out)
 {
 	D3DVolumeTexture *texture = (D3DVolumeTexture *)D3DDevice_CreateTexture2(width, height, depth, levels + 1, g_43e8a8[usage_index], (D3DFORMAT)g_450768[0][a], D3DRTYPE_VOLUMETEXTURE);
+	D3DVolumeTexture *result;
+	bool created;
 	if (texture == NULL)
 	{
-		*out = NULL;
-		return false;
+		result = NULL;
+		created = false;
 	}
-	*out = texture;
-	return true;
+	else
+	{
+		result = texture;
+		created = true;
+	}
+	*out = result;
+	return created;
 }
 
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 
+// score 99 (was 103): D3DDevice_CreatePalette2 stays a call; retail inlines it (b13A below).
+// b13A (11-17) walk against retail, fast build on r846: logic matches statement by statement. Retail inlines the SDK's
+// D3DDevice_CreatePalette2: alloc 0xc / 0x64800000 (0x15b20), size read from D3D::g_PaletteSize (0x15b2b, its only
+// reference: retail holds no out-of-line CreatePalette2), data alloc 0xb6800000 (0x15b38), free 0x24800000 (0x15b47),
+// Common = size << 30 | 0x1030001 stored before Data = ptr & 0xfffffff (0x15b63, 0x15b65), no store to Lock; `out`
+// arrives in ebx. Here the library's CreatePalette2 stays a call (103; via the IDirect3DDevice8_CreatePalette wrapper
+// 86), and writing its body out in this file as a static __forceinline helper (reading the library's
+// D3D::g_PaletteSize) gives 20 here and 0x1d3f0 76 -> 64, but DECOMPILING.md says a function that calls the public D3D
+// API must call it, so the body still calls D3DDevice_CreatePalette2; why LTCG keeps this one call out of line is open.
+// Left: retail keeps the NULL in ecx (xor ecx, ecx at 0x15b4c, mov [ebx], ecx at 0x15b51), ours does pop edi; mov
+// [ebx], 0 - the same difference 0x158f0/0x159b0/0x15a60 show with the real inlined body. With the written-out helper:
+// body in the function 25, one result variable 23, *out stored before the test 39, a local for the table read 18.
+// b16K (11-17) fast build on r852: the tail as 0x15a60's (result and flag assigned in both arms, one store and one
+// return) gives 99 (was 103); the rest is still D3DDevice_CreatePalette2 kept out of line, as above.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
 	D3DPalette **out)
 {
 	D3DPalette *palette = D3DDevice_CreatePalette2((D3DPALETTESIZE)g_43e8d8[index]);
+	D3DPalette *result;
+	bool created;
 	if (palette == NULL)
 	{
-		*out = NULL;
-		return false;
+		result = NULL;
+		created = false;
 	}
-	*out = palette;
-	return true;
+	else
+	{
+		result = palette;
+		created = true;
+	}
+	*out = result;
+	return created;
 }
 
 // @retail 0x15b70

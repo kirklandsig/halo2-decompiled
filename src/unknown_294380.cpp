@@ -109,7 +109,7 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
 // score 252 (was 252): three slot pairs swapped against retail (walk position/offset, record spill/centroid sum, object
-// spill/nearest distance), see below.
+// spill/nearest distance), see below; m3 lane 16 r179 unchanged (its lines just above the marker).
 // MiniMax C (11-11): no new form, no lower score; the fast check scores this function 280 at 3717 bytes, where the
 // note's 252 is the full build's count, and retail's dead store of zero to the speed vector's i is still missing, so
 // the walk head keeps its pad and every later slot stays off; the three-member local struct lead (274 on the fast
@@ -272,6 +272,139 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // position shares the post-walk vector's slot, ours the offset); the neighbour test as `local_26 > 0.0f && field_34 >
 // local_26` 256 [95/30]; the squared distance named once and used for the reciprocal and the separation test 281 (3717
 // bytes) [106/38]; the nearest point copied before its distance 255 [91/27].
+// M3 lane 3 r255 (plain with 0x293b30, which stays matched; with offsets masked and registers kept only 22 hunks differ, so
+// nearly all of 252 is the three swapped slot pairs): the centroid scaled in place by vector3f_scale and taken from the sum
+// 455 (3712 B); the sum's adds written position-first 252 (same code); the first 3.0 clamp after 0x295600 through
+// function_294b56 with the still-zero total 252 (same code: the zero folds, so retail's lone clamp is that helper too);
+// the nearest distance and point declared before the sum 252 (same code); the sum through vector3f_add 533 (3725 B).
+// m3 lane 5 r192 (plain with 0x293b30/0x293d30/0x294050/0x295600, all unchanged; control 252, aligned 90, masked 25): the
+// centroid sum typed as a vector (no casts) 252, the post-walk vector and its scalar in a block ending after the waypoint
+// step 252, the nearest test as `local_26 < local_10` 252, the scalar declared at the top uninitialised 252 (all the same code:
+// neither scope nor type moves the swapped slot pairs); the half radius computed where the cohesion arm uses it 500 (3703 B);
+// the walk test as `cos(...) < dot` 628; the steer flag's declaration moved to the top 772 (3730 B); the path step's maximum
+// declared just before the 0x294050 call 726 (3718 B); the strength total declared after the walk 785 (3731 B). Body unchanged.
+// M3 lane 9 r133 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched throughout; control 252): the early exit as two
+// returns (parent, then member) 252; the neighbour count declared ahead of the nearest distance and point 252; the self test
+// on the iterator's flock pointer (`local_21 != (s_flock_object *)local_2`) 252; the walk iterator brace-initialised from the
+// record's head 252 (all four identical code: declaration order does not move the object/nearest or record/sum spill
+// pairs); the walk guarded by the head as well (`field_34 > 0 && head != NONE`) 721 (3731 B). Body unchanged.
+// m3 lane 13 r109 (fast screens, which carry the "builds differently" caveat (control 280 fast, 252 plain); plain for the one
+// that changed code in the right place): the object lookup declared ahead of the record lookup 813 fast (3736 B); the nearest
+// distance declared ahead of the centroid sum 280 fast and the post-walk vector declared before the walk 280 fast (both the
+// same code); the inline steering helper's second dot written vector-first (`dot3f(arg_1, &previous)`) 455 plain (3712 B,
+// 462 fast): it gives retail's `mulss xmm3, [ebx + 0x28]` at the first call site (the i product taking the vector's register
+// as destination ahead of the j and k products), but not at the second (after 0x294050), and the rest shifts; both dots
+// vector-first 462 fast (the first dot's code does not change). Lead: retail's second dot at both sites multiplies the
+// vector's i register in place before the other products; ours loads the stored i and multiplies after the first add.
+// m3 lane 10 r121 (a one-object LTCG screen linked with the callees' real objects, build/r121/lt294.sh: it reproduces this build's
+// frame and prints each home by name, 1.2 s a variant; plain where marked): the frame is ordered by references per cell (72 over
+// 12 bytes down to 9 over 48), and all three swapped pairs are exact ties in both builds: object + centroid distance, count,
+// nearest, sum and record + `3 - total` have 4 references per cell each (retail's order object, count, nearest, sum, record; ours
+// nearest, count, object, record, sum), and the walk's position and offset 10 each (the post-walk vector shares with one of them).
+// The tie order did not move for: sum/nearest/count declared at the top in all six orders; their first assignments in five
+// orders; either walk vector or both at function scope, or the post-walk vector declared first; the count raised before the sums
+// or with `+= 1`; the nearest test first with the arms swapped; the nearest point copied first; the object through its accessor in
+// the early part; the record re-derived at the 0x294050 call; `3 - total` or the reciprocal unnamed; no neighbour alias; the
+// waypoint record read without a pointer; a named squared distance; the alignment weight written out; the centroid scaled in
+// place; the two later distances as one variable; a separate cohesion strength; the speed vector stored first; both 0x2949aa
+// dots swapped (576 combinations of these: same homes in every one). It moves only when the set of variables that have homes
+// changes: the wander, path and waypoint strengths as three named locals (they share the old slot) give retail's object, count,
+// nearest order (plain 280, as r102 found); on that, one variable for the walk's position and the post-walk vector puts the
+// position/offset homes right too (7 of 8 homes in the screen) but drops four instructions: plain 623 (3693 B, aligned 100
+// against this body's 90). No form found for the record/sum pair (diagnostic: one extra read of the sum puts the record at 0x84
+// and adds code). Compile-only synthetic functions: equal-count spill homes are laid out in order of first load, address-taken
+// locals in order of last use, and neither declaration nor first-assignment order moves them.
+// M3 lane 16 r144 (fast, control 280 at 3717 B; 0x293d30 reads DIFF in every fast image here, control included):
+// unused initialised locals at the top (diagnostic only) 1-7: 301 (3718 B)/300/543/535/270/466/462, the 270 with one
+// more aligned difference than the control. The separation radius squared named for the test and the reciprocal 685
+// (3708 B); the neighbour's position summed before the alignment and separation terms 630 (3712 B); the neighbour view
+// alias dropped (cast at its two uses) 462; the alignment weight written reciprocal-first 280 (same code); the
+// alignment total accumulated before its weighted forward 682 (3720 B). Body unchanged.
+// M3 lane 16 r146 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all matched each time; screens with lane 10's
+// one-object frame screen copied to build/r146): the 0x293d30 strength (an output only: that callee zeroes it first) as
+// its own named local, alone 356 (3723 B), with the path strength 397 (3722 B), with wander and path 280 (3716 B), with
+// path and waypoint 280 (3716 B); all four strengths named and the shared scalar dropped 280 (3716 B). Screen: any three
+// or four of the strengths named give retail's object, count, nearest homes, any one or two do not; the pool record still
+// sits below the centroid sum and the walk's offset (not its position) shares the post-walk vector's slot in every one,
+// also with `3 - total` or the reciprocal unnamed, the scaled centre written per component, the sum assigned after its
+// declaration or added through a pointer, and with 1-10 unused locals (no home moves). Body unchanged.
+// M3 lane 5 r218 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all matched each time; control 252; [aligned, masked] =
+// difflib counts with addresses masked / registers and stack offsets masked too): 0x294669's scale taken as `real const &` (each
+// row reads the caller's strength from its home) 469 at 3712 B [101, 33]; the four strengths named with the centroid scaled in
+// place 270 at 3716 B [88, 30]; the four strengths named with the reference scale 453 at 3717 B [97, 36]; the four strengths
+// named with the request's speed vector stored ahead of its forward vector 276 [100, 41]; the reference scale with the speed
+// vector stored first 469 at 3712 B. Slot reference counts recounted from both listings: the object spill, the count, the nearest
+// distance, each centroid cell and the record spill have four references a cell in retail and here, so the three pairs are ties in
+// the emitted code too. Body unchanged.
+// m3 lane 13 r132 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched; screens with a one-object build compared
+// against retail, build/r132/scr.py, counting aligned differing lines with stack offsets masked, 47 on this body): the scaled
+// centre written per component in the scale helper's operand pattern (s*x, y*s, z*s) 259; the nearest fallback's strength as a
+// named local 266 (3718 B). Screen only: the centre's components all vector-first 46; divided by the count 47 (804 instructions,
+// the dead store goes); the sum's y and z read into named locals first 41 (804); the centre and its difference as one
+// expression per component 66; the reciprocal passed unnamed 41 (804). Diagnostic (not kept): 0 to 8 extra referenced locals
+// give 47/63/65/47/47/46/43/41/47, period 8 and the same wherever they are declared, homes unchanged in each; naming or
+// un-naming a value only moves that phase, and none of the eight phases has retail's operand sides at the walk's alignment i
+// term, the second 0x2949aa site and the scaled centre together. Frame study on synthetic functions: in a frame over 128 bytes
+// equal-weight homes are permuted by a rule that takes in every home's reference count (deleting the waypoint step here flips
+// local_13/local_14 and local_32/local_16), and neither declaration order nor the order addresses are taken moves a home, so
+// the three swapped pairs follow the whole set of homes and their counts, not the tied locals themselves.
+// M3 lane 4 r239 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, MATCH each time; control 252; a one-file frame screen
+// first, build/r239/lt294.sh): the walk's neighbour position (declared at function scope) reused for the scaled centroid 455
+// (3712 B); the nearest point reused for the scaled centroid 455 (3712 B); the centroid scaled into the post-walk vector and
+// differenced in place 455 (3712 B, the listed in-place code); three strengths named with the nearest point reused 270 (3716 B);
+// one variable for the walk's position and the post-walk vector declared just before the walk 607 (3690 B). Screen only: that
+// shared vector declared at twelve places from the function's top to the walk, 844/845 instructions each (its earlier first
+// reference flips the scale helper's product operands, so retail's position is its own variable that only shares the slot);
+// whole-word renames of the record, object, count, nearest and sum locals to sort first or last, nine forms, every home
+// unchanged. Frame-order study (compile-only synthetic functions, 468 layouts, all reproduced by build/r239/model/zmodel.py): a
+// frame over 128 bytes is a stable sort of its homes by references per cell from a base order of last use, and ties are then
+// permuted by a fixed recursion (m = (lo + hi) / 2, the element at m swapped to the front of its equal run, both sides
+// recursed), so a tie follows every other home's count and place and never a name or a declaration. On this frame that model
+// gives every tie group from last-use order except the five 4-reference cells, whose base order here is record, nearest,
+// count, object, sum (record, object, count, nearest, sum with three strengths named); retail's layout needs sum, object,
+// count, nearest, record. What orders register spill homes against address-taken locals in that base list is not found.
+// M3 lane 2 r135 (a one-object frame screen, lane 4 r239's kit, printing each home by name; identical code is scored by
+// identity): the 3.0 guard moved inside the clamp helper 0x294b56 with the callers' guards dropped 252 (identical code:
+// the jumps thread); the flock-flag test as `(flags & 0x10) == 0` 252 (identical code); the speed vector and the steering
+// direction as one two-member local aggregate, +2 instructions (the direction then lives in memory, frame 0xdc kept);
+// 0x2949aa taking the wander state member instead of the record, +5 instructions; 0x2949aa taking the steering vector by
+// value, +9 instructions. Slot map read off the listing: retail and this build agree at every frame offset except the three
+// pairs (retail's walk position, not the offset, shares the post-walk vector's slot); on the three-strengths form the
+// four-reference group reads object, count, nearest, record, sum (retail object, count, nearest, sum, record), and lane 4's
+// tie model reaches retail's group from no input order with that home set. Body unchanged.
+// M3 lane 8 r223 (h2m fast, control 280 at 3717 B; the plain build stays 252): the neighbour count as `long` 526 (3716 B);
+// compare sides swapped at the nearest-distance test (`local_26 < local_10`) 280, at the cone test (cosine on the left)
+// 638 (3716 B), at the radius test (`local_26 < radius && 0.0f < local_26`) 280, at the separation test (squared
+// distance on the left) 280 (same code where 280). Body unchanged.
+// M3 lane 12 r176 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; control 252, aligned 90, masked 32;
+// operand-side sites read from both listings: the field_70 product, the k/j/i preload before 0x295600, the xmm0/xmm3 reload
+// after 0xb75a0, the second dot of both 0x2949aa copies, the scaled centre's y/z and the nearest fallback's i row): the
+// helper's second dot as `dot3f(arg_1, &previous)` 455 (3712 B, aligned 84, masked 26: the first copy's dot becomes retail's
+// `mulss xmm3, [ebx + 0x28]`, the second copy's stays a fresh load); on it the add-scaled helper's i row as `v * s`, its j
+// and k rows as `s * v`, and the first dot swapped as well, 462 fast each (same code). Diagnostic (removed): 1-7 initialised
+// dead locals on the swapped form move the first copy, the second copy (right at 5 and 6) and the field_70 product (right
+// at 5) but never the preload, the reload, the centre or the fallback row. Body unchanged.
+// M3 lane 6 r231 (plain with 0x293b30, MATCH each time; control 252): the nearest-distance arm first under the negated
+// radius test 252 (identical code); the walk's member pointer declared in the `while` condition 252 (identical code); the
+// separation total accumulated before its scaled offset is added 655 (3719 B); the two k clears as one chained assignment
+// 254; 0x2949aa reading through a pointer to the member's wander state 583 (3734 B). Body unchanged.
+// M3 lane 16 r179 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; the fast image builds this body at 280,
+// so fast only screened): the walk radius read into a named local at its five uses, fast 780 (3744 B); the centroid
+// block's inner and outer limits named, fast 543 (3719 B); the walk's separation limit named, fast 685 (3708 B); the
+// object's forward through a named pointer at its three reads, fast 630 (3709 B). Lead (statement order, match-only):
+// the request's second vector assigned before its forward, plain 248 (fast 276): the tail stores then follow retail's
+// order. Body unchanged.
+// M3 lane 6 r235 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; control 252, aligned 90, masked 25;
+// the fast image builds this body at 280): one, two and three redundant pairs around the half radius product 252 each,
+// one pair around the centroid block's strength product 252 (same code each: these pairs move no operand side here);
+// lane 12 r176's `dot3f(arg_1, &previous)` with one pair 455 (3712 B, the pair inert); the speed vector declared without
+// its `*g_4687a4` initialiser 797 (3683 B: the copy is not dead code here) and as `{ 0.0f, 0.0f, 0.0f }` with the three
+// zero stores dropped 797 (3683 B). Body unchanged.
+// M3 lane 2 r143 (h2m fast with 0x293b30, 0x293d30, 0x294050 and 0x295600; this body builds at 280 there, 252 plain,
+// so equal scores were compared listing by listing): the final nearest test as `local_10 < 3.402823466e38f` 280 (same
+// code); the count incremented ahead of the three centroid sums 281; the sums written `local_9.x = local_24.x +
+// local_9.x` 280 (same code); the nearest arm storing the point before the distance 283; the centroid test as `local_15
+// != 0` 280 (`je` for `jle`, otherwise the same code). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

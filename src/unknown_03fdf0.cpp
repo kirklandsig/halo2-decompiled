@@ -155,6 +155,11 @@ bool function_c17f0(long light_index, s_light_shape_ab *shape, bool respect_engi
 void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale);
 
+/* Retail keeps `first` in a frame slot of its own (shared later with the material) and gives the entry pointer the
+   dead mode parameter's home: below the loop guard the entry pointer starts ahead of the index. So the entries are
+   walked through a pointer stepped beside the counter, and the guard that repeats the loop's first test keeps the
+   pointer's start below that test (a steering form, kept for the byte match; `&entries[n]` in a plain `for` leaves
+   `first` in the mode parameter's home, two rows off). */
 // score 2 (was 2): only first's spill slot differs (retail +0x14, ours the mode parameter's home, shared with the entry cursor).
 // Earlier: count, mode and first-index homes conflict across the inline copy. Retail
 // multiplies the index into edx and clears the globals before the loop, ours
@@ -553,6 +558,101 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (entry, index, selection) 2, with `first + n` passed and no index local 2; the part loop as a forceinline helper 2 (all
 // the same code); a block pointer for the copy and the count update only, the loop still indexed, 148. Diagnostic: a use
 // of mode after first's store (a byte global written) leaves first in mode's home (126), so mode's home is free from entry.
+// Round 128 (m3 lane 9, fast): `if (!geometry) continue;` 2; the geometry call's flag as `(unknown00 & 0x1000) != 0` 2 (same
+// code); the part count hoisted into the `for` init 35; the entry read from the copy (`&g_4ba138[index]`) 147 (495 bytes);
+// the count read through the metadata view (`g_4c6b00[cache_index].count`) 2.
+// M3 lane 14 r101 (fast with 0x404b0): a named const entries base used as the copy's source and for `&entries[n]` 2; with
+// `index` computed ahead of `entry` 2; with the base named ahead of `first` 2; with `entry = entries + n` 2; the base named
+// just ahead of the `for` only 2 (all the same code: `first` keeps the mode parameter's home).
+// M3 lane 14 r104 (fast with 0x404b0): `first` renamed to the running index and stepped with `++n, ++index` (no `first + n`)
+// 163 (492 bytes: the index lives in EBP, mode on the stack); the index built in two steps (`index = first; index += n;`) 2;
+// n declared right before the `for` 2; the part context declared at the top of the entry test's body 2; material declared at
+// the function top and assigned NONE where it was declared 2 (all four the same code). Re-measured: first declared then
+// assigned with `n + first` 2.
+// M3 lane 11 r112 (fast with 0x404b0; base 2): the loop body in 0x3fdf0's spelling (failed entry test and missing geometry
+// as `continue`, `index` named ahead of `entry`) 2, the same with `entry` named first 2 (both the same code); a redundant
+// `if (0 < count)` ahead of the `for` 159 (494 B); the block's count through a `short const &` bound once and used at all
+// four reads 2 (same code); a `dword` material 2 (same code). The permuter was skipped (the round's full check took about
+// 16 minutes).
+// Round 135 (m3 lane 9, fast): the copy's destination as `g_4ba138 + first` 157 (492 bytes); one block pointer for
+// every block read (guard, copy, count update, loop) 169 (490 bytes); no index local, `first + n` written at each of
+// its six uses 114 (491 bytes); the entry as a const reference (`entry.` reads) 2 (same code); a block reference for
+// the loop's count and entries only 152. The loop's step order (n, cursor, index) is retail's; only the preheader
+// order of the cursor start and first's last read decides whether first shares the cursor's mode home.
+// M3 lane 11 r116 (fast with 0x404b0; base 2): a named `long count` in the block for the copy size and the `current +=`
+// update, the loop still reading the field, 2; the copy (first, the memcpy, the current update) as an inline helper
+// returning first 218 (442 bytes, it is called), forced inline 2; that helper writing first through an out-parameter
+// (`long first; append(cache_index, &first);`) 2 (the indirection folds once inlined; first stays a spilled register
+// candidate); a `dword` mode parameter 2 (all the 2s the same code). Re-measured: the explicit cursor before the `for` 5
+// (first at +0x14 with the material and every other instruction retail's; only the cursor's two start instructions sit
+// above the loop guard). No address-taken or aggregate-member form of first had been tried before; the inlined
+// out-parameter does not keep it in memory.
+// M3 lane 15 r100 (fast with 0x404b0): the copy's operands as `&g_4ba138[current]` and `&entries[0]` 2; first assigned
+// through a bound `long &` 2; the two cleared draw records as a plain `pass = 1..2` loop 2 (unrolled); the block's entry
+// array bound by reference (`(&entries)[32]`) for the copy source and `&entries[n]` 2; `register` on first 2 (all the
+// same code: first keeps the mode parameter's home).
+// Round 103 (m3 lane 2, fast; control 2): the selection computed right after first, ahead of the copy, 170 (490 bytes);
+// the block's entry array named inside the loop body ahead of `entry` 2; an `int` loop counter 2; a `dword` counter
+// compared as `(long)n` 2 (all three the same code); the counter declared `long n = 0;` ahead of first with the `for`
+// init left empty 149 (495 bytes). Re-measured: the entry from `index - first` 2; first read from previous after the
+// count update 119.
+// M3 lane 6 r198 (fast with 0x404b0; control 2): an explicit entry cursor set before the `for` and stepped last in the
+// body 9 (first in retail's slot, the cursor start above the guard, the latch steps the cursor first); the same inside
+// its own `if (count > 0)` 9 (the guard folds, same code); the function declared `__stdcall` 2 (same code); `__cdecl` 31
+// (diagnostic: first takes its own slot shared with material as in retail, but the cursor also leaves mode's home: frame
+// 0x4c, plain `ret`); the parameters as (mode, cache_index) at the definition and the call 2; a leading unused parameter
+// (mode then a front-end stack parameter) 2 (both the same code). So the front-end convention does not decide first's slot.
+// M3 lane 12 r147 (fast with 0x404b0; control 2): the loop index declared and stepped in the `for` beside n 4 (its start
+// moves above the guard, first still in mode's home); diagnostic, the weight read ahead of the entry test 81 (first still
+// in mode's home, so the order of the induction variables' first uses does not decide it); the entry loop in a
+// forceinline helper taking (cache_index, first, selection) 2; the part context declared at the function top 2; the
+// selection in 0x40e90's spelling (`long`, NONE, then the ternary) 2 (all the 2s the same code).
+// M3 lane 7 r191 (fast with 0x404b0/0x3fdf0; control 2): an explicit entry cursor declared before the `for` and stepped in its
+// increment (`++n, ++entry`) 5 (first at +0x14 as retail; the cursor start and its spill sit above the loop guard); the
+// same cursor declared right after first, ahead of the copy, 163 (490 B); a pointer-bounded loop over the entries with the
+// index from `first + (entry - entries)` 165 (528 B); material declared at block scope after the selection and assigned
+// NONE in the loop 2; the entry as `entries + n` 2 (both the same code).
+// M3 lane 11 r127 (fast with 0x404b0, which is 186 in the reduced image either way; control 2): the copy's source named
+// as an entry cursor (after or before first), passed to the copy and stepped at the end of the loop body, 163/163 (490
+// bytes: cache_index then arrives in ECX, and 0x404b0 rises to 206); the block's entry array named as a pointer after or
+// before first, used for the copy and `&entries[n]`, 2/2; first read back from the current counter after the store 2
+// (all three 2s the same code). Retail's first and the loop cursor take different homes though their final code does
+// not overlap, so at allocation time the cursor must start before first's last read (the index start).
+// M3 lane 14 r119 (fast with 0x404b0; control 2): a `long` material index (`movzx`, then a dword compare with 0xff) 76;
+// postfix steps for n and part 2; the selection as `mode == 0 ? ~0UL : (mode == 2 ? 0x10 : 0x20)` 2; `geometry != NULL`
+// 2 (the 2s the same code). Diagnostic, restored at once: first stored to a draw record after the loop (first live
+// across the cursor's range) 36 (517 B): first then leaves mode's home, so its slot follows a range overlap, and
+// retail's preheader order (the cursor's start ahead of first's last read) is what gives that overlap without code.
+// Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 2 at every K (not a symbol-count tie).
+// M3 lane 4 r228 (fast with 0x404b0; control 2): the index start read through a `long const &` bound to first 2; the
+// index declared once ahead of the loop and assigned in the body 2; first declared `long const` 2; the entry pointer
+// declared once ahead of the loop 2; the entry pointer and the index both declared ahead of the loop 2 (all the same
+// code: first keeps the mode parameter's home). Permuter (fast, annealed, 600 s): 55 tries, none below 2.
+// M3 lane 13 r126 (fast with 0x404b0/0x3fdf0; control 2): the counter declared `long n;` ahead of first and set in the
+// `for` 2 (same code); the entries base named at the function top for the copy and `&entries[n]` 28 (cache_index then
+// arrives in EAX, first still in mode's home); the material as one ternary 76; `chosen` as a ternary 52; a `short`
+// counter 152. The permuter was skipped (the round's baseline full check took 17 minutes).
+// M3 lane 3 r279 (fast; control 2): first typed dword 2; the index as `n + first` 2; the selection a long with NONE 2; the mode
+// test as `mode == 0 ?` 2 (the four the same code); material declared with its NONE ahead of the weight read 4.
+// M3 lane 14 r127 (fast with 0x404b0; control 2): `long first = previous; current = first;` 158 (492 bytes); the selection
+// computed at the function top 165 (492 bytes); first declared at function scope and assigned in the block 2 (same code);
+// the loop counting the running index from first (`index - first < count`, entry `&entries[index - first]`) 8 (first still
+// in mode's home, the counter's zero store moves below the guard); material declared without a value ahead of first and
+// assigned NONE in the loop 2 (same code).
+// M3 lane 14 r130 (fast with 0x404b0/0x3fdf0; control 2): `first` renamed to sort first or last 2/2; `material` renamed
+// to sort first or last 2/2; the entry loop as `while (n < count) { ...; ++n; }` 2 (all the same code); as a guarded
+// `do ... while (++n < count)` 159 (492 B). Diagnostic: 0, 1, 2, 3, 4, 6, 8, 10 dead initialised longs at the top 2 each
+// (round 119 measured odd 9..39), so first's slot is no symbol-count tie at any parity.
+// M3 lane 9 r146 (fast with 0x404b0; control 2): the shape read ahead of the weight 19; the material index read ahead of
+// the shape 22; the weight read after the material lookup 23; no first local, the index from `g_4c0b78.previous + n` 142
+// (496 B: the previous count is re-read every pass); first and index typed dword 2 (same code). A multi-file LTCG screen
+// (this file's generated unit linked with the four callees' files as the full build compiled them) reproduces the real
+// slots exactly (material alone at the frame's second cell, first and the entry cursor in the mode home; the explicit
+// cursor moves first as in the real build). In it 191 random combinations of ten same-code spellings (first by chain
+// or current-then-first, dword/long selection, pre/post increment, n or material declared ahead, `&entries[n]` or
+// `entries + n`, `first + n` or `n + first`, the index ahead of, after or inside the entry test) all keep first in the
+// mode home, and so do the guard as `>= 1`, the loop test reversed, `current = first + count` and the selection ahead of
+// the copy (each other code). Only a later read of first (diagnostic) moves it. All restored.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
@@ -570,33 +670,37 @@ void function_402b0(long cache_index, long mode)
         g_4c0b78.current += g_4c62f8.records.blocks[cache_index + 1].count;
         dword selection = !mode ? ~0UL : mode == 2 ? 0x10 : 0x20;
 
-        for (long n = 0; n < g_4c62f8.records.blocks[cache_index + 1].count; ++n)
+        long n = 0;
+        if (n < g_4c62f8.records.blocks[cache_index + 1].count)
         {
-            s_44940_entry const *entry = &g_4c62f8.records.blocks[cache_index + 1].entries[n];
-            long index = first + n;
-            if (entry->unknown00 & selection & 0x1fffff &&
-                entry->unknown00 & 1 && entry->unknown10[0xa] > 0 && (entry->flags & 0x1f0) == 0x1f0)
+            for (s_44940_entry const *entry = g_4c62f8.records.blocks[cache_index + 1].entries;
+                n < g_4c62f8.records.blocks[cache_index + 1].count; ++n, ++entry)
             {
-                byte weight = g_4c0b78.weights[index];
-                long shape = entry->flags & 0xf;
-                byte material_index = g_4c0b78.material_indices[(short)index];
-                long material = NONE;
-                if (material_index != 0xff)
-                    material = g_4c0b78.materials[material_index];
-                byte *geometry = (byte *)function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), false);
-                if (geometry)
+                long index = first + n;
+                if (entry->unknown00 & selection & 0x1fffff &&
+                    entry->unknown00 & 1 && entry->unknown10[0xa] > 0 && (entry->flags & 0x1f0) == 0x1f0)
                 {
-                    for (long part = 0; part < *(long *)geometry; ++part)
+                    byte weight = g_4c0b78.weights[index];
+                    long shape = entry->flags & 0xf;
+                    byte material_index = g_4c0b78.material_indices[(short)index];
+                    long material = NONE;
+                    if (material_index != 0xff)
+                        material = g_4c0b78.materials[material_index];
+                    byte *geometry = (byte *)function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), false);
+                    if (geometry)
                     {
-                        s_render_part_context context;
-                        if (function_45ce0((short)index, (byte *)&context, (short)part, (short)shape) &&
-                            function_460d0(*(dword const **)(entry->unknown10 + 4), (short)index, part))
+                        for (long part = 0; part < *(long *)geometry; ++part)
                         {
-                            long chosen = context.material;
-                            if (material != NONE)
-                                chosen = material;
-                            if (chosen != NONE)
-                                function_41040((short)index, part, 1, weight, &context, chosen, true, ~0UL, 0);
+                            s_render_part_context context;
+                            if (function_45ce0((short)index, (byte *)&context, (short)part, (short)shape) &&
+                                function_460d0(*(dword const **)(entry->unknown10 + 4), (short)index, part))
+                            {
+                                long chosen = context.material;
+                                if (material != NONE)
+                                    chosen = material;
+                                if (chosen != NONE)
+                                    function_41040((short)index, part, 1, weight, &context, chosen, true, ~0UL, 0);
+                            }
                         }
                     }
                 }

@@ -146,7 +146,7 @@ short actor_behavior_find_level(long owner_index, short type);
 void function_b7360(long object_index);
 void function_b58c0(long index, dword mask);
 void function_d0e00(long unit_index, real rate);
-void __stdcall function_1e1a00(long index, long value);
+void __stdcall function_1e1a00(long index, bool value);
 void swarm_creatures_set_object_flag(long perception_index, bool flag);
 void function_203360(long squad_index);
 

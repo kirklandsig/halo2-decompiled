@@ -34,10 +34,85 @@ bool controller_is_connected(short index);
 void player_slot_get_profile(long index, s_player_profile *profile, long *profile_index);
 long function_1249d0(short index);
 long player_slot_iterate_next(long index);
-void function_2b10a3(dword const *appearance, c_class_2b0b5e *widget, long type);
+void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type);
 void function_2b0a14(s_widget_view_2b0a *widget, short index);
 void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 
+// score 49 (was 49): retail calls the item-array constructor iterator (0x20670 with the constructor 0x2b0149, 4, 0x74)
+// where ours expands the constructor into a zeroing loop, and it forms the sign-in slot's address once and loads the slot
+// flags twice where ours loads them once; the rest is the same code, shifted.
+// M414 (11-18): placement construction of the four items in raw dword storage plus one shared slot
+// reference reached 33 (retail's constructor-iterator call; the slot address then forms before the connected test
+// and both predicates reuse one load, while retail reads the slot twice). NOT kept: raw storage + placement new only
+// steers link-time inlining of the existing constructor (coordinator review); body back at 49.
+// Automatic `s_widget_item items[4]` construction inlined the `flags = 0`
+// constructor into a zeroing loop; retail calls the array-constructor
+// Earlier 49 (was 55): retail calls the item-array constructor iterator, then loads the slot flags twice.
+// Earlier: the `s_widget_item items[4]` construction differs. Ours inlines the
+// the `s_widget_item items[4]` construction differs. Ours inlines the
+// `flags = 0` constructor into a zeroing loop; retail calls the array-constructor
+// helper 0x20670 with (constructor 0x2b0149, 4, 0x74, &items). Marking the
+// constructor `__declspec(noinline)` gives 53, but the compiler still emits a
+// per-element loop rather than the helper call. The helper choice is the front
+// end's, not reachable from the constructor or array spelling.
+// Aligned placement with a named pointer/result 236/236, direct placement 226.
+// Direct placement matches the constructor call, controller slot and four movsd copies.
+// NOT kept: one flag load is reused and shifts later offsets in the checker.
+// Shared slot layout 49, ternary status 252, conditional appearance 252, short controller 237,
+// full-width flag shifts 49. Direct placement with declared slot flags 226, split connection
+// branch 113, mixed flag views 226. Typed profile copy with ordinary construction 247.
+// end's decision for the automatic array forms tested there.
+// Placement array construction and value initialization both emit the iterator but score 242. Empty
+// initializer and array typedef 49 each; four constructor initializers 228; one constructor initializer
+// 243; direct signed-in check for live 258; separate model names 49. Placement before controller
+// initialization moves the first difference to the controller stack slot at +0x2a (236). Placement with
+// appearance memcpy 243, or 237 with the controller initialized after the array. The latter emits a
+// memcpy call where retail uses four movsd instructions.
+// Placement trials: typed array construction 226; const sign-in slot reference 33 (kept, plain);
+// native slot-head reference 33; sign-in state enum 243; connected-only state assignments 213;
+// combined sign-in bits 248; pretested controller loop 226; disconnected defaults 116;
+// aligned byte storage 216; connection-scoped slot reference 209; const slot pointer 33;
+// nullable connected slot 234.
+// Direct placement construction with the sign-in bit from the global slot 226,
+// live from the global slot 226, separate live slot view 230, connected state
+// updated to sign-in 247, shared admission test 245, false arm first 204,
+// live assigned first on admission 203, and live under its final sign-in guard 230.
+// NOT kept: the iterator prefix returns, but the flag-read block and score regress.
+// Round 140 (m3 lane 12, fast; control 49): the four items as the member array of a new aggregate (implicit constructor)
+// 256 and with an empty inline constructor 256 (the aggregate's constructor stays out of line and the iterator is called
+// from it); diagnostic, `#pragma inline_depth(0)` around the array as main's 0x253339 has, 233 (791 B): the iterator call
+// appears, so the loop is the inliner expanding the compiler's iterator (retail's file or build never expanded it), and
+// the controller's zero store then sits ahead of the pushes (the controller is declared before the array; retail stores
+// it after the call). The slot reads: a slot pointer declared after the connected flag for both tests 244 (the address
+// forms before the connected test, one load); the two flags set by plain `if` statements 252 (two loads, but the address
+// is formed twice and the flags materialise with `and al, 1`); the pointer formed inside a connected branch with nested
+// tests 262 (one load). Retail: one address, formed after the connected test, and two loads.
+// M3 lane 10 r121 (fast; control 49): the inlined iterator is a build-level cause, BLOCKED-BY 0x20670. The compiler's
+// array-constructor iterator is one shared copy, taken from the first object in link order that needs it: here
+// src/main_menu.cpp, built for size, and a size-built copy is inlined into this size-built function. Retail's copy sits at
+// 0x20670 among speed-built code and every size-built screen calls it. Diagnostics (not kept): this file's flags with
+// /Ob1 49; an array of a constructed type declared in a speed-built file that links ahead of src/main_menu.cpp makes that
+// object supply the copy, and the plain `s_widget_item items[4]` then gives retail's call, 233 at 791 bytes (a
+// speed-built supplier without SSE does the same; an SSE size-built supplier still inlines). Under that condition:
+// `items` declared ahead of `controller` 226 (the controller's zero store then follows the call as in retail); both bits
+// read through the shared slot type 226; the live bit as a signed bitfield 227; the signed-in flag address-taken 226;
+// the slot through an inline accessor returning its address 226 (one load in all four). The slot's flags dword returned
+// by value, as a 4-byte bitfield aggregate, from an inline accessor called at each read MATCHES (fast, and in a full
+// check under the condition, which lost nothing): the two aggregate copies are not merged, so the address forms once and
+// the dword is loaded twice. In the plain tree that source scores 247 (790 bytes: the iterator is still inlined and the
+// second load shifts every later line), so the body stays as it was; the source is build/r121/held-252554.patch. Needed:
+// the build takes the iterator's copy from a speed-built object (the user's decision, like a flags change).
+// M3 lane 6 r202 (fast; control 49), re-measured on today's main: `items` declared ahead of `controller` 50; round 121's
+// recipe (that order plus the slot flags dword returned by value from an inline accessor at each read) 247, the same
+// without the declaration move 246. Diagnostic, restored: with an array-construction probe appended to a speed-built file
+// that links ahead of the size-built supplier, the recipe MATCHES and without the declaration move scores 7 (the controller's
+// zero store then sits ahead of the iterator call), so both parts are needed. Still BLOCKED-BY 0x20670 (build-level).
+// Coordinator trial (Fable, 2026-11-19, full checks): linking the objects of src/unknown_0815e0.cpp and then src/team_balancing.cpp first (both
+// Coordinator trial (Fable, 2026-11-19, full checks): linking the objects of unknown_0815e0.cpp and then team_balancing.cpp first (both
+// speed-built, both use the iterator; either alone loses 0x54590) gives retail's iterator call, and with the accessor above
+// 0x252554 matches (also 0x41640, 0 lost). Nine in-place forms of the two slot reads under that link order do not match.
+// HELD: the accessor is a new steering helper (one caller, a struct copied by value), which is not kept even with a
+// match, so the link-order change is not kept either. Needed: a form without a helper that loads the slot flags twice.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {
@@ -119,10 +194,10 @@ void c_4way_signin_screen::v3()
         set_child_value6e(6, (short)live2, live);
         c_class_1a2c81 *model = find_child(7, (short)model0, false);
         if (model)
-            function_2b10a3(appearance, (c_class_2b0b5e *)model, 0);
+            function_2b10a3((c_class_2b0b5e *)model, appearance, 0);
         model = find_child(7, (short)model1, false);
         if (model)
-            function_2b10a3(appearance, (c_class_2b0b5e *)model, 1);
+            function_2b10a3((c_class_2b0b5e *)model, appearance, 1);
         c_class_1a2c81 *bitmap = find_child(8, (short)active_bitmap, false);
         if (bitmap)
             bitmap->value6e = signed_in;

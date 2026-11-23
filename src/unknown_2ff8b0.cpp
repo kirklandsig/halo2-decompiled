@@ -113,11 +113,32 @@ ELEMENTS_2D91D0(keys_300290, long);
 #define READ_3_300290(p) (((((p)[0] << 8) + (p)[1]) << 8) + (p)[2])
 #define READ_4_300290(p) (((((((p)[0] << 8) + (p)[1]) << 8) + (p)[2]) << 8) + (p)[3])
 
+inline reporter_2ff210 *reporter_2ff8b0()
+{
+	return g_48017c;
+}
+
 // runs a tree's command stream for a range of cells: commands narrow the
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
-// score 466 (was 466): Frame 0x3c versus 0x38; the two-child case takes
+// Matched (was 132): the four times-three cases (0x19..0x1c) bind each product to a
+// constant reference before copying it to the shared bound, so each product is a
+// value of its own case and the byte is read into eax and multiplied into the
+// bound's register, as in retail.
+// Before, 132 (was 197): the default case reads the error reporter through a small
+// accessor, so it is loaded before the command is pushed, as retail does.
+// Before, 197 (was 216): cases 0x23..0x25 read the
+// upper bound from the range, as retail does (it was read from the query's own
+// bounds, a different value), and the corner case adds one to each upper bound and
+// takes the corner off in a second statement (retail's inc before sub); with the
+// second change the first no longer costs a frame slot.
+// Before, 216 (was 234): cases 0x60..0x63 read the byte before stepping and
+// storing, as in 0x300290.
+// Before, 234 (was 466): each case continues the loop itself instead of breaking
+// to a shared step (the compiler merges the copies where retail has its step),
+// and the second bound test of cases 0x23..0x25 reads its bounds again.
+// Before, 466 (was 466): Frame 0x3c versus 0x38; the two-child case takes
 // the saved-object register for a bound instead of using the argument homes.
 // Byte command 542; copy rename 466; memcpy 466; corner loop 466;
 // bounds loop 482; byte OR 515; shared bound tuple 466; positive branch 469;
@@ -184,26 +205,42 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			above = range->upper[0] - range->lower[1];
 			goto split;
 		case 0x19:
-			low = node[1] * 3;
-			high = node[2] * 3;
+			{
+				long const &scaled_low = node[1] * 3;
+				long const &scaled_high = node[2] * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[2] + range->lower[1] + range->lower[0];
 			above = range->upper[2] + range->upper[1] + range->upper[0];
 			goto split;
 		case 0x1a:
-			low = (node[1] - 0x55) * 3;
-			high = (node[2] - 0x55) * 3;
+			{
+				long const &scaled_low = (node[1] - 0x55) * 3;
+				long const &scaled_high = (node[2] - 0x55) * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[1] - range->upper[2] + range->lower[0];
 			above = range->upper[1] - range->lower[2] + range->upper[0];
 			goto split;
 		case 0x1b:
-			low = (node[1] - 0x55) * 3;
-			high = (node[2] - 0x55) * 3;
+			{
+				long const &scaled_low = (node[1] - 0x55) * 3;
+				long const &scaled_high = (node[2] - 0x55) * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[2] - range->upper[1] + range->lower[0];
 			above = range->upper[2] - range->lower[1] + range->upper[0];
 			goto split;
 		case 0x1c:
-			low = (node[1] - 0xaa) * 3;
-			high = (node[2] - 0xaa) * 3;
+			{
+				long const &scaled_low = (node[1] - 0xaa) * 3;
+				long const &scaled_high = (node[2] - 0xaa) * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[0] - range->upper[2] - range->upper[1];
 			above = range->upper[0] - range->lower[2] - range->lower[1];
 		// the range below the plane's first value goes on to the first side,
@@ -217,17 +254,19 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 				{
 					return;
 				}
-				break;
+				continue;
 			}
 			{
 				long const skip = node[-1];
-				if (below < low)
+				if (below >= low)
 				{
-					function_2ff8b0(range, node);
+					node += skip;
+					continue;
 				}
+				function_2ff8b0(range, node);
 				node += skip;
 			}
-			break;
+			continue;
 
 		// planes across one axis
 		case 0x10:
@@ -244,16 +283,16 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 				{
 					return;
 				}
-				break;
+				continue;
 			}
 			long const skip = node[-1];
 			node += skip;
 			if (along_below >= second_start)
 			{
-				break;
+				continue;
 			}
 			function_2ff8b0(range, node - skip);
-			break;
+			continue;
 		}
 
 		// one plane across an axis, the second side's start given
@@ -265,46 +304,46 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			node += 3;
 			if (range->upper[op - 0x20] <= plane)
 			{
-				break;
+				continue;
 			}
 			long const skip = node[-1];
 			long const along_below = range->lower[op - 0x20];
 			node += skip;
 			if (along_below > plane)
 			{
-				break;
+				continue;
 			}
 			function_2ff8b0(range, node - skip);
-			break;
+			continue;
 		}
 		// two planes across an axis, both sides' starts given
 		case 0x23:
 		case 0x24:
 		case 0x25:
 		{
-			low = node[1];
-			below = range->lower[op - 0x23];
+			long const low_2 = node[1];
+			long const high_2 = node[2];
+			long const below_2 = range->lower[op - 0x23];
 			long const first_skip = READ_2_300290(node + 3);
-			above = range->upper[op - 0x23];
-			high = node[2];
+			long const above_2 = range->upper[op - 0x23];
 			node += 7;
-			if (above <= high)
+			if (above_2 <= high_2)
 			{
-				if (below >= low)
+				if (below_2 >= low_2)
 				{
 					return;
 				}
 				node += first_skip;
-				break;
+				continue;
 			}
 			long const second_skip = READ_2_300290(node - 2);
 			node += second_skip;
-			if (below >= low)
+			if (below_2 >= low_2)
 			{
-				break;
+				continue;
 			}
 			function_2ff8b0(range, node - second_skip + first_skip);
-			break;
+			continue;
 		}
 		// a slab across an axis the range must touch
 		case 0x26:
@@ -319,7 +358,7 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 				return;
 			}
 			node += 3;
-			break;
+			continue;
 		// the same in the whole grid
 		case 0x29:
 		case 0x2a:
@@ -333,16 +372,16 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 				return;
 			}
 			node += 7;
-			break;
+			continue;
 		case 0x05:
 			node += node[1] + 2;
-			break;
+			continue;
 		case 0x06:
 			node += READ_2_300290(node + 1) + 3;
-			break;
+			continue;
 		case 0x07:
 			node += READ_3_300290(node + 1) + 4;
-			break;
+			continue;
 		case 0x01:
 		case 0x02:
 		case 0x03:
@@ -357,14 +396,17 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			copy.lower[0] = (lower[0] >> shift) - copy.corner[0];
 			copy.lower[1] = (lower[1] >> shift) - copy.corner[1];
 			copy.lower[2] = (lower[2] >> shift) - copy.corner[2];
-			copy.upper[0] = (upper[0] >> shift) + 1 - copy.corner[0];
-			copy.upper[1] = (upper[1] >> shift) + 1 - copy.corner[1];
-			copy.upper[2] = (upper[2] >> shift) + 1 - copy.corner[2];
+			copy.upper[0] = (upper[0] >> shift) + 1;
+			copy.upper[0] -= copy.corner[0];
+			copy.upper[1] = (upper[1] >> shift) + 1;
+			copy.upper[1] -= copy.corner[1];
+			copy.upper[2] = (upper[2] >> shift) + 1;
+			copy.upper[2] -= copy.corner[2];
 			copy.values[0] = range->values[0];
 			copy.key_base = range->key_base;
 			range = (cell_range_2ff8b0 const *)&copy;
 			node += 4;
-			break;
+			continue;
 		}
 		case 0x09:
 		{
@@ -376,7 +418,7 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			}
 			copy.key_base += delta;
 			node += 2;
-			break;
+			continue;
 		}
 		case 0x0a:
 		{
@@ -388,7 +430,7 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			}
 			copy.key_base += delta;
 			node += 3;
-			break;
+			continue;
 		}
 		case 0x0b:
 		{
@@ -400,7 +442,7 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			}
 			copy.key_base = start;
 			node += 5;
-			break;
+			continue;
 		}
 
 		// the value in the first of four slots (retail writes the slot the
@@ -409,29 +451,18 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = node[1];
+		{
+			long const byte = node[1];
 			node += 2;
-			value = copy.values[0];
-			if (range != &copy)
-			{
-				copy = *range;
-				range = (cell_range_2ff8b0 const *)&copy;
-			}
-			copy.values[0] = value;
+			copy.values[op - 0x60] = byte;
 			break;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
 		case 0x67:
 			copy.values[op - 0x64] = READ_2_300290(node + 1);
 			node += 3;
-			value = copy.values[0];
-			if (range != &copy)
-			{
-				copy = *range;
-				range = (cell_range_2ff8b0 const *)&copy;
-			}
-			copy.values[0] = value;
 			break;
 		case 0x68:
 		case 0x69:
@@ -439,17 +470,10 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 		case 0x6b:
 			copy.values[op - 0x68] = READ_4_300290(node + 1);
 			node += 5;
-			value = copy.values[0];
-			if (range != &copy)
-			{
-				copy = *range;
-				range = (cell_range_2ff8b0 const *)&copy;
-			}
-			copy.values[0] = value;
 			break;
 		default:
-			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
-			((class_2d9060 *)g_48017c->slot_1())->function_2d9060();
+			reporter_2ff8b0()->slot_1()->function_2d9000("unknown command %i\n", op);
+			((class_2d9060 *)reporter_2ff8b0()->slot_1())->function_2d9060();
 			*(long *)0 = 0;
 			return;
 		case 0x00:
@@ -473,6 +497,13 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			offset = op - 0x30;
 			goto found;
 		}
+		value = copy.values[0];
+		if (range != &copy)
+		{
+			copy = *range;
+			range = (cell_range_2ff8b0 const *)&copy;
+		}
+		copy.values[0] = value;
 	}
 found:
 	((keys_300290 *)keys)->append(range->key_base + offset);
@@ -603,24 +634,10 @@ public:
 // child cell, split the walk where the sphere spans both sides of a plane
 // (the first side by recursion), cut it off where the sphere misses a slab,
 // move the key base, or give a key to add to the list
-// score 375 (was 521): Frame 0x2c and extent 1596 agree; first +0x176
-// exchanges two reads. Loop-tail value update 537; limits first 400; limits
-// between position and extent 514; byte command 521/1608; box rename 521;
-// limit declarations first 521; paired word reads 521; axis loop 521.
-// Limits first with the loop-tail update 375, confirmed by ordinary check.
-// The latter follows the shared block at 0x3006e3; neither change adds a label.
-// One-plane radius snapshot 377; split value names 375; two-plane limits
-// first 376; all axial radii captured 213 (NOT kept: 1600 versus 1596 bytes);
-// named bounds, joined slab tests and unsigned command 375/375/375;
-// word distances 393 (1612 bytes). Original body restored.
-// Round 426: first limit read 375; first limit/radius read 374; lower
-// limit first 376; two-plane radius copy 205 (1600 bytes, NOT kept);
-// memcpy 375; signed int words 375; next_slot 376; one exit 375.
-// NOT kept: one-point gain or length beyond retail; original body restored.
-// Shared axial position 375; shared two-plane bounds 375; shared axial
-// extent 210 (1600 bytes, NOT kept: four excess bytes); nested bounds 375;
-// first distance decoded first 380; OR byte joins 496; append_copy 375;
-// mutable axial scalars 375. Original body and decoder macros restored.
+// Matched (was 3): the command byte is kept as a byte and the switch value made from it;
+// cases 0x26 and 0x29 name the radius after the position along the axis; and case 0x29's
+// first three-byte read takes its address from a named pointer. With those values defined
+// before it, the read gathers into the middle byte's register as in retail.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {
@@ -633,7 +650,8 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 	long high;
 	for (;;)
 	{
-		long const op = *node;
+		unsigned char const code = *node;
+		long const op = code;
 		switch (op)
 		{
 		// planes across two axes or three, then one
@@ -729,16 +747,17 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x21:
 		case 0x22:
 		{
-			long const along = box->centre[op - 0x20];
 			long const plane = node[1];
+			long const reach = box->radius;
+			position = box->centre[op - 0x20];
 			node += 3;
-			if (along + box->radius < plane)
+			if (position + reach < plane)
 			{
 				continue;
 			}
 			long const skip = node[-1];
 			node += skip;
-			if (along > box->radius + plane + 1)
+			if (position > reach + plane + 1)
 			{
 				continue;
 			}
@@ -750,19 +769,20 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x24:
 		case 0x25:
 		{
-			long const along = box->centre[op - 0x23];
 			long const second_low = node[1];
 			long const first_high = node[2];
+			long const along = box->centre[op - 0x23];
+			long const reach = box->radius;
 			long const first_skip = READ_2_300290(node + 3);
 			node += 7;
-			if (along + box->radius < first_high)
+			if (along + reach < first_high)
 			{
 				node += first_skip;
 				continue;
 			}
 			long const second_skip = READ_2_300290(node - 2);
 			node += second_skip;
-			if (along > box->radius + second_low)
+			if (along > reach + second_low)
 			{
 				continue;
 			}
@@ -775,11 +795,12 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x28:
 		{
 			long const along = box->centre[op - 0x26];
-			if (along + box->radius < node[1])
+			long const reach = box->radius;
+			if (along + reach < node[1])
 			{
 				return;
 			}
-			if (along > node[2] + box->radius)
+			if (along > node[2] + reach)
 			{
 				return;
 			}
@@ -792,11 +813,13 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x2b:
 		{
 			long const along = centre[op - 0x29];
-			if (radius + along < READ_3_300290(node + 1))
+			long const reach = radius;
+			unsigned char const *const first = node + 1;
+			if (reach + along < READ_3_300290(first))
 			{
 				return;
 			}
-			if (along > READ_3_300290(node + 4) + radius)
+			if (along > READ_3_300290(node + 4) + reach)
 			{
 				return;
 			}
@@ -875,9 +898,12 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = node[1];
+		{
+			long const byte = node[1];
 			node += 2;
+			copy.values[op - 0x60] = byte;
 			break;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
@@ -893,8 +919,8 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			node += 5;
 			break;
 		default:
-			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
-			((class_2d9060 *)g_48017c->slot_1())->function_2d9060();
+			reporter_2ff8b0()->slot_1()->function_2d9000("unknown command %i\n", op);
+			((class_2d9060 *)reporter_2ff8b0()->slot_1())->function_2d9060();
 			*(long *)0 = 0;
 			return;
 		case 0x00:
@@ -932,7 +958,10 @@ found:
 
 // the sphere's centre and radius in the tree's fixed-point grid, and the
 // walk of the tree from its root
-// score 65 (was 65): Frame 0x28 and extent 213 agree; first +4 exchanges
+// score 0 (was 65): matched with the node array bound by a constant reference
+// to the tree's member (retail forms its address early in esi), the keys stored
+// after it, and the box filled in field order.
+// Before, 65 (was 65): Frame 0x28 and extent 213 agree; first +4 exchanges
 // argument registers, followed by different saved registers and spill homes.
 // Tree view after publication 65; direct vector lanes 65; box declared first 65;
 // command pointer renamed 65; direct command argument 65; const helper input
@@ -950,23 +979,23 @@ found:
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {
 	tree_3008d0 const *tree = (tree_3008d0 const *)tree_;
+	unsigned char const *const &nodes = tree->nodes;
 	keys = keys_;
 	float const *sphere_centre = (float const *)sphere;
-	unsigned char const *const nodes = tree->nodes;
 	centre[0] = round_3008d0((sphere_centre[0] - tree->origin[0]) * tree->scale) - 1;
 	centre[1] = round_3008d0((sphere_centre[1] - tree->origin[1]) * tree->scale) - 1;
 	centre[2] = round_3008d0((sphere_centre[2] - tree->origin[2]) * tree->scale) - 1;
 	radius = round_3008d0(sphere_centre[3] * tree->scale);
 	cell_box_300290 box;
 	box.centre[0] = centre[0] >> 16;
-	box.radius = (radius >> 16) + 1;
 	box.centre[1] = centre[1] >> 16;
+	box.centre[2] = centre[2] >> 16;
+	box.radius = (radius >> 16) + 1;
 	box.corner[0] = 0;
 	box.corner[1] = 0;
 	box.corner[2] = 0;
 	box.key_base = 0;
 	box.values[0] = 0;
-	box.centre[2] = centre[2] >> 16;
 	box.shift = 0x10;
 	function_300290(&box, nodes);
 }

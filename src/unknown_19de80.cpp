@@ -308,16 +308,31 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax D (11-20, round 132): no new form, no lower score (390): the body is unchanged. With an ordinary result the
+// four name and team copy tails still merge into one block (691) and the volatile result keeps them apart but frames
+// 0x208 against retail's 0x204, so retail's ranking (the result in ESI, the token length in EDI, the event in EBX, the
+// remaining count in EBP, with the token re-read from its stack slot for every compare) and its token preload are not
+// reproduced here.
+// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
+// MiniMax H (11-19, round 95): no new form, no lower score (390): retail's register ranking is the result in ESI, the token
+// length in EDI, the event in EBX and the remaining count in EBP, with the token re-read from its stack slot for every
+// compare, while this build keeps the result in a volatile slot, so the constant zero takes EBP and the frame is 0x208.
+// An ordinary result does give retail's 0x204 frame and its ESI result, but it merges the name and team copy tails (691),
+// and no reordering of the four name arms avoids that merge, so the body stands.
+// MiniMax B (11-18, round 2): no new form, no lower score (390): the frame is still 0x208 against retail's 0x204 and
+// the token preload still differs; the permuter over the body (one job, --fast, 300 s) tried 24 forms and its best is
+// 384 differing instructions against the 385 baseline - one instruction, which the eight-point gate leaves out - and
+// with an ordinary result the four name and team copy tails still merge (691 at 1170 bytes), so the body stands.
+// retail clamps the copy length with `cmp remaining, length` and a conditional
+// move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
+// with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
+// and its ESI result register, but it merges the four name/team copy tails into one block, where
+// retail keeps a copy of the length and clamp in each case and shares only the copy itself.
 // MiniMax b (11-11): no new form, no lower score (390); our frame is still 0x208 against retail's 0x204, the
 // volatile result keeps our four name and team copy tails apart where retail keeps a copy of the length and
 // clamp in each case, and retail's prologue forms the first token compare with the string, the stack argument
 // and the token in the other registers.
 // MiniMax G (11-12): no new form, no lower score (390): the volatile result still keeps our four copy tails apart but frames 0x208 against retail's 0x204, and a plain result reaches that frame and retail's ESI result register only by merging the four tails into one block (691 this round); the permuter's 319 seconds over the body found nothing below its 385 baseline.
-// score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
-// move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
-// with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
-// and its ESI result register, but it merges the four name/team copy tails into one block, where
-// retail keeps a copy of the length and clamp in each case and shares only the copy itself.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // Earlier: this round confirmed the blocker is the frame: the `volatile` result keeps the
@@ -694,6 +709,288 @@ static inline bool teams_enabled_19e1c0()
 // MiniMax E (11-15): no new form, no lower score (390): the extra dword in our frame is the length temporary at +0x14
 // beside the volatile result at +0x10, and retail's first name case stores the buffer's zero word before taking its address
 // while its second case takes the address first, so retail's two copy tails stay apart where ours merge.
+// M3 lane 10 r113 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B, frame
+// 0x204 as retail): retail's result is a register (ESI, clamped with cmovle), `remaining` is EBP for the whole function and
+// the token is reloaded from its slot for each compare; the plain result enregisters the token (EDI) instead and its case
+// bodies come out identical and merge. On the plain result: the cause team read once into a local ahead of the opponent
+// scan 693 (1169 B); the scoring mode read at each use (no `mode` local) 691 (same code); the local-team value as `long` 693
+// (1169 B). On the volatile result: the cause-team local ahead of the scan 415 (1436 B); the local-team value as `long` 393
+// (1436 B). Body unchanged.
+// MiniMax I (11-16): no new form, no lower score (390): the plain result still merges the four name and team copy tails where retail keeps them apart - its first name case stores the buffer's zero word before taking its address and its second case takes the address first - and retail keeps `remaining` in EBP and reloads the token for every compare where ours keeps the token in a register; the clamps and the copy helper of the earlier rounds come to 385 at best, a gain of 5 that is below the keep bar.
+// M3 lane 12 r135 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// the volatile result makes ours hold a constant zero in EBP for the whole function (every `text[0] = 0` stores `bp`, the
+// event tests compare against EBP), the register retail gives to `remaining`; on the plain result ours sets up 0x19ea60's
+// ESI argument ahead of the first case's `text[0] = 0` (an immediate store) where retail stores the zero result register SI
+// first. Forms: the player index read into a local ahead of `text[0] = 0` in both player cases, plain/volatile 691/390; the
+// player cases passing `&text[0]`, volatile/plain 390/691 (all the same code as their bases).
+// M3 lane 13 r105 (fast with 0x19e0f0, which stays matched; control 390, plain result 691): with the plain result ours has one
+// call each to 0x19ea60, 0x19eae0 and wcslen (the name tails cross-jump into one) where retail has two, two and four; retail's
+// per-compare token reloads shift the scratch rotation so its tails differ. Forms: plain result with one `text[0] = 0;` at the
+// function's top for every case 644 (1212 B, token still EDI); that with the event teams read at each use 694 (1161 B); plain
+// result with the teams at each use and a named player pointer in the spawn-time and lives cases 667 (1196 B), with `best_score
+// <= function_1587f0(team)` too 667; the volatile result with those three together 387 (1443 B, retail's length; 3 points and a
+// one-use pointer, not kept).
+// ordinary rejection assignments 701;
+// qualified rejection assignments 437;
+// ordinary rejection-first branches 657;
+// qualified rejection-first branches 415;
+// ordinary arm-local defaults 695;
+// qualified arm-local defaults 420;
+// ordinary result with reject returns 662;
+// qualified result with reject returns 420;
+// Original body restored.
+// NOT kept: complete string-format returns 643, integer-format returns 655, all formatted returns
+// 707 with plain copy result and 458 with existing result; shared signed name/literal clamp and
+// copy with per-name lengths 557 plain or 519 with existing result; shared name clamp/copy 548;
+// shared name length/clamp/copy 596. The plain result recovers frame 0x204 but merges the name tails.
+// The entry token preload and separate length/clamp blocks still differ. Shared final copy only, with branch-local
+// length and clamp, for player names, team names, all names, or names plus fallback: existing result 422, 478, 527,
+// 539. Ordinary result 605, 569, 550, 568. Ordinary results reach frame 0x204 and shorten the body. Body restored.
+// Token preload, ordinary result and independent copy tails still differ. Capacity-initialized result
+// with zero on rejected cases, through name clamp, formats, both, or both plus engine fallback:
+// ordinary 458/701/458/458, existing qualified result 427/497/431/434.
+// m3 lane 5 r196 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): re-measured
+// without knowing they were listed, the teams-enabled helper as one `&&` return plain/volatile 736/454, as if/else arms or a
+// ternary 414/414, the ternary on the plain result 698 (the listed admission forms). New: `remaining` bound by `long const &`
+// for every use, plain/volatile 691/390; `token` bound by `word const *const &` for every use, plain 691 (all fold). Lever,
+// diagnostic only: the plain result with a `remaining > 0 &&` test in every token compare 440 (1423 B): `remaining` then
+// takes EDI and `token` is re-read from its home for every compare as in retail; the same test in the first case only 655
+// (token keeps EDI). A compile-only copy of the file (no /GL; build/r196/cc19e.py) flips already with one early `remaining`
+// use (first or second case's condition, not a later one, not a token_length or destination test): token preload above
+// `sub esp`, the first buffer zero stored from SI and retail's four wcslen, two 0x19ea60 and two 0x19eae0 calls, frame
+// 0x208 only for the opponent loop's spilled down-counter. 121 random combinations of listed spellings (clamp, teams at
+// each use, failure returns, counter/team widths, mode local, declaration order, fallback test) never move token there.
+// So retail's source weights `remaining` above `token` on the dispatch path; no natural spelling found that does.
+// AC571: Teams predicate as unsigned byte/plain byte/word/long 390/390/409/410, and each with ordinary
+// returned count 691. NOT kept: the word predicate reaches frame 0x204 at 1437 bytes but replaces the
+// retail predicate spill with a word compare and misses the token preload. Ordinary results merge name tails.
+// M3 lane 3 r259 (fast with 0x19e0f0, matched each time; control 390): every later read of `remaining` through a `long
+// const &capacity = remaining;` binding at entry, plain result 691 (1170 B, folds to the plain result), volatile result
+// 390 (same code); the two player-name cases through a two-caller forced-inline helper (clear, name call, length, clamp,
+// copy) 460 volatile (1392 B) / 691 plain; the two team-name cases through the same kind of helper 484 volatile (1368 B);
+// the spawn-time and lives `%d` prints with their failure fallback through a two-caller helper 473 volatile (1513 B).
+// The token preload and 0x204 frame with separate name lengths and clamps remain unresolved.
+// ordinary result and early player-name returns 691;
+// ordinary result and returns through cause-team name 691; ordinary result and early name returns 691;
+// ordinary result and returns through cause-team score 665;
+// existing result and early player-name returns 390;
+// existing result and returns through cause-team name 390; existing result and early name returns 390;
+// existing result and returns through cause-team score 390.
+// NOT kept: the ordinary result reaches frame 0x204 but moves farther from retail's length and merges the name tails.
+// M3 lane 16 r137 (fast with 0x19e0f0; control 390): the switch-side failure as `result = remaining;` (single exit)
+// 431 (1398 B), with a plain result 732 (1129 B); the engine's token text in its own `written` local with the fallback
+// copy in the else 391 (1450 B), with a plain result 678 (1183 B), plus the single switch-side exit 719 (1142 B).
+// Token comparisons supply the selected arm's zero count for player names,
+// team names, local scores and timers, or all tokens. Existing count storage scores
+// 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
+// ordinary count gives frame 0x204 but still merges the name producers.
+// M3 lane 6 r199 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): the four
+// name/team clamps written into `remaining` itself (`if (remaining > length) remaining = length;`, then the copy and
+// `result = remaining;`) plain 692 (1170 B), volatile 618 (1235 B); that with the token fallback clamped the same way
+// plain 686 (1176 B), volatile 626 (1226 B); the clear-and-name calls through two two-caller inline helpers (`buffer[0] = 0;`
+// then 0x19ea60 / 0x19eae0) plain 691, volatile 390 (same code each). Compile-only (no /GL) diagnostic: a store of
+// `remaining` to a probe global after the if/else chain gives retail's shape there (token re-read for every compare,
+// `remaining` in EBP, four wcslen and two calls to each name function); a store of `token` there keeps token in memory but
+// EBP then holds a constant zero. The LTCG build does not follow that screen (lane 4 r167's probe before the return 687).
+// Round 140 (m3 lane 9, fast with 0x19e0f0/0x19ea60/0x19eae0, matched each time; control 390): retail's frame cell past
+// the buffer is the teams-enabled predicate byte (ours spills it too, one cell higher, under the volatile result). On
+// the plain result the fourth callee-saved register goes to `token` (retail: `remaining`), and the compile-only
+// harness reproduces that exactly; 32 combinations of five spellings (teams read at each use, `best_score <=
+// function_1587f0(team)`, a `long` team, the first clamp as `remaining < result`, the switch-side failure as `result =
+// remaining`) never move it. Real: volatile result with the teams read at each use and the reversed compare 388 (1437
+// B); the compare with a `long` team 421; teams at use, compare, `long` team and the single switch-side exit 461; teams
+// at use with the first clamp `remaining < result` 466; the plain result with all five 652 (1211 B, tails merged).
+// M3 lane 11 r120 (a one-file LTCG harness of this file with its callees' objects; positional counts; control 396 at
+// 1437 B, plain result 416 at 1170 B with token EDI, token_length EBX, event EBP, result ESI, `remaining` on the stack):
+// plain result with the switch-side failure as `result = remaining;` 416 (1129 B, token EDI); plain result with the four
+// name clamps spelled `>`, `<`, `>=`, `<=` 407 (1353 B, token EDI); `token` as a one-pointer aggregate parameter (with
+// 0x19e0f0's pointer type to match) 416 (scalarised, same code as the plain result). Diagnostics (reverted): one to eight
+// extra uses of `remaining` inside the name cases leave token in EDI; dropping the fallback's two token uses leaves it in
+// EDI; only an entry test of `remaining` gives it EBP. So uses inside the cases weigh far less than the thirteen
+// compares on the dispatch path, and retail's token in memory needs fewer or lighter token uses on that path.
+// Standard signed minimum after a single name-length call. Player/team/all names/all
+// names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
+// with an ordinary result. NOT kept: the minimum stays out of line and needs
+// a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// First comparison before both locals 390/691; native comparison count 390/691; signed name
+// length published after the clamp 438/692; missing-index sentinel in dispatch 454/736
+// (existing result and ordinary result, respectively). The ordinary count recovers the
+// 0x204 frame while merging the name-copy paths. Token preload and capacity home still differ.
+// M3 lane 1 r125 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// `remaining` copied into a named `long capacity` used for every clamp, format and the fallback, on the plain result 691,
+// on the volatile result 390 (both the same code: the copy propagates); on the plain result the token parameter declared
+// `word const *const` 691, `long const remaining` 691, `__forceinline` on teams_enabled_19e1c0 691 (all the same code).
+// Reading (plain result): ours ranks result ESI, token EDI, token_length EBX, event EBP and leaves `remaining` in its home;
+// retail ranks result ESI, token_length EDI, event EBX, `remaining` EBP and reloads the token for each compare, whose
+// rotating reload temps are what keep its name/team tails from cross-jumping.
+// M3 lane 14 r117 (fast with 0x19e0f0, 0x19ea60, 0x19eae0, matched throughout; control 390, plain result 691 at 1170 B:
+// result ESI, token EDI, token_length EBX, event EBP, `remaining` on the stack, where retail has event EBX, token_length
+// EDI, remaining EBP and token on the stack). New: the plain result with an entry `__assume(remaining >= 0)`
+// (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
+// code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
+// volatile result (1432 B). Body unchanged.
+// M3 lane 2 r113 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, aligned/masked in brackets):
+// combinations of listed partial forms: the event teams read at each use with every clamp as `result = remaining <= result
+// ? remaining : result` (retail's cmp/cmovle order) 425 (1457 B) [209/120]; that with `best_score <= function_1587f0(team)`
+// 425 [207/119]; the plain result with those two and the switch-side failure as `result = remaining` 701 (1161 B)
+// [183/131]; the ternary clamps with `best_score <=` 415 (1446 B) [212/124]; teams at each use, `best_score <=` and the
+// switch-side `result = remaining` 431 (1398 B) [205/119]. Reading (retail): the token is never held in a register (a
+// scratch reload per compare and again for the fallback copy, the last compare's reload landing in ESI), `remaining` holds
+// EBP from the entry, the team cases jump to the shared return when the team is NONE and re-read it for the call.
+// Shared integer format call for the two local-player tokens, lives and the side timer,
+// all three, or all three with a direct normalized return. Existing result 450/488/522/471.
+// Ordinary result 682/702/746/694.
+// NOT kept: the ordinary result gets frame 0x204 and merges the name paths. The other
+// forms still reserve 0x208. None recovers the token preload.
+// M3 lane 13 r119 (fast with 0x19e0f0; control 390): the plain result with `remaining` renamed through a `long const &`
+// local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
+// plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before
+// the allocator weighs token against remaining.
+// Zero-result terminators for player names, team names, scores, or all 467/413/433/487.
+// Ordinary result for player, team, score, or cause names 691/691/691/691.
+// NOT kept: the team-name form reaches retail length but keeps the 0x208 frame.
+// Ordinary results recover the 0x204 frame and merge the name-copy tails.
+// M3 lane 7 r195 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched unless said; control 390, plain result 691): parameter
+// names as the tie-break on the plain result (`token` as string / a / z / name, `remaining` as a / z / count /
+// maximum_length / buffer_size, 8 builds) 691 each (same code: names do not move the registers); 0x19e0f0 calling this
+// function directly, volatile / plain result 449 / 663 (0x19e0f0 9 / 10: LTCG then takes the token length in EAX, keeps
+// the token in EBP and re-reads the event from its slot at every use, the per-use reload retail shows for the token);
+// the token as a by-value one-pointer class-type parameter (it has a constructor), plain result 691 (scalarised, the same code; 0x19e0f0
+// 54); the `register` keyword on `remaining` 691 (ignored). Diagnostic (reverted): the opponent scan removed, or without
+// its event read, moves the event to EDI and the token to EBP on the plain result, `remaining` still in memory: with the
+// scan's read the event takes the last register (EBP) and without it the first (EDI), so the registers go out lowest
+// weight first, and retail's order (token length EDI, event EBX, `remaining` EBP) puts `remaining` above the event,
+// which has the scan's loop read. No natural form found that weighs `remaining` that high.
+// M3 lane 4 r234 (fast with 0x19e0f0/0x19ea60/0x19eae0; control 390, plain result 691): the parameters in the caller's
+// setup order (token, destination, remaining, token_length, event) with a direct call from 0x19e0f0 449 (1477 B: LTCG
+// then passes token_length in EAX and token in ECX, the two heaviest values in our body, so the register parameters
+// follow the body's ranking and retail's ECX/EDX pair means event and token_length outrank token there; 0x19e0f0 8);
+// every NONE test NONE-first 390 / 691 plain (same code); the twelve token literals as named file-scope arrays 390 / 691
+// (same code); the opponent scan's team declared ahead of best_score 390 / 691 (same code). Body unchanged.
+// Round 203 (m3 lane 8, fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// diagnostics (a volatile probe local, reverted): a read of `remaining` ahead of the first compare flips the plain result
+// to retail's homes (remaining EBP from the entry, the token preloaded into EAX and reloaded per compare) 453 (1470 B,
+// token_length EBX, event EDI spilled); the same read inside the opponent loop leaves the token in EDI 708 (1157 B), so loop
+// weight is not the lever, only an entry-block reference is. Natural entry references, each with its own test: `if
+// (remaining <= 0) return 0;` at the top on the plain result 473 (1392 B, remaining EBP as retail), on the volatile result
+// 428 (1436 B); `remaining > 0 &&` leading the first compare (plain) 479 (1487 B). The first player case clearing its
+// buffer with the zero result (`text[0] = (word)result;`, retail's SI store) on the plain result 691 (same code: the zero
+// propagates), with the early return 473. Body unchanged.
+// M3 lane 14 r129 (fast with 0x19e0f0, which stays matched; control 390, plain result 691): the plain result with a
+// redundant `result = 0;` at the top of the first name case 691 (same code); `token_length` typed `unsigned long` (with the
+// caller's pointer type) on the volatile/plain result 390/691 (same code each); an entry `if (remaining <= 0) return 0;`
+// (diagnostic: it adds a test retail lacks) on the plain result 473 (1392 B: `remaining` in EBP and the token re-read from
+// its slot for every compare as in retail, token_length EBX and event EDI spilled where retail has EDI/EBX), on the
+// volatile result 428 (1436 B).
+// M3 lane 2 r122 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B). Reading:
+// both builds hand out ESI, EDI, EBX, EBP in rank order; ours ranks result, token, token length, event, retail result, token
+// length, event, `remaining`: the same order with the token left out. Every callee's convention agrees (0x1587f0 takes its team
+// in EDI in both). On the plain result: the token read through its own address (`word const *const *reference = &token;`) at
+// the virtual call, at the fallback copy, at both, or at the first compare 691 each (same code: the reference folds away, so it
+// does not take the token out of the ranking); the four name copies through a file-local inline bounded copy 691 (same code);
+// the "%s" formats through a file-local inline bounded format 594 (1269 B, token still EDI); both helpers 594.
+// M3 lane 2 r124 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result re-measured 691 at
+// 1170 B: token EDI, token length EBX, event EBP, result ESI, `remaining` in memory). Loop shapes of the opponent scan,
+// untried above (a bottom-tested helper loop is what moved the register ranking in 0x2689d0): on the plain result, `long
+// team` with `do { ... } while (++team < 8);` 688 (1172 B), a `short` team with that loop 691 (same code as the plain
+// result), `long team` with `team++` inside the body 688; on this body, a `short` team bottom-tested 390 (same code), `long
+// team` bottom-tested 421 (1424 B). The token keeps EDI in all five, so the scan's shape does not decide the ranking.
+// Fallback copy bound computed at entry, defaulting to token length or capacity in
+// branches or ternaries: ordinary result 669/480/669/669, existing qualified result
+// 563 each. NOT kept: the early bound adds a stack slot, growing the frame to 0x20c.
+// The token is still loaded after the prologue and the 0x204 frame remains unresolved.
+// M3 lane 4 r239 (fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH unless said; control 390, plain result 691 at 1170 B): `token`
+// and `destination` as one by-value two-pointer aggregate parameter (the caller builds it, same stack layout) plain 691,
+// volatile 390 (same code each: the aggregate is scalarised); the three stack parameters as one by-value aggregate plain 691
+// (same code, 0x19e0f0 then differs); the twelve compares through an inline predicate taking `&token` plain 691 (folded).
+// Diagnostics (reverted): every failure tail made unique so that no two arms can share code, plain 717 (1669 B: the token
+// still takes EDI and `remaining` stays on the stack with about 27 unshared uses, so shared tails are not what keeps it
+// there); a volatile token parameter with the plain result 469 (1386 B: result ESI, token length EDI, event EBX and the token
+// preload as retail, but the fourth register goes to a hoisted zero and `remaining` still stays on the stack). So retail's
+// `remaining` outranks both the token and the zero constant, which only a reference on the dispatch path gives it here.
+// M3 lane 5 r225 (h2m fast with 0x19e0f0 MATCH; control 390, plain result 691 at 1170 B). Reading: retail's two player arms
+// do not share their copy tails because the token is re-read into the next scratch register before every compare, so each
+// arm starts at another point of the scratch rotation and the arms' rows differ in registers; with the token in a
+// callee-saved register every arm gets the same registers and the tails merge. On the plain result: the name clamps as
+// `result < remaining ? result : remaining` 691, through a named length 692, as `if (remaining <= result)` 691; `remaining`
+// copied to a capacity local at the top and used throughout 691 (same code). On the volatile result: the clamps through
+// a named length 412 (1444 B). Diagnostics on the plain result (restored): an empty inline taking `remaining`, or the
+// destination and `remaining`, called at the top 691; a discarded inline predicate on `remaining` at the top 691;
+// `remaining = remaining;` at the top 691 (same code: a reference that emits nothing does not count as the entry-block
+// reference round 203 found); the empty inline on the volatile result 390. Body unchanged.
+// Complete signed clamp assignments on both branches for player/team/all names/all plus literal fallback
+// 432/433/438/436 with the existing result, 685/684/692/694 with an ordinary result.
+// The ordinary result recovers frame 0x204 and merges the length tails. The entry token preload remains absent.
+// M3 lane 15 r129 (H2M_FAST with 0x19df10, 0x19de80, 0x19e0f0, 0x19e770, 0x19e890, all MATCH; control 390): on the plain
+// result, the five clamps as `if (remaining <= result)` 691 and as `if (remaining < result)` 691 (1170 B, both the same code
+// as the plain control); the plain result with `__assume(remaining >= 0)` as the first statement 691 (diagnostic: a
+// code-free entry reference is not a use, `remaining` stays on the stack); the plain result with the twelve compares
+// reading a `name` copy of the token 691 (the copy coalesces with the parameter); on this body the opponent loop's team
+// counter typed `long` 421 (1424 B).
+// M3 lane 7 r209 (h2m fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH; control 390). Reading: retail's player and team
+// arms end in byte-identical 13-instruction runs (wcslen, clamp, three pushes) that each jump to one shared wcsncpy
+// call, so only the call is cross-jumped; the plain result merges the whole runs. Tried: the plain result with the
+// switch-side-time error path as `result = remaining` 732 (1129 B); every format error path returning `remaining`
+// directly 439 (1416 B), with the plain result 696 (1167 B); the plain result with `return result;` after each name and
+// team copy 691 (same code as the plain result); the plain result with both team arms reading the event's team field at
+// each use (retail's `mov ecx, [ebx + 0x18]` at the call) 661 (1202 B).
+// Capacity return on formatter failure for the event-team scores, local/target
+// scores, local timers, or opponent score only, 438/432/434/389. With ordinary
+// result storage, 666/642/646/691. NOT kept: opponent-only gains one but
+// keeps the 0x208 frame. Ordinary results merge name preparation.
+// M3 lane 1 r152 (h2m fast with 0x19e0f0, MATCH each time; control 390, plain result 691): every formatter failure as
+// `result = result < 0 ? remaining : result;` 573 (1570 B), on the plain result 691; the name clamps as a named length and
+// `length < remaining ? length : remaining` on the plain result 692; the two player cases with the index in a named
+// `player_index` local 390 (same code), on the plain result 691. Reading (plain result): the merge starts at the player
+// cases' `lea esi` / zero store / 0x19ea60 call, which both cases emit in one order; retail's first player case stores the
+// zero from SI (the zero result) ahead of the `lea esi` and its second case stores an immediate after it, and the
+// following wcslen/cmovle tails take different scratch registers, so only the final copy call is shared.
+// M3 lane 5 r230 (h2m fast with 0x19e0f0, MATCH; control 390, plain result 691 at 1170 B). Reading: the plain result
+// ranks result ESI, token EDI, token length EBX, event EBP with `remaining` on the stack (retail: result ESI, token
+// length EDI, event EBX, remaining EBP, token on the stack), and its opponent loop counts down an extra EBX counter where
+// retail runs `inc edi; cmp edi, 8; jl`. On the plain result: `remaining` renamed with an `a_` prefix 691, `token`
+// renamed with a `z_` prefix 691, `long const remaining` 691, the text buffer declared ahead of the result 691 (same code
+// each: no name or declaration tie); the loop counter typed long 688 (1172 B); the score test written
+// `best_score <= score` 691, with the long counter 688. On the volatile result: `best_score <= score` 388.
+// M3 lane 6 r230 (H2M_FAST with 0x19e0f0, MATCH; control 390, plain result 691): a text buffer declared in each arm, on
+// the plain result 691 and on the kept result 390 (same code each). Diagnostics, not keepable: the plain result with
+// the token read through a volatile view of its own address at every use 469 (1386 B: result ESI, token length EDI,
+// event EBX and the per-compare token reloads as retail, but EBP goes to a hoisted zero used by the event NULL tests
+// and the `text[0]` stores, and `remaining` stays on the stack); those reads at the twelve compares only 473 (1381 B);
+// with a long team counter 469 (same ranking). Body unchanged.
+// M3 lane 8 r223 (h2m fast with 0x19e0f0, MATCH; control 390): the engine-text arm as `if (result) return result;` ahead of
+// the token copy (retail returns there with a dead `mov esi, eax`) 390 (same code), on the plain result 693 (1168 B); the
+// switch-side-time failure as `result = remaining;` on the volatile result 431 (1398 B); the text buffer declared ahead of
+// the volatile result 390; the opponent arm's mode read from the global at each of its three uses 390 (same code each).
+// M3 lane 4 r252 (H2M_FAST with 0x19e0f0, MATCH; control 390, all on the volatile result): the opponent loop counter
+// typed long 421 (1424 B), with the score test written `best_score <= score` 421 (that test alone re-measured 388); both
+// team arms reading the event's team field at each use 394; the local team typed long 393 (1436 B); the token
+// fallback's clamp as one ternary 395 (1432 B). Retail reads the token from its argument slot ahead of the prologue
+// (`mov eax, [esp + 4]` before `sub esp`), so the token is its lightest value. Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x19e0f0, MATCH; control 390, aligned 324, masked 203): the opponent test as
+// `best_score <= function_1587f0(team)` 388 (retail's `cmp esi, eax; jg`; under the bar); that with a long team counter
+// 421 (1424 B); the opponent text cleared after the scan instead of before it 408 (1432 B); the time-mode test inverted
+// with the arms swapped 390 (same code); the local player lookup as one conditional initialiser 390 (same code). Retail
+// re-reads the zero of `wcsncmp`'s result for the score-to-win buffer clear (`mov word [text], ax`).
+// M3 lane 2 r142 (H2M_FAST with 0x19e0f0, 0x19ea60 and 0x19eae0, all MATCH each run; control 390, difflib-aligned 229, 145
+// with registers and offsets masked; plain result re-measured 691 at 1170 B, aligned 232; body unchanged). Reading of
+// retail's merges, arm by arm: the four name arms are compiled apart (their scratch registers rotate: the destination in
+// EAX, ECX, EDX, EAX and the text address in EDX, EAX, ECX, EDX) and each is joined only to the token fallback's tail, the
+// first, second and fourth at its `call` and the third six instructions earlier, where its registers happen to agree;
+// the first and fourth arms end in the same 13 instructions and are still not joined to each other. Of the formatted
+// arms, #cause_team_score keeps the full tail with its own epilogue, #local_team_score, #score_to_win, #local_spawn_time,
+// #local_lives_remaining and #switch_side_time jump into it at four different depths, and #cause_team_opponent_score and
+// #local_player_score each keep a full copy with their own epilogue although their last eight instructions are that
+// tail's. With the plain result this build joins every arm whose code is identical: the second player arm jumps to the
+// first one's start, the team arms share one tail, the opponent arm's tail is copied into both of its format branches
+// and each copy joins #cause_team_score's. Tried, all on the plain result: `return result;` closing the opponent and the
+// local-player arms 704 (1160 B: those two join each other, through `cmovl eax, esi`, and leave the first score arm);
+// those two arms with their own `count` local returned 704 (same code); the switch-side failure as `result = remaining;`
+// 732 (1129 B, re-measured); that with the two returns 744 (1119 B); the four name copies through one file-local inline
+// helper (length, clamp, copy, return the length) 732 (same code as without it: instances of one helper still join);
+// each name arm with its own differently named length local, assigned to the result 732 or returned 732 (same code).
+// So neither a separate variable, a separate helper instance nor a return keeps identical arms apart here; retail's
+// arms were never identical when its merge ran, and what kept them apart is not found.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
@@ -959,9 +1256,11 @@ void function_19ea60(long player_index, word *buffer)
 	buffer[0xff] = 0;
 }
 
-/* the team's name, as the text shows it */
+/* the team's name, as the text shows it; inline because retail expands it in
+   0x1608e0's team rows (the name buffer cleared twice) while its callers here and in
+   the postgame statistics keep the call */
 // @retail 0x19eae0
-void function_19eae0(long team, word *buffer)
+inline void function_19eae0(long team, word *buffer)
 {
 	s_event_universal_globals *universal = ((s_event_globals_definition *)g_4e3b44[g_4e034c->index & 0xffff].bytes)->universal;
 	long team_names;

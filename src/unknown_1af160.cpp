@@ -155,6 +155,172 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 12 (same code); the equal-arm store's actor lookup written as the getter's expression 12 (same code: the inline getter's
 // temporary does not order the offset's home); the 0x1e4be0 result as `dword const *` 12 (same code). 0x260670 on the
 // bool output's chain is still 440 at 3097 bytes against 3077.
+// m3 lane 5 r188 (`--fast 0x1af160 0x1e1f20`, control 12; ours homes the actor offset 0x24 / actor 0x28 / node 0x30 /
+// bool output 0x34, retail 0x28 / 0x24 / 0x34 / 0x30): the equal arm's result flag cleared before the actor store 12
+// (same code); the marker pointer as a NULL default and an if 236 (982 bytes); the two opening tests nested 12 (same
+// code); the definition's range field named once for its three uses 65; the 0x265c30 flag declared inside the found
+// test 19. Body unchanged.
+// m3 lane 15 r93 (`--fast 0x1af160 0x1e1f20`, control 12; the same two swapped home pairs): the equal arm's two clears as one
+// chained `local_5 = actor_get(arg_0)->unknown040 = false;` 12 (same code); the saved-reference test with the macro's operands
+// swapped 13; the 0x261280 outputs declared bool before long, all three ahead of the scratch buffer 12 (same code); the search's
+// +0x59 flag as a ternary on the 0x1e4be0 result 222; the search's +0x698 bool stored before the +0x69a short 14. Still the
+// homes tie (0x260670, ours, is 440 at 3097 bytes against 3077, on the bool output's chain). Body unchanged.
+// m3 lane 13 r103 (`--fast 0x1af160 0x1e1f20`, control 12; reference bindings as in the contributor's slot forms, each
+// match-only): the prop node bound by reference for its two later uses 12; the bool output bound by reference for the
+// 0x2626b0 argument 12; the bool output's address in a pointer local for the 0x261280 call 12; the actor bound by reference
+// for the node lookup 12 (all the same code); re-measured on the real 0x260670 body, the three 0x261280 outputs declared at
+// the function's top 12 (same code). 0x260670 (ours) is still 440 at 3097 bytes against 3077.
+// m3 lane 15 r96 (`--fast 0x1af160 0x1e1f20`, control 12; the same two swapped home pairs): the node looked up through a
+// fresh actor lookup 79; a block around the 0x261280 outputs and everything that uses them (ending before the scratch release)
+// 44; the search record declared first in the function 12 (same code); the scratch buffer fetched before the search record's
+// setup 249 (978 bytes); the 0x1ac610 short output array scoped to its call 12 (same code). Re-measured by mistake: the
+// equal-arm flag test on a fresh actor lookup 61 (round 150). Body unchanged.
+// m3 lane 9 r137 (`--fast 0x1af160 0x1e1f20`, control 12; masked 0: only the two swapped home pairs, the actor 0x28 / offset temp 0x24
+// and the node 0x30 / bool output 0x34 against retail's 0x24 / 0x28 and 0x34 / 0x30): the 0x25d690 result as a const pointer 12; the
+// search's +0x59 flag as an if/else 12; the 0x261280 result declared ahead of its outputs and assigned at the call 12 (all the same
+// code); the scratch buffer fetched before the marker pointer is chosen 257 (978 bytes); the two 0x1f4a20 flags' declarations swapped
+// around the 0x262b40 result 15. Each tied pair holds four and two slot references in both builds, so the order still looks like
+// the allocator's tie-break; 0x260670 on the bool output's chain is still 440 at 3097 bytes against 3077.
+// M3 lane 12 r139 (`--fast 0x1af160 0x1e1f20`, control 12): fresh actor lookups to give the actor fewer uses, none folding
+// back (calls sit between): the saved reference copy 295 (990 bytes), the first test's +0x3c flag 297 (994 bytes), its
+// unknown227 306 (1002 bytes), the first two together 306; the node looked up again after the first 0x25d690 call, its first
+// lookup inline in that call's argument, 311 (1003 bytes). Body unchanged.
+// M3 lane 7 r180 (`--fast 0x1af160 0x1e1f20`, control 12): 0x2605d0's and 0x260670's two integer outputs typed as pointers
+// (`void *`, `long *`) at both definitions, every declaration and all twelve call lines, the casts dropped, 42 (the pairs stay
+// swapped and the low slots 0x12-0x1c move, so retail's frame is the escaped-integer one; the other eleven callers stay
+// MATCH; restored); the actor pointer const 12, the actor, node and 0x25d690 result const 12 (same code); the 0x262b40
+// result's +0x14 field named for its two tests 14; the three 0x261280 outputs declared ahead of the scratch fetch 12.
+// M3 lane 16 r141 (`--fast 0x1af160 0x1e1f20`, control 12): 1..8 dead initialised locals at the top 12 each; diagnostics in
+// 0x260670 (reverted): its read of the flag output dropped 12, the flag pointer stored to a global 9 (the bool output then takes
+// the lowest home; retail's 0x260670 reads and writes the flag as ours does, so the lever is elsewhere on that chain); the bool
+// output passed as `local_14 != false` 172 (978 B); the definition range test with its operands swapped 12 (same code).
+// M3 lane 13 r113 (`--fast 0x1af160 0x1e1f20`, control 12): the bool output alone in a block spanning its uses (the
+// reference result declared outside) 12; the actor offset `(arg_0 & 0xffff) * size` as a named local at both actor lookups
+// 12, renamed to sort last 12 (the CSE temporary's slot does not follow a user name); the three outputs in a block with
+// the reference result outside 44; the node looked up through a fresh actor lookup ahead of the actor local 79; the
+// equal arm's actor lookup through a named local 12 (same code).
+// M3 lane 4 r220 (`--fast 0x1af160 0x1e1f20`, control 12; homes ours offset 0x24 / actor 0x28 / node 0x30 / bool output
+// 0x34, retail actor 0x24 / offset 0x28 / bool output 0x30 / node 0x34): the bool output declared at the top with a const
+// pointer to it passed to 0x261280 12; the two marker/short arrays declared ahead of the cleared flag 12, the short array
+// ahead of the marker array 12; the 0x261280 result declared bare at the top and assigned at the call 12 (same code each);
+// the bool output passed to 0x2626b0 as `local_14 != false` 172 (978 bytes). Re-measured: the three outputs declared at
+// the top 12, the node pointer const 12. 0x260670 (ours, on the bool output's chain) is still 440 at 3097 bytes against
+// 3077 (frame 0x8a8 against 0x8a0).
+// M3 lane 13 r122 (`--fast 0x1af160 0x1e1f20`, control 12; merging same-role locals to change the frame's symbol set, the
+// lever that fixed 0x12eb00's tied homes, each match-only): the second 0x25d690 result assigned to `local_2` (no `local_28`)
+// 12; the 0x265c30 flag carried in `local_18` 12, in `local_17` 33; the 0x1e1f20 result carried in `local_13` 72 (978
+// bytes); the rounding input sharing 0x1af530's real output (one real declared at the arm's top) 44. The pairs stay swapped.
+// M3 lane 16 r147 (`--fast 0x1af160 0x1e1f20`, control 12): the delay rounding through a forceinline seconds-to-ticks
+// helper (the tick-rate product and fld/fistp inside) assigned to the long output 134 (981 bytes), its result stored
+// straight to the record's short 25 (the helper's result takes its own home); the 0x1e5280 completion flag declared
+// inside its test 19 (its true store moves after the call); the rounding input declared at the top of the non-equal
+// branch 12 (same code); the result flag declared after the 0x261280 call 62.
+// M3 lane 6 r208 (`--fast 0x1af160 0x1e1f20`, control 12; reference bindings, each match-only): the 0x262b40 result's +0x14
+// field bound by const reference for its two tests 12; the actor bound by const reference for the 0x265c30 prop index 12;
+// the 0x262b40 result bound by const reference for the 0x210ac0 call 12; the long output bound by const reference for the
+// 0x2626b0 call 12; the marker pointer bound by const reference for the 0x1f4a20 call 12. 0x260670 (ours, on the bool
+// output's chain, in another lane's file this round) is still 440 at 3097 bytes against 3077.
+// M3 lane 12 r154 (`--fast 0x1af160 0x1e1f20`, control 12; `const &` bindings, each match-only): the 0x262b40 result read
+// through one for its two +0x14 tests and the 0x210ac0 argument 12; the prop node, the actor, both, and the 0x25d690 result
+// each bound straight to its lookup's result (a hidden temporary) 12/12/12/12 (all the same code). 0x260670 is still 440.
+// M3 lane 12 r157 (fast with 0x1e1f20, control 12; 0x260670's file was another lane's this round): the actor through a
+// `const &` at its two late uses 12; a second actor pointer local for the three flag tests 12; the saved +0x418
+// reference copy read ahead of the node lookup 27; the bool output declared at the top with its address named there 12;
+// the result flag stored true again at the top of the non-equal arm 124 (978 bytes).
+// M3 lane 15 r118 (fast with 0x1e1f20, MATCH; control 12): the bool output declared ahead of the entry aggregate and the
+// long output 12; the rounding input declared at the function's top 12; the long output declared at the function's top
+// 12; the bool output declared just before the scratch fetch 12; the short array declared ahead of the marker array 12
+// (all the same code). Lead for next rounds: round 141's diagnostic (0x260670 storing the flag pointer to a global moved
+// the bool output's home) is the callee-summary lever that matched 0x1c4c50 this round (a reference binding in its
+// callee); 0x261280 already writes the flag directly, so look for how retail's 0x260670 lets the flag pointer escape.
+// M3 lane 1 r137 (H2M_FAST with 0x1e1f20, control 12): the rounding through the existing `real_to_long` (slot_handler.h)
+// stored straight to the record's short 25 (the helper's result takes its own home; retail's fistp writes the long output's
+// home, so the asm form stays); `local_13 = real_to_long(local_20);` 134 (981 bytes); `local_13 = real_to_long(...)` on the
+// product with no real local 134 (981 bytes); the rounding product written `field_2_3 * random` 12; the bool output through
+// a `bool *const` local for the 0x261280 call and the 0x2626b0 argument 12 (both the same code).
+// M3 lane 6 r211 (`--fast 0x1af160 0x1e1f20`, control 12): the rounding through the existing x87 rounding helper of
+// slot_handler.h assigned to the long output 134 (981 bytes), stored straight to the record's short 25 (974 bytes, masked 0:
+// the helper's own result takes a new home and the small cells rotate further); the asm block writing a fresh block-local
+// long 25 (same layout as the helper); the saved reference copy declared const 12 (same code). On 0x260670's chain (with
+// that function's five trials of this round: the sort scratch in its own block, the two flags in one declaration, the flags
+// declared after the best score, the evaluator-loop flag declared at the top, a long sorted index) this function stays 12.
+// M3 lane 15 r122 (fast with 0x1e1f20, control 12; the same two swapped home pairs): the 0x1e5280 record's +0xc range
+// named once for its three uses 65; the squared distance as the vector's dot with itself 12 (same code); the 0x265c30
+// flag declared inside the record test 19; the 0x1e5280 definition index named ahead of the call 12 (same code); the
+// 0x2626b0 test written `!local_18 && !local_17` 15. Adding or dropping a symbol there leaves both pairs as they are.
+// M3 lane 11 r140 (H2M_FAST with 0x1e1f20, MATCH; control 12): the homes now differ as two swapped pairs, actor/offset
+// temporary at +0x24/+0x28 (retail +0x28/+0x24, the 0x262b40 result sharing the temporary's cell) and prop node/bool output
+// at +0x30/+0x34 (retail +0x34/+0x30). The late actor flag clear re-fetched into the actor local 12; through a new const
+// actor local 12; the actor and node locals `*const` 12; the actor local declared, then assigned 12; the bool output declared
+// ahead of the long output 12 (all the same code). Diagnostics, reverted: the late clear through the actor local 257 (954 B);
+// the rounding as a plain C cast (no asm block) 209, with both pairs still swapped, so the asm block does not order them.
+// M3 lane 12 r161 (`--fast 0x1af160 0x1e1f20`, control 12; the frame slots: ours 0x24 the offset temporary shared with
+// the 0x262b40 result and 0x28 the actor, retail the other way; ours 0x30 the prop node and 0x34 the bool output, retail
+// the other way): the equal arm's lookup assigned back to the actor pointer 12 (same code: the lookup is CSE'd); the
+// node looked up again into its pointer before the second 0x25d690 call 87 (1002 bytes); diagnostics, a folded redundant
+// guard around the equal arm's store 12 and around the 0x265c30 call 12 (same code: the folded tests' frequency does not
+// order these slots); the first reference test with its operands swapped 13. 0x260670 (ours) is still 440 at 3097 bytes
+// against 3077 (frame 0x8a8 against 0x8a0).
+// M3 lane 3 r288 (h2m fast with 0x1e1f20, MATCH; control 12): fresh actor lookups at one use each, to move the actor /
+// offset tie: the late +0x4ae store 128 (984 bytes), the entry flag tests 301 (996 bytes), the saved +0x418 reference copy
+// 295 (990 bytes); the not-found test as `!local_18 && !local_17` 15; the second 0x1f4a20 flag declared ahead of the
+// 0x262b40 result 12 (same code).
+// M3 lane 1 r145 (h2m fast with 0x1e1f20, MATCH; control 12): the search record's `type = 0` store after its memset
+// dropped 233; the saved +0x418 reference copy read after the 0x1e4be0 call 17; the second 0x25d690 position passed
+// straight to the difference (no point pointer local) 12 (same code); the result flag declared ahead of the cleared flag
+// and its five clears 12 (same code); the marker pointer chosen right after the 0x1ac610 call, ahead of the search
+// record, 181 (975 bytes).
+// M3 lane 8 r216 (h2m fast with 0x1e1f20, MATCH; control 12): the 0x1f4a20 marker argument read back from the search
+// record's +0x64 field instead of the marker local 210; the opening tests in the other order (unknown227 first) 16; the
+// +0x4ae actor store ahead of the record's field_4 clear 14; the equal arm's field_6 store ahead of field_0 14; the saved
+// +0x418 reference copied after the 0x1e4be0 call 17. Diagnostics (reverted): the bool output, the prop node and the actor
+// renamed to sort first or last (five renames) 12 each, the same code: these homes are spill slots and one address-taken
+// flag, not ordered by name.
+// M3 lane 5 r227 (h2m fast with 0x1e1f20, MATCH; control 12; 0x260670's file is another lane's again): the equal arm as an
+// early return (the scratch release and `return local_5` in that arm, the rest unindented) 196 (974 B, every small home
+// moves); declared at function scope instead of in the not-equal arm, each alone: the 0x1f4a20 bool output 12, the
+// 0x262b40 result 12, the 0x1e5280 record pointer with its flag 12, the 0x1f4a20 result flag 12 (all the same code).
+// M3 lane 5 r229 (h2m fast with 0x1e1f20, MATCH; control 12): the 0x25d690 result held as a `point3f *` to its position
+// for both uses 107; the 0x1e4be0 result typed `byte *` 12; the search flag as `local_4 != NULL && (*local_4 & 1) != 0` 12;
+// the scratch buffer pointer declared at the function's top and assigned at its call 12; the marker pointer declared at
+// the top and assigned where chosen 12 (same code each). A `dword` long output does not compile (`long *` outputs).
+// M3 lane 13 r142 (h2m fast with 0x1e1f20, MATCH; control 12): aggregate declarations moved to the function's top to shift
+// the small cells, each alone: the 0x261280 entry record 12, the search record (its memset left in place) 12, the short and
+// marker arrays (short first) 12, the 0x1af530 real output 12, the distance vector 12 (all the same code: the two swapped
+// pairs stay). Still BLOCKED-BY 0x260670 (on the bool output's callee chain, 440 at 3097 B).
+// M3 lane 14 r142 (h2m fast with 0x1e1f20, MATCH each run; control 12): the node lookup through a second actor lookup (no
+// call between, CSE'd) 79 (the prologue's loads reorder, both home pairs unchanged); the 0x265c30 prop index through a fresh
+// actor lookup 77 (984 B); the node and 0x25d690 result pointers `*const` 12 (same code); the equal arm's unknown227 test
+// through a fresh actor lookup 61; the rounding asm as two single-line statements 12 (same code). All restored.
+// M3 lane 11 r154 (h2m fast with 0x1e1f20, MATCH; control 12): reading: both swapped pairs tie in reference count in
+// both builds (actor 4 against offset-or-0x262b40-result 4, prop node 2 against bool output 2) and, with a branch
+// halving the estimated frequency, in weight too (1.875 / 1.875, 1.125 / 1.125), and retail's branch structure in this
+// function is ours branch for branch, so the tie is broken elsewhere. Tried: the 0x2626b0 test as `!(local_17 ||
+// local_18)` 12 (same code); the equal arm's two arms the other way round (the unknown227 test positive) 29; the
+// not-found arm's flag test in its own braces under a plain else 12 (same code); the 0x1f4a20 result tested negated with
+// the arms swapped 21; the 0x262b40 result declared ahead of both 0x1f4a20 flags 15.
+// M3 lane 13 r143 (h2m fast with 0x1e1f20, MATCH; control 12): the equal arm's clear looked up as `actor_get(arg_0 &
+// 0xffff)` 12; the node's +0x28 range read into a named real for its test 12; the long and bool outputs declared ahead of
+// the entry record 12 (the three the same code); the second 0x25d690 call on a fresh prop_node_get of the actor's prop
+// index 87 (1002 B); the prop index read once at the top into a long used for the node lookup and the 0x265c30 call 256.
+// All restored.
+// M3 lane 3 r298 (h2m fast with 0x1e1f20, MATCH; control 12): the equal arm's two branches swapped with the test
+// un-negated 29 (the frame cells rotate further); the 0x1af530/0x210ac0 test as nested ifs 12; the node pointer to const
+// 12; the second 0x25d690 position passed straight to the subtraction (no named pointer) 12 (same code each); the result
+// flag declared first 187.
+// M3 lane 12 r178 (h2m fast with 0x1e1f20, MATCH; control 12, the same two swapped home pairs): changes to the set of
+// locals, each match-only: no marker-pointer local, `local_6 ? local_7 : NULL` written at the record store and at the
+// 0x1f4a20 argument 12; the 0x1e5280 record carried in the 0x1e4be0 pointer local 12; the 0x265c30 flag carried in
+// `local_6` 12; the 0x1f4a20 result flag carried in `local_6` 12 (all four the same code: none of these locals owns a
+// frame home); the chosen reference as its own local from the top of the not-equal arm 135 (979 bytes).
+// M3 lane 6 r233 (h2m fast with 0x1e1f20, MATCH; control 12): the prop node as `*const` 12; the actor as `*const` 12;
+// both 12; the 0x25d690 and 0x262b40 result pointers `*const` 12; the scratch buffer pointer `*const` 12 (all the same
+// code). Still BLOCKED-BY 0x260670 (440 at 3097 B).
+// M3 lane 16 r182 (h2m fast with 0x1e1f20, MATCH; control 12): the five output clears as one chained assignment 12; the
+// 0x1ac610 test as nested ifs 12; the +0x14 range test as `!(== NONE || == 0xffff)` 12 (same code each); the marker pointer
+// NULL-defaulted and set by `if (local_6)` 236 (982 B); the search flag as `local_4 ? (*local_4 & 1) != 0 : false` 222.
+// The two swapped home pairs stay; the bool output's chain (0x261280 -> 0x2605d0 -> 0x260670, itself BLOCKED-BY 0x262a30)
+// is unchanged. All restored.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

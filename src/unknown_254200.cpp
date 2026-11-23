@@ -212,6 +212,162 @@ void function_254200(void)
 // Round 98 (m3 lane 14, single-address fast, control 4): the bitmap choice as an if/else 4; the third vertex's x sum
 // written size first 4; the colour helper's 4f call in member form 4; the two dimension locals as `int` 4 (all the same
 // code); the two cached render-state stores after their SetRenderState calls 10.
+// Round 91 (m3 lane 15, single-address fast): through the XDK's IDirect3DDevice8_ wrappers with a NULL device: the four
+// vertex 4f calls 10 (the pair unchanged; the colour helper's three spill slots permuted), the four 2s calls 4,
+// Begin/End 4, the two SetRenderState calls 4, the colour helper's 4f call 4, every stream call 10.
+// Round 102 (m3 lane 14, single-address fast, control 4): the colour helper's parameters in the other order 4 (same
+// code); the four texture/position pairs as a forceinline quad helper taking the point pointer and the size 259 (1205 B,
+// the point re-read at each use), taking the point copy by value 135 (1097 B); the point copy and size declared at the
+// top of the body 4 (same code); diagnostic (not kept) a dead float product ahead of the point copy 4.
+// M3 lane 8 r177 (single-address fast, control 4; references that are not folded back): the size through a `real &`
+// 259 (1205 B, the size re-read at each use); the point copy through a `point2f const &` 259 (1205 B); the 16777215
+// constant through a `real const &` to a named value 8 (the colour products' spill slots swap, the pair unchanged); the
+// first vertex's y sum written size first, the others as now 4; the second vertex's y sum size first only 4 (same code).
+// Reading: the colour block reloads its three spilled products from the highest slot down in both builds; only the
+// constant and the y sum after the second and third reservations come back in the other order.
+// Round 194 (m3 lane 5, single-address fast, control 4): the size `arg_2 * 2.f` written at each of its eight uses
+// 221 (1118 B); the point copy and size declared after the 0x1cf50/0x1c710 calls 16 (the pair unchanged); the colour
+// helper ahead of Begin 48 (diagnostic); each corner through one `point2f corner` assigned per vertex 270 (1205 B); the
+// colour helper plain `inline` 339 (985 B, out of line). Reading: retail reloads the depth constant and y + size in the
+// order they are first computed (call arguments right to left: the constant first), ours in the reverse order; the
+// colour helper's three products reload in declaration order in both builds.
+// Round 98 (m3 lane 2, single-address fast, control 4): descriptive names, to test a name-hash tie: the point copy
+// and size as center/size 4; the three bitmap pointers as first/second/bitmap 4; the dimension locals as height/width
+// 4; all seven together 4; the five parameters named 4 (all the same code: the reload pair does not follow names).
+// M3 lane 15 r98 (single-address fast, control 4): the doubled size as a two-component point used x for x and y for y
+// 136 (1113 B); the four edges computed into a four-real array ahead of the calls 173; the depth pair from a two-real local
+// array 4 (same code); the first vertex's corner in a point copy updated in place (x -= size, y += size) and reused 206
+// (1114 B); two corner points (low, high) computed ahead of the calls 173. The constant and y + size still reload in our order.
+// M3 lane 15 r100 (single-address fast, control 4): the two dimension shorts through named width/height fields of the
+// file's bitmap view 4; the draw-ready flag global typed bool 4; the readiness test as an early return 4; the point copy
+// through memcpy 4 (all the same code); the vertex register spelled 0 as in unknown_01cf50.cpp's quads 8 (not the same
+// register: the opcode word changes).
+// M3 lane 5 r203 (fast with 0x254200 matched; control 4): the colour helper's products written scale first 4; the
+// texture lookup's result through a named texture local before the store 4; the colour helper's scale as a `real const &`
+// 4; the two dimension locals `long const` 4; the chosen bitmap declared ahead of the readiness test and assigned inside
+// it 4 (all the same code). Reading: the swapped pair is loaded twice per record, at the top of the block after the
+// texture-coordinate reservation and again after the vertex reservation, in the same order both times, so the order is
+// set where the three values' registers are first loaded after a call, not at their uses.
+// M3 lane 12 r143 (single-address fast, control 4): 8, 9, 10, 11, 12, 13, 14, 16, 20 and 24 unused initialised locals at the
+// top 4 each (round 115 measured 0-7: the pair does not follow the referenced-local count); the four edges named where
+// first used (left and top before vertex 1, right before vertex 2, bottom before vertex 3) 174 (1133 B: the sums move
+// ahead of the reservations), top ahead of left 174, only the two y edges named 126 (1119 B), only the two x edges 153
+// (1119 B). Diagnostic: 0x2548f0's body moved above this function in the file 4 (0x2548f0 2), so the order in which the
+// constant's pool entry is first used in the file does not set the pair either.
+// M3 lane 4 r220 (single-address fast, control 4; the reload triple after the second and third reservations is retail
+// x, constant, y + size, ours x, y + size, constant): vertices 2 and 3 through the member 4f form 4; y + size named as a
+// const local ahead of the state calls 206; the four edges as const locals after the colour call 173; integer zero
+// literals for the bitmap calls' real arguments 4 (same code); both cached render-state stores embedded in the call
+// arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
+// the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
+// embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
+// M3 lane 4 r223 (single-address fast, control 4): the size as `arg_2 * 2` 4 and as a copy doubled in place
+// (`size *= 2.f`) 4 (same code each); the point copied by an aggregate initialiser from its two fields 88 (1117 B,
+// float loads); the cull mode spelled with its enumerator 4; the size as a copy added to itself 15 (addss).
+// M3 lane 7 r190 (single-address fast, control 4): the shared y + size bound to a `real const &` for vertices 1-2 64
+// (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
+// all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
+// (Begin, 2s, 4f, render state, End) 4. All restored.
+// M3 lane 10 r132 (single-address fast; control 4): the doubled size computed after the 0x1cf50/0x1c710 calls with the
+// point copy still ahead of them 20 (the colour products' spill slots swap, the pair unchanged); the point copy after the
+// calls with the size ahead 16; both after Begin 116 (1093 B); the chosen bitmap selected ahead of the readiness test 52;
+// the choice as `if (!arg_4) ... else ...` 4 (same code). All restored.
+// M3 lane 2 r116 (single-address fast, control 4): the point copy declared ahead of the size 15 (the copy's two dword
+// moves land after the size product, the colour spills swap); the colour helper's products computed red, green, blue
+// 9 (the colour loads and stores reorder); the products written straight into the helper's 4f call 4 (same code); the
+// products stored into a scaled colour aggregate 28 (first +0xe: it takes a frame home); the colour by `color3f const &`
+// 4 (same code). The constant and y + size still reload in our order after the second and third reservations.
+// M3 lane 3 r278 (single-address fast, control 4): the vertex 4f calls through the member wrapper for vertex 3 only 4,
+// vertex 4 only 4, vertices 1 and 4 4, vertices 3 and 4 4, vertices 1 and 2 4 (all the same code; the wrapper's extra
+// inline level does not move the constant / y + size reload pair).
+// M3 lane 6 r213 (fast, control 4): 48 random combinations (2 to 13 at once) of thirteen same-code natural forms: each
+// vertex's 4f call in member form (four separate choices), the colour helper's 4f call in member form, each render-state
+// call in member form (two choices), the closing call in member form, the size as `arg_2 * 2`, the bitmap choice as if/else, the
+// dimension locals as `int`, the readiness test as nested ifs, the colour helper taking `color3f const &`: all 48 give
+// 4 with the same aligned code, so the extra inline levels and their argument temporaries never reach the reload pair.
+// Also r213: the four vertices through a file-local forceinline position helper (x, y) issuing the far-depth 4f call 8
+// (the colour helper's spills swap, the pair stays).
+// M3 lane 7 r198 (single-address fast, control 4): the readiness test held in a named bool 4 (same code); the point copy
+// as a `point2f const &` to the parameter's point 341 (1162 B); the point copy, then the size, after the 0x1cf50/0x1c710
+// calls 22 (the pair unchanged); the two dimension reads ahead of the texture store 56 (1110 B); the bitmap selection
+// written in the test and again in the block, no shared local, 239 (1116 B). Reading: in this function, in 0x2548f0 and
+// in 0x281b60's walk, ours emits each two- or three-value call-path reload group in exactly the reverse of retail's order
+// (here retail x, constant, y + size; ours x, y + size, constant), while a one-value group (the constant alone after the
+// second vertex's reservation in 0x2548f0) agrees. All restored.
+// M3 lane 3 r281 (fast, control 4): the two cached render-state writes through the existing 0x222d0 setter, as 0x2548f0
+// does, 4 (same code; kept, it replaces that setter's body written by hand); on it: the four vertex 4f calls in member
+// form 4; End in member form 4; the point copy and size `const` 4 (same code each); the four 2s calls in C form 392
+// (914 B, they stop inlining); Begin in C form 247 (1053 B). The setter's two inlined parameters do not move the pair.
+// M3 lane 3 r283 (fast, control 4): the colour helper copying the colour into a const local before its products 218
+// (1133 B); the colour products and the colour 4f call written at the call site 4 (same code); the point copy declared
+// and then assigned 4 (same code); the point copy and size declared in a block of their own around Begin..End 21 (the
+// pair unchanged); the four vertex 4f calls through the device-pointer wrapper given the device global 4 (same code).
+// M3 lane 3 r286 (single-address fast, control 4): separate `width` and `height` products for the x and y offsets 127
+// (1113 B); the doubled size computed at the top of the readiness block 33 (the pair stays ours); at the top of the
+// function 283 (1103 B); the size parameter doubled in place with no size local 19; the bitmap choice as `if (arg_4)
+// local_0 = local_1;` reusing the first view local 41. All restored.
+// M3 lane 1 r144 (single-address fast, control 4): the depth through a `real const &` to a named value 8 (the colour
+// block's three spills and reloads come back red, green, blue where the control has blue, green, red; the pair stays ours);
+// that with the two dimension locals dropped (fields read at the stores) 12; that with the point copy declared ahead of
+// the size 17 (the colour reloads then xmm2, xmm1, xmm0 from 0x24, 0x18, 0x20: neither slot nor register order); the size
+// parameter doubled in place with the point copy after the 0x1cf50/0x1c710 calls 30; the point copy at the top of the
+// readiness block, ahead of the bitmap choice 96 (1093 B). All restored; the x, y + size, constant group stays ours.
+// M3 lane 14 r135 (fast, control 4): the bitmap lookup helper as two nested ifs 4 (same code); each corner through a
+// forceinline (u, v, x, y) helper issuing the texture-coordinate and position calls 4 (same code); the drawing block in a
+// forceinline helper taking the point, scale, size and colour 230 (1095 B); the colour helper taking the colour by value
+// 218 (1133 B); the four texture-coordinate calls through a forceinline (u, v) helper 8. Reading: a scan of every function's
+// reload groups right after a call on a skipped path finds matched functions in both orders (0x22aff1 reloads its
+// second-declared local first, 0x13f700 its first-declared), so no register, declaration or definition order sets this pair.
+// M3 lane 5 r225 (single-address fast, control 4): named real values that the optimiser merges, to change how many real
+// values the body has without adding code (round 150's reading on 0x2548f0): the y offsets through a second real copied
+// from the doubled size 4; the depth and w as two named reals (`w = depth`) 4; x and y read into two reals from the point
+// copy 4; the doubled size as a product with a named `2.f` 4; w written as the depth times `1.f` 4 (all the same code).
+// M3 lane 8 r219 (fast, control 4; 0x254200 matched, 0x2548f0 2): the system headers included first 4; the view getter
+// helper as one ternary return 4; the colour helper defined just above this function 4 (all the same code); the draw-ready
+// flag read into a bool ahead of the texture block 238; the bitmap lookup index as a word cast 279 (1100 B). Reading: in this
+// function, 0x2548f0 and 0x270d90 ours emits each reload group in descending register order (here x, then xmm1, xmm0), retail
+// in ascending order after any plain load (x, then xmm0, xmm1). All restored.
+// M3 lane 11 r147 (single-address fast, control 4): a dead forceinline helper holding 1-8 named locals called at the top,
+// ahead of the size, ahead of Begin, ahead of the first or the second vertex 4 each (40 runs); one to three redundant
+// paren pairs around the size product, the y sums, every sum, the first x or y sum or a colour product 4 each (17 runs);
+// 0-40 unused initialised locals at the top 4 each (no period-8 or period-32 state); diagnostic, the depth as a non-const
+// file-scope real 259 (1205 B); the point read through pointers to its x and y (0x2548f0's form) 341 (1162 B).
+// M3 lane 5 r231 (fast, control 4): a whole-image scan of call-edge reload groups (two or more float reloads on a
+// reservation's slow path) finds only this function and 0x2548f0 with a differing order; the matched 0x2353a5 and
+// 0x2477b0 reload theirs in descending register order as ours does. The depth as a `real const` declared at the top 4;
+// the point copy direct-initialised 4; the point parameter a const pointer 4 (all the same code). Diagnostics: the first
+// vertex's depth and w as 0.f 134, its depth alone 0.f 125 (the constant no longer stays live). All restored.
+// M3 lane 15 r130 (single-address H2M_FAST, control 4): true `__assume(p != NULL)` on the point and colour parameters at
+// the top, ahead of the point copy, both, and on the chosen bitmap inside its test 4 each (6 runs); the minus edges
+// written `x + -size` 4; the two dimension locals, the chosen bitmap, or the size and point copy declared bare at the top
+// and assigned in place 4 / 4 / 4 (all the same code: the x, y + size, constant group stays ours).
+// M3 lane 1 r153 (single-address H2M_FAST, control 4): the scale, size and flag parameters `real const` / `bool const`
+// 4; the chosen bitmap a const pointer 4; the drawing block (primitive start to end) in a scope block of its own 4
+// (all the same code); the size read through a `real const *` to the size local at the x sums 259 (1205 B, re-read per
+// use). Diagnostic: 0x2548f0's body emptied 4 (0x254200 MATCH), so the pair does not follow the other function's
+// compilation.
+// M3 lane 6 r229 (single-address H2M_FAST, control 4): the colour helper scaling a copy of the colour in place 218 (1133 B);
+// the two lookup tags read into named longs before each bitmap lookup 4 (same code); the colour helper storing its three
+// products into a colour local member by member 28; the point copy and size declared after the bitmap choice, ahead of
+// the texture block 57; the size alone there 25. The x, y + size, constant group stays ours.
+// M3 lane 7 r216 (single-address H2M_FAST, control 4): a 32-run grid of five same-code named values in every
+// combination (the texture lookup result named before its store, the doubling factor as a named `2.f`, x and y read
+// into named reals from the point copy for all four vertices, the depth as a named real, w as a second named real)
+// 4 each; the depth through an `extern real const` declared above the file's first function and defined after this
+// one (so the front end cannot fold it) 4 (the whole-program build folds it); that in both functions 4. Diagnostic,
+// restored: the file built with each processor target (G5, G6, G7) 4 (0x2548f0 2): the reload order ignores them.
+// M3 lane 5 r236 (single-address H2M_FAST, control 4): the depth written as a double literal `16777215.0` 4, as
+// `(real)0xffffff` 4, w alone spelled `16777215.0f` 4 (all fold to the same constant); the size as `arg_2 * 2.0` 60
+// (1099 B, a double product); Begin alone through the device-interface inline with a NULL device 4, End alone through it
+// 4 (same code). Diagnostics, reverted at once: a favour-size optimize pragma around this function 773 (608 B), so the
+// file was not built for size; the colour call after the first texture-coordinate call (push order changed) 52.
+// M3 lane 7 r217 (H2M_FAST), at 4: the four vertex position calls through the platform's device-interface inline that
+// takes a device pointer (one more inline layer) 10 (the colour block's three spills change slots, the pair stays ours);
+// the two-short texture calls through that inline 4 (same code), in the plain C form 392 (914 B, no longer expanded);
+// every Begin, texture, position and End call through it 10; the half size as `2.f * arg_2` 4 (same code).
+// M3 lane 7 r219 (single-address H2M_FAST, control 4): the doubled size as `arg_2 / 0.5f` 4 (same code); the colour helper's
+// green product ahead of blue 8; the two dimension stores height first 6; the first vertex's w spelled `1.6777215e7f` 4
+// (folds); the bitmap choice parenthesised 4 (same code). The x, y + size, constant group stays ours.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -234,10 +390,8 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 			point2f local_3 = *arg_0;
 			function_1cf50();
 			function_1c710(g_51f0f0);
-			g_4b8448 = 0;
-			D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
-			g_4b8450 = 0;
-			D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
+			function_0222d0(D3DRS_CULLMODE, 0);
+			function_0222d0(D3DRS_ZBIAS, 0);
 			D3DDevice::Begin(D3DPT_TRIANGLEFAN);
 			function_254491(arg_1, arg_3);
 			D3DDevice::SetVertexData2s(1, 0, 0);
@@ -529,6 +683,158 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 257; the third and fourth texture calls through the D3DDevice:: member form like the first two 2 (same code). In this function
 // and 0x254490 retail emits the post-call reload pair in ascending register order whichever values they hold (here
 // xmm0 = lower first, there xmm0 = the depth constant first); ours emits xmm1 first in both.
+// Round 168 (m3 lane 7, fast; 0x254200 matched, 0x254490 4 throughout): the colour getter after 0x1cf50 7; the alpha
+// byte computed ahead of the texture-stage reset block 94 (2256 bytes), ahead of the third block's SRCBLEND/DESTBLEND
+// pair 87; the second quad's colour as a const colour aggregate through the existing colour helper 254 (2273 bytes); the
+// second block's SRCBLEND/DESTBLEND pair ahead of its 0x14390 call 12. Same code (2): the lower coordinate's product
+// commuted in all four uses, the lower coordinate as `arg_1 * -0.5f + 0.5f`, the else arm as a separate test after an
+// early return, the guard inverted with the success block in the else, the point pointers declared ahead of the size.
+// Round 102 (m3 lane 14, single-address fast, control 2): the last quad's size `real const` 2; the last quad's size and
+// point pointers after 0x1cf50 10; the colour through a `real const *` 2; every upper texture coordinate written
+// constant first 2; the first two vertices' depth through the platform's 24-bit depth maximum macro 2 (same code).
+// M3 lane 8 r177 (single-address fast, control 2; const references, which keep a value in memory): the first quad's lower
+// texture coordinate bound by a `real const &` 363 (2278 B, computed ahead of 0x1cf50), the upper one 363 (2278 B), both
+// 342 (2256 B); the colour as a `color3f const` value copied from the getter 392 (2238 B); the getter's result passed
+// straight to the existing colour helper `function_254491(1.f, ...)` after Begin 31 (the getter moves after Begin; the
+// reload pair unchanged).
+// Round 194 (m3 lane 5, single-address fast, control 2): declaration-only moves to the function top (assigned in place)
+// of the colour pointer, the alpha byte, the last quad's size and all three 2 each (same code: local symbol order does
+// not enter the reload order); the first two texture calls in the free device-call form 467 (2157 B, out of line).
+// Retail reloads the lower coordinate (defined at the first texture call) before the constant (first vertex), i.e. in
+// the order the values are first computed, as in 0x254490; ours reverses both pairs.
+// M3 lane 12 r139 (single-address fast, control 2): each SDK call of the body switched alone between the C and the
+// class-member form (29 C sites to the member form 2 each, same code; the first quad's Begin and first two texture
+// calls to the C form 446/369/375); the first block's eleven texture-stage calls through the existing wrapper 0x224f0
+// 465 (2236 bytes); the colour bound by a `color3f const &` 2 (same code). Diagnostics: the first quad's inline-depth
+// start moved one call later 2; an unreferenced float function added to the file leaves 2 and 0x254490's 4.
+// Round 185 (m3 lane 8, fast with 0x254490 and 0x254200; control 2): the bitmap and stage calls' 0.f arguments as
+// integer 0 2; every depth constant as a double literal 2; the first quad's four texture calls through a forceinline
+// two-coordinate wrapper 263 (first difference +0x83: the texture-stage block inlines differently); every depth
+// constant through a forceinline accessor returning it 340 (2197 bytes, same cause); the two lookup helpers plain
+// `inline` in place of forceinline 2. The two reloads after the second texture reservation stay swapped.
+// Round 264 (m3 lane 3, fast with 0x254490 4 and 0x254200 matched; control 2): the last quad's four edges named
+// (left/right/top/bottom, each used twice, no point pointers) 164 (2179 bytes: the sums are shared); the two bitmap
+// lookups moved inside the flag test 152 (first +0x0); the alpha as `long` 133; the texture tests as `!= NULL` 2 (same
+// code); the alpha product named before the byte conversion 2 (same code); the colour's three components read into
+// named `real const` locals ahead of 0x1cf50 377. The reload pair after the second texture reservation stays swapped.
+// Round 195 (m3 lane 6, fast with 0x254490 4 and 0x254200 matched; control 2): the file's prototype and extern
+// declarations in reverse order 2; every shader block's texture-mode store written ahead of the combiner count (as
+// 0x254200) 2; the draw-ready flag defined as bool 2; the two lookup helpers defined after the colour helper 2; all
+// four together 2 (all the same code). No matched caller of the reservation helper has a true two-value reload pair,
+// so no matched function shows this build emitting retail's first-defined-first order.
+// M3 lane 16 r142 (fast with 0x254490 4 and 0x254200 matched; control 2): the scale parameter declared `real const` 2;
+// the inline-depth reset after the first quad's end call and the depth-0 start before the second block's blend-state setter pair
+// dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
+// dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
+// quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
+// M3 lane 4 r226 (fast with 0x254490 4 and 0x254200 matched; control 2): the first quad's halving as `arg_1 / 2.f` 2
+// (same code); the readiness test as two nested ifs 3 (first difference +0x95); the colour as a `real const *` indexed 2;
+// the table getter called once into a named local for both lookups 545 (2233 bytes: retail calls it twice); the colour
+// getter through End in their own block scope 2 (same code). All restored.
+// M3 lane 11 r127 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant of the first quad written
+// `(real)0xffffff` 2; through a file-scope `static real const` 2 (both the same code); the depth-0 inline start moved one
+// call earlier (before the second vertex) 356 (2190 bytes). Diagnostics, restored: an unused local holding the lower
+// coordinate ahead of the colour fetch or of the first texture call 2/2 (same code: creating the lower value's common
+// subexpression first does not reorder the pair); the first vertex's two depth constants made different 25 (the
+// constant is then no longer carried into the third vertex, so the pair disappears). Retail's skip branch lands after
+// both reloads (0x254d0c), so the pair is call-path compensation code; other functions with an adjacent reload swap
+// (0x3a5c0, 0x185be0, 0x217c40, 0x4e260) show retail in both register orders, so it is not a fixed register order.
+// M3 lane 13 r119 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant written `(real)0xffffff`
+// 2 (same code); file-local forceinline accessors returning the lower and upper texture coordinates from the scale, in
+// all four texture calls 324 (2275 B), the lower one only 298, the upper one only 338, both in the first two calls only 2,
+// the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
+// Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
+// in our order (aligned). Restored.
+// M3 lane 12 r155 (fast with 0x254490 4 and 0x254200 matched; control 2; a compile-only build leaves the graphics
+// calls out of line, so it cannot screen this pair): the first quad's two texture coordinates as `real const` upper and
+// lower locals declared after the quad's start call 398 (2264 B), declared before 0x1cf50 382 (2258 B); the last quad's size as an
+// if/else 2 (same code); the alpha converted straight to a byte 2 (same code); the point read as `arg_0->x`/`arg_0->y`
+// at each use without the coordinate pointers 18 (the y fold returns). All restored.
+// M3 lane 4 r231 (screened with 0x254490 4 and 0x254200 matched; control 2): the colour pointer read through a
+// `color3f const *const &` binding 2 (same code); the colour components named red, green, blue after Begin 7 (first
+// difference +0x2da); named blue, green, red (the order retail reads them) 2 (same code); that with a named `real alpha = 1.f`
+// 466 (2159 bytes, first difference +0xe); the mip LOD bias stage value as a zero real read as a dword 443 (2271 bytes).
+// All restored.
+// M3 lane 6 r213 (fast with 0x254490 4 and 0x254200 matched; control 2): a file-local forceinline position helper (x, y)
+// issuing the far-depth 4f call, used by the first quad's first two vertices 2, also used by 0x254490's four vertices 2
+// (0x254490 8: its colour spills swap); a forceinline texture-coordinate helper (u, v) for the first two 2f calls 2; both
+// helpers 2; the texture helper with the first two vertices' 4f calls in member form 2 (all the same code). Reading: a
+// helper that evaluates the coordinates before the depth constant does not reverse the pair either, so the pair does not
+// follow the order the values are first computed; the swapped reloads sit on the reservation call's edge only (the
+// skip branch lands after them), and the unmatched 0x3a5c0, 0x185be0, 0x217c40 and 0x4e260 show the same kind of swap.
+// M3 lane 7 r198 (single-address fast with 0x254490 4 and 0x254200 matched; control 2): the scale's half product named
+// `real const half` just ahead of the first texture call and used in all four texture coordinates 386 (2272 B), named after
+// the quad's start call, ahead of the colour call 423 (2286 B); the last quad's point read into one `point2f` copy in place of the two
+// coordinate pointers 161 (2194 B); the readiness test held in a named bool 2 (same code). Diagnostic: every
+// `#pragma inline_depth` line removed 440 (2388 B: every SDK call inlines), so retail's out-of-line calls after the
+// second vertex need the pragmas in this source. All restored.
+// M3 lane 3 r281 (fast, control 2), combinations of earlier same-code forms in the first quad: the colour and both
+// vertex 4f calls in member form 2; colour member form, a const colour pointer and a block-local `real const` depth for
+// the first two vertices 2; both vertices in member form with that depth 2; all five together 2; scale-first texture
+// products with the colour member form and the depth 2. All restored.
+// M3 lane 3 r283 (fast, control 2): the colour as a const reference bound to the getter's result 2 (same code); the
+// first pixel-shader record cleared by value-initialisation instead of memset 576 (2287 B); the first quad's 64-unit
+// extent as a named `real const` 2 (same code); both readiness tests written `!= NULL` 2 (same code); the depth pair
+// through the platform header's 24-bit far-depth macro cast to real 2 (same code).
+// M3 lane 3 r286 (single-address fast, control 2): the offset quad's half size as an if/else assignment 2 (same
+// code); defaulted to 42 and overridden in an `if` 94 (2258 B); the closing `else if (g_51ec9a)` as a plain `else` 22
+// (retail re-reads the flag); the alpha product scale first 2 (same code); the offset quad reading arg_0's fields
+// directly instead of the two coordinate pointers 18. All restored.
+// M3 lane 1 r144 (single-address fast, control 2): the first quad's depth constants through a `real const &` to a named
+// value 2, every quad's 2 (both the same pair: the reference that reverses 0x254490's colour reloads does not reach this
+// pair); the lower texture coordinate written `-(arg_1 * 0.5f) + 0.5f` 2; the upper written constant first 2; the first
+// quad's reference with the upper constant first 2 (all the same code). All restored.
+// M3 lane 14 r135 (fast, control 2): the bitmap lookup helper as nested ifs 2 (same code); the two 0x14bc0 calls without
+// the (short) cast 2 (same code); a 600 s permuter run (60 tries), best 2; the last quad's corners through a forceinline
+// (u, v, x, y) helper 162 (2176 B, first +0x83); the texture-stage values by enumerator name 2 (same code).
+// M3 lane 5 r225 (single-address fast, control 2): the first quad's depth and w as two named reals (`w = depth`) 2; its
+// zero coordinates through one named real 2; its w written as the depth times `1.f` 2 (all the same code); the colour
+// call's alpha through a named `1.f` real 462 (2161 B, first +0xe); the second texture call's second lower coordinate
+// written `-(arg_1 * 0.5f - 0.5f)` 369 (2303 B).
+// M3 lane 8 r219 (fast, control 2; 0x254200 matched, 0x254490 4): the first quad's second texture-coordinate call in C form 375
+// (2192 B), its first texture-coordinate call in C form 369 (2209 B), its Begin in C form 446 (2196 B); file-level forms measured
+// with 0x254490's trials: the system headers first 2, the view getter as a ternary 2, the colour helper moved 2, the lookup index
+// as a word cast 527. Retail reloads xmm0 (the lower coordinate) before xmm1 (the depth); ours always descending. All restored.
+// M3 lane 11 r147 (fast, control 2): 0-40 unused initialised locals at the top 2, except at n = 4 mod 8 18 (the last
+// quad's y + size fold returns: a period-8 state for the fold, none for the reload pair); a dead forceinline helper with
+// 1-4 named locals ahead of the colour fetch, of the first quad's 0x1cf50 call or of the second texture call 2 each (12
+// runs); diagnostic, the depth as a non-const file-scope real 369 (2276 B).
+// M3 lane 5 r231 (fast, control 2): every first-quad `arg_1 * 0.5f` written `0.5f * arg_1` 2; the first quad's depth as a
+// `real const` named ahead of the primitive-start call 2; the colour pointer a const pointer 2 (all the same code).
+// Diagnostics: the first vertex's depth 0.f 74; the first vertex's two texture coordinates swapped 27, where the group then
+// loads the constant into xmm0 first and the coordinate into xmm1: ours keeps the constant first whichever registers the
+// two values get. All restored.
+// M3 lane 15 r130 (single-address H2M_FAST, control 2): true `__assume(... != NULL)` on the point parameter at the top or
+// ahead of the coordinate pointers, on the colour getter's result, and both 2 each; the offset quad's half size or the
+// two coordinate pointers declared bare at the top 2 / 2; the coordinate pointers declared y first 2; the minus edges
+// written `x + -size` 2 (all the same code).
+// M3 lane 1 r153 (single-address H2M_FAST, control 2): the first quad (colour fetch to its end call) in a scope block
+// of its own 2; the point parameter a const pointer 2 (same code each). Diagnostics: 0x254490's body emptied 2
+// (0x254200 MATCH); the colour call after the first texture call 359 (first +0xe); the first region's inline depth 1
+// instead of 0 419 (2365 B, the later calls inline).
+// M3 lane 6 r229 (H2M_FAST with 0x254490, control 2): the pixel-shader clears and commits through the program-words view
+// that the matched 0x254200 uses 2 (same code); the colour read as a `real const *` triple 2 (same code); both together 2;
+// the first quad's first two texture coordinates through one `point2f` updated in place 393 (2286 B); its first two
+// depth pairs from a `real const depth[2]` 18. Reading: 0xc2d00's note records the same kind of slow-path reload tie
+// flipping with other files' contents.
+// M3 lane 7 r216 (single-address H2M_FAST with 0x254490 4 and 0x254200 matched; control 2): the depth through an
+// `extern real const` defined in the file 2, used in both functions 2 (folded); the four lower texture coordinates of
+// the first quad through a file-local forceinline (scale) helper 298 (2264 B), lower and upper through two helpers 324
+// (2275 B); both first-quad texture calls in C form 467 (2157 B); the first vertex's position call alone in member form 2
+// (same code). Diagnostic, restored: each processor target on the file 2. Reading: in this pair and in 0x254490's triple,
+// retail's call-edge reloads follow the order the values are first defined (0x254490: x, the depth, y + size; here the
+// lower coordinate, then the depth), ours descend by register; neither named values nor a later-folded constant move it.
+// M3 lane 5 r236 (single-address H2M_FAST, control 2): the first quad's depth pair after the first vertex written as a
+// double literal 2; the first vertex's position as integer zeros 2; the second texture call's lower value written
+// `0.5f - 0.5f * arg_1` 2; the second vertex's position call through the device-interface inline (NULL device) 2; the
+// second texture call through it 2 (all the same code: the lower value / depth reload pair stays ours).
+// M3 lane 7 r217 (H2M_FAST), at 2: the first quad's calls through the platform's device-interface inline that takes a
+// device pointer: the four position calls 2, the texture calls 2, both 2, Begin and the colour call 2, all of them 2. In
+// both this pair and 0x254490's, retail's two loads after the reservation are ascending by xmm number and ours descending.
+// M3 lane 7 r219 (single-address H2M_FAST, control 2): the colour call's alpha `1.0f` 2; the colour fetched after the
+// 0x1cf50 call 7; the first quad's second position as integer literals 2; the first quad's closing call in member form 2;
+// the first texture-stage helper call given an integer zero 2; the last quad's size test written `1 < g_4ba04c` 2 (all the
+// same code); the alpha byte through real_truncate 30 (first +0x83).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -585,9 +891,7 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice_SetVertexData2f(1, arg_1 * 0.5f + 0.5f, arg_1 * 0.5f + 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 0.f, 64.f, 16777215.f, 16777215.f);
 			D3DDevice_End();
-			#pragma inline_depth()
 			function_14390(0, (s_type_7ba8e9 *)local_1, 0.f);
-#pragma inline_depth(0)
 			function_0222d0(D3DRS_SRCBLEND, 0);
 			function_0222d0(D3DRS_DESTBLEND, 0x302);
 #pragma inline_depth()
