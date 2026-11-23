@@ -1449,6 +1449,15 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // marks' flag, tick and table (0x4e7c18, 0x4e7c1c, 0x4e7c20) are three separate globals, while the cluster and object
 // marks this function also uses are one storage block each; retail hoists only the instance tick out of its loop
 // (reloading it after the call). The table is defined in src/unknown_1321f0.cpp (a held file), so it was not tried.
+// Round 230 (m3 lane 8, h2m fast over this file's markers plus the six listed above, base 23): that lead is now on main
+// (include/instance_marks_storage.h, one block), and the tick still loads at the loop top. Diagnostics: the tick as a
+// separate scalar global 23; the store going to another block 58; the loop without the store 186; without the call 241:
+// in every one the load stays in the loop, so neither the table store nor the call is what keeps it there. Tried: the
+// test and mark as a forceinline helper returning whether it marked 23; the tick named inside the loop body for the
+// test and the store 23 (both same code); the tick read into a local ahead of the loop and read again after the call
+// 27 (retail's preheader load and reload, but loaded ahead of the count guard and in EAX, the count in EDX); that inside
+// an explicit `if (0 < count)` guard 24 (retail's layout, scratch registers rotated: tick EAX, element pointer ECX,
+// index EDX against retail's EDX/EAX/EAX); that with the dword world mask 218 (898 bytes).
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)

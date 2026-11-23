@@ -1130,6 +1130,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // with the walking index copied from it 535, the orientation bounds pair through a pointer to the pair 535 (same code
 // each); the remaining count lowered ahead of the group's call loop 746; re-measured: the edge extrema as ternaries 613,
 // the inner empty slot as `continue` 535 (same code).
+// M3 lane 15 r139 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; 0x17d9a0/0x17d900 MATCH
+// each run; control 535). Frame reading (ours -> retail): group count +0xc -> +0x14, face count/remaining +0x18 -> +0x20,
+// first face +0x1c -> +0x10, secondary count +0x4c -> +0x54, tag pointer +0xb4 -> +0x94, search index +0xbc -> +0x88.
+// Forms: `first_face` declared ahead of the search loop 535; the search index declared ahead of its loop 535; the two
+// counts declared ahead of the face arrays (assigned in place) 535; the tag pointer declared ahead of the arrays 535 (same
+// code each: scope and declaration order move no home); the seed face stored after the two counts 536. Body unchanged.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
