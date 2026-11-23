@@ -438,6 +438,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // first; on 56 the dot through dot3f or left through cross3f 60; with the explicit time cursor the six compute
 // orders 124/124/124/128/128/128 (1413 B). On 56 the loop slots, the dot's k-i-j order, the cross section's
 // schedule and the first normalize's j product still differ.
+// M3 lane 5 r237 (H2M_FAST, control 64): `group` renamed channel, ordinal, a or zone 64 each (same code: the cursor and
+// ordinal homes do not follow names); the loop's pointer advances with the six coefficient pointers ahead of value and
+// velocity 228 (1415 B), all advances ahead of current/target 215 (1397 B), value moved after first (retail's EBP add
+// position) 78, the coefficient advances reversed then velocity and value 241 (1415 B). Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1567,6 +1571,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // the squares summed x, y, z 337; the rows computed x, y, z 337. The matrix stored transposed (tij - s*k at +0xc as
 // retail) with the transform reading it transposed 358 (1453 B); a second matrix for the second rotation, declared
 // there or at the top, 344 (1442 B).
+// M3 lane 5 r237 (H2M_FAST, reduced control 337): the file's other axis-angle builder and transform (the unused inline
+// pair above the view-setup helpers) for the first rotation only 386 (1425 B), both builders 360 (1455 B), the four
+// transforms 368 (1441 B), builders and transforms 359 (1473 B), the second builder only 352 (1464 B). Body unchanged.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1755,7 +1762,7 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ.
+// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ (r237: a 2 lead, below).
 // Earlier at 37 (was 45). the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
 // The reservation publishes the pointer before the pool count and state test. The stride spill,
 // cap reload, corner loads, and recount registers still differ.
@@ -1904,6 +1911,16 @@ struct s_point_pool_173520
 // and paired reverse selection 167. Signed-short clip count 226 or staged 224. Shared viewport count 115. Unused
 // reservation trim 190. NOT kept: the 24 form needs an exact match for its reservation and cap binding. The
 // pool/state order, stride spill and recount remain.
+// M3 lane 5 r237 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). Lead 2 (match-only, 865 B): on the 9
+// lead the recount's count read through `long const &used = result->count;` with `pool->count = (result->points -
+// pool->points) + used;` 2 (recount exact: points ESI, count ECX); `long used = result->count; long &total = used; total
+// += ...; pool->count = total;` 2; `total = difference; total += count` through the reference 10; a `short const &` 9.
+// Left on the 2 lead: only `mov [esp + 0x1c], ecx` (step * 8) after the clipped cursor's lea where retail stores it
+// first. On the 2 lead: step as `long const &` to its selection 2, the index start through a `long const &` 2, `long
+// const &stride = step` in the update 2, the cursor start through a `point3f const *const &` 152, the countdown from a
+// `long const &` to the clip count 2, `remaining` declared ahead of index and step 2, `&result->points[index]` 2, index
+// and step in one if/else on the state 166; the guarded loop as `do { ... } while (--remaining)` 65 (869 B), as a do-while
+// with `--remaining` in the body 65 (869 B), as `while (remaining != 0)` 2; permuter 74 tries in 600 s, best 2.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

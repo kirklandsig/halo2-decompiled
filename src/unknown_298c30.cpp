@@ -791,6 +791,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // divisions by the length 305 (same code: one reciprocal); its products as `x * inv` and `inv * y` 305; its reciprocal
 // declared bare at the helper's top 305; the far arm's difference point set member by member 305 (all four the same
 // code); that point copied from the sum and decremented in place 368 (1745 B). All restored.
+// M3 lane 16 r180 (H2M_FAST with 0x29a190, MATCH throughout; main 305; all on lane 2 r134's p1 lead rebuilt, 249 at 1722 B,
+// aligned 59): the shared normalizer's products as `y = inv * y`, both `inv *` or both `* inv` 249 each (same code: the far
+// arm still forms both products before its stores); the near rows' `cos * y` or y term first in all four arms 249 (same
+// code); the far difference through the existing vector2d_from_points2d 160 (1734 B, aligned 61: the inner loop's pad comes
+// back with the code address, but the y difference is stored and reloaded and the normalization still differs); the far
+// arm through the existing normalize2d_fast (cast or a vector2f local) 249 (same code); the float distance copy declared
+// ahead of the double root 249 (same code). Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1618,6 +1625,19 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // the in-loop trace result declared in the loop 562; on this body both distances named 569 (same code); the body after the
 // sector read nested under `if (local_11 != NONE)` with `return true;` last 790 (3348 B). Still BLOCKED-BY 0x2108a0 (its
 // file is on this round's Avoid list).
+// M3 lane 16 r180 (H2M_FAST; main 569, unchanged; on lane 6 r207's w10 lead re-applied, 108 at 3374 B, aligned 30): the
+// first sweep distance site follows the tree of the distance helper's sum: one redundant pair around its z square
+// (`x*x + (y*y + (z*z))`) 104 (aligned 26, that site exact; the pair around x*x as well 104; around y*y, or y*y and x*x,
+// 112; around both inner squares or around x*x alone 108). One to three pairs on the sweep angle's products move only the
+// obstacle bounds' SSE sum (odd counts 124, even 104). The obstacle offset's squares follow the shared magnitude helper's
+// tree: a pair around its j square (diagnostic, shared header) 115 (3373 B, aligned 22: both magnitude sites take retail's
+// y-first order; the bounds sum flips), with one sweep pair 95 (3374 B, aligned 16). Left on 95: the two obstacle sine
+// products (retail copies the sine and multiplies it by the memory component) and the rotated/offset homes (+0x18/+0x44
+// exchanged). On 95: pairs around the sine products in one row, the other or both, with 0 to 3 sweep pairs, 95 or 108
+// (aligned 16 to 33, never the sine form); the helper reading the vector3f's i/j directly 95 (same code); trig-first
+// products 95 (same code); the sine held in a double local 154; the second difference in its own local 174 (3372 B,
+// aligned 26: homes still exchanged, two other sums flip); the rotation output declared at the loop top 95 (same code).
+// Patch: build/r180/lead-299460-95.patch (m3-lane16; needs the held `inline` on 0x2108a0 and the header pair).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

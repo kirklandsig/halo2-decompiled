@@ -1033,6 +1033,13 @@ extern "C" void _ReadWriteBarrier(void);
 // the actor as an `s_actor_view &` with the barrier 6; the busy test held in a named bool after the barrier 6 (all three
 // the same code); a second barrier at the head of the NONE block 7; a second barrier ahead of the state and the lookup
 // 6 (same code).
+// M3 lane 12 r179 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the flags tested through a bool set ahead of
+// the barrier, `bool point_target = (state->flags & 4) != 0;` 38 (208 B: the test and `setne` in the entry block); the
+// flags as a `long` local read ahead of the barrier 37 (205 B, first +0x1e: retail's entry through the add, the slot into
+// ECX right after the data base, but the flags `movzx` into EDX in the entry block and ESI pushed there); that local read
+// first, ahead of the actor lookup, 44 (first +0x5); read after the barrier 6 (same code: it sinks); actor, `long` flags
+// local, no barrier, 44 (208 B). A read through the slot anchored by the barrier always brings its own load into the
+// entry block; retail's entry has the slot load alone.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
