@@ -329,6 +329,7 @@ static __forceinline void apply_linear_spilled(float const &source, solver_linea
 static __forceinline void apply_first_normal_positive_impulse(float const &source, solver_linear_row_31e7b0 const *row,__m128 const *angular_axes,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_copy)
 {
+
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
 	float impulse = source;
@@ -338,7 +339,9 @@ static __forceinline void apply_first_normal_positive_impulse(float const &sourc
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 inverse_b = b.body->inverse_inertia;
 	solver_scoped_body_fields_31c940 const &linear_body_b = b;
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	// Each body broadcasts its own read of the rounded SIMD copy.
+	__m128 scalar_b = _mm_load_ss(&simd_copy);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar_b, scalar_b, 0), inverse_b);
 	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
 	a->linear = _mm_add_ps(a->linear, linear_a);
@@ -351,6 +354,7 @@ static __forceinline void apply_first_normal_positive_impulse(float const &sourc
 	a->angular = _mm_add_ps(a->angular, angular_a);
 	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
 	*result += impulse;
+
 }
 
 // The first pair reloads B for inertia, then captures each update receiver.
@@ -1172,7 +1176,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2039. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2033. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
