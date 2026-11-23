@@ -488,6 +488,12 @@ extern long g_55c154;
 // variant and replaced by `saved` under `if (create_default)` 76 (577 B); the variant copy ahead of the index store 174
 // (581 B, first +0x7: the frame flips); the copy's count as the name array's element count 61 (same code); the load
 // result held in a named bool 61 (same code). Body unchanged.
+// M3 lane 12 r181 (H2M_FAST with 0x13fac0/0x212bc0/0x238c69, all MATCH; control 61): two load arms re-measured 174
+// (595 B: `this` EDI from the first instruction, `saved` EBX, then the hoisted variant address in EBX); on them `saved`
+// declared at the function's top, at the second half's top or ahead of the entry 174/174/174 (same code: declaration
+// order does not break the `this`/`saved` contest); the game type read once into a local for the second half's three
+// calls 160 (586 B, aligned 80); the first flag read once into a local for its two tests 187 (594 B); both 176 (585 B,
+// retail's length, aligned 70; `this` still EDI); the game-type local on the one-load body 159 (572 B).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

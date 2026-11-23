@@ -328,6 +328,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // (compile-only, every argument on the stack, no address local): the transform is loaded once in each arm there (EDI
 // in the node arm, EAX in the else arm) and the record late into ESI; the linked build still passes all four in
 // registers (EAX, DX, ECX, EDI, a plain `ret`), so retail's stack-passed transform is not explained by a per-arm load.
+// M3 lane 1 r161 (h2m fast with 0xb8c00, 0x142570 and 0x200e60, all MATCH; control 19): the record's tail stores
+// reordered: field2e ahead of field1c 20; field2e right after the constructor 38; field10 after the angle call 32;
+// field10, field1c and field2e all ahead of the angle call 35; field10 ahead of the position 19 (same code). The
+// transform keeps EBX and the point's y EBP in all five. Body unchanged.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

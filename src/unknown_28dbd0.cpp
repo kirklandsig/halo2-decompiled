@@ -782,6 +782,23 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // positive first (`if (local_4->field_30)`) 175, as a conditional expression 175.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the spread rotation through include/axis_rotation.h's helper in place of function_28dbd2 236 (1190 B).
 // Restored.
+// M3 lane 2 r142 (H2M_FAST with 0x28dab0, 0x256bd0 and 0x259d0, all MATCH each run; control 173, difflib-aligned 131, 94
+// with offsets masked, 41 with registers masked too; helper and body unchanged). Two grids over function_28dbd2. (1) Statement
+// order {sine, dot3f, cosine, `projection *= 1 - cosine`; the same with a named dot; dot, sine, cosine; sine, cosine,
+// projection; main's cosine, projection, cross, sine} x cross {cross3f(v, axis) subtracted; cross3f(axis, v) added;
+// scalar j and k with i written in row i; three scalars; cross3f_staged(v, axis)} x four row spellings x {rows assigned in
+// place; three temporaries}: the four row spellings compile alike in every cell and the temporaries are 5 to 13 worse. Best
+// 197: main's order with three scalar cross terms (i, j, k, retail's operand orders, subtracted), retail's 0x118 frame at
+// 1209 B, aligned 88 / 85 / 30, every instruction outside the rotation and the jitter arm then retail's. The rest: cross3f(v,
+// axis) 213 (1209 B, frame 0x11c) with the sine first and 216 with main's order; cross3f(axis, v) added 224 (1198 B); the
+// scalar forms with the sine first 228-236 (frame 0x114); scalar j and k with main's order 231 (1192 B, frame 0x114).
+// (2) Twelve statement orders x the scalar cross declared {i, j, k; j, k, i; k, j, i; j and k with i in row i}: cosine,
+// projection, cross, sine and cosine, projection, sine, cross 196-197 (k, j, i: 196, aligned 88 / 85 / 28); the cross
+// first or right after the cosine 208 (1191 B, frame 0x118); every order with the sine first 226-241 (frame 0x114). On the
+// 196 form: the jitter as a directly drawn zero-k offset through vector3f_add_scaled 210 (1221 B); both 0.1 updates
+// through vector3f_add_scaled 196; both 222 (1231 B). Main's helper with those updates re-measured 180. Reading: retail's
+// frame comes with the three cross terms as scalars, but the order that gives it here takes the cosine first; retail takes
+// the sine first (`fsin` ahead of the outer cross, stored after the dot), and no order with the sine first keeps the frame.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
