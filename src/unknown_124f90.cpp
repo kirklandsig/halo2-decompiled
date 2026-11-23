@@ -1913,6 +1913,17 @@ long function_2197f0(real gain);
 // with the product reading the field 102 (685 B); the product's fade-out through a trivial file-local accessor 87 (same
 // code); arm 1 alone as `gain += ...` 87 (same code: the add is still interpolation plus the gain from memory); arm 1 alone
 // written interpolation first 157 (688 B: the gain copy takes a new stack slot). Body unchanged.
+// M3 lane 7 r220 (compile-only screens of this file alone, scored against retail with stack and global references masked,
+// control 60; H2M_FAST with 0x1251e0/0x221810 for the confirmations, control 87). Reading: on the division form with a
+// fade-out local the first arm has retail's instruction order and only the XMM numbers differ; retail's fade-out value
+// stays in XMM1 from the window test (reciprocal 2, elapsed 3, one 4), a named local takes the last register (4) and the
+// window test then adds the hold time first, and without a name the product re-reads the field. Division form without the
+// local, product `(e - hold) / fade_in * fade_out`, `fade_out * ((e - hold) / fade_in)` or `(e - hold) * fade_out /
+// fade_in`, clamp `1.0f > q ? q : 1.0f` or `q < 1.0f ? q : 1.0f`: masked 55/55, 59/59, 55/55 (H2M_FAST 125 at 678 B).
+// The same six with the fade-out local read just before the window test, declared uninitialised ahead of `elapsed` and
+// assigned before the window test, declared at the top of the function and assigned there, or assigned inside the window
+// test's first comparison: masked 76 each (H2M_FAST 128 at 678 B for each of the four places). The kept inverse form with
+// the local at the first three places: masked 80 each (H2M_FAST 92). The declaration point does not move the register.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3787,6 +3798,15 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
+// advance differs at +0x6b.
+// M3 lane 15 r138 (H2M_FAST): 0x128020's loop-top `sounds = g_4e637c;` 8 (same code); with the sound pointer as
+// `(s_sound_playback *)sounds->data + index` ahead of the start test 157 (561 B); the start test and the pointer both
+// through `sounds` after that reload 8; the advance reading the global at both calls with no `sounds` reload 8; no
+// `sounds` local at all (entry, loop top and advance through the global) 8; the all-global advance with `sounds =
+// g_4e637c` last (the earlier 17 form) 8 on this base; `default: __assume(0);` first in the switch 8; `case 1:
+// continue; default: __assume(0);` both ahead of case 0 8. With the assumed default every advance spelling loads the
+// pool ahead of the ternary.
 // MiniMax C (11-20): no new form, no lower score (8): the pool reload still lands ahead of the next-slot diamond in every form
 // tried this round (the seed as its own statement ahead of the reload, the advance as two body statements with the mode-1 arm
 // broken instead of continued, and the seed through a comma), and retail's mode dispatch (`movsx eax, ax; sub eax, 0; jne`)
@@ -3808,8 +3828,6 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
 // MiniMax G (11-20): no new form, no lower score (8): the pool reload is still scheduled before the next-slot selection - retail loads the pool after the next-index ternary's join and re-reads it on every path into the advance, while this build reloads it only where the body clobbered the register and lets the branch into the loop advance skip it; the seed as its own statement ahead of the reload, the reload inside the search call's argument and both pool uses through the global all score the same 8.
-// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
-// advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
 // `case 1: continue;` arm and an unreachable `default: __assume(0);`, and the pitch range is computed inside case 0
 // where retail computes it: every register, the `sub eax, 0` dispatch and case 0 are retail's. Left: the loop end's
@@ -5293,6 +5311,17 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // local itself initialised to NONE at the loop top and copied after the if/else 531 (2284 B); the else arm as one
 // chained assignment 484 (same code); the loop head as `function_14de70(...) != NONE` 530 (2298 B). MiniMax E's left
 // rows k, j, i re-measured 432 (the anchor stays +0xb8; not kept, a statement order).
+// M3 lane 7 r220 (H2M_FAST with 0x220790, MATCH unless noted; control 484, difflib-aligned rows [471]). Rotate helper:
+// its four quaternion locals dropped (fields read at each use) 488 at 2310 B [461]; declared j, k, w, i 484 (same code);
+// k, j, w, i 490 at 2312 B [494]; w, j, k, i 446 at 2323 B [486] (a declaration order, not kept; the body moves further
+// from retail's length); only w named 491 at 2314 B [461]; only i, j, k named 481 at 2305 B [471]; only i named 485 at
+// 2307 B [459]; only j and k named 1049 at 1726 B (the helper is then called, not expanded). Loop head: the unit index
+// declared at the loop top as NONE and assigned in the player arm 484 (same code); the player index the same way 484
+// (same code); the else arm's cluster store first 484 (same code). The location declared at the loop top with both fields
+// NONE and one pair of listener stores after the if/else 531 at 2284 B [538]; the same with the stores kept in both arms,
+// the else arm reading the location, 525 at 2294 B [519]: retail's `or esi, -1` head and immediate compares in the player
+// arm appear, but the location's two NONE stores are emitted at the loop top, the 0x155760 result is still spilled and EBX
+// goes to the player-state cursor that retail keeps in memory.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

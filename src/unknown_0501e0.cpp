@@ -792,6 +792,30 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // statement form (first view: retail's shape; second view: retail holds right.i in XMM7 from the first view and the
 // scale in XMM6, loaded after the last origin subtraction, so the second view's scaled x and z go to [esp+4] and [esp];
 // ours gives XMM7 to the scale at the top and keeps all three in registers).
+// M3 lane 8 r229 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH unless stated; control 221, aligned 249, register-masked
+// 154; body unchanged). Diagnostics on the form retail's code points to, each reverted at once: matched 0x142640 itself expanded
+// here (an `inline` on its definition, which its /Ob1 file otherwise prevents; 0x16c2f0 then 107) in place through
+// `(transform4x3f const *)&g_4b9e14` 218 (1115 B, masked 144), with the depth limits in the condition 256 (1117 B, masked 115):
+// retail's first 33 instructions up to register numbers (second offsets stored at once, the scale loaded into XMM6 after the last
+// origin use, copy then scale), but every product copies the value and multiplies by the coefficient in memory and the sums run
+// x, y, z where retail loads the coefficient first and sums z, y, x; frame 0x20. On that form: 0x142640's scalar copies assigned
+// z, y, x 256 (the sums become z, y, x; 0x142640 itself 18), declared z, y, x but assigned x, y, z 256 (same code), so an expanded
+// helper's sum order follows the order its scalar copies are assigned and not the written sum; separate view vectors 310 (1075 B),
+// the first separate and the second in place 285 (1099 B); offsets through vector3d_from_points3d with the first/second point
+// first 256/257; all 36 orders of the six offset statements (first point first) 255 to 270 (i,j,k for the second point with
+// j,i,k / i,j,k for the first 255 / 256; none moves the sum order); the second view out of place with the segment kept in the
+// second offset vector 256 (first view in place) and 285 (both out of place), without that reuse 290 and 310. On lane 13 r96's
+// macro lead (re-measured 252 at 1136 B, frame 0x14, masked 62): the second view reading another global as its matrix
+// (diagnostic) 256 (masked 85) with the first view still loading its coefficients, so those loads do not come from sharing
+// between the views; the second view without its scale step 322 (1067 B), the first without 302 (1086 B), neither 375 (1012 B):
+// in none does this build carry a coefficient from the first view into the second, even inside one block, because all eight XMM
+// registers are held (the second offset's i keeps XMM0 through the first view), so retail's right.i in XMM7 needs the second
+// offsets out of the registers first; the scale step as three conditional expressions 320 (1188 B); the segment kept in the
+// second offset vector 253 (frame 0x20, the second offset's i still in XMM0 through the first view). On this body: the offsets
+// as component statements with the first/second point first 218/220, paired by component 216/217, through
+// vector3d_from_points3d 219/219, one fused loop 218; the helper reading the camera's scale itself with the offset loops 218 and
+// with those seven offset forms 218/220/216/217/218/218/219; the helper with three scalar copies scaled under the test the same
+// eight values. The small gains do not add up (floor 216, five under the control).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

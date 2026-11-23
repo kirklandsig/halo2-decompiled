@@ -1273,6 +1273,13 @@ void function_143250(
 // Band three's r2_r2_s105 declared ahead of r5_r5_s105 939, r5_r5 ahead of r2_r2 939 (both the same code); r2_r2 and
 // r5_r5 at the top of band three 1569 (10780 B); r8_r8 after r5_r5 944 (10781 B); band two's s5 and s5_s15 declared
 // just ahead of entry 0 1134 (10763 B, frame 0x2f8). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x143250 MATCH; control 939): retail's extra cell (+0x234 under the matrix) holds band three's
+// root-105 times r1-square product alone (stored once, read once for its r6 product); ours shares that product's cell
+// with two other values. That product's r6 product declared right after its r7 product 1567 (10728 B); the product
+// written into its two uses 1226 (10744 B); its operands as `r1_r1 * s105` 939; entry 0 of band two as
+// `r3 * r1 + r4 * r0` 939; the three band calls with `&result[n]` / `&coefficients[n]` 939 (same code each); band three
+// nested in band two's block reusing band two's ten shared products (no redeclarations) 1994 (10500 B: retail keeps the
+// second home of each shared product, so band three's redeclarations are retail's). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
