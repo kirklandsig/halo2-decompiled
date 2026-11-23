@@ -1731,6 +1731,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
 // with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
 // allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
+// M3 lane 4 r252 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged; control 529). Reading: both
+// builds give one local the dead `record` argument slot ([esp+0x40] after the pushes): ours the spilled result byte,
+// retail the length, so the extra frame dword is the length's own cell. On constant returns (566, frame 0x28): the
+// length stored to the record and read back from it 560 (2193 B); `if (count <= 0) return false;` 561; a per-entry
+// pointer in the scan 563; the mask written inside the test 569 (2172 B); the mask inside the test on the plain
+// result 575 (2172 B). Body unchanged.
 // M3 lane 14 r146 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21 unless named; control 529, aligned 527, masked
 // 281). Reading: VC packs locals into dead argument homes; ours puts the spilled result byte in record's argument slot
 // (`mov [esp + 0x40], al`) where retail, returning constants, keeps the length there (`fst [esp + 0x3c]`). Forms: the
@@ -1738,6 +1744,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 0x28, first +0xc: the block and query still arrive exchanged); the mask computed ahead of the count read 569; both
 // 570 (2172 B); `result = false` at the top and `result = true` closing the found block 590 (2157 B; 0x3db00 8, 0xd4080
 // 508).
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both lighting_rotate calls (this function's and 0xd4080's) through include/axis_rotation.h's helper, sine and
+// cosine of a named angle, 605 (2136 B; 0xd4080 470). Restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2086,6 +2094,8 @@ real function_30bf0(vector3f *vector);
 // (0x3db00 lost). With 0xd37f0's colour-scale helper and live-axis pair: N D0 IP ES SS 316 (1877 B, aligned 215: left are the
 // entry flag store, the normal copy's square order, the hoisted tag-table load, the call's query/block registers, the rotation's
 // sine interleave and the final scales); without ES all 16 subsets 427 (N D0 IP SS) to 486, the pair alone 477. Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both lighting_rotate calls through include/axis_rotation.h's helper (the negated copy turned in
+// place, then stored) 470 (1844 B; 0xd37f0 605). Restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

@@ -1156,7 +1156,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 33 (was 33): m3 lane 5 r233 unchanged (its lines just above the marker). Frame 0x1144 and extent agree. Query size and write count exchange stack
+// score 33 (was 33): m3 lane 16 r179 and lane 5 r233 unchanged (their lines just above the marker). Frame 0x1144 and extent agree. Query size and write count exchange stack
 // slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax I (11-20): no new form, no lower score (33): the write block's close test written as one shared condition (the count test or the not-resized path with the handle test inside) measures 157, and the close duplicated in both arms measures 179 (994 bytes against retail's 930), so the body stands; what still differs is retail's single close block reached from the resized and the not-resized path, which needs a goto (kept only with a byte match), the swapped pair of homes (ours the query size at [esp+0x28] against retail's [esp+0x24] and the write count at [esp+0x24] against retail's [esp+0x28]), the write call's flags zero built in EAX where retail builds it in ECX, and the checksum compare taking EDX where retail takes EAX.
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
@@ -2114,6 +2114,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // constructor on the file-handle type (callers passing the raw handle, a temporary built at each call) cannot be the
 // answer: the type is a member of the async task aggregate that overlays the task records, which rules a constructor
 // out. Body unchanged.
+// M3 lane 16 r179 (H2M_FAST with 0x213800 and 0x2149c0, both MATCH; control 33; lane 9 r132's 5 form rebuilt at 5). On
+// the 5 form: the write's handle as a functional-cast copy `s_file_handle(*handle)` 114 (917 B: loaded first, the close's
+// copy lost as with every named copy); `written` declared at the size-mismatch block's top 5; the count declared ahead
+// of the empty header 5 (same code each). On main: the close's count test as `bytes_written < 0x800` 33 (same code); the
+// block-scoped count copied into an outer `long written_size = 0;` with no else arm 83 (the dword form's code). Body
+// unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

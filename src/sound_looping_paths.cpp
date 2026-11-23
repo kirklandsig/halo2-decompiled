@@ -157,7 +157,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 846): The 0x4e0 frame and 3327-byte extent agree. The entry zero uses EBP instead of ESI,
+// score 846 (was 846; m3 lane 16 r179 unchanged, its lines just above the marker): The 0x4e0 frame and 3327-byte extent agree. The entry zero uses EBP instead of ESI,
 // and the target count, primary source and query arrays receive different homes. The retail query keeps its
 // full-width count through the walk and reloads a sound entry before testing its tag.
 // MiniMax E (11-19): score 846 (was 846): no new form, no lower score. Read from the listing again: retail zeroes
@@ -887,6 +887,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // target loop's search ending on `index == NONE` in its condition (no break) 857 (3338 B); the existing list appended as a
 // store then `existing_count++` 846 (same code); the gain sum written portal first 846 (same code); the override loop
 // through a named target pointer 850; the listener slot through a `long *` used for its three accesses 846 (same code).
+// M3 lane 16 r179 (H2M_FAST with 0x18bb80, MATCH; control 846): the repair loop's first-choice flags read through the
+// sounds table at both tests (no sound pointer) 873; the repair loop's matched sound as a named element pointer with a
+// `continue` on NONE 948 (3289 B); the query loop's tag read once into a named local 846 (same code); the choice
+// distance defaulted to zero in a local and stored once 924 (3304 B); the target's fade-time definition through a named
+// element pointer 885. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

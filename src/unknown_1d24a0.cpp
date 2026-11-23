@@ -695,6 +695,13 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // existing remove_at (the array typed with the growable-array members, the head reading the field): alone 780,
 // with the reads 808, with the split 776, with both 775 (full check too: the loop head, frame and fraction homes are
 // retail's), but the full check again loses matched 0x54590 and gains 0xc2d00, so not kept. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST, single address; control 838, difflib-aligned 386): r215's object-type long local (the mask
+// written at both tests) with the angular block's fraction split off into its own local 831 (4256 B, aligned 339; 7
+// points and the mask computed at each use, so not kept); that with the angular coefficients read at each use 843
+// (4226 B, aligned 267, first difference +0x14); the two level bytes read ahead of the two step conversions 837 (a
+// statement order, one point); the swap-remove through a named elements pointer 885 (4259 B); the second limit block's
+// fraction split off instead of the angular block's 836 (aligned 341, the same count as lane 11 r152's split). The loop
+// head stays BLOCKED-BY 0xbadc0 (its file is on this round's avoid list). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
