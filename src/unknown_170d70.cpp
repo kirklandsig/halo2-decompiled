@@ -1934,6 +1934,12 @@ struct s_point_pool_173520
 // `long const &` to the clip count 2, `remaining` declared ahead of index and step 2, `&result->points[index]` 2, index
 // and step in one if/else on the state 166; the guarded loop as `do { ... } while (--remaining)` 65 (869 B), as a do-while
 // with `--remaining` in the body 65 (869 B), as `while (remaining != 0)` 2; permuter 74 tries in 600 s, best 2.
+// M3 lane 15 r138 (H2M_FAST; round 237's 2 lead rebuilt, 2 at 865 B; left: the stride spill `mov [esp + 0x1c], ecx`
+// after the cursor's `lea edx, [esp + 0x328]` in the loop preheader, where retail stores it first). On the 2 lead: the
+// cursor declared ahead of index and step 2; the cursor declared right after the clip call 2; `&clipped[0]` 2;
+// `remaining` ahead of the cursor 2; the inverse computed ahead of the destination point 2; the guard on `count` with
+// `remaining` kept 2; `index += step` ahead of `++cursor` 121 (863 B); permuter (seed 13821, anneal, 600 s) 69 tries,
+// best 2.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
