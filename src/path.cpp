@@ -1050,6 +1050,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // expression return 2, `if` with `return true; return false;` 2 (same code each: no vanishing block); the link test
 // through an inline edge getter returning the edge or NULL 314 (1389 B); the previous point as a default then
 // `if (j > 0)` 280 (1396 B, 0x270930 260); `*const steps` in the definition 2 (same code). Body unchanged.
+// M3 lane 2 r141 (H2M_FAST with 0x270930, MATCH each run; control 286): `previous` dropped, the predecessor read through
+// `lookup->nodes[previous_index]` 287 (1393 B, but frame 0xe4 as retail: first difference +0x19); the truncation test
+// as `j < count - 1 && distance > 1600` 287; the edge-index test with `!= 0xffff` first 286; the special test written
+// into the type chain (no named bool) 330. Round 110's saved two-flag lead re-applied to today's file 2 (the latch's
+// steps/j reload pair only); on it the truncation's two stores swapped 4. Retail's link test stores the edge bit to the
+// +0xf byte that the surface flag reuses (two block-scoped bools sharing a slot). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

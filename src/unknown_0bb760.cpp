@@ -495,8 +495,8 @@ void function_3dd10(long object_index, bool force);
 // two conversions first, then the inverse) the blend takes retail's slot, the found block matches retail's
 // code step by step and the clamp entry orders its zero and its one the way retail does, but the
 // not-found path joins the clamp entry's load instead of carrying its own copy of the one (132) and the count
-// test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call
-// scores 86 and leaves the blend in the seed's slot.
+// test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call scores
+// 86 and leaves the blend in the seed's slot.
 // MiniMax B (11-13): no new form, no lower score (84): aligned the two listings instruction by instruction: the first scan
 // leaves on a signed less-than bound (retail's jle and jl against this build's je and jne), and writing that scan with
 // the less-than bound unrolls it by four here (637); the blend keeps the seed's home (esp+0x38) where retail keeps it at
@@ -1021,6 +1021,15 @@ void function_3dd10(long object_index, bool force);
 // long 74; the selection loop's latch as `while (choice_count > j)` 74; the scan stepping a choice pointer (`++j, ++choice`)
 // 156; the weight test as `0.0f < weight` 74; the selection test as `target <= cumulative` 74 (same code each but the
 // pointer). Body unchanged.
+// M3 lane 13 r149 (H2M_FAST with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77). Diagnostic (a probe global and
+// chained dead-weight products, reverted at once): on the signed `j < choice_count` scan (636, unrolled), 8/24/48 live
+// float temporaries computed ahead of the scan 757/998/1326: the weight turns memory-resident (retail's add from its
+// home) but the scan stays unrolled, so register pressure is not what keeps retail's scan rolled. Forms: the outer loop
+// bound written count first (`count > i`) 77 (same code); on the rolled form with both remainders through the float
+// overload (186) 74, on the rolled form with only the blend's (74) 186 (the outer bound and the second float remainder
+// each toggle the selection loop's choice-first add: a phase, not kept); on the latter the variant left uninitialised and
+// zeroed in an else arm of the model test 234 (1042 B), the weight declared just ahead of the first scan 293 (974 B).
+// Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

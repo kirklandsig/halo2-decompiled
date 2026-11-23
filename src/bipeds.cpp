@@ -559,6 +559,12 @@ void function_e5930(long unit_index);
 // MiniMax E (11-20): no new form, no lower score (118): retail keeps 0xe5930 out of line here, so the reset
 // dispatch does not expand and the body is 70 bytes shorter; that helper's file is not this lane's: BLOCKED-BY 0xe5930.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
+// M3 lane 13 r148 (h2m fast): word_flags_set with the shifted bit as an implicit bool 113; the set/clear as one ternary
+// expression statement, word |=/&= arms 113, byte-cast arms 121; word_flags_set with TEST_FIELD_BIT(flags & 2) 113;
+// `if (TEST_FIELD_BIT(flags & 2))` with byte stores 121. One-object LTCG kit (this file, 0xe5930's file and the ballast,
+// whole-link threshold T): 0xe5930 is a call here at T 60, expanded at T 75..90 and a call again at T 100 (0xe5980 then
+// expands into 0xe5930); the caller file's own threshold is ignored; 0xe5930's body placed in this file still expands at
+// T 81, so the file split is not the cause. Still BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
 // final 0xe5930 call with the unit index); no behaviour difference. Only the inlined 0xe5930 body and the flag test differ.
@@ -786,7 +792,7 @@ struct s_biped_flags_10a_view
 // MiniMax E (11-20): no new form, no lower score (222): retail computes the state pointer at the top and spills it
 // where this build reads it at its one use, and the 0x111650 call pushes both arguments where ours takes the names in
 // EAX: BLOCKED-BY 0x111650.
-// score 222 (was 224): Frame 0x16c agrees. Retail
+// score 209 (was 222; 224 earlier): Frame 0x16c agrees. Retail
 // keeps the animation-state pointer at +0x20 and the pool offset at +0x24.
 // The build reads the state at its use and spills the offset at +0x20.
 // The type-0 bit still uses `and al, 4` where retail shifts then masks.
@@ -877,6 +883,14 @@ struct s_biped_flags_10a_view
 // accumulated result first or animation-success return: 273/255/271/295.
 // With the state pointer computed at entry: 359/331/359/381.
 // NOT kept: conditional update approaches retail length but raises the score. Early state takes EBX.
+// M3 lane 13 r148 (h2m fast), kept: the control vector's squared length through the existing length_sq3f 222 -> 209
+// (the inline helper's boundary puts the 0xdd300 result store right after the call, before the control loads, as
+// retail). On 209: the second counter test through TEST_FIELD_BIT 258; a byte read of flags_348 at the first or the
+// second counter test 208/208 (breaks the cached flags word; a cast only, not kept); both with TEST_FIELD_BIT on the
+// second 242/208; `changed |= function_111650(...) | action; return changed;` 209; `changed = true;` above the else
+// arm's 0xd4 test 197 (retail sets BL before that je; statement order, match-only lead); single exit with `return
+// changed` 301 (head as retail but the three state instructions), with the state pointer at the top 304 (state takes
+// EBX, changed a stack byte), with a separate result and changed declared at the 0xe2d80 call 305/305.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -949,8 +963,7 @@ bool __stdcall function_dd360(long arg_159e6d)
 			}
 		}
 		biped->unknown34a = function_dd300(*(long *)((byte *)biped + *(short *)((byte *)biped + 0x12a) + 0x7c));
-		if (0.1f * 0.1f > biped->control.i * biped->control.i + biped->control.j * biped->control.j +
-			biped->control.k * biped->control.k)
+		if (0.1f * 0.1f > length_sq3f(&biped->control))
 		{
 			biped->control = *g_4687a4;
 		}
@@ -1947,6 +1960,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // main with the reorder: case 4/5 using the entry `state` (no re-derivation) 205 (2816 B); the state read inline in the
 // 0x1e67f0 argument 416. Retail's argument temporaries sit c0 byte +0x90, flags_348 byte +0x94, gravity +0x9c; ours (lead)
 // c0 byte +0x8c, gravity +0x94, flags_348 byte +0x9c.
+// M3 lane 4 r254 (H2M_FAST, control 158; the walking-preload lead rebuilt 137): on the lead 1..7 redundant paren pairs
+// on the pill material address 137 each and 1..4 around the boost product 137 each (inert); material set in an else
+// arm with no top init 666 (2796 B; on main 659); boost initialised 1.0f at its declaration with no else arm 641 (main
+// 636); turning computed ahead of the boost block 152 (main 615, 2832 B); the boost's `peak - 1` named 159; the spread
+// test as `!unknown1bc && flag` 145 (retail tests the flag first); the walking slowdown named (`slowdown * rate`) 586.
+// On the lead ours ends its code 4 bytes early (jump table +0xaf0 and 4 pad bytes, retail's table at +0xaf4).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4674,6 +4693,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // axis * sine before cosine * v); that with the addends swapped or each product's operands swapped, fast 599/599 (same
 // order); sine/cosine declared cosine first, fast 604. The x87 row order (retail cosine * v first in rows i and j) follows
 // none of the spellings.
+// M3 lane 4 r254 (plain checks, control 537; the call set agrees with retail, 18 calls): `turned` copied ahead of the
+// turn angle 538 (2727 B); special as `0x7000039 == key` 537 (same code); `else if (mode != 5)` with a two-use key
+// local and a nested 0x6000084 test 640 (2737 B); `(definition->biped.flags & 1)` through field_bit_test 530 (2725 B,
+// under the bar); the names[1] ternary as if/else 553 (2719 B); with that bit-0 test: the wall flag through
+// field_bit_test 603 (2720 B), names[1] as if/else 551 (2718 B), turned copied first 531, flags_134 bit 11 or unit
+// flags bit 20 through field_bit_test 602 each (2719 B). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5697,6 +5722,9 @@ void function_e4300(long arg_159e6d)
 // MiniMax E (11-20): no new form, no lower score (91): the reset-mode dispatch expands here (113 bytes against
 // retail's 61) where retail calls it out of line: BLOCKED-BY 0xe5930.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
+// M3 lane 13 r148 (h2m fast, 0xcaf00 10 throughout): biped as `s_biped const *` 91, as `s_biped *const` 91;
+// `!TEST_FIELD_BIT(flags_c0 & 0x40)` 98; `((flags_c0 >> 6) & 1) == 0` 91; `!(flags_c0 & (1 << 6))` 91. Kit thresholds
+// as in 0xde4c0's note (0xe5930 expanded here at T 75..90). Still BLOCKED-BY 0xe5930.
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
 // declarations with Boolean test 98, with field-use lookup 101. Original body/declarations restored.
@@ -6458,6 +6486,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 111; the angle as rate * length 79 and declared at its assignment 79 (same code each); the forward pointer declared
 // first, ahead of the axis copy, 130; the final test written `0.0f == length` 79 (893 B). Body unchanged.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_direction calls through include/axis_rotation.h's helper 134 (895 B). Restored.
+// M3 lane 4 r254 (H2M_FAST with 0x1ecf50 MATCH; control 79; the rotation helper's file was on the avoid list again, so
+// body-only forms): `up` declared at its copy 79 and `side` declared ahead of `up` 79 (same code); the side cross
+// reading `&biped->forward` 79, the first normalize reading it 79; the staged cross reading it (a field/pointer mix,
+// match-only) 83 at 887 B, retail's length. Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

@@ -499,6 +499,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the local, from the direct store 5 (+0x1a7), from the reference 5 (+0x19e); the tables stored to the field and the
 // `tables` local by one chained assignment on main's body 5 (+0x19e), on the direct store 5 (+0x1a7) (each its base
 // form's code). All restored.
+// M3 lane 3 r300 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e, the
+// direct entry store re-measured 5 at +0x1a7): fresh block locals for the restore block's word, chain word and pass on the
+// direct store 5 (+0x1a7) and on the reference 5 (+0x19e); the direct store with the table field bound as a `byte *const &`
+// for the chain, pass and range bases 293 (980 B); the range stored directly and read back for the calls 178 (+0x148); the
+// pass stored directly and read back for the range index 5 (+0x1a7). Restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1342,6 +1347,9 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // kept 12/13. A zero local or a split pair in 14/18 flips as well (6). Writing the 12/13 zeros as
 // `((real volatile *)out)[2]`/`[3]` matches that tail (2, left in 14/18) but costs 0x19ca0 its match (130), like the
 // `out + 2` copy: any non-direct access to out[] is out. Kept: the direct stores.
+// M3 lane 16 r181 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): case 10 written height first 6 (case 10
+// then stores descending); case 9 written height first 2 (same code); case 16's constant store written first 111 (688
+// bytes); case 11's chain reversed 2 (same code); cases 5-8 as one label group 2 (same code).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

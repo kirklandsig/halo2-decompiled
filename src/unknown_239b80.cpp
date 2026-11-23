@@ -230,7 +230,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 144 (was 144): r154 unchanged; earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
+// score 144 (was 144): r149 and r154 unchanged; earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
 // MiniMax E (11-20): no new form, no lower score (144): the frame is still 0x18 against retail's 0x14 because the
 // departure flag is a dword local here and a byte in retail's dead indices home (our hull count then takes a dead
@@ -995,6 +995,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with a top `if ((short)hull_count >= count) break;` 236 (759 B, frame 0x14 as retail; it is rotated all the same, the
 // same code as) `while ((short)hull_count < count)` 236; that with `current` initialised at function scope ahead of the
 // classifier call 236 (766 B); with a bool departure flag 236; with the candidate bound written `count > j` 258 (762 B).
+// M3 lane 13 r149 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH each run; control 144): a retail-shaped body (one long
+// hull counter with short casts, a top-tested `while ((short)hull_count < count)`, the index store then `hull_count++`, a
+// bool departure flag set under `if (!left_start)`, the three closure exits as `return (short)hull_count;`, the compaction
+// after the loop) 248 (747 B: frame 0x14, but points in EBP, indices spilled, the hull loop still inverted); with a short
+// hull count and `indices[hull_count++] = current;` 246 (749 B); with the departure flag declared ahead of the classifier
+// call 249; with a long departure flag 241 (752 B); with the closure as `if (!left_start || differ) continue; return
+// hull_count;` 360 (667 B). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1609,6 +1616,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // crossing's mask update ahead of the two output stores 131. Re-measured: the copy moved ahead of `if (inside)` 157 (count in
 // ECX and retail's loop head; retail's copy is at the loop end through CL, so the moved copy is not retail's statement order:
 // at the loop head retail holds `points` in ECX, which is what leaves the previous side without a byte register). Body unchanged.
+// M3 lane 2 r141 (h2m fast with 0x239e50; control 129): both dedupe tests as `result > 1` 131; the dedupe through a named
+// `last` output pointer (`last - 1` for the one before) 269 (891 B); the y output as `current->y + fraction * dy` 129 (same
+// code); the kept-point bit as `point_mask && TEST_FLAG(...)` 252 (880 B); `result = 0` set just ahead of the loop 255.
+// Reading: the count's dword load is a cross-block CSE of `count` that only appears when the guard is in the source (the
+// rotated loop test is formed after CSE here), which is why the repeated `count > 0` guard reproduces it. Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

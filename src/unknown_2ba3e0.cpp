@@ -1050,6 +1050,11 @@ real g_55e618;
 // sweep setup folds away, so it says nothing about them). BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands;
 // 0x1697c0 also reads its point and vector parameters through their addresses, which captures a caller's local in the
 // same way (measured on 0x1fe620 this round), and its file is on this round's avoid list.
+// M3 lane 1 r159 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): the perpendicular through the existing
+// vector3f_scale 102; the contact position through the existing vector3f_add_scaled 102; the tangent through the existing
+// vector3d_from_points3d with the velocity copy kept 102; the scale and the point difference together 102; the impact
+// record declared at function scope 102 (the same code each: the homes do not follow these). BLOCKED-BY 0x169510 and
+// 0x244980 (the record's capture) stands. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
