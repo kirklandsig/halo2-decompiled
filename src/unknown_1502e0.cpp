@@ -1339,6 +1339,12 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // eax`): a players-array local and a masked-index local shared by the player and the reload as `players[index]` 5, as
 // `players + index` 5; the index local alone with the global's array at both 5; the index local for the player with the
 // getter reload 5; the players local for the player with the getter reload 5.
+// M3 lane 16 r181 (h2m fast; control 5): on the plain-read form (17) the code is retail's with only ESI/EDI exchanged
+// (unit index against the pool-table/slot web; the opening is retail's there). `result = false;` again at the head of
+// the tested block 33 (140 B) plain-read, 5 getter-reload (same code); the unit pointer read through a `const &` 17/5
+// (same code each); both dispatch arms reading the unit index again through the getter, lookup plain 41 (142 B); a
+// second named player local from the getter for the lookup 5 (the getter-reload code); the unit through the shared
+// object getter in place of the file's 17/5 (same code each; 0x151aa0 43, 0x152bf0 MATCH).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

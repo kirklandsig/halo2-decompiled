@@ -1558,6 +1558,10 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // the one-use weapon-marker bool removed alone 156 (1007); the marker declared in the else arm 8
 // fast (the forward load moves ahead of the position copy); the parameter-address local declared
 // before the marker 2 plain (the same tie).
+// M3 lane 16 r181 (each fast MATCH unless marked, then plain): the flags read declared ahead of the definition 2; the
+// marker aggregate declared after the flags 2; the weapon-marker bool ahead of the marker-name call 2 (same code); the
+// definition local renamed to sort after `light` 2; 0xc28b0's argument read through the parameter-address local 151
+// fast, 153 plain (1013 bytes). The reduced image's CAVEAT names callee 0x16a8e0 as building differently there.
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
