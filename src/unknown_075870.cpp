@@ -1422,7 +1422,7 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 	}
 }
 
-// score 19 (was 19): the only differences are in the last block (everything before it, the loops, the division, the
+// score 18 (was 18; 19 before the stand-in SDK headers): the only differences are in the last block (everything before it, the loops, the division, the
 // scaling loop and the memset tail, is instruction for instruction retail). Retail reads the refresh rate
 // (movsx [0x485ac0]) into edx BEFORE `inc ecx` / `imul ecx, eax` and keeps burst in ecx with the minimum in eax; ours
 // reads it after the clamp and keeps burst in eax, so the flag byte registers (al/dl) and the burst register swap.
@@ -1431,7 +1431,16 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // `quotient` local (19), min-clamp spelled with ?: (19/25), reversed clamp `if (burst > m) m = burst` (18, cmov flips),
 // refresh read into a short local (25).
 // Permuter (25 min on r660): nothing below 19.
-// Score 18 (was 19) with stand-in SDK headers: the burst local starts at the configured minimum and is raised to the burst.
+// At 18 (from 19) with stand-in SDK headers: the burst local starts at the configured minimum and is raised to the burst.
+// M3 lane 12 r180 (h2m fast, 18): retail gives the refresh word EDX (the scheduler then hoists its load above the
+// product) and the rate test's bool DL with its argument loads in AL; ours EAX, AL and DL. `if (burst <= minimum)
+// burst = minimum;` 19; the quotient bound as a `long const &` (0x79850's form) with that clamp 18 (product into ECX
+// and cmovle as retail, refresh still EAX; steering, no gain), with a named `periods` 18, the current clamp 19, a
+// ternary 18, `minimum >= burst` 18, product operands swapped 18, the minimum read as the rates[16] word 18; on it the
+// frame rate before the product 24, before the quotient 30, between minimum and clamp 45, between product and minimum
+// 24 (refresh EDX, but its branches split ahead of the product); the frame rate as the argument 18; `limited` stored
+// first 19; burst stored first 20; the test stored straight into the channel after the budget and rate 67/72 (1035
+// B); the out-of-line 0x78190 called instead 135/134 (926 B, LTCG keeps the call).
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
@@ -2363,6 +2372,9 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 // follows the base, not the spelling (observer fields and globals load before configuration fields; two configuration
 // fields, a diagnostic, give retail's exact merged shape); a pointer or reference to 4e28, a `this` member body, a
 // configuration local and an earlier mention of c140 all leave it.
+// M3 lane 12 r180 (plain): the sum as `if (flag) budget += value4e28; else budget += rate;` 137; the ternary negated
+// with its arms swapped 2 (same code); the selection into an increment local (rate, replaced by 4e28 under the flag)
+// then the 0x140 base plus it 159; `!= false` on the flag 2; the 0x140 field bound to a const reference first 2.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
