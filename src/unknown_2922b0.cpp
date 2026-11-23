@@ -890,6 +890,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // gives retail's six global-first products). The first rotation's pure XMM permutation (retail i/j/k in XMM1/2/3, ours
 // XMM3/1/2) does not follow the pair count, nor the helper's projection dot in i, j, k order 331, its cross_k computed
 // ahead of cross_j 364, or cos taken ahead of sin 408. Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): on lane 6 r231's 636 form (crosses,
+// range read first, clamp input `local_4 / local_6`, no else) the positive range test around the body with `return true`
+// last 615 (2886 B; the success byte at +0x17 and the hit flags at +0x1c become retail's, the exit moves after the main
+// epilogue); with the range read first inside the block 610 (its spill store moves after the pushes as retail). Lane 2
+// r113's 331 lead rebuilt (331 at 2896 B, aligned 183): its first difference is the second cross, where retail's six
+// products all take the axis component as the loaded destination (axis i loaded twice); ours folds axis i as a memory
+// operand in both of its products. Screened on the lead (40 variants: the axis through a pointer local, the direction
+// through a pointer local, the output through a pointer local, each combination, with 0-3 redundant pairs on the first
+// ray product): three orientation states only (axis i folded alone; both b.j/b.k ahead of the whole axis; every product
+// direction-first), never axis i first; the axis pointer alone 582 (2886 B, the loop pad goes); the clamp helper's
+// product as `local_0 * arg_2` 331 (same code). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
