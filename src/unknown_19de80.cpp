@@ -1237,9 +1237,11 @@ void function_19ea60(long player_index, word *buffer)
 	buffer[0xff] = 0;
 }
 
-/* the team's name, as the text shows it */
+/* the team's name, as the text shows it; inline because retail expands it in
+   0x1608e0's team rows (the name buffer cleared twice) while its callers here and in
+   the postgame statistics keep the call */
 // @retail 0x19eae0
-void function_19eae0(long team, word *buffer)
+inline void function_19eae0(long team, word *buffer)
 {
 	s_event_universal_globals *universal = ((s_event_globals_definition *)g_4e3b44[g_4e034c->index & 0xffff].bytes)->universal;
 	long team_names;
