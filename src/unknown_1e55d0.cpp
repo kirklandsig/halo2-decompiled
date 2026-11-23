@@ -435,6 +435,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // the contact call and the object-index read 319 (same code); diagnostics on the 0x1ec690 stub (its only live caller is
 // this function): parameters as (state, output, input) 318, that `__stdcall` 316 (the EBX/EDI trade stays). Still
 // BLOCKED-BY 0x1ec690 and 0xb7430.
+// M3 lane 16 r180 (H2M_FAST; control 319, aligned 320, register-masked 247; still BLOCKED-BY 0x1ec690): the 0x20-flag block
+// behind an early `return` when the flag is clear 319 (same code); the countdown test as `if (state[1])` 320; the object
+// index read ahead of the flag test 319 (masked 251); the capsule chain reading the shape from the input at each use 342
+// (1200 B); the case-6 countdown declared ahead of the tick value 319 (same code). Re-measured: the compound test as an
+// if/else setting the match flag, compound arm first, 388 (1212 B, aligned 268, masked 135). Body unchanged.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
