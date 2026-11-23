@@ -1091,7 +1091,7 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Ordinary reduced-check score 2145 (2171 before the stored-word change).
+// Ordinary reduced-check score 2135 (2145 before the residual dispatch change).
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1555,11 +1555,14 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		solver_header_31c940 *first_residual_header = (solver_header_31c940 *)op;
 		a = first_residual_header->a; b = first_residual_header->b;
 		terms = first_residual_header->terms; op += 24;
-		while ((signed char)op[2] != 0)
+		// Carry the class through grouped rows; class zero finishes this pass.
+		bool residual_done = false;
+		residual_kind = (signed char)op[2];
+		for (; !residual_done; residual_kind = (signed char)op[2])
 		{
-			residual_kind = (signed char)op[2];
 			switch (residual_kind)
 			{
+			case 0: residual_done = true; break;
 			case 1:
 			{
 				solver_header_31c940 *header = (solver_header_31c940 *)op;
