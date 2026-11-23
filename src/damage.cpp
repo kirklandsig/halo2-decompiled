@@ -2443,6 +2443,7 @@ struct s_unit_event
 // address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
 // where retail reads it after.
 // score 420 (was 420; 513 earlier): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
+// score 420 (was 420; earlier 513): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
 // Earlier detail: Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
@@ -2761,6 +2762,12 @@ struct s_unit_event
 // reference 523; the region lookup reading the parameter directly 523 (0xdaaa0 stays matched on L); no region local
 // 560. Paren pairs around L's shifted bit 523 (inert). Retail's second notification lookup starts the datum offset's
 // ESI web (the mode-4 path loads it at the join) and its later blocks keep the constant 1 in a register. Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0xdaaa0, 0xdae60 and 0xdb760, all MATCH; control 420): the region states named at entry
+// (after the permutation pointer) and indexed at the update 472 (1880 B); the child walk as a while loop 420 (same code);
+// the mode-4 block through `object` 424; the four flag-byte stores through a pointer to the byte 420 (same code); the
+// child-name test written name first as the section and seat tests are 421. Reading: retail loads the datum offset
+// into ESI at the second attachment lookup and keeps it (the shift's 1 then goes through the dead region home into
+// EDI); ours gives ESI to object_index from the 0xa8360 call on.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3723,6 +3730,7 @@ enum
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
 // score 309 (was 309; 371 before m3 lane 4 r248): the loop's frame homes and ESI/EDI roles are retail's (1885 bytes for 1880); left: the reported
+// score 309 (was 309; earlier 371): the loop's frame homes and ESI/EDI roles are retail's (1885 bytes for 1880); left: the reported
 // block's shield material (retail reads the accumulator's info field there, ours the info local, which then stays live
 // in EDI), the head (the count in ESI where retail has EDI, `add ecx, 0x10` for retail's `lea ecx, [eax + 0x10]`, the
 // store order of the child flags and of friendly), the loop's first index (`dec esi` for `lea eax, [edi - 1]`), the
@@ -3798,6 +3806,14 @@ enum
 // event word in BX for AX, and the info reload after the kill block). On 283: the definition through a named tag
 // pointer 283; `i < object_count - 1` 466; `for (i = object_count; --i >= 0;)` 283; an `if (0 < object_count)` guard
 // 283 (1882 B, not folded); the event word or the victim index named 283 (the same colouring). Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0xdb210 and 0xd8cb0, both MATCH; control 309): the five flag locals renamed to sort
+// first or last 309 (same code: names do not order these bool homes); the tag named and the definition formed as `jpt +
+// 0x10` 309 (same code; retail's `lea ecx, [eax + 0x10]` head is not that); the team identifier read once into a named
+// short for the test and the call 309 (same code); `reported` declared first 489; the parents array declared first 309
+// (same code); r248's match-only forms together (the shield material through the accumulator's info field, body flag
+// first, friendly ahead of a named tag pointer, `kill = true;` first) 291 at 1882 B, with all five flag homes and the
+// info/definition homes as retail; left there: the tag load in ECX + add (retail EAX + lea) and the count in ESI
+// (retail EDI, its first index `lea eax, [edi - 1]` so the count is not decremented in place).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

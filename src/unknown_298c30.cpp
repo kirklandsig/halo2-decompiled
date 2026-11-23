@@ -787,6 +787,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // second normalization is 4 bytes short (retail stores x before it forms `y * inv`) and the inner loop's alignment pad
 // goes; the double result cast at the call with no double local 229 (same code); on the 249 form one to three redundant
 // paren pairs around the near rows' `y * cos` 249 each. Body unchanged.
+// M3 lane 14 r147 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; control 305): the normalizer as two
+// divisions by the length 305 (same code: one reciprocal); its products as `x * inv` and `inv * y` 305; its reciprocal
+// declared bare at the helper's top 305; the far arm's difference point set member by member 305 (all four the same
+// code); that point copied from the sum and decremented in place 368 (1745 B). All restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

@@ -1014,6 +1014,13 @@ void function_3dd10(long object_index, bool force);
 // selection increment in its condition 135 and the eligibility guard as two nested ifs 135 (both the same code); the
 // selection latch count first 137 (`jg`); the mask zeroed ahead of the count too 260; the mask declared ahead of
 // `last` 134. Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77; R = `0 < choice_count`, the scan as
+// `for (long j = 0; choice_count > j; ++j)`, `fmod(seed, 1.0f)`, re-measured 74). Retail's clamp block has three entries
+// (0xbe30c zero, 0xbe30f the 1.0 load, 0xbe317 the compare): the found and not-found exits enter at the compare with
+// XMM5 = 1.0 already set, so the not-found exit loads 1.0 on its own edge; ours enters at the load. On R: the mask typed
+// long 74; the selection loop's latch as `while (choice_count > j)` 74; the scan stepping a choice pointer (`++j, ++choice`)
+// 156; the weight test as `0.0f < weight` 74; the selection test as `target <= cumulative` 74 (same code each but the
+// pointer). Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
