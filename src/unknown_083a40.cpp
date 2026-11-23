@@ -1023,6 +1023,15 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // cursor, computed in place; ours rebases only `i * 0xb4` and adds the in-loop `collection` after it, and an invariant
 // base gets its own induction variable instead, so retail's base was invariant to the address analysis without being
 // strength-reduced on its own.
+// M3 lane 8 r226 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; control 28; reference-bound
+// locals, which kept a sum apart in 0x211cc0): `collection` through a reference bound to a pointer local defined
+// ahead of the second loop 277 (1072 B: the key still gets its own induction variable, so the binding is seen
+// through); the occupied key through a reference-bound element pointer built in two steps (`entry =
+// collection->players; entry += i;`) 47 (the pointer is formed ahead of the type and index stores and the sum is
+// still (inverse + cursor) first). Compile-only (the occupied block alone, which reproduces ours): `collection`
+// assigned through a reference at the loop top, the key indexed by a reference-bound copy of `i`, the loop-top
+// player assigned through a reference: all the same code as the base, so in this file the bindings are folded
+// before the key sum is ordered. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

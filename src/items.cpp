@@ -1825,6 +1825,8 @@ struct s_item_flags_view_10b850
 // fallback, surface arms, qualified publication, shared support and bounce rejection
 // 859/862/871/871/892/886/817/875/903. NOT kept: the seven-point lead grows to 4099 bytes and retains frame
 // 0x154. Entry flag bytes and low motion homes still differ.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the four item_spin_vector calls through include/axis_rotation.h's helper (the item's axis, sine and
+// cosine) 865 (4143 B); the first two only 829. Restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

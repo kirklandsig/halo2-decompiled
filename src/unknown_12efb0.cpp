@@ -965,6 +965,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // found flag declared ahead of the 0x130f60 call 608 (aligned 493); the out index declared ahead of the cluster record
 // pointer 607; the palette bound test as `0 <= slot` 607; the loop bound as `count > index` 607; `NONE != slot` 607 (the
 // last four the same code). Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607, aligned 487,
+// registers masked 275): lane 15 r102's lead re-measured 599 (3818 B); with the tag arm's radius clamp read from the
+// field at each test (retail re-reads `[esi + 0x44]` there) 602 (3821 B); the scalar accumulate helper's weight and
+// remaining updates after its six channels 718 (3838 B, aligned 466); the merge helper's after its weighted block 705
+// (3841 B, aligned 367); both 732 (3847 B, aligned 346, masked 192); the `char` slot re-measured 700. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

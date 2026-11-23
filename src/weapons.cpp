@@ -2004,6 +2004,14 @@ static inline bool unit_dual_wielding(long unit_index)
 // its file, restored at once; the file is another lane's this round), with the 2 form here: its first unit read, both
 // reads, or both with no pool copy through a by-value header-array accessor 78 (540 B) each, and 0xc9d00 itself 83 and
 // 0x1058b0 49 with them, so 0xc9d00's reads are plain and the by-value form is not what separates its data load.
+// M3 lane 13 r145 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 0xc9d00-call form rebuilt 27, with
+// `result` first 4, with weapon_get_102e10 at lookup 1 as well 2): on the 2 form one, two or three redundant parenthesis
+// pairs around the b7360 argument, the lookup-3 initialiser, the gate's state read or the animation test's lookup 2 each
+// (twelve forms, same code: the address operand orders ignore parens). Diagnostics on the 2 form: the dual-wield test
+// removed 116 (501 B) or the whole holder test removed 239 (421 B) leave lookup 4 offset-first and the put-away lookup
+// data-first, so lookup 4's order does not come from its data load being shared with the unit lookups. On the
+// 0xc9d00-call form the put-away pointer as `current` reassigned 27 (same code); the 0xc9d00 call's unit argument read
+// again through the getter 67 (on the 2 form 42).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -5089,6 +5097,7 @@ struct s_weapon_projectile_creation
 // separate results 1214/1210, direct marker input with separate results 1273/1273, or direct marker input
 // with a shared result 1142/1142. NOT kept: one result for the saved inputs recovers 0x1e98 and first +0x75
 // at 5195 bytes, but raises the score. The separate trace point and original rotations remain.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both weapon_emission_rotate calls through include/axis_rotation.h's helper 1190 (5150 B). Restored.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

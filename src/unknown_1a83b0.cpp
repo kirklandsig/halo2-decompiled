@@ -821,6 +821,13 @@ s_1a8a10 g_4453c0[] =
 // on the copy's j assigned between the sums, products point first 17 and only the forward's point first 17 (both the
 // j reload as retail, but the left product still multiplies a copy of i while retail multiplies i in place and copies
 // it for the forward product, and forward's j load stays after the left sum).
+// M3 lane 8 r226 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH each time; control 17; reference-bound
+// locals, which kept a two-step sum apart in 0x211cc0): the facing copy stored through a `vector2f &` bound to it 17
+// (same code); the negated j built through a reference (`minus_j = 0.0f; minus_j -= actor j;`) with the left sum
+// written either way round 17/17 (same code: the binding is folded and j is still read once); the left sum
+// accumulated through a reference (`left = i * y; left += (0 - actor j) * x;`) 84 (first difference +0x75, the xmm
+// numbering moves); the left sum built in three steps through it (`left = 0 - actor j; left *= x; left += i * y;`) 37
+// (the zero then stays out of XMM1 and the [1] store moves up). j is read once in all five. All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

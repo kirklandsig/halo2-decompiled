@@ -504,7 +504,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
 // counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
 // the table global in ECX the other way round, so every later home is one slot off.
-// score 535 (was 535; m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// score 535 (was 535; m3 lane 8 r221, m3 lane 1 r154 and m3 lane 4 r251 unchanged, their lines just above the marker): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
 // M3 lane 6 r223 (plain each; the reduced image builds this function differently, 834; control 535): the first loop as
 // a do-while with its index declared at function scope 533 (frame 0x21e4: the tag then spills at retail's +0x94 and the
 // secondary count sits at retail's +0x54, but the face list moves to +0x1f0 and the count to +0x1c), with the index in
@@ -1106,12 +1106,22 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // the prologue changes); the definition read through the tag table at each of its four uses (no `definition` local)
 // 720 (3649 B); `remaining -= group_count;` after the search loop 746; the sign through dot3f re-measured 699 (3615 B);
 // the short-axis arm first (`if (fabs(length) < 0.0001f) length = 0.0f; else ...`) 535 (same code). Body unchanged.
+// M3 lane 16 r177 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535, difflib-
+// aligned with stack offsets and registers masked 355): the axis scaled by three `*=` statements k, j, i 559 (3631 B,
+// masked 339); cosine declared ahead of sine 535 (masked 350, a schedule change only); `one_minus_cosine` declared
+// after the three squares 535 (same code); the nine rotation stores column by column (forward.i, left.i, up.i, ...)
+// 662 (first difference +0x7); the scaling loop index as a short 600 (3615 B). Body unchanged.
 // M3 lane 1 r154 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; all but 0x17dd80 MATCH each
 // run; control 535): the axis scaled through the existing vector3f_scale (no inverse local, no component loop) 568 (3631
 // B); the length and scaling through the existing normalize3d 677 (3664 B, first +0x7); the final call loop's counter as
 // long 540; the cosine taken before the sine 535; the edge search keeping the two endpoint pointers and copying them after
 // the loop 712 (3695 B). Retail's rotation of the offset in place stages each row's running sum through one stack cell
 // (+0x10, stored and reloaded after every product) and forms `axis.i * sine` on x87. Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535): the offset
+// vector declared ahead of the rotation rows 535, the endpoints ahead of the selected face 535, the first edge read first
+// with the walking index copied from it 535, the orientation bounds pair through a pointer to the pair 535 (same code
+// each); the remaining count lowered ahead of the group's call loop 746; re-measured: the edge extrema as ternaries 613,
+// the inner empty slot as `continue` 535 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

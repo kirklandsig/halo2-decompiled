@@ -319,6 +319,15 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // the else arm's point copied component by component through the address local 143 (485 B); the initial point
 // direct-initialised 19; the node pointer re-pointed as `local_3 = &local_3[arg_1]` 19; the record filled after the
 // constructor through a reference bound to `*arg_3` 19 (the 19s the same code: transform EBX, y EBP, constant 1 shared).
+// M3 lane 8 r226 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19; reference-bound
+// locals, which kept a two-step sum apart in 0x211cc0): the transform stored into a pointer local through a reference
+// bound to it (`source = *local_4;`, both arms reading the local) 19 (same code); the same with no address local
+// (`source = arg_2;`) 124 (447 B: the convention changes, the transform arrives in ECX); field2e set in two steps
+// through a `short &` to the field (`count = 0; count += 1;`) 19 (folded: same code, the 1 still shared); the point
+// declared bare and assigned through a reference bound to it 113 (453 B, the convention changes). Diagnostic
+// (compile-only, every argument on the stack, no address local): the transform is loaded once in each arm there (EDI
+// in the node arm, EAX in the else arm) and the record late into ESI; the linked build still passes all four in
+// registers (EAX, DX, ECX, EDI, a plain `ret`), so retail's stack-passed transform is not explained by a per-arm load.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
