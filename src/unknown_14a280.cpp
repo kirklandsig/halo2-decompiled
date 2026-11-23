@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 #include "globals.h"
+#include "scenario_skies.h"
 #include <math.h>
 
 // @flags /O2 /arch:SSE /Gr
@@ -297,21 +298,6 @@ struct s_structure_bsp_clusters_view
 	s_cluster_view *clusters;
 };
 
-struct s_scenario_sky_reference
-{
-	byte unknown00[4];
-	long sky_index;
-};
-
-struct s_scenario_skies_view
-{
-	byte unknown00[8];
-	long sky_count;
-	s_scenario_sky_reference *skies;
-	byte unknown10[2];
-	byte flags;
-};
-
 struct s_sky_view
 {
 	byte unknown00[4];
@@ -371,28 +357,9 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 	return result;
 }
 
-/* the tag data of a scenario sky, or NULL when the index or its tag is NONE
-   (the same lookup as sky_surface_data in unknown_0d0690.cpp, typed with this
-   file's views) */
-PRIVATE __forceinline s_sky_view *scenario_sky_get(short index)
-{
-	s_scenario_skies_view *scenario = (s_scenario_skies_view *)g_4e0350;
-	long tag_index = NONE;
-	if (index >= 0)
-	{
-		long count = scenario->sky_count;
-		if (index < count)
-			tag_index = scenario->skies[index].sky_index;
-	}
-	s_sky_view *result = NULL;
-	if (tag_index != NONE)
-		result = (s_sky_view *)g_4e3b44[tag_index & 0xffff].bytes;
-	return result;
-}
-
-// Matched once the sky lookup became the inline helper above (the shape of the
-// matched 0xd1a30): written out in the body (flat or nested range test, count
-// local, NULL-preset sky pointer, tag test outside the cluster block, an
+// Matched once the sky lookup went through sky_surface_data (scenario_skies.h,
+// shared with 0xd1a30): written out in the body (flat or nested range test,
+// count local, NULL-preset sky pointer, tag test outside the cluster block, an
 // accessor for the count) the NONE preset was jump-threaded and the count
 // folded into a memory compare, 44 every time.
 // @retail 0x14b360
@@ -412,7 +379,7 @@ bool cluster_get_sky(long cluster_index, long *sky_index, vector3f *vector, bool
 			*sky_index = 0;
 		}
 
-		s_sky_view *sky = scenario_sky_get((short)*sky_index);
+		s_sky_view *sky = (s_sky_view *)sky_surface_data((short)*sky_index);
 
 		if (sky && sky->unknown04 != NONE)
 		{
