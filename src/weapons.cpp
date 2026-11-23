@@ -3530,6 +3530,21 @@ struct s_ammo_conversion_entry
 // Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
 // Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
 // NOT kept: the joined conversion paths tie or shorten the body, and holding the pickup amount adds a frame word. The caller and both callee controls retain their scores.
+// M3 lane 11 r157 (H2M_FAST; control 190): lane 2 r110's 52 lead rebuilt 52; on it the conversion clamp written like the
+// unloaded clamp (`count > available ? available : count`) 51 at 731 B, register-masked 2 (retail's 16-bit count load and
+// flag store order then agree); left only the loop's ECX/EDX pair (offset 16 in ECX for retail's EDX, base and source in
+// EDX for retail's ECX) and the tail's scratch phase from the 0xa88a0 call on. Compile-only screens on the 51 form (the
+// loop's pair reproduces there): the four sum forms, source/transfer declaration places and order, the magazine
+// definition first (pair right, index in ECX and base in EDI), references to the magazine, definition or source, a long
+// index or available, a redundant loop guard, flag initialisation orders, compare operand orders, `continue` for the
+// capacity and mode tests, the clamp as if/MIN/swapped ternaries: the pair never flips; with no clamp in the same-
+// definition arm (diagnostic) it does. Available clamped in place with a `continue` on a scan miss 165 (fast; offset 16
+// right, available and source then swap ECX/ESI). Tail: the call's count in a named long or short local, the sound
+// store as a block, the existing-object pointer for the last lookup 51 each (same phase). On main's body the gt clamp
+// alone 190 (same code). Lead saved as build/r157/lead-0xffc60-51.patch. Permuter on the 51 form (900 s, 66 tries): best 51.
+// More tail forms on the 51 form (H2M_FAST): the sound picked by if/else 51, both NONE compares written constant first 51
+// (same phase each), the other's definition re-derived through the pool for the sound 110 (747 B), `retained` as false
+// plus an if 136 (741 B).
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3895,6 +3910,17 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // the sentinel test 603. NOT kept: the 568 form shares the first selector load
 // with sign extension where retail reads twice. The later binding restores
 // those reads and ties. Required rounds and the original field reads restored.
+// M3 lane 11 r157 (plain; control 603): ours keeps `barrel_index != 0` from the 0x105fa0 argument in a stack cell for the
+// 0x1058b0 call (the extra frame word: `mov [esp+0x24], eax` in both arms, `inc` of the reload later); retail recomputes it
+// there with xor/cmp/setne/inc. The second call's trigger as `barrel_index ? 2 : 1` 600 at 2538 B (aligned 349 -> 320; the
+// reduced image then has retail's 0x1c60 frame, the full one still 0x1c64: the magazine pointer and the movsx'd loaded
+// count still take two cells where retail keeps the magazine definition in EBX); that with the unit index not volatile 646
+// at 2507 B (aligned 255, register-masked 153 against 238: structurally the closest form so far); both trigger arguments
+// as ternaries 636 fast (same code as the first); the first as `(barrel_index != 0) + (failure ? 3 : 1)` 631 fast at 2512 B.
+// The effect loop: retail hoists `movzx eax, word` for the mask test and reloads the mask (xor/mov) for the `|=`, ours
+// hoists a 16-bit load and reuses it for the `|=`; compile-only, the test as dword/long/word-masked/operands swapped, the
+// `|=` as an assignment or without its cast, and named mask/index/ticks fields in the barrel record: same code each (with
+// no `|=` at all, diagnostic, the hoist becomes retail's movzx and the bit goes to EBX as retail). Body unchanged.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4411,6 +4437,16 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // for presence/absence 1422/1422. Shared trigger test from the signed player
 // index 1419 or from a selected index 1442. NOT kept: all regress and
 // hold a 0x30 frame against retail's 0x38. The signed player index is restored.
+// M3 lane 11 r157 (H2M_FAST; control 1412 at 5684 B, aligned 1450, register-masked 1158): retail holds the 0x105e80
+// result as a byte (BL, stored to its byte cell at each set and read back at the return); `bool result` 1494 (5616 B).
+// The flags word at weapon+0x16c: retail tests its bits with a byte load and shr/test and sets/clears them with byte
+// memory RMWs (one word load at the overheated read); a word bitfield record there (eight one-bit fields overlaid on the word)
+// with every 0x16c access in this body through it 1419 (same length; the clears become retail's memory RMW, the sets a
+// word RMW); byte bitfields 1412 (same code as the byte macro); word bitfields with the tests through TEST_FIELD_BIT 1487
+// (5716 B); the 0xf9 clear as a word `&=` or two bit clears 1447 each. Retail branches with a load in each arm for the
+// state-change tag and the cooling rate: `increasing ? WEAPON_LONG_AT(definition, 0x248) : WEAPON_LONG_AT(definition,
+// 0x250)` 1412 (aligned 1447, masked 1153; retail's shape), the rate the same way 1417, both 1416 (aligned 1443, masked
+// 1146). Body unchanged.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
