@@ -684,6 +684,14 @@
 // after the rounded store: three common values whose second use was removed. Forms: shape1 declared ahead of shape0 536
 // (same code); inv declared after the shape pointers 549; special computed ahead of the shape pointers 704 (2643 B); w
 // declared ahead of v1 536 (same code); v4 declared ahead of v1 658 (2633 B). Body unchanged.
+// M3 lane 14 r149 (H2M_FAST with 0x4a1e0, unchanged at 322; control 536). LEAD 476 (2630 B, frame 0x60 as retail, first
+// +0x6): the special block split in two, the first holding the first cross and both wave values (declared at function
+// scope; the cross vector renamed so it does not clash with the later input copy) with `w = source->v1c` as ITS else arm,
+// the second holding the two scaled adds and the second cross. s1 is then evaluated first into +0x1c and s0 into +0x18,
+// both scaled in SSE, shape0 at retail's +0x14. Left: the else arm laid out after the mode switch (8 extra bytes), the x87
+// factor schedule, the reciprocal in XMM4. Not kept: the second `if (special)` repeats a test (match-only). The same split
+// with the else arm on the second block 644 (2665 B, lane 3 r249's shape); either cross through cross3f_staged on the
+// lead 476 each (same code); the waves scaled in place (`s0 *= 0.03f; s1 *= 0.025f;`) ahead of the adds 652 (2592 B).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

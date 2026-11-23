@@ -1277,6 +1277,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // copy 141 (re-measured, first +0x5d); the segment flags cleared after the near distance 172 (first +0x4a); the near
 // distance's compare as `near_sum < 1.52588e-5f` 115 (same code); the forward pointer declared with the locals at the top
 // 196 (first +0x6); the planes array declared ahead of the point arrays 115 (same code). Body unchanged.
+// M3 lane 2 r142 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH each run; control 115, difflib-aligned 64, register-masked
+// 22). At +0xbb retail loads all three view coefficients (j, k, i) ahead of the forward copy and reads the copied normal
+// back j, k, i, so the i coefficient is the product's destination in XMM4 and the copied i sits in XMM3; ours reads the
+// copied i first (it is stored first) and the i coefficient last. Plane 0 only: the distance negated and offset in one
+// statement (`near_distance - d`) 423 (first +0x60); the dot kept in a local and stored negated after the normal's
+// negations 119; the normal negated from `forward` again (the copy read by the dot only) 452 (1819 B); the distance
+// negated ahead of the normal's negations 143 (first +0xae); the dot's terms written j, k, i 133 (first +0xaf); the i
+// product added to a parenthesised k + j 145. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

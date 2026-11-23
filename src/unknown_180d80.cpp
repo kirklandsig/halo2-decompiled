@@ -403,6 +403,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // `*const` 91; the output pointer `*const` 91; the stored flag as a `(bool)` cast of the masked byte 91; the colour record
 // declared at the top of the block 91 (same code each); the fourth strip index as `local_13 + (wrap ? 0 : local_16 + 2)`
 // 417. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// M3 lane 12 r181 (h2m fast, control 91): the transform helper's rows as src/unknown_11c380.cpp spells its matched
+// inline transform (x row left, forward, up term by term; y and z rows one expression each) 282 (2666 B); as
+// src/unknown_1eff40.cpp spells it (three named x-row terms) 284 (2664 B); this x row with one-expression y and z rows
+// in up, left, forward order 280 and in forward, up, left order 280 (2666 B each); this x row with the y and z rows term
+// by term in up, left, forward order 140 (2683 B). The count sum and the vertex counter renamed to sort either way
+// round 91/91/91 (same code: the slot pair ignores names).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
