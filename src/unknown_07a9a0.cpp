@@ -1043,7 +1043,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871; r251 unchanged): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call. Earlier score 964.
 // Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
 // Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
@@ -1800,6 +1800,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 0x1931a0's definition 962 (0x63220 55, 0x73530 164). Survey: every matched function that keeps a depth-0 0x192e60 call
 // out of line does so under a test (0x73ca0) or inside an existing inline_depth(0) region (0x6dcc0, 0x73530, 0x66050,
 // 0x90880), so the top call stays the link's choice.
+// m3 lane 4 r251 (H2M_FAST with 0x73530 and 0x192e60, both MATCH; control 871): the party histogram's cells `short` 871;
+// `use_parties` computed ahead of the team-count block 875; the rated count stepped ahead of the average sum 871;
+// `bool result = true;` after the output clear 871; the player loop's group copy ahead of the identity copy 877 (2784 B).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

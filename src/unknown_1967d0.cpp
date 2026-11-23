@@ -913,7 +913,7 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 100): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100; r251 unchanged): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
 // Earlier score 191.
 // store, and the third team-score read expands where retail calls 0x1587f0. Earlier score 191.
@@ -1058,6 +1058,11 @@ static inline long team_score_195ed0(long team)
 // ranking.team_count` 149 (1210 B: the entry test is retail's `cmp word ptr [esp + 0x82], bp`, but the latch compares
 // words too where retail sign-extends). Retail's own 0x1587f0 calls 0x161e60 and 0x162030, so its two full expansions
 // here and the called third read fit one score call expanded by site frequency. Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the rank loop's test
+// written count first 100 (same code); the score store ahead of the rank store 109; a `short` counter for the team-rank
+// loop alone 205 (1242 B, a pointer walk); the counter initialised at its declaration 104 (its zero then serves the
+// ranking call's `push 0`, the guard still sign-extends where retail compares the word with the zeroed counter); the
+// ranking aggregate in the outer block 100 (same code).
 // @retail 0x195ed0
 void function_195ed0(void)
 {

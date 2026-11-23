@@ -1933,6 +1933,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 590; the globals pointer named alone 587 (definition home fixed); the rate named alone 590; case 1's float as
 // `(real)count * (rate / recovery_time)` 158 (same code; on the lead 137); on the lead, material declared after
 // position 137 and the case 6 target declared after moved/distance 137 (same code).
+// M3 lane 4 r252 (H2M_FAST, control 158; the walking-preload lead re-measured 137): on the lead, material as one
+// ternary 137 and the turning test written inside the 0x1e5bb0 call 137 (same code each); case 4/5's animation state
+// as a fresh local in place of reassigning `state` 155; the spread call unnamed 559; gravity named ahead of the call
+// 155. Diagnostics (not forms): a second b9dd0(&position) moves position +0x80 -> +0x70 (homes follow reference
+// weight); material passed as 0 puts boost at retail's +0x88; an extra material reference in its arm moves nothing.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4646,6 +4651,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // neither); and with the mode-6 exit returning `changed` 543 (2714 B: both bytes at retail's homes, so one more
 // reference to changed flips the tie, but that exit then merges with the final return where retail keeps `mov al, 1`).
 // With both bytes placed 543 remain: the wall-vector products' operand order and xmm scheduling.
+// M3 lane 4 r252 (plain checks, control 537, aligned 301): the turn angle as turning speed * rate 537, the mode-6
+// limit as 9.424778f * rate 537, the overshoot tests written overshoot-first 537 (same code each); the wall side
+// through the existing cross3f (facing rows written out) 538 (aligned 297); the wall flag through the file's
+// field_bit_test 531 (aligned 296; only the yaw rotation's xmm numbering at the end moves, under the bar); with the
+// flags_134 bit 11 test, the unit flags bit 20 test or both also through field_bit_test 603 (2720 B, aligned 274 each);
+// with the side through cross3f 603 (2721 B, aligned 293). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6425,6 +6436,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // complement and cross spellings x statement order x 0..7 (640) 8, a vector-local or in-row cross 142+; the helper returning its result
 // pointer, consumed by the normalize or the side cross (288) 8; input and result spelled as the field or a pointer local in each
 // combination x 0..7 (232) 15.
+// M3 lane 4 r252 (H2M_FAST with 0x1ecf50 MATCH; control 79; the rotation helper's file was held by another lane, so
+// body-only forms): the forward field at every use, no pointer local, 154 (879 B); the sine taken before the cosine
+// 111; the angle as rate * length 79 and declared at its assignment 79 (same code each); the forward pointer declared
+// first, ahead of the axis copy, 130; the final test written `0.0f == length` 79 (893 B). Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

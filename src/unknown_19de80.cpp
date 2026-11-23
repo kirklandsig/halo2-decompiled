@@ -962,6 +962,11 @@ static inline bool teams_enabled_19e1c0()
 // the token copy (retail returns there with a dead `mov esi, eax`) 390 (same code), on the plain result 693 (1168 B); the
 // switch-side-time failure as `result = remaining;` on the volatile result 431 (1398 B); the text buffer declared ahead of
 // the volatile result 390; the opponent arm's mode read from the global at each of its three uses 390 (same code each).
+// M3 lane 4 r252 (H2M_FAST with 0x19e0f0, MATCH; control 390, all on the volatile result): the opponent loop counter
+// typed long 421 (1424 B), with the score test written `best_score <= score` 421 (that test alone re-measured 388); both
+// team arms reading the event's team field at each use 394; the local team typed long 393 (1436 B); the token
+// fallback's clamp as one ternary 395 (1432 B). Retail reads the token from its argument slot ahead of the prologue
+// (`mov eax, [esp + 4]` before `sub esp`), so the token is its lightest value. Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
