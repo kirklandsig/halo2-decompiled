@@ -1083,15 +1083,23 @@ static __forceinline void project_residual_linear_velocity(
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,
 	solver_velocity_31c940 *b, __m128 const &linear_axis, float &projection_output)
 {
-	__m128 relative = _mm_sub_ps(a->linear, b->linear);
-	__m128 contribution[3] =
-	{
-		_mm_mul_ps(a->angular, row->a),
-		_mm_mul_ps(relative, linear_axis),
-		_mm_mul_ps(b->angular, row->b)
-	};
-	__m128 angular = _mm_add_ps(contribution[0], contribution[2]);
-	sum_three_to_arena_31c940(_mm_add_ps(angular, contribution[1]), projection_output);
+	// Capture the angular input before its axis, then reuse each vector after
+	// its final contribution. Both body inputs precede the reduction store.
+	__m128 angular_a=a->angular;
+	__m128 angular_axis=row->a;
+	__m128 linear_b=b->linear;
+	__m128 angular_b=b->angular;
+	angular_a=_mm_mul_ps(angular_a,angular_axis);
+	angular_axis=a->linear;
+	angular_axis=_mm_sub_ps(angular_axis,linear_b);
+	linear_b=linear_axis;
+	angular_axis=_mm_mul_ps(angular_axis,linear_b);
+	linear_b=row->b;
+	angular_b=_mm_mul_ps(angular_b,linear_b);
+	angular_a=_mm_add_ps(angular_a,angular_b);
+	angular_a=_mm_add_ps(angular_a,angular_axis);
+	sum_three_to_arena_31c940(angular_a,projection_output);
+
 }
 
 
@@ -1156,7 +1164,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2042. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2041. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
