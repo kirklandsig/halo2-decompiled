@@ -307,6 +307,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // `byte *const` 21 (same code each); the update-time subtraction written inside its test (no update-elapsed local) 259
 // (802 B: the subtraction moves to the test), the same with `bool update = false;` right after the zero-elapsed return
 // 263; that update-first order with the object `byte *const` 216 (the update-first code).
+// M3 lane 16 r182 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21): the update-time test as two ifs (NONE, then
+// `else if (update elapsed > 1)`) 21; the hidden test through a fresh element read of the header array 21; the header array
+// as a named `s_3dd10_object_header *` local 21; the sample time named (`dword`) for the elapsed time and the NONE test 21
+// (same code each); `else update = false;` as a third arm after the hidden return 222. Re-measured: update ahead of force
+// 218, the not-force arm first in braces 25, the object looked up ahead of update elapsed 215.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -226,17 +226,15 @@ static inline long data_find_index(s_record_pool *array, long index)
 	long result = NONE;
 	if (index >= 0 && index < array->high_water_index)
 	{
-		long count = array->high_water_index;
-		dword *bits = array->bitmap;
 		do
 		{
-			if (bits[index >> 5] & (1 << (index & 0x1f)))
+			if (array->bitmap[index >> 5] & (1 << (index & 0x1f)))
 			{
 				result = index;
 				break;
 			}
 			index++;
-		} while (index < count);
+		} while (index < array->high_water_index);
 	}
 	return result;
 }

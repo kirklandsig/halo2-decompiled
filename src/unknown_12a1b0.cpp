@@ -1538,6 +1538,14 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // S1. LEAD, HELD (twin form): S1's step written out by hand in this body (`for (;;)` with the step, then `break` on NONE),
 // the shared helper unchanged: this, 0x21bd00, 0x21b870, 0x126df0 and 0x12a810 all MATCH (check.py --fast too), 0x21b0e0
 // 305 unchanged; not kept, a per-site spelling of the shared step.
+// M3 lane 4 r255 (h2m fast with 0x21bd00, 0x21b870, 0x126df0 and 0x12a810; control 24). S1 re-measured: this MATCH,
+// 0x21b870 MATCH, 0x21bd00 2 (only the latch's two reloads after the 0x12a810 call: retail the count `[esp+0x18]` then
+// the first index from the parameter's home `[esp+0x24]`, ours the reverse), 0x21b0e0 305 -> 418 (so S1 alone also
+// raises that user). On S1: the next index named first (`next = ...; index = next; if (next == first) ...`) 47 (201 B;
+// 0x21bd00 71, 0x21b870 32); 0x21bd00's guard on the iterator's own first field after it is built 0x21bd00 77 (this and
+// 0x21b870 MATCH); the count stepped first (`long count = iterator->count++; if (count > 0 && ...)`) 23 (213 B; 0x21bd00
+// 51, 0x21b870 16). In 0x126df0 (file free this round) the fade-in gain as one conditional expression 37 (205 B;
+// 0x126df0 15). Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
