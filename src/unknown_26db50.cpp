@@ -1266,6 +1266,11 @@ struct s_record_collision_view
 // redundant parenthesis pairs around the integer sector test 20 each, one to three dead `long` locals ahead of the sector
 // probe 20 each (the dot order does not follow integer-expression or symbol counts, only the float trees' order). All
 // restored.
+// M3 lane 16 r182 (h2m fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26): operand orders, each over all three
+// rows: the 0.1 offset as `collision.point.x + g_4687b0->i * 0.1f` 26, as `0.1f * g_4687b0->i + ...` 26; the lift product as
+// `0.5f * g_4687b0->n[component]` 26; the endpoint as `origin->x + direction.i * trace_distance` 26 (all the same code: the
+// dot order follows statement order, not operand order); the rotation's axis through a named `vector3f const *` local 42; the
+// direction copied member by member through a `vector3f const *` source local 232 (1081 B). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
