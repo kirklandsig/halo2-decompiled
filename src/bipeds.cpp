@@ -1960,6 +1960,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // main with the reorder: case 4/5 using the entry `state` (no re-derivation) 205 (2816 B); the state read inline in the
 // 0x1e67f0 argument 416. Retail's argument temporaries sit c0 byte +0x90, flags_348 byte +0x94, gravity +0x9c; ours (lead)
 // c0 byte +0x8c, gravity +0x94, flags_348 byte +0x9c.
+// M3 lane 4 r254 (H2M_FAST, control 158; the walking-preload lead rebuilt 137): on the lead 1..7 redundant paren pairs
+// on the pill material address 137 each and 1..4 around the boost product 137 each (inert); material set in an else
+// arm with no top init 666 (2796 B; on main 659); boost initialised 1.0f at its declaration with no else arm 641 (main
+// 636); turning computed ahead of the boost block 152 (main 615, 2832 B); the boost's `peak - 1` named 159; the spread
+// test as `!unknown1bc && flag` 145 (retail tests the flag first); the walking slowdown named (`slowdown * rate`) 586.
+// On the lead ours ends its code 4 bytes early (jump table +0xaf0 and 4 pad bytes, retail's table at +0xaf4).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4687,6 +4693,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // axis * sine before cosine * v); that with the addends swapped or each product's operands swapped, fast 599/599 (same
 // order); sine/cosine declared cosine first, fast 604. The x87 row order (retail cosine * v first in rows i and j) follows
 // none of the spellings.
+// M3 lane 4 r254 (plain checks, control 537; the call set agrees with retail, 18 calls): `turned` copied ahead of the
+// turn angle 538 (2727 B); special as `0x7000039 == key` 537 (same code); `else if (mode != 5)` with a two-use key
+// local and a nested 0x6000084 test 640 (2737 B); `(definition->biped.flags & 1)` through field_bit_test 530 (2725 B,
+// under the bar); the names[1] ternary as if/else 553 (2719 B); with that bit-0 test: the wall flag through
+// field_bit_test 603 (2720 B), names[1] as if/else 551 (2718 B), turned copied first 531, flags_134 bit 11 or unit
+// flags bit 20 through field_bit_test 602 each (2719 B). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6474,6 +6486,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 111; the angle as rate * length 79 and declared at its assignment 79 (same code each); the forward pointer declared
 // first, ahead of the axis copy, 130; the final test written `0.0f == length` 79 (893 B). Body unchanged.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_direction calls through include/axis_rotation.h's helper 134 (895 B). Restored.
+// M3 lane 4 r254 (H2M_FAST with 0x1ecf50 MATCH; control 79; the rotation helper's file was on the avoid list again, so
+// body-only forms): `up` declared at its copy 79 and `side` declared ahead of `up` 79 (same code); the side cross
+// reading `&biped->forward` 79, the first normalize reading it 79; the staged cross reading it (a field/pointer mix,
+// match-only) 83 at 887 B, retail's length. Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
