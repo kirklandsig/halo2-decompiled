@@ -1114,6 +1114,15 @@ void function_2118c0(void)
 
 	g_4f93bc.cell_count = (short)globals->count;
 }
+/* seeds sample 0 of each of the table's 24 rows (three bands of eight) from
+   the random direction table, then fills samples 1 to 7 of every row with a
+   cubic through sample 0 of the row and of its neighbours in the band, the
+   row indices wrapping inside the band. Each neighbour's row goes through a
+   reference: retail keeps the band's first row as a counter stepped by 8 and
+   adds it to each wrapped index inside the band loop, which this compiler
+   gives only when the sum is built in two steps it cannot fold (a plain
+   `row + index` turns every row into a stepped pointer, a shifted row is
+   never stepped). */
 // score 10 (was 10): retail steps b * 8 in esi and adds it to the wrapped
 // indices (lea/add, add esi, 8) where ours steps b and scales it (lea with
 // esi*8); that is four instructions, the rest of the count is the shift they
@@ -1385,6 +1394,11 @@ void function_2118c0(void)
 // sums `&noise[0][0] + (row + w) * 8` 10 (same code); as `noise[w] + b * 64` 150 (every row reduced); `long row = b * 8`
 // for the knots with p1 and out from `(b << 3) + k` 150; `unsigned long row` 10 (same code); `long row = b;` then
 // `row *= 8;` 150. All restored.
+// M3 lane 1 r156 (h2m fast; control 10): the band row taken as `(long)b++ << 3` at the band body's top (no foot
+// increment, p1 and out from `row + k`) 150; the knot rows through a forceinline `(short band, word knot)` accessor
+// returning `noise[(band << 3) + knot]` 150, with `(long)(band << 3) + knot` 150 (every row reduced: the shift inside
+// an expanded helper is affine again); the three knot pointers declared at the sample loop's level and assigned in the
+// band body 10; t computed in the band body 10 (both the same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -1428,11 +1442,23 @@ void function_211cc0(void)
 			do
 			{
 				real previous = (real)(k - 1);
-				long row = b << 3;
-				vector3f *p3 = g_4f93bc.noise[row + w3];
-				vector3f *p2 = g_4f93bc.noise[row + w2];
+				long row = b * 8;
+				long knot;
+				long &knot_row = knot;
+
+				knot_row = w3;
+				knot_row += row;
+				long row3 = knot_row;
+				knot_row = w2;
+				knot_row += row;
+				long row2 = knot_row;
+				knot_row = w0;
+				knot_row += row;
+
+				vector3f *p3 = g_4f93bc.noise[row3];
+				vector3f *p2 = g_4f93bc.noise[row2];
 				vector3f *p1 = &g_4f93bc.noise[b * 8 + k][0];
-				vector3f *p0 = g_4f93bc.noise[row + w0];
+				vector3f *p0 = g_4f93bc.noise[knot_row];
 				vector3f *out = &g_4f93bc.noise[b * 8 + k][m];
 				real ta = t - (previous + 2.0f);
 				real tb = t - (previous + 1.0f);

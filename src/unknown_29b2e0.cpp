@@ -861,6 +861,13 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // the sign tests through a bool-returning forced-inline (yaw, pitch, both, the two depth signs, all four) 309/225/212/
 // 212/212; the second axis's product sides change with each, never to retail's six. Retail copies the zero for the yaw
 // lower bound ahead of the scale's branch (0x29b64a) and ours behind it.
+// M3 lane 8 r225 (h2m fast with 0x29b990 and 0x170d70, both MATCH; control 130): compare sides with the zero on the
+// other side for the field_38, arg_3->k, arg_2->k, field_30 and both turn tests 130 each (same code), for either
+// field_34 test 214 (1708 B, first +0x2); `0.0f == normalize3d(&local_5)` 131; the second axis computed ahead of the
+// first rotation or between the facing copy and it 202 (1737 B); the object's up as `&local_1->forward + 1` 130 (same
+// code); a forward pointer for the six cross products 151 (1696 B); the clamp bounds as `0.0f - limit` for the two
+// turn limits or all four 130 (same code).
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_vector_170d70 calls through include/axis_rotation.h's helper 151 (1696 B). Restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

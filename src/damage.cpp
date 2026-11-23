@@ -2442,7 +2442,8 @@ struct s_unit_event
 // permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
 // address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
 // where retail reads it after.
-// score 420 (was 513): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
+// score 420 (was 420; 513 earlier): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
+// score 420 (was 420; earlier 513): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
 // Earlier detail: Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
@@ -2751,6 +2752,22 @@ struct s_unit_event
 // aligned 193: the search loop is then retail's (count ESI, cursor EDX set up after the guard) but for the EBX/EBP
 // exchange of the permutation and object pointers, which runs through the whole body; with the pointer-arithmetic
 // update or the named attached index 420 (aligned 193).
+// M3 lane 2 r138 (h2m fast with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420, aligned 195, registers masked 34):
+// main reads the region index through its address once and directly twice; all three uses through the pointer 420,
+// only the 0xa8360 argument through it 420, only the state update through it 420, the parameter bound to a
+// `long const &` for the lookup 420 and for all three uses 420 (all the same code). Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; L = the named region-states lead, re-measured 523
+// at 1852 B, aligned 128): on L both notifications through one named attached index read again for the second 523;
+// the mode-4 block's `current` as the function's object pointer 539 (1836 B); the 0xa8360 argument through the region
+// reference 523; the region lookup reading the parameter directly 523 (0xdaaa0 stays matched on L); no region local
+// 560. Paren pairs around L's shifted bit 523 (inert). Retail's second notification lookup starts the datum offset's
+// ESI web (the mode-4 path loads it at the join) and its later blocks keep the constant 1 in a register. Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0xdaaa0, 0xdae60 and 0xdb760, all MATCH; control 420): the region states named at entry
+// (after the permutation pointer) and indexed at the update 472 (1880 B); the child walk as a while loop 420 (same code);
+// the mode-4 block through `object` 424; the four flag-byte stores through a pointer to the byte 420 (same code); the
+// child-name test written name first as the section and seat tests are 421. Reading: retail loads the datum offset
+// into ESI at the second attachment lookup and keeps it (the shift's 1 then goes through the dead region home into
+// EDI); ours gives ESI to object_index from the 0xa8360 call on.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3712,7 +3729,8 @@ enum
 
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
-// score 309 (was 371): the loop's frame homes and ESI/EDI roles are retail's (1885 bytes for 1880); left: the reported
+// score 309 (was 309; 371 before m3 lane 4 r248): the loop's frame homes and ESI/EDI roles are retail's (1885 bytes for 1880); left: the reported
+// score 309 (was 309; earlier 371): the loop's frame homes and ESI/EDI roles are retail's (1885 bytes for 1880); left: the reported
 // block's shield material (retail reads the accumulator's info field there, ours the info local, which then stays live
 // in EDI), the head (the count in ESI where retail has EDI, `add ecx, 0x10` for retail's `lea ecx, [eax + 0x10]`, the
 // store order of the child flags and of friendly), the loop's first index (`dec esi` for `lea eax, [edi - 1]`), the
@@ -3773,6 +3791,29 @@ enum
 // hit byte's store 295; both 293; with them `friendly` declared ahead of the definition 291; the definition through a
 // named tag pointer plus 0x10 (as 0xd82e0 writes it) 293, with friendly first 291; `object_count` declared first 300;
 // the accumulator's direction field typed as a vector pointer 291 (same code). Orders not kept (match-only).
+// M3 lane 2 r138 (h2m fast; control 309, aligned 92, registers masked 35, registers and frame slots masked 13): the
+// definition through a named damage-tag pointer plus 0x10 on this body 309 (same code); the kill block's two vitality
+// stores through the owner-store pointer 404 (1890 B); `for (i = object_count; --i >= 0;)` with the parent test
+// `i < object_count - 1` 304 (1884 B, aligned 136); the pending team event named once for the test and the call 309
+// (same code); the victim's player index named once for the test and the call 471 (1894 B). Body unchanged.
+// M3 lane 2 r140 (h2m fast; control 309, aligned 92, registers masked 42): the three node fields as ternaries on
+// `i == 0` 469 (1898 B); `kill` declared at the top of the pass 309; the pass's report declared there 309; the team
+// event test as two nested ifs 309 (all three the same code); the node fields stored in the record's order (0c, 10,
+// 14) in both arms 369 (1881 B: a positional rise, but the node block is then retail's, its shared `mov [esp+0x44],
+// eax` tail included). Lead (match-only parts): that order with the accumulator-field shield read 286 (1880 B), with
+// the body flag declared first and `kill = true` ahead of the hit byte 285, with friendly ahead of the definition 283
+// (aligned 45, registers masked 10: the frame is retail's; left are the head count ESI for EDI with its `dec`, the
+// event word in BX for AX, and the info reload after the kill block). On 283: the definition through a named tag
+// pointer 283; `i < object_count - 1` 466; `for (i = object_count; --i >= 0;)` 283; an `if (0 < object_count)` guard
+// 283 (1882 B, not folded); the event word or the victim index named 283 (the same colouring). Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0xdb210 and 0xd8cb0, both MATCH; control 309): the five flag locals renamed to sort
+// first or last 309 (same code: names do not order these bool homes); the tag named and the definition formed as `jpt +
+// 0x10` 309 (same code; retail's `lea ecx, [eax + 0x10]` head is not that); the team identifier read once into a named
+// short for the test and the call 309 (same code); `reported` declared first 489; the parents array declared first 309
+// (same code); r248's match-only forms together (the shield material through the accumulator's info field, body flag
+// first, friendly ahead of a named tag pointer, `kill = true;` first) 291 at 1882 B, with all five flag homes and the
+// info/definition homes as retail; left there: the tag load in ECX + add (retail EAX + lea) and the count in ESI
+// (retail EDI, its first index `lea eax, [edi - 1]` so the count is not decremented in place).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5505,6 +5546,17 @@ struct s_damage_object_creation
 // index ECX) because info itself stays live in EAX; retail keeps its count in EAX, loaded over info, so retail's count
 // is a variable that takes info's register where ours takes EDI. On main's body: the count `long const` 167; a redundant
 // `if (section_count > 0)` around the loop 181; info declared in the `if` condition 167; info typed `const` 167.
+// M3 lane 2 r138 (h2m fast with 0xdb810/0xdbb40, both MATCH; control 167, aligned 37, registers masked 7): the node
+// loop's two tests as one `&&` 167; the section stores or-ing `(word)(1 << i)` 167; the count bound to a
+// `long const &` for the loop test 167; info bound to a const pointer reference for the count read 167; the first mask
+// bound to a `short const &` inside the loop 167; the count assigned through a `long &` 167 (all the same code); the
+// components as typed pointer arithmetic do not compile in this file (incomplete type). Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0xdb810/0xdbb40, both MATCH; control 167, registers masked 11): a `dword` primary mask
+// local shared by the section loop and the detachment test 169 (811 B; retail reads the argument's word in memory
+// there); the piece search as a counted `for` with `first_node = i; break;` 223 (793 B, frame 0x13dc), with its own
+// counter 223; an empty-bodied `for` then `if (i < node_count) first_node = i;` 170 (810 B); the count as
+// `info ? info->unknowne0 : 0` with the loop outside the `if` 182 (not threaded, count still EDI); the counted break
+// search on the one-use first-mask local (re-measured 112) 247 (777 B). Body unchanged.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
