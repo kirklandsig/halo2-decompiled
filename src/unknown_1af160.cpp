@@ -304,6 +304,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // the entry record 12 (the three the same code); the second 0x25d690 call on a fresh prop_node_get of the actor's prop
 // index 87 (1002 B); the prop index read once at the top into a long used for the node lookup and the 0x265c30 call 256.
 // All restored.
+// M3 lane 3 r298 (h2m fast with 0x1e1f20, MATCH; control 12): the equal arm's two branches swapped with the test
+// un-negated 29 (the frame cells rotate further); the 0x1af530/0x210ac0 test as nested ifs 12; the node pointer to const
+// 12; the second 0x25d690 position passed straight to the subtraction (no named pointer) 12 (same code each); the result
+// flag declared first 187.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

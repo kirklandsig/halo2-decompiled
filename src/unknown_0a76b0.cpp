@@ -4176,6 +4176,10 @@ extern vector3f *g_4687bc;
 // M3 lane 13 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the permuter (fast, anneal, one
 // job, 1810 s, 70 tries) best 8; the rigid-body index as a `long const` 8; the rigid-body index declared between the
 // material and the component lookup, assigned at the call 8 (both the same code). All restored.
+// M3 lane 3 r298 (h2m fast with 0xb67a0, MATCH; control 8): the element subscript given `(short)rigid_body_index` 73
+// (1101 B); the element as `&rigid_body_index[component->rigid_bodies.data]` 8 (same code: the data still loads first);
+// the object-type test as `((1 << type) & 1) != 0` 8 (same code), as a `(bool)` cast 26 (byte shift `mov dl, 1; shl dl,
+// cl`); the default material built ahead of the effect-tag test 13 (its load and store move above the branch, still DX).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

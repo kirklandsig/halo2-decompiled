@@ -1861,6 +1861,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // `stored` declared after the early return 39; the early-return test reading the object fetched at the top (no second
 // lookup) 364 (1392 B). Listing reading: our no-model arm reads the parent node and scales it before the parent object
 // lookup (the node argument is evaluated first), retail looks the object up first and reads the node after. All restored.
+// M3 lane 3 r298 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): the render arm ending in `return`
+// with the no-model code after it (no else) 20; the no-model parent index read from its field at each use 20; both
+// together 20 (same code each: the index still takes ECX and the pool is reloaded); the mirrored flag set by an `if`
+// 35 (1400 B); the defaults in the `parent_index == NONE` arm of an if/else 25 (1395 B).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
