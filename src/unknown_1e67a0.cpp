@@ -1374,6 +1374,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // term first 114 (same code); the rotated copy renamed 114 (same code). Helper and body restored.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 111 (1393 B; plain
 // check agrees, every matched function of the file unchanged). KEPT as the shared spelling (count lowered).
+// M3 lane 14 r148 (fast; control 111): one redundant paren pair around a float expression (a velocity row, the rotation
+// angle product, the small-angle test) 109/110 at retail's 1382 B, two pairs 122/123 (1389 B), three 189/190 (1362 B);
+// around a bare identifier or the trig arguments 111 (no change): a period-4 shift of the later code, the rotation's
+// four products never move (steering, under the bar, not kept); the velocity rows reading `state->scale` at each use
+// 194 (1391 B), with one paren pair 197 (1382 B); the axis through a `vector3f const &` to `state->up` 111 (same code).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

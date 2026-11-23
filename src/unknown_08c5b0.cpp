@@ -360,6 +360,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // `controller->voice_setting != setting` 5; the selector seeded `setting = 1` with `kind == 1 && available` and the
 // availability helper as one returned expression 15; the payload setting read into a local at the selector's top 10.
 // Diagnostic (a repeated test, not keepable): `kind == 1 ? selector(kind) : 1` at the call 4 (same code).
+// M3 lane 1 r158 (h2m fast with 0x8c5b0, MATCH each run; control 4), all with the existing kind read: the header's kind
+// read into a local in the availability helper 4; the kind declared, then assigned 4; the handler taking an untyped
+// request pointer cast to the request inside 4; both fields read through a pointer to the result word (`fields[0]`,
+// the index at the next dword) 4; the payload read through a const reference in the selector 4 (all the same code).
 // M3 lane 8 r226 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with a reference-bound plain kind
 // read (no volatile; 4 alone): the controller index read through a reference-bound copy of the request pointer 4; the
 // kind read through that copy with the index through the parameter 4; the controller index read into a reference-bound

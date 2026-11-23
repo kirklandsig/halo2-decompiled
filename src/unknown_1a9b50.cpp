@@ -920,6 +920,14 @@ extern point2f *g_468778;
 // facing pointer straight from the 0x25d740 call 384 (1551 B). On the 384 lead: the dot as `dot3f(local_8, &actor)` 404
 // (1549 B), as `dot3f(&actor, local_8)` 404, written i, j, k 384 (same code). On the 410 form: the three facing copies
 // read through the view 410, the weight dot through dot3f 410 (same code each). Body unchanged.
+// M3 lane 15 r137 (H2M_FAST; control 389 at 1563 B, aligned exact/stack-masked/register-masked 190/92/30; main has
+// retail's homes for arg_0, actor and slot and loses only the prop to the view, which takes EBX apart from the facing
+// pointer): the -0.4 facing dot through the facing pointer with its three terms in each of the six orders, and with
+// the products written actor-first in two orders, 410 each (1549 B, same code: the sum is emitted k, i, j whatever the
+// order; aligned 278/159/39); the facing pointer declared right after the 0x25d740 call (ahead of the 0x110ab0 test)
+// with the dot through it 407 (1549 B, 282/166/39), with the dot left on the view 430 (1572 B); the dot's k and j
+// through the facing pointer and i through the view 410 (1549 B, 278/155/34); k through the view, j and i through the
+// facing pointer 432 (1573 B). Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1515,6 +1523,13 @@ static __forceinline long real_to_long(real value);
 // facing pointer formed straight from the 0x25d740 call with no view local 381 (aligned 151, masked 108: the first dot
 // then loads the state's field first, retail's operand order; a gain of 1, not kept); that with the velocity read
 // through an AI object pointer at each use 486 (1924 B, masked 98). Body unchanged.
+// M3 lane 15 r137 (H2M_FAST with 0x25d740, MATCH each run; control 382, aligned exact/stack-masked/register-masked
+// 242/109/58; retail's false exit sits after the first goto arm, and its near arm forms the facing address from the view
+// in EAX while the far arm reads the first dot off the view and forms the pointer later): the speed through the existing
+// magnitude3d 468 (1904 B, 287/144/82); the facing pointer declared at the top of the far arm with the near arm copying
+// the view's field 479 (1907 B), with magnitude3d too 493 (1927 B); the first dot written facing-first 382 (same code);
+// the first dot through the existing dot3f, either argument order, 381 (1904 B, 240/107/57; a gain of 1, not kept).
+// Still BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -1887,6 +1887,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // the flag through object_get 20 (both the same code). Re-measured: the arms swapped under `render_index == NONE` 297
 // (1388 B: the block keeps the index in ECX there too, so the arm's place does not order the two); a pool local set ahead
 // of the current-object lookup, the matrix through it and the flag through the global, 358 (1394 B).
+// M3 lane 6 r233 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): the no-model parent index renamed to
+// sort ahead of the other locals 20 and after them 20; the index declared `register` 20; the index and its test in their
+// own inner block, parent and flag outside 20; the no-model parent and flag renamed to sort first 20 (all the same code:
+// names and scopes do not move the index off ECX).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

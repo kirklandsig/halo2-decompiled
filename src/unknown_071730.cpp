@@ -65,12 +65,12 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // MiniMax G (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line for the session data where this
 // build expands it at the call site, and the second session state still sits in ESI where retail keeps it in EAX; the
 // 0x5b080 body lives in another file, so the two paths diverge from the first difference on. BLOCKED-BY 0x5b080.
 // MiniMax H (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line where this build expands get_data_4a00; the second session state sits in ESI against retail's EAX.
 // MiniMax E (11-20): no new form, no lower score (376): the secondary state still lives in esi where retail keeps it in eax, because 0x5b080 is expanded here and called out of line in retail; 0x5b080 lives in src/unknown_05b040.cpp, which this lane may not edit, so the difference is not reachable from this file.
-// score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // Earlier at 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // MiniMax E (11-20): no new form, no lower score (376): the top block still reads the session state into ESI and compares ESI where retail loads it into EAX and compares EAX, and retail's out-of-line call to 0x5b080 for the session data is expanded at the call site in this build, so the two paths diverge from the first difference at 0x6b on.
 // Round 127 (m3 lane 10; fast, kept form confirmed plain with 0x706f0 and 0x5b080 matched): the property value cleared by
@@ -491,6 +491,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (the second then loads ahead of its clock as in retail, as the 0x75890-inline forms do); the player count read once into a
 // named `dword` for the compare and the store 376 (same code); local_2 declared inside the type test 437 (first +0x16); the
 // owner-state test split into an outer state test and an inner timeout test 376 (same code). Still BLOCKED-BY 0x5b080.
+// M3 lane 4 r253 (h2m fast with 0x5b080, 0x72140, 0x71ff0, 0x71e00, 0x706f0, plus 0x72330, 0x6daa0 and 0x6dae0 for the
+// getter trials, all MATCH unless noted; control 376): the data getter's hand-written expansion in 0x72330 as a call to it
+// 376 (0x72330 stays matched); with 0x6daa0's expansion as a call as well 376 (0x6daa0 matched); with 0x6dae0's too 376
+// (0x6dae0 134, 268 B), so the number of the getter's call sites does not move its expansion here (all restored); the two
+// missing-input exits in the other order 372 (statement order by score, not kept); the surface and data locals declared
+// first and assigned after 376 (same code). Still BLOCKED-BY 0x5b080's call-site depth.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
