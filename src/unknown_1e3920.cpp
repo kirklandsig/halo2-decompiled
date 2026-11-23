@@ -1321,6 +1321,10 @@ void function_1e3b60(long actor_index);
 // difference is the 0x262ba0 call (`push ebx` for retail's `mov eax, ebx`); the later rows are operands shifted by that byte. In
 // 0x262ba0: sample/update at function scope 404, `short old_state` 404, the flags declared `update, sample` 402 (1620 B), a const
 // actor parameter 404, sampled_one declared ahead of maximum 404; the actor stays a stack parameter in each. Still BLOCKED-BY 0x262ba0.
+// M3 lane 3 r300 (h2m fast with 0x262ba0, 0x2641c0, 0x264210, 0x265680, 0x263210 and 0x264330; 25 here in every form):
+// diagnostic, 0x2641c0's noinline declaration dropped: 0x262ba0 509 (1696 B), this 25, 0x264210 114 (139 B); reverted. In
+// 0x262ba0 (404 each, same code): a `short volatile` maximum, `short old_state`, `long const index`, the node pointer and its
+// byte view declared the other way round, the state cases in numeric order. Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

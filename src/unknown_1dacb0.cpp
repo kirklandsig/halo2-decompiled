@@ -1652,6 +1652,15 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // pass with `animation_id = c_type_709360();` 947 (2837 B), with the loop tested on the candidate's index 947 (same code);
 // the result copied member by member from the candidate 963 (2825 B); the three output stores in reverse order (the type
 // first, the mode last) 813. Body unchanged.
+// M3 lane 6 r234 (h2m fast; control 812): the do-while as a label before the iterate call and a `goto` back when the
+// result is NONE 812 (identical listing: the same flow graph, so the do-while's `je` back edge is not a source choice
+// between these two); the first iterate ahead of `while (weapon_type_entry)` with `break` on a found result and the
+// next iterate at the bottom, no flag, 1022 (2853 B: the two calls stay apart, the loop is rotated like `for (;;)`);
+// the entry pointer declared at the iterate call inside the do-while 812 (same code); `while (result.index == NONE &&
+// (weapon_type_entry = iterate(...)) != NULL)` 812 (same code); the request helper's inheritance loop under a redundant
+// `if (0 < graph->inheritance_count)` 823 (2805 B; it costs matched 0x1dc8c0 two, so it is out); diagnostic, `for
+// (;;)` with both breaks under a favour-size pragma 2035 (1794 B, nothing inlines). Retail's `jne 0x1db22a; jmp
+// 0x1db1d3` is `for (;;)`'s graph without the header copy our build makes at the latch. Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

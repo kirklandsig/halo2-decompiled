@@ -1058,6 +1058,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // call re-deriving the child record as 0x247fd0 does 335 (1654 B); the velocity selection testing the system's effect
 // index field instead of `local_0` 411; re-measured, the collision result declared ahead of the workspace 334. Body
 // unchanged.
+// M3 lane 6 r234 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334): the scale rows as compound
+// `*= arg_7` 334; the kind test as `!local_3->unknown0c` 334 (retail loads the word into AX from the definition held
+// in EDI and tests it; ours compares memory through a reload); the bit-4 test as a plain `& 0x10` mask 334 (still
+// `shr al, 4; test al, 1`); the blend's x row written like y and z 334; y and z written like x 334 (same code in every
+// one). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

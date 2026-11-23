@@ -2325,6 +2325,14 @@ bool function_1900a5(long index);
 // of the fill loop) and the fill loop's bound; `existing`, `records_used` and `properties_used` stay in their homes
 // inside the scan loop and are loaded into ESI/EDI at the inner latch. Retail's write poll tests the range first
 // (`state < 0` to the release, `state <= 1` to the return) and `state == 2` inside it.
+// M3 lane 6 r233 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / masked 256):
+// the property fill written through the global property array (`g_50cbf8[properties_used + j]`, no record re-reads),
+// bound `record->count` 677 (2894 B); bound 6 with `properties_used += 6` 669 (2846 B); those two with the last write
+// time in a two-use local 678 / 669; bound 6 with `+= 6` and the free space named (`record_space`, `property_space`,
+// tested `> 0`) 645 at retail's 2862 B (aligned 453 / masked 258: the frame grows to 0xc8, and with no aliasing store
+// the player state stays in EBP, where retail re-reads it, so the property cursor loses EBP); that with the last write
+// local 645; bound 6 with `+= record->count` and the named space 645; bound `record->count` with the named space 689.
+// Reading: retail re-reads the state after the fill, so its fill stores go through a pointer that may alias it.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
