@@ -1385,6 +1385,11 @@ void function_2118c0(void)
 // sums `&noise[0][0] + (row + w) * 8` 10 (same code); as `noise[w] + b * 64` 150 (every row reduced); `long row = b * 8`
 // for the knots with p1 and out from `(b << 3) + k` 150; `unsigned long row` 10 (same code); `long row = b;` then
 // `row *= 8;` 150. All restored.
+// M3 lane 1 r156 (h2m fast; control 10): the band row taken as `(long)b++ << 3` at the band body's top (no foot
+// increment, p1 and out from `row + k`) 150; the knot rows through a forceinline `(short band, word knot)` accessor
+// returning `noise[(band << 3) + knot]` 150, with `(long)(band << 3) + knot` 150 (every row reduced: the shift inside
+// an expanded helper is affine again); the three knot pointers declared at the sample loop's level and assigned in the
+// band body 10; t computed in the band body 10 (both the same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
