@@ -539,6 +539,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
 // score 1346 (was 1346; m3 lane 8 r221, m3 lane 1 r154, m3 lane 5 r234 and m3 lane 11 r157 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// score 1346 (was 1346; m3 lane 2 r139, m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// Earlier header line, a stack merged here in m3 lane 2 r139: 1346 (was 1346; m3 lane 8 r221 and m3 lane 5 r234 unchanged, its line just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // header line, 1375 (was 1375), sits further up this file).
 // (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
@@ -934,6 +936,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // length but further off); the steering factor's product written field_8c first 1346 (same code: ours still loads field_8c
 // first where retail loads the definition's +0x30 first); the sign applied as `*=` 1346 (same code), as a negation under
 // an if 1396; local_13's sign factor in reals 1402. Body unchanged.
+// M3 lane 2 r139 (h2m fast with 0x2056e0, MATCH each run; control 1346, register-masked aligned 896). Retail aligns two
+// forward-only joins in the contact pass as if they were loop heads (0x207420 after the impact block and its skip arm,
+// padded behind a `jmp`; the latch 0x207640 behind `mov edi, edi`) and does not align the wheel loop's head, where ours
+// pads the wheel loop and neither join. Forms: the disabled contact's skip call with `continue` at the top of the pass
+// (no else) 1351 (6238 B, retail's length; masked 908), with the result returned as `return !local_34 && ... ;` 1349
+// (6243 B), with the magnitude helper reading its input directly 1634 (5990 B) and with both 1618 (6006 B); the wheel
+// loop's cross through function_206092 re-measured 1405, with the `continue` 1425 (6211 B), with both other forms 1411
+// (6238 B). The `continue` form does not pad the latch. Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

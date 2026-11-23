@@ -990,6 +990,12 @@ struct s_object_damage_view
 // is promoted like a plain local); the fallback validating a named copy of the reported player that then becomes the
 // killer 353 (same code, the copy folds); the killer block working on a named copy of the killer 353 (same code),
 // both 353; the two flags in retail's shape with the killer-block copy 344 (the listed flag forms' code).
+// M3 lane 2 r138 (h2m fast with 0x197160, 0xd9640, 0x1ea770, 0x1ea880, 0x1e9ce0; control 353, aligned 132, registers
+// masked 56): both bools in retail's start-then-set shape alone (`true`, cleared after the reported-team test; `false`,
+// set after the four friendly tests) 344 (1548 B, registers masked 49; flag forms, match-only); with the selection
+// amount named once for the compare and the best 358 (the cursor stays +0x2f4); the selected entry through a named
+// record pointer re-measured 454 (1583 B), on the flag shapes 449; the killer fallback written as `if (killer != NONE)
+// { if (killer == reported_player) ... } else if (valid) ...` 363 (1532 B). Body unchanged.
 // M3 lane 11 r156 (H2M fast with 0x1e9ce0/0x1ea770/0x1ea880/0xd9640/0x197160, all MATCH; control 353, aligned 179):
 // `long killer = NONE;` declared first 370; `bool hostile = false;` declared first 439 (first difference +0x8); the two
 // assist arrays declared first 353 (same code); the two assist counts declared first 451 (+0x8); the selection amount

@@ -528,6 +528,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // form: named sine products (i, k, j, after the squares) 392 (1825 B; 387 without the complement move); the rows summed
 // forward first 332 (same code); the first cross term written `axis->j * inverse * axis->i` 332 (same code); squares
 // k, j, i 344 (1790 B). The axis registers and the square spills are unchanged in all of them.
+// M3 lane 8 r225 (h2m fast with 0x137ed0, MATCH throughout; control 334): one matrix reused for both rotations, the
+// second built after the first pass's stores, 444 (1670 B, frame changes); two matrices with the second builder after
+// the first pass 460 (1654 B); each rotated row stored straight into g_467104 in both passes (each row reads only its
+// own input) 367 (1751 B), in the first pass only 333 (one point, same frame); the rows rotated up, left, forward in
+// both passes 334. Retail builds both matrices (both fsin before any rotation) and scalar-replaces most of the first
+// matrix: only forward.j, left.i, forward.k and left.k are stored to it.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2910,6 +2916,22 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // products, delta first in the i and k ones, ours the global first in all six); the global-side cast with delta
 // assigned i, j, k 280 (aligned 130; the sums then emit k, j, i); the opacity's two arms as one conditional multiply,
 // `opacity *= (*flags & 0x20) ? unoccluded_alpha : attenuation;` or `opacity = opacity * (...)`, 306 each (2288 B).
+// M3 lane 3 r299 (h2m fast with 0x2f2d0, 0x2e3f0 and 0x2df00; control 281, difflib-aligned 143). LEAD, not kept at review
+// (the PIN spelling at one of five clamp_2e9e0 sites needs a byte match, and the aggregate alone is 3, under the bar): 281 -> 271 (plain
+// too; aligned 135; 0x2df00 still matches): the four saved records and their count as one global aggregate 278 (the count
+// sits directly behind the records at 0x4c1a04, and retail stores the incremented count ahead of the new record's tag,
+// 0x2f275-0x2f280, as it must when a store through the record pointer may reach the count; as two globals the count's
+// store was delayed past the tag), and with it the vertex-data value through the PIN macro 271 (retail stores that value
+// in each clamp arm, 0x2f173; PIN alone 274). On that form the distance clamp through PIN 525 (2305 B). Reading of the
+// tail: every load is hoisted up to the previous use of its register, so the store order there is the source's.
+// M3 lane 8 r225 (h2m fast with 0x2e3f0/0x222d0, both MATCH; control 281): retail's opacity test falls through to the
+// attenuation arm (`jne` to the unoccluded arm). The arms in that order under a negated test 278, with delta assigned
+// i, j, k 277, as `opacity *= !(*flags & 0x20) ? attenuation : unoccluded_alpha;` 306 (2288 B); the zero or the far
+// bound on the other side of the visibility, attenuation, opacity/size tests 281 each, of the near-distance test 286,
+// of the near-angle test 489; attenuation's 1.0 assigned in an else arm 424; the forward dot through dot3f in either
+// argument order 281 (same code); delta through vector3d_from_points3d 284, with the opacity arms in retail's order 281.
+// Reading: the extra byte is loop-top padding (ours jumps from the entry-pointer reload over four bytes of padding;
+// retail's reload falls into an already aligned body), so it follows the pre-loop length, not the loop.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3685,6 +3707,12 @@ real magnitude3d(vector3f const *v);
 // length tests ahead of the parallel test 182; the parallel test on `(real)fabs(dot)` 170; the angle as
 // `step * acos(dot)` 170; the fallback clamp through the existing PIN macro 188 (1025 B). Diagnostic (flags, reverted at
 // once): the file built with /Op 558 (1296 B), so the reloads are not float-consistency code. Restored.
+// M3 lane 3 r299 (H2M_FAST with 0x30bf0 and 0x24590; control 170, difflib-aligned 187): the angle as a double local 198
+// (1053 B); a double copy of the angle for the sine and cosine 249 (1009 B); the arccosine named as a double ahead of the
+// step product 196 (1051 B); a float copy of the angle for the cosine 166 (1045 B, aligned 183; a one-use copy, round
+// 221's form again); that with a float copy of the dot for the arccosine 166 (1039 B, frame 0x34); the parallel test on a
+// named `(real)fabs(dot)` 170 (same code). Reading unchanged: retail loads the float dot and the float angle from their
+// homes at each of the two uses, ours converts once and keeps the wide value.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

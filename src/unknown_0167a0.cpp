@@ -487,6 +487,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // table field bound as a `byte *&` with every restore-block read through it 5, with the `tables` local stored through it 5,
 // that reference bound at the top of the restore block 5 (all main's code); the chain table named from the field ahead of
 // the entry store 174 (+0x148), with the entry base from the `tables` local 178. All restored.
+// M3 lane 6 r232 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e): the direct
+// entry store re-measured 5 (+0x1a7, `second` loading into ESI right after the entry lea); the reference store with the word read
+// back from the field 293 (980 B); the direct store as `((byte **)state)[5]` with the word read back the same way 5 (+0x1a7); a
+// `byte **` view of the state's pointer fields for the entry, its table base and the word 176 (+0x148); the direct store with the
+// first block's index as `second + (packed & 0x1ff)` 5 (+0x1a7); the direct store with the restore block's chain base read as
+// `*(word **)` 5 (+0x1a7). Restored.
 // M3 lane 11 r155 (h2m fast with 0x16f60/0x17000/0x189a0, all MATCH; control 5 at +0x19e, the direct entry store
 // re-measured 5 at +0x1a7): permuter (`--fast --anneal --jobs 1`, 600 s, 59 tries, 17 failed builds) none below 5; the
 // restore block's entry stored and kept in the existing `entry` local by one chained assignment, the word read through

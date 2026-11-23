@@ -560,6 +560,9 @@ __forceinline bool function_184448(long arg_0)
 // constants are then reloaded after each call exactly as retail does (the head is unchanged); the same copy without
 // `inline` 965 (no reloads). So the reloads follow 0x48e70 being an inline-declared definition kept out of line, as
 // 0x22750 is for 0x22cf0; the lead is `inline` on 0x48e70's own definition (machine 1's file), not measured here.
+// M3 lane 16 r178 (coordinator diagnostic, one full check, restored byte for byte): `inline` on 0x48e70's own definition
+// (0x22750's spelling) 965 -> 1014 (4590 -> 4623 B, first +0x7 unchanged); 0x48ee0 174 -> 175 (1486 -> 1496 B, first
+// +0x5c -> +0x29); 0x48e70 itself still matched (kept out of line); no other count moved, no match lost or gained.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
