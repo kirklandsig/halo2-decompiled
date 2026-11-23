@@ -1883,6 +1883,10 @@ long function_1e4a10(long index);
 // code). Diagnostics (reverted): probe-symbol chains at the top (k = 1..8: 4 4 4 7 8 8 8 8) and right after the shield
 // default (k = 9/12/16/24: 8 each) never flip the zero/shield pair; on this set round 139's 1.0f clamp no longer flips it
 // either (257); the function_176780 call's first zero as 1.0f 176.
+// M3 lane 11 r160 (fast): the overflow as `-object->shield_vitality * maximum_shield` 120 (886 bytes), as `maximum_shield *
+// (0.0f - vitality)` 8 (same code); the body damage stored ahead of the end lookup and the 0xb58c0 call 43 (883 bytes);
+// the stun bounds into a NULL-initialised local tested after the type test 8 (same code); the vitality clamp as an
+// if/else store 206 (885 bytes).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
