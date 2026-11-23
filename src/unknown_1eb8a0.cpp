@@ -923,6 +923,28 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // qr copy through EDX, so q has no scratch register there; ours reloads the clock four times in that span and holds q in
 // EDX. Leads saved as build/r229/lead-0x1eb8a0-q-ebx.patch (717) and lead-0x1eb8a0-q-ebx-pin.patch (710) in the m3-lane8
 // worktree; not kept (each raises the count).
+// M3 lane 15 r139 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603, aligned 658). Retail's exits load `out`
+// into EAX just before `ret 0x14` (no return value; the one caller ignores it) and its pops of EDI, EBP and EBX sit in the
+// counter block ahead of the final flag test, where this build pops in each exit. The blocker is the settle arm's double
+// local: with the settle factor computed inside the step expression (`real step = (real)(globals->rate *
+// PIN((double)s->alignment * 1.5, 0.75, 3.5));`, the same double arithmetic and constants) the pops move up and the
+// `or dword ptr [eax], 4` exit is retail's. Diagnostic cuts (not source forms): without the settle arm the pops move up,
+// without the approach arm they do not; `real v` there moves them up too (659). Forms: the void return alone 603 (same
+// code, aligned 657); void with `s->counter++` and the final test reading the field 604; void with `long new_counter =
+// ++s->counter;` 604; void with the flag test written failure-first 603; that counter tail through a file-local inline
+// helper 604; the factor inside the step expression 597, with the void return 597, with void and `s->counter++` 596
+// (plain 596 at 2880 B, aligned 639, the file's 17 other functions MATCH: a gain of 7, under the keep bar; lead patch
+// build/r139/lead-0x1eb8a0-596.patch in the m3-lane15 worktree). On that 596 form: the e3 test as retail's `!(0.001f >=
+// e3)` (a NaN takes the main arm, as retail's `comiss 0.001, e3; jb`) 642 with the main arm first and 644 with the
+// settled arm first (aligned 612/607); the second step count as a ternary 589 (the first one stays an if: a mixed
+// spelling of two parallel blocks, not kept; both as ternaries 672, the first only 670); w as one expression 614; the
+// settle dot as `dot3f(&nq, d)` 596 and len3 as one conditional 596 (same code each); `s->distance = len3;` 675
+// (2885 B, aligned 567). Body unchanged.
+// Also on the 596 form: q copied into the sample as one aggregate 664 (2875 B); the impulse through the existing
+// vector3f_scale 638 (2896 B, aligned 556); the activation delta's impulse add through the existing vector3f_add 676; the
+// impulse through vector3f_scale with `s->distance = len3;` 684 (aligned 575), with the e3 test as `!(0.001f >= e3)` 688
+// (2900 B, aligned 499, the lowest aligned count so far: the rest is the three clamps' 12/8 factor order and the q/d
+// EBX home; lead patch build/r139/lead-0x1eb8a0-n2-aligned499.patch in the m3-lane15 worktree), all three 712.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
