@@ -2375,6 +2375,11 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 // M3 lane 12 r180 (plain): the sum as `if (flag) budget += value4e28; else budget += rate;` 137; the ternary negated
 // with its arms swapped 2 (same code); the selection into an increment local (rate, replaced by 4e28 under the flag)
 // then the 0x140 base plus it 159; `!= false` on the flag 2; the 0x140 field bound to a const reference first 2.
+// M3 lane 7 r221 (plain with 0x78090, 0x78190 and 0x75da0, all MATCH; control 2): the flag read into a named bool at
+// the top of the raise block, ahead of the high-water update, 249; the 0x140 base read there, ahead of the update, 5 (its
+// load stays ahead of the 0x4e20 store and the flag keeps BL); the configuration's 0x13c/0x140 words as named header
+// fields (layout unchanged) in main's form 2, in the two-arm sum 245, in the one-expression sum 93 (the same code as the
+// raw-offset spellings each: member access does not change the arm's operand order). Body unchanged.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {

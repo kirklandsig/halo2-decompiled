@@ -711,6 +711,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // B), with case 3 selected-first 214 (990 B); a case-3 up pointer for both arms with main's none-first order 240 (1010 B);
 // case 3 selected-first with an up pointer for the selected arm only 178 (991 B, the selected-first code); the loop's
 // height read into a `real z` copy instead of the const reference 276 (993 B: the stack value moves the loop's registers).
+// M3 lane 1 r161 (H2M_FAST with 0x1f19c0, 0x1f2e60 and 0x1201a0, all MATCH; control 31): the average through the existing
+// vector3f_add as (b, a) 61 and as (a, b) 61 (974 B); the average summed a first in all three rows 31 (same code: the
+// i row's operand order does not follow the written order); case 2's selected normal formed after the first cross 204
+// (991 B); the component pointer and the contact list read as const 31 (same code). Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1855,6 +1859,20 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `fraction` local) 433 (3049 B); the history maximum passed straight to the clamp call 431 (3049 B); the general arm's
 // speed product passed straight to vector3f_scale (no reassignment of `magnitude`) 236; the three together 491 (3054 B);
 // the normal push rows as `0.234f * normal` 234 (same code). Body unchanged.
+// M3 lane 1 r160 (H2M_FAST with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 234). Retail's 12-byte homes: +0x14 the
+// flying left / history offset (and the direct arm's bounded pair), +0x20 desired / the general bounded copy / the history
+// relative vector, +0x2c the flying forward / the general delta / the history change; ours swaps the general pair and the
+// direct pair. One function-scope vector for the general bounded copy and the history's clamped relative vector 488 (3053
+// B: the shared vector takes +0x14, as lane 13 r107's two-arm vector did); the first arm's last add-scaled as three `+=`
+// rows on `state->up` 602 (3007 B, that arm's code unchanged); `up` and `facing` pointer locals together for the first
+// arm's cross, scale and last add 358 (the i row's up.k product becomes retail's, three others flip); the first arm's
+// scaled input as three `state->speed * input->i` rows 614 (3035 B); its scale and both adds as rows through a velocity
+// pointer 503 (3049 B); the direct arm with the speed folded into the two rotation rows 575 (3024 B), `rotated.x *=
+// state->speed` in place with no speed local 440 (3053 B), `rotated.x *= speed` in place with the local 232 (3050 B; two
+// points, not kept); gravity cleared ahead of the first arm's last add-scaled re-measured 233. Reading: in the first
+// arm's cross retail loads up.i and up.k and leaves up.j as the memory operand (ours loads only up.i), and its last
+// add-scaled loads up.i where ours copies the scale; 0x1faf80 shows the same up.k tie on its evidenced parameter order
+// (see 0x1197b0's note in src/unknown_118e80.cpp). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

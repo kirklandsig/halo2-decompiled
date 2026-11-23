@@ -1350,6 +1350,10 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // M3 lane 16 r181 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): case 10 written height first 6 (case 10
 // then stores descending); case 9 written height first 2 (same code); case 16's constant store written first 111 (688
 // bytes); case 11's chain reversed 2 (same code); cases 5-8 as one label group 2 (same code).
+// M3 lane 11 r160 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): 1..8 dead probe locals here, or 1/2/3/5 in the
+// preceding 0x176a0, 2 each (not a symbol-count tie); the 12/13 zeros as `out[3] = 0.0f; out[2] = out[3];` 2 (same
+// code), as integer 0 2 (same code); the switch on `output_component` with cases 0..15 6; only case 12's chain ascending
+// 6, only case 13's 6.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

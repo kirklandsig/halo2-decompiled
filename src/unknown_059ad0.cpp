@@ -4244,7 +4244,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 295 (was 295; r126, r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
+// score 295 (was 295; r239, r126, r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
 // is in the paragraph below (the two stacked score lines merged in r286).
 // earlier header line (merged in r126): 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
 // and acknowledgement is laid out early. Rounds 275 and 234 kept the round 208 score.
@@ -4705,6 +4705,13 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // read 295 (same code); the identity compare moved down to the timeout test 384 (1231 B); the timed-out arm with one
 // identity copy and `*reason = identity_equal ? 4 : 6` 323 (1229 B, as lane 3 r242 found); the acknowledgement block
 // through a named member-state pointer 309 (1246 B). Body unchanged.
+// M3 lane 5 r239 (H2M_FAST with 0x5e3f0, MATCH each run; main 295; lane 1 r144's 44 lead rebuilt from its diff, 44). On the
+// 44 lead: the kept arms `result = true; if (same || better) return true;` 44 (same code). On main: the kept arms `return
+// true;` 307 (1273 B); the state-8 exit `return true;` 339 (1266 B); the refused block written at its test, no label, 295
+// (same code); every exit through `done:` 313 (1280 B), with the post-disconnect `if (result) goto done; return result;`
+// 328 (1286 B). Reading: retail's final return is a join that holds the result in AL (the state-8 edge stores 1 and
+// reloads it, the kept arms and the post-disconnect true edge arrive with AL set, the reason exits reload the byte).
+// Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

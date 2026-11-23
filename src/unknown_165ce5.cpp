@@ -2097,6 +2097,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // first overlay block (where retail holds it in ESI) 194 (2187 B); the zoomed arm's rate as one conditional expression 188
 // (same code); the overlay play's flags/set arms in the no-scope-first order 189. Still BLOCKED by the stand-in (round 98)
 // for the ESI/EDI saves. Body unchanged.
+// M3 lane 1 r161 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the scope overlay's index
+// tested on the call's returned value with no named local, in the `!no_scope` test 197 or nested under it 197 (frame
+// still 0x30: the named animation local is not the unused cell); the channel frame expression passed straight to
+// set_frame_position 335 (2189 B); the user flags read and set in place with no `flags` local 188 (same code); the idle
+// globals pointer read in place at its three uses 225 (2205 B). Frame 0x30 in all five. Still BLOCKED by the stand-in
+// (round 98) for the ESI/EDI saves. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -987,6 +987,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // through the globals getter 20; index24's test and argument through the getter 20 (same code each); the old mask read
 // from `globals->team_mask` with the pointer kept for the store 131 (374 B); only the mask compare's operands swapped
 // (`old_team_mask != present_teams`) 20 (same code). Body unchanged.
+// M3 lane 6 r236 (h2m fast with 0xb58c0/0x196780; control 23): the present accumulator `volatile long` 23; a `word *` to
+// the playing field for its entry read and store (like the mask pointer) 23; the present update as `present_teams =
+// present_teams | (1 << team)` 23 (the three the same code); the field read in the present update and the team local in
+// the playing one 37 (383 B, the bits CSE); no volatile, the player loop in a forceinline collector taking both
+// accumulators by address 63 (384 B: scalar-replaced, the plain-present code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6069,6 +6074,13 @@ void __stdcall function_d6bc0(long object_index);
 // tail-merged); diagnostic, on the field-test form the countdown block given the loop-top index 244 (882 B).
 // Re-measured listed forms: case 1 as `schedule = bit;` 129, the flag initialised from the field test 154, from the
 // local test 130. Body unchanged.
+// M3 lane 11 r159 (h2m fast with 0x15c150, MATCH each run; base 29; flag recipe rebuilt 7 at 869 B, its field-test form
+// 172 at 858 B: there `entries` is loaded into EDI at the loop top and in both reset arms and that copy serves the
+// `= 1` store, the zero test and the index test, where retail reloads it into a scratch register in each block): on
+// the field-test form the countdown block re-reading the loop-top `index` local (`index = entries[i].index;`) for its
+// test and 0x158ff0, 0xd6bc0 on the field 172, with 0xd6bc0 given `index` too 175 (855 B); the reset counter through a
+// block-local `s_netgame_entry_state &` 183 (851 B); 0xd6bc0 given the loop-top `index` (live through the schedule
+// block) 192 (870 B); on main the countdown re-reading `index` 29 (same code). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

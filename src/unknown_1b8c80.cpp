@@ -1040,6 +1040,12 @@ extern "C" void _ReadWriteBarrier(void);
 // first, ahead of the actor lookup, 44 (first +0x5); read after the barrier 6 (same code: it sinks); actor, `long` flags
 // local, no barrier, 44 (208 B). A read through the slot anchored by the barrier always brings its own load into the
 // entry block; retail's entry has the slot load alone.
+// M3 lane 13 r150 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; each without the barrier): the actor assigned in
+// the busy test's condition 44 (208 B); the busy test as an empty first arm of one flat else-if chain 44; a second state
+// pointer for the point copy 44; the state assigned again from the slot at the head of the NONE block 44 (all the no-barrier
+// code). Matched functions found by a scan for a stack parameter loaded in the entry block and read after its branch
+// (0x1b22e0, 0x25fe50, 0x227600) read it on both paths or after the join; matched 0x1c14b0 (actor test, then a slot test)
+// loads the slot after the branch, as ours does here.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2317,6 +2323,17 @@ void function_1f86a0(long actor_index);
 // code: the shared mask temp takes BL too), with non-zero tests 234; the mask local read from the state view with bit 0x40
 // from the selection 245 (867 B). Reading: any byte value live across the two root calls (mask local, shared mask temp or
 // the shared flags byte) takes BL; retail has none (mask spilled at F+3, flags re-read for bit 0x40, entry in EBX).
+// M3 lane 1 r160 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123): the iterator's three
+// stores as the first statements, ahead of the actor and unit lookups 248 (865 B: the early return gets its own epilogue);
+// `same` started false and set under `if (specified)` re-measured 240; the element's root named under `if (specified ==
+// 0x20)` and compared with the selection's 240; the entry's index named ahead of the element lookup and used once 123
+// (same code); the decline and the join attempt taking the actor index from the iterator record 123 (same code); the
+// accept arm as a bare `break` with the joint index read through the entry after the loop 123 (same code). Diagnostics
+// (reverted): one unused local ahead of the element, between the mask and the same-root test, or ahead of the entry
+// declaration 123 each (same code: the contest is not a symbol-count tie). Reading of retail's loop: the first root's
+// result takes EBX across the second root call and the entry is reloaded from its home after it, the actor stays in EDI
+// and the mask is the only value left without a register; ours gives the root EDI (reloading the actor every pass) and
+// the mask BL. Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

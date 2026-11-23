@@ -1124,6 +1124,15 @@ void swarm_leader_detach(long actor_index);
 // (`actor + slot_index * 0x40 + 0x90`) 4; the argument as `(s_slot *)((byte *)actor + 0x90) + slot_index` 4 and as
 // `actor->slots + slot_index` 4 (all the same code: the address is shared whatever its spelling). On main's body with
 // `actor != other`: the bit held as `bool counted = definition && bit;` 57 (974 B, no byte store). Body unchanged (59).
+// M3 lane 3 r302 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at
+// 980 B). Reading of the definition block: retail computes the bit into AL (`shr eax, 3; and al, 1`), stores it to the
+// dead actor-index home [esp+0x34] and branches on the flags, which is exactly the false-then-set flag form; so that form
+// is retail's there and only the slot loop's `lea` stays (ours forms it after the type load, the handler then takes EDX;
+// retail's handler reuses the type's ECX and the `lea` sits between the stop test and its jump). On the 4 form, each a
+// no-code file-local inline accessor: for the loop bound (`actor->current`) 4, for the `slot_index < 4` test 4, for the
+// type read 4, all three together 4 (same code each). Diagnostic, restored at once: the handler read as a four-byte
+// memcpy of its table entry 297 (996 B, frame 0x24, EDI pushed after the loop: the listed whole-allocation flip, now in the reduced image too).
+// Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

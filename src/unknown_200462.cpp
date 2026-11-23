@@ -360,6 +360,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // around the rest of the draw iteration 14; the half height declared bare ahead of the half width and assigned after it
 // 14; the corner array and the draw call in their own block 14; the corner array declared at function scope beside the
 // position 14 (the last four the same code). All restored.
+// M3 lane 6 r236 (h2m fast with 0x2008fc 0x200891, control 14): both half extents as `0.5f * span * size` 14; only the
+// half height so 14; both as `size * 0.5f * span` 14; corners 2 and 3 copying corner 1's and 0's x and corner 3 copying
+// corner 2's y 32; the bounds copy source read as a `long` and offset as an integer 14 (the ADD stays). All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

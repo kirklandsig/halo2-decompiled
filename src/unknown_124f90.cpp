@@ -3798,6 +3798,15 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
+// advance differs at +0x6b.
+// M3 lane 15 r138 (H2M_FAST): 0x128020's loop-top `sounds = g_4e637c;` 8 (same code); with the sound pointer as
+// `(s_sound_playback *)sounds->data + index` ahead of the start test 157 (561 B); the start test and the pointer both
+// through `sounds` after that reload 8; the advance reading the global at both calls with no `sounds` reload 8; no
+// `sounds` local at all (entry, loop top and advance through the global) 8; the all-global advance with `sounds =
+// g_4e637c` last (the earlier 17 form) 8 on this base; `default: __assume(0);` first in the switch 8; `case 1:
+// continue; default: __assume(0);` both ahead of case 0 8. With the assumed default every advance spelling loads the
+// pool ahead of the ternary.
 // MiniMax C (11-20): no new form, no lower score (8): the pool reload still lands ahead of the next-slot diamond in every form
 // tried this round (the seed as its own statement ahead of the reload, the advance as two body statements with the mode-1 arm
 // broken instead of continued, and the seed through a comma), and retail's mode dispatch (`movsx eax, ax; sub eax, 0; jne`)
@@ -3819,8 +3828,6 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
 // MiniMax G (11-20): no new form, no lower score (8): the pool reload is still scheduled before the next-slot selection - retail loads the pool after the next-index ternary's join and re-reads it on every path into the advance, while this build reloads it only where the body clobbered the register and lets the branch into the loop advance skip it; the seed as its own statement ahead of the reload, the reload inside the search call's argument and both pool uses through the global all score the same 8.
-// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
-// advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
 // `case 1: continue;` arm and an unreachable `default: __assume(0);`, and the pitch range is computed inside case 0
 // where retail computes it: every register, the `sub eax, 0` dispatch and case 0 are retail's. Left: the loop end's
@@ -4050,6 +4057,17 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // the admitted datum directly from its low word 91. NOT kept: The shared calls remain out of line and shorten the
 // body. A native word slot retains 558 bytes at 168. Advancing the admitted slot directly removes the retail
 // sentinel branch and shortens the body.
+// M3 lane 11 r160 (fast): the hoist comes from the loop top reading the pool global (the macro): with the start test
+// and the sound pointer read through `sounds` the loop end's load stays in the loop end (round 181's 6 form, re-measured
+// 6: the load then sits in the compare block ahead of the next-index ternary). Barriers after the entry, at the loop
+// top or a volatile index change nothing (8/8/171). The existing record_pool_next_used at the loop end 183, at both
+// sites 293; held form (`inline` on its definition) 91 at either (517 bytes: load after the ternary, 0x16bc00 called),
+// with `inline` on 0x16bc00 too 8 (main's code, hoisted). On the 6 base: the loop end as `datum(g, find(g, next)),
+// sounds = g` 17 (retail's loop end plus a `mov esi, ebp` copy); a named next index, then `sounds = g_4e637c`, then the
+// datum and find through `sounds` 25 (every instruction retail's, but the pool takes ESI where retail has EBP; the
+// embedded `data_datum_index(sounds = g_4e637c, ...)` is the same code); on that: the datum through the global 40, the
+// find through the global 25, the entry through the global 163/27/25, the pointer declared before the start test 162, a
+// named playback array for the loop top 160, the start test through the macro 157; 1..8 probe locals 25 each (no tie).
 // @retail 0x1282d0
 void function_1282d0(void)
 {

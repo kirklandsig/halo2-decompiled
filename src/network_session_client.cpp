@@ -1033,6 +1033,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // store's machine buffer 130 (495 B), the summary getter's session 165 (511 B, both callers lost), the variant's session
 // read 157 (506 B), the opening's flag read 150 (495 B), the copy loop's member read 132 (495 B); every placement grows the
 // body by 12 B or more, so it changes more than the rotation.
+// M3 lane 11 r159 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, all MATCH unless noted; control 22): `result`
+// initialised from the state test (`bool result = session->state == 5; if (result)`, no `result = true`) 169; the player
+// loop skipping by `if (!mask || index == NONE) continue;` 22; the opening as a positive test with an empty arm and the
+// work in its else 22; the opening's address tests as `== NULL` 22; its flag test as `== false` 22; the machine mask as
+// `(1u << member_count) - 1` 22 (all 22s the same code); re-measured the `short` player index 127 (0x6e500 69, 0x72700
+// 94). Body unchanged.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1601,6 +1607,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
 // 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
 // colouring (that needs memcpy's own argument order).
+// M3 lane 6 r236 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; the indexed copy
+// re-measured 195): the identities zeroed by a `= {0}` initialiser in place of the memset 14 (first difference +0x2d); the
+// copy source as `current->players + i` 9; the player loop as a `while` stepping its index at the body's end 9; the
+// destination as `&identities[0][0]` 9 (the three the same code); the count declared bare and zeroed after the clear 15.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

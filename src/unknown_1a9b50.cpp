@@ -928,6 +928,16 @@ extern point2f *g_468778;
 // with the dot through it 407 (1549 B, 282/166/39), with the dot left on the view 430 (1572 B); the dot's k and j
 // through the facing pointer and i through the view 410 (1549 B, 278/155/34); k through the view, j and i through the
 // facing pointer 432 (1573 B). Body unchanged.
+// M3 lane 3 r302 (H2M_FAST with 0x265d30, MATCH each run; control 389 at 1563 B, aligned exact/register-masked 124/51):
+// the view bound by `s_prop_view_fields *const &` for the facing pointer 395 (1568 B); the prop bound by
+// `s_prop_node_view *const &` for the view block's six uses 401 (1571 B); lane 1 r147's lead re-measured (the facing
+// pointer straight from the 0x25d740 call, no view local, the dot through it) 384 (1551 B, aligned 223/81: the prop
+// takes retail's EBX with retail's `xor ebx, ebx`, but arg_0/facing ESI, actor EDI spilled, slot EBP, frame 0x44); on
+// it a named `&field_2d` pointer for the tail 384, the prop lookup ahead of the clock 384, the facing pointer under the
+// view's old name 384 (same code each); on it the prop left uninitialised and cleared in the no-prop arm 354 at 1550 B
+// but aligned 225/84 (positional only: the rotation stays). Main's body with that prop clearing alone 370 (1563 B,
+// aligned 124/51 unchanged: the NULL store moves from the entry into the else arm, away from retail's `xor ebx, ebx`
+// ahead of the NONE test, and the next rows line up by position only; not kept). Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1530,6 +1540,16 @@ static __forceinline long real_to_long(real value);
 // the view's field 479 (1907 B), with magnitude3d too 493 (1927 B); the first dot written facing-first 382 (same code);
 // the first dot through the existing dot3f, either argument order, 381 (1904 B, 240/107/57; a gain of 1, not kept).
 // Still BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
+// M3 lane 3 r302 (H2M_FAST with 0x25d740, MATCH each run; control 382 at 1904 B, aligned exact/register-masked 155/112,
+// 21 calls): re-measured the facing pointer straight from the 0x25d740 call (no view local) 381 (aligned 151/112) and
+// lane 6's computed entry result with it 508 (1921 B, 20 calls: 0x25d740 expanded). New: the prop pointer declared
+// ahead of the two lookups 494 (1913 B); the near arm's flag set ahead of its facing copy 382 (aligned 159), with the
+// facing pointer from the call 381; the near arm copying `local_9->unknown2c` (the far arm keeping the pointer) 397
+// (1905 B); 0x1aa0d0's kept r125 form here (`local_17` declared bare and zeroed in the branch that copies the facing)
+// 467 (aligned 156/115), with the facing pointer from the call 466. Reading of the aligned diff: beyond the false exit's
+// place, retail reads the object velocity off the AI object pointer kept at [esp+0x20] (+0x88/+0x8c/+0x90) where ours
+// keeps a velocity pointer in EBX, and forms the two position pointers for 0xfa1a0 ahead of the direction rows. Still
+// BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
