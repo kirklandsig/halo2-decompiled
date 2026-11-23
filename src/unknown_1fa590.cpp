@@ -575,6 +575,16 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // Permuter (900 s, 94 tries): best 103 by its own count only through a swapped cross3f argument order (a sign change,
 // not usable) plus constant and volatile temporaries.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 214 (1175 B). Restored.
+// M3 lane 16 r181 (h2m fast with 0xc7840, 0x30bf0 and 0x1eb8a0 listed, which reproduces 132; without 0x1eb8a0 the
+// rotation is a call, 962 bytes): aligned, 36 instructions differ. Retail's commutative operands put forward->i first
+// against every leaf (both dots' i products, the scale's i) and forward->j/k last (the second cross, the scale's j/k);
+// ours puts all of forward first in the idle arm and up->i first in both dots. The matched 0x109660 (scale plus a
+// subtract helper) gets retail's forward->i-first dot, so the keys are context. Redundant paren pairs anywhere
+// give two states only (count 0 mod 4 = this code; 1, 2, 3 or 5 pairs = one other listing, 130): the first cross's
+// i row becomes retail's but its j/k second products flip. Parameter renames 132; casts on either cross or the
+// projection inputs 132; a pointer local for forward in the idle arm at any one use 130 (the paren state); the
+// sine declared first 143; the rate first in the angle product 132; the angle call result in parens 170 (1164
+// bytes, the rotation reschedules); double sin/cos in the active arm 204, in the idle arm 130, both 202.
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {
