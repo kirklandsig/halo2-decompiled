@@ -11,6 +11,7 @@
 #include "globals.h"
 #include "unknown_0d0690.h"
 #include "geometry_cache.h"
+#include "scenario_skies.h"
 
 struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
@@ -24,23 +25,6 @@ struct s_sky_surface_record
     dword color0;
     dword color1;
 };
-
-/* the tag data of a scenario sky, or NULL when the index or its tag is NONE */
-PRIVATE __forceinline byte *sky_surface_data(short index)
-{
-    byte *scenario = (byte *)g_4e0350;
-    long tag_index = NONE;
-    if (index >= 0)
-    {
-        long count = *(long *)(scenario + 8);
-        if (index < count)
-            tag_index = *(long *)(*(byte **)(scenario + 0xc) + index * 8 + 4);
-    }
-    byte *result = NULL;
-    if (tag_index != NONE)
-        result = g_4e3b44[tag_index & 0xffff].bytes;
-    return result;
-}
 
 real function_30bf0(vector3f *vector);
 

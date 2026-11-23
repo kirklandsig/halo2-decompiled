@@ -2269,6 +2269,28 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // graph's inheritance count once into a local ahead of its loop 818 (0x1dc8c0 lost, 272); the type helper's urgent
 // resource index named before the resource pointer 812; its streamed test written `!= 0` 812; the request helper's outer
 // test as an early `return` 812 (same code each, the siblings stay matched). Body unchanged.
+// M3 lane 2 r142 (H2M_FAST with 0x1db170, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70, 0x1ddd00 and 0x1db120; control 812; body
+// unchanged). Re-measured, the siblings' found-flag loop with the outputs and the result as one record 732 (2825 B): its
+// first 255 lines and its three epilogues are retail's. Left on it are the zero register from the fifth kind to the
+// inheritance setup of each request, and the second request's roles: retail has the graph in EBX (reloaded from its home
+// on the first inheritance loop's exit edge only), the found mode copied into EBP at the join and the table address read
+// from its spill home at each kind; ours reloads the table address into EBX at the join, loads the graph into EBP at the
+// first resource loop and reads the mode from memory at each kind. New forms on the 732 form: the urgent flag in a named
+// local as well 697 (2825 B: the padding jump after the first kind's loop goes, no zero register); the request helper's
+// counter initialised at its declaration ahead of the kinds request 800 (0x1dc8c0 lost, 474: the counter's zero store
+// moves ahead of the first kind); both requests written out in the body as the kinds call and the inheritance loop with
+// one counter 737 (same roles); the three-level lookup helper with early returns 732 (same code, 0x1db120 lost, 29); its
+// result declared after the first lookup 732 (same code, 0x1db120 2). Diagnostics on the 732 form, each reverted at once:
+// the second request alone compiles to retail's request (graph EBX, mode EBP, `xor ebp, ebp` after the fifth kind's first
+// lookup, five `cmp reg, ebp`, both counter stores from EBP); the first request alone has a zero in ECX at the
+// inheritance setup only, and gets the EBP zero once its mode or its weapon_class argument is a found key instead of the
+// parameter (the weapon_type argument makes no difference); with both requests the first inheritance setup stores
+// immediates whatever the keys (first request on the found keys, second on the parameters, one found key in the first),
+// also with the second request's inheritance loop removed or its graph read from the iterator (no shared table address).
+// The first request without its inheritance loop: the whole second request is retail's (graph kept in EBX, mode in EBP,
+// EBP zero), so the loop between the requests is what costs the graph its register. The second request without its loop:
+// mode in EBP at the join and the table address read from memory as retail, the graph in EBX but loaded at the first
+// resource loop. No source form found yet that keeps the graph in EBX across the first inheritance loop.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
