@@ -1974,6 +1974,10 @@ PRIVATE __forceinline real const &component_time_step()
 // stop distance's product as `delta_time * velocity` 43; `real next_velocity;` declared first in the body 26 (same code),
 // with the stop-first test 43; the second test as `step < target` after the stop test 43; `real stop_distance;` declared at
 // function scope beside the result and assigned in the arm 26 (same code), with the stop-first test 43. All restored.
+// M3 lane 4 r255 (h2m fast with 0x1d24a0; control 26): the step product scaled-value first 26 (same code); the time-step
+// reference bound after `target -= position` 119 (473 B); the stop distance's product `delta_time * velocity` 26 (same
+// code); `step = scaled; step *= delta_time;` 26 (same code); the reference bound ahead of the scale helper with its
+// result used straight in the step product 142 (476 B).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3436,6 +3440,25 @@ struct s_1cf531
 // M3 lane 12 r180 (h2m fast, 2): local_14 declared before local_13 2, on its own line first 2 (same code); the copy
 // into local_13 after the velocity call 62; the subtraction reading local_7 instead of the copy 57 (915 B, frame
 // 0x64); local_13 declared and copied ahead of the length test 8.
+// M3 lane 12 r181 (h2m fast, 2): the copy as an __m128 value with local_13 written only by the final product, with
+// the correction named 94, in place in that value 94, local_13 declared just before the final product 94 (all frame
+// 0x64: the value and local_13 never share a slot); local_13 corrected in place and read back into a named __m128
+// for the final product 29; in place with the factor through _mm_load_ss 28; the factor through _mm_load_ss alone
+// 23 (907 B). Diagnostic: the final product into local_7 and local_7 passed (local_13 no longer address-taken) 100
+// either way, the subtraction then moves after 0x183dc0 and the copy gets its own slot.
+// M3 lane 4 r255 (h2m fast, 2): corrected in place in local_13 with the final product `local_13 * splat` 19 (908 B; the
+// store goes to retail's 0x30 and only the last product differs), on it a named splat first/last 23/19, the factor
+// splatted in place first/last 23/19, splat first unnamed 23; the splat through `__m128 &` bound to the factor 6 or a
+// named splat read through `__m128 const &` 6 (both 905 B: only the hoisted local_13 load differs); local_13's value or
+// local_13 through a const reference 23/23; corrected also stored into local_13 ahead of the scale call 30 (910 B);
+// local_13 copied back into an `__m128` for the final product 29 (910 B). Compile-only (CL without /GL, /FAs; it gives
+// this build's frame exactly: local_7 -64, local_13 -48, two temps and corrected -32, local_14 -16): an address-taken
+// local is never folded into `mulps` (a read of local_13 not just written is a separate load too), and it never shares
+// its slot with a temp unless it is block-scoped (a block-local final vector shares with the spilled local_18); corrected
+// declared ahead of local_13, after it, or in the outer block, and local_14 declared first: corrected stays at -32. A
+// block-local copy (also via operator=) is forwarded from local_7 and never stored. Reading: retail's 0x30 is written by
+// the copy, the correction and the final vector and folded once, so its folded read is a non-address-taken value packed
+// with the address-taken final vector; no spelling here gives that packing.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
