@@ -559,6 +559,12 @@ void function_e5930(long unit_index);
 // MiniMax E (11-20): no new form, no lower score (118): retail keeps 0xe5930 out of line here, so the reset
 // dispatch does not expand and the body is 70 bytes shorter; that helper's file is not this lane's: BLOCKED-BY 0xe5930.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
+// M3 lane 13 r148 (h2m fast): word_flags_set with the shifted bit as an implicit bool 113; the set/clear as one ternary
+// expression statement, word |=/&= arms 113, byte-cast arms 121; word_flags_set with TEST_FIELD_BIT(flags & 2) 113;
+// `if (TEST_FIELD_BIT(flags & 2))` with byte stores 121. One-object LTCG kit (this file, 0xe5930's file and the ballast,
+// whole-link threshold T): 0xe5930 is a call here at T 60, expanded at T 75..90 and a call again at T 100 (0xe5980 then
+// expands into 0xe5930); the caller file's own threshold is ignored; 0xe5930's body placed in this file still expands at
+// T 81, so the file split is not the cause. Still BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
 // final 0xe5930 call with the unit index); no behaviour difference. Only the inlined 0xe5930 body and the flag test differ.
@@ -786,7 +792,7 @@ struct s_biped_flags_10a_view
 // MiniMax E (11-20): no new form, no lower score (222): retail computes the state pointer at the top and spills it
 // where this build reads it at its one use, and the 0x111650 call pushes both arguments where ours takes the names in
 // EAX: BLOCKED-BY 0x111650.
-// score 222 (was 224): Frame 0x16c agrees. Retail
+// score 209 (was 222; 224 earlier): Frame 0x16c agrees. Retail
 // keeps the animation-state pointer at +0x20 and the pool offset at +0x24.
 // The build reads the state at its use and spills the offset at +0x20.
 // The type-0 bit still uses `and al, 4` where retail shifts then masks.
@@ -877,6 +883,14 @@ struct s_biped_flags_10a_view
 // accumulated result first or animation-success return: 273/255/271/295.
 // With the state pointer computed at entry: 359/331/359/381.
 // NOT kept: conditional update approaches retail length but raises the score. Early state takes EBX.
+// M3 lane 13 r148 (h2m fast), kept: the control vector's squared length through the existing length_sq3f 222 -> 209
+// (the inline helper's boundary puts the 0xdd300 result store right after the call, before the control loads, as
+// retail). On 209: the second counter test through TEST_FIELD_BIT 258; a byte read of flags_348 at the first or the
+// second counter test 208/208 (breaks the cached flags word; a cast only, not kept); both with TEST_FIELD_BIT on the
+// second 242/208; `changed |= function_111650(...) | action; return changed;` 209; `changed = true;` above the else
+// arm's 0xd4 test 197 (retail sets BL before that je; statement order, match-only lead); single exit with `return
+// changed` 301 (head as retail but the three state instructions), with the state pointer at the top 304 (state takes
+// EBX, changed a stack byte), with a separate result and changed declared at the 0xe2d80 call 305/305.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -949,8 +963,7 @@ bool __stdcall function_dd360(long arg_159e6d)
 			}
 		}
 		biped->unknown34a = function_dd300(*(long *)((byte *)biped + *(short *)((byte *)biped + 0x12a) + 0x7c));
-		if (0.1f * 0.1f > biped->control.i * biped->control.i + biped->control.j * biped->control.j +
-			biped->control.k * biped->control.k)
+		if (0.1f * 0.1f > length_sq3f(&biped->control))
 		{
 			biped->control = *g_4687a4;
 		}
@@ -5697,6 +5710,9 @@ void function_e4300(long arg_159e6d)
 // MiniMax E (11-20): no new form, no lower score (91): the reset-mode dispatch expands here (113 bytes against
 // retail's 61) where retail calls it out of line: BLOCKED-BY 0xe5930.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
+// M3 lane 13 r148 (h2m fast, 0xcaf00 10 throughout): biped as `s_biped const *` 91, as `s_biped *const` 91;
+// `!TEST_FIELD_BIT(flags_c0 & 0x40)` 98; `((flags_c0 >> 6) & 1) == 0` 91; `!(flags_c0 & (1 << 6))` 91. Kit thresholds
+// as in 0xde4c0's note (0xe5930 expanded here at T 75..90). Still BLOCKED-BY 0xe5930.
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
 // declarations with Boolean test 98, with field-use lookup 101. Original body/declarations restored.
