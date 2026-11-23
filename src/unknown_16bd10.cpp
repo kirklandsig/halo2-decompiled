@@ -1471,6 +1471,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // at its later uses too 328; the pan arm's game time through the game_time local 126 and its transform declared at the
 // arm's top 126 (both the same code); the pan arm's rotation matrix without its own scope 219 (1708 B, the frame moves);
 // the position blend from the once-pinned t (no second PIN) 239 (1672 B). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x16c6f0/0x13cb40/0x142d10/0x16c740, all MATCH; control 126): the yaw block's rotated
+// offset through the shared 2-D dot and cross helpers on a {cosine, sine} pair, offset first 368 (frame move, first +0x2),
+// the pair first with the cross negated 390 (1704 B); the yaw block's offset as three scalar locals instead of the
+// vector3f 394 (1700 B: the scalars are not the same code as the vector's members); the distance dot ahead of the yaw
+// 126 and the origin store ahead of the sine 126 (same code each). Reading: the tail keeps the target in a register for
+// both the zero test and `current = target` in retail (0x16c740's helper shape), and every block's zero is XMM0 there.
+// Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
