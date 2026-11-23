@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "physical_memory.h"
+#include "normalize3d.h"
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
 
@@ -107,7 +108,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
-// score 91 (was 93): r176 baseline 91 (fast and full); the 0x17cfa0 call setup now agrees with retail. Left: the entry
+// score 91 (was 91; 93 earlier): r176 baseline 91 (fast and full); the 0x17cfa0 call setup now agrees with retail. Left: the entry
 // guard's registers, the count loop's movsx (retail tests the word and zero-extends), the count-sum/vertex-index slot pair
 // and the inlined point transform's x/y row product forms (24 lines over the four copies).
 // MiniMax C (11-19): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the
@@ -393,6 +394,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // loop exact, the three centre sums and two call setups turn); that with a short count sum 102 (same code); the scale
 // steps as `x = scale * x` 91 (same code); the transform rows as one expression each 314 (2647 B); one named sum per row
 // 167 (rows unchanged, the rest moves). The rows never flip. Body unchanged.
+// M3 lane 6 r231 (h2m fast, control 91; 0x17cfa0 and 0x180b60 MATCH): kept, the 1/256 scale through the existing
+// vector3f_scale (same code). The three centre ranges typed as the existing real_bounds (hi + lo) 91 on the long index and
+// 102 on the short index (same code each); the colour/vector overlay split into a colour and a separate vector 267 (2668 B:
+// retail shares one slot); vector3f_scale on the short index 102 (same code); the luminance written constant-first in the
+// green, blue, red order 91 and red, green, blue 91 (same code each), blue, green, red 92.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
@@ -410,9 +416,7 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
             local_3.j = arg_0->field_98 + arg_0->field_94;
             local_3.k = arg_0->field_a0 + arg_0->field_9c;
             function_30bf0(&local_3);
-            local_3.i *= 0.00390625f;
-            local_3.j *= 0.00390625f;
-            local_3.k *= 0.00390625f;
+            vector3f_scale(&local_3, 0.00390625f, &local_3);
         }
         for (long local_5 = 0; local_5 < arg_5->field_5802; local_5++)
             local_4 += (arg_5->field_5002[local_5] - 1) / 2;

@@ -4941,6 +4941,12 @@ struct s_128ca0
 // the second pin's scratch registers then rotate one step), `long count = NONE` 118 (extraction `xor edx, edx` / `and edx,
 // 0x7f`, the rest of the block and the second pin as retail), `word count = NONE` 115 (0xffff is shared with the lookup's
 // mask: `mov edx, 0xffff`, `and eax, edx`). Body unchanged.
+// M3 lane 15 r135 (h2m fast with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt from its patch,
+// re-measured 17; Lc = L with `char count = NONE`, re-measured 204): on L the char count declared at the function's top 248
+// (1074 B), at the top of the not-yet-started arm 237 (1074 B), just before function_21f720 198 (1056 B), just before the
+// chunk-queue call 199 (1056 B); on this body `char count = NONE` in place 203 (1054 B), declared just before function_21f720
+// 197 (1056 B). Every char form keeps the scratch shift at the pitch-range index (+0x12a); a declaration live across a call
+// lengthens the frame. Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

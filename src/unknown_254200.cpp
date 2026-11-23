@@ -361,6 +361,10 @@ void function_254200(void)
 // (1099 B, a double product); Begin alone through the device-interface inline with a NULL device 4, End alone through it
 // 4 (same code). Diagnostics, reverted at once: a favour-size optimize pragma around this function 773 (608 B), so the
 // file was not built for size; the colour call after the first texture-coordinate call (push order changed) 52.
+// M3 lane 7 r217 (H2M_FAST), at 4: the four vertex position calls through the platform's device-interface inline that
+// takes a device pointer (one more inline layer) 10 (the colour block's three spills change slots, the pair stays ours);
+// the two-short texture calls through that inline 4 (same code), in the plain C form 392 (914 B, no longer expanded);
+// every Begin, texture, position and End call through it 10; the half size as `2.f * arg_2` 4 (same code).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -821,6 +825,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // double literal 2; the first vertex's position as integer zeros 2; the second texture call's lower value written
 // `0.5f - 0.5f * arg_1` 2; the second vertex's position call through the device-interface inline (NULL device) 2; the
 // second texture call through it 2 (all the same code: the lower value / depth reload pair stays ours).
+// M3 lane 7 r217 (H2M_FAST), at 2: the first quad's calls through the platform's device-interface inline that takes a
+// device pointer: the four position calls 2, the texture calls 2, both 2, Begin and the colour call 2, all of them 2. In
+// both this pair and 0x254490's, retail's two loads after the reservation are ascending by xmm number and ours descending.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

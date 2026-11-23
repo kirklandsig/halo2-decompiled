@@ -574,6 +574,7 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // crosses 163 (diagnostic: the second cross still loads forward first). Dead-local phase scans 0-7: no effect.
 // Permuter (900 s, 94 tries): best 103 by its own count only through a swapped cross3f argument order (a sign change,
 // not usable) plus constant and volatile temporaries.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 214 (1175 B). Restored.
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {

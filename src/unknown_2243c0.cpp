@@ -217,7 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// score 117 (was 117): m3 lane 5 r233 unchanged (its lines just above the marker). The fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
+// score 117 (was 117): m3 lane 16 r179 and lane 5 r233 unchanged (their lines just above the marker). The fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
 // and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax D (11-20, round 132): no new form, no lower score (117): the body is unchanged. Masking the fallback tag index
 // in place gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX and hoists its load above the frame
@@ -937,6 +937,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // alive past the material lookup 26 rows (the pass element's load unfuses instead), so the busy-register reading above
 // is not what gives retail's EAX/EDX/EDI picks; the pass tag masked once into a named index 7 (same code as the chain).
 // Body unchanged.
+// M3 lane 16 r179 (H2M_FAST with 0x2243c0 and 0x224d90, both MATCH; control 117). Lane 1 r59's match-only score-8 chain
+// rebuilt at 8 (first +0x9e: pass definition EDX where retail overwrites EAX, material index ECX for EDX, material
+// definition EDX for retail's EDI, and retail's cache-zero xor scheduled ahead of the material index shift). On it:
+// local_11's tag data through the by-value tag-data and record-tag accessors 8; local_10's through the tag-data accessor
+// 8; both 8; local_10 and local_11 bound as const references 8 (all the same code); the material tag data bound to a
+// const-reference temporary before local_11's read 92 (552 B). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
