@@ -163,6 +163,9 @@ PRIVATE byte *update_object_0a6430(long index)
 // existing model-count result through memcpy 14. NOT kept: no equality; native
 // state-pointer register and final pool/index schedule remain. Full body restored.
 // MiniMax B (11-20): no new form, no lower score (14): every spelling of the pool lookup compiles to the same bytes - retail loads the pool into EAX after the index and keeps the object in EDX, ours loads the pool into ECX first - and retail's 0x100 call pushes lea ecx,[edi+0x51] where ours pushes EDX.
+// M3 lane 12 r180 (h2m fast, 14): the 0x200 model count through a forceinline helper taking the model tag index
+// 18 (550 B); the region count declared at function scope 14; 0xba690 also given an unused states out-pointer 14;
+// the pushed pointer as `(byte const *)(state_address + 0x51)` 14; the region compare state byte first 15.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
