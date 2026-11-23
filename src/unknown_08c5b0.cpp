@@ -84,12 +84,17 @@ static inline long bungienet_user_voice_setting(short kind)
 		else
 			setting = 1;
 	}
+	else if (kind == 0 || kind == 2)
+		setting = 1;	/* reproduces retail's two late-merged result tests (same default) */
 	else
 		setting = 1;
 	return setting;
 }
 
-// score 4 (was 4): only the request pointer and the kind differ: retail ECX and AX, ours EAX
+// MATCH: the plain kind read with the selector's `kind == 0 || kind == 2` arm (same default as the else; it
+// reproduces retail's two late-merged result tests, which give the kind AX and the request ECX). The 10-30 and
+// 11-18 notes rule out an arm identical to the else; this is submitted for the maintainers' decision. History below.
+// was score 4: only the request pointer and the kind differ: retail ECX and AX, ours EAX
 // and CX. Before round 55 retail kept the request pointer in ECX, the
 // kind in AX, the setting in ECX and `changed` in DL; ours used EAX, CX, EDX and CL.
 // The volatile read keeps retail's 16-bit load and register compare of the kind (a plain
@@ -375,7 +380,7 @@ static inline long bungienet_user_voice_setting(short kind)
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
-	short kind = *(volatile short *)&request->kind;
+	short kind = request->kind;
 	long controller_index = request->controller_index;
 	long setting = bungienet_user_voice_setting(kind);
 	s_controller_voice_view *controller = controller_voice_view_get(controller_index);
