@@ -1731,6 +1731,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 529 (same code); a named entry pointer in the scan (both flag tests and the selection) 530; `return parameters != NULL;`
 // with no result local re-measured 570; the count guard as `0 < count` 568 (the operand order alone moves the
 // allocation); the scan bound read from the block at each pass 529 (same code). Body unchanged.
+// M3 lane 4 r252 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged; control 529). Reading: both
+// builds give one local the dead `record` argument slot ([esp+0x40] after the pushes): ours the spilled result byte,
+// retail the length, so the extra frame dword is the length's own cell. On constant returns (566, frame 0x28): the
+// length stored to the record and read back from it 560 (2193 B); `if (count <= 0) return false;` 561; a per-entry
+// pointer in the scan 563; the mask written inside the test 569 (2172 B); the mask inside the test on the plain
+// result 575 (2172 B). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
