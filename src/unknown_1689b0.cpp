@@ -1555,7 +1555,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 551 (was 551): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
+// score 551 (was 551; m3 lane 2 r139 unchanged, its lines just above the marker): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
 // The projected and first point now have retail's stack homes.
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
@@ -2278,6 +2278,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // distance products flip to plane-first); that with the distance operands swapped in the source 553 (same code); the
 // four declared face_count, edge_radius, edge_count, face_radius 550, with the square at its use 552; the `opposite`
 // local written into its call 552 (2879 B), with the square at its use 553. Body unchanged.
+// M3 lane 2 r139 (H2M_FAST with 0x16a440, 0x120790 and 0x2469b0; control 551, aligned 363, register-masked 289). Retail
+// stores the four tallies before the query call in the order edge count, edge radius, face count, face radius (frame
+// 0x8c, 0x88, 0x84, 0x90). Declared in that order 550, face pair first 551, each radius ahead of its count 551, chained
+// `edge_count = face_count = 0; edge_radius = face_radius = radius;` 553, the other chain order 553 (no home moves in any).
+// Both averages as three divisions by the count (no inverse) re-measured 578 (2891 B, aligned 337, masked 272); the
+// diagnostic 1 to 7 dead initialised locals at the top on it 578, 573, 590, 590, 590, 579, 580 (no phase brings the
+// distance and cross rows back). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -1313,6 +1313,14 @@ void function_1e3b60(long actor_index);
 // 0x262ba0 (listed in its note: a second prop lookup for the byte view 438 there, the release pair through a
 // forceinline helper 404, the flags declared ahead of the lookup 404, `update` declared after the 0x263670 call 405,
 // `index` at function scope 404); the actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
+// M3 lane 3 r298 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form; 0x2641c0's noinline declaration
+// is in another lane's file again): five forms in 0x262ba0 (listed in its note: char flags, a const prop index, the
+// 0x25d610 test nested under `sample && update`, the prop walk as a guarded do-while 464, the sample counter through a
+// `short &`); the actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
+// M3 lane 6 r232 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form): the plain listing's only real
+// difference is the 0x262ba0 call (`push ebx` for retail's `mov eax, ebx`); the later rows are operands shifted by that byte. In
+// 0x262ba0: sample/update at function scope 404, `short old_state` 404, the flags declared `update, sample` 402 (1620 B), a const
+// actor parameter 404, sampled_one declared ahead of maximum 404; the actor stays a stack parameter in each. Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
