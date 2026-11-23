@@ -166,6 +166,10 @@ PRIVATE byte *update_object_0a6430(long index)
 // M3 lane 12 r180 (h2m fast, 14): the 0x200 model count through a forceinline helper taking the model tag index
 // 18 (550 B); the region count declared at function scope 14; 0xba690 also given an unused states out-pointer 14;
 // the pushed pointer as `(byte const *)(state_address + 0x51)` 14; the region compare state byte first 15.
+// M3 lane 12 r181 (h2m fast, 14): the whole 0x200 count (object lookup, definition, model, count) in a forceinline
+// helper taking the object index 14, the object pointer 14 or the definition 14 (all same code), the index-taking
+// helper plain inline 124 (471 B, stays a call); the two words through a named `word const *` used three times 14;
+// the 0x100 state byte and pushed pointer through a named `state + 0x50` pointer 14 (same code).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

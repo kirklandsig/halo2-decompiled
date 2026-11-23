@@ -2932,6 +2932,13 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // argument order 281 (same code); delta through vector3d_from_points3d 284, with the opacity arms in retail's order 281.
 // Reading: the extra byte is loop-top padding (ours jumps from the entry-pointer reload over four bytes of padding;
 // retail's reload falls into an already aligned body), so it follows the pre-loop length, not the loop.
+// M3 lane 13 r150 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0; control 281, difflib-aligned 142 with addresses masked):
+// retail stores the attenuation's 1.0 right after the three `animated` stores, ahead of the forward products, and
+// computes reflected.j first, then i and k interleaved. `real attenuation = 1.0f;` declared beside `animated` 503 (2290 B,
+// aligned 164); the reflected rows as plain statements j, i, k 417 (retail's 2285 B and its row order, aligned 153: the
+// forward products still load the global first and the deltas come after the axis loads), as j, k, i 417 (aligned 153);
+// the camera position through a `point3f const *` 500 (aligned 200); the deltas as three `real` locals 519 (2270 B, a new
+// frame), that with the j-first rows 527 (2264 B).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

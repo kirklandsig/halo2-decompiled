@@ -2012,6 +2012,10 @@ static inline bool unit_dual_wielding(long unit_index)
 // data-first, so lookup 4's order does not come from its data load being shared with the unit lookups. On the
 // 0xc9d00-call form the put-away pointer as `current` reassigned 27 (same code); the 0xc9d00 call's unit argument read
 // again through the getter 67 (on the 2 form 42).
+// M3 lane 14 r149 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 2 form rebuilt 2): on the 2 form,
+// lookup 4 indexed by `(word)weapon_index` 104 (545 B, the offset is no longer shared); the put-away lookup indexed so 58
+// (536 B); the animation test as `NONE != ...` 2; the put-away NONE test as `NONE != put_away->unit_index` 2; the
+// dual-wield test written in the condition through WEAPON_UNIT_GET with no helper 2 (the 2s the same code).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

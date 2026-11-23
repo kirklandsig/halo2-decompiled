@@ -1915,6 +1915,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the type-one arm's): the not-left type-zero arm y first 237; the left arm y first 242 (1163 B); both 237; the type-one
 // arm y first 233; not-left and type-one arms y first 244 (1164 B); the origin parameter read directly instead of
 // through its address 242 (1176 B, and matched 0x29a190 drops to 17). Radius still XMM4. Body unchanged.
+// M3 lane 7 r221 (h2m fast with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B, radius XMM4 for retail's
+// XMM5): values bound to const references so they stay apart: the radius read 307 (1156 B, first +0x4), the side test's
+// bool 249 (1184 B), the lateral offset 198, the forward minimum 198, the desired distance 198 (same code each). The XMM
+// numbering still follows the 0x210690/0x210770 call summaries (the held `inline` lead above). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
