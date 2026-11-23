@@ -1080,7 +1080,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 
 
 // Solver state stays together through the iterations. Result publication then
-// reuses its storage for the result stride and borrowed time-scale pointer.
+// reuses its storage for the result stride and dispatch kind.
 union solver_phase_state_31c940
 {
 	struct
@@ -1121,7 +1121,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2083. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2053. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1175,27 +1175,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			solver_scoped_body_fields_31c940 scoped_b(b);
 			switch (*(signed char *)op)
 			{
-			case 0: dispatch_done = true; break;
+			case 0: dispatch_done = true; continue;
 			// Retail groups up to two coupled normal pairs, then checks directly
 			// for the three-axis friction record. Longer runs redispatch here.
-			// A single unilateral linear row.
-			case 2:
-			{
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				__m128 *linear_b_pointer = &body_b.body->linear;
-				__m128 * &angular_b_pointer = scalar_work.angular_b;
-				angular_b_pointer = &body_b.body->angular;
-				do
-				{
-					solve_unilateral_linear(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b,
-						*linear_b_pointer, angular_b_pointer, step, result, projection_pool, scalar_work.fallback_scalar);
-					terms += 3; ++result; op += 4;
-				} while (*op == 2);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-
 			case 3:
 			{
 				{
@@ -1211,10 +1193,341 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				}
 
 				if (*op != 8) { normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128)); continue; }
+				break;
 			}
-			// Two tangential rows and a spinning row share one friction limit.
-			case 8:
+			// Continue below the switch for the shared spinning-friction path.
+			case 8: break;
+
+			// A single unilateral linear row.
+			case 2:
 			{
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				__m128 *linear_b_pointer = &body_b.body->linear;
+				__m128 * &angular_b_pointer = scalar_work.angular_b;
+				angular_b_pointer = &body_b.body->angular;
+				do
+				{
+					solve_unilateral_linear(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b,
+						*linear_b_pointer, angular_b_pointer, step, result, projection_pool, scalar_work.fallback_scalar);
+					terms += 3; ++result; op += 4;
+				} while (*op == 2);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+
+			case 1:
+			{
+				op=decode_solver_header_31c940(op,terms,a,b,state.solving.a_home);
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Two tangential rows share a circular friction limit.
+			case 7:
+			{
+				float target_a = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
+				linear_velocity(((solver_linear_row_31e7b0 *)terms), a, b, projection_pool.circular_first);
+				linear_velocity(((solver_linear_row_31e7b0 *)terms) + 1, a, b, projection_pool.circular_second);
+				// Both projections finish before these shared parameter reads.
+				solver_step_31c940 *parameters = step;
+				scalar_work.fallback_scalar = target_a * parameters->friction_scale - projection_pool.circular_first * parameters->velocity_scale;
+				// Retain the row target before its scale product.
+				float const &target_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
+				scalar_work.pair_a = target_b * parameters->friction_scale
+					- projection_pool.circular_second * parameters->velocity_scale;
+				float maximum = operation_float(op, 12);
+				// Round the circular limit to its float home before comparison and
+				// division; the reads can then use that home directly.
+				float &maximum_squared = scalar_work.pair_b;
+				float &maximum_store = maximum_squared;
+				maximum_store = maximum * maximum;
+				// Capture each mass before its coupled product. These product locals
+				// retain the extended x87 value until addition to the diagonal term.
+				float const &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
+				float mass_a = mass_a_source;
+				float coupled_a = scalar_work.pair_a * operation_float(op, 8);
+				float impulse_a = mass_a * scalar_work.fallback_scalar + coupled_a;
+				float const &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
+				float mass_b = mass_b_source;
+				float coupled_b = scalar_work.fallback_scalar * operation_float(op, 8);
+				float impulse_b = mass_b * scalar_work.pair_a + coupled_b;
+				// Retain the first tangential square before adding the second.
+				float norm = impulse_a * impulse_a;
+				norm += impulse_b * impulse_b;
+				if (norm > maximum_squared)
+				{
+					float factor = sqrtf(maximum_squared / norm);
+					impulse_a *= factor; impulse_b *= factor;
+					((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
+					((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
+				}
+				apply_circular_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result, scalar_work.simd_scalar);
+				apply_circular_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1, scalar_work.simd_scalar);
+				terms += 6; result += 2;
+				op += 20;
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Angular friction with a scalar limit.
+			case 9:
+			{
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				float const * &friction_scale_pointer = scalar_work.friction_scale;
+ friction_scale_pointer = &step->friction_scale;
+				__m128 *velocity_b_pointer = &body_b.body->angular;
+				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
+				inverse_b_pointer = &body_b.body->inverse_inertia;
+				do
+				{
+					state.solving.angular_limit = operation_float(op, 4);
+					solve_angular_friction_kernel(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], state.solving.angular_limit, friction_scale_pointer,
+						((solver_angular_row_31e7b0 *)terms), step, a, *velocity_b_pointer, inverse_b_pointer, result, projection_pool, scalar_work.simd_scalar);
+					terms += 2; ++result; op += 8;
+				} while (*op == 9);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Angular limits.
+			case 10:
+			{
+				__m128 &velocity_b = scoped_b.body->angular;
+				do
+				{
+					__m128 axis_a = ((solver_angular_row_31e7b0 *)terms)->a, axis_b = ((solver_angular_row_31e7b0 *)terms)->b;
+					__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(velocity_b, axis_b));
+					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+
+					_mm_store_ss(&projection_pool.angular_limit, xyz);
+					bool active;
+					__m128 scalar;
+					float impulse = select_angular_limit(projection_pool.angular_limit * load_velocity_scale(step),
+						((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], operation_float(op, 4), operation_float(op, 8),
+						operation_float(op, 12), ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3], active, scalar, scalar_work.simd_scalar);
+					if (active)
+					{
+						__m128 inertia_a = a->inverse_inertia;
+						__m128 inertia_second = scoped_b.body->inverse_inertia;
+						__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
+						a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
+						__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_second);
+						velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+						*result += impulse;
+					}
+					terms += 2; ++result; op += 16;
+				} while (*op == 10);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// A bounded angular impulse.
+			case 4:
+			{
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
+				inverse_b_pointer = &body_b.body->inverse_inertia;
+				float *velocity_b_pointer = (float *)&body_b.body->angular;
+				do
+				{
+					float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
+					float mass = mass_source;
+					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
+					solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, velocity_b_pointer, inverse_b_pointer,
+						operation_float(op, 4), operation_float(op, 8), step, result, projection_pool, scalar_work.simd_scalar);
+					terms += 2; ++result; op += 16;
+				} while (*op == 4);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Angular error correction.
+			case 12:
+			{
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				__m128 * velocity_b_pointer = &body_b.body->angular;
+				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
+				inverse_b_pointer = &body_b.body->inverse_inertia;
+				__m128 *velocity_a_pointer = &a->angular;
+				do
+				{
+					float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
+					float mass = mass_source;
+					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
+					__m128 axis_a = ((solver_angular_row_31e7b0 *)terms)->a;
+					__m128 axis_b = ((solver_angular_row_31e7b0 *)terms)->b;
+					__m128 weighted_a = _mm_mul_ps(*velocity_a_pointer, axis_a);
+					__m128 weighted_b = _mm_mul_ps(*velocity_b_pointer, axis_b);
+					__m128 weighted = _mm_add_ps(weighted_a, weighted_b);
+					__m128 xy = _mm_add_ss(_mm_shuffle_ps(weighted, weighted, 0x55), weighted);
+					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(weighted, weighted, 0xaa), xy);
+
+					_mm_store_ss(&projection_pool.angular_error, xyz);
+					solver_step_31c940 *current_step = step;
+					float impulse = mass * (target * current_step->error_scale - projection_pool.angular_error * current_step->velocity_scale);
+					update_angular_values(impulse, axis_a, axis_b, *velocity_a_pointer, velocity_b_pointer,
+						a->inverse_inertia, inverse_b_pointer, result, scalar_work.simd_scalar);
+					terms += 2; ++result; op += 4;
+				} while (*op == 12);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Linear error correction.
+			case 13:
+			{
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				float * &linear_b_pointer = scalar_work.linear_floats_b;
+				linear_b_pointer = (float *)&body_b.body->linear;
+				__m128 * &angular_b_pointer = scalar_work.angular_b;
+				angular_b_pointer = &body_b.body->angular;
+				__m128 const *&inverse_b_pointer = scalar_work.inverse_b;
+				inverse_b_pointer = &body_b.body->inverse_inertia;
+				__m128 *linear_a_pointer = &a->linear;
+				do
+				{
+					solve_linear_error_kernel(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a, ((solver_linear_row_31e7b0 *)terms)->b, ((solver_linear_row_31e7b0 *)terms)->linear,
+						a->angular, angular_b_pointer, *linear_a_pointer, linear_b_pointer,
+						a->inverse_inertia, *inverse_b_pointer, step, result, projection_pool, scalar_work.simd_scalar);
+					terms += 3; ++result; op += 4;
+				} while (*op == 13);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Linear friction with a scalar limit.
+			case 6:
+			{
+				float const * &friction_scale_pointer = scalar_work.friction_scale;
+ friction_scale_pointer = &step->friction_scale;
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
+				inverse_b_pointer = &body_b.body->inverse_inertia;
+				__m128 *linear_b_pointer = &body_b.body->linear;
+				__m128 * &angular_b_pointer = scalar_work.angular_b;
+				angular_b_pointer = &body_b.body->angular;
+				do
+				{
+					state.solving.linear_limit = operation_float(op, 4);
+					solve_linear_friction(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], state.solving.linear_limit, friction_scale_pointer,
+						((solver_linear_row_31e7b0 *)terms), a, angular_b_pointer, *linear_b_pointer, inverse_b_pointer, step, result, projection_pool, scalar_work.simd_scalar);
+					terms += 3; ++result; op += 8;
+				} while (*op == 6);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// Independent lower and upper linear limits.
+			case 11:
+			{
+				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+				// Retain the linear field address across both bound updates.
+				float * linear_b_pointer = (float *)&body_b.body->linear;
+				__m128 * &angular_b_pointer = scalar_work.angular_b;
+				angular_b_pointer = &body_b.body->angular;
+				do
+				{
+					solver_linear_row_31e7b0 const *row = (solver_linear_row_31e7b0 const *)terms;
+					// Retain the angular inputs, then reuse their work vectors for reduction.
+					__m128 work_a = _mm_load_ps((float const *)&(a->angular));
+					__m128 work_b = *angular_b_pointer;
+					work_a = _mm_mul_ps(work_a, row->a);
+					__m128 work_c = row->b;
+					work_c = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_c));
+					work_b = _mm_add_ps(work_c,
+						_mm_mul_ps(_mm_sub_ps(_mm_load_ps((float const *)&(a->linear)),
+							*(__m128 const *)linear_b_pointer), row->linear));
+					sum_three_to_arena_31c940(work_b, projection_pool.linear_bounds);
+					// Capture the step pointer for velocity and the first bound. The
+					// second bound reloads it after any first-bound result write.
+					solver_step_31c940 *parameters = step;
+					float velocity = projection_pool.linear_bounds * parameters->velocity_scale;
+					float low = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 4)) * parameters->error_scale - velocity;
+					if (low > 0.0f)
+						update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
+					float high = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 8)) * load_error_scale(step) - velocity;
+					if (high < 0.0f)
+						update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
+					terms += 3; ++result; op += 12;
+				} while (*op == 11);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			// A bounded linear impulse.
+			case 5:
+			{
+				do
+				{
+					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+					// Capture the mass before projection, retaining its x87 value.
+					float const &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
+					float mass = mass_source;
+					__m128 *linear_b_pointer = &body_b.body->linear;
+					__m128 *angular_b_pointer = &body_b.body->angular;
+					float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
+					// Match the same mass-before-step-scale order as the angular path.
+					__m128 relative = _mm_sub_ps(a->linear, *linear_b_pointer);
+					__m128 angular = _mm_add_ps(
+						_mm_mul_ps(a->angular, ((solver_linear_row_31e7b0 *)terms)->a),
+						_mm_mul_ps(*angular_b_pointer, ((solver_linear_row_31e7b0 *)terms)->b));
+					__m128 axis = ((solver_linear_row_31e7b0 *)terms)->linear;
+					__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis));
+					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+
+					_mm_store_ss(&projection_pool.bounded_linear, xyz);
+					double mass_error = (target - projection_pool.bounded_linear) * mass;
+					float impulse = mass_error * load_error_scale(step);
+					// Keep the divide followed by multiply on both clamp paths;
+					// reassociating them changes rounding at 24-bit x87 precision.
+					if (impulse > operation_float(op, 4))
+					{
+						float ratio = operation_float(op, 4) / impulse;
+						impulse = ratio * impulse;
+					}
+					else if (impulse < operation_float(op, 8))
+					{
+						float ratio = operation_float(op, 8) / impulse;
+						impulse = ratio * impulse;
+					}
+					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), a, scoped_b, result, scalar_work.simd_scalar);
+					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
+					a = state.solving.a_home; ++result; op += 16;
+				} while (*op == 5);
+
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			case 15:
+			{
+				solver_step_31c940 *parameters = ((solver_step_31c940 *const &)step);
+				state.solving.saved_velocity = parameters->velocity_scale;
+				state.solving.saved_error = parameters->error_scale;
+				parameters->velocity_scale = operation_float(op, 8);
+				parameters->error_scale = operation_float(op, 4);
+				op += 12;
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			}
+			case 16:
+				step->error_scale = state.solving.saved_error; step->velocity_scale = state.solving.saved_velocity;
+				op += 4;
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+			case 14:
+				(*(void (__cdecl **)(__m128 *, void *))(op + 4))(terms, op + 8);
+				op += op[1];
+			a = state.solving.a_home;
+				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+				continue;
+
+			default: continue;
+			}
+
+			// Both entry paths consume the same three-axis friction record.
+			{
+
 				solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(((solver_linear_row_31e7b0 *)terms) + 2);
 				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
 				__m128 * &linear_b_pointer = scalar_work.linear_b;
@@ -1262,313 +1575,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				apply_angular(scalar_work.first_error, spin, a, scoped_b, result + 2, projection_pool.spin_angular_copy);
 				terms += 8; result += 3;
 				op += 24;
-				if (*op != 1) { normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128)); break; }
-			}
-			case 1:
-			{
-				op=decode_solver_header_31c940(op,terms,a,b,state.solving.a_home);
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Two tangential rows share a circular friction limit.
-			case 7:
-			{
-				float target_a = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
-				linear_velocity(((solver_linear_row_31e7b0 *)terms), a, b, projection_pool.circular_first);
-				linear_velocity(((solver_linear_row_31e7b0 *)terms) + 1, a, b, projection_pool.circular_second);
-				// Both projections finish before these shared parameter reads.
-				solver_step_31c940 *parameters = step;
-				scalar_work.fallback_scalar = target_a * parameters->friction_scale - projection_pool.circular_first * parameters->velocity_scale;
-				// Retain the row target before its scale product.
-				float const &target_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
-				scalar_work.pair_a = target_b * parameters->friction_scale
-					- projection_pool.circular_second * parameters->velocity_scale;
-				float maximum = operation_float(op, 12);
-				// Round the circular limit to its float home before comparison and
-				// division; the reads can then use that home directly.
-				float &maximum_squared = scalar_work.pair_b;
-				float &maximum_store = maximum_squared;
-				maximum_store = maximum * maximum;
-				// Capture each mass before its coupled product. These product locals
-				// retain the extended x87 value until addition to the diagonal term.
-				float const &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
-				float mass_a = mass_a_source;
-				float coupled_a = scalar_work.pair_a * operation_float(op, 8);
-				float impulse_a = mass_a * scalar_work.fallback_scalar + coupled_a;
-				float const &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
-				float mass_b = mass_b_source;
-				float coupled_b = scalar_work.fallback_scalar * operation_float(op, 8);
-				float impulse_b = mass_b * scalar_work.pair_a + coupled_b;
-				// Retain the first tangential square before adding the second.
-				float norm = impulse_a * impulse_a;
-				norm += impulse_b * impulse_b;
-				if (norm > maximum_squared)
-				{
-					float factor = sqrtf(maximum_squared / norm);
-					impulse_a *= factor; impulse_b *= factor;
-					((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
-					((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
-				}
-				apply_circular_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result, scalar_work.simd_scalar);
-				apply_circular_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1, scalar_work.simd_scalar);
-				terms += 6; result += 2;
-				op += 20;
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Angular friction with a scalar limit.
-			case 9:
-			{
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				float const * &friction_scale_pointer = scalar_work.friction_scale;
- friction_scale_pointer = &step->friction_scale;
-				__m128 *velocity_b_pointer = &body_b.body->angular;
-				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
-				inverse_b_pointer = &body_b.body->inverse_inertia;
-				do
-				{
-					state.solving.angular_limit = operation_float(op, 4);
-					solve_angular_friction_kernel(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], state.solving.angular_limit, friction_scale_pointer,
-						((solver_angular_row_31e7b0 *)terms), step, a, *velocity_b_pointer, inverse_b_pointer, result, projection_pool, scalar_work.simd_scalar);
-					terms += 2; ++result; op += 8;
-				} while (*op == 9);
 
 				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Angular limits.
-			case 10:
-			{
-				__m128 &velocity_b = scoped_b.body->angular;
-				do
-				{
-					__m128 axis_a = ((solver_angular_row_31e7b0 *)terms)->a, axis_b = ((solver_angular_row_31e7b0 *)terms)->b;
-					__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(velocity_b, axis_b));
-					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
-
-					_mm_store_ss(&projection_pool.angular_limit, xyz);
-					bool active;
-					__m128 scalar;
-					float impulse = select_angular_limit(projection_pool.angular_limit * load_velocity_scale(step),
-						((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], operation_float(op, 4), operation_float(op, 8),
-						operation_float(op, 12), ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3], active, scalar, scalar_work.simd_scalar);
-					if (active)
-					{
-						__m128 inertia_a = a->inverse_inertia;
-						__m128 inertia_second = scoped_b.body->inverse_inertia;
-						__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
-						a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
-						__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_second);
-						velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
-						*result += impulse;
-					}
-					terms += 2; ++result; op += 16;
-				} while (*op == 10);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// A bounded angular impulse.
-			case 4:
-			{
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
-				inverse_b_pointer = &body_b.body->inverse_inertia;
-				float *velocity_b_pointer = (float *)&body_b.body->angular;
-				do
-				{
-					float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
-					float mass = mass_source;
-					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
-					solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, velocity_b_pointer, inverse_b_pointer,
-						operation_float(op, 4), operation_float(op, 8), step, result, projection_pool, scalar_work.simd_scalar);
-					terms += 2; ++result; op += 16;
-				} while (*op == 4);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Angular error correction.
-			case 12:
-			{
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				__m128 * velocity_b_pointer = &body_b.body->angular;
-				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
-				inverse_b_pointer = &body_b.body->inverse_inertia;
-				__m128 *velocity_a_pointer = &a->angular;
-				do
-				{
-					float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
-					float mass = mass_source;
-					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
-					__m128 axis_a = ((solver_angular_row_31e7b0 *)terms)->a;
-					__m128 axis_b = ((solver_angular_row_31e7b0 *)terms)->b;
-					__m128 weighted_a = _mm_mul_ps(*velocity_a_pointer, axis_a);
-					__m128 weighted_b = _mm_mul_ps(*velocity_b_pointer, axis_b);
-					__m128 weighted = _mm_add_ps(weighted_a, weighted_b);
-					__m128 xy = _mm_add_ss(_mm_shuffle_ps(weighted, weighted, 0x55), weighted);
-					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(weighted, weighted, 0xaa), xy);
-
-					_mm_store_ss(&projection_pool.angular_error, xyz);
-					solver_step_31c940 *current_step = step;
-					float impulse = mass * (target * current_step->error_scale - projection_pool.angular_error * current_step->velocity_scale);
-					update_angular_values(impulse, axis_a, axis_b, *velocity_a_pointer, velocity_b_pointer,
-						a->inverse_inertia, inverse_b_pointer, result, scalar_work.simd_scalar);
-					terms += 2; ++result; op += 4;
-				} while (*op == 12);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Linear error correction.
-			case 13:
-			{
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				float * &linear_b_pointer = scalar_work.linear_floats_b;
-				linear_b_pointer = (float *)&body_b.body->linear;
-				__m128 * &angular_b_pointer = scalar_work.angular_b;
-				angular_b_pointer = &body_b.body->angular;
-				__m128 const *&inverse_b_pointer = scalar_work.inverse_b;
-				inverse_b_pointer = &body_b.body->inverse_inertia;
-				__m128 *linear_a_pointer = &a->linear;
-				do
-				{
-					solve_linear_error_kernel(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a, ((solver_linear_row_31e7b0 *)terms)->b, ((solver_linear_row_31e7b0 *)terms)->linear,
-						a->angular, angular_b_pointer, *linear_a_pointer, linear_b_pointer,
-						a->inverse_inertia, *inverse_b_pointer, step, result, projection_pool, scalar_work.simd_scalar);
-					terms += 3; ++result; op += 4;
-				} while (*op == 13);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Linear friction with a scalar limit.
-			case 6:
-			{
-				float const * &friction_scale_pointer = scalar_work.friction_scale;
- friction_scale_pointer = &step->friction_scale;
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
-				inverse_b_pointer = &body_b.body->inverse_inertia;
-				__m128 *linear_b_pointer = &body_b.body->linear;
-				__m128 * &angular_b_pointer = scalar_work.angular_b;
-				angular_b_pointer = &body_b.body->angular;
-				do
-				{
-					state.solving.linear_limit = operation_float(op, 4);
-					solve_linear_friction(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], state.solving.linear_limit, friction_scale_pointer,
-						((solver_linear_row_31e7b0 *)terms), a, angular_b_pointer, *linear_b_pointer, inverse_b_pointer, step, result, projection_pool, scalar_work.simd_scalar);
-					terms += 3; ++result; op += 8;
-				} while (*op == 6);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// Independent lower and upper linear limits.
-			case 11:
-			{
-				solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-				// Retain the linear field address across both bound updates.
-				float * linear_b_pointer = (float *)&body_b.body->linear;
-				__m128 * &angular_b_pointer = scalar_work.angular_b;
-				angular_b_pointer = &body_b.body->angular;
-				do
-				{
-					solver_linear_row_31e7b0 const *row = (solver_linear_row_31e7b0 const *)terms;
-					// Retain the angular inputs, then reuse their work vectors for reduction.
-					__m128 work_a = _mm_load_ps((float const *)&(a->angular));
-					__m128 work_b = *angular_b_pointer;
-					work_a = _mm_mul_ps(work_a, row->a);
-					__m128 work_c = row->b;
-					work_c = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_c));
-					work_b = _mm_add_ps(work_c,
-						_mm_mul_ps(_mm_sub_ps(_mm_load_ps((float const *)&(a->linear)),
-							*(__m128 const *)linear_b_pointer), row->linear));
-					sum_three_to_arena_31c940(work_b, projection_pool.linear_bounds);
-					// Capture the step pointer for velocity and the first bound. The
-					// second bound reloads it after any first-bound result write.
-					solver_step_31c940 *parameters = step;
-					float velocity = projection_pool.linear_bounds * parameters->velocity_scale;
-					float low = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 4)) * parameters->error_scale - velocity;
-					if (low > 0.0f)
-						update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
-					float high = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 8)) * load_error_scale(step) - velocity;
-					if (high < 0.0f)
-						update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
-					terms += 3; ++result; op += 12;
-				} while (*op == 11);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			// A bounded linear impulse.
-			case 5:
-			{
-				do
-				{
-					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-					// Capture the mass before projection, retaining its x87 value.
-					float const &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
-					float mass = mass_source;
-					__m128 *linear_b_pointer = &body_b.body->linear;
-					__m128 *angular_b_pointer = &body_b.body->angular;
-					float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
-					// Match the same mass-before-step-scale order as the angular path.
-					__m128 relative = _mm_sub_ps(a->linear, *linear_b_pointer);
-					__m128 angular = _mm_add_ps(
-						_mm_mul_ps(a->angular, ((solver_linear_row_31e7b0 *)terms)->a),
-						_mm_mul_ps(*angular_b_pointer, ((solver_linear_row_31e7b0 *)terms)->b));
-					__m128 axis = ((solver_linear_row_31e7b0 *)terms)->linear;
-					__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis));
-					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
-
-					_mm_store_ss(&projection_pool.bounded_linear, xyz);
-					double mass_error = (target - projection_pool.bounded_linear) * mass;
-					float impulse = mass_error * load_error_scale(step);
-					// Keep the divide followed by multiply on both clamp paths;
-					// reassociating them changes rounding at 24-bit x87 precision.
-					if (impulse > operation_float(op, 4))
-					{
-						float ratio = operation_float(op, 4) / impulse;
-						impulse = ratio * impulse;
-					}
-					else if (impulse < operation_float(op, 8))
-					{
-						float ratio = operation_float(op, 8) / impulse;
-						impulse = ratio * impulse;
-					}
-					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), a, scoped_b, result, scalar_work.simd_scalar);
-					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
-					a = state.solving.a_home; ++result; op += 16;
-				} while (*op == 5);
-
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			case 15:
-			{
-				solver_step_31c940 *parameters = ((solver_step_31c940 *const &)step);
-				state.solving.saved_velocity = parameters->velocity_scale;
-				state.solving.saved_error = parameters->error_scale;
-				parameters->velocity_scale = operation_float(op, 8);
-				parameters->error_scale = operation_float(op, 4);
-				op += 12;
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			}
-			case 16:
-				step->error_scale = state.solving.saved_error; step->velocity_scale = state.solving.saved_velocity;
-				op += 4;
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
-			case 14:
-				(*(void (__cdecl **)(__m128 *, void *))(op + 4))(terms, op + 8);
-				op += op[1];
-			a = state.solving.a_home;
-				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-				break;
 			}
 		}
 
