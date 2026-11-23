@@ -354,6 +354,11 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // Diagnostic (held form, restored): the exchanged form with `inline` on 0x262a30's definition 519 (3191 B; 0x13e2d0
 // expands too, 0x2623a0 65): the actor takes retail's home and only result/selected stay swapped, so retail's slot order
 // fits the owner lookup's expansion adding references to `result`.
+// M3 lane 12 r181 (H2M_FAST with 0x2605d0/0x2613d0 MATCH; control 440): `result` declared at the chosen reference's
+// read, the two early returns returning g_470fa0 622 (3082 B); the best score declared at the top of the sorted path
+// 636; the count-0 history reset as a counted `for` over the six-byte slots 800 (3114 B); both history resets through
+// one file-local helper, forceinline 628 (3097 B), plain inline 793 (3049 B). Still BLOCKED-BY 0x262a30 (retail
+// expands the owner lookup here; its /Ob1 file allows that only with `inline` on its definition, a held form).
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
