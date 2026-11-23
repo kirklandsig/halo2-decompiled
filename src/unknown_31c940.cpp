@@ -51,7 +51,7 @@ typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
 
 // These five words serve different scalar and pointer roles in separate operations.
 struct solver_scalar_work_31c940 {
- float pair_b;
+ union { float pair_b; __m128 const *inverse_b; };
  union { stored_word_31c940 first_error; __m128 *angular_b; };
  float fallback_scalar;
  // Normal pairs retain this cursor; other updates use the word for SIMD rounding.
@@ -1091,7 +1091,7 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Ordinary reduced-check score 2119 (2135 before writeback storage reuse).
+// Ordinary reduced-check score 2088 (2119 before the linear-error pointer home).
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1375,7 +1375,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_velocity_31c940 *body_b = b;
 				float *linear_b_pointer = (float *)&body_b->linear;
 				__m128 *angular_b_pointer = &body_b->angular;
-				__m128 const *inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 const *&inverse_b_pointer = scalar_work.inverse_b;
+				inverse_b_pointer = &body_b->inverse_inertia;
 				__m128 *linear_a_pointer = &a->linear;
 				do
 				{
