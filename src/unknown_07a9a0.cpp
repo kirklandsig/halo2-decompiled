@@ -1818,6 +1818,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // m3 lane 4 r251 (H2M_FAST with 0x73530 and 0x192e60, both MATCH; control 871): the party histogram's cells `short` 871;
 // `use_parties` computed ahead of the team-count block 875; the rated count stepped ahead of the average sum 871;
 // `bool result = true;` after the output clear 871; the player loop's group copy ahead of the identity copy 877 (2784 B).
+// M3 lane 15 r139 (h2m fast with 0x73530, 0x71730 (376), 0x6fa60, 0x63220, 0x192e60, 0x193300, 0x1932c0, 0x193250,
+// 0x1931a0, 0x1931d0 and 0x72330; control 871, aligned 1016): round 81 forms re-measured on this body. Both failure exits
+// as `result = false;` joined to the one `return result;` (type-5 scan under `result &&`, the rest under `if (result)`) 988
+// (2952 B, aligned 846; 0x73530 8); that with the player value through the existing 0x63220 957 (2920 B, aligned 893);
+// that with the file-local ratings accessors replaced by the matched 0x1934d0/0x1933d0/0x1933a0/0x193440/0x193400 and the
+// type tests by 0x1934b0/0x193470, 902 (2892 B, aligned 786; 0x73530 8; the top 0x192e60, 0x1931a0 and 0x193250 still
+// expand and 0x193300 stays a call). On the early-return body: the player value through 0x63220 1012 (2608 B); with the
+// accessors 1103 (2516 B); the accessors alone 917 (2724 B, aligned 785). Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

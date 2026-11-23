@@ -1045,6 +1045,10 @@ struct s_collision_result_buffer_1697c0
 // orders 196 / 155), rows `cos - sin + proj` 287 / 31 and `proj - sin + cos` 340 / 44: no form lowers this body
 // without raising 0x297d30. The wrapper's cosine computed first 274 (0x297d30 41); the candidate copied between the
 // two draws 330 at 1423 B (aligned 383: worse); the up axis through a pointer local 283 (1438 B). Body unchanged.
+// M3 lane 15 r139 (h2m fast with 0x297660, 0x2980d0, 0x297d30 (23) and 0x24590; control 270): the normalizer's length local
+// renamed (slot-name order) 270 (same code); the pitch axis passed through a const pointer local 328 (frame 0xb0); the
+// candidate through a pointer local for both turns 334; both draws held as double 341 (1425 B, frame 0xb0, aligned 329
+// against 198); the candidate declared ahead of the draws and assigned after them 270 (same code). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
