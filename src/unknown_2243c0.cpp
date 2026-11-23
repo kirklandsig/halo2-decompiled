@@ -943,6 +943,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // local_11's tag data through the by-value tag-data and record-tag accessors 8; local_10's through the tag-data accessor
 // 8; both 8; local_10 and local_11 bound as const references 8 (all the same code); the material tag data bound to a
 // const-reference temporary before local_11's read 92 (552 B). Body unchanged.
+// M3 lane 6 r234 (H2M_FAST with 0x2243c0 and 0x224d90, both MATCH; control 117). The chain rebuilt on this main at 8
+// needs the +0xd8 flags read moved after the two cache tests as well; with main's early read the chain head alone gives
+// 47 (the flags load is hoisted above the search). On the 8 chain: the pass tag `long const` 8; the field_44 zero back
+// between the pass tag and the pass definition 59 (first +0x50); the instance pointer to const 8; the root tag not
+// const 8; the cache local declared ahead of the context local 8 (same code each). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

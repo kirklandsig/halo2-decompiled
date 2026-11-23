@@ -509,6 +509,14 @@ const dword g_455978[81] = {
 // end's operand orders. On it: the upper bounds written `local_4 + arg_3->x` (all three) 277; the reciprocal and the
 // radial term after the zero test, written `local_17 * 0.0f`, 277 (same code each). The keepable route for the helper
 // is moving 0x1d01c0's helper into a header both files include. Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the cluster result and the break
+// as `if (arg_5->cluster_index != NONE) { local_0 = true; break; }` 485 (2076 B); the planar test as `0.0f < arg_6` 268; the
+// transform's three rotation rows through the existing vector3f_assign 268; the reciprocal and radial term after the zero
+// test 268; the direction counter declared ahead of its loop 268 (all the same code). Reading: retail's jcc/call skeleton
+// from the loop head to the 0x11bed0 call is ours test for test, so the expansion is not the site's written tests; the
+// lane 15 r126 diagnostic (0x279740 inlinable makes 0x11bed0 a call while both releases expand) points at a per-function
+// link-time inline budget that retail's first-release expansion used up. Body unchanged; still BLOCKED-BY 0x11bed0's
+// expansion here.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

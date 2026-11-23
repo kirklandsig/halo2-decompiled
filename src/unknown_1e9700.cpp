@@ -366,6 +366,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // On 70, the old maximum's read as the getter's own shape (`long value = NONE; if (index != NONE) value = ...;` then
 // the copy) 100 (425 B), the team maximum so 94 (425 B), both 102 (423 B; aligned 22: the shape is retail's, the
 // missing enable reloads shift the rest).
+// M3 lane 15 r137 (H2M_FAST with 0x1ea770, 0x1e9ce0, 0x1e9df0, all MATCH; control 76 at 432 B, aligned exact/stack-
+// masked/register-masked 79/54/21): the old maximum's read nested (`if (enabled) { if (index != NONE) ... }`) 101
+// (427 B); the player clamp as one nested conditional expression 86 at retail's 434 B (aligned 67/38/21: the team block
+// then schedules retail's `mov ecx, 0xffffffff` between its test and branch); the clamp test's first compare written
+// `consecutive > (short)old_maximum` 76 and the bool as `!!g_510ca0` 76 (same code each); the increment through the
+// statistics address with the row formed after it 85 (434 B, first +0x16), with the conditional clamp 91 (436 B); the
+// increment and the read as two statements through the row 76 (same code). The enable byte stays in DL. Body unchanged.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

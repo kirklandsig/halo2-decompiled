@@ -646,6 +646,11 @@ struct s_visibility_bound_record
 // `parts` first 449 (1760 B); the geometry lookup ahead of the entry pointer 430 (same code); the bottom arm's node transforms
 // named once from the tag 436 (1749 B); the visibility word as a `dword *` formed once per part for the test and the set 430
 // (same code).
+// M3 lane 16 r180 (H2M_FAST with 0x458d0, MATCH each run; control 430): the plane copy written i, k, j 427 (re-measured,
+// lane 1 r141's form); the plane local declared ahead of the plane loop and assigned in it 430 (same code); the frustum index
+// as `short` 440 (1760 B); the view counter as `short` 455 (1760 B); the copy through a `plane3f &` to the element 430 (same
+// code); the transform reading the frustum plane straight into the local with the copy in an else arm 440 (1760 B, aligned
+// 339). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

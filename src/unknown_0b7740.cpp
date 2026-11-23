@@ -908,7 +908,7 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
-// score 240 (was 240): earlier 240 (was 291); 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// score 240 (was 240): m3 lane 11 r158 unchanged (its line just above the marker); earlier 240 (was 291); 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
 // M3 lane 6 r180 (fast): retail's frame lacks our `orientations` home (it keeps orientations in ESI) and loads
 // input_matrices into EDX at entry for the late final_matrices store, with a separate EDI copy for `result`, so the +0xb3
 // byte must take BL; ours holds the parameter in ESI for both. On the current body: final_matrices declared at the top
@@ -1253,6 +1253,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // ahead of the mask copy (retail loads it before the copy) 170 (same code); `result` read once through the matrices
 // parameter's address 170 (same code); the header index read once through object_index's address 170 (same code: both
 // indirections fold before allocation and the parameter roles at entry stay ESI/EDX swapped). Body unchanged.
+// M3 lane 11 r158 (h2m fast, single address; control 240): on lane 4 r225's 170 lead rebuilt (826 B): node_count
+// declared ahead of `state` 170 (same code); the object-type test through a fresh definition lookup from header->object
+// 276 (839 B); the model index read through its own lookup expression, so that `definition` serves only the object-type
+// test, 170 (CSE folds it back); the sample/matrices/orientations initialisers ahead of final_matrices and the mask copy
+// 244 (844 B, head unchanged: object_index EDX, parameter ESI); node_count through a `(dword)` cast as in 0xbd090 170
+// (same code). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1881,6 +1887,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // the flag through object_get 20 (both the same code). Re-measured: the arms swapped under `render_index == NONE` 297
 // (1388 B: the block keeps the index in ECX there too, so the arm's place does not order the two); a pool local set ahead
 // of the current-object lookup, the matrix through it and the flag through the global, 358 (1394 B).
+// M3 lane 6 r233 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): the no-model parent index renamed to
+// sort ahead of the other locals 20 and after them 20; the index declared `register` 20; the index and its test in their
+// own inner block, parent and flag outside 20; the no-model parent and flag renamed to sort first 20 (all the same code:
+// names and scopes do not move the index off ECX).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
