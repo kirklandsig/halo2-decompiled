@@ -1061,6 +1061,7 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
 // all 303 instructions). On it: the rotation dot through shape_dot(limited, axis) too 239 (1243 B), with every rotation
 // row written `axis.x * dot` first 239; on the body, the rows written `axis.x * dot` alone 235, the old up bound as a
 // `vector3f const &` instead of a pointer 235 (both the same code). Body otherwise unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the limit rotation through include/axis_rotation.h's helper 301 (1275 B). Restored.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)

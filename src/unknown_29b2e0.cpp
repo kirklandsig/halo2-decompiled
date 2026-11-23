@@ -867,6 +867,7 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // first rotation or between the facing copy and it 202 (1737 B); the object's up as `&local_1->forward + 1` 130 (same
 // code); a forward pointer for the six cross products 151 (1696 B); the clamp bounds as `0.0f - limit` for the two
 // turn limits or all four 130 (same code).
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_vector_170d70 calls through include/axis_rotation.h's helper 151 (1696 B). Restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

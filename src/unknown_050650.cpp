@@ -1031,6 +1031,8 @@ struct s_collision_result_buffer_1697c0
 // projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled
 // by the sine 317 (0x297d30 244); best_fraction initialised after the pitch axis 267 (under the bar); lane 5 r224's
 // sine-scaled crosses re-measured 199 (0x297d30 153). Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 416 (1347 B; 0x297d30
+// 245). Restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2383,6 +2385,8 @@ struct s_actor_looking_structure_view
 // both pointers 61/145/143/140, 135/172 (911 B)/142/141, 144/145/139/21, 144/145/139/21. The angle wrapper computing
 // cosine before sine (0x296e60 270 -> 274) with main's, the two-stage and the dot3f score: 41/73/145/142, 125/144/70/25,
 // 51/145/31/129. Nothing below round 152's 9.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 245 (893 B; 0x296e60
+// 416). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

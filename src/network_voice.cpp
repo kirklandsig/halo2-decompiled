@@ -2104,6 +2104,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // after both output stores 134 [12], between them 134 [12]; the length with the size ternary written out as in 0x54990
 // (`written * (include_mask ? 13 : 11) + 2`) 134 [12] (folds into the size); the gate as `entry_size <= capacity` 134 [12]
 // (with the cast 6). On the kept body the written-out ternary length 201 (493 B, recomputed). Body unchanged.
+// M3 lane 15 r136 (h2m fast with 0x56380; control 60; lane 6 r222's lead rebuilt from its patch at 5, 450 B, 0x56380 MATCH,
+// left `movsx edi, cx` for retail's `mov edi, ecx`): on the lead, the length computed after the kept-mask compaction and
+// the mask rebuild (last in the block) 158 (437 B, 0x56380 137); on the lead's shape with a plain long count: the product
+// through a `long const &` bound to the size 134 (456 B, 0x56380 12), the latch's capacity debit ahead of the count
+// increment 134, the size as `11 + (include_mask ? 2 : 0)` 134, the two header byte stores swapped 135; re-measured, the
+// size typed dword 134. Diagnostic: on the lead the count typed `short` with the product uncast keeps retail's dword
+// init, increment and spill stores (5, the same code), so only the product's sign extension tells the count's width.
+// Body unchanged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

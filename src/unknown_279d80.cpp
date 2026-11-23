@@ -2210,6 +2210,11 @@ void function_27dd10(void)
 // interpolation's frame-state saves interleaved with the sets (save, set, save, set, save, set) 94 (1731 B; 0x281b60 47,
 // 0x285750 45, 0x288570 219); the group end's `arg_5 + 8` named and used twice in the ternary 2 (0x281b60 62, 0x288570 3,
 // 0x289580 78); the counter chain's last arm as `else if (arg_4 == 2)` 2 (same code). All restored.
+// M3 lane 15 r135 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): the
+// walk's mask and interpolation flags as long parameters of function_288571 and function_288572 2 (0x281b60 2, 0x288570
+// 120); the three counter resets in reverse order 2; the wrapper's count declared `register` 2; the in-place flag as long
+// 2; the group end declared `long const` 2; the method-2 scale product with its operands swapped 2 (all the same code
+// here and in 0x281b60). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2491,6 +2496,9 @@ void function_2818e0(void)
 // M3 lane 14 r147 (measured with 0x27dff0, the walk forms listed above it; control 2): the out-parameter-first node lookup
 // 2; the interleaved frame-state saves 47; the named group-end sum 62; the explicit last counter arm 2; the kind-2 clamp in
 // function_288571 as `if (arg_1 == 2) local_2 = MIN(local_2, 1);` 2 (same code). All restored.
+// M3 lane 15 r135 (the shared-walk trials listed above 0x27dff0, control 2): mask and interpolation flags as long
+// parameters 2; counter resets reversed 2; `register` count 2; in-place flag as long 2; group end const 2; the method-2
+// scale product's operands swapped 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

@@ -780,6 +780,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // (1198 B); the angle taken through a `double` local for both trig calls 229 (the heading's cosine and sine then spill to
 // other cells); the outer cross's output declared ahead of the forward copy 173 (same code); the owner test written
 // positive first (`if (local_4->field_30)`) 175, as a conditional expression 175.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the spread rotation through include/axis_rotation.h's helper in place of function_28dbd2 236 (1190 B).
+// Restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

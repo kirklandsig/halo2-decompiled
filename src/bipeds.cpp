@@ -4657,6 +4657,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // field_bit_test 531 (aligned 296; only the yaw rotation's xmm numbering at the end moves, under the bar); with the
 // flags_134 bit 11 test, the unit flags bit 20 test or both also through field_bit_test 603 (2720 B, aligned 274 each);
 // with the side through cross3f 603 (2721 B, aligned 293). Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the wall turn through include/axis_rotation.h's helper 556 (2732 B). Restored. biped_rotate (the look
+// turn) is a different rotation (no projection term) and was not switched.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6440,6 +6442,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // body-only forms): the forward field at every use, no pointer local, 154 (879 B); the sine taken before the cosine
 // 111; the angle as rate * length 79 and declared at its assignment 79 (same code each); the forward pointer declared
 // first, ahead of the axis copy, 130; the final test written `0.0f == length` 79 (893 B). Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_direction calls through include/axis_rotation.h's helper 134 (895 B). Restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

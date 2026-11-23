@@ -540,6 +540,9 @@ long g_55e6c0;
 // call 29 (propagated); the clamp's store after the pitch, ahead of the packed word, 71 (486 B); the height part named
 // inside the packing (`long rows = (height - 1) << 12;`) 29; the entry as `g_4b4b58 + index` 29; the busy test with the
 // flag first 32 (the 29s are the lead's code). All restored.
+// M3 lane 15 r135 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp positive-first (`count > 0 ? (count <
+// 4 ? count : 4) : 0`) 32; `(void)&height;` at the top 29, `(void)&count;` 29, `(void)&kind;` 29 (all three the same code);
+// round 51's signed pitch/packed lead re-measured 29 (484 B), with `(void)&height;` 29 (484 B). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
