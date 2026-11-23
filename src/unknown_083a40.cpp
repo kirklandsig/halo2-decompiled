@@ -1032,6 +1032,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // assigned through a reference at the loop top, the key indexed by a reference-bound copy of `i`, the loop-top
 // player assigned through a reference: all the same code as the base, so in this file the bindings are folded
 // before the key sum is ordered. All restored.
+// M3 lane 1 r161 (h2m fast with 0x84e90/0x84c90/0x83c90, all MATCH each time; control 28): one function-scope `long i`
+// for the three loops 28; the session-player source declared ahead of `collection` 28; the loop-top player declared
+// first, then source, then `collection` 28; the occupied key copied from `&collection->players[i].key` with
+// `sizeof(t_player_key)` 28; `machines` declared at the function's top 28; `slot` and `occupied` declared at the
+// function's top 28 (all the same code: the key sum stays (inverse + cursor) + collection). Body unchanged.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
