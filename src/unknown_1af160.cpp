@@ -316,6 +316,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // M3 lane 6 r233 (h2m fast with 0x1e1f20, MATCH; control 12): the prop node as `*const` 12; the actor as `*const` 12;
 // both 12; the 0x25d690 and 0x262b40 result pointers `*const` 12; the scratch buffer pointer `*const` 12 (all the same
 // code). Still BLOCKED-BY 0x260670 (440 at 3097 B).
+// M3 lane 16 r182 (h2m fast with 0x1e1f20, MATCH; control 12): the five output clears as one chained assignment 12; the
+// 0x1ac610 test as nested ifs 12; the +0x14 range test as `!(== NONE || == 0xffff)` 12 (same code each); the marker pointer
+// NULL-defaulted and set by `if (local_6)` 236 (982 B); the search flag as `local_4 ? (*local_4 & 1) != 0 : false` 222.
+// The two swapped home pairs stay; the bool output's chain (0x261280 -> 0x2605d0 -> 0x260670, itself BLOCKED-BY 0x262a30)
+// is unchanged. All restored.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
