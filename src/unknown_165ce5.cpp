@@ -2107,6 +2107,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // 0x28). Named values for all four spring overrides 548, primary handle selected before its guard 526, primary slot
 // reused through the final test 188, overrides before mode lookup 574, one overlay set read for both clear tests 362,
 // and scope flag assigned from the overlay index 220. The unit and mode homes and the early saves still differ.
+// Unit/mode and activity/zoom homes still differ. Immutable mode 188, aiming vector reference 569, first
+// receiver before unit admission 188, nested handle admission 188, clear activity after failed queries 183,
+// nested animation success tests 188, retained clock for late updates 460, direct short overlay index 197.
+// NOT kept: the activity form improves by five at the opening length.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

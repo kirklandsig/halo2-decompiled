@@ -927,6 +927,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // for conversion 837, incrementing the short choice count before its stores 915, and a duplicate break at the scan
 // head 837. Primary tag held for repair 838, promoted source 837 with or without a named type byte, named fade
 // records in both loops 888, and explicit range branch 837.
+// The query/count homes and entry zero still differ. Const dword query 911, capacity break 837, dword query
+// with tag snapshot 911, duplicate pointer walk 928, direct query bound and completed choice snapshot 931,
+// dword query and duplicate ordinal 968, dword query and choice reference 927, dword construction and capacity
+// break 936.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

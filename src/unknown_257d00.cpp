@@ -2841,6 +2841,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // values 431, and selector read before the request destination 600 (actor/state exchange). Case 20 completion arms
 // 429, inactive clear 533, retained publication target 429, and case 11 named short state 429. The shared success
 // return and excess length remain.
+// The dispatch span and shared success target remain. Prior target snapshot 429, selected target snapshot 429,
+// both snapshots 431, skip invalid candidate 429, skip non-winning distance 429, both scan skips 429, direct
+// completed search 490, inactive search first 505.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

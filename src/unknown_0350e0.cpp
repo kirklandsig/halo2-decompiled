@@ -2943,6 +2943,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // One dword for both context flag tests 500, a combined mask 308, and visibility tested after selecting its value 519.
 // Named definition flag reads at the two tests 500, aggregate sampled tint assignment 532, nested tag and entry
 // admission 324, and distances through real_bounds 281. The camera-axis load schedule and the extra byte remain.
+// Camera displacement and reflected-row scheduling still differ. horizontal forward subtotal 500, both SSE
+// subtotals 500, all four subtotals 500, origin copy and shared difference 540, aggregate delta and subtotal
+// 500, scale after setter 365, separate projection and reflection setters 499, subtotal and separate setters
+// 187, subtotal and Y-first stores 375, named projected/reflected rows 500, ordered delta and subtotal 500,
+// ordered delta and Y-first stores 375. NOT kept: the subtotal and separate setters improve only together and
+// compute X before Y, while retail publishes Y first.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
