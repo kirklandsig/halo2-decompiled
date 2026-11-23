@@ -3433,6 +3433,9 @@ struct s_1cf531
 // the final product with the original scale splat 50. NOT kept: The projection names, velocity scope and split
 // splat leave both spill operands unchanged. The intrinsic broadcasts preserve the extent at higher scores.
 // Forming the correction at the final product extends the body to 915 bytes.
+// M3 lane 12 r180 (h2m fast, 2): local_14 declared before local_13 2, on its own line first 2 (same code); the copy
+// into local_13 after the velocity call 62; the subtraction reading local_7 instead of the copy 57 (915 B, frame
+// 0x64); local_13 declared and copied ahead of the length test 8.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
