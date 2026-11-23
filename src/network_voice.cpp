@@ -2276,7 +2276,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // the matched callers 0x54890 and 0x53a20 as well, and `inline` on 0x53bb0 with either test order gives 105 or
 // 102 and takes those two callers with it. The body stays 415 bytes against retail's 427, the missing twelve
 // being that expansion. BLOCKED-BY 0x53bb0 (its per-site inlining) and 0x59670/0x596a0 (the session getters).
-// score 64 (was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
+// Merged from a second score line (64, was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
 // availability byte in CL, then the second port flag expanded in place (two calls of 0x53be0); this body tests the two
 // port flags first and calls 0x53bb0 out of line, 12 bytes short. BLOCKED-BY 0x53bb0 (its per-site inlining).
 // MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
@@ -2510,6 +2510,11 @@ static inline dword voice_get_player_mask_inlined(void);
 // asks the mode query first and keeps the two bytes' test after it; the earlier rounds' 85 point forms need the
 // active and passive mode flags, which only a byte match would keep, so the control (64) stands.
 // MiniMax R (11-20): re-checked, no new form and no lower score (64): the inner loop runs the two port flag queries before the muted word bit where retail runs the muted word bit first and expands both port flag queries in place, and this build calls the second one out of line, so the body is twelve bytes short: BLOCKED-BY 0x53bb0's per site inlining.
+// M3 lane 14 r148 (fast with 0x54890, 0x53a20, 0x53bb0, all matched; control 64): diagnostic, the file built /Ob2
+// 269 (539 B; 0x54890 113, 0x53a20 84), so retail's single-site expansion of 0x53bb0 is not a file-wide auto-inline;
+// the second query written out in the muted-first order 89 (435 B: `test al, 4`, no result byte, both availability
+// bytes re-read), in the flags-first order 93 (435 B); with plain availability reads 89 (435 B); both port-flag
+// queries written out with plain reads 122 (393 B); a `short` inner index 136 (447 B).
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -4544,6 +4549,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 181 (450 B: not expanded there); the relay arm through the inline talker test 138 (same code: only the call's target
 // symbol differs, the out-of-line copy is identical); `long consumed = 2; size -= consumed;` 139 (same code); the packet size
 // as `11 + 2 * relay` 178 (469 B); the member bit test as `(1 << member) & members` 139 (same code). Body unchanged.
+// M3 lane 14 r148 (fast with 0x564c0, matched each time; control 139, the packet-cursor form re-measured 164 at 478 B,
+// the member in EBP, the channel in no register): on the cursor form, the remaining mask `members & ~(1 << member)` formed
+// before the talker calls and tested `!= members` 168 (460 B); the member bound through a named `long const &` 164 (same
+// code); the members word bound through `word &` 164 (same code); a separate `remaining = size - 2` local in place of
+// debiting the size parameter 159 (479 B); the cursor started as `(byte *)((word *)data + 1)` 164 (478 B).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

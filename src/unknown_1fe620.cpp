@@ -433,6 +433,13 @@ static __forceinline long real_to_long(real value);
 // 373 here, 0x1697c0 itself 155 (2188 B; its match is lost); with only the point's address local removed 373 here,
 // 0x1697c0 122 (2175 B). 0x1fe410 and the other callers stay matched in both. 0x1697c0 needs both locals for its own
 // match, so the capture cannot be removed there; restored.
+// M3 lane 1 r159 (H2M_FAST with 0x210850 MATCH each run; control 373): the existing 0x210850 called out of line for the
+// point (no `inline` on its definition) 445 (1807 B, it stays a call); the random-state local declared at the top for the
+// head draw and both function_259d0 draws 413 (1866 B); +0x38 named early with the other limits for its two uses 375; that
+// with the second draw through function_259d0 (retail's second draw is the x87 one) 412; the first output named as a
+// vector pointer for its store and the three sums, on this body, 376 (1854 B). Retail reads +0x10, +0x14/+0x18, +0x1c,
+// +0xc and +0x38 after the sign step and stores the seed once after the three draws. BLOCKED-BY 0x210850 as above. Body
+// unchanged.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

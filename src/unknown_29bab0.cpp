@@ -875,6 +875,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // select as an if/else 708; local_26 formed straight from the rows (no local_25) 711 (3484 B); the perpendicular as a
 // 2-D vector `{ 0.0f - local_17.j, local_17.i }` with both side tests through dot_product2d 661 (3499 B, aligned 235).
 // Body unchanged.
+// M3 lane 6 r234 (plain each; control 489, aligned-equal 799 of 844 masked rows): the blend rows reading field_64 at
+// each use with no `blend` local (retail's complement reads the field from memory while XMM6 holds it) 572 (3502 B);
+// that with both clamps as `MIN(1.0f, ratio)` 571; the side point with the y row inside each arm of an if/else select
+// and the x row after the join (retail 0x29be20-0x29be5f's shape) 718 (3501 B, first +0x2); the 0x47c override read
+// into a named local used for the test and the store 665 (3499 B, first +0x60); the turn factor's dot as
+// `dot_product2d(&local_17, &local_15)` 489 (same code). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

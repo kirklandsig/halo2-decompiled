@@ -730,6 +730,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // rigid body ESI through `mov esi, ecx`). On it: the object index as `long const &` bound to the component's field 96
 // (caller 208); the absolute index, the header array and the rigid body each bound by a const reference 28 [0] (same code
 // each). Body unchanged.
+// M3 lane 11 r157 (H2M_FAST, caller 0x1d5bf0 in brackets, 0 = MATCH; control 96 [0]). Entry statements as header array
+// (H), object index (O), rigid body (R) and a byte type local (T, `headers[object_index & 0xffff].type`, case 0 through
+// havok_object_get(object_index)), no absolute-index local: HORT 88 [13], HROT 96 [13], OHRT 84 [13], ORHT 96 [13], RHOT 94
+// [13], ROHT 96 [13], HOTR 88 [11], OHTR 92 [9]. With the absolute-index local (A) and case 0 through
+// havok_object_get(component->object_index), every order with O before A before T and H before T: OARHT (round 60's
+// one-read form) 28 [0], OAHRT 88 [0], OHART 83 [0], OHRAT 25 [13], HORAT 25 [13], HOART 83 [2], ORAHT 94 [13], ORHAT 94
+// [13], ROAHT 96 [13], ROHAT 96 [13], RHOAT 96 [13], HROAT 94 [13], OAHTR 111 [9] (268 B), OHATR 106 [9], HOATR 106 [11];
+// OARHT with case 0 through havok_object_get(object_index) 101 [0]. In every caller-keeping order the object index is
+// read first into EDX and the header array takes ESI; retail reads the header array first into EDX, copies the incoming
+// index to ESI for the rigid body and gives the object index ECX. Body unchanged.
 // M3 lane 2 r139 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): one `byte type` local read at the entry (after
 // the rigid body) with the kind-7 route as `return type == 1 ? 0xc : 1;` 104 (240 B) [13]; that with case 0 through
 // havok_object_get(object_index) 136 (216 B) [213] (the mask is then shared, where retail masks again in case 0); the type
