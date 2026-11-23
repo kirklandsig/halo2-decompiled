@@ -1012,6 +1012,17 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // 289 (1051 B, frame 0x8c: the inverse-start slot disappears, so that induction value exists only for the occupied
 // key); the occupied key copy removed 329 (1013 B); the swap call removed 262 (1021 B); each also drops a frame slot,
 // so neither spot can be isolated by deleting the other.
+// M3 lane 1 r158 (h2m fast with 0x84e90, MATCH each time; control 28): the occupied key through a file-local forceinline
+// accessor returning `&collection->players[index].key` 28 (same code), with the swap order (collection, player, update,
+// other) 32; the second loop without the `player` local (flag and configuration read through
+// `watcher->players.players[i]`) 32; the second loop's first mask test through `collection` 193 (1063 B: the mask is no
+// longer cached and the loop head reorders); on the swap order, `collection` declared at the else arm's top (the first
+// arm's apply given `&watcher->players`) 32. Compile-only key screen (exact for the grouping here): each of those keeps
+// (inverse + cursor) + collection + 4; the player local formed from `collection` folds the key into its own pointer.
+// Reading: retail's sum is SR's rebasing of `collection + i * 0xb4` onto the configuration cursor, (collection - start) +
+// cursor, computed in place; ours rebases only `i * 0xb4` and adds the in-loop `collection` after it, and an invariant
+// base gets its own induction variable instead, so retail's base was invariant to the address analysis without being
+// strength-reduced on its own.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
