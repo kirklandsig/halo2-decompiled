@@ -441,6 +441,15 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // change it) 409 (1370 B); `bool local_2 = false;` declared ahead of the search 399 (1372 B); the pacing test as
 // `!(local_17 > 0.0f && 1.0f / local_22 > local_17)` 356 (same count); local_5's NONE declared beside local_18 403
 // (1376 B). Re-measured: the snapshot and reset through the 64-bit view 429 (1330 B). Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356 at 1374 B;
+// aligned = difflib count of unmatched instructions with addresses, registers and stack offsets masked [mnemonic only],
+// control 98 [57]): snapshot and reset through the 64-bit view with the zero-rate exit as `return local_2;` 393 (1354 B)
+// [99, 49]; the has-host result started false and set in the call's arm (retail stores the zero at entry and the 1 in the
+// arm, match-only flag form) 402 (1376 B) [101, 58]; the three together 355 (1372 B, frame 0x30 for retail's 0x34) [82,
+// 46]; on that, the second threshold as `if (local_6 < 48) goto done;` 401 (1373 B) [86, 51], the first as `if (!(local_23
+// >= local_13)) goto done;` 360 (1369 B) [80, 46]. Reading: retail's done block (`mov al, [esp + 0x48]` and the first
+// epilogue) sits after the capacity arm with the zero-rate test falling into it, so the zero-rate exit is a goto there,
+// and retail's local_2 is never stored by the first threshold (setge/test straight into the jump). Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
