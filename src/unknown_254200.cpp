@@ -365,6 +365,9 @@ void function_254200(void)
 // takes a device pointer (one more inline layer) 10 (the colour block's three spills change slots, the pair stays ours);
 // the two-short texture calls through that inline 4 (same code), in the plain C form 392 (914 B, no longer expanded);
 // every Begin, texture, position and End call through it 10; the half size as `2.f * arg_2` 4 (same code).
+// M3 lane 7 r219 (single-address H2M_FAST, control 4): the doubled size as `arg_2 / 0.5f` 4 (same code); the colour helper's
+// green product ahead of blue 8; the two dimension stores height first 6; the first vertex's w spelled `1.6777215e7f` 4
+// (folds); the bitmap choice parenthesised 4 (same code). The x, y + size, constant group stays ours.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -828,6 +831,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // M3 lane 7 r217 (H2M_FAST), at 2: the first quad's calls through the platform's device-interface inline that takes a
 // device pointer: the four position calls 2, the texture calls 2, both 2, Begin and the colour call 2, all of them 2. In
 // both this pair and 0x254490's, retail's two loads after the reservation are ascending by xmm number and ours descending.
+// M3 lane 7 r219 (single-address H2M_FAST, control 2): the colour call's alpha `1.0f` 2; the colour fetched after the
+// 0x1cf50 call 7; the first quad's second position as integer literals 2; the first quad's closing call in member form 2;
+// the first texture-stage helper call given an integer zero 2; the last quad's size test written `1 < g_4ba04c` 2 (all the
+// same code); the alpha byte through real_truncate 30 (first +0x83).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

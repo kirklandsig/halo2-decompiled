@@ -1363,6 +1363,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // expressions 576 (2800 B); the projection helper in 0x1427f0's own spelling (x, y, z, `inverse * x`, rows k, j, i) 290
 // (same code); the face row named for the four projections 481 (2814 B); the entry's point array named for the four
 // projections and the bounds call 555 (2798 B).
+// M3 lane 8 r228 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the sphere left
+// axis crossed and normalized in a local vector, then assigned 590 (2822 B); the up axis negated into a local vector
+// 625 (2862 B); the forward cross into a local vector 585 (2857 B); the cone half extents as `0.5f * (width * scale)`
+// 600 (2777 B); the cone reciprocal computed before the centre projection 597 (2780 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

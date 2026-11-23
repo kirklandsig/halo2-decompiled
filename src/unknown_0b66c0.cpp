@@ -679,6 +679,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // body the length kept in the scan's `unsigned long` type with the cast at the compare 21 [match], with the compare made
 // unsigned 21 [match]; the length and the source declared bare ahead of their assignments 21 [match] (all three the same
 // code); the bound sum named after the early source 21 [match] (same code), named ahead of the scan 51 (92 B) [83].
+// M3 lane 12 r179 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the early source
+// with the scan read straight in the bound test (no length local) 37 [84]; the clamp as `if (++count > 0x200)` 21 [match];
+// the bound test written `length >= start + count` 21 [match] (both the same code); the count test as `count >= 1` 23
+// [match]; the string assigned into the source inside the scan's argument and the start added after it 48 (93 B) [84].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

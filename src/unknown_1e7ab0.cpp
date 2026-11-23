@@ -647,6 +647,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // and 165 each on the 0x1e8d50 entry (same code; the child test keeps `movsx eax, ax` / `test cl, 1` where retail has
 // `movsx edx, ax` / `test al, 1`). Still BLOCKED-BY 0xd0590 (contributor; its file is on this round's avoid list, so
 // the held order was not re-measured).
+// M3 lane 1 r159 (H2M_FAST with 0x1e83c0 MATCH each run; control 117): diagnostic, 1 to 6 dead initialised locals at the
+// top 117 at every count (the getter's table/result rotation is not a symbol-numbering tie); request_unit's parameters as
+// (headers, object_index) at all four sites 117; case 23's headers named once for both weapon lookups 117; case 4's child
+// test against `player->unit_index` 117 (the same code each); the existing 0x1e8d50 entry with the swapped helper order
+// 165, with the child test on `player->unit_index` 165 (2312 B each). Still BLOCKED-BY 0xd0590 (contributor; its file is
+// on this round's avoid list, so the held order was not re-measured). Body unchanged.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

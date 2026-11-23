@@ -490,6 +490,10 @@ extern real g_4c9798[36];
 // 180 (re-measured); the forward vector at matrix+0x28 named once for the first block's seven reads 321 (1479 B, the entry
 // changes at +0x2); the render flags word read once into a `dword` for the two limits 180 (1491 B); the upper clamp as a
 // conditional expression in the else arm 174 (same code). Still BLOCKED-BY 0x48e70.
+// M3 lane 1 r159 (H2M_FAST with 0x48e70 and 0x1cf50, both MATCH; control 174): the mode test as a mask (`!(g_4c1a80 &
+// 0x400)`) 299 (1485 B); the offset test as `== 1` 336 (1491 B); the mode's else arm as one boolean assignment 174 (same
+// code); `maximum` converted ahead of the height limit 253 (1484 B); the size's first term named for the product 174 (same
+// code). Still BLOCKED-BY 0x48e70 (its file is on this round's avoid list). Body unchanged.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

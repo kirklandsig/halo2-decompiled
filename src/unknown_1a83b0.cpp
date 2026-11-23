@@ -816,6 +816,11 @@ s_1a8a10 g_4453c0[] =
 // the table pointer with the index and score after the sums 15 (the listed identifier, index, score order: tail only,
 // float block unchanged, j still shared); the copy read through a planar `vector2f const *` view with the negation from
 // the actor 17; the negated j named right after the copy 17 (all the 17s the same code).
+// M3 lane 1 r158 (h2m fast with 0x1a8c30, MATCH; control 17): the facing copy as a two-element real array 17; both
+// sums `real const` 17; every product written point first (`x * (0 - j) + y * i`, `x * i + y * j`) 17 (same code);
+// on the copy's j assigned between the sums, products point first 17 and only the forward's point first 17 (both the
+// j reload as retail, but the left product still multiplies a copy of i while retail multiplies i in place and copies
+// it for the forward product, and forward's j load stays after the left sum).
 // M3 lane 8 r226 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH each time; control 17; reference-bound
 // locals, which kept a two-step sum apart in 0x211cc0): the facing copy stored through a `vector2f &` bound to it 17
 // (same code); the negated j built through a reference (`minus_j = 0.0f; minus_j -= actor j;`) with the left sum

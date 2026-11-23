@@ -1087,6 +1087,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // store 72; the object read as `OBJECT_HEADER((word)object_index)->object` 8 (same code); the attach passed
 // `entity->object_index` 21; no second store with the object lookup and the attach both through `entity->object_index` 82
 // (157 B); the second store moved after the field store 69.
+// M3 lane 7 r219 (H2M_FAST; control 8): the flag test inverted (clear first, valid block in the else) 33; `result = true`
+// ahead of the attach call 76 (182 B). The field-read form (call result stored into the field, every later read through
+// `entity->object_index`, store and attach through 0xbb780) re-measured 67: on it `result = true` ahead of the 0xbb780 call
+// 61 (178 B), the flag test inverted 67, `result` declared ahead of `value` 67 (same code); its listing has retail's
+// recomputed index but `f` cached in EBP and the data pointer shared in EDX, so no EBP window.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1622,6 +1627,9 @@ bool c_projectile_type::v8(long a, long b)
 // pointer declared with the index reference and assigned in the NONE block 12; `NONE != index` with a const entry pointer
 // 12; the 0x800 arm's result bit set ahead of its store 14. Diagnostics (semantics changed, reverted): `| 0x3ff` or
 // `| 0xffff` on the call's result 48 (192 B), `& NONE` 12.
+// M3 lane 7 r219 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the object pointer and the
+// flags both const 12; the result declared bare and assigned from the call 12; the call's mask as `flags % 0x400` 12; both
+// device-bit tests written constant-first 12 (all the mask's code; the flags keep ESI). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
