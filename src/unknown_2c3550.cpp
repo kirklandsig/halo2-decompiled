@@ -997,6 +997,15 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `radius < state->source.radius` 675 (same code); the source radius read once into a const local for the test and the
 // assignment 754; flags left undefined at its declaration and zeroed in a `!actor` arm 759; the step's input pointer
 // formed ahead of the output-count test 685; the object-index clear moved ahead of the actor block 761. Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x270930 and 0x2c4030, both MATCH each run; control 675; aligned = difflib count of
+// unmatched instructions with addresses, registers and stack offsets masked [and mnemonic only], control 273 [199]):
+// a short index in the first centre-transform loop only 717 (2966 B) [267, 214]; in the blocking loop only 714 (first
+// difference +0x1) [276, 198]; the failure flag loop on a short index with the flag pointer tested per obstacle under
+// `step == count - 1` 694 [273, 199]; the inserted count and truncation flag declared ahead of the value28 test (retail
+// zeroes both there) 710 (2976 B) [257, 197]; `maximum_height` declared ahead of `flags` (retail's store order) 676
+// [273, 199]. Reading: retail's result is a byte set to 1 at entry and read only at the two kept exits (the failure exit
+// returns a literal false with its own epilogue), and the centre-transform loops count a short against the list's short
+// count. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

@@ -315,6 +315,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // to the entry and it still takes EBX in each arm); the else arm's forward copied member by member 59 (480 B: no
 // zero-offset access to the transform is left, still EBX). Diagnostic (reverted): the transform read again after the
 // constructor call 51 (still EBX), so neither the zero-offset access nor the live range decides the pair.
+// M3 lane 1 r158 (h2m fast with 0x200e60 and 0x142570, MATCH each run; control 19): the initial point copied by memcpy 19;
+// the else arm's point copied component by component through the address local 143 (485 B); the initial point
+// direct-initialised 19; the node pointer re-pointed as `local_3 = &local_3[arg_1]` 19; the record filled after the
+// constructor through a reference bound to `*arg_3` 19 (the 19s the same code: transform EBX, y EBP, constant 1 shared).
 // M3 lane 8 r226 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19; reference-bound
 // locals, which kept a two-step sum apart in 0x211cc0): the transform stored into a pointer local through a reference
 // bound to it (`source = *local_4;`, both arms reading the local) 19 (same code); the same with no address local

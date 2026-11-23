@@ -508,6 +508,12 @@ void function_2232a0(void)
 // record still adds its base early, so that part is not the stub's. The found arm as a default-zero ternary 90; the layout
 // as one ternary in the `local_2 > 1` arm 47 (same code); that ternary with the view count declared at the terminal call
 // 108. Still BLOCKED-BY 0x2b5d0 (its activation is blocked by the frame-alignment chain round 55 lists).
+// M3 lane 2 r141 (H2M_FAST with 0x223240, MATCH; 0x223080 reads 2 on the reduced image even unchanged; control 47): the
+// terminal record indexed `local_2 + 1` with the view count kept for the stub call 183 (583 B); the view loop as
+// `for (; local_0 < local_2; ++local_0)` 47 (same code); the terminal record through a named pointer local 47 (same code);
+// no view-count local, `local_2 + 1` at both uses 120; the view count as a short 79. Re-measured: the view count declared
+// just ahead of the terminal call 40 (the flag stores then share a CL zero; a moved declaration, under the bar). Still
+// BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

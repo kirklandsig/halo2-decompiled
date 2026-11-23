@@ -706,6 +706,11 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // case 2's axis at case scope 31, axis declared before the selected normal 31, the loop index declared ahead of the loop
 // 31, the entry pointer as `byte const *` 31 (all the same code). Retail's inlined tail is i*inv, inv*j, k*inv (the last
 // load-first although the inverse dies there); ours is load-first in all three rows. Body unchanged.
+// M3 lane 12 r179 (H2M_FAST with 0x1f2250 413, 0x1201a0/0x1f2e60 MATCH each run; control 31): one function-level `vector3f
+// const *up = g_4687b0;` read at all four places (entry copy, both case 3 arms, the tail call) with case 3 none-first 236 (996
+// B), with case 3 selected-first 214 (990 B); a case-3 up pointer for both arms with main's none-first order 240 (1010 B);
+// case 3 selected-first with an up pointer for the selected arm only 178 (991 B, the selected-first code); the loop's
+// height read into a `real z` copy instead of the const reference 276 (993 B: the stack value moves the loop's registers).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1062,6 +1067,11 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
 // row written `axis.x * dot` first 239; on the body, the rows written `axis.x * dot` alone 235, the old up bound as a
 // `vector3f const &` instead of a pointer 235 (both the same code). Body otherwise unchanged.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the limit rotation through include/axis_rotation.h's helper 301 (1275 B). Restored.
+// M3 lane 12 r179 (H2M_FAST with 0x1e5af0/0x30bf0, both MATCH; control 235): the acceptance dot as shape_dot(axis, cross)
+// 235 (same code); the rotation dot as `shape_dot(axis, limited) * (1.0f - cosine)` 239 (1243 B) and as `(1.0f - cosine) *
+// shape_dot(limited, axis)` 239 (1243 B); the zero-axis dot through shape_dot(*old_up, up) 244 (1249 B) and shape_dot(up,
+// *old_up) 244 (1249 B). The fallback cross still loads the old up first where retail copies up's register and multiplies
+// from memory (one byte longer per product).
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)

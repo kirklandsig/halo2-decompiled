@@ -2387,6 +2387,10 @@ struct s_actor_looking_structure_view
 // 51/145/31/129. Nothing below round 152's 9.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 245 (893 B; 0x296e60
 // 416). Restored.
+// M3 lane 3 r300 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590, MATCH each run; control 23): the candidate
+// array declared after the best pair 23 (same code); the trace fraction as `trace.distance / 5.f` 23 (same code: it folds to
+// the 0.2 product); the best index stored before the best score 25; the selected direction as `directions[best_index]` at
+// each use (no pointer) 39; a per-candidate trace record inside the loop 144 (928 B). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
