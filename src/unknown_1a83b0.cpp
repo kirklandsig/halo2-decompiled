@@ -828,6 +828,10 @@ s_1a8a10 g_4453c0[] =
 // accumulated through a reference (`left = i * y; left += (0 - actor j) * x;`) 84 (first difference +0x75, the xmm
 // numbering moves); the left sum built in three steps through it (`left = 0 - actor j; left *= x; left += i * y;`) 37
 // (the zero then stays out of XMM1 and the [1] store moves up). j is read once in all five. All restored.
+// M3 lane 1 r161 (h2m fast with 0x1a8c30, MATCH each time; control 17): the facing copy declared at the function's top
+// 17; the value array declared at the function's top 17; the result flag declared after the path-trace locals 17; the
+// table pointer initialised ahead of the sums 17; the facing copy typed as the facing's own 3D vector (only i and j set)
+// 17 (all the same code: j read once). Body unchanged.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

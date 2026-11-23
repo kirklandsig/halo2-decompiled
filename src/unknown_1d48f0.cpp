@@ -47,7 +47,7 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
-// score 268 (was 298; r286 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
+// score 268 (was 298; r286 and r239 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
 // MiniMax G (11-20): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is expanded here but called out of line in retail, so the optional-state homes stay four bytes off.
 // MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
 // expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
@@ -517,6 +517,12 @@ const dword g_455978[81] = {
 // lane 15 r126 diagnostic (0x279740 inlinable makes 0x11bed0 a call while both releases expand) points at a per-function
 // link-time inline budget that retail's first-release expansion used up. Body unchanged; still BLOCKED-BY 0x11bed0's
 // expansion here.
+// M3 lane 5 r239 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the direction loop as
+// `long local_13 = 0; do { ... } while (++local_13 < local_6);` 328 (2071 B: the first form without a redundant guard
+// that leaves 0x11bed0 a real call here, as retail has it; the layout is not retail's); the loop test as `local_13 !=
+// local_6` 268 (same code); the do-while with the first release through a file-local copy of 0x1d01c0's release helper
+// (diagnostic) 360 (2117 B); that copy alone 367 (2131 B); the count written into the loop condition, no local, 373
+// (2085 B). Body unchanged; still BLOCKED-BY 0x11bed0's expansion here.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

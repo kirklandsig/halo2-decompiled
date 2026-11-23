@@ -353,6 +353,12 @@ static inline void *function_xc5914d(long thread_index, short size)
 // `result = NULL` first in the arm 107 (255 B); the first allocation written out through `*frame` with the result copy
 // after the third allocation and `result = NULL` first in the arm, volatile-free, 83 (277 B, the null-first code); on
 // the kept body the argument index stepped ahead of the expression update 19 (279 B).
+// M3 lane 13 r150 (h2m fast with 0x2099f0, which stays matched; volatile-free forms, `result = NULL` first in the arm unless
+// noted): the frame reference after the three allocations with the expression pool read once into a pool local for the
+// init block and the test 80 (282 B); the frame reference first with the pool's data read once into a byte pointer for
+// them 85 (277 B, the pointer still in EAX); the arm's element taken from `result` with `result = NULL` right after it 93
+// (268 B), with `result = NULL` last 95 (266 B); the frame bound as a `s_hs_macro_frame *&` with the first allocation
+// written through it 83 (277 B, the clear-first code).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

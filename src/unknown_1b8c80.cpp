@@ -1040,6 +1040,12 @@ extern "C" void _ReadWriteBarrier(void);
 // first, ahead of the actor lookup, 44 (first +0x5); read after the barrier 6 (same code: it sinks); actor, `long` flags
 // local, no barrier, 44 (208 B). A read through the slot anchored by the barrier always brings its own load into the
 // entry block; retail's entry has the slot load alone.
+// M3 lane 13 r150 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; each without the barrier): the actor assigned in
+// the busy test's condition 44 (208 B); the busy test as an empty first arm of one flat else-if chain 44; a second state
+// pointer for the point copy 44; the state assigned again from the slot at the head of the NONE block 44 (all the no-barrier
+// code). Matched functions found by a scan for a stack parameter loaded in the entry block and read after its branch
+// (0x1b22e0, 0x25fe50, 0x227600) read it on both paths or after the join; matched 0x1c14b0 (actor test, then a slot test)
+// loads the slot after the branch, as ours does here.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

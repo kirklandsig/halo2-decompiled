@@ -1607,6 +1607,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
 // 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
 // colouring (that needs memcpy's own argument order).
+// M3 lane 6 r236 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; the indexed copy
+// re-measured 195): the identities zeroed by a `= {0}` initialiser in place of the memset 14 (first difference +0x2d); the
+// copy source as `current->players + i` 9; the player loop as a `while` stepping its index at the body's end 9; the
+// destination as `&identities[0][0]` 9 (the three the same code); the count declared bare and zeroed after the clear 15.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
