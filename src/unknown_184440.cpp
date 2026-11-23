@@ -181,7 +181,7 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
-// score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
+// score 965 (was 965): m3 lane 11 r158 unchanged (its line just above the marker); the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
 // the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
 // EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
 // MiniMax D (11-20): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so every later slot sits
@@ -563,6 +563,11 @@ __forceinline bool function_184448(long arg_0)
 // M3 lane 16 r178 (coordinator diagnostic, one full check, restored byte for byte): `inline` on 0x48e70's own definition
 // (0x22750's spelling) 965 -> 1014 (4590 -> 4623 B, first +0x7 unchanged); 0x48ee0 174 -> 175 (1486 -> 1496 B, first
 // +0x5c -> +0x29); 0x48e70 itself still matched (kept out of line); no other count moved, no match lost or gained.
+// M3 lane 11 r158 (h2m fast with the callers 0x9cca0/0x184060, both MATCH each run; control 965): the surface-list
+// pointer declared const 965 (same code); the per-face bounds initialised by a two-pass loop at the same place 980; the
+// material lookup through the existing global_material_get in place of its body written out 978 (head identical, later
+// homes move), with the one-use index folded into the call 978; the edge side as a bool re-measured 981; the two early
+// returns as nested blocks 965 (same code). Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
