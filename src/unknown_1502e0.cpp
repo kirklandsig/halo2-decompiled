@@ -1320,6 +1320,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // form the mode read into a `long mode` local 5 (same code); the weapon test as an early `return result;` inside the slot
 // test 51 (143 B); `long hand = !primary;` declared at function scope after the result 28; the reload as `[0].unit_index` 5
 // (same code); the e68c0 code as `hand ? 0x13 : 9` 54 (146 B).
+// M3 lane 1 r157: HELD, a byte match not kept: the unit lookup's index read through a new file-local accessor that
+// returns a one-member record by value (a long handle copied from unit_index) matches this function and 0x151aa0 (43) in
+// the full check, 0 lost. The same one-member return-record device is held elsewhere for the user's ruling, so the body
+// stays as it was.
 // M3 lane 13 r145 (h2m fast with 0x152bf0, MATCH each time; control 5): `__assume(player->unit_index != NONE)` at the
 // head of the tested block on the plain-read form 17, ahead of the hand 17, on the getter-reload form 5 (folded each
 // time); the file's player getter with its data pointer in a local 5 (0x151ea0 then 13), with its result in a local 5;
@@ -1782,6 +1786,8 @@ void function_150820(dword *bits, bool local_only)
 // Primary-selected mode with compound/nested query 88/88; slot/mode selection and late hand 77/77.
 // Secondary bool through both reads and late hand 88/88; late hand with byte slot 83/83.
 // NOT kept: The 210-byte late-hand form puts the player in ESI but passes primary in a register and grows the frame to eight bytes. All forms raise the score.
+// M3 lane 1 r157: HELD, a byte match not kept: the one-member handle record described in 0x151b80's note, used at this
+// function's unit lookup, matches it (43 -> MATCH); held with 0x151b80 for the user's ruling, body unchanged.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

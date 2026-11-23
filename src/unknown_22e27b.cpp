@@ -643,6 +643,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // declaration too 1 (same code); an explicit in-range arm `else { restart = false; }` before the restart break 153 (663 B,
 // the store is kept); the loop test as `next_time <= time` 5; the timing step ahead of the flag-8 store 9; restart typed
 // `long` 230 (661 B).
+// M3 lane 4 r250 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): on lane 6 r220's 14 lead
+// (diagnostic: the thread-breaking join and the flag-8 test through a byte cast), the per-pass disposal reset ahead of
+// the frame sum 14, dispose typed `byte` 14 and `char` 14, the frame declared once ahead of the loop 14 (all the same
+// zero EAX / `& 2` EBX pair); the two loop restarts as `type == 0 && (playback_flags & 3) != 0` 243 (626 B).
 // M3 lane 13 r146 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): `dispose = false;` again inside
 // the restart break 1; a second join break on dispose after the restart break 1; `!dispose` added to the loop test 1 (the
 // three folded, the in-range jump still threaded); restart started as a copy of a false-initialised dispose 1 (same code);

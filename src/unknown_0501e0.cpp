@@ -766,11 +766,32 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // with a single scale read 256/261. Shared vector setter in the same four forms
 // 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
 // forms score higher, and the frame remains 0x20.
+// M3 lane 16 r177 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221, difflib-aligned 270, register-
+// masked 156): the perspective weight sum as `local_4 + local_5` 221; field_14 stored ahead of the blended position 220
+// (1113 B, one point); field_10 ahead of field_c 221; the depth limits as `4.f * k * k` 221 (same code each); the view
+// helper's scale test as `1.f != arg_0` 259 at retail's 1136 B (aligned 263, masked 168: it loads the scale fifth and
+// compares the constant from a register, not retail's shape). Body unchanged.
 // M3 lane 12 r175 (H2M_FAST with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the camera origin copied once
 // into a const point local for both offset loops 262 (1136 B, frame still 0x20); the second point's view transform called
 // first 218 (1114 B, three points, under the bar); that with the second offset loop first as well 219; that with the
 // helper's rows in 0x142640's order (+0x1c by z, +0x10 by y, +4 by x) 218; the two offset vectors declared in the other
 // order 221 (same code). Body unchanged.
+// M3 lane 12 r178 (h2m fast; control 221 at 1112 B; "masked" = difflib rows that differ with XMM numbers, stack offsets
+// and addresses masked, control 154). Dead-local scans (diagnostic, `long unused = 0;` lines, none kept), to see whether
+// the product orders and XMM ranks are a symbol-count state: K = 0 to 32 after the two offset vectors 221, 222, 222, 223,
+// 223, then 221 for K = 5 to 12, 218 for 13 and 14 (masked 156), 279 at 15 (1107 B), 287 at 16 and 17, 293 to 302 from 18
+// on (1095 to 1086 B); K = 1 to 16 between the two view calls the same values; K = 1 to 16 inside the view helper 221 at
+// every K (its locals are not counted); the helper with three scalar copies scaled under the test, K = 0 to 40, the same
+// values as the aggregate form at every K. So no count of locals gives retail's first view on this body. Lane 8 r201's
+// macro lead rebuilt on this body 252 (1136 B, frame 0x14, masked 62) and its six-statement form with the second point
+// first 226 (1136 B, masked 67); the statement form over K = 0 to 40: 226 at K 0, 251 at K 1 and 2 (1140 B), 270 for K 3
+// to 10 (1151 B), 272 at 11 and 12 (1116 B), 200 at 13 and 14 (1118 B, masked 112), then 1114 B falling to 1072 B with
+// masked 119 to 146: K 0 is its closest state. On the statement form: the clamp folded into the root's argument (one
+// named local fewer) 226, that and the radicand written at both uses 226, the rows written right, up, forward 226 (all
+// the same code); the view helper with separate outputs in place of the macro 260 (1114 B, masked 120). Left on the
+// statement form (first view: retail's shape; second view: retail holds right.i in XMM7 from the first view and the
+// scale in XMM6, loaded after the last origin subtraction, so the second view's scaled x and z go to [esp+4] and [esp];
+// ours gives XMM7 to the scale at the top and keeps all three in registers).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

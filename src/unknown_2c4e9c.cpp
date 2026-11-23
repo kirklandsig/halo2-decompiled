@@ -3361,6 +3361,34 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // uninitialised and set under a test of the field, the walk guarded by a second test of the field, 30; the guard as
 // `map_id ^ NONE` 32 (83 B, `not` and `test`); as `map_id - NONE` 9 (82 B: the one-based `lea`/`test` form, the load
 // still straight into EBX). All restored.
+// M3 lane 1 r156 (h2m fast with 0x2c9a58, matched in each): on the NONE-default id (re-measured 13, match-only: NONE
+// cached in EAX for the compare and both iterator stores, the id loaded straight into EBX): the iterator's datum index
+// stored from `iterator.index` 13; the loop compare reading the field again 13; the iterator declared at function scope
+// 13; the id typed `dword` 13; the iterator's two NONE stores chained with the default at the top (`map_id =
+// iterator.index = iterator.datum_index = NONE;`) 13 (the stores then precede the guard, NONE still in EAX).
+// M3 lane 8 r226 (h2m fast with 0x2c9a58, matched in each): the id stored or read through a reference bound to it or to
+// a first copy (store through the reference with the guard or the loop compare on the local, the guard through the
+// reference, a block copy read through it; six forms) 30 each; a second definition under a repeated `map_id == NONE`
+// test inside the guard (`map_id = 0`), also with the test against `iterator.index`, 30/30 (the inner test folds before
+// copy propagation); the first local reused in the loop for each entry's map id with the walk on a copy 30 (all the
+// 30s the same direct EBX load); the if/else two-definition id with 0 in the invalid arm and the walk guarded by the
+// field 37 (88 B). Diagnostics (arms of equal value, not keepable): `long saved = field; if (saved != NONE) map_id =
+// saved; else map_id = field;` with the walk under `if (saved != NONE)` 27 (81 B, retail's length: `this` to EDI, the
+// field into EAX, `mov ebx, eax` ahead of the `je` as retail, the invalid arm gone, but NONE cached in ECX for the
+// compare and both iterator stores), with the walk under `if (map_id != NONE)` 26 (81 B); those with the iterator's NONE
+// stores chained or the datum index stored from `iterator.index` 27/26 (NONE still cached: two tests and two stores);
+// with a named bool for both tests 32 (86 B: NONE no longer cached, `cmp eax, -1` and both `or` stores as retail, but
+// the bool is built with setne and tested). Reading: retail's copy ahead of the branch is what two definitions of equal
+// value on the two paths give once they are merged; retail's three immediate NONE uses mean its source tests the id
+// once, so the second definition comes without a second NONE test.
+// HELD (not kept, a ruled-out form; build/r226/held-2c9a73.patch): the same two definitions selected by a test that
+// has nothing to do with the id, `long saved = field; if (coop) map_id = saved; else map_id = field;` with the walk
+// under `if (saved != NONE)` and compared against map_id, MATCH (fast and plain; the caller 0x2c9a58 and the file's
+// other functions still match). The selecting test and its branch leave no code once both arms are the same copy,
+// and NONE then has retail's three immediate uses. It is an if/else whose two arms give the same value, which the
+// 10-30 ruling reverts even with a match, so the body stays as it was. With both arms reading the field (no `saved`
+// copy) the arms merge before copy propagation, 30. What a natural form needs: the id copied from an earlier read
+// on one path and read from the field again on another, the two paths joining ahead of the guard.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

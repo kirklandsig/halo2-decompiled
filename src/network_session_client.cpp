@@ -1013,6 +1013,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // eax` and the bit takes EAX): on the plain `for` copy, one index declared ahead of both loops 100; the mask test written
 // `(mask & bit) != 0` 100; the player record named at the top of the player loop's body 100; the copy loop under main's
 // `if (member_count > 0)` guard 100; the player loop as a do-while on a `player_index` 100 (all 477 B, the fold kept).
+// M3 lane 4 r250 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost): on the pair, the pair re-pointed at the two new buffers and passed to
+// the setter 46; the pair declared at the function top ahead of `result` 46, after it 46, that with the variant at the
+// top too 46; the variant declared inside the player loop's call block 49.
 // M3 lane 13 r146 (h2m fast with 0x6e500, 0x72700; control 22): an identity forceinline pointer view (no code of its own)
 // around one read at a time, aimed at the one-step scratch rotation: the member count's session read 133 (495 B), the mask
 // store's machine buffer 130 (495 B), the summary getter's session 165 (511 B, both callers lost), the variant's session
@@ -1567,6 +1571,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // colouring (count EBX, the index spilled, `current` reloaded) when its step sits inside the copy's arguments, and flips
 // to the 195 colouring when the step follows the copy; a step inside the arguments evaluates the destination before the
 // source, so the copy's two pointers swap (ECX/ESI) as in the `[count++]` 40.
+// M3 lane 4 r250 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; re-measured
+// `[count++]` 40 and the indexed copy 195): a `dword (*)[3]` row pointer declared before the branch and stepped by one
+// 9 (same code); that row pointer in the true arm with `count++;` ahead of `memcpy(dest++, ...)` 44 (the copy's two
+// pointers still swap); a walked destination in the true arm stepped ahead of the copy (`dest += 3; memcpy(dest - 3,
+// ...)`) 194; the step as `dest = &dest[3];` 9; the player-loop index declared at function scope ahead of the
+// destination 9 (same code).
 // M3 lane 13 r146 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): a new forced-inline
 // 12-byte copy helper (dest, source) called with a `dword (*)[3]` row pointer declared in the true arm and stepped in the
 // call's arguments (`copy(dest++, ...); count++;`) 216 (728 B), with `count++` ahead of the call 203 (704 B), with

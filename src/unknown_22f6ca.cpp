@@ -335,6 +335,15 @@ void function_22fba9(c_class_1473c9 *screen)
 // code); the text loop's test so 25, both 25; `long i = 0;` above the pane lookup with the model test swapped 25 (first
 // +0xb). The matched sibling 0x22facd keeps a `mov ecx, esi` copy in its model loop, so the direct `[esi + 0x34]` read is
 // particular to this loop.
+// M3 lane 1 r157 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf/0x22f6ca, all MATCH each time; control 23). The screen's
+// animation type read through a file-local inline accessor returning it as a one-long aggregate by value (the form that
+// matched 0x151b80; such a copy is not merged with a plain read): in the model loop only 23, in the text loop only 23, in
+// all five loops 23, in the text and model loops 23 (all four the same code as main); in the first four loops with the
+// model loop plain 26 (417 B: the model takes ESI and the screen is reloaded from its home, as in the bitmap loop); in
+// the bitmap loop only 160 (429 B, the shared zero moves to ESI); in the block-24 loop only 37 (415 B); in the block-18
+// loop only 26 (417 B, the 26 code); in the first three loops 26. On `long i = 0;` above the pane lookup (25): plain 25
+// re-measured, the accessor in the model loop 25, in the text loop 25 (same code each). The model loop's EAX copy and
+// its `and` reset stay in every form whose model loop keeps the model in EDI.
 // M3 lane 13 r145 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): one, two or three redundant
 // parenthesis pairs around the model call's definition argument 23/23/23, around the text call's 23/23/23 (no phase
 // effect on this integer code); 0x22fa5b returning the concrete model type, the model local typed so, 23; the text

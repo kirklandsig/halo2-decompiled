@@ -1984,6 +1984,26 @@ static inline bool unit_dual_wielding(long unit_index)
 // initialiser 39; the holder and dual-wield tests in one inline helper taking the weapon index 2; the definition read
 // through a second weapon lookup 2 (the 2s the same code); the animation test's index cast to short before the mask 104
 // (545 B, the offset is no longer shared).
+// M3 lane 1 r157 (h2m fast with 0xc9d00 and 0x1058b0, both MATCH each time; control 17). Rebuilt: the 2 form (0xc9d00 call,
+// `result` first, weapon_get_102e10 at lookup 1) 2, the two rows left being base/index swaps (animation-test lookup `[esi +
+// ecx + 8]` for retail's `[ecx + esi + 8]`, put-away lookup the reverse), and the plain 0xc9d00-call form 27. Retail's own
+// 0x1058b0 and 0xc9d00 are data-first at every lookup, and retail's `mov eax, ecx` here is 0xc9d00's `mov eax, [pool +
+// 0x44]` forwarded from the put-away lookup's register, so retail's put-away data load is a single-use load when the
+// lookup is formed. On the 2 form, a file-local inline accessor returning the pool's header array as a one-pointer
+// aggregate by value (the form that matched 0x151b80): at the put-away lookup 14 (533 B: that lookup takes retail's `[esi
+// + eax + 8]`, but its data goes to EAX and 0xc9d00's load stays a second load, no copy); at the animation-test lookup
+// 206 (583 B, an 8-byte frame); at both 207 (584 B); at lookup 3 19 (533 B); at lookup 1 in place of the getter 20; at all
+// five 135 (551 B); in the dual-wield helper 201 (579 B). Pool-copy spellings (`s_record_pool *objects = g_4e0300;`
+// read once) in the dual-wield helper 2, that with a result flag as 0xcd660 has it 2, in the holder helper 2, in both 2
+// (all the same code). The state block as a call to the existing 0x1058b0 (`if (function_1058b0(weapon_index, 10,
+// immediate))`) re-measured 117 (503 B: 0x101f20 and 0xcd660 stay calls, every lookup data-first), with
+// weapon_get_102e10 at lookup 1 151 (525 B), that with `result` first 151. Diagnostic (a forced-inline file-local twin
+// of 0x1058b0's body with its own weapon index, state and force parameters, reverted): with the getter and `result`
+// first 2 (the 2 form's code), `result` after the loops 27, the result taken straight from the twin 49 (534 B), no
+// getter 27; so inlined formals do not move the two lookups either. Diagnostic on 0xc9d00's own lookups (a scratch edit of
+// its file, restored at once; the file is another lane's this round), with the 2 form here: its first unit read, both
+// reads, or both with no pool copy through a by-value header-array accessor 78 (540 B) each, and 0xc9d00 itself 83 and
+// 0x1058b0 49 with them, so 0xc9d00's reads are plain and the by-value form is not what separates its data load.
 // M3 lane 13 r145 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 0xc9d00-call form rebuilt 27, with
 // `result` first 4, with weapon_get_102e10 at lookup 1 as well 2): on the 2 form one, two or three redundant parenthesis
 // pairs around the b7360 argument, the lookup-3 initialiser, the gate's state read or the animation test's lookup 2 each
@@ -5077,6 +5097,7 @@ struct s_weapon_projectile_creation
 // separate results 1214/1210, direct marker input with separate results 1273/1273, or direct marker input
 // with a shared result 1142/1142. NOT kept: one result for the saved inputs recovers 0x1e98 and first +0x75
 // at 5195 bytes, but raises the score. The separate trace point and original rotations remain.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both weapon_emission_rotate calls through include/axis_rotation.h's helper 1190 (5150 B). Restored.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

@@ -2051,6 +2051,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// score 429 (was 429; m3 lane 2 r139 unchanged, its lines just above the marker; m3 lane 5 r233 unchanged; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier header line, a stack merged here in m3 lane 2 r139: 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // score 429 (was 429; m3 lane 13 r147, m3 lane 5 r233, m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; two stacked header lines merged here, r147): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2771,6 +2773,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // planar vector at animation release 431, turning 431, fallback 431, turning and release 431, release and
 // fallback 431, turning and fallback 431, all three 431, release with separate declaration and assignment
 // 431. All retain the 0x1c frame and the existing copy schedule.
+// M3 lane 16 r177 (h2m fast with 0x110ab0; control 429; the r160 lead re-measured 403 at 2416 B, with case 2's aggregate
+// copy and case 4's direct facing reads 518 at 2384 B, actor EDI / state EBX). New forms, same code on both bases: case
+// 20's actor position named once for its two difference calls 429 / 518; the state local declared `const` 518; case 2's
+// two short stores ahead of the aggregate copy 518; case 21's 0x20 flag set through the parameter's own flags field 429 /
+// 518, and through one read of the parameter's address 518. The exchange is not a matter of names or order. Body unchanged.
 // M3 lane 5 r233 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, aligned 129/130, register-masked
 // 81/82; body unchanged). Case 2's record written as the matched siblings write it (0x1ac090, 0x1bd3b0, 0x1c10a0: type,
 // mode, vector, flag, typed fields) with the vector read straight from the actor (`actor->unknown424.vector = *(vector3f
@@ -2807,6 +2814,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // default to the shared `mov eax, 1` block after the post-switch test. On main: case 20's main arm returning 1 itself
 // (`{ local_30 = 1; goto local_31; } local_3 = false;`) 498 (2432 B); its else arm as `local_3 = b0 == NONE || d1;`
 // 523 (2432 B); `case 13: break;` 477 (2404 B); the first with it 490, the second with it 494 (2416 B each).
+// M3 lane 2 r139 (h2m fast with 0x110ab0 and 0x258a00; control 429, register-masked aligned 97). A 56-subset grid of
+// six retail-evidenced forms on main (cases 9/11 actor field first, iterator data/index/datum_index, second publish
+// flag-first, case 7/8's flag as `== ? flag264 : true`, `? 1 : 0` at +0x465, `case 13: return 1;` dropped): best 426
+// (the first, third and fifth together); every subset with case 13 dropped 470-477, with the case 7/8 flag 487-493.
+// Layout cause: the post-switch test stays after case 20 because that last case's else arm falls into it; with case 13
+// dropped and the else arm as `local_3 = b0 == NONE || d1;` (threaded: retail's `mov al, [d1]; jmp` into the test) the
+// test moves after case 0 with the shared return-1 block as in retail, 494 (2416 B, register-masked 82); on that base the
+// grid's forms 492-498 (masked 80-87). With case 13 dropped, the else arm as `d1 != 0`, `d1 ? 1 : 0` or `!!d1` 485 each
+// (a `setne` store that still falls into the test), `(bool)d1` 477; `d1 != 0` alone 481. The flag returned as the result
+// (`if (!local_3) { tail } return local_3;`, case 2's exits setting the flag) 734 on main, 743 on the 494 base (2496 B),
+// as a short 670.
 // M3 lane 13 r147 (h2m fast with 0x110ab0 and 0x258a00; control 429, difflib-aligned 59 groups): the tail's turn copy
 // (`local_20`) member by member 500 (2432 B); the second publish's facing copy member by member 570 (2420 B); case 6's
 // second OR written through the global (`((byte *)g_5023fc)[0x22] |= 0x48`, the reload mix: match-only) 482 (2432 B,

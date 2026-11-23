@@ -905,6 +905,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // parameter order (previous_direction after direction; definition, four declarations and three calls): 933 (3714 B),
 // 0x2c41b0 675 -> 661, the matched callers unchanged; the entry dot then loads the direction first in all three terms
 // as retail, but the zero/actor-index registers and the frame stay ours, so the body still rises. Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with the three callers and five callees as above, fast control 925 = plain): retail stores 1
+// to `straight` three times: the entry store, the dot test's own `mov byte ptr [esp+0x13], 1` ahead of its `ja`, and the
+// no-actor store at 0x2c0e9a. The 849 form (no initialiser, set in the previous-direction else and the no-actor else,
+// re-measured 849, frame 0x2cac) has the entry store (hoisted from the previous-direction else) and the no-actor store, but
+// its dot test stores only the 0. On that 849 base (match-only): the type-1 arm as `if (team == actor team ||
+// !function_1df560(...)) skip_classification = true;` 888 (3756 B); self_unit as `unit[0xaa] == 0 ? unit : NULL` 878 (3740
+// B); the skip flag declared just before the type tests 941; both of those skip forms 888; local_4d3867 also without an
+// initialiser, cleared in the no-actor else 922 (3724 B).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
