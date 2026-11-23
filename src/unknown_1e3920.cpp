@@ -2066,6 +2066,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // 278 (1191 B, frame 0x10); the rounds sum written lower bound first 251 (same code); the tick store as a signed
 // char like its read 251 (same code); the halved fraction as a conditional argument to 0x101a10 260 (1223 B); the rounds
 // pair cleared by `rounds[1] = 0;` in place of the memset 253. Still BLOCKED-BY 0x259a0 (its file's no-LTCG flag).
+// M3 lane 5 r238 (h2m fast with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240, 0x1e5280, 0x1e3b60, 0xcbd50,
+// 0x1e1f20, 0x1e1fd0 and 0x1ca2d0, all MATCH; control 251, aligned 183 exact / 73 register-masked): the weapon pair
+// filled by a loop over the two slot bytes with a `short` counter 323 (1198 B, kept as a loop), with a `long` counter
+// 280 (1216 B, unrolled into the two-call form); filled through a cursor 280; both queries through 0xcbd50 with fresh
+// slot lookups, the grenade type through a fresh lookup and the unit fetched after the queries 280 (the same code
+// each); the pair as an initializer of two 0xcbd50 calls with a `long` loop index 333 (1186 B). Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

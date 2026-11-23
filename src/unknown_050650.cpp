@@ -1033,6 +1033,18 @@ struct s_collision_result_buffer_1697c0
 // sine-scaled crosses re-measured 199 (0x297d30 153). Body unchanged.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 416 (1347 B; 0x297d30
 // 245). Restored.
+// M3 lane 5 r238 (h2m fast with 0x297d30 (23), 0x297660, 0x2967b0, 0x24590, 0x2980d0, 0x297a50; control 270, aligned 198
+// exact / 71 register-masked). Reading: retail's x87-to-SSE transfer slots hold {magnitude, both draws, first sine,
+// second cosine} and {first cosine, second sine}; this build's hold {magnitude, both cosines} and {draws, both sines},
+// and each rotation's pair written out in its own block gets the same slots as the wrapper (331 at 1434 B, frame 0xb0),
+// so variable identity does not set them. An automated search over the shared in-place rotation's spelling, every
+// form screened on both users (63 forms: the dot's six term orders and product sides, the projection's operand
+// order, six declaration orders and four product-side forms of the cross terms, the sine scaled in the cross or in the
+// row, four row term orders and each row product's sides): 44 forms compile to main's code (270 / 23), the dot with k
+// ahead of j 324 / 23, the cross terms with k ahead of j 268 / 39, sine-scaled crosses 199 / 153 (with those cross
+// orders 196 / 155), rows `cos - sin + proj` 287 / 31 and `proj - sin + cos` 340 / 44: no form lowers this body
+// without raising 0x297d30. The wrapper's cosine computed first 274 (0x297d30 41); the candidate copied between the
+// two draws 330 at 1423 B (aligned 383: worse); the up axis through a pointer local 283 (1438 B). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2750,6 +2762,12 @@ struct s_actor_looking_turn_request
 // Share the masked long actor slot through the looking, movement, or prop lookup 534/534/534.
 // Word slot with those lookups 523/523/523. Shared byte displacement, direct or named bases 442/442.
 // NOT kept: both slot types recover frame 0xc8 and the displacement home but shorten and raise the score.
+// M3 lane 5 r238 (h2m fast with its callees and 0x1fdd90; control 442, aligned 356 exact / 179 register-masked; 27
+// calls for retail's 28): 0x1fdd90's own body with its second test nested (a heavier body) is still expanded here
+// (548) and no longer matches itself (7); the looking output chosen through a `vector3f const *` with one copy at
+// the end 536 (2012 B; aligned 365 / 156), with `bool valid` 614 (1932 B; 341 / 165); `bool valid` and `bool
+// looking_valid` re-measured 547 (1996 B; 366 / 175). Reading: the actor's pool offset retail spills at entry is read
+// once, by the output getter at the end, which this body already re-reads there. BLOCKED-BY 0x1fdd90 stands.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
