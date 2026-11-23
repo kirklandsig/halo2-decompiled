@@ -108,15 +108,16 @@ static __forceinline void sum_three_into_projection(__m128 const &v, solver_proj
 	out.store(xyz);
 }
 
-// The first error has already been stored to float. Borrow that word while
-// retaining the second error's extended intermediate through the two sums.
-static __forceinline float second_pair_first_candidate(double mass,
+// Both normal pairs borrow the first error from its float home. The first
+// coefficient is captured before the diagonal product; the second error
+// retains its extended intermediate through the two coupled sums.
+static __forceinline float first_coupled_impulse_31c940(double mass,
  float const &diagonal, double other, float coupling)
 {
  return mass * diagonal + other * coupling;
 }
 
-static __forceinline float second_pair_second_candidate(float mass,
+static __forceinline float second_coupled_impulse_31c940(float mass,
  double diagonal, float const &other, float coupling)
 {
  return mass * diagonal + other * coupling;
@@ -322,6 +323,7 @@ static __forceinline void apply_linear_spilled(float const &source, solver_linea
 // The first positive row retains its unshifted linear cursor while angular
 // axes use the coupled-pair cursor. Keep this update separate from the second
 // positive row so both existing cursor representations survive optimization.
+// Capture B's angular receiver after the linear writes, before either angular write.
 
 
 static __forceinline void apply_first_normal_positive_impulse(float const &source, solver_linear_row_31e7b0 const *row,__m128 const *angular_axes,
@@ -343,11 +345,11 @@ static __forceinline void apply_first_normal_positive_impulse(float const &sourc
 	linear_body_b.body->linear = _mm_sub_ps(linear_body_b.body->linear, linear_b);
 	// Reload the axes after both linear writes, then form both contributions
 	// before either angular write. Row storage may overlap the body fields.
-	solver_scoped_body_fields_31c940 const &angular_body_b = b;
+	solver_velocity_31c940 *angular_body_b = b.body;
 	__m128 angular_a = _mm_mul_ps(change_a, angular_axes[0]);
 	__m128 angular_b = _mm_mul_ps(change_b, angular_axes[1]);
 	a->angular = _mm_add_ps(a->angular, angular_a);
-	angular_body_b.body->angular = _mm_add_ps(angular_body_b.body->angular, angular_b);
+	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
 	*result += impulse;
 }
 
@@ -494,7 +496,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		- projection_pool.normal_first_projection_b * parameters->velocity_scale;
 	float const &mass_a_source = axis[-3].m128_f32[3];
-	scalar_work.pair_a = mass_a_source * scalar_work.first_error + error_b * operation_float(op, 4);
+	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a_source,
+		(float const &)scalar_work.first_error, error_b, operation_float(op, 4));
 	// Capture the second mass before its coupled product.
 	float const &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
@@ -666,12 +669,12 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		- projection_pool.normal_second_projection_b * parameters->velocity_scale;
 	float const &mass_a_source = normal_axes[-3].m128_f32[3];
 	float mass_a = mass_a_source;
-	scalar_work.pair_a = second_pair_first_candidate(mass_a, (float const &)scalar_work.pair_b,
+	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a, (float const &)scalar_work.pair_b,
 		error_b, operation_float(op, 4));
 	// Capture the second mass before its coupled product.
 	float const &mass_b_source = normal_axes[0].m128_f32[3];
 	float mass_b = mass_b_source;
-	scalar_work.fallback_scalar = second_pair_second_candidate(mass_b, error_b,
+	scalar_work.fallback_scalar = second_coupled_impulse_31c940(mass_b, error_b,
 		(float const &)scalar_work.pair_b, operation_float(op, 4));
 	// Keep the first-row fallback in both source paths. The compiler merges
 	// that tail while retaining retail's unordered second-row branch direction.
@@ -1153,7 +1156,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2050. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2044. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
