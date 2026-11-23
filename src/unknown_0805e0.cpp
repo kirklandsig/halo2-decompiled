@@ -946,6 +946,12 @@ void function_1537f0(s_profile_record *record);
 // (`entry < &g_4cf98c[350]`, `entry++`) 80 (275 B), with `entry->` link pairs in retail's order 84 (270 B), ended on `!=` 80; the
 // builder given the entry pointer itself (no member address) 18 (same code), that with the `entry->` link pairs 49 (base +0x4c and
 // retail's link order, NONE hoisted into EBP). Restored.
+// M3 lane 11 r155 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18; E = the builder's view from the array
+// element with the `entry->` links as two chained pairs in retail's store order, re-measured 46 with NONE hoisted into EBP):
+// E as a do/while on `++index < 350` 46 (same code); E as a pointer walk over the entries 84 (270 B); E with `entry` declared
+// after the builder call 46; E with the record declared at function scope 46; the tail as `entry->field_64 = entry->flags =
+// 0;` on E 46, on main 18 (same code each). Main with `entry` declared after the builder call (view from the element) 14,
+// round 110's mix. All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

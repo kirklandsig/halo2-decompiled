@@ -1520,6 +1520,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // swapped 4 (0x126df0 2 each); `__assume(first_sound_index != NONE)` inside 0x21bd00's guard 2; its guard as `NONE !=` 2; the
 // iterator initialised count, index, first 4 (this 2, 0x21b870 2); the iterator laid out count, first, index or first, count,
 // index 3/3 (this 2: only the count slot's displacements move, the reload order stays first then count). Restored.
+// M3 lane 11 r155 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all MATCH unless noted; control 24): in
+// 0x126df0 the fading bit set through the file's flags_set_bit (0x128020's spelling of the same fade) in the fade-in half,
+// the fade-out half or both 24 each (same code); the element looked up again after the gain's join (0x126360's re-get
+// after a call) 76 (223 B; 0x126df0 77: the second lookup is not merged across the 0x12a810 call); the fade-in element
+// formed at 0x126df0's top ahead of its NONE test 24 (0x126df0 52); the element through the typed-pointer pool form
+// `(T *)pool->data + (index & 0xffff)` in the state test or in 0x126df0 24/24 (same code). Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

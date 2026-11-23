@@ -513,6 +513,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // plain arm 84 on main's locals (197 B) and 39 on the lead (the getter's copies fold); on the lead `buffer` named before
 // the ascii conversion 44, `result = buffer;` ahead of the indexed terminator 39, the terminator through the arm's
 // entry pointer 54 (199 B). Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67, aligned 26): entries typed
+// as the header's profile list entry (index, name, tag bytes and display buffer as its own fields) 67 (same code); the search
+// as a forced-inline index finder returning the index or NONE, the found body under `if (i != NONE)` 84 (191 B); `entries`
+// and `count` declared first with the items call as its own statement 69; the loop test as `count > i` 67 (aligned 36,
+// other code); the items result kept as `void *items`, the arm's entry formed as `items + i` with the terminator indexed
+// 83 (198 B). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
