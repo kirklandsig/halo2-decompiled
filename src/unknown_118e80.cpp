@@ -627,6 +627,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // both declarations, both calls) 2; the facing i leaf through a `real const *` declared after the object 2; the object's
 // forward.i leaf through a `real const *` so 2 (each the same code: the i product still loads facing first). Still
 // BLOCKED-BY 0x1faf80. All restored.
+// M3 lane 1 r162 (h2m fast with 0x11f0d0, 0x1faf80, 0x109290 and 0x118700, faithful at 15; control 15): the two field
+// pointers `vector3f *const` 15, in one declaration 15, as `vector3f &` references for the tests and stores 15 (the three
+// the same code); the agreement test as `!(a >= 0.9999f) || !(b >= 0.9999f)` 19; the turn-velocity store ahead of the
+// dispatch block 80.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1701,6 +1705,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // with it 16 (first +0x273); the +0x88 copy component by component 106 (1050 B); the force bool declared at the top and
 // assigned at the call 14; the copy through a `vector3f *` to the re-fetched object's +0x88 14 (both the same code).
 // Still BLOCKED-BY 0x1c4b00 (round 272's bool form stays held: it raises contributor 0xe24f0).
+// M3 lane 1 r162 (h2m fast with 0x1c4b00, its callers and 0x1197b0's callees; control 14). Diagnostics, all restored:
+// 0x1c4b00's last parameter `bool` in its definition and all 14 declarations (none of those files held this round)
+// re-measured 90 with the member store (1038 B; 0xe24f0 579 -> 601) and 40 without it; on the 40 form the 0x119bc0 result
+// passed straight to the call 98, the member store after the call 100 (1043 B), the object looked up before the 0x119bc0
+// call 40, the result `bool const` 40 (both the same code); `inline` on 0xb7740's definition with
+// `function_b7740(arg_0, &local_11.field_c, NULL, true)` for the lookup and copy 279 (ten callers lost: it then expands
+// everywhere). Still BLOCKED-BY 0x1c4b00 and 0xb7740.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
