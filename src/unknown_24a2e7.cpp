@@ -519,6 +519,13 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // and `count` declared first with the items call as its own statement 69; the loop test as `count > i` 67 (aligned 36,
 // other code); the items result kept as `void *items`, the arm's entry formed as `items + i` with the terminator indexed
 // 83 (198 B). Body unchanged.
+// M3 lane 11 r159 (H2M fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67). The file is /O1. Re-measured
+// the indexed terminator 84 (the arm's entry address kept in EBX across the calls) and lane 10 r119's two-member lead 39
+// (retail's code but for one choice: our product `i * 0x248` is kept in EBX from the arm to the terminator with `i` in
+// ECX for the loop, where retail keeps `i` in EBX from the start and multiplies again). On main: the indexed terminator
+// through `s_entry_24a64d *const &kept = entries` 84, with the plain arm through it too 84 (the reference folds). On the
+// lead: the terminator's index through `long const &found = i` 39; the arm's entry as a reference 39 (same code each);
+// the entry pointer formed ahead of the append test and used by the plain arm 72. Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
