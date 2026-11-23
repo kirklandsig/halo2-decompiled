@@ -1730,6 +1730,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 508).
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both lighting_rotate calls (this function's and 0xd4080's) through include/axis_rotation.h's helper, sine and
 // cosine of a named angle, 605 (2136 B; 0xd4080 470). Restored.
+// M3 lane 2 r143 (h2m fast with 0xd4080 378 and 0x3db00 MATCH unless noted; control 529): the colour2 blend reading
+// the `primary` local instead of the record's colour1 566 (2176 B); `real length = record->length = magnitude3d(...)` 562;
+// the selection scan through an entry pointer stepped with the index 568 (2175 B); the primary blend with `if (parameters)
+// { ... return true; } return false;` 571 (2176 B); direction2 rotated from a negated copy straight into the record 580
+// (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

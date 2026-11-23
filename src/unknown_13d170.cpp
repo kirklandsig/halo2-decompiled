@@ -1007,6 +1007,10 @@ struct s_physical_block_iterator
 // 211; the insertion as two stages each testing `best.previous == NONE` directly 209; the fresh-pool form with both
 // ages `MAX(x, 0)` 221; the default arm's clamps written inline in the product test (both `MAX(x, 0)`) 209; both named
 // ages `MAX(x, 0)` with the products written age first 209. Body unchanged.
+// M3 lane 2 r143 (h2m fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): case 0 as `time <=
+// best.time && (time != best.time || pages < best.pages)` 222 (1220 B); the default arm's clamped ages written inside the
+// product test 201 (same code); `better` typed `dword` 210 (1223 B); the default arm written first, then cases 0 and 1,
+// 204; case 0 as `time < best.time || (!(time > best.time) && pages < best.pages)` 201 (same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
