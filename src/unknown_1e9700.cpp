@@ -1007,6 +1007,10 @@ struct s_object_damage_view
 // `long killer = NONE;` declared first 370; `bool hostile = false;` declared first 439 (first difference +0x8); the two
 // assist arrays declared first 353 (same code); the two assist counts declared first 451 (+0x8); the selection amount
 // read once inside the time test with the killer declared first 435 (1578 B). Body unchanged.
+// M3 lane 14 r149 (H2M_FAST with 0x197160, 0xd9640, 0x1ea770, all MATCH; control 353): `bool hostile = false;` declared
+// with the entry defaults 425 (first +0x8); `real best = -FLT_MAX;` declared there 410 (first +0x8); the selection test as
+// `(dword)recent < time && best < amount` 354; the assist gate as `0.0f < assist_threshold` 353; the selection loop's NONE
+// skip as an enclosing `if (player_index != NONE)` block 353 (the 353s the same code). Body unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

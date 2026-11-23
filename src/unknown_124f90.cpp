@@ -4057,6 +4057,17 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // the admitted datum directly from its low word 91. NOT kept: The shared calls remain out of line and shorten the
 // body. A native word slot retains 558 bytes at 168. Advancing the admitted slot directly removes the retail
 // sentinel branch and shortens the body.
+// M3 lane 11 r160 (fast): the hoist comes from the loop top reading the pool global (the macro): with the start test
+// and the sound pointer read through `sounds` the loop end's load stays in the loop end (round 181's 6 form, re-measured
+// 6: the load then sits in the compare block ahead of the next-index ternary). Barriers after the entry, at the loop
+// top or a volatile index change nothing (8/8/171). The existing record_pool_next_used at the loop end 183, at both
+// sites 293; held form (`inline` on its definition) 91 at either (517 bytes: load after the ternary, 0x16bc00 called),
+// with `inline` on 0x16bc00 too 8 (main's code, hoisted). On the 6 base: the loop end as `datum(g, find(g, next)),
+// sounds = g` 17 (retail's loop end plus a `mov esi, ebp` copy); a named next index, then `sounds = g_4e637c`, then the
+// datum and find through `sounds` 25 (every instruction retail's, but the pool takes ESI where retail has EBP; the
+// embedded `data_datum_index(sounds = g_4e637c, ...)` is the same code); on that: the datum through the global 40, the
+// find through the global 25, the entry through the global 163/27/25, the pointer declared before the start test 162, a
+// named playback array for the loop top 160, the start test through the macro 157; 1..8 probe locals 25 each (no tie).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
