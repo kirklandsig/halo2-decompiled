@@ -515,6 +515,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax B (11-20): no new form, no lower score (238): the frame is 0x40 where retail has 0x44, the node pointer's home is frame+0x14 where retail keeps frame+0x20, the 1..16 classifier folds its first compare where retail loads the word into ECX and compares the register, and the classifier's data is loaded once where retail reloads it; the form that reaches retail's frame needs the material output declared at function scope, a declaration move that is not keepable.
 // MiniMax H (11-20): no new form, no lower score (238): the frame is still 0x40 where retail has 0x44, the second
 // node is stored at frame+0x14 where retail keeps frame+0x20, and the node's type is still compared in memory
@@ -524,7 +525,6 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // home is frame+0x14 where retail keeps frame+0x20; retail's 1..16 classifier holds the constant in the result register and
 // compares it against the value register and re-reads the shape's data word three times, while ours folds the range check
 // into immediate compares and loads the data once.
-// score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
 // node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
 // entity's property list for the key 0x2001; our body reads the root's type straight from the node and compares it
@@ -1213,6 +1213,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // key test with the next node's shape named for its null test and kind call 237 (1246 B, one point, under the bar), with the
 // key's data read through it too 307 (1245 B: retail re-reads the shape there); the root test in the positive sense around
 // the rest of the body 238 (same code). Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Reading: retail
+// gives the origin a 12-byte home at +0x38 of which only x is used (+0x3c/+0x40 are the two untouched dwords), y and z
+// moving to shared spill slots, the same first-member-only home as 0x22cf0's offset. Tried: the instance arm's side test
+// through plane_distance_to_point 238, the record arm's 238 (same code each); the origin's members assigned z, y, x from a
+// position pointer 311 (movss copies into one contiguous home, frame 0x40); that with the instance arm through
+// plane_distance_to_point 311; the hit's members assigned y, x, z 323 (1262 B). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

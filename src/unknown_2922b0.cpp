@@ -884,6 +884,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // no-else form with the crosses, the range and the clamp input as `local_4 / local_6` 636 at retail's 2886 B (aligned 196,
 // masked 78: the inactive exit sits inline after the test where retail puts it after the main epilogue, which shifts every
 // later row). Body unchanged.
+// M3 lane 7 r218 (H2M_FAST; control 521; all on lane 2 r113's 331 lead, re-applied, 331 at 2896 B, not kept): the second
+// cross through cross3f 331, through the private helper 331 (same code as cross3f_staged there); with 1/2/3 redundant pairs
+// around the ray's first product 331/584/572 for each of the three spellings (the spelling never moves the cycle; no state
+// gives retail's six global-first products). The first rotation's pure XMM permutation (retail i/j/k in XMM1/2/3, ours
+// XMM3/1/2) does not follow the pair count, nor the helper's projection dot in i, j, k order 331, its cross_k computed
+// ahead of cross_j 364, or cos taken ahead of sin 408. Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

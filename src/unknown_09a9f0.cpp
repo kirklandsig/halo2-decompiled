@@ -1083,6 +1083,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // (`if (index != NONE && flagged) index = NONE;`, flat or nested) and the valid block under a retest of the field 67 / 67
 // (the retest is threaded away). Lead: the 67 form plus a barrier that emits no code between the header test and the
 // object read.
+// M3 lane 7 r217 (H2M_FAST), at 8: no second store with the object read masked and `result = true` ahead of the field
+// store 72; the object read as `OBJECT_HEADER((word)object_index)->object` 8 (same code); the attach passed
+// `entity->object_index` 21; no second store with the object lookup and the attach both through `entity->object_index` 82
+// (157 B); the second store moved after the field store 69.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1613,6 +1617,11 @@ bool c_projectile_type::v8(long a, long b)
 // `index != NONE ? <masked entry> : NULL` and tested `if (entry && ...)` 37 (190 B: the NULL test is not threaded into
 // the NONE test), that with the value compare nested under `if (entry)` 37, the entry started NULL and set under the NONE
 // test 37; the flags local as `(dword)b` 12; a value `long index` with a `byte const *` entry 12. Word-read body kept (5).
+// M3 lane 7 r217 (H2M_FAST; word read 5, mask 12), all with the full-width mask: both device-bit tests from `b` with the
+// flags local only for the call's mask 12; the flags local ahead of the object with the call's mask from `b` 12; the entry
+// pointer declared with the index reference and assigned in the NONE block 12; `NONE != index` with a const entry pointer
+// 12; the 0x800 arm's result bit set ahead of its store 14. Diagnostics (semantics changed, reverted): `| 0x3ff` or
+// `| 0xffff` on the call's result 48 (192 B), `& NONE` 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

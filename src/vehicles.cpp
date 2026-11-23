@@ -1328,6 +1328,12 @@ __forceinline long vehicle_round(real value)
 // the if-chain or PIN, `side` in its block or at the arm's top, the file's `real dt` idiom none/first/second) 2 without
 // dt, 12 with it; the clamp through the existing cross-file real_pin (0x2a0c90's file linked) 90, as the rate's
 // initialiser 92.
+// M3 lane 7 r217 (H2M_FAST), at 4: re-measured the lead: cross3f_staged at the first cross 4 (+0x1e1), plus one dead
+// forced-inline helper local after the strength update MATCH (diagnostic only). Real forms on the staged first cross:
+// the rate on vehicle->up.k (up pointer at the first cross only) 4; the file's `real dt = g_510c54->rate;` for the
+// rate's tick length 6; a ticks-to-time inline `(real)ticks * rate` called with 1 (the tick-length idiom of the other
+// sites) 4, with a real parameter 4, with a named result 4/4 (long/real), on the plain first cross 4/17/4/17; a byte
+// mode local read after the velocity call for the axis and side tests 6 (plain first cross 13); no up pointer at all 10.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2488,6 +2494,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the three reloads), the same with the i term written forward-first 7, with every term velocity-first 7 (not kept: 2
 // points without a match, the known += split result); the three terms named (k_term, j_term, i_term, declared k, j, i or
 // i, j, k) and summed k + j + i or i + j + k 17 each.
+// M3 lane 7 r217 (H2M_FAST), at 9: overlay 1's dot with the other seven operand orientations of its k, j, i terms
+// (left-first L / velocity-first V) LLL 308, LLV 33, LVV 369 (2011 B), VLL 29, VLV 368 (2011 B), VVL 361 (2011 B),
+// VVV 376 (2007 B); the graph test's second lookup dropped (the first vehicle pointer's offset) 530 (2011 B).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
