@@ -2939,6 +2939,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // forward products still load the global first and the deltas come after the axis loads), as j, k, i 417 (aligned 153);
 // the camera position through a `point3f const *` 500 (aligned 200); the deltas as three `real` locals 519 (2270 B, a new
 // frame), that with the j-first rows 527 (2264 B).
+// Round 114: Axis reads interleaved with the deltas 421, an axis copy at the dot 542, and named atan2 sums 281.
+// One dword for both context flag tests 500, a combined mask 308, and visibility tested after selecting its value 519.
+// Named definition flag reads at the two tests 500, aggregate sampled tint assignment 532, nested tag and entry
+// admission 324, and distances through real_bounds 281. The camera-axis load schedule and the extra byte remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

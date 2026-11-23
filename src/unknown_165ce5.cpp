@@ -2103,6 +2103,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // set_frame_position 335 (2189 B); the user flags read and set in place with no `flags` local 188 (same code); the idle
 // globals pointer read in place at its three uses 225 (2205 B). Frame 0x30 in all five. Still BLOCKED by the stand-in
 // (round 98) for the ESI/EDI saves. Body unchanged.
+// Round 114: Explicit clamps into the look members 188. Initializing the look pair from clamped scalars 196 (frame
+// 0x28). Named values for all four spring overrides 548, primary handle selected before its guard 526, primary slot
+// reused through the final test 188, overrides before mode lookup 574, one overlay set read for both clear tests 362,
+// and scope flag assigned from the overlay index 220. The unit and mode homes and the early saves still differ.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
