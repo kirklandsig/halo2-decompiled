@@ -2126,6 +2126,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // parameter takes no rotation step either). On the write-local form (`s_file_handle write_handle = *handle;`, 114): the
 // count tested through a `dword *` to it 114, through a `dword const &` 114; the close test through a const reference
 // to the raw handle 114; the write's task result named and left unused 114 (same code each). Body unchanged.
+// M3 lane 7 r221 (h2m fast with 0x213800, 0x2149c0 and 0x2141f0, all MATCH; control 33; lane 9 r132's 5 form rebuilt
+// at 5, aligned 4; the plain write-handle local on it 114 at 917 B, aligned 4). Looking for the no-code scratch step
+// between the write and the close on the write-local form, all 114 (same code each): `written = false;` again at the top
+// of the resized block, again after the write's wait; `valid = false;` again at the resized block's top, after the wait;
+// the count declared ahead of the empty header; the count declared ahead of `written` outside the block. Redundant
+// stores fold before allocation and the declaration order does not move the close copy. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -1066,6 +1066,12 @@ real function_30bf0(vector3f *vector);
 // the occupant's forward vector bound by const reference and passed by address to both crosses and the facing query 84;
 // the clipped point declared beside `motion` 84; `bool const facing` 84 (all the same code); the scaled-range test
 // through a named squared scaled range 150 (1312 B). Body unchanged.
+// M3 lane 14 r149 (H2M_FAST with 0x263740 and 0x26d370, both MATCH; control 84). Diagnostic phase scan, 1..7 unused
+// longs at the top: 84, 86, 138 (1308 B), 138, 82, 82, 82; the phase moves only the first seat cross's subtrahend rows (at
+// 5..7 the k row is retail's, the j row never) and never the second cross's register copies or the homes. Forms: the seat
+// count typed long 193 (1318 B); `vector3f side, up;` at the top of the seat-loop body 84 (same code); the first delta
+// through vector3d_from_points3d 142 (1308 B); the clipped point through vector3f_add_scaled 90; the facing maxima
+// initialised to 0.0f 201 (1315 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

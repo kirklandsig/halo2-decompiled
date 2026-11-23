@@ -2215,6 +2215,12 @@ void function_27dd10(void)
 // 120); the three counter resets in reverse order 2; the wrapper's count declared `register` 2; the in-place flag as long
 // 2; the group end declared `long const` 2; the method-2 scale product with its operands swapped 2 (all the same code
 // here and in 0x281b60). All restored.
+// M3 lane 11 r160 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): in function_288572 the saved frame index as long 2 (same code); the 0x504410 target set ahead of the three
+// frame-state sets 14 (0x285750 12, 0x288570 12); the 0x504430 target restored ahead of the three restores 13 (0x285750
+// 11, 0x288570 98); the bit-flags word as dword 5 (four siblings 3); the group end capped by an if 208; the pass counters
+// pre-incremented 2 (same code). Matched 0x285750 reloads flags first after the same quaternion_multiply asm, its arm
+// doing integer work in EAX/ECX first. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2499,6 +2505,12 @@ void function_2818e0(void)
 // M3 lane 15 r135 (the shared-walk trials listed above 0x27dff0, control 2): mask and interpolation flags as long
 // parameters 2; counter resets reversed 2; `register` count 2; in-place flag as long 2; group end const 2; the method-2
 // scale product's operands swapped 2. All restored.
+// M3 lane 11 r160 (h2m fast with 0x27dff0 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): in function_288572 the saved frame index as long 2 (same code); the 0x504410 target set ahead of the three
+// frame-state sets 14 (0x285750 12, 0x288570 12); the 0x504430 target restored ahead of the three restores 13 (0x285750
+// 11, 0x288570 98); the bit-flags word as dword 5 (four siblings 3); the group end capped by an if 241; the pass counters
+// pre-incremented 2 (same code). Matched 0x285750 reloads flags first after the same quaternion_multiply asm, its arm
+// doing integer work in EAX/ECX first. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
