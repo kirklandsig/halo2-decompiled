@@ -1806,6 +1806,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 0x1931a0's definition 962 (0x63220 55, 0x73530 164). Survey: every matched function that keeps a depth-0 0x192e60 call
 // out of line does so under a test (0x73ca0) or inside an existing inline_depth(0) region (0x6dcc0, 0x73530, 0x66050,
 // 0x90880), so the top call stays the link's choice.
+// M3 lane 1 r158 (h2m fast with 0x73530, 0x63220 and 0x192e60, all MATCH unless noted; control 871; re-measures on today's base,
+// which rose from the 766 of the earlier rounds): the single-exit form (the opening test sets `result = false`, the type-5
+// scan and the rest in the else arm, the rest under `if (result)`) 903 (2748 B; the call set is unchanged: the top lookup
+// still expands and 0x193300 and 0x631f0 stay calls); the loop's variant through 0x192e60 at the loop body's top level 949
+// (2700 B: the top lookup still expands, so the loop site no longer takes the one inlined copy); `long histogram[16]` 911
+// (2748 B, frame 0xb0: the histogram now shares the machine-ID copy's storage, retail's 0xb4 has four bytes more); the party
+// minimum/maximum/spread copies in the matched accessors' result-first form 894 (2728 B), with `long histogram[16]` 942
+// (2696 B, frame 0xb0); the result flag and the output clear ahead of the session reads 859 (2796 B) but 0x73530 8 (lost,
+// and retail clears the output after the reads).
 // m3 lane 4 r251 (H2M_FAST with 0x73530 and 0x192e60, both MATCH; control 871): the party histogram's cells `short` 871;
 // `use_parties` computed ahead of the team-count block 875; the rated count stepped ahead of the average sum 871;
 // `bool result = true;` after the output clear 871; the player loop's group copy ahead of the identity copy 877 (2784 B).

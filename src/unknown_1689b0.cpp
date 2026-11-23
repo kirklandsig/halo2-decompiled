@@ -2285,6 +2285,16 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Both averages as three divisions by the count (no inverse) re-measured 578 (2891 B, aligned 337, masked 272); the
 // diagnostic 1 to 7 dead initialised locals at the top on it 578, 573, 590, 590, 590, 579, 580 (no phase brings the
 // distance and cross rows back). Body unchanged.
+// M3 lane 6 r234 (h2m fast; control 551, aligned-equal 487 of 629 masked rows): the edge loop zero-based with
+// `long next_vertex = (vertex + 1) % prism->point_count;` at its top, measured alone, 619 (2904 B, aligned-equal 504):
+// the clamp, guard, `inc eax; ...; cdq; idiv` head and the `jl` bottom are then retail's instruction for instruction
+// (ebx and ebp exchanged), but the frame grows to 0xb968 because xmm7 is spilled once more in the cross-product rows;
+// the successor named without the modulo (`long next_vertex = vertex + 1;`, modulo at the call) 615 (2900 B, z1's code:
+// the add folds into the late index); the two loop names over four by four spellings 619 each (registers only, inert);
+// the named successor with `radius * radius` at its one use 601 (2888 B, frame still 0xb968); with the nearest reset
+// and `inside` moved up after the distance 618. Diagnostic on the named-successor form, restored: 1 to 10 dead
+// initialised longs at the top 619, 620, 609, 610, 611, 611, 576, 619, 619, 619 (frame 0xb968 in every one). Body
+// unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

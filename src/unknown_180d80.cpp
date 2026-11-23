@@ -399,6 +399,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // 102 on the short index (same code each); the colour/vector overlay split into a colour and a separate vector 267 (2668 B:
 // retail shares one slot); vector3f_scale on the short index 102 (same code); the luminance written constant-first in the
 // green, blue, red order 91 and red, green, blue 91 (same code each), blue, green, red 92.
+// M3 lane 6 r233 (h2m fast with 0x180b60 and 0x17cfa0, both MATCH; control 91): the vertex loop's input element pointer
+// `*const` 91; the output pointer `*const` 91; the stored flag as a `(bool)` cast of the masked byte 91; the colour record
+// declared at the top of the block 91 (same code each); the fourth strip index as `local_13 + (wrap ? 0 : local_16 + 2)`
+// 417. Still BLOCKED-BY 0x17cfa0 for the call setup.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

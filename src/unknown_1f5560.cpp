@@ -1910,6 +1910,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the forward test as `forward_minimum < forward` 198, the fraction test as `radius * 1.3f < forward` 198 (same code each);
 // the cosine clamp as `1.0f < cosine ? 1.0 : cosine` 226 (1176 B); the pathfinding getter passed straight to the trace call
 // 198 (same code). Radius still XMM4 for retail's XMM5. Body unchanged.
+// M3 lane 15 r137 (H2M_FAST with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B; retail's type-zero
+// not-left arm computes y then x and threads straight to the not-left offset, its left arm's y add is tail-merged with
+// the type-one arm's): the not-left type-zero arm y first 237; the left arm y first 242 (1163 B); both 237; the type-one
+// arm y first 233; not-left and type-one arms y first 244 (1164 B); the origin parameter read directly instead of
+// through its address 242 (1176 B, and matched 0x29a190 drops to 17). Radius still XMM4. Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

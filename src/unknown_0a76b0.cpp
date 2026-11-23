@@ -4189,6 +4189,10 @@ extern vector3f *g_4687bc;
 // form the element first with `lea eax, [ecx + edx]`); the callee's result named as a `short` and widened into the index
 // 8 (same code); that `short` indexing the element with the widened index for the NONE test 25 (1099 B, a second
 // `movsx`); the element indexed by `(short)rigid_body_index` 73 (1101 B).
+// M3 lane 6 r233 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the component pointer as `*const` 8;
+// `strength` declared at the top of the Havok block, ahead of the material 8; the rigid-body index declared there too and
+// assigned at its call 8; the element as a non-const pointer `rigid_bodies.data + index` 8; impulse and strength both
+// declared ahead of the material 8 (all the same code: the material still takes DX).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

@@ -1609,6 +1609,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // crossing's mask update ahead of the two output stores 131. Re-measured: the copy moved ahead of `if (inside)` 157 (count in
 // ECX and retail's loop head; retail's copy is at the loop end through CL, so the moved copy is not retail's statement order:
 // at the loop head retail holds `points` in ECX, which is what leaves the previous side without a byte register). Body unchanged.
+// M3 lane 2 r141 (h2m fast with 0x239e50; control 129): both dedupe tests as `result > 1` 131; the dedupe through a named
+// `last` output pointer (`last - 1` for the one before) 269 (891 B); the y output as `current->y + fraction * dy` 129 (same
+// code); the kept-point bit as `point_mask && TEST_FLAG(...)` 252 (880 B); `result = 0` set just ahead of the loop 255.
+// Reading: the count's dword load is a cross-block CSE of `count` that only appears when the guard is in the source (the
+// rotated loop test is formed after CSE here), which is why the repeated `count > 0` guard reproduces it. Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
