@@ -895,6 +895,24 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // or 3 unused locals at the top (diagnostic) 925/925/934: the actor index keeps EBP and the zero EBX (not a symbol-count
 // tie). Retail also reloads the object-table global in the actor and location blocks, where ours loads it once into ESI
 // at the entry. Body unchanged.
+// M3 lane 13 r147 (H2M_FAST with the three callers and 0x2c0d00/0x2c3550/0x29c860/0x2c3030/0x2c2060, unchanged in every
+// run; control 925, difflib-aligned 172 groups): the entry dot written previous-direction first in all three terms 925
+// (only the i term's loads swap, to previous first; the k and j terms load the previous direction first in both
+// spellings, where retail loads the direction first in all three); local_4d3867's store moved ahead of the
+// previous-direction block 931, after the self-unit test 928; both of those ahead of the previous-direction block 935;
+// the actor-index test read once through the parameter's address 925 (two other dots swap operand loads: the
+// load sides follow the symbol count, not the written order). Re-measured on today's body, lane 13 r121's retail-evidenced
+// parameter order (previous_direction after direction; definition, four declarations and three calls): 933 (3714 B),
+// 0x2c41b0 675 -> 661, the matched callers unchanged; the entry dot then loads the direction first in all three terms
+// as retail, but the zero/actor-index registers and the frame stay ours, so the body still rises. Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with the three callers and five callees as above, fast control 925 = plain): retail stores 1
+// to `straight` three times: the entry store, the dot test's own `mov byte ptr [esp+0x13], 1` ahead of its `ja`, and the
+// no-actor store at 0x2c0e9a. The 849 form (no initialiser, set in the previous-direction else and the no-actor else,
+// re-measured 849, frame 0x2cac) has the entry store (hoisted from the previous-direction else) and the no-actor store, but
+// its dot test stores only the 0. On that 849 base (match-only): the type-1 arm as `if (team == actor team ||
+// !function_1df560(...)) skip_classification = true;` 888 (3756 B); self_unit as `unit[0xaa] == 0 ? unit : NULL` 878 (3740
+// B); the skip flag declared just before the type tests 941; both of those skip forms 888; local_4d3867 also without an
+// initialiser, cleared in the no-actor else 922 (3724 B).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

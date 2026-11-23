@@ -988,6 +988,18 @@ struct s_physical_block_iterator
 // time < best.time` 284 (1182 B); with every compare best-first 201 (same code); as `!(time > best.time) && (time !=
 // best.time || pages < best.pages)` 222 (1220 B); as an if/else on `time != best.time` setting `better` in each arm 284
 // (1182 B); the default arm with both ages `MAX(x, 0)` and `pages * best_age < best.pages * age` 209 (1228 B). Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x13d320, MATCH; lane 1 r124's 40 lead re-applied, 40 at 1213 B, aligned 18, masked 16):
+// on the lead, the deletion walk as a forced-inline range helper (physical, offset, count) 40 (same code), that helper
+// plain `inline` 291 (1089 B, kept out of line), a (physical, offset, end) helper with the end summed at the call 381
+// (1218 B), the helper's parameters as (physical, count, offset) 40, its end named inside its loop 40 (same code each:
+// best.offset is still read again for the second test). Reading: retail's insertion is one `cmp esi, ebx; jne` with the
+// head arm's link stores duplicated into both of its sub-arms and the other arm's second stage reading the pool data
+// again, i.e. main's single-stage shape plus a fresh pool read. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 through a plain result-flag comparator
+// defined beside 0x13d320 in its own file and inlined by LTCG 237 (1178 B); that with the second age as `MAX(x, 0)` 115
+// (1194 B, the forced-inline lead's code; match-only), with 0x13d320's (physical, a, b) parameter list 115 (same code);
+// `bool better;` with no initialiser 201 (same code); the deletion walk on plain iterator/block locals as in 0x13d950
+// 212. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -852,6 +852,13 @@ union s_185be7
 // before the quotient 26/28 (diagnostics: other pairs flip, the quotient/1.0 XMM tie never, so it is not a symbol-count
 // tie); `0.0f < arg_2` in the condition 26 (same code); the up component named once for its three uses 28; the
 // quotient computed just before its first product 48. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST; control 60; all on lane 16 r173's 26 lead, rebuilt from my r215 edits, 26 at 3777 B, only the
+// quotient/1.0 XMM3/XMM4 rows left, not applied): the angle products clamped where they are formed 37 (the quotient then
+// takes XMM5); the quotient as `local_18 = arg_3; local_18 /= arg_2;` 28; one product written quotient-first, either
+// one, 26/26 (same code); local_19 clamped first and reduced (`1 - local_19 * k`) after local_20 602 (the quotient then
+// takes retail's XMM3, but 1.0 moves to XMM2 and the reduction is scheduled late); the permuter on the lead (anneal, 58
+// tries in 600 s) best 26. Reading: quotient, 1.0 and local_20 form a two-colour triangle (the quotient interferes with
+// both, they do not interfere); retail colours the quotient first. Body unchanged.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

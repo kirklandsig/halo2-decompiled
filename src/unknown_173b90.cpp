@@ -2247,6 +2247,12 @@ bool function_17afd0(long effect_index, long value);
 // declared first without an initialiser and set true after the availability 141, set by if/else there 138 (510 B); main's
 // initialiser plus a second true store after the availability 141, a false initialiser with it 141. Each puts same_view in BL and
 // the availability in memory (retail the other way round). Restored.
+// M3 lane 11 r155 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction, 138 at 510 B;
+// L = no default, the owner/view arm storing true then clearing it when unavailable, its else false, 148 at 518 B): the
+// pool global read at each use (no `systems` local) on this body 12 (same code), on P 138, on L 148; on L the owner lookup
+// moved after the availability 125 (500 B), the availability as a ternary initialiser 130 (506 B); P with a dead `false`
+// or `true` initialiser on same_view at its declaration ahead of the availability 138 / 138 (P's code: the dead store goes
+// before allocation, so it does not lengthen same_view's range). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

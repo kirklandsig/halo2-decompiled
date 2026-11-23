@@ -2099,6 +2099,19 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // shape: the length as `2 + written * entry_size` 134, as `entry_size * written + 2` 134, with `+ sizeof(word)` 134 (each
 // the same code: the product is formed in the dying size register); the size declared `short` or `byte` 127 / 127 (445 B,
 // 0x56380 13). Body unchanged.
+// M3 lane 5 r235 (h2m fast with 0x56380; control 60; caller's score in brackets when it breaks): lane 6 r222's lead
+// rebuilt 5 (450 B, 0x56380 MATCH); with a plain long count 134 [12] (456 B). On the plain-count lead: the length computed
+// after both output stores 134 [12], between them 134 [12]; the length with the size ternary written out as in 0x54990
+// (`written * (include_mask ? 13 : 11) + 2`) 134 [12] (folds into the size); the gate as `entry_size <= capacity` 134 [12]
+// (with the cast 6). On the kept body the written-out ternary length 201 (493 B, recomputed). Body unchanged.
+// M3 lane 15 r136 (h2m fast with 0x56380; control 60; lane 6 r222's lead rebuilt from its patch at 5, 450 B, 0x56380 MATCH,
+// left `movsx edi, cx` for retail's `mov edi, ecx`): on the lead, the length computed after the kept-mask compaction and
+// the mask rebuild (last in the block) 158 (437 B, 0x56380 137); on the lead's shape with a plain long count: the product
+// through a `long const &` bound to the size 134 (456 B, 0x56380 12), the latch's capacity debit ahead of the count
+// increment 134, the size as `11 + (include_mask ? 2 : 0)` 134, the two header byte stores swapped 135; re-measured, the
+// size typed dword 134. Diagnostic: on the lead the count typed `short` with the product uncast keeps retail's dword
+// init, increment and spill stores (5, the same code), so only the product's sign extension tells the count's width.
+// Body unchanged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4527,6 +4540,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the members word read into a dword 188 (460 B). Reading: retail's zero-trip exit returns ECX, the register holding the
 // constant 2 that also feeds `size -= 2` and the count's store, so that exit returns the constant while the loop exit reloads
 // the count from its slot. Body unchanged.
+// M3 lane 5 r235 (h2m fast with 0x564c0, MATCH each time; control 139): the plain arm calling the out-of-line talker test
+// 181 (450 B: not expanded there); the relay arm through the inline talker test 138 (same code: only the call's target
+// symbol differs, the out-of-line copy is identical); `long consumed = 2; size -= consumed;` 139 (same code); the packet size
+// as `11 + 2 * relay` 178 (469 B); the member bit test as `(1 << member) & members` 139 (same code). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

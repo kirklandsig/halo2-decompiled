@@ -702,6 +702,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // `vector3f const &` 178 (991 B, the same code as selected-first); the contact list read once into a function-level pointer
 // for the loop only 35, at all six contact reads 259 (977 B: the list load is hoisted where retail reloads it in each
 // case); case 3 selected-first with that pointer at all six reads 263 (973 B), in the loop only 178. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x1f2250 413 each run; control 31): the loop's stores as `selected = i; lowest = z;` 31,
+// case 2's axis at case scope 31, axis declared before the selected normal 31, the loop index declared ahead of the loop
+// 31, the entry pointer as `byte const *` 31 (all the same code). Retail's inlined tail is i*inv, inv*j, k*inv (the last
+// load-first although the inverse dies there); ours is load-first in all three rows. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -776,7 +780,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// score 235 (was 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1242 bytes (retail 1229), frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
+
+// score 235 (was 235; earlier 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1242 bytes (retail 1229), frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax H (11-11): no new form, no lower score (163); the state dot still takes its registers from XMM4-6 where retail uses
 // XMM5-7, and the rotation block still schedules its products differently.
 // Earlier 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
@@ -1050,6 +1056,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // dot3f(&limited, &axis) or (&axis, &limited) 232 (1234 B, same (k + j) + i tree, limited's components copied as retail,
 // sine and cosine slots swap), with `(1.0f - cosine)` first 232, the acceptance dot through dot3f either order 234,
 // cosine before sine 234; `limited` copied right after old_up 290. Three points at best: body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x1e5af0/0x30bf0, both MATCH; control 235): kept, the acceptance dot through the file's
+// shape_dot(cross, axis) (declared ahead of this function; the dot was that helper's body written out) 235 (the same code,
+// all 303 instructions). On it: the rotation dot through shape_dot(limited, axis) too 239 (1243 B), with every rotation
+// row written `axis.x * dot` first 239; on the body, the rows written `axis.x * dot` alone 235, the old up bound as a
+// `vector3f const &` instead of a pointer 235 (both the same code). Body otherwise unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the limit rotation through include/axis_rotation.h's helper 301 (1275 B). Restored.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -1087,8 +1099,7 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
             limited.i = dot * axis.i + limited.i * cosine - cross.i * sine;
             limited.j = axis.j * dot + limited.j * cosine - cross.j * sine;
             contact_cross(&limited, &up, &cross);
-            // (k + j) + i as retail (0x1f16ef, 0x1f16f3), likewise
-            if ((cross.k * axis.k + cross.j * axis.j) + cross.i * axis.i > 0.0f)
+            if (shape_dot(cross, axis) > 0.0f)
                 up = limited;
         }
         vector3f const *old_forward = &state->forward;
@@ -1830,6 +1841,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 234/234/234 (diagnostic, same code: names do not order these homes); `limited` declared ahead of `delta` in the general,
 // direct or both arms 234/234/234 (same code); flags flying, direct, damping, gravity re-measured 230, with both arms'
 // `limited` declared first 230. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x1f0450/0x24590, both MATCH; control 234): the damping factor read at each use (no
+// `fraction` local) 433 (3049 B); the history maximum passed straight to the clamp call 431 (3049 B); the general arm's
+// speed product passed straight to vector3f_scale (no reassignment of `magnitude`) 236; the three together 491 (3054 B);
+// the normal push rows as `0.234f * normal` 234 (same code). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -2334,6 +2349,14 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // swapped 375, direction rows written out 468, scaled in place then copied 501; `switch (count)` 439, on helper+bool 412;
 // count without volatile 531, on helper+bool 541, on helper+bool+switch 428 (aligned 136: count and component then in
 // retail's homes); switch+plain count 442, with the helper 423, with the bool 435; helper+switch 433. Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x1f19c0/0x1f2e60 MATCH, 0x1f2a80 31; control 413, aligned 213, masked 161): the count-2
+// arm by fields (`along = dot3f(&tangent, &desired)`, three products into direction) 435 (2105 B); scaled into a temporary
+// then copied to direction 481 (2112 B); scaled in place (`vector3f_scale(&tangent, ..., &tangent); direction = tangent;`)
+// 412 (2121 B, under the bar); direction with no aggregate use (field-wise init, fallback copy and count-2 arm) 421 (2073
+// B), the same on an unnamed three-real aggregate 421. Diagnostics (reverted): final loop removed 838, first contact loop
+// removed 721, desired read through a volatile view in both arms 435, direction as three scalar locals 453; in all of them
+// the inner loop still reads direction from the stack, so direction loses XMM6/7 to desired.i/j (and XMM5 to -1.0) across
+// the inner loop, not to its address, its copies or the function's size. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

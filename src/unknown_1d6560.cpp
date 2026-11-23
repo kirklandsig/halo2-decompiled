@@ -100,7 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
-// score 96 (was 96): The object type is read in both kind routes and the build starts with the owner chain. Retail reads the header data and type once at entry and keeps the body in ESI.
+// score 96 (was 96; m3 lane 2 r139 unchanged, its lines just above the marker): The object type is read in both kind routes and the build starts with the owner chain. Retail reads the header data and type once at entry and keeps the body in ESI.
 // MiniMax D (11-20, round 132): no new form, no lower score (96): the body is unchanged. The permuter refuses this
 // function in the reduced image (the reduced image scores 96 differing instructions, the full image 87), so the
 // full-image search was run instead and it reached its time limit with no better form; the one-read type still needs
@@ -730,6 +730,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // rigid body ESI through `mov esi, ecx`). On it: the object index as `long const &` bound to the component's field 96
 // (caller 208); the absolute index, the header array and the rigid body each bound by a const reference 28 [0] (same code
 // each). Body unchanged.
+// M3 lane 2 r139 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): one `byte type` local read at the entry (after
+// the rigid body) with the kind-7 route as `return type == 1 ? 0xc : 1;` 104 (240 B) [13]; that with case 0 through
+// havok_object_get(object_index) 136 (216 B) [213] (the mask is then shared, where retail masks again in case 0); the type
+// local declared ahead of the rigid body 137 [213]; the rigid body declared after the kind-7 route (where it is first
+// needed) 137 [213]; the kind-7 route kept as its switch on the type local 133 (220 B) [213]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

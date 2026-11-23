@@ -1031,6 +1031,8 @@ struct s_collision_result_buffer_1697c0
 // projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled
 // by the sine 317 (0x297d30 244); best_fraction initialised after the pitch axis 267 (under the bar); lane 5 r224's
 // sine-scaled crosses re-measured 199 (0x297d30 153). Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 416 (1347 B; 0x297d30
+// 245). Restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2373,6 +2375,18 @@ struct s_actor_looking_structure_view
 // helper's trig as `sinf`/`cosf` 145 (928 B; 0x296e60 273); the loop step `i++` 23; the best score declared ahead of the best
 // index 25; the candidate array at function scope 23; the clamp as an if then `score *= fraction` 141 (re-measured); the
 // fraction initialised ahead of the candidate copy 23. Restored.
+// M3 lane 11 r155 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590, MATCH throughout; control 23): a grid of
+// argument spelling x score form x 0-3 redundant pairs on the clamp product (score forms: main's; `i + k` then `+= j`;
+// dot3f(&forward, &directions[i]); dot3f(&directions[i], &forward)). Plain arguments reproduce the listed cycles (23/60/
+// 144/141, 124/143/59/9, 35/144/11/128, 35/144/11/128). A `vector3f *direction = &directions[i]` passed to the rotation and
+// the trace (no reads or writes through it) 33/69/144/141, 124/143/68/19, 32/145/29/128, 32/145/29/128; the same pointer
+// passed to only the rotation, or only the trace, gives exactly those numbers (its existence sets the cycle, not its uses).
+// A `vector3f const *up = g_4687b0` for the rotation 70/144/143/141, 134/65/143/143, 144/146/138/143, 144/146/138/143;
+// both pointers 61/145/143/140, 135/172 (911 B)/142/141, 144/145/139/21, 144/145/139/21. The angle wrapper computing
+// cosine before sine (0x296e60 270 -> 274) with main's, the two-stage and the dot3f score: 41/73/145/142, 125/144/70/25,
+// 51/145/31/129. Nothing below round 152's 9.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 245 (893 B; 0x296e60
+// 416). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

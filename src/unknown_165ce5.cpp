@@ -2092,6 +2092,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // once into a named local for both compares 376 (2193 B, aligned 30: retail's hoisted `mov eax, [edi + 0xa0]`), the plain-else
 // form with it 379 (2187 B). The last six bytes are the active preset and the movzx channel-byte test (both match-only), the
 // rest the stand-in's ESI/EDI rows. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): a named indices pointer for the
+// three indices uses 188 (same code); a named pointer to the +0x98 overlay channel at all ten uses 194 (2187 B), only in the
+// first overlay block (where retail holds it in ESI) 194 (2187 B); the zoomed arm's rate as one conditional expression 188
+// (same code); the overlay play's flags/set arms in the no-scope-first order 189. Still BLOCKED by the stand-in (round 98)
+// for the ESI/EDI saves. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
