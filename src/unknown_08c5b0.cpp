@@ -355,6 +355,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // `__assume(kind == 0 || kind == 1 || kind == 2)` 32 (95 B, folded); the selector's last arm as `else if (kind != 1)`
 // (an implied test) 4; the selector seeded 1 with `switch (kind)` on case 1 and empty `case 0: case 2:` arms 30. All
 // restored.
+// M3 lane 1 r156 (h2m fast with 0x8c5b0, MATCH each run; control 4), all with the existing kind read: the selector as
+// `if (kind == 1 && available) return payload; return 1;` 11; no old-setting local with the change test as
+// `controller->voice_setting != setting` 5; the selector seeded `setting = 1` with `kind == 1 && available` and the
+// availability helper as one returned expression 15; the payload setting read into a local at the selector's top 10.
+// Diagnostic (a repeated test, not keepable): `kind == 1 ? selector(kind) : 1` at the call 4 (same code).
 // M3 lane 8 r226 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with a reference-bound plain kind
 // read (no volatile; 4 alone): the controller index read through a reference-bound copy of the request pointer 4; the
 // kind read through that copy with the index through the parameter 4; the controller index read into a reference-bound

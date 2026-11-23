@@ -813,6 +813,17 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // of the linked test 27 (both the same code: the base's loads sink into the arm); the busy function's spelling (test on
 // the local, the group through a fresh `geometry_cache_block_get(block_index)->block`) 115 (293 B); 0x12de70's apply
 // spelling for the base (`physical_block_get(local_1->cache_block_index)`) 71.
+// M3 lane 4 r250 (h2m fast with 0x12e210, which stays matched; control 27, round 85's field-pointer form re-measured 14
+// at 266 B): the arm's block through a `s_geometry_block_info *const &` bound to the field before the loop 14 (the same
+// code as the field pointer, match-only); the field pointer declared inside the loop for the arm only 27; the loop's
+// block local declared `*const` 27; the linked test as `!= false` 27; the loop's block read through the cache-block
+// getter 114 (291 B).
+// M3 lane 13 r146 (h2m fast with 0x12e210, which stays matched; control 27): the release callee's two parameters declared
+// (base, group) at its definition, declaration and this call (retail sets the group register up first; diagnostic only, the
+// callee is a contributor's) 27 (the same code; the callee 0x223e00 and 0x12de70/0x223c70/0x223d80 stay matched); the time
+// fix through a `now` local read once, with the field pointer 27 (same code), with the field written at both uses and no
+// pointer 45; an identity forceinline pointer view (no code) around the arm's group argument 48 (272 B), around the arm's
+// linked test 48 (272 B).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

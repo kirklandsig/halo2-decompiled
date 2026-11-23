@@ -1009,6 +1009,30 @@ extern "C" void _ReadWriteBarrier(void);
 // `s_slot *const *` to the parameter as the first statement 6; the 0x86 test as `!(... < 7)` 6; actor first, then the state,
 // then the barrier and `(void)list;` 6; the busy test as `!(... != NONE)` 6; the flags test through a cast of the slot
 // parameter at the test 6 (all the same code: the slot still loads after the jne). Without the barrier re-measured 44 (208 B).
+// M3 lane 1 r157 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH each time; control 6, no barrier 44 at 208 B). By-value
+// copies (an inline accessor returning a small aggregate by value, the form that matched 0x151b80), each without the
+// barrier: the state through a one-pointer aggregate copied from the parameter's own home, declared first or after the
+// actor, 44/44 (folded); the vehicle index through a one-long aggregate accessor in the test 44 (same code), named at the
+// top ahead of the state 44; the flags byte through a one-byte aggregate accessor in the arm 39 (205 B: `mov dl, [ecx +
+// 0x22]; test dl, 4`, the constant 4 no longer shared, the slot still loads after the jne); that copy named at the top
+// after the actor 38 (205 B, first +0x1e: retail's first seven instructions exactly with no barrier, the slot into ECX
+// after the data base and the 0x26c compare in memory, but the byte loads in the entry block into DL and ESI is pushed
+// there), named ahead of the actor 50 (210 B), with the barrier after it 38 (same code as without); the copy at the top
+// unused with the plain test in the arm 44/44 (dropped early, named or discarded); the copy joined to the busy test as
+// an always-true term 44; actor and state through a two-pointer aggregate returned by value from an inline routine 49
+// (210 B: the slot loads in the entry block after the 0x26c load, the data base in ESI), filled through an out-pointer
+// 44; the state through a one-pointer aggregate built from the parameter and returned by value 44; the seat group
+// (0x1c..0x23) copied by value at the top and its flags tested 86 (237 B, a real stack copy), through an accessor 86,
+// the four bytes from 0x20 60 (218 B), the 0x14-byte seat selection 116 (260 B). Diagnostics (reverted): a self-copy
+// `state->flags = state->flags;` at the top 38 (the store goes, the load stays in the entry block and feeds the arm's
+// test: the 38 code), `state->flags |= 0;` 38; self-copies of another byte, of the 0x1c dword, of the header or of the
+// point 44 each (dropped early). Reading: a statement that reads through the state between the actor lookup and the
+// busy test gives retail's entry and memory compare with no barrier, but every such read tried leaves its own load in
+// the entry block; retail's entry statement leaves only the slot load.
+// M3 lane 13 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state converted through `(void *)` 6;
+// the actor as an `s_actor_view &` with the barrier 6; the busy test held in a named bool after the barrier 6 (all three
+// the same code); a second barrier at the head of the NONE block 7; a second barrier ahead of the state and the lookup
+// 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

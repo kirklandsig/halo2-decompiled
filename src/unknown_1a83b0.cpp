@@ -811,6 +811,11 @@ s_1a8a10 g_4453c0[] =
 // the point after the facing copy 88 (the y store sinks); the forward sum's i read from the actor in place 38 (left is
 // then computed first, but i loads twice and j once); the value array by an initializer list after the sums 18 (same
 // float block); left from the copy with the negated copy j, forward read in place, 118 (548 B). All restored.
+// M3 lane 1 r156 (h2m fast with 0x1a8c30, MATCH; control 17): statements placed between the facing copy and the left
+// sum to split the two j reads: the table pointer 17, the identifier and index initialisations 17, the identifier and
+// the table pointer with the index and score after the sums 15 (the listed identifier, index, score order: tail only,
+// float block unchanged, j still shared); the copy read through a planar `vector2f const *` view with the negation from
+// the actor 17; the negated j named right after the copy 17 (all the 17s the same code).
 // M3 lane 8 r226 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH each time; control 17; reference-bound
 // locals, which kept a two-step sum apart in 0x211cc0): the facing copy stored through a `vector2f &` bound to it 17
 // (same code); the negated j built through a reference (`minus_j = 0.0f; minus_j -= actor j;`) with the left sum

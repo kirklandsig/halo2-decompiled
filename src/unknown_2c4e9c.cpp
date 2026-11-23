@@ -3361,6 +3361,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // uninitialised and set under a test of the field, the walk guarded by a second test of the field, 30; the guard as
 // `map_id ^ NONE` 32 (83 B, `not` and `test`); as `map_id - NONE` 9 (82 B: the one-based `lea`/`test` form, the load
 // still straight into EBX). All restored.
+// M3 lane 1 r156 (h2m fast with 0x2c9a58, matched in each): on the NONE-default id (re-measured 13, match-only: NONE
+// cached in EAX for the compare and both iterator stores, the id loaded straight into EBX): the iterator's datum index
+// stored from `iterator.index` 13; the loop compare reading the field again 13; the iterator declared at function scope
+// 13; the id typed `dword` 13; the iterator's two NONE stores chained with the default at the top (`map_id =
+// iterator.index = iterator.datum_index = NONE;`) 13 (the stores then precede the guard, NONE still in EAX).
 // M3 lane 8 r226 (h2m fast with 0x2c9a58, matched in each): the id stored or read through a reference bound to it or to
 // a first copy (store through the reference with the guard or the loop compare on the local, the guard through the
 // reference, a block copy read through it; six forms) 30 each; a second definition under a repeated `map_id == NONE`

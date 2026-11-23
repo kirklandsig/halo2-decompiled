@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "axis_rotation.h"
 #include "reciprocal_normalize.h"
 
 struct s_shape_contact;
@@ -680,7 +681,6 @@ struct s_physics_initial_state
  long material;
 };
 
-void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* src/unknown_1eb8a0.cpp */
 
 PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f *result)
 {
@@ -701,7 +701,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // vector's component with `movaps` and multiplies the axis from memory, ours loads the axis and multiplies by the vector's
 // register, and that swap moves the whole rotation block's register roles.
 // MiniMax I (11-20): no new form, no lower score (114): the first difference is still inside the shared rotation helper, whose source lives in another file, so the block copies and the side crosses are not this file's to change.
-// score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// score 111 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
 // axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated
 // vector's or the axis's components before the call, all 64 subsets: the axis reads change nothing, any vector read
@@ -1372,6 +1372,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // j/k with the axis's j/k differs. The shared rotation helper's dot written out `v.j*a.j + v.k*a.k + v.i*a.i` 111 (1393 B,
 // products unchanged), written axis-first 111 (same code); its cross terms computed j, k, i 114 and its rows projection
 // term first 114 (same code); the rotated copy renamed 114 (same code). Helper and body restored.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 111 (1393 B; plain
+// check agrees, every matched function of the file unchanged). KEPT as the shared spelling (count lowered).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
@@ -1426,7 +1428,7 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
   {
    vector3f rotated = state->forward;
    real rotation = angle * g_510c54->rate;
-   rotate_direction(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
+   function_x84d9e8(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
    if (c && turning)
    {
     real alignment = dot3f(facing_goal, &state->forward);

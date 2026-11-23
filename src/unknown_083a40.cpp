@@ -1007,6 +1007,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // ahead of the session-mask `continue` 251; the tail after the conflict scan nested under `if (!conflict)` 28 (same
 // code); the occupied record's count step as `*count += 1;` 28 (same code); the swap's and the occupied record's
 // updates as `&updates[(*count)++]` 63 (1051 B). All restored.
+// M3 lane 1 r156 (h2m fast; control 28): the occupied key copied with `sizeof(t_player_key)` 28 (same code); the last
+// record's apply given `&watcher->players` re-measured 28. Diagnostics (reverted): the occupied key read at `players[slot]`
+// 289 (1051 B, frame 0x8c: the inverse-start slot disappears, so that induction value exists only for the occupied
+// key); the occupied key copy removed 329 (1013 B); the swap call removed 262 (1021 B); each also drops a frame slot,
+// so neither spot can be isolated by deleting the other.
 // M3 lane 8 r226 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; control 28; reference-bound
 // locals, which kept a sum apart in 0x211cc0): `collection` through a reference bound to a pointer local defined
 // ahead of the second loop 277 (1072 B: the key still gets its own induction variable, so the binding is seen

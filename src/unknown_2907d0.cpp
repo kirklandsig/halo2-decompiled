@@ -309,6 +309,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // node arm 19 (same code); the node pointer formed in one statement ahead of the bounds test (`function_b8c00(...) + arg_1`)
 // 119 (472 B). Re-measured: `field2e = true` 19, the transform parameter declared `const` 19, the else arm's copies as
 // memcpy 19, the position stored field by field 141 (485 B).
+// M3 lane 1 r156 (h2m fast; control 19): the transform passed as a by-value one-member aggregate with a forceinline
+// conversion operator (the stack-parameter form that matched 0x1414d0) 86, with the address local taken of its member 86,
+// read once into a pointer local at the top 86, through a const pointer to the aggregate 86 (its load is no longer hoisted
+// to the entry and it still takes EBX in each arm); the else arm's forward copied member by member 59 (480 B: no
+// zero-offset access to the transform is left, still EBX). Diagnostic (reverted): the transform read again after the
+// constructor call 51 (still EBX), so neither the zero-offset access nor the live range decides the pair.
 // M3 lane 8 r226 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19; reference-bound
 // locals, which kept a two-step sum apart in 0x211cc0): the transform stored into a pointer local through a reference
 // bound to it (`source = *local_4;`, both arms reading the local) 19 (same code); the same with no address local
