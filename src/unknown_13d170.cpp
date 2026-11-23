@@ -995,6 +995,11 @@ struct s_physical_block_iterator
 // best.offset is still read again for the second test). Reading: retail's insertion is one `cmp esi, ebx; jne` with the
 // head arm's link stores duplicated into both of its sub-arms and the other arm's second stage reading the pool data
 // again, i.e. main's single-stage shape plus a fresh pool read. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 through a plain result-flag comparator
+// defined beside 0x13d320 in its own file and inlined by LTCG 237 (1178 B); that with the second age as `MAX(x, 0)` 115
+// (1194 B, the forced-inline lead's code; match-only), with 0x13d320's (physical, a, b) parameter list 115 (same code);
+// `bool better;` with no initialiser 201 (same code); the deletion walk on plain iterator/block locals as in 0x13d950
+// 212. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

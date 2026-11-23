@@ -1865,6 +1865,22 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // with the no-model code after it (no else) 20; the no-model parent index read from its field at each use 20; both
 // together 20 (same code each: the index still takes ECX and the pool is reloaded); the mirrored flag set by an `if`
 // 35 (1400 B); the defaults in the `parent_index == NONE` arm of an if/else 25 (1395 B).
+// M3 lane 12 r178 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Diagnostic, restored at once: `inline`
+// on 0xb8bd0's definition with the render arm's call routed through a noinline wrapper, so that only the no-model site
+// expands the real 0xb8bd0: 20, the base's code byte for byte. So the no-model block is not waiting on 0xb8bd0's inline
+// decision (the BLOCKED-BY above does not hold): expanded or spelled through the header accessors it is the same code, and
+// what is left is the register choice alone (retail: pool kept in ECX, index in ESI and copied to EAX). Second diagnostic,
+// restored: one more read of the pool pointer at the end of the no-model arm 371 (1394 B: the pool is then a held value in
+// EBP from the current-object lookup on, data re-read through it as retail does, the index still in ECX), so the pool is
+// a register candidate that loses to the index here. Matched 0xe6b00 has retail's `mov eax, [ecx + 0x44]` re-read from a
+// pool local declared ahead of its first lookup and used by the second; tried here: such a pool local declared just ahead
+// of the current-object lookup and used by both no-model lookups 20 (forwarded: same code); the same local read through a
+// `s_record_pool *const &` 20 (same code); the no-model flag through the existing bit tester 0xbfe60 46 (1400 B: stays a
+// call); the parent and mirrored defaults initialised once ahead of the render-index test for both arms 391 (1411 B); the
+// parent index tested on the field with its local declared inside the test 20; a named header entry for the matrix with
+// the flag through object_get 20 (both the same code). Re-measured: the arms swapped under `render_index == NONE` 297
+// (1388 B: the block keeps the index in ECX there too, so the arm's place does not order the two); a pool local set ahead
+// of the current-object lookup, the matrix through it and the flag through the global, 358 (1394 B).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

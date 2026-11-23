@@ -2305,6 +2305,26 @@ bool function_1900a5(long index);
 // the team and failed flags renamed to sort first, or those two and the valid flag renamed to sort last, 643 each (same
 // code: the shared byte cell stays at +0x17 against retail's +0x13); the delay as an `else if` / `else` pair 643 (same
 // code, still `setg`).
+// M3 lane 12 r178 (h2m fast, control 643 at 2862 B; rows 157 to the end are all one or more instructions off, so a real
+// fix only shows once the instruction counts ahead of it agree). Diagnostic, restored: with this file's `connected`
+// switch idiom for the logon test (retail's `dec eax`, 743) and the users loop bounded by an undefined extern instead of
+// 4, the loop head gets its `jmp` + pad again (758, 2878 B): the build pads a loop head by more than 7 bytes only when
+// the trip count is not a known constant, so retail's 9-byte pad says its users loop was not a constant-count loop when
+// the pad was decided (it has the pad with the user getters expanded, lane 7 r185's lead). Loop spellings on the
+// switch idiom, none brings the pad back: a `short` index 750, a `dword` index 750, do/while with `++group < 4` 743, the
+// bound as the user table's element count 743; without the idiom the `short` and `dword` indices 715 / 715 (2878 B), the
+// do/while 643 (same code). A 32-combination grid of five forms on the current body (a: the switch idiom; b: the
+// builder's free space named and tested `> 0`; c: the last request time in a two-use local ahead of the request test;
+// d: the last write time in a two-use local ahead of the write test; f: `failed = true` in the incomplete arm): a 743,
+// b 663, c 645, d 637, f 679, ab 758, ac 743, ad 744, af 776, bc 666, bd 662, bf 695, cd 639, cf 681, df 678, abc 758,
+// abd 756, abf 789, acd 744, acf 776, adf 775, bcd 665, bcf 698, bdf 695, cdf 680, abcd 756, abcf 789, abdf 789, acdf 775,
+// bcdf 698, abcdf 789 (sizes 2814 to 2862 B). The lowest is d alone, 6 under the control and under the keep bar.
+// Reading of retail's request loop (0x74d40 to 0x74f2b), for the next round: a byte flag in DL is set for state 1
+// and the state-4 time test jumps past its test; the record cursor (EBX, +0x14 into the record) and a property cursor
+// (EBP, stepped by 0x60) are both carried; the count 6 sits in ESI for the count store, the `properties_used` add (ahead
+// of the fill loop) and the fill loop's bound; `existing`, `records_used` and `properties_used` stay in their homes
+// inside the scan loop and are loaded into ESI/EDI at the inner latch. Retail's write poll tests the range first
+// (`state < 0` to the release, `state <= 1` to the return) and `state == 2` inside it.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

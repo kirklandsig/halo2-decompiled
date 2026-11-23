@@ -1467,6 +1467,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 0.0f)` with start read at each use 134 (aligned 102), with the lerp arm first 134; the tail's test as `target != 0.0f`
 // alone 149 (1700 B). Reading: the 14 jumps into the tail sit 3 bytes late because of the animation arm's `movaps xmm0,
 // xmm1`; retail's success path stores the zero from XMM0 and re-enters the tail at its `xorps xmm0, xmm0`. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x142d10/0x16c6f0/0x13cb40, all MATCH; control 126): the point arm's object_index local
+// at its later uses too 328; the pan arm's game time through the game_time local 126 and its transform declared at the
+// arm's top 126 (both the same code); the pan arm's rotation matrix without its own scope 219 (1708 B, the frame moves);
+// the position blend from the once-pinned t (no second PIN) 239 (1672 B). Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
