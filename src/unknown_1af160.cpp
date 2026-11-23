@@ -313,6 +313,9 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 0x1f4a20 argument 12; the 0x1e5280 record carried in the 0x1e4be0 pointer local 12; the 0x265c30 flag carried in
 // `local_6` 12; the 0x1f4a20 result flag carried in `local_6` 12 (all four the same code: none of these locals owns a
 // frame home); the chosen reference as its own local from the top of the not-equal arm 135 (979 bytes).
+// M3 lane 6 r233 (h2m fast with 0x1e1f20, MATCH; control 12): the prop node as `*const` 12; the actor as `*const` 12;
+// both 12; the 0x25d690 and 0x262b40 result pointers `*const` 12; the scratch buffer pointer `*const` 12 (all the same
+// code). Still BLOCKED-BY 0x260670 (440 at 3097 B).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
