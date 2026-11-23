@@ -2112,6 +2112,16 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // size typed dword 134. Diagnostic: on the lead the count typed `short` with the product uncast keeps retail's dword
 // init, increment and spill stores (5, the same code), so only the product's sign extension tells the count's width.
 // Body unchanged.
+// M3 lane 14 r149 (H2M_FAST with 0x56380, 0x564c0, 0x53b00, 0x56000; control 60; caller 0x56380's score in brackets when
+// it breaks): lane 6 r222's lead rebuilt 5 [0], its plain-count shape 134 [12]. Reading: with a plain count the product is
+// formed in the dying size register, so size and the length coalesce into one long-lived value that takes EDI and the
+// player goes to the stack; any fresh temporary as the left operand keeps them apart. On the plain-count shape: `result`
+// itself as the entry counter, `output[1] = (byte)result; result = result * entry_size + 2;` 164 [13] (461 B); `result`
+// as the counter with `long written = result;` after the loop 149 [13]; `result = 2; result += written * entry_size;`
+// 134 [12]; the count byte stored before the length 134 [12]; (diagnostic) the length under `if (written)` 178 [55]; a
+// length helper scaling its own count parameter 134 [12] (folded); the count byte stored first and the length read back
+// from it, `result = output[1] * entry_size + 2;` 8 [0] (450 B: retail's whole allocation; left `movzx edi, cl` from a
+// byte load where retail loads the dword and copies it, and the byte store ahead of the product).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4554,6 +4564,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // before the talker calls and tested `!= members` 168 (460 B); the member bound through a named `long const &` 164 (same
 // code); the members word bound through `word &` 164 (same code); a separate `remaining = size - 2` local in place of
 // debiting the size parameter 159 (479 B); the cursor started as `(byte *)((word *)data + 1)` 164 (478 B).
+// M3 lane 14 r149 (H2M_FAST with 0x564c0, MATCH each time; control 139; the packet-cursor form re-measured 167 at 478 B,
+// the member in EBP): on the cursor form, the arms in the other order (`if (!relay)` first) 156 (488 B, data in EDI from
+// entry, the channel still in no register); the member declared bare and assigned next 167; the members word read ahead
+// of the member call 167; the size test as `packet_size > size` 167 (the 167s the same code). On main's form the tail's
+// consumed update ahead of the size debit 139 (same code). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
