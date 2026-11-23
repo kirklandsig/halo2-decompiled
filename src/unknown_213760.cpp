@@ -2120,6 +2120,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // of the empty header 5 (same code each). On main: the close's count test as `bytes_written < 0x800` 33 (same code); the
 // block-scoped count copied into an outer `long written_size = 0;` with no else arm 83 (the dword form's code). Body
 // unchanged.
+// M3 lane 6 r234 (h2m fast with 0x213800 and 0x2149c0, both MATCH; control 33; lane 9 r132's 5 form rebuilt at 5): the
+// write through a file-local forceinline helper taking the handle as its last parameter, so the unnamed `*handle` is
+// evaluated ahead of the flags zero, 114 (917 B: the write is retail's, the close loses its `mov ecx, eax` copy: the
+// parameter takes no rotation step either). On the write-local form (`s_file_handle write_handle = *handle;`, 114): the
+// count tested through a `dword *` to it 114, through a `dword const &` 114; the close test through a const reference
+// to the raw handle 114; the write's task result named and left unused 114 (same code each). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

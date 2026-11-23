@@ -868,6 +868,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // code); a forward pointer for the six cross products 151 (1696 B); the clamp bounds as `0.0f - limit` for the two
 // turn limits or all four 130 (same code).
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_vector_170d70 calls through include/axis_rotation.h's helper 151 (1696 B). Restored.
+// M3 lane 5 r237 (H2M_FAST with 0x29b990 and 0x170d70, both MATCH; control 130): both angles started at zero in their
+// declarations with the else arm's two zero stores dropped 329 (1716 B), the pitch alone 308 (1710 B); descriptive names
+// for the angles, the copies, the planar pair and the side axis in four sets 130 each (same code: these homes do not
+// follow names). Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

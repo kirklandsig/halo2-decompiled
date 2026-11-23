@@ -1869,6 +1869,11 @@ real function_30bf0(vector3f *vector);
 // copy and the limited, rotation and colour homes are still in other slots; the permuter over 300 s made ten tries and
 // reached no lower score than its own 370, and the test-set mobile flag measures 362 (kept only with a byte match).
 // score 378 (was 378; MiniMax B's 356 not kept at review, see below): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// M3 lane 13 r148 (h2m fast, 0x3db00 matching unless noted): the shared normalize's j/k products as `*=` 378 (same code);
+// the shared normalize as an in/out helper, every call passing the same vector, 378 and 0xd37f0 529 -> 530 (once inlined
+// the two pointers are known equal, so retail's per-component load/multiply/store order is not from that); `mobile`
+// declared first 405 with 0x3db00 lost; the dead read of `flag` through its address removed 455 with 0x3db00 lost (that
+// read holds 0x3db00); the final pin bounds as const locals 378 (same code).
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
 // Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
@@ -2490,6 +2495,11 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // short pointers formed inline from each vertex index 618, and swapping the sample point declarations or the red/blue
 // weight order gives the same 542, so the body stands.
 // score 596 (was 596): frame 0x90 agrees. The earlier 542 belongs to a body a merge replaced; this body is 3132 bytes against retail 3130. The status, mesh, color and sample homes and selective helper expansion differ.
+// M3 lane 13 r148 (h2m fast): the record arm's closing u/v/material sample in its own block 637 (frame changes); the
+// first arm's u/v/base_u/base_v declared just above the format branch 669 (3130 bytes, but frame 0x8c and the zero
+// stores move after the tests); the record arm's base/normal declared with the dynamic outputs 596 (same code); the
+// per-instance word address with the scaled index first 596 (same code); the combined colour as a copy of base plus
+// in-place adds 623. The first arm differs from retail only in its homes (and that per-instance read's operand order).
 // Earlier score 555.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the

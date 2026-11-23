@@ -4697,6 +4697,14 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // written `goto accepted;` 100 (homes back, but the test folds into the final return); the channel-7 jump alone 94 (same
 // code); the kept arms `return true;` 103 (1270 B), as two tests each `return true;` 131 (1269 B), as `if (same || better)
 // return result = true;` ahead of the plain store 237 (frame 0xe0).
+// M3 lane 16 r180 (H2M_FAST with 0x5e3f0, MATCH each run; main 295, aligned 149). Lane 1 r144's 44 lead rebuilt from its
+// L9 body, 44 (aligned 21). On it: the result as the element of a one-element array bound by reference 44 (same code:
+// scalar-replaced); diagnostic, reverted at once: the result's address held in a volatile pointer local 359 (every exit
+// then reads the result byte back as retail does, but the homes rotate (result +9) and the kept arms and the accept block
+// are unchanged, so an escaped result is not what retail has). On main's body: the result declared ahead of the state
+// read 295 (same code); the identity compare moved down to the timeout test 384 (1231 B); the timed-out arm with one
+// identity copy and `*reason = identity_equal ? 4 : 6` 323 (1229 B, as lane 3 r242 found); the acknowledgement block
+// through a named member-state pointer 309 (1246 B). Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
