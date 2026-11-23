@@ -235,7 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// score 144 (was 144; r251 unchanged): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
@@ -1022,6 +1022,15 @@ void __stdcall function_1160c0(real dt)
 // address 144 (same code); the base with `+=` written in both arms of the test 289 (1381 B, aligned 193). Diagnostic,
 // the first of those with the 113 rotation: 274 at retail's 1368 B, aligned 108 (the base load still sits ahead of the
 // branch and the XMM registers stay permuted). Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0x116750 and 0x1160c0, MATCH throughout; control 144): the prediction rows after the
+// velocity, position and previous stores 175 (1380 B); the axis declared ahead of the vertical 144 and `predicted`
+// declared ahead of `previous` 144 (same code each); the sine and cosine named ahead of the rotation call 169 (1373 B);
+// the blend weight `1.f - stiffness` named once for the three rows 262 (1355 B).
+// M3 lane 13 r147 (h2m fast with 0x116750 and 0x1160c0, MATCH each run; control 144, difflib-aligned 35 groups): the
+// velocity rows through the existing vector3d_from_points3d and vector3f_scale 195 (1399 B); the predicted point through
+// the existing vector3f_add 204 (1368 B, retail's length, aligned 46); the chain delta through vector3d_from_points3d in
+// place of its initializer 259 (1368 B); `previous = node->position = position;` 144 (same code); vector3f_add with the
+// helper delta 282 (1355 B). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

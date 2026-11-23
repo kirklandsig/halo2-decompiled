@@ -1647,6 +1647,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // (2831 B: LTCG then drops the output parameters). Read from matched 0x1dc8c0 (its request inside the loop): its fifth kind
 // keeps `test` and its inheritance setup takes a scratch `xor ecx, ecx` across the zero-trip `jle`, as our second request
 // does; only the twins' retail promotes the zero to EBP from the fifth kind's first test. Body unchanged.
+// M3 lane 5 r235 (h2m fast with 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH each time; control 812): the lookup declared
+// ahead of the per-pass candidate re-measured 1011 (2837 B); the candidate declared once ahead of the do-while and reset each
+// pass with `animation_id = c_type_709360();` 947 (2837 B), with the loop tested on the candidate's index 947 (same code);
+// the result copied member by member from the candidate 963 (2825 B); the three output stores in reverse order (the type
+// first, the mode last) 813. Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2250,6 +2255,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // unchanged.
 // M3 lane 11 r153 (H2M_FAST with 0x1dc790 and 0x1dc8c0, both MATCH; control 812): the twin 0x1db170's forms of this round
 // measured the same here (the record 732, the id as its first member 746); the list is in 0x1db170's note. Body unchanged.
+// M3 lane 15 r136 (h2m fast with the twin 0x1db170, 0x1dc8c0, 0x1ddb90 and 0x1ddd00; control 812 each, the rest MATCH): the
+// iterator declared at function scope ahead of the result 812 (same code, the twin too); the request helper reading the
+// graph's inheritance count once into a local ahead of its loop 818 (0x1dc8c0 lost, 272); the type helper's urgent
+// resource index named before the resource pointer 812; its streamed test written `!= 0` 812; the request helper's outer
+// test as an early `return` 812 (same code each, the siblings stay matched). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

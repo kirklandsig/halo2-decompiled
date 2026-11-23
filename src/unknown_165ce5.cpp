@@ -2083,6 +2083,20 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // function scope 188, zoom at function scope 188, the two zoom flags at function scope 188, the weapon-slot index declared in
 // the for statement 188, the active byte declared at its assignment 188 (same code each: scopes move no home). Still BLOCKED
 // by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): the zoom block in
+// retail's positive sense as read from its listing (zoomed = zoom > 0.1, scoped = zoomed && the 0xc8a10 query, both cleared on
+// 0xd03b0, scoped cleared when the overlay is missing, rate `zoomed && !scoped` pinned else `scoped` 1.0, clear on `!zoomed &&
+// !scoped || scoped && current != set || !scoped && current == set`, play and save per arm with constant arguments) with a
+// plain `else` 364 (2191 B, aligned 36); with retail's `else if (zoomed)` (implied test, match-only) 371 (2197 B, aligned 31,
+// masked 28); positive sense with the shared flags/set play 381 (2193 B); the else-if form with the channel's current set read
+// once into a named local for both compares 376 (2193 B, aligned 30: retail's hoisted `mov eax, [edi + 0xa0]`), the plain-else
+// form with it 379 (2187 B). The last six bytes are the active preset and the movzx channel-byte test (both match-only), the
+// rest the stand-in's ESI/EDI rows. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): a named indices pointer for the
+// three indices uses 188 (same code); a named pointer to the +0x98 overlay channel at all ten uses 194 (2187 B), only in the
+// first overlay block (where retail holds it in ESI) 194 (2187 B); the zoomed arm's rate as one conditional expression 188
+// (same code); the overlay play's flags/set arms in the no-scope-first order 189. Still BLOCKED by the stand-in (round 98)
+// for the ESI/EDI saves. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

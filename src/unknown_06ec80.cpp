@@ -300,6 +300,16 @@ union s_6ec80
 // one joined clear `if (!local_2 || !players || !data || !mask)` after the guard 226; a `s_session_player *` copy of the
 // players pointer declared in the guard 225; a `dword` counter with `1u <<` and `active != 0` 226; the active byte read by
 // raw stride from the block 225; a `for` loop re-measured 348 (1059 B).
+// M3 lane 4 r250 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5): on lane 2 r137's 48 lead (mask zeroed in the guard,
+// the 0x49c8 NONE default just before `if (arg_1)`; rebuilt 48: the block pointers' EBX/EDI swapped, the flag compare
+// against BL): the players pointer declared ahead of the machines pointer 48, the machines pointer declared last 48,
+// `long value_49c8 = NONE;` declared at the moved store 48 (the three the same code); players declared and nulled first
+// 41; the counter declared ahead of the mask in the guard 50.
+// M3 lane 13 r146 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5): on lane 2 r137's 48 lead (mask zeroed in the
+// guard, the 0x49c8 NONE default just before `if (arg_1)`; re-measured 48: left the default's store place and the two block
+// pointers' EBX/EDI swap): the players pointer declared first 48, the machines pointer declared after players 48, the two
+// flags declared first 48, both block pointers declared at their NULL stores 48 (declaration order does not break the
+// EBX/EDI tie); the two flags declared first with the mask scoped on main's opening 225.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

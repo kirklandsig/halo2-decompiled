@@ -2070,6 +2070,11 @@ long g_4858b8;
 // 0x13c20, 0x31c80, 0x335e0 and 0x133790 (matched -> todo) and 0x14ac0 (0 -> near),
 // with 0x44370 85 -> 89; game 10,622 -> 10,617. The clear stub convention is not the
 // cause; the slot is a whole-program home decision, not a body error.
+// Re-measured 2026-11-22 (block enabled with its marker and the stub removed, full check on the
+// 10879 base): 0x14b60 itself 37 (93 bytes against 91); lost 0x13c20 (18), 0x14ac0 (2), 0x30ed0 (27),
+// 0x31c80 (47), 0x335e0 (17) and 0x133790 (133), with 0xc2d00 gained (an image flipper): 10874.
+// The functions citing it: 0x44370 85 -> 90 (491 B), 0x132d0 95 -> 66, 0x41cc0 96 -> 268 (992 B),
+// 0x404b0 155 -> 155, 0x31170 212 -> 262 (927 B).
 // Retail 0x14b60
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil)
 {

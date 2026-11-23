@@ -883,6 +883,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // tail's `ret` and jumps back to the scan head, the record-pool iterator layout); the target level named ahead of the
 // current level in the target loop 857 (3332 B); the first scan's datum index formed ahead of its type and source tests 846
 // (same code). Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, aligned 1004, masked 473): the
+// target loop's search ending on `index == NONE` in its condition (no break) 857 (3338 B); the existing list appended as a
+// store then `existing_count++` 846 (same code); the gain sum written portal first 846 (same code); the override loop
+// through a named target pointer 850; the listener slot through a `long *` used for its three accesses 846 (same code).
 // M3 lane 16 r179 (H2M_FAST with 0x18bb80, MATCH; control 846): the repair loop's first-choice flags read through the
 // sounds table at both tests (no sound pointer) 873; the repair loop's matched sound as a named element pointer with a
 // `continue` on NONE 948 (3289 B); the query loop's tag read once into a named local 846 (same code); the choice

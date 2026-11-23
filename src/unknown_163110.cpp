@@ -1267,6 +1267,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // M3 lane 15 r134 (h2m fast with 0x1648d0 and 0x320b0, both MATCH; control 115): redundant paren pairs (diagnostic): around
 // the near sum 1/2/3 pairs 145/247 (1867 B)/271 (1867 B); around the far-plane flag test 115/115/115 (same code); one pair
 // around plane 0's d i, k or j product 163/176/145. Body unchanged.
+// M3 lane 13 r147 (h2m fast with 0x1648d0 and 0x320b0, both MATCH each run; control 115, difflib-aligned 31 groups): the
+// clip loop's pair base named once (`long first = segment * 2;`, five uses) 249 (1867 B, aligned 29: the distance's z
+// term then loads the point first as retail, the intersection adds move, and the projection loop gains retail's `jmp`
+// over a pad, so the body runs 16 B long); the always-true `pass == 1 &&` dropped from the far-plane skip 370; the plane
+// picked as `&planes[pass]` after `if (!(pass ? use_plane1 : use_plane0)) continue;` 376; the named base with each of
+// those two 386 / 392 (1835 B). Body unchanged.
 // M3 lane 16 r178 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH; control 115): the near sum and distance after plane 0's
 // copy 141 (re-measured, first +0x5d); the segment flags cleared after the near distance 172 (first +0x4a); the near
 // distance's compare as `near_sum < 1.52588e-5f` 115 (same code); the forward pointer declared with the locals at the top
