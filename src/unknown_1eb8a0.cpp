@@ -67,6 +67,7 @@ struct s_ease_output
 };
 
 real function_30bf0(vector3f *v);
+real magnitude3d(vector3f const *v);
 
 struct s_direction_rotation_input
 {
@@ -183,7 +184,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 603 (was 603): r131 and m3 lane 1 r154 unchanged (delta helper forms below; r154 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
+// score 603 (was 603): r131, m3 lane 1 r154 and lane 16 r179 unchanged (delta helper forms below; r154 and r179 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
 // r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
 // MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
@@ -877,6 +878,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // code); the output stage's third computed right after e3 615; the first block's up declared ahead of third 603 (same
 // code); the second clamp's length as `real len3 = len2; if (limit != 0.f && len3 > limit) len3 = limit;` 688 (2882
 // B, aligned 637, register-masked 306). All restored.
+// M3 lane 16 r179 (H2M_FAST with the file's 17 other functions, all MATCH; control 603): kept, the output distance
+// through the existing magnitude3d(&dl) 603 (byte-identical, plain too). Tried: the settle length through magnitude3d
+// 605, both lengths 605; the tick counter declared at the active block's top 609 (2883 B); qr's rate rows through
+// vector3f_scale 691 (2861 B); the first settle arm's tick scaling through vector3f_scale 605; the output distance as
+// `sqrt(dot3f(&dl, &dl))` 603 (same code). d keeps EBX in each.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1053,7 +1059,7 @@ long function_1eb8a0(
 		qr.k = qr.k * globals->rate;
 		vector3f dl;
 		vector3d_from_points3d(pos, &s->target, &dl);
-		real dist = (real)sqrt(length_sq3f(&dl));
+		real dist = magnitude3d(&dl);
 
 		if (e3 > 0.001f)
 		{

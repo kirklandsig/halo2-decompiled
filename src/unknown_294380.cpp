@@ -109,7 +109,7 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
 // score 252 (was 252): three slot pairs swapped against retail (walk position/offset, record spill/centroid sum, object
-// spill/nearest distance), see below.
+// spill/nearest distance), see below; m3 lane 16 r179 unchanged (its lines just above the marker).
 // MiniMax C (11-11): no new form, no lower score; the fast check scores this function 280 at 3717 bytes, where the
 // note's 252 is the full build's count, and retail's dead store of zero to the speed vector's i is still missing, so
 // the walk head keeps its pad and every later slot stays off; the three-member local struct lead (274 on the fast
@@ -384,6 +384,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // and k rows as `s * v`, and the first dot swapped as well, 462 fast each (same code). Diagnostic (removed): 1-7 initialised
 // dead locals on the swapped form move the first copy, the second copy (right at 5 and 6) and the field_70 product (right
 // at 5) but never the preload, the reload, the centre or the fallback row. Body unchanged.
+// M3 lane 16 r179 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; the fast image builds this body at 280,
+// so fast only screened): the walk radius read into a named local at its five uses, fast 780 (3744 B); the centroid
+// block's inner and outer limits named, fast 543 (3719 B); the walk's separation limit named, fast 685 (3708 B); the
+// object's forward through a named pointer at its three reads, fast 630 (3709 B). Lead (statement order, match-only):
+// the request's second vector assigned before its forward, plain 248 (fast 276): the tail stores then follow retail's
+// order. Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
