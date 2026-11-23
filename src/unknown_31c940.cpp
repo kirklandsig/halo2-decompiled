@@ -1054,7 +1054,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 }
 
 // Solver state stays together through the iterations. Result publication then
-// reuses its storage for the result stride and current operation kind.
+// reuses its storage for the result stride and borrowed time-scale pointer.
 union solver_phase_state_31c940
 {
 	struct
@@ -1070,7 +1070,7 @@ union solver_phase_state_31c940
 	struct
 	{
 		long stride;
-		int kind;
+		float const *inverse_time;
 	} writing;
 };
 
@@ -1078,11 +1078,11 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// Solving and publication use this pointer storage in separate phases.
+// Body B is no longer needed when publication reuses this word for dispatch.
 union solver_pointer_phase_31c940
 {
 	solver_velocity_31c940 *body_b;
-	float const *inverse_time;
+	long kind;
 };
 struct solver_complete_scalars_31c940
 {
@@ -1091,7 +1091,7 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Ordinary reduced-check score 2135 (2145 before the residual dispatch change).
+// Ordinary reduced-check score 2119 (2135 before writeback storage reuse).
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1642,7 +1642,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	{
 		// Retain the dispatch value while publishing its home for repeated rows.
 		int current_kind = *(signed char *)op;
-		state.writing.kind = current_kind;
+		pointer_phase.kind = current_kind;
 		switch (current_kind)
 		{
 		case 1:
@@ -1680,7 +1680,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		case 2: case 5: case 6: case 11: case 13:
 		{
 			// Keep the coefficient address across the cursor calls.
-			float const *&inverse_time_pointer = pointer_phase.inverse_time;
+			float const *&inverse_time_pointer = state.writing.inverse_time;
 			inverse_time_pointer = &step->inverse_time;
 			do
 			{
@@ -1689,7 +1689,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				destination += state.writing.stride;
 				terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 				++result; op += op[1];
-			} while (*(signed char *)op == state.writing.kind);
+			} while (*(signed char *)op == pointer_phase.kind);
 			break;
 		}
 		case 4: case 9: case 10: case 12:
@@ -1702,7 +1702,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				destination += state.writing.stride;
 				terms = (__m128 *)((s_angular_cursor_31c520 *)terms)->offset(1);
 				++result; op += op[1];
-			} while (*(signed char *)op == state.writing.kind);
+			} while (*(signed char *)op == pointer_phase.kind);
 			break;
 		}
 		case 7:
@@ -1728,7 +1728,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 			*(float *)friction_result = result[0];
 			*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			float const *&inverse_time_pointer = pointer_phase.inverse_time;
+			float const *&inverse_time_pointer = state.writing.inverse_time;
 			inverse_time_pointer = &step->inverse_time;
 			destination = 0;
 			friction_result += friction_stride;
