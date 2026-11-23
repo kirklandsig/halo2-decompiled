@@ -371,17 +371,30 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 	return result;
 }
 
-// Tried (stand-in image, full build): the range test evaluated into a bool first
-// (`bool in_range = false; if (index >= 0) in_range = index < scenario->sky_count; if (in_range)`) 18: it keeps the
-// two compares apart as in retail; not kept, a test-and-set flag stays only in a byte match.
-// score 44 (was 44): retail loads the sky count into ebp for the range test
-// (cmp edx, ebp) where ours compares with [esi + 8]; retail's ebp then stays
-// saved up to the tag-index test, so its NONE preset (or ecx, -1) and that
-// test are not jump-threaded as ours are. Tried: a ternary 44, the count in
-// a local 44, count > index 44, an inline helper returning NONE early 44,
-// (long)index 44, the index lookup moved out of the cluster test 49, a copy
-// of the scenario view 101, (short)*sky_index at each use 44, tag_index
-// declared first 44, a long copy of the index for the compare 44.
+/* the tag data of a scenario sky, or NULL when the index or its tag is NONE
+   (the same lookup as sky_surface_data in unknown_0d0690.cpp, typed with this
+   file's views) */
+PRIVATE __forceinline s_sky_view *scenario_sky_get(short index)
+{
+	s_scenario_skies_view *scenario = (s_scenario_skies_view *)g_4e0350;
+	long tag_index = NONE;
+	if (index >= 0)
+	{
+		long count = scenario->sky_count;
+		if (index < count)
+			tag_index = scenario->skies[index].sky_index;
+	}
+	s_sky_view *result = NULL;
+	if (tag_index != NONE)
+		result = (s_sky_view *)g_4e3b44[tag_index & 0xffff].bytes;
+	return result;
+}
+
+// Matched once the sky lookup became the inline helper above (the shape of the
+// matched 0xd1a30): written out in the body (flat or nested range test, count
+// local, NULL-preset sky pointer, tag test outside the cluster block, an
+// accessor for the count) the NONE preset was jump-threaded and the count
+// folded into a memory compare, 44 every time.
 // @retail 0x14b360
 bool cluster_get_sky(long cluster_index, long *sky_index, vector3f *vector, bool *found)
 {
@@ -399,26 +412,15 @@ bool cluster_get_sky(long cluster_index, long *sky_index, vector3f *vector, bool
 			*sky_index = 0;
 		}
 
-		short index = (short)*sky_index;
-		long tag_index = NONE;
+		s_sky_view *sky = scenario_sky_get((short)*sky_index);
 
-		if (index >= 0 && index < scenario->sky_count)
+		if (sky && sky->unknown04 != NONE)
 		{
-			tag_index = scenario->skies[index].sky_index;
-		}
-
-		if (tag_index != NONE)
-		{
-			s_sky_view *sky = (s_sky_view *)g_4e3b44[tag_index & 0xffff].bytes;
-
-			if (sky && sky->unknown04 != NONE)
+			result = true;
+			if (sky->flags & 0x20)
 			{
-				result = true;
-				if (sky->flags & 0x20)
-				{
-					*vector = sky->vector;
-					*found = result;
-				}
+				*vector = sky->vector;
+				*found = result;
 			}
 		}
 	}
