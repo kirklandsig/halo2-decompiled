@@ -5495,6 +5495,15 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // zero defined anywhere ahead of the sum statement (even between the call and the add) is stored ahead of the call, and
 // one defined after it is the loop's sign-extended index temp in EAX, shared with the guard (`cmp edi, eax`); retail's
 // store follows the call yet the guard folds to `test edi, edi`.
+// M3 lane 12 r180 (h2m fast; control 22): retail's guard reads as a hoisted loop-bound temp (its zero store precedes
+// the bound's spill, as the long second count in the loop bound gives) with the second count extended into ECX (as
+// only the running `+=` gives). On the long second count in the bound: dead no-code temps (`(void)(x * 3);`, an
+// unused long local) at five places 43 each, a trivial inline identity around the second fill, the bound or the
+// first count 43 each (diagnostics: no rotation shift), `const` on both counts 43; a named `long count = primary_count
+// + secondary_count` 46; the running count with an explicit `(long)` on the fill 126; a short running count 128 (657
+// B); a long running first count with a named short second count in the bound 45 (the widened temp operand takes
+// the sum, a variable operand never does); the running total copied into a `long const count` bound 46 (the sum
+// then lands in the copy's EAX, as the plain sum); a long first count named and summed with the fill 46.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
