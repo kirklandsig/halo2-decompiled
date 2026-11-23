@@ -3241,6 +3241,14 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // expanded into 0x53de0, 0x53e30, 0x54a20 and 0x54a70, which lose their matches). The players[i] reload is still
 // BLOCKED-BY the 0x53b40 chain's link-time summary (retail's 0x59670 stores through its pointer only conditionally, as
 // ours does). Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x24fd74, 0x2507c3, 0x22f042 and 0x250155, all MATCH; control 87; src/network_voice.cpp
+// was open this round). Diagnostic, reverted at once: a store of the port to a new global at the top of 0x53b40 gives
+// retail's reload of players[i] after the call (`mov esi, [esi]`, 87 -> 81 with 0x53b40 itself 33), so the reload is the
+// call's link-time write summary alone, and retail's 0x53b40 chain was not known free of stores; the voice membership
+// helper's session pointer as a one-element array 87 (0x53de0 and 0x53b40 still match; no reload). Retail gives the two
+// loops' players pointers separate homes (first loop [ebp - 8], later shared with a short index; second loop [ebp -
+// 0x18]) where ours shares one: the first loop's counter declared in its `for` 85, the second loop's 85, the last loop's
+// 87 (two points each, under the bar). Still BLOCKED-BY the 0x53b40 chain's write summary for the reload.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
