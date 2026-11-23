@@ -1732,6 +1732,21 @@ PRIVATE inline long score_string_list_1608e0()
 // that with the increment ahead of the call 691, with 0x19eae0's `team == NONE ? 8 : team` as a conditional argument
 // 691, both 691. HELD as a lead, restored (inline on an existing helper is the user's decision): the inlined 0x19eae0 call with the fade count no longer volatile 679 (2879 B, aligned 598,
 // masked 225; the increment ahead of the call 679 too); with the height also plain 737 (2840 B), the height alone 723.
+// M3 lane 2 r142 (H2M_FAST with 0x161420, 0x1600f0, 0x15f120 and 0x163350, MATCH each run; control 679; body unchanged).
+// Lane 4 r213's lead rebuilt on this tree 610 (difflib-aligned 376, 72 with registers and offsets masked) and lane 6
+// r230's scalar-plus-point form on it 636 (aligned 311, first +0x45). Reading of retail's title block: the near edges
+// come from the x and y registers (DI, BX), the far edges and the header advance from two dword loads of the origin
+// point made after the title-text call (`mov ecx, [esp + 0x10]`, `mov edi, [esp + 0x12]`), and the header reads the row
+// position the same way (a word load for a plain copy, a dword load for a sum, and `bounds.left` read back as a dword
+// right after its word store); retail's header rectangle sits at the origin's address and its right and bottom are
+// summed from the row position, not from left and top. Tried on the 636 form for the origin's reload: the far edges
+// and the advance through a const reference to the origin 636 (same code); through a pointer local 636 (same code);
+// the advance written ahead of the title bounds 635; the title bounds through a file-local inline helper that takes the
+// origin's address (top, left copied, bottom, right summed) 693, the same without the scalars 693 (the copied dword is
+// then kept in a register across the title-text call, lane 4's whole-copy code); the origin as a point view of the
+// header rectangle variable (diagnostic, a cast) 640 at frame 0x7a0, still no reload. So neither an address-taking
+// inline helper nor sharing the header rectangle's storage makes this build read the origin again after that call;
+// lane 6's diagnostic (the origin's address stored in a global) is still the only form that does.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
