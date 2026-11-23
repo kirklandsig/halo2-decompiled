@@ -2832,6 +2832,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // the 0x502400 load left; the extra bytes are a loop alignment pad before case 20); that with the 0x29 OR ahead of the
 // two 1000.f stores 482 (same code); every case 6 store through the global read at each use 428 (still one `or 0x69`).
 // Body unchanged.
+// M3 lane 1 r161 (h2m fast with 0x110ab0 and 0x258a00; control 429): case 6's 0x29 OR moved ahead of the 0x20 store
+// (the 0x48 OR after the 1000.f stores) 429 (same code: still one `or 0x69`); the 0x29 OR as the case's first statement
+// 605 (exchanged, first difference +0x9); case 9's test written actor field first alone 428; the tail's 0x1f57f0 target
+// named once for its test and call 429 (same code); case 14's type store ahead of the 0x20 flag 604 (exchanged). Body
+// unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

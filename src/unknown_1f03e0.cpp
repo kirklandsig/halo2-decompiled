@@ -711,6 +711,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // B), with case 3 selected-first 214 (990 B); a case-3 up pointer for both arms with main's none-first order 240 (1010 B);
 // case 3 selected-first with an up pointer for the selected arm only 178 (991 B, the selected-first code); the loop's
 // height read into a `real z` copy instead of the const reference 276 (993 B: the stack value moves the loop's registers).
+// M3 lane 1 r161 (H2M_FAST with 0x1f19c0, 0x1f2e60 and 0x1201a0, all MATCH; control 31): the average through the existing
+// vector3f_add as (b, a) 61 and as (a, b) 61 (974 B); the average summed a first in all three rows 31 (same code: the
+// i row's operand order does not follow the written order); case 2's selected normal formed after the first cross 204
+// (991 B); the component pointer and the contact list read as const 31 (same code). Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)

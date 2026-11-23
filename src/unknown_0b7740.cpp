@@ -1259,6 +1259,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // test, 170 (CSE folds it back); the sample/matrices/orientations initialisers ahead of final_matrices and the mask copy
 // 244 (844 B, head unchanged: object_index EDX, parameter ESI); node_count through a `(dword)` cast as in 0xbd090 170
 // (same code). Body unchanged.
+// M3 lane 7 r221 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0xbfc90, all MATCH; control 240; lane 4 r225's lead rebuilt
+// 170 at 826 B, aligned 100). On the lead: the model's node mask named once for the copy and both calls 170; one fresh
+// read of the header's object in a second pointer local for the bit-29 and +0x34b tests 170 (same code), the same local
+// from object_get() 293 (825 B, aligned 74); the header through slot_handler.h's object_header_get 170; final_matrices
+// read once through the parameter's own address 170, with the object_get() local 293 (same code each: the entry roles stay
+// object_index EDX / parameter ESI). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

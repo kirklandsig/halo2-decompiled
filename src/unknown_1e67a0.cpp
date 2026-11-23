@@ -1379,6 +1379,15 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // around a bare identifier or the trig arguments 111 (no change): a period-4 shift of the later code, the rotation's
 // four products never move (steering, under the bar, not kept); the velocity rows reading `state->scale` at each use
 // 194 (1391 B), with one paren pair 197 (1382 B); the axis through a `vector3f const &` to `state->up` 111 (same code).
+// M3 lane 3 r302 (H2M_FAST with 0x1e5af0 and 0x1eb640, MATCH each run; control 111 at 1393 B, aligned exact/register-
+// masked 73/57). Same code (111 each): the rotation angle written `g_510c54->rate * angle`; `angle` declared ahead of
+// `movement`; the two cross vectors declared new-first. Lane 11 r141's single store re-measured on this base (the goal
+// copied into `rotated` under the side test, the flag set there, no early return, the one `state->forward = rotated;`
+// store) 111 at 1393 B but aligned 52/45 (both exits retail's load-all-then-store; a positional tie, not kept); with the
+// moved-away flag preset false and set by its `if` 108 at 1391 B, aligned 49/42 (match-only flag form); on that, the
+// side-dot product's operands swapped 108 (same code), the two cross calls swapped 94 at 1382 B but aligned 99/76
+// (positional only). Left on the 108 form: the rotation helper's four products (axis component loaded first where
+// retail copies the vector's register), the old cross's two products and the side dots' evaluation order. Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
