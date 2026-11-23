@@ -40,10 +40,19 @@ struct solver_scalar_arena_31c940
 	float circular_second;
 	float residual_angular;
 };
+// One float word, with assignment and borrowing through its stored value.
+struct stored_word_31c940 {
+ float value;
+ __forceinline stored_word_31c940 &operator=(float input) { value = input; return *this; }
+ __forceinline operator float &() { return value; }
+ __forceinline operator float const &() const { return value; }
+};
+typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
+
 // These five words serve different scalar and pointer roles in separate operations.
 struct solver_scalar_work_31c940 {
  float pair_b;
- union { float first_error; __m128 *angular_b; };
+ union { stored_word_31c940 first_error; __m128 *angular_b; };
  float fallback_scalar;
  // Normal pairs retain this cursor; other updates use the word for SIMD rounding.
  union { float simd_scalar; __m128 *normal_cursor; };
@@ -1082,7 +1091,7 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Ordinary reduced-check score 2171 (2183 before the zero-opcode dispatch change).
+// Ordinary reduced-check score 2145 (2171 before the stored-word change).
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1174,7 +1183,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					((solver_linear_row_31e7b0 *)terms) + 1, a, *linear_b_pointer, *angular_b_pointer), projection_pool.spin_second);
 				// Round the initial spin before the coupled tangential calculation.
 				project_spin_angular_velocity(spin, a, *angular_b_pointer, projection_pool.spin_angular);
-				_mm_store_ss(&scalar_work.first_error, _mm_set_ss((spin_target * load_friction_scale(step) - projection_pool.spin_angular * load_velocity_scale(step)) * spin_mass));
+				scalar_work.first_error = (spin_target * load_friction_scale(step) - projection_pool.spin_angular * load_velocity_scale(step)) * spin_mass;
 				// Observe each target before multiplying by the current step scale.
 				float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
 				scalar_work.pair_b = captured_target_a * load_friction_scale(step) - projection_pool.spin_first * load_velocity_scale(step);
@@ -1198,7 +1207,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					spin->b.m128_f32[3] *= factor;
 				}
 				// Scale and round spin before either linear update can change ((solver_linear_row_31e7b0 *)terms) storage.
-				_mm_store_ss(&scalar_work.first_error, _mm_set_ss(impulse_spin * operation_float(op, 20)));
+				scalar_work.first_error = impulse_spin * operation_float(op, 20);
 				__m128 const *inverse_b_pointer = &b->inverse_inertia;
 				apply_spin_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a,
 					*linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result, scalar_work.fallback_scalar);
