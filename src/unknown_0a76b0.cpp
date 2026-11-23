@@ -4193,6 +4193,12 @@ extern vector3f *g_4687bc;
 // `strength` declared at the top of the Havok block, ahead of the material 8; the rigid-body index declared there too and
 // assigned at its call 8; the element as a non-const pointer `rigid_bodies.data + index` 8; impulse and strength both
 // declared ahead of the material 8 (all the same code: the material still takes DX).
+// M3 lane 16 r182 (h2m fast with 0xb67a0, MATCH; control 8): the rigid-body element bound as a const reference 8; 0x0b67a0
+// given `&component->identifier` 8; the object-type test and the Havok index test nested, the index named once for its test
+// and the component lookup 8; the material default-constructed with the component declared bare, then the material's index
+// and the component assigned in that order 8; the component declared bare ahead of the material and assigned after it 8
+// (all the same code). Diagnostic: 1 to 7 dead initialised longs at the top 8 each with identical rows (the material's DX
+// and the element add's EDX/EAX choice do not follow the symbol-count phase). All restored.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
