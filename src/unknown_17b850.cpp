@@ -382,7 +382,8 @@ void contrail_update(long contrail_index, bool detach, real dt)
 	contrail->unknown2c += dt;
 }
 
-// score 4 (was 6): a shared `one` local for the three literal 1s (the
+// score 6 (was 4; 2026-11-23: rose with data_find_index reading its two fields directly for 0x2689d0's match, lane 8 r230;
+// the text below describes the 4): a shared `one` local for the three literal 1s (the
 // 0x17c0e0 count, the flags03 bit and the index step) fixes the two locals'
 // EBX/EDI load order. The remaining differences are the two `frame_time`
 // updates' remaining/elapsed XMM registers.

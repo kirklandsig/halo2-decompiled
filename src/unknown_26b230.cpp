@@ -1789,6 +1789,8 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+/* picks the clump group whose score beats the best so far for the actor; the score is computed and compared inside
+   the team test, and the shared datum step scans through data_find_index (lane 8 r230) */
 // M3 review (11-21, lane 2 r124): a byte MATCH (full check 12319, 0 lost) came from file-local copies of the shared index scan
 // and datum step (data_datum_iterator_next_inlined) with the scan's loop inverted by hand (`if (index >= 0 && index < high)
 // do { ... } while (++index < high);`), plus the score compared inside the team arm and the selection stored before best.
@@ -2397,13 +2399,14 @@ void function_2689d0(void)
 		s_clump_activity_view *group;
 		while ((group = (s_clump_activity_view *)clump_datum_walk_next(&groups, active)) != NULL)
 		{
-			real score = best;
 			if (group->team == actor->unknown024)
-				score = function_268bb0(group, actor);
-			if (score > best)
 			{
-				best = score;
-				selected = groups.clump_index;
+				real score = function_268bb0(group, actor);
+				if (score > best)
+				{
+					best = score;
+					selected = groups.clump_index;
+				}
 			}
 		}
 		if (selected != NONE)
