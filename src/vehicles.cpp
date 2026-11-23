@@ -533,6 +533,15 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// score 107 (was 116): earlier 218 before the reversing test had retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
+// retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
+// forward/heading in other registers) and the atan2 sums' x87 operand orders.
+// (the velocity copy's eax/ecx and the blend rows are now retail's.)
+// M3 lane 15 r138 (H2M_FAST; the colouring is the 1.0 web against the input rotation's throttle temporary: retail gives
+// the temporary XMM2 and 1.0 XMM3, ours the reverse, and the entry schedule follows): the velocity normalize as `*=`
+// 107 (same code); its y row as `velocity.y * inverse` 107 (same code); as two divisions by speed 107 (same code, one
+// reciprocal); a `vector3f const *controls` local for both magnitude sites 239 (1133 B); the input.y row ahead of
+// input.x in the interleave 117.
 // MiniMax S (11-20): no new form, no lower score (107): the 1.0 constant takes XMM2 where retail takes XMM3 (retail loads it right after the first add of the entry magnitude), and every normalize's registers follow from that.
 // MiniMax I (11-20): no new form, no lower score (107): the frame, the length and the layout are retail's and what is left is the colouring of the entry magnitude - this build loads the 1.0 constant into xmm2 where retail has xmm3 and adds the first two squares after the square root, and the difference cascades through the rest of the xmm allocation; the permutation search over the body found no lower form.
 // MiniMax D (11-19): 107 (was 116): the velocity copy x first and the speed's squares accumulated make both retail's;
@@ -540,10 +549,6 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // retail holds it in EAX, so both loads and the first store differ) and the entry magnitude's SSE order (the 1.0 in xmm2
 // against retail's xmm3, and the first addss after the fsqrt); the entry magnitude written out flat measures 123, the
 // two-term nested form 123, dot3f of the throttle vector 281 and the velocity copy x first 120, so the body stands.
-// score 107 (was 116): earlier 218 before the reversing test had retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
-// retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
-// forward/heading in other registers) and the atan2 sums' x87 operand orders.
-// (the velocity copy's eax/ecx and the blend rows are now retail's.)
 // forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
 // velocity copy's eax/ecx and two x87 operand orders in the atan2 sums.
 // MiniMax I (11-17): no new form, no lower score (218): the frame, the length and the layout are retail's and what is
@@ -3401,6 +3406,16 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// score 672 (was 672): earlier 682; current transform position cleared as one twelve-byte region; native
+// has three consecutive four-byte zero stores. Frame 0x100 versus 0xfc and scalar/vector homes remain.
+// M3 lane 15 r138 (H2M_FAST; frame map: retail stores the three mass products into the cells 0x04-0x0c the angular
+// velocity leaves after its call, loading the mass field once into a register as `mass * (f * f)`, and reads the
+// field again for each of force and torque at the end, `mass * x`; ours keeps a mass local live to the end, the extra
+// cell): the mass field read at each use, no local, 693 (frame 0xfc, first difference +0x66); that with the transform
+// position as three zero stores 676 (3248 B); the three zero stores alone 682; the mass local for the products and
+// two vector3f_scale calls on the field at the end 710 (frame 0xfc, register-masked aligned diff 485 lines against
+// 511); that with the three zero stores 707 (3244 B, aligned 438). Left on those: the acceleration scale's and the
+// velocities' homes and the 1.0 constant in XMM6 against retail's XMM7.
 // MiniMax S (11-20): no new form, no lower score (672): the frame is 0x100 where retail has 0xfc; the two vector3f_scale calls on the mass field recover retail's frame and its first difference but score 710.
 // MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
 // MiniMax H (11-20): no new form, no lower score (672): the frame is 0x100 against retail's 0xfc, one dword more, and the homes are not one uniform shift (retail's dt at 0x10, the linear-velocity address at 0x14, the acceleration scale at 0x34, the maximum speed at 0x3c and the angular-velocity address at 0x44 against ours at 0x20, 0x38, 0x58 and 0x68), so no single local accounts for the gap; the permuter tried sixteen forms in 523 s without a gain.
@@ -3410,8 +3425,6 @@ real g_47ff30 = 2.5f;
 // 0x38, 0x58 and 0x68), so no single local accounts for the gap; the transform position is still cleared as one
 // twelve-byte region where retail uses three four-byte zero stores, and the float chain still sits in xmm5/xmm6 against
 // retail's xmm6/xmm7.
-// score 672 (was 672): earlier 682; current transform position cleared as one twelve-byte region; native
-// has three consecutive four-byte zero stores. Frame 0x100 versus 0xfc and scalar/vector homes remain.
 // MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
 // MiniMax H (11-20): no new form, no lower score (672): the frame is 0x100 against retail's 0xfc, one dword more, and the homes are not one uniform shift (retail's dt at 0x10, the linear-velocity address at 0x14, the acceleration scale at 0x34, the maximum speed at 0x3c and the angular-velocity address at 0x44 against ours at 0x20, 0x38, 0x58 and 0x68), so no single local accounts for the gap; the permuter tried sixteen forms in 523 s without a gain.
 // MiniMax S (11-17): no new form, no lower score (672, was 672); our frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the two leads that reach retail's frame (the mass field read at each use, 676, and the final force and torque scaling through vector3f_scale, 710) each score worse, so the body stays as it is.
@@ -6824,10 +6837,19 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
+// score 959 (was 978): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
+// M3 lane 15 r138 (H2M_FAST; frame map of retail by slot: 0x60 holds the flip output's facing, then the current
+// orientation, then the copied rotation; 0x2c the desired orientation, then the inertia product; 0xb4 the flipped
+// orientation, then the first 0x142eb0 product, whose third argument is not the desired matrix as ours passes; the
+// quaternion shares the angular velocity's 0x84; retail's rounding result shares the general float temporary at 0):
+// the first product into a new `difference` matrix declared at its call 1031 (5046 B); into `flipped` (dead by then)
+// 1009 (5062 B, frame 0xdc, register-masked aligned diff 510 lines against 523); that with a `bool` boosting flag
+// 1095; the `difference` form with it 1101; `difference` declared with the top matrices 1031 (frame 0xfc). Lead: the
+// product's third matrix is what packs the frame to 0xdc; ours still keeps the rounding helper's asm result in its own
+// cell (0x2c) and an unused lowest cell.
 // MiniMax G (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; no form of the body I tried moves them.
 // MiniMax S (11-20): no new form, no lower score (978): the frame is 0xfc where retail has 0xd8, and this build pushes EDI where retail does not (retail indexes with ESI and EDI straight from [esp + 0xe8]).
 // MiniMax I (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; I found no form of the body that moves them.
-// score 959 (was 978): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):

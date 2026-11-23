@@ -394,6 +394,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // object's forward through a named pointer at its three reads, fast 630 (3709 B). Lead (statement order, match-only):
 // the request's second vector assigned before its forward, plain 248 (fast 276): the tail stores then follow retail's
 // order. Body unchanged.
+// M3 lane 6 r235 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; control 252, aligned 90, masked 25;
+// the fast image builds this body at 280): one, two and three redundant pairs around the half radius product 252 each,
+// one pair around the centroid block's strength product 252 (same code each: these pairs move no operand side here);
+// lane 12 r176's `dot3f(arg_1, &previous)` with one pair 455 (3712 B, the pair inert); the speed vector declared without
+// its `*g_4687a4` initialiser 797 (3683 B: the copy is not dead code here) and as `{ 0.0f, 0.0f, 0.0f }` with the three
+// zero stores dropped 797 (3683 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

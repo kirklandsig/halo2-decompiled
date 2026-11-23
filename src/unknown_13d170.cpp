@@ -1000,6 +1000,13 @@ struct s_physical_block_iterator
 // (1194 B, the forced-inline lead's code; match-only), with 0x13d320's (physical, a, b) parameter list 115 (same code);
 // `bool better;` with no initialiser 201 (same code); the deletion walk on plain iterator/block locals as in 0x13d950
 // 212. Body unchanged.
+// M3 lane 11 r159 (h2m fast with 0x13d320, 0x13d830, 0x13d8b0, 0x13d950; control 201; lane 1 r124's 40 lead re-applied, 40
+// at 1213 B). Reading: retail's insertion (one `cmp esi, ebx`, the head arm's next-link stores duplicated into both of its
+// sub-arms, the else arm's second stage reading the pool afresh) is a two-stage insertion merged by jump threading. On
+// main: the else arm's next-link stage through a `before` formed again from the pool after the previous-link stage
+// 211; the insertion as two stages each testing `best.previous == NONE` directly 209; the fresh-pool form with both
+// ages `MAX(x, 0)` 221; the default arm's clamps written inline in the product test (both `MAX(x, 0)`) 209; both named
+// ages `MAX(x, 0)` with the products written age first 209. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

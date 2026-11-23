@@ -1259,6 +1259,13 @@ struct s_record_collision_view
 // 118: this body's dot order does not follow which component the helper names); the unread pathfinding pointer and the
 // collision buffer as one local aggregate (0x26bfa0's request form, no volatile) 131 (1093 B, frame moves); the trace
 // origin pointer declared at the top of the spoke body 26 (same code). All restored.
+// M3 lane 11 r159 (h2m fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each run; control 26; M re-measured 20, M with the
+// offset x, z, y 6, where only the offset's y/z stores are left): on M, the endpoint with no trace-distance local 148
+// (1085 B); the 0.1 offset as a copy of the collision point then three `+=` 146 (1113 B), then a component loop 161 (1113
+// B); the 0.5 lift loop counting down 42; the lift as `+=` statements z, y, x 187 (1088 B). Diagnostics on M: one to three
+// redundant parenthesis pairs around the integer sector test 20 each, one to three dead `long` locals ahead of the sector
+// probe 20 each (the dot order does not follow integer-expression or symbol counts, only the float trees' order). All
+// restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
