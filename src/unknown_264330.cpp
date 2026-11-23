@@ -963,6 +963,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // the prop index `long const` 404; the 0x25d610 test nested under `if (sample && update)` 404; the sample counter through
 // a `short &` bound to its field 404 (same code each); diagnostic, the prop walk as a do-while under `if (next != NONE)`
 // 464 (1584 B). The actor index stays a stack argument in each. Still BLOCKED-BY 0x2641c0's noinline declaration.
+// M3 lane 6 r232 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all three MATCH; control 404):
+// sample/update declared at function scope and cleared at the loop top 404 (re-measured); `short old_state` 404 (same code); the
+// flags declared `update, sample` 402 (1620 B; EBX still the sample flag in the loop); a `long const` actor parameter 404;
+// sampled_one declared ahead of maximum 404. All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

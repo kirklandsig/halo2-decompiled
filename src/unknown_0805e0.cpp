@@ -942,6 +942,10 @@ void function_1537f0(s_profile_record *record);
 // value40 and value70 as element stores 117 (210 B; 0x1537f0 27), value40 by a counted loop 18 (0x1537f0 26); the identity
 // zeroed by one chained element assignment 64 (256 B), that with the `entry->` links as chained pairs in retail's order 62.
 // 0x1537f0 keeps its own bytes only with its memsets. All restored.
+// M3 lane 6 r232 (h2m fast with 0x7f8b0, 0x1537f0 and 0x80490, all MATCH each run; control 18): the loop over an entry pointer
+// (`entry < &g_4cf98c[350]`, `entry++`) 80 (275 B), with `entry->` link pairs in retail's order 84 (270 B), ended on `!=` 80; the
+// builder given the entry pointer itself (no member address) 18 (same code), that with the `entry->` link pairs 49 (base +0x4c and
+// retail's link order, NONE hoisted into EBP). Restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -1509,6 +1509,17 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // and forceinline 24 (0x126df0 matched); the fading bit read into a named bool ahead of the gain test 24 (same code).
 // Diagnostic: 0x126df0's halves in the other order (fade-out first) 24 (0x126df0 66), so the inlinee's symbol order is
 // not the tie-breaker. Restored.
+// M3 lane 6 r232 (h2m fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; control 24): the shared step spelled `index = next;
+// if (next == first) index = NONE;` (one helper for all four users) gives this function MATCH and 0x21b870 MATCH, but 0x21bd00 2
+// (its two latch reloads, count then first in retail, come out first then count). On that step, 0x21bd00's score: the step
+// `index = NONE; if (next != first) index = next;` 64 (this 45, 0x21b870 33); 0x21bd00 without its duration pointer 2, with an
+// early return 2, reading `iterator.index` in the body 2, without the guard 96; its parameter or the iterator's count or first
+// field renamed to sort first or last 2 each; the step's two tests nested 2, `NONE != index` 2, `count = count + 1` 2; its body
+// with the header lookup first 55, the curve written at the call 28, the playback lookup folded into the definition lookup 2;
+// 0x126df0's fade-out half with `1000.0f * duration` 2, the curve and start stores swapped 4, the start and end stores
+// swapped 4 (0x126df0 2 each); `__assume(first_sound_index != NONE)` inside 0x21bd00's guard 2; its guard as `NONE !=` 2; the
+// iterator initialised count, index, first 4 (this 2, 0x21b870 2); the iterator laid out count, first, index or first, count,
+// index 3/3 (this 2: only the count slot's displacements move, the reload order stays first then count). Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -2241,6 +2241,12 @@ bool function_17afd0(long effect_index, long value);
 // with the availability repeated in the true arm (the two arms' attached identical) 17 (same code); with the false value
 // as the declaration's initialiser and only the true arm storing 113 (502 B); with attached false by default and the
 // else arm's set under `if (available)` 121 (506 B). All restored.
+// M3 lane 6 r232 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): with the availability computed first, same_view
+// as `owner != NONE && g == owner` cleared when unavailable 135 (508 B); a false same_view set true and cleared under the owner
+// tests 149 (519 B); main's same_view statements after the availability 141 (513 B), with the clear as an `else if` 149; same_view
+// declared first without an initialiser and set true after the availability 141, set by if/else there 138 (510 B); main's
+// initialiser plus a second true store after the availability 141, a false initialiser with it 141. Each puts same_view in BL and
+// the availability in memory (retail the other way round). Restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

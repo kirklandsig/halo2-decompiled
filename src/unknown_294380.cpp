@@ -384,6 +384,10 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // and k rows as `s * v`, and the first dot swapped as well, 462 fast each (same code). Diagnostic (removed): 1-7 initialised
 // dead locals on the swapped form move the first copy, the second copy (right at 5 and 6) and the field_70 product (right
 // at 5) but never the preload, the reload, the centre or the fallback row. Body unchanged.
+// M3 lane 6 r231 (plain with 0x293b30, MATCH each time; control 252): the nearest-distance arm first under the negated
+// radius test 252 (identical code); the walk's member pointer declared in the `while` condition 252 (identical code); the
+// separation total accumulated before its scaled offset is added 655 (3719 B); the two k clears as one chained assignment
+// 254; 0x2949aa reading through a pointer to the member's wander state 583 (3734 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

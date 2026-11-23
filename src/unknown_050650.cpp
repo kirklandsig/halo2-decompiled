@@ -2369,6 +2369,10 @@ struct s_actor_looking_structure_view
 // pointer for copy, rotation, trace and score 139/143/143/126; the selected or best test reversed 35/35; the fraction as a
 // ternary initialiser 114/130/103/129; the angle named 32/145/29/128; the dot3f call itself in 1-3 pairs: total count mod 4.
 // No natural form gives the 2-pair shift.
+// M3 lane 6 r232 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the shared rotate
+// helper's trig as `sinf`/`cosf` 145 (928 B; 0x296e60 273); the loop step `i++` 23; the best score declared ahead of the best
+// index 25; the candidate array at function scope 23; the clamp as an if then `score *= fraction` 141 (re-measured); the
+// fraction initialised ahead of the candidate copy 23. Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
