@@ -300,6 +300,12 @@ union s_6ec80
 // one joined clear `if (!local_2 || !players || !data || !mask)` after the guard 226; a `s_session_player *` copy of the
 // players pointer declared in the guard 225; a `dword` counter with `1u <<` and `active != 0` 226; the active byte read by
 // raw stride from the block 225; a `for` loop re-measured 348 (1059 B).
+// M3 lane 8 r227 (h2m fast with 0x6ec10/0x5b120, both MATCH unless noted; base 5): lane 14 r101's counter zeroed before
+// the guard combined with lane 2 r137's form (mask zeroed in the guard, the 0x49c8 NONE default just before `if (arg_1)`)
+// 113; that default move with the mask as now 39; lane 2 r137's form re-measured 48 (the block pointers EDI/EBX); on it
+// `players` declared ahead of `local_2` 48 and `local_2` declared after `players` 48 (same code), the data test through
+// `arg_0->data4f24.data[0]` 230, the machines memcpy from `&arg_0->data4f24` 269 (985 B, 0x6ec10 lost), the players
+// memcpy from `&arg_0->data4f90` 228 (0x6ec10 lost).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

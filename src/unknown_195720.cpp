@@ -272,6 +272,8 @@ bool function_1946f0(s_bitstream *stream)
 // only (clear on the field) 48, the same just ahead of the index 39 (the mask folds into `[edx + edi]`, index first; the
 // clear reloads, data first); that local for the clear only 40 (the clear's LEA is retail's `[edx + edi + 1]`, but the
 // mask's field read numbers to the local and folds `[edi + edx]`), at the function's top 52; an unused early data read 2.
+// M3 lane 8 r227 (h2m fast; base 2): a phase scan on the LTCG build (the earlier scans were compile-only), 1 to 7
+// initialised dead locals at the function's top, 2 each (both LEAs stay data first: no symbol-count phase here).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

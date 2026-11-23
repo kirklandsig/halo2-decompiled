@@ -1013,6 +1013,17 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // eax` and the bit takes EAX): on the plain `for` copy, one index declared ahead of both loops 100; the mask test written
 // `(mask & bit) != 0` 100; the player record named at the top of the player loop's body 100; the copy loop under main's
 // `if (member_count > 0)` guard 100; the player loop as a do-while on a `player_index` 100 (all 477 B, the fold kept).
+// M3 lane 8 r227 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost): on the pair, 1 to 7 initialised dead locals at the top 46 each; the pair
+// declared at the function top 46, players declared first 46, the variant declared ahead of the pair 46; a 15-form grid
+// of summary before variant, one shared loop index, the addresses pointer before the clears and the member count before
+// the clears 46 (or 127 with the count before the clears); without the variant local 49, without the addresses pointer
+// 46, without both 49; a bool getter in 0x5b0d0's shape (both out pointers written under the live and flag tests) with
+// its result tested ahead of the two pointers 46 (inline or forceinline). On this body the two address tests through an
+// inline `a && b` helper 22, arguments swapped 23 (the addresses sink: the second lea stays after the `je`).
+// Diagnostics (removed): `value49c8` read into a local before the player loop puts the session back in EBX with both
+// callers matched (124 on the pair, 130 here, 493 B each), the player mask so 133 (493 B): the session's register
+// follows its loop uses.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1562,6 +1573,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // colouring (count EBX, the index spilled, `current` reloaded) when its step sits inside the copy's arguments, and flips
 // to the 195 colouring when the step follows the copy; a step inside the arguments evaluates the destination before the
 // source, so the copy's two pointers swap (ECX/ESI) as in the `[count++]` 40.
+// M3 lane 8 r227 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): the else
+// arm through a named `const byte *` to the state's entry list (count, then entries) 9 on this body, 195 on the indexed
+// copy, 195 with the destination declared in the true arm, 40 on `[count++]` (the pointer folds each time); the true arm
+// reading the session into a fresh local from `state->owner->session_a` instead of `current` 159 (713 B), on the indexed
+// copy 155 (713 B); lane 7 r214's row pointer declared in the true arm with `memcpy(dest++, ...)` re-measured 48, the
+// same with `count++` ahead of the copy 44 (first difference +0x4a, the copy's pointers still swapped).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

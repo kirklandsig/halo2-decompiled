@@ -643,6 +643,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // declaration too 1 (same code); an explicit in-range arm `else { restart = false; }` before the restart break 153 (663 B,
 // the store is kept); the loop test as `next_time <= time` 5; the timing step ahead of the flag-8 store 9; restart typed
 // `long` 230 (661 B).
+// M3 lane 8 r227 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): both loop boundary restarts with
+// `|=` 184; `restart = false;` again at each pass's end 139 (661 B); the false start as a one-byte memset of the flag 223
+// (659 B); the loop as a do-while under an `if` of its test 1 (same code). Diagnostic (removed): the flag's address
+// stored to a probe global at the top 227 (665 B), and the in-range miss still skips the restart test, so an escaped
+// address does not stop the thread.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

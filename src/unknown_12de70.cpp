@@ -807,6 +807,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // 14; on the 14 form a new forced-inline release step taking (physical index, group) 14 (the arm's own load still comes
 // after the pool data and offset loads); the group or the linked test through a `const &` bound to the block local 27/27
 // (all the same code as their bases).
+// M3 lane 8 r227 (h2m fast with 0x12e210, which stays matched; control 27): a null test ahead of the arm's linked test
+// (`local_1 && local_1->runtime_linked`) 45 (269 B: the calls in the loop keep the test); a group pointer named from the
+// field ahead of the test, the test on the field and the release base named in the arm 27; the release base named ahead
+// of the linked test 27 (both the same code: the base's loads sink into the arm); the busy function's spelling (test on
+// the local, the group through a fresh `geometry_cache_block_get(block_index)->block`) 115 (293 B); 0x12de70's apply
+// spelling for the base (`physical_block_get(local_1->cache_block_index)`) 71.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
