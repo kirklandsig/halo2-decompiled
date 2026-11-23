@@ -986,10 +986,18 @@ static __forceinline void solve_unilateral_linear(float target,
 		// Reload A for the update instead of retaining its projection load.
 		a->linear = _mm_add_ps(_mm_load_ps((float const *)&a->linear), linear_delta[0]);
 		linear_b = _mm_sub_ps(linear_b, linear_delta[1]);
-		__m128 angular_a = _mm_mul_ps(change_a, row->a);
-		__m128 angular_second = _mm_mul_ps(change_b, row->b);
-		a->angular = _mm_add_ps(a->angular, angular_a);
-		(*angular_b_pointer) = _mm_add_ps((*angular_b_pointer), angular_second);
+		// Both linear deltas are consumed before the angular axes reload.
+		// Reuse their first vector through the angular contributions and A write.
+		linear_delta[0]=row->a;
+		change_a=_mm_mul_ps(change_a,linear_delta[0]);
+		linear_delta[0]=row->b;
+		change_b=_mm_mul_ps(change_b,linear_delta[0]);
+		linear_delta[0]=a->angular;
+		linear_delta[0]=_mm_add_ps(linear_delta[0],change_a);
+		a->angular=linear_delta[0];
+		change_a=(*angular_b_pointer);
+		change_a=_mm_add_ps(change_a,change_b);
+		(*angular_b_pointer)=change_a;
 		*result += impulse;
 	}
 }
@@ -1164,7 +1172,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2041. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2039. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
