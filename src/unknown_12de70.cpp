@@ -812,6 +812,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // code as the field pointer, match-only); the field pointer declared inside the loop for the arm only 27; the loop's
 // block local declared `*const` 27; the linked test as `!= false` 27; the loop's block read through the cache-block
 // getter 114 (291 B).
+// M3 lane 13 r146 (h2m fast with 0x12e210, which stays matched; control 27): the release callee's two parameters declared
+// (base, group) at its definition, declaration and this call (retail sets the group register up first; diagnostic only, the
+// callee is a contributor's) 27 (the same code; the callee 0x223e00 and 0x12de70/0x223c70/0x223d80 stay matched); the time
+// fix through a `now` local read once, with the field pointer 27 (same code), with the field written at both uses and no
+// pointer 45; an identity forceinline pointer view (no code) around the arm's group argument 48 (272 B), around the arm's
+// linked test 48 (272 B).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

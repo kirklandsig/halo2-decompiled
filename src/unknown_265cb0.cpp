@@ -363,7 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// score 84 (was 84): m3 lane 5 r233 unchanged (its lines just above the marker); r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// score 84 (was 84): m3 lane 16 r179 and lane 5 r233 unchanged (their lines just above the marker); r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // M3 lane 6 r223 (h2m fast with 0x263740/0x26d370, both MATCH; control 84): local renames, to test name order among
 // same-size homes: `a`/`b` as occupant_secondary/occupant_primary, the facing pair as secondary_reach/primary_reach,
 // the squared distance and clip amount as distance_sq/clip_fraction, range and scale as perception_range/range_scale,
@@ -1062,6 +1062,10 @@ real function_30bf0(vector3f *vector);
 // secondary copied first 101 (1311 B). No form here gives the squared distance the clip amount's cell without naming
 // them as one variable, and on that form range and scale still sort ahead of the facing pair where retail has them
 // behind it.
+// M3 lane 16 r179 (H2M_FAST with 0x263740 and 0x26d370, both MATCH; control 84): the occupant pointer declared const 84;
+// the occupant's forward vector bound by const reference and passed by address to both crosses and the facing query 84;
+// the clipped point declared beside `motion` 84; `bool const facing` 84 (all the same code); the scaled-range test
+// through a named squared scaled range 150 (1312 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

@@ -1045,6 +1045,19 @@ static inline long team_score_195ed0(long team)
 // test's bit folded into its condition with `result = true;` 151 (1210 B). Diagnostic (behaviour change, reverted): an
 // extra guarded 0x199460 call with a team test ahead of the team loop 381 (1253 B), and the third score read still
 // expands with its team test called, so the third read's expansion does not follow the inline work spent before it.
+// M3 lane 2 r138 (h2m fast with 0x1587f0, 0x159460, 0x161e60, 0x162030, 0xd9640, 0x15b3a0, 0x15c550, 0x15ca10, 0x15ce70,
+// 0x162060, 0x196780, 0x64d70): this file and the file of the real team test and statistics getter are both /Ob1, so
+// neither can expand here; with PIN over the real 0x1587f0 (re-measured 192 at 1241 B): `inline` on 0x161e60's definition
+// 489 (1338 B; 0x159460 lost), on 0x162030's 180 (1225 B; 0x1587f0, 0x159460, 0x15b3a0, 0x15c550, 0x162060 lost), on
+// both 442 (1301 B); `inline` on 0x1587f0's own definition 192 and a forced-inline declaration of it here 192 (both the
+// same code as the plain call). Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0x196470, 0x1587f0, 0x161e60, 0x162030, all MATCH; control 100): the team loop's counter
+// `short` in its own `for` with the player loop's `long` 205 (1242 B); the reverse 175 (1223 B); both `short` 222 (1255
+// B); the clamp as an if / else-if chain over one sampled score, the value read again, 220 (1257 B); the first team loop's
+// entry named once for the test and the store 100 (same code). Diagnostic (width cast, not keepable): `(short)rank <
+// ranking.team_count` 149 (1210 B: the entry test is retail's `cmp word ptr [esp + 0x82], bp`, but the latch compares
+// words too where retail sign-extends). Retail's own 0x1587f0 calls 0x161e60 and 0x162030, so its two full expansions
+// here and the called third read fit one score call expanded by site frequency. Body unchanged.
 // m3 lane 4 r251 (H2M_FAST with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the rank loop's test
 // written count first 100 (same code); the score store ahead of the rank store 109; a `short` counter for the team-rank
 // loop alone 205 (1242 B, a pointer walk); the counter initialised at its declaration 104 (its zero then serves the
