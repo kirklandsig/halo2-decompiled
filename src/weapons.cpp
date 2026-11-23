@@ -2016,6 +2016,24 @@ static inline bool unit_dual_wielding(long unit_index)
 // lookup 4 indexed by `(word)weapon_index` 104 (545 B, the offset is no longer shared); the put-away lookup indexed so 58
 // (536 B); the animation test as `NONE != ...` 2; the put-away NONE test as `NONE != put_away->unit_index` 2; the
 // dual-wield test written in the condition through WEAPON_UNIT_GET with no helper 2 (the 2s the same code).
+// M3 lane 14 r150 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 2 form rebuilt 2, O O O O D against
+// retail's O O O D O). A two-use pool local (`s_record_pool *objects = g_4e0300;` in the gate block) is the first form
+// that gives the animation-test lookup retail's `[ecx + esi + 8]` at 532 B: with a named animation-test pointer through it
+// (the holder's two fields read through that pointer) and the dual-wield unit looked up through it as well 2, but the two
+// rows left are then lookup 3 and the put-away lookup, both data-first (O O D D D): a macro lookup whose pool load is
+// followed by a pool local's own load of the global takes that local as its pool and goes data-first, which is also what
+// 0xc9d00's pool copy does to the put-away lookup in every 0xc9d00-call form. On that form: the local declared after or
+// ahead of the b7360 call 2 (same code), at the function's top 197 (576 B); `result` after lookup 3 27, no getter at lookup
+// 1 4 (D D D D D), both 27; the getter at lookup 3, at the put-away lookup, at both 2 (same code); a second macro lookup
+// beside lookup 3 for the gate's state read 2 (same code: equal lookups fold to one), a second one at the put-away test or
+// for 0xc9d00's unit argument 42. Lookup 3 keeps its order only when another macro lookup follows the local: the test
+// through the local with the holder helper as is 206 (583 B: lookup 3 O, lookup 4 D, but the helper's lookup is repeated
+// through a `mov edx, ecx` copy and the frame grows), the test and the holder each through the local with the dual-wield
+// helper as is 200 (579 B). The local used once (the dual-wield helper as is) 2, and a two-use header-array local in its
+// place 2 (both the 2 form's code: they are forwarded). Diagnostics: the three helpers as functions of another unit that
+// the link-time inliner expands 2 (the 2 form's code, so the order is not set per unit); the existing 0xbf5a0 for the
+// animation test 106 (547 B, it stays a call). Left: a form that puts only the animation-test group on a pool local
+// without that local, or 0xc9d00's, taking over the lookups ahead of them.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
