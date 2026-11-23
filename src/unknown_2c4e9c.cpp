@@ -3366,6 +3366,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // stored from `iterator.index` 13; the loop compare reading the field again 13; the iterator declared at function scope
 // 13; the id typed `dword` 13; the iterator's two NONE stores chained with the default at the top (`map_id =
 // iterator.index = iterator.datum_index = NONE;`) 13 (the stores then precede the guard, NONE still in EAX).
+// M3 lane 1 r158 (h2m fast with 0x2c9a58, matched in each): the guard and the walk in a file-local `__forceinline`
+// (list, id) helper called with the field 30; the iterator set up at the top ahead of the id read 29 (layout only:
+// its two NONE stores move ahead of the load, the id still straight into EBX); `return` in place of `break` at the hit
+// 30; `__assume(map_id != NONE)` inside the guarded block 30; the guard written `NONE != map_id` 30; the iterator first
+// with the NONE-default id 15 (match-only base: NONE cached in EAX, the id loaded straight into EBX).
 // M3 lane 8 r226 (h2m fast with 0x2c9a58, matched in each): the id stored or read through a reference bound to it or to
 // a first copy (store through the reference with the guard or the loop compare on the local, the guard through the
 // reference, a block copy read through it; six forms) 30 each; a second definition under a repeated `map_id == NONE`

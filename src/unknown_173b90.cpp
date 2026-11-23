@@ -2253,6 +2253,10 @@ bool function_17afd0(long effect_index, long value);
 // moved after the availability 125 (500 B), the availability as a ternary initialiser 130 (506 B); P with a dead `false`
 // or `true` initialiser on same_view at its declaration ahead of the availability 138 / 138 (P's code: the dead store goes
 // before allocation, so it does not lengthen same_view's range). All restored.
+// M3 lane 3 r300 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the availability declared ahead of
+// same_view 12 (same code); the view test `owner != g_4b9ed8` 12 (same code); the availability test `!function_155760(...)`
+// 12 (same code); `view_pass == same_view` 13; the attached flag false then set by an `if` on the conjunction 133 (510 B).
+// Restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

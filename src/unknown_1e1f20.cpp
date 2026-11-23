@@ -1116,6 +1116,14 @@ void swarm_leader_detach(long actor_index);
 // image 297 (996 B, frame 0x24), as the plain check gave in r289. The loop's pointer as a plain copy of the main
 // one 4, the main one copied from the loop's after the 0x258600 call 4 (same code: copies coalesce, so the late
 // address needs two looked-up pointers live at once). Body unchanged (59).
+// M3 lane 15 r137 (H2M_FAST with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B, only the
+// slot loop's `lea` ahead of the handler loads). Retail's own 0x1e2150 and 0x1e23c0 (slot pointer named, type read
+// through it) form the address right after the type load as ours does; 0x1e22d0 and this function form it after the
+// stop test, where the handler reuses the type's ECX. On the 4 form: the type in a `short` local and the handler in a
+// plain `s_slot_handler const *` local 4; the type read by a raw offset associated the other way
+// (`actor + slot_index * 0x40 + 0x90`) 4; the argument as `(s_slot *)((byte *)actor + 0x90) + slot_index` 4 and as
+// `actor->slots + slot_index` 4 (all the same code: the address is shared whatever its spelling). On main's body with
+// `actor != other`: the bit held as `bool counted = definition && bit;` 57 (974 B, no byte store). Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

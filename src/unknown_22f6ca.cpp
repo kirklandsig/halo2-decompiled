@@ -350,6 +350,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // helper's index typed `short` with `(short)i` at the call 23 (same code); the pane declared in the `if` condition with
 // `long i = 0;` above it 25 (the 25 form's code), with `long i = 0;` at the block's top 66. Diagnostic: the text loop
 // without its flag test 46 (411 B; its reset stays `mov`, so the flag test does not set it).
+// M3 lane 12 r179 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the text loop's counter read through a
+// `long &index = i;` bound in its body 23; the text and model loops both so 23 (both the same code); `long i = 0;` above
+// the pane lookup with the text loop through that reference 25 (the 25 form's code); the block-18 inner counter declared
+// `long j = 0;` 23 (same code); the pane test as an early `if (!pane) return;` with `long i = 0;` declared after it 66 (every
+// reset then a `mov` from the one zero register).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
