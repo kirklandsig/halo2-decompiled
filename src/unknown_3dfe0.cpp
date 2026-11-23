@@ -285,6 +285,24 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // getter 21 / 21, a game-tick getter at the three reads 21, both 21, the same on update-first 218 each (same code); the
 // stationary test as a file-local inline or forceinline helper (flag form or early-return form) 195 (831 B), on
 // update-first 202; update-first with the force arm storing `update = force` 163.
+// M3 lane 3 r298 (h2m fast with 0xd1850, MATCH; control 21): the elapsed clamp moved inside the sample-time NONE test
+// (its only reader) 31; that with `bool update = false;` ahead of force 226; the update-time test moved into the
+// not-force arm after the hidden return 242 (first +0x0); the blend clamp through the existing PIN_126660 macro 196 (882 B:
+// the product is evaluated per use); a redundant `else update = false;` after the hidden return 222.
+// M3 lane 12 r178 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21, update right after the zero-elapsed return
+// re-measured 216: its entry block is retail's instruction for instruction, left are the two timestamps and the late
+// object index in EDI/ESI for ESI/EDI and the missing force-arm reload). Reading of retail's force arm: the object has
+// a stack home and sits in EBX from its lookup to the hidden test; the force arm, which never reads it, loads EBX from
+// that home again for the uses after the join, so its register range is cut in that arm. Tried for that reload, all on
+// the after-return order unless noted: the stationary test's position through a fresh lookup 216, on the kept order 21
+// (both merge with the first lookup: same code); a second pointer declared after the force block from a fresh lookup
+// for the three later uses 216, on the kept order 21 (same code each); the object assigned from a fresh lookup in the
+// force arm ahead of `update = true` 155 (the arm then stores EBX to the object's home where retail loads from it,
+// the homes swap back to object 0x10 / force 0x14), after `update = true` 156; a second pointer set in both arms, from
+// a fresh lookup in the force arm and from the object after the hidden return 211, from a fresh lookup in both 211,
+// from the object in the force arm and a fresh lookup after the hidden return 211 (the object then takes ESI), that on
+// the kept order 235; `if (!force && hidden) return;` then `if (force) update = true;` 216, the two statements the
+// other way round 216, the hidden return nested under `if (!force)` then `if (force) update = true;` 216 (no reload).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
