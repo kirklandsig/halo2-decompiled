@@ -107,7 +107,7 @@ static __forceinline unsigned long string_length_512_ab(char const *string)
 struct s_text512_ab
 {
     char bytes[0x200];
-    char const *get_string() const { return bytes; }
+    char const *get_chars() const { return bytes; }
     long find(long start, char const *substring) const;
     bool function_b6220(long start, long count, char *destination) const;
 };
@@ -115,7 +115,7 @@ struct s_text512_ab
 // @retail 0xb61d0
 long s_text512_ab::find(long start, char const *substring) const
 {
-    char const *string = get_string();
+    char const *string = get_chars();
 	long result = NONE;
 	if (start < (long)string_length_512_ab(string))
 	{
@@ -143,7 +143,7 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // @retail 0xb6220
 bool s_text512_ab::function_b6220(long start, long count, char *destination) const
 {
-	char const *string = get_string();
+	char const *string = get_chars();
 	bool result = false;
 	if (start >= 0 && count > 0)
 	{
