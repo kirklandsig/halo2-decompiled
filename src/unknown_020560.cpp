@@ -1426,6 +1426,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // distance's (k + j) + i are retail's, x stored before the `jb`; the projection sums (j + k) + i where retail sums
 // (k + j) + i, one pointer, no pass counter); with the entries-field scan 761 (2320 B, frame 0x2c, every x store makes the
 // entries field be read again). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 273, masked 262): scan 2's
+// distance as distance_sq3f(position, sample) 541 (2122 B, frame 0x18, `nearest` then lives in memory); scan 1's the same
+// way 448 (2094 B); both 553 (2122 B); scan 2's distance as length_sq3f(&offset) re-measured 646 (2039 B); scan 2's
+// distance from `source->entries[i]` with the offset from the samples local 645 (2199 B, masked 191: two induction
+// pointers as retail); the offset from `source->entries[i]` with the distance from the local 644 (2193 B). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

@@ -883,6 +883,46 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 605, both lengths 605; the tick counter declared at the active block's top 609 (2883 B); qr's rate rows through
 // vector3f_scale 691 (2861 B); the first settle arm's tick scaling through vector3f_scale 605; the output distance as
 // `sqrt(dot3f(&dl, &dl))` 603 (same code). d keeps EBX in each.
+// M3 lane 8 r229 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, which keep fast equal to plain; control 603, aligned 658,
+// register-masked 302; the caller 0x1eb6f0 MATCH unless said; body unchanged). New reading of the q/d contest: q reaches
+// EBX at entry, with retail's `cmove ebx`, once it has three top-level references on the factor-first form. Re-measured on
+// today's body (rounds 166/181/198's lead): the impulse through vector3f_scale 649, the delta sum through vector3f_add 674,
+// both 694; the 12/8 factor ahead of t at the second clamp 716, with the scale helper 703, the add helper 707, both 713; at
+// clamps one and two 695 (caller 22), with the scale helper 680 (the caller back), both helpers 682; at all three 694 (caller
+// 22), with the scale helper 679 (2888 B, aligned 561, masked 255: the start copy now takes EDI/EBX/EDX and reloads EBX from
+// the stack after the 0x30bf0 call as retail does, but for d), both helpers 681; at the third only 603, with the scale helper
+// 649; at two and three with the scale helper 702, both helpers 712; at the first with the scale helper 653, both 698.
+// On the all-three + scale-helper form (679): the output copy from q by component 706 (q in EBX at entry and the cmove,
+// but frame 0x20, the clock in EDX, b on the stack, caller lost); w as dot3f(&s->direction, q) 682; `qr = *q` 702; the
+// 0.866 test as dot3f(&s->direction, d) 682; the pairs and triples of those four 706/689/706/706/677/706 and
+// 687/706/687/706, all four 692 (q takes EBX exactly in the forms with the component copy). The component copy with the
+// clock read at each use (no globals local) 717 (2872 B, masked 248, caller kept: frame 0x24, q in EBX, pos in EBP, the
+// cmove, first difference +0x11, where d takes EDI and retail has the clock), with `s->limit` at each use 727, both 715;
+// those three with the 0.866 dot3f 720/722/715, with the w dot3f 720/722/715, with both 720/722/718. The clamps as
+// PIN(t, 0.001f, rate * k) with the scale helper and the component copy 716 (caller lost), clock at each use 701 (masked
+// 255), limit at each use 721 (masked 247), both 710 (2882 B, masked 242, first difference +0x11); the third clamp in the if
+// form 715/700/720/710; the PIN form without the component copy 675, clock at each use 714 (caller lost), limit at each use
+// 729, both 681 (caller lost). d keeps a callee-saved register (EDI) in every one of them.
+// Diagnostics, each reverted at once. d out of the activation block (a in its place) 723, also without q's reassignment
+// 737, no d anywhere 712 / 735: `a` takes EBX; d replaced by a global pointer 680, without the reassignment 705, with a
+// read of q at the top 739: the global's value takes EBX at entry, so the pointer used across the two 0x30bf0 calls takes
+// EBX whatever it is; one call on q at the function top 753 (b takes EBX), two 760 (q holds EBX for the whole function,
+// with the cmove), one ahead of the output copy 671 (d keeps EBX); the d and q parameters declared the other way round
+// 605 (caller 2; EBX still holds the direction); `qr = *q` on this body 665 (q in EDX and the copy through EBX, the
+// reverse of retail). On the component-copy forms: the 0.866 test, the settle dot, both fallback copies, or the alignment
+// dot read from a global pointer instead of d, with the limit at each use 741/727/743/729, with the clock at each use
+// 710/721/712/714 (with the clock at each use only the alignment dot's d decides EDI at entry: without it b takes EDI);
+// the alignment dot with two d references 724 (b then
+// takes EDI and the clock EDX) / 745; one more clock reference 727 / 732; the alignment as dot3f(a, d) 727; the alignment
+// named once for the store and the scale 713. d read through a volatile view of its home at every use (diagnostic only):
+// this body 692 with retail's entry to +0x1d (q EBX, pos EBP, clock EDI), the all-three + scale-helper form 684, with the
+// component copy 678 (+0x1d), with the limit at each use 719, the clock at each use 720, the PIN form with all three 723
+// (masked 238): with the entry right the count stays near 680, so the q/d choice is not what holds the body back.
+// Reading: retail's start copy needs EDI and EBX because CL holds the second clamp's fast byte to the duration and EAX the
+// limited flag; its output stage keeps the clock in ECX from the third clamp to the ramp arms, the counter in EAX and the
+// qr copy through EDX, so q has no scratch register there; ours reloads the clock four times in that span and holds q in
+// EDX. Leads saved as build/r229/lead-0x1eb8a0-q-ebx.patch (717) and lead-0x1eb8a0-q-ebx-pin.patch (710) in the m3-lane8
+// worktree; not kept (each raises the count).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
