@@ -616,6 +616,21 @@ void function_e5930(long unit_index);
 // 121, complemented tag bit and clear arm first 126, direct bit transfer 128,
 // XOR transfer 126, typed tag subrecord with word setter 153, shared second
 // object lookup 118. The final reset still expands.
+// M3 lane 16 r186 (fast, then plain and one full check of the held form; body unchanged, 118): the cause is 0xe5930's
+// file having no /Ob1. Diagnostic: `/Ob1` added to that file's flags 9 at 343 bytes (0xe4bd0 10 at 61, but 0xcaf00
+// 10 -> 85: 0xe57e0 of the same file is expanded there in retail, so the flag belongs to 0xe5930 alone).
+// HELD (needs the owner's OK; 0xe5930 is contributor code; measured and put back, diff in
+// build/r186/held-de4c0-e4bd0.patch): 0xe5930 moved alone into a file of its own with `/O2 /Ob1 /arch:SSE /Gr`, the
+// flag set/clear here as `word_flags_set(&biped->flags_348, 3, TEST_FIELD_BIT((definition->biped.flags >> 1) & 1))`,
+// and 0xe4bd0 moved into the same /Ob1 file with its test as TEST_FIELD_BIT: this function MATCHES, 0xe4bd0 MATCHES and
+// 0xcaf00 MATCHES (fast and plain; 0xe5930, 0xe57e0, 0xe5840, 0xe5980, 0xe2d80, 0xea1f0 and 0xec0d0 still match,
+// 0xe24f0 586 -> 579); the full check of that form gained those three and lost nothing. Retail's evidence for the flag:
+// 0xe5930 is a `call` at all six of its retail call sites (0xde608 here, 0xe4bf3 in the 61-byte 0xe4bd0, and in
+// 0xe2d80, 0xe24f0, 0xea1f0, 0xec0d0), and 0xe4bd0 is a tail `jmp` from 0xcaf00, where this build expands both at
+// straight-line sites. Without 0xe5930's move: the same flag form alone 113 (415 bytes, listed); 0xe4bd0 alone in an
+// /Ob1 file changes nothing here (the callee's own file decides). The reset called through a function-pointer local
+// 11 at 343 bytes, but 0xe5930 then takes the standard convention (27) and 0xe2d80, 0xea1f0 and 0xec0d0 each lose
+// their match; not kept. Still BLOCKED-BY 0xe5930.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -650,14 +665,7 @@ void __stdcall function_de4c0(long arg_159e6d)
 	current->unknown360 = NONE;
 	current->unknown364 = NONE;
 	current->unknown350 = NONE;
-	if ((definition->biped.flags >> 1) & 1)
-	{
-		*(byte *)&biped->flags_348 |= 8;
-	}
-	else
-	{
-		*(byte *)&biped->flags_348 &= ~8;
-	}
+	word_flags_set(&biped->flags_348, 3, TEST_FIELD_BIT((definition->biped.flags >> 1) & 1));
 	biped->unknown3d8 = NONE;
 	biped->unknown3e0 = arg_159e6d;
 	biped->physics_mode = 0;
@@ -3925,7 +3933,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // 522/502, with the same scores for signed and unsigned state. NOT kept: the
 // one-first dispatch reaches 0x4c but takes the index in EAX and changes the caller.
 // The state compares stay byte-wide and the pre-call flag slot is still missing.
-// score 324 (was 324): frame 0x48 against retail's 0x4c, so every home is four bytes out; the +0x34b state byte
+// score 323 (was 324): frame 0x48 against retail's 0x4c, so every home is four bytes out; the +0x34b state byte
 // zero-extended where retail sign-extends it, and the 0xe16b0 call's argument in a register where retail passes it
 // on the stack.
 // MiniMax R (11-20): re-checked, no new form and no lower score (324): the frame is 0x48 against retail's 0x4c, so every home is four bytes out, the biped index is read from [esp + 0x54] where retail reads it from [esp + 0x58], and the state byte at +0x34b is zero extended where retail sign extends it.
@@ -3934,6 +3942,52 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // With total updated first 332, direct weighted scalars 494, weighted point initializer 509, and staged
 // weighted products 398. NOT kept: the setter recovers the 0x4c frame but grows to 1924 bytes and loads the
 // point before the mass call. Four other forms break the caller.
+// M3 lane 16 r186 (fast with 0xdd360, 0xe16b0, 0xe18d0 and 0x1ed430, all matched there; the kept change confirmed plain):
+// kept 324 -> 323: 0x1ed430 (ours) stores its out value plainly instead of reading the parameter through its own address;
+// it still matches, and this function's query value no longer counts as escaped, so its home is free after the 0x183c60
+// call (retail packs the mass loop's pointer home into it, [esp + 0x18]). The body here is unchanged.
+// Why the positional count cannot fall without 0xe16b0: retail's five instructions for the flag byte at 0xe1133-0xe1142
+// are missing here, so every later row is one of ours against another of retail's (the count is the row count from there).
+// HELD (needs the owner's OK; 0xe16b0 is a contributor's matched function; measured fast and plain and put back, diff
+// against this file in build/r186/held-e0ef0.patch): 21 at 1908 bytes, retail's length and frame 0x4c, first difference
+// +0x396, 10 aligned rows (0xe16b0, 0xe18d0, 0x1ed430 and 0xdd360 match). Its parts: 0xe16b0's unread `bool` second
+// parameter fed from a named local of `(flags_348 >> 9) & 1`; a `(char)` switch; the mass as a `long` (retail converts it
+// once, `cvtsi2ss xmm3, ecx`, a value apart from the call's result, so the three products rank above it and take
+// xmm0-xmm2); the weighted position through vector3f_scale and vector3f_add(&weighted, &center, &center) (retail's
+// `addss xmm0, xmm6` then `movaps xmm6, xmm0`); `total += mass`; a named reciprocal for the centre scale (the centre then
+// stays in xmm4-xmm6 through the scale and the subtraction, which ranks it above the total, 88 against 92 before; the
+// total is then split around the call and lives in memory in the loop, retail's `addss xmm3, [esp + 0x14]`); the hit
+// through real_point3d_set and the difference through vector3d_from_points3d (the hit shares the difference's home);
+// the three scans on the size field (retail re-reads it after the velocity call only); the projection dot and both
+// scans' dots through basis_dot_xzy (retail sums x, z, y at all three); the projection through vector3f_scale and
+// vector3d_from_points3d (retail's three mulss then three subss); the reciprocal of the farthest distance named inside
+// the third scan; `farthest` declared after the push scale; the change through vector3f_scale with `change.k += lift`;
+// the query value in an inner block with hit_body preset to NONE; the three flags_348 bit sets through word_flags_set
+// (retail's `or byte ptr [ebx + 0x349], 2`). Steps on the held form: with a subtract written out on direction's fields
+// 201 (1894 B, aligned 46); the helper projection 49 (1908 B); the named reciprocal 28; farthest after the scale 24; the
+// change through the scale helper 21. Not better there: dot3f at the projection dot 39 (either argument order);
+// basis_dot_xzy's arguments swapped, same code; the push scale written `direction.i *= push` 122 or `= push *
+// direction.i` 122 (1910 B); the push value unnamed 21 (same code); a named side factor, same code.
+// Left on the held form, all operand roles: the mass loop's x product (`movaps xmm0, xmm3; mulss xmm0, [eax]` against
+// retail's load then `mulss xmm0, xmm3`; it follows the symbol count, two to seven unused locals give retail's), the
+// projection dot's i product (ours copies direction.i, retail along.i) and the push scale's i row (retail copies the push
+// and multiplies by direction.i from memory). Retail ranks direction.i below along.i and the push value and
+// direction's j and k above them; here all three of direction's fields rank above (a field ranks by when it is first
+// named or first read through a helper). With 0x1ed430's old form the held body kept a cell of its own for the query
+// value: frame 0x50, 250.
+// Diagnostic on the held form, not source to keep (diff in build/r186/e0ef0-held-diag-match.patch; fast and plain):
+// with the third scan's scale stored in the centre scale's variable, an unused `real probe = direction.i;` right after
+// that variable's declaration and two unused long locals, this function MATCHES byte for byte (0xe16b0, 0xe18d0,
+// 0x1ed430 and 0xdd360 still match). The probe alone on the shared variable 15 (only the x product and one loop pad
+// left); the probe at the hit block's top 97 (1911 B: direction.i then ranks below the scale as well); the scale
+// shared without the probe 21; `&direction.i` in the projection call's cast 21 (it does not name the field). So two
+// things are left for a natural spelling: a statement between the centre scale's declaration and the push value that
+// names direction.i directly (and not its j or k), and two more symbols.
+// Lead without the 0xe16b0 change, not kept (the count rises; diff in build/r186/e0ef0-lead.patch): 361 at 1892 bytes,
+// frame 0x48 (retail's less the flag byte's cell). Earlier steps of the lead on main's 0xe16b0: the hit loaded into the
+// difference vector in place with float-wise centre sums 394; the scale and add helpers 354; the long mass 354; the hit
+// setter and points helper 358; the named centre reciprocal 346 (frame 0x4c, first difference +0x22, aligned 126); the
+// dots, a written-out subtract and the flag setter 366 (aligned 97); with the inner-block query value 380.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -5690,18 +5744,16 @@ void function_e4300(long arg_159e6d)
 // unsigned remainder slot 91, named headers and word slot 94, saved record-pool
 // pointer 91, bound header 91, shared header table 91, bound biped datum 91.
 // The direct reset still expands in all eight forms.
-// @retail 0xe4bd0
-void function_e4bd0(long arg_159e6d)
-{
-	s_biped *biped = BIPED_GET(arg_159e6d);
-
-	function_e18d0(arg_159e6d, true);
-	function_e5930(arg_159e6d);
-	if (!((biped->flags_c0 >> 6) & 1))
-	{
-		function_b8890(arg_159e6d);
-	}
-}
+// M3 lane 16 r186 (fast, then plain and one full check of the held form; body unchanged, 91): `/Ob1` on 0xe5930's file
+// (diagnostic) 10 at 61 bytes, the unit in ESI as retail; only the bit test is left. HELD (needs the owner's OK; 0xe5930
+// is contributor code; measured and put back, diff in build/r186/held-de4c0-e4bd0.patch): 0xe5930 alone in a file of
+// its own with `/O2 /Ob1 /arch:SSE /Gr` and this test as `!TEST_FIELD_BIT((biped->flags_c0 >> 6) & 1)`: MATCH, but
+// 0xcaf00 then expands this function at its tail call (10 -> 92, 140 bytes); with this function moved into that /Ob1
+// file as well, this function, 0xde4c0 and 0xcaf00 all MATCH and the full check loses nothing (see 0xde4c0's note for
+// retail's evidence: `call 0xe5930` at 0xe4bf3 and at five other sites, and 0xcaf00's `jmp` to this function).
+// This function alone in an /Ob1 file, 0xe5930 left where it is, 98 (118 bytes: the reset dispatch still expands; the
+// callee's own file decides). Still BLOCKED-BY 0xe5930.
+void function_e4bd0(long arg_159e6d);
 
 /* gets a ragdolling biped up */
 // @retail 0xe4c10
@@ -6430,6 +6482,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Existing early-cross rotation on forward, up, or both 143/143/144; paired with the other shared rotation
 // 143/188; forward field throughout with one or both early-cross rotations 154/154; both with staged side
 // cross 79. NOT kept: the best ties at 894 bytes and leaves the first difference at +0x107.
+// Matrix basis with field forward and direct/staged-side output 90/90,
+// staged up publication 253, early forward publication 313. Complete matrix
+// with ordinary/staged side, early input copies, or ordinary final cross
+// 333/333/342/333. The 0x3c frames and earlier differences lose retail's
+// 0x24 prefix. The complement spill and final forward load still differ.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

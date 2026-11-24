@@ -1948,6 +1948,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // Left test through the existing cross product, either sign and point or vector direction:
 // side axis formed before the test 198 in all four forms, after it 203 in all four. The 0x3c
 // frame and 1173 bytes hold, with radius still in XMM4 where retail uses XMM5. Body restored.
+// M3 lane 2 r147 (H2M_FAST with 0x29a190 and 0x1f9580, both MATCH; control 198): the cosine with the y terms first 198
+// (same code); the clamp passed straight to the arc-cosine helper 226 (1176 B); the 3-D direction initialised with two
+// members 253 (1182 B); the clamp as an `if` storing `(real)1.0` 250 (1141 B); the side as `{ -direction.y, direction.x }`
+// 198 (same code). Retail loads the trace radius (+0x14) into ECX ahead of the pushes and spills it to the dead facing
+// argument home (0x1f9d91). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
