@@ -3843,6 +3843,10 @@ real g_47ff30 = 2.5f;
 // Frame 0x100 versus 0xfc; acceleration and velocity homes still differ.
 // Tick-rate scope through climb approach or boosted speed, each alone, with query-local angular output,
 // with up-magnitude scope, or with both: 672 in all eight forms. The acceleration spill stays at +0x20.
+// Separate final mass reads and role names for query outputs, force/torque, axis-angle, or all three
+// groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
+// scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
+// return, but the acceleration spill stays at +0x20 and both velocity homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

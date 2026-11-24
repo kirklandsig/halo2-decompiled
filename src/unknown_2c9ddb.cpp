@@ -523,6 +523,10 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // the same code (174). Allocator ranking on the named-count form, as lane 7 r224 read it: the variant address 104 (five
 // references in the two arms), `this` 63, the entry 61, `saved` 35; a zero constant takes EBX through the first half.
 // Body unchanged.
+// B517 split loads: private template 181, private selected edit 179, separate edit/creation workspaces
+// with shared copy destination 173, failure-first with copy destination 188 or private template 178,
+// eligibility disjunction with copy destination 179, separate dispatch returns with copy destination 179,
+// common screen dispatch with private template 196. NOT kept: receiver allocation and frame layout differ.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

@@ -956,6 +956,10 @@ struct s_item_collision_bsp
 // The transformed-plane XMM homes and contact slot still differ. Angular impulse, contact point and travel speed slot names 190/190/190.
 // Conditional const axis 259; shared double-factor vector scale in the axial arm, fallback arm, both arms or at the joined spin 239/239/238/319.
 // NOT kept: the names tie and none of the scale forms recovers the pending x87 factor at a lower score.
+// Plane-join homes differ and the real spin scale spills at the join. Wide axial, fallback or joined k
+// products 240/240/198, both initial pairs 194, axial plus k 242, fallback plus k 241, all products 241.
+// Wide scale with explicit real fallback rounding 237. NOT kept: wider products need a match. The joined
+// k alone restores the +0x28 speed slot but shortens the body to 1342 bytes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1306,6 +1310,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 130, scale final expression from lateral subtotal 130, shared marker transform pointer 165, ordinary dot for
 // alignment 130, shared fallback side cross 130, shared fallback result cross 130, staged axis cross and in-
 // place projection scale 151.
+// The scaled axis i still spills and the frame stays at 0xc0. Marker-up-first alignment, axis-first projection,
+// axis-first and forward-first rotation cross products, scalar-first diagonal, reversed axial and weighted cross
+// products, and axis-first rows through the shared setter all score 130.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
