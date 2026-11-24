@@ -2884,6 +2884,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Direct acceptance exits, type 19 first or notification first, 483/479 with a success return after dispatch.
 // Joined acceptance exits in the same orders 483/479. Running the tail only on a pending result 609 in all four forms.
 // NOT kept: the 2400-byte forms narrow the length gap but keep the late dispatch success branch and raise the score.
+// Direct completion on rejection of the actor, paired target, single target or selector request 429 each.
+// Both target requests, actor and selector requests, all four requests, or separate guard exits 429 each.
+// NOT kept: the dispatch still reaches the late success block, with the original 20-byte excess.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -7119,6 +7119,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Lateral input with force 1054, lateral output with torque 959, linear velocity with rotation axis 970.
 // Input/output, input/axis, output/axis and all three shared 1068/1054/970/1055.
 // All three with a scoped relative matrix 1145. NOT kept: the frame drops to 0xdc and the body shortens to 5043 bytes. The other forms keep frame 0xfc.
+// Independent transpose values 959, stage three 1032, stage six 1032, stage the two forward coefficients 969,
+// up pairs first 971, reciprocal-side reads first 971, forced inline 959, and forced inline with six staged 1032.
+// NOT kept: every form leaves frame 0xfc versus 0xd8 and ties or raises the score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
