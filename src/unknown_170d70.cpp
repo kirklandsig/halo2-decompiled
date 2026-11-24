@@ -1635,6 +1635,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
 // 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
 // `c * (1 - square) + square` 337 (the same code: the product order is canonical).
+// Transform row accumulators 390; partial sums 346; terms formed one row at a time 356; all terms before output 453; partial and final terms before output 395.
+// Bounded alignment 337; separate reciprocal arms 352; named squared deviation 337. Reduced control 337.
+// NOT kept: the tied forms leave the opening unity register and two squares spilled. The staged row terms increase the frame.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2384,6 +2387,9 @@ struct s_pool_view_172840
 // bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
 // stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
 // `== unknown00` with the arms swapped 22.
+// Reserved pointer for recount 149, bounds 155, or both 148. Saved point start for commit 142 or both outcomes 255.
+// Shared post-clip offset 235; recount through clip record 256; explicit inherited-bit assignment 55.
+// NOT kept: retaining the reservation enlarges the frame, and the tied assignment still leaves the long sentinel.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
