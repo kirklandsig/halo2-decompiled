@@ -1546,6 +1546,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // 0x21b870 MATCH); the count stepped first (`long count = iterator->count++; if (count > 0 && ...)`) 23 (213 B; 0x21bd00
 // 51, 0x21b870 16). In 0x126df0 (file free this round) the fade-in gain as one conditional expression 37 (205 B;
 // 0x126df0 15). Restored.
+// M3 lane 16 r183 (h2m fast with 0x126df0, 0x21bd00, 0x21b870 and 0x12a810; control 24; 0x126df0's fade-in half, its
+// file free this round): the two times stored end first 24 (0x126df0 2); the curve stored after the times 27 (0x126df0
+// 3); the fading-bit setter right after the gain's join 28 (0x126df0 7); the gain in a local defaulted to the silence
+// value, set by the fading test and stored once 29 (203 B; 0x126df0 50); the curve stored ahead of the gain test 38
+// (0x126df0 9). Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

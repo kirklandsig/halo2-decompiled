@@ -992,6 +992,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // present_teams | (1 << team)` 23 (the three the same code); the field read in the present update and the team local in
 // the playing one 37 (383 B, the bits CSE); no volatile, the player loop in a forceinline collector taking both
 // accumulators by address 63 (384 B: scalar-replaced, the plain-present code). Body unchanged.
+// M3 lane 13 r151 (h2m fast with 0xb58c0/0x196780; control 23, the one-use team-bit carrier re-measured 20): the saved
+// mask read and stored through `globals->team_mask` with no field pointer 131 (374 B, field re-reads); the mask read
+// through the pointer and stored through the field 23 (same code); on the carrier the uncast update with present first
+// 78 and with the compare's operands swapped 78 (both the listed uncast store's code: a dword reload of the mask, but
+// only in the change block); on the carrier present read once into a local for the compare only 102 (393 B), with the
+// uncast update 78. Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6081,6 +6087,12 @@ void __stdcall function_d6bc0(long object_index);
 // test and 0x158ff0, 0xd6bc0 on the field 172, with 0xd6bc0 given `index` too 175 (855 B); the reset counter through a
 // block-local `s_netgame_entry_state &` 183 (851 B); 0xd6bc0 given the loop-top `index` (live through the schedule
 // block) 192 (870 B); on main the countdown re-reading `index` 29 (same code). Body unchanged.
+// M3 lane 13 r151 (h2m fast with 0x15c150, MATCH each run; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172
+// at 858 B): the function as a `__stdcall` member of c_engine_equipment on the flag + field-test form 172 (same code);
+// the countdown block's index in a new block local for its test and 0x158ff0 only 172 (local test 7, both the same
+// code); the flag as `long` 172 (local test 7, same code); an inverted skip flag set by each failing case and `default:`
+// 173 (857 B), on the local test 21; the loop-top index local scoped to a block around the object block with the field
+// test 172. Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -373,6 +373,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // `consecutive > (short)old_maximum` 76 and the bool as `!!g_510ca0` 76 (same code each); the increment through the
 // statistics address with the row formed after it 85 (434 B, first +0x16), with the conditional clamp 91 (436 B); the
 // increment and the read as two statements through the row 76 (same code). The enable byte stays in DL. Body unchanged.
+// M3 lane 12 r182 (H2M_FAST with 0x1e9fa0, 0x1ea770, 0x1e9ce0, 0x1e9df0, all MATCH each run; control 76 at 432 B,
+// aligned / register-masked 70 / 31): the team as a char local 104 (426 B); the row as a `short *` indexed by element
+// (11, 12, 14) 76 (same code); the clamp limits read after the value local 101 (426 B); the old maximum as a word with
+// a word NONE 77 (436 B); the streak update as one conditional store 90 (436 B); the team test nested in the engine
+// test 76 (same code). The enable byte is still held in DL across the counter store (retail reloads it).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -412,7 +417,7 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 struct s_object;
 s_object *function_badc0(long object_index, dword types);
 bool function_1df560(short team, short other_team);
-void function_197160(long player_index, long arg_1f407d_2, long code);
+void function_197160(long player_index, long arg_1f407d_2, byte code);
 long function_baf80(long object_index);
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage);
 void function_196dd0(long player_index, long counter, long arg_1f407d_2, long delta);
@@ -440,577 +445,18 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 353): m3 lane 5 r233 unchanged (its lines just above the marker). victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
-// MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
-// +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
-// is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
-// the team test as a disjunction (`reported_player == NONE || !function_1df560(...)`) compiles to the same code (353), and
-// the three homes are not reachable from the expression's spelling.
-// MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
-// MiniMax I (11-20): no new form, no lower score (353): the permuter ran over the function for 690 s and kept its baseline (350 differing instructions on the reduced image); the three small homes stay rotated (killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c there, victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c here) and the history cursor stays biased +4.
-// M3 lane 6 r214 (fast with 0x197160 and 0xd9640, both MATCH throughout): on 0x197160's code parameter typed byte (the
-// listed lead, re-measured 354), each listed form: consideration flag 345, friendly flag 354, found-flag dedupe 366 (1528 B),
-// retail's arm order 363 (1532 B), team byte argument 354, `self` in the call 350 (1544 B), assist stores re-read 377, related
-// player re-read 355, amount local 454 (1578 B); both flags 345; both flags with the dedupe and the arm order 374 (1512 B), with
-// the related re-read as well 374 (1512 B; masked aligned count 32, the lowest so far), that plus the team byte 357 (1528 B),
-// plus the assist re-reads 383 (1528 B), plus both 365 (1544 B), plus a `&history[selected]` record pointer 416 (1547 B), plus
-// the amount local 417 (1547 B). Left on the 374 form: the +4 selection cursor, the selected block's record pointer, retail's
-// killer reloads at the two fallback merges, the team byte's paired movsx, the assist loop's +0xc cursor with its store
-// re-reads, and the object table load after the 0xbaf80 call. Body unchanged.
-// M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
-// after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
-// flags in retail's shape (consideration true by default and cleared by the same-team test; friendly false by default
-// and set by its test) 344 (aligned 172; flags set inside a test, and the direct forms are main's 353, so not kept); the
-// friendly flag alone 353; the consideration flag alone 344; the selected record through a record pointer with the
-// consideration flag 449 (1583 B, frame 0x54); both flags with the assist loop reading the record's player index at each
-// use 386 (1564 B). Diagnostic (one-object link screen): renaming the three locals (each alone, and all three in either
-// alphabetical order) leaves their homes and the code unchanged.
-// MiniMax D (11-16): no new form kept, no lower score (353): the permuter refuses this function (the reduced image scores
-// 446, the full image 341), so the round was run by hand; the consideration flag as a true default cleared by the
-// same-team test reproduces retail's store pair and gives 344, but that is a test-set flag (match only, as the 11-05 note
-// below says), so the body stays; a record pointer for the selected entry (retail's (selected + 0x2f) * 16 + object
-// address) gives 479 because the pointer spills and the frame grows, the killer's own damage-code test moved inside the
-// selected block (retail's shape) gives 355, the fallback's polarity 354 and the declaration orders 353; the three homes
-// stay rotated and the history cursor stays biased +4.
-// MiniMax H (11-14): no new form, no lower score (353): re-read the diff and the earlier rounds' thirteen trials; the frame stays 0x48 against retail's 0x50 and the three homes stay rotated, and every earlier trial (rounding in place, result lifetimes, short selections, direct duplicate skips, the history cursor) measured above 353.
-// MiniMax E (11-15): no new form, no lower score (353): the three homes stay rotated (ours victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c against retail's killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c), which only a change of the declaration order would turn round, and the history cursor stays biased +4.
-// MiniMax H (11-12): no new form, no lower score (353): the history entries read through a named record
-// pointer (player_index, time and amount off one pointer) compile to the same bytes as the indexed form, and
-// the permuter refuses this function because the reduced image and the full image disagree (446 against 350).
-// The score line above read 344 from a reduced build; the full build gives 353, which is the number here.
-// MiniMax H (11-11): the consideration flag is now a true default cleared by the test, which is retail's shape.
-// Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
-// both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
-// fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
-// the killer block). Tried: the related-assist limit as `assist_count < 5` (no cast) 353 (aligned 133, masked 36); `self` as
-// `victim == reported_player` 353 (133/36); the selection fallback as `selected = selected != NONE ? selected : reported_slot`
-// 353 (same code); `byte damage_code = code;` declared just before the selected block 470 (1578 B, first difference +0x8);
-// `long killer = NONE;` declared there 409 (1564 B; aligned 137, masked 37).
-// MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
-// Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
-// player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's
-// team byte passed to 0x1df560 at the call 370 (1564 B) [131/132, 32/33]; the dedupe searches as `for (j...) if (==) break;`
-// 357 (same code); diagnostic, the dedupe through a two-site inline search returning from its loop (retail's threaded exits,
-// no `j == i` test) 361 (1532 B) [115/126, 25/36], with `player_index == players[i]` (retail's `cmp ecx, [mem]`) 361
-// [113/124, 23/34]; that plus the assist record's player index read at each use 371 (frame moves) [154/161, 35/42].
-// MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
-// kept, the original body is restored.
-// MiniMax S (11-06): the record walk is anchored at the field with the most source-level reads, ties going to the lowest offset: reading the timestamp twice moves the selection walk onto retail's 0x2f0 base (373) and reading the assist player index at each use moves that walk onto retail's 0x2fc base (390), both loops together 390; every such form drops a frame word (0x4c against 0x50) and the base spill, so the original body stays.
-// Earlier 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
-// rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
-// block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
-// Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
-// 421; early self result 453 (frame 0x50).
-// Earlier (421): frame 0x48 versus 0x50; victim/result homes and rounding calls differ.
-// Assist cursor 464; damage snapshot 466; early hostility 463; hostile arm first 421; size optimization 713.
-// j91: frame 0x48 versus 0x50 and victim/selection/count homes remain; isolated early killer recovers 0x50 at 454 but regresses.
-// early killer result 454; early assist threshold 440; early attribution results 463; shared tick frequency
-// 421; attribution shared frequency 460
-// Frame pointer 530; long selection index 451; short assist counts 421 (1549 bytes);
-// long consideration result 426; long hostility result 430.
-// Frame 0x48/0x50, result homes and rounding calls remain; typed history 421; history base before team query 466; named rounded windows 421; byte consideration 421; short award counters 433.
-// Complete history-object layout 421; fallback slot alone short 422; later killer-team result 426;
-// retained player-pool pointer 462; final friendly result from nested tests 427.
-// Early assist arrays alone 421; unsigned short selection ordinal 421; first assist-prefix cursors 451; both assist-prefix cursors 430; expired-history continue 421.
-// Object before/between rounding 421/421; object and history before/between 466/465;
-// later victim-team observation 450; early object with later team 449;
-// early object / object and history with forced rounding expansion 439/472. All restored.
-// Round 160: native award counts/prefix ordinals 421/422; shared award/prefix/both
-// ordinals 421/421/421; native counts with shared ordinals/slot homes/early
-// credit default 421/421/452. Original types, lifetimes and loops restored.
-// Round 149: Shared current tick with rate, earlier code and clock receiver combinations [427, 450, 445,
-// 432, 427, 450, 445, 432]; all restored.
-// Round 381: Victim/selection/victim-selection/threshold/victim-threshold/selection-threshold/all
-// workspace scopes 421/464/464/421/421/464/464; all scopes with unsigned selection ordinal 464.
-// Original lifetimes restored; frame, result homes and rounding calls remain.
-// Round 242: Native statistics-valid/player-record/object-header fields, all
-// seven subsets and complete graph with native history, 421 each. Original
-// body, types, rounding calls and memory observations restored.
-// Round 262: native team/credited-player/victim/secondary-award call summaries,
-// inline and noinline 421/421/421/421/421/421/421/421. Every declaration and complete
-// body restored; frame 0x48 versus 0x50 and result/history/rounding homes remain.
-// Round 399: First-lookup entry defaults for damage code, selection/fallback slots, killer team and all
-// combinations, then credited player: 461/442/433/467/460/442/433/443. Original restored.
-// Round 209: History player fields at every use in selection/attribution/assist 466/447/426; selection-
-// attribution/selection-assist/attribution-assist 456/440/458; all phases 420, with related-unit player
-// at each use 416. Five-point best excluded; original observations restored; frame/result/rounding
-// homes remain.
-// Round 308: Complete victim-index/killer-index/award-player subsets 452/442/435/442/441/458/453;
-// all with native word indices 461. Earlier victim-index lifetime recovers frame 0x50 but regresses;
-// original handle arithmetic, award observations, frame and rounding calls restored.
-// Round 203: native selected/fallback/both record results 484/505/459;
-// with a twice-used amount 460/483/459; native record cursor
-// without/with amount 473/473. Original result types and body restored;
-// frame, victim/selection/count homes and rounding expansion remain.
-// Round 120 (lane 6, fast = plain): forceinline real_to_long declaration 444 (retail's inline fld/fistp);
-// with the victim through unit_get_player_index 472; with both assist arrays [5] 469 (frame 0x50); with
-// the game time through function_146650 472 (game_time read before the asm as retail); with retail's
-// statement order (NONE defaults first, consider_team cleared after the test, short selected and
-// reported_slot, hostile/threshold/counts after the selection, `if (killer == NONE) ... else if (killer
-// == reported_player)`, friendly through function_15eaf0) 501; with the record fields read as
-// `*(long *)(history + i * 0x10 + 0xc)` 501 (same code); with the history as a typed damage-record
-// array 376; the assist stores and the related player re-reading the field 387 (assist loop alone 418:
-// frame 0x4c); dedupe as `j >= i` 378; dedupe compare as `assists[i] != assists[j]` 376 (same count);
-// as a for loop with break 376; killer read from the record at each use 344 (kept); `if (killer !=
-// NONE) {...} else if (datum...)` 354, with the fallback's stores swapped 354; object as a typed view
-// with history/damage_codes members 344 (cursor still +4); damage read once under a nested time test
-// 440; the killer-team call argument read from the player byte again 362 (retail's movsx si, al), with
-// the != NONE arm order 345; consider_team as one expression 353; friendly as one expression 344
-// (aligned 176 against 169); a walked record pointer in the selection loop 346 (still rebased +4);
-// named victim/killer index locals for the two 0x196dd0 calls 344 (killer first gives retail's
-// EBP/ESI roles there, same count). Kept with consider_team and friendly as single expressions 353:
-// consider_team set true and cleared inside the reported-team test gives retail's store pair and 344,
-// but it is a flag set inside a test (left for a matching round); `reported_player == NONE ||
-// !function_1df560(...)` 353.
-// With all of it 353 (cursor biased +4, killer/victim_team/damage_code in rotated slots, killer kept in
-// EBP, the assist player index in EBX), but only with a file-local __forceinline redeclaration of the
-// header's plain-inline real_to_long (483 without it): an inline twin, kept only with a match; body restored.
-// Round 62 (m3 lane 16, fast, on this body without the forceinline real_to_long): the victim through the existing
-// unit_get_player_index 459 (1561 bytes); the game time through function_146650 441; friendly through function_15eaf0
-// 438; all three 463 (1567 bytes); other_assists[5] 421 (frame 0x4c). Retail still inlines real_to_long's fld/fistp
-// where this body calls it.
-// Round 142 (lane 4, fast): other_assists sized 5 (retail's frame ends with two five-entry arrays) 421
-// (same frame); short selected/reported_slot 453 (1556 bytes), with the [5] array 456; the victim through
-// unit_get_player_index 459; friendly through function_x340af0()/function_15eaf0() 438/438; the game time
-// through function_146650 441.
-// Round 49 (lane 10, fast): include/slot_handler.h's real_to_long made `static __forceinline` (every other live
-// caller already redeclares it so; the rest of its plain-inline users are #if 0 files) and lane 6 r120's chain
-// rebuilt on it (unit_get_player_index victim, function_146650 game time, NONE defaults and damage_code first,
-// short reported_slot/selected, hostile/threshold/counts after the selection, `if (killer == NONE) ... else if
-// (killer == reported_player)`, killer read from the record at each use, other_assists[5], typed damage records,
-// `assists[i] != assists[j]`, friendly through function_15eaf0; consider_team and friendly single expressions)
-// 353 (kept). On it: a record pointer in the selection loop 353 (same code); the damage read once into a local
-// 454 (1583 bytes); the player index read at each use in the selection loop 376; a `&history[selected]` record
-// pointer in the killer block 454 (1583); victim_team/killer/damage_code declared in the other five orders
-// 353-360 (the three slots never move).
-// Round 114 (m3 lane 7, fast): a `&object->history[selected]` record pointer in the killer block 454 (1583 bytes:
-// retail's `lea [sel+0x2f]; shl 4; add` record and victim_team/damage_code slots, but selected loses EDI to a
-// parameter home and the frame grows to 0x54), with a record pointer in the selection loop too 454 (same code),
-// with the record's player index named 491 (1617); the selection amount read once before the time test 454 (the
-// loop base stays +0x2f4); a `history` array pointer local for every lookup 353 (same code: retail saves
-// object+0x2f0 at [esp+0x34] for both loops, ours object+0x2f4).
-// Lane 12 r72 (fast = plain, the same chain rebuilt on its own base before round 49 landed): the shared header's real_to_long made __forceinline (every other user
-// already redeclares it so; retail has its fld/fistp inline at every call) 444 (1561 bytes) alone; with
-// round 120's form (victim through unit_get_player_index, the game time through function_146650, the
-// NONE/code defaults and the counts declared early, short selected/reported_slot, both assist arrays [5],
-// the killer read from the record at each use, `if (killer == NONE) ... else if (killer ==
-// reported_player)`, the four records typed as unit_object_type.cpp's damage-source struct) 353; with
-// friendly kept as written (not through function_15eaf0) 349, kept. Round 120's form without the header
-// change 483. On 349: other_assists[4] 368; the game time read directly 394; long selected/reported_slot
-// 424; the selected block through a record pointer with a player-index local 498, the local alone 380,
-// the pointer alone 435; killer declared before victim_team 350, damage_code first 378, killer first
-// 366. Compile-only (reproduces the +4 cursor): the cursor follows the most-read field (the player read
-// at each use: +0xc); the amount named once, the time test after the amount test, `best` read through
-// `selected`: still +4.
-// Lane 12 r72 result not kept: friendly written out (not through function_15eaf0) gave 349 (retail's 1544
-// bytes) on its own form, 4 under the keep bar against round 49's 353.
-// Round 290: Persistent victim-team/credited-player/code role names, all seven subsets, 353 each;
-// all names with separate declarations and original assignments 353. Frame 0x50 agrees; the
-// three scalar homes, biased history cursor and attribution/award allocation remain. Original restored.
-// Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
-// then consistent existing inline validation: 375/396/509/494/509/526/557/515.
-// Original complete executable body restored.
-// Round 305: Record-pointer selection, assist admission and both award-prefix scans, seven subsets:
-// 461/379/465/370/480/398/485; all with native short teams 494. Original body restored; frame/scalar
-// homes and the biased history cursor remain.
-// Round 308: Long/dword/short/word event-code carriers 423/423/453/453;
-// with both team results short 454/454/456/456. Every code remains in 0..255 and all
-// callback arguments stay unchanged. Wider carriers disturb the entry and do not recover
-// retail result homes; original byte code, long teams and complete body restored.
-// N308: Complete native history-record values in selection/attribution/assist, seven subsets,
-// 500/378/514/436/615/498/584; all by aggregate assignment 584. Original records and body
-// restored; scalar homes, amount-biased history cursor and credited-player validation remain.
-// P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
-// corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
-// Original domains and body restored; scalar homes and biased history cursor remain.
-// Round 370: Chained team/credit, selection and award-count defaults, subsets
-// 1/2/4/3/5/6/7, then all with earlier parameter-derived code: 353/463/355/463/355/463/463/463.
-// Selection chains grow frame to 0x54; original body restored. Scalar homes and biased history cursor remain.
-// DL245: Frame 0x50 agrees; victim-team/credited-player/code homes and amount-biased history cursor remain. Dword consideration/hostility/friendly subsets 381/360/390/354/380/354/397; all word 412. Native unsigned cutoff/recent/both 353 each. Original Boolean, signed window and record graph restored.
-// Round 372: positive engine/valid-selection/eligible-assist regions, subsets 1/2/4/3/5/6/7,
-// then common conditional slot fallback: 353/353/353/353/353/353/353/353. Original complete body
-// restored; scalar homes and amount-biased history cursor remain.
-// Round 390: External amount-field identity after timestamp acceptance, original/whole
-// record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
-// Original body restored; scalar homes, amount-biased cursor and attribution remain.
-// Round 202 (lane 3): the assist stores re-reading object->history[i].player_index (both arrays) 392 (1564
-// bytes, frame 0x4c; the assist cursor becomes retail's +0xc record field); the friendly store alone 379; both
-// with the selection amount read once into a local under the time test 451 (selection cursor becomes retail's
-// object+0x2f0, but the assist loop keeps its own base: retail spills one object+0x2f0 for both loops); both
-// with a walked record pointer in the selection loop 390, started from a history local used by both loops 392;
-// killer/victim_team/damage_code renamed in all six name orders in the harness, one order in --fast, 353 (the slots never move). Restored.
-// Round 129 (m3 lane 8, fast): victim_team as a ternary initializer 410; friendly as a false default set true
-// under the full test 353 (retail's tail shape: self +0x68, friendly +0x6c, the stores line up); with consider_team
-// as a true default cleared in the reported-team test as well 344 (match-only flag form). On that 344: assist
-// stores re-reading the record's player 386 (1564 bytes, frame 0x4c: the shared object+0x2f0 base at +0x34 goes);
-// with a history pointer for both loops 386; stores re-read plus the amount read once under the time test 444;
-// a `&history[selected]` record pointer in the killer block 449 (1583); the killer-team call argument from the
-// player byte 349. Original body restored.
-// Round 390: External amount-field identity after timestamp acceptance, original/whole
-// record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
-// Original body restored; scalar homes, amount-biased cursor and attribution remain.
-// J249: Existing recorded-event byte/streak long/final-event long/paired first two contracts
-// 354/354/355/353. Final-event long loses matched 0x1ea770 (19). NOT kept: paired contracts
-// lower the streak provider 107 -> 76 but replace its native byte flag-home store with a
-// full-width flag test. Coherent long/word caller event carriers with the streak contract,
-// without/with the recorded-event byte formal: 423/423/453/453; all lose matched 0xd9640 (61).
-// Original body, code domains and every provider restored; scalar homes and biased cursor remain.
-// DL253: existing streak/final/secondary provider ordinary-inline singles 353/353/353;
-// ordinary-inline pairs 353/353/353 and all three 353 on the native-frame graph;
-// forced streak expansion 962 (1949 bytes), loses a matched caller; NOT kept: shared regression.
-// Original providers and calls restored; scalar homes, history cursor and attribution still differ.
-// B399: Standard prefix searches on the two award arrays: find first/second/both
-// 360/360/373; count first/second 360/361; count-find/find-count/both count
-// 374/374/375. NOT kept: every form regresses and shortens away from retail. Original
-// whole body and include list restored; scalar homes and amount-biased history cursor remain.
-// B406: Attribution-produced event code byte/word/long/dword, definite assignment
-// 436/451/452/452; conditional selected-code producers 436/440/472/472. All regress;
-// original eager code, scalar homes, history observations and complete body restored.
-// P303: Late constant killer-team/hostility defaults and direct statistics parameter, subsets
-// 1/2/4/3/5/6/7: 374/338/353/378/374/338/378; reversed award-array declarations 353.
-// NOT kept: hostility at 338 delays its clear past attribution, unlike retail; original lifetimes and body restored.
-// M346: Existing consideration/hostility/friendly results as byte, masks 1/2/4/3/5/6/7:
-// 353/369/351/369/351/362/362; all char 362. NOT kept: friendly alone or with
-// consideration gains only two through extent, with scalar homes unchanged. Original body restored.
-// M354: Complementary consideration/hostility/both bool and byte, then word/long pairs:
-// 353/369/369/353/369/369/417/392. NOT kept: complemented status publication misses native byte/store allocation.
-// M356: Complete timestamp/strict-improvement results, expression then ordered
-// tests, bool/byte/short/long: 353/353/353/353/353/353/353/353. NOT kept: no gain;
-// original selection and complete body restored. Scalar homes and biased cursor remain.
-// DH336: Two real award buffers/counts in array and record ownership forms:
-// 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
-// NOT kept: grouped storage needs equality; original complete body restored.
-// DH350: Both award-prefix searches own duplicate/unique outcomes,
-// bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
-// original ordinal searches, scalar homes and complete body restored.
-// J257: Completed selected/reported validation outcomes, bool subsets and byte/short/long pairs, pointers and direct credit results:
-// 353/353/353/353/353/353/353/425. NOT kept: seven validation forms tie 353; direct credit production grows to 1580 bytes at 425 and leaves scalar/history homes unresolved.
-// Original executable source restored; allocation gaps remain.
-// DH371: Actual engine/reported-source/selected-validation/fallback-validation/credit-hostility/
-// assist-admission/credit-pair/related-owner Boolean test results: 353 each.
-// NOT kept: no gain or equality; original validation, record observations and full body restored.
-// Native scalar homes and amount-biased history cursor remain.
-// Round 53 (m3 lane 2, fast; positional/aligned/masked aligned, baseline 353/160/56): consider_team as a true default
-// cleared by an if 344/156/52 (retail's store, but a flag form: match-only, not kept); the killer test as `if (killer !=
-// NONE) { if (killer == reported) code; } else if (reported is valid) { ... }` (retail's layout) 363 (1532)/157/52, with the
-// default 354 (1532)/153/48; a walked record pointer from a history local in the selection loop 374/169/68, with the default
-// 368/165/64; a `&history[selected]` pointer 454 (1583)/264/106, with the new test 438 (1567)/264/102; a named selected
-// player 403 (1596)/174/105, with the new test 354/160/58; pointer and player together 491 (1617)/275/192, with the test
-// 433 (1569)/272/142; those with the walked pointer and default 438 (1585)/259/89, with history reads in the assists 417
-// (1569)/247/81. Slots follow memory references, heaviest lowest: ours victim_team 8, damage_code 7, killer 6 references
-// (+0x14/+0x18/+0x1c); retail killer 8, victim_team 8, damage_code 6 (+0x14/+0x18/+0x1c). So retail's killer is read from
-// its home two more times and its damage code once less; the record pointer forms lose `selected`'s EDI and grow the frame.
-// N398: Native post-root shared object-header raw/typed/readonly tables, then related-player observations at every use 353/353/353/353/357/357/357/357.
-// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
-// MiniMax R (11-05): the team-consideration result is a true default cleared by the query, 344 (was 353); not kept: a test-set flag, match only.
-// Round 79 (m3 lane 11, fast): `s_damage_record *record = &object->history[selected]` in the killer block, declared before or
-// after the damage code read, 454/454 (1583 bytes): victim_team and damage_code take retail's +0x18/+0x1c and the record
-// is retail's `lea [sel+0x2f]; shl 4; add`, but `selected` moves to a parameter home, the pool pointer takes EDI (retail
-// ESI) and the frame grows to 0x54. On it: `selected` declared first 464; `if (killer != NONE) { if (killer ==
-// reported_player) ... } else if (reported valid)` 438 (1567); that with the consideration flag as a true default cleared
-// by the test 433 (match-only flag form; diagnostic). No form reaches below 353.
-// Round 163 (m3 lane 5, fast): the damage code read after the validation block 342 (1568 bytes; retail reads it
-// before the validation's test, a statement order by score, not kept); `if (killer == NONE && reported valid)
-// killer = reported; if (killer == reported) code` 332, discarded: not the same behaviour (retail leaves the code
-// alone when the fallback fails); the selection fallback below the hostile/threshold/count defaults 386; the
-// record's player assigned to killer first and cleared when the validation fails 415 (1612); the credited player's
-// team byte as a twice-used char local for the team store and the query 358 (1552), as a short local 358. Retail
-// keeps the credited player in its home (+0x14; reloaded into EDX at the fallback, into EDI at the team block).
-// M3 lane 13 r72 (fast with 0x1e9ce0 and 0x1ea5b0, unchanged at 13 and 106; brackets: aligned count with registers and
-// stack offsets masked, base 353 [35]). Retail's two award loops have no compare after the prefix search (the search
-// leaves straight to the next award when it finds the player). The search as an inline early-return list predicate
-// used by both loops 366 (1528 B) [37]; with the killer-team call argument read from the player byte again 365 [38];
-// with the consideration flag as a true default cleared by the test 357 [35]; those three with the `if (killer !=
-// NONE) { if (killer == reported_player) ... } else if (reported valid)` layout 358 [33]; plus the assist stores
-// re-reading the record's player index 366 (1544 B, retail's length, first difference +0x8) [39]; the predicate with
-// that killer layout alone 383 (1512 B). NOT kept: all above 353; body below unchanged.
-// M3 lane 14 r79 (fast with 0x1ea770/0x1ea5b0/0x1e9ce0, unchanged): `victim != NONE && assist_threshold > 0.0f` 353
-// (same code); `victim != NONE && killer != NONE` 354; `victim != NONE &&` ahead of the killer-team query 371 (1564
-// bytes); `reported_slot` declared before `object` 355; `hostile = true;` ahead of the hostility count increment 353
-// (same code). The three rotated scalar homes and the biased history cursor stay.
-// Round 228 (m3 lane 3, fast with 0xd9640, 0x1e9700, 0x1ea770 and the other file-mates, which keep their state;
-// aligned counts exact/stack-masked/register-masked in brackets, base 353 [179/160/56]): the assist index short 353,
-// the entry test as an enclosing `if` instead of the early return 353, the award searches as `for` loops with a
-// `break` 353 (same code each). Retail reads the related unit's player field again for the assist store (after the
-// team call): that field read at each use in the related block 357 (1552 B) [170/151/53] (the block is then retail's);
-// with both award searches through a two-caller early-return predicate 361 (1532 B) [166/147/49] (retail's searches
-// leave straight for the next award); with the assist stores re-reading the record's player as well 371 (1544 B,
-// frame 0x4c) [198/141/56], plus one history pointer for both loops 371 [198/141/55]; the selection amount in a local
-// under the time test on those 441/442 (1563 B). All restored.
-// Round 148 (m3 lane 7, fast; [stack+register masked, register masked] aligned counts, control 353 [53, 78]): the reported
-// player's code written once after the fallback (`if (killer == NONE && valid(reported)) killer = reported; if (killer != NONE
-// && killer == reported) damage_code = code;`, the same behaviour with one store fewer) 355 [55, 80]; consider_team as
-// `reported_player == NONE || !function_1df560(...)` 353 (same code); victim_team set in an if/else with no NONE default 422
-// [60, 84]; the victim's team byte through a named player pointer 353 (same code); the hostile arm's flag set before the
-// counter 353 (same code); re-measured: the selection amount named once 454. Retail keeps killer in EDX across the
-// fallback merge and reloads it from its home on the paths that skip the record (0x1ea1de) and at the team block; ours
-// threads those paths into the fallback and keeps killer in EBP.
-// M3 lane 12 r114 (fast with the file's 19 functions and 0xd9640; [masked aligned, register-masked], control 353 [112, 36]):
-// the selection loop as a file-local helper returning the chosen slot, plain inline 686 (1308 B: it stays out of line and
-// 0xd9640 then reads 61), forced inline 509 (1484 B) [155, 98]; assist_threshold set before killer in the selected block 353
-// (one store moves) [112, 37]; the killer choice (selected record, then the reported fallback) as a forced-inline helper
-// returning the killer and setting the damage code and threshold through pointers 366 (1548 B, 450 instructions as retail)
-// [115, 39]: the caller then reloads the killer from a home at the killer block as retail does, but the helper's killer takes
-// a parameter home and the caller's copy EBP; on that helper, consider_team as a true default cleared by the test 366 [113, 37]
-// and the assist stores re-reading the record's player 432 [110, 48]; the object, root header and related unit through the
-// existing object_get/object_header_get 353 (same code). Re-measured (listed): one history pointer for both loops, the amount
-// read once under the time test and the assist stores re-reading the player 451 (1578 B) [170, 54]: the selection base stays
-// +0x2f4 and selected moves to a home, so the amount's read count does not set the cursor. Also seen: ours loads the object
-// pool's data ahead of the 0xbaf80 call in the related block, retail after it.
-// M3 lane 16 r106 (fast with the file's functions and unknown_196d20.cpp's, all matched ones stay matched; [register-masked
-// aligned], base [78]): lead: retail pushes the damage code to 0x197160 straight from its byte home (`mov esi, [esp+0x1c]; push
-// esi`, reused for 0x1ea5b0), so 0x197160's code parameter is a byte (its own body reads only the low byte); typed so at its
-// definition and declaration 354 [78] (0x197160 stays matched; ours then pushes as retail and the damage code has one reference
-// fewer, retail's count per round 53). On it: the killer's team byte passed to 0x1df560 at the call 354 [79] (retail's `movsx edx,
-// al` / `movsx si, al` pair); with `if (killer != NONE) { if (killer == reported_player) ... } else if (reported valid)` as well
-// 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
-// 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
-// MiniMax H (11-11), NOT kept (coordinator 11-11): 353 -> 344 only from consider_team set true and cleared by two nested tests in place of its one expression (a bool set by tests: match-only); body at 353.
-// m3 lane 1 r98 (fast with the file's functions and 0xd9640; control 353): `best = object->history[selected].amount;` in the
-// selection (to take one amount read off the walk's anchor), `else if (!consider_team) continue;` in the selection loop, and the
-// assist loop's skip test split into three `continue` tests: 353 each, identical code (the selected index is copy-propagated
-// before the walk is anchored). No other unlisted single form found; the cause stays the allocation one above (killer kept in
-// EBP across the fallback where retail keeps its home, the three rotated slots, the +4 walk base). 0 counted trials: no
-// unlisted code-changing natural form (round 163/lane 14 r79/lane 12 r114 above cover the remaining spellings).
-// Round 157 (m3 lane 7, fast): the killer choice as a force-inline helper setting the killer, the damage code and the
-// threshold through pointers 353 (same code: the pointer outs are promoted after inlining, so the killer does not become
-// memory-resident as retail's is, stored at every assignment and reloaded at the killer block). Re-measured, the
-// `&object->history[selected]` record pointer 454 (1583 bytes): `selected` then takes the reported team parameter's home,
-// where retail keeps `best`, so `best` needs a new slot (frame 0x54) and the killer sorts below the victim. No counted
-// trial: lane 1 r98's survey, round 163, lane 14 r79 and lane 12 r114 above cover the remaining killer-block spellings.
-// P487: Award prefixes through predicate find first/second/both, predicate count
-// first/second/both, both search-n and both first-of: 455/431/468/455/431/468/443/455.
-// NOT kept: all regress and grow; matched caller 0xd9640 becomes 61 in all eight trials.
-// Original body restored; scalar homes and the amount-biased cursor remain.
-// M3 lane 16 r118 (fast with the file's functions and 0xd9640, control 353): both award dedupe searches as `for (j...) if (equal)
-// break; if (j < i) continue;` 356 (1550 B: the found exit is not threaded, a jmp to a separate `cmp eax, esi; jl`); the assist and
-// related-unit stores re-reading their player fields (retail re-reads both after the team call), no predicate, 392 (1564 B, frame
-// 0x4c: the shared object+0x2f0 spill goes); the three inline validations through effects.h's record_pool_lookup_checked 353 (same
-// code); `self` passed straight in the 0x1ea770 call 350 (1544 B, retail's length, but the compare sinks to the call and esi/ebx pop
-// early; 3 points, not kept); the two 0x196dd0 calls' absolute indices as two-use named locals 353 (same code).
-// M3 lane 4 r202 (fast with 0x1e9ce0/0x1ea770/0x1ea880; base 353): consider_team and friendly both as a default then
-// set by an if (retail's shape for both bytes; a flag set by an if, match-only) 344; the selected record's player index
-// named in the selected block 400 (1596 B); consider_team as `reported_player == NONE || !function_1df560(...)` 353
-// (same code); friendly computed before self 350 (1544 B); self and friendly passed as call arguments 359 (1535 B).
-// P542: Complete absent-source/query and unavailable-mode/team result definitions, queried or exhaustive arms, bool/byte: 396/396/397/397/353/351/353/351.
-// NOT kept: at most two points; one-use/test-defined results miss equality. Original complete body restored; scalar homes and amount-biased history cursor remain.
-// M3 lane 3 r249 (fast with 0xd9640, which stays MATCH; base 353): `self` passed in the 0x1ea770 call with the fallback as
-// `if (killer != NONE) { if (killer == reported_player) code; } else if (reported valid) {...}` 368 (1527 B); both award dedupe
-// searches with a `duplicate` flag set and `break` inside the search 366 (1528 B: each search then leaves straight for the next
-// award as retail's does, no `j == i` test; a flag set inside a test, match-only), that with consider_team as a true default
-// cleared by the test 357 (1528 B, both flag forms, diagnostic); the dedupe through a two-caller inline list test with a result
-// variable 366 (same code as the flag form); the assist admission as a positive `if (player && ... && (reported || amount >
-// threshold)) {...}` 353 (same code). Re-measured (listed): the selection amount in a local under the time test 454 (1578 B).
-// Lead: retail's fallback-fail edges reach the `killer != NONE` test (0x1ea227, not threaded), ours skip the killer block
-// directly; retail reloads killer from its home at both merges.
-// P563: Terminal self/other-player comparison results in byte/short/long/dword storage:
-// 365/370/369/369/365/370/369/369. NOT kept: native scalar homes and biased history cursor remain; original comparison, observations, providers and complete body restored.
-// P578: Scalar memcpy at victim team/selection handle/assist handle/selected event/
-// selected amount/credited team/related player/related object: 353/353/353/353/371/353/353/353. NOT kept:
-// no exact scalar-home or history-cursor recovery; original complete body and observations restored.
-// m3 lane 8 r176 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0; control 353): the selection amount in a local under the
-// time test 454 (1578 B: retail's 0x2f0 cursor and damage_code's +0x1c slot, but `selected` loses EDI); read with the player
-// index at the body's top 418; both dedupe loops as a found flag with break 366 (1528 B: retail's exact dedupe exits, no test
-// after the loop, the rise is two pads; a flag, match-only); 0x197160's `code` typed byte (its only caller; retail loads the
-// code's dword once into ESI and pushes it for 0x197160 and 0x1ea5b0) 354 (retail's setup exactly, 0x197160 stays matched:
-// lead for a combined form); the two together 366.
-// b7G (11-17) walk against retail, fast build on r830 (353 unchanged, 0xd9640 MATCH): checked every block of
-// 0x1e9fa0 against retail statement by statement: entry and victim (0x1e9fb7 call 0xbadc0 mask 3, +0x13c), team byte
-// (+0xc0, movsx), both tick windows (0x45dc10 = 4.0 into 0x1ea5b0's cutoff at 0x1ea278, 0x45dbfc = 6.0 for the time
-// test; float store then fld/fistp at 0x1ea02c-0x1ea036), consideration flag (0x1ea09b), selection loop (record
-// +0 time unsigned 0x1ea114, +4 amount strict 0x1ea11e, +0xc player, -FLT_MAX 0x4409d4), slot fallback (0x1ea13e),
-// selected block (code stored before the player test 0x1ea17e, 0.4 = 0x45dd30 at 0x1ea1ba), reported fallback
-// (0x1ea1e2), killer block (victim NONE joins the hostile arm 0x1ea26b), assist loop (4 records, test order, 0.0
-// 0x45dbd8 at 0x1ea2a4), related unit (+0x2c, +0x248, +0x13c, unsigned < 5 at 0x1ea437), callee argument registers
-// and stack orders at 0x1ea271, 0x1ea285, 0x1ea460, 0x1ea486, 0x1ea4db, 0x1ea50f and 0x1ea599, both dedupe loops,
-// self/friendly. Behaviour differences found: none. The lead above is allocation only: every edge into 0x1ea1de
-// has killer == NONE (0x1ea15c, 0x1ea182, 0x1ea191, 0x1ea1a4, 0x1ea1b0), so retail's 0x1ea227 test runs on NONE and
-// leaves at 0x1ea29e; ours skips the killer block directly, the same work. Only non-behaviour spots: retail re-reads
-// the record's player at the assist stores (0x1ea336, 0x1ea33f) and the related player at 0x1ea43c (listed above).
-// M3 lane 17 r46 (fast, control 353, aligned 132): the selected record's pointer used only for the validation test 353
-// (same code, it folds back); a file-local inline accessor returning `&object->history[index]` at each of the three reads
-// 353 (same code); the pointer for the test and the killer with the amount indexed 452 (1599 B), for the test and the
-// amount with the killer indexed 432 (1580 B), as `object->history + selected` declared after the damage code read 454
-// (the listed 454's code); 1 to 3 unused locals on the 454 form 454 each (diagnostic). The 454 form loses EDI for
-// `selected` because the -1 constant follows `selected` into its register: with `selected` in memory the constant takes
-// ESI and the pool EDI. A fast-check search over 111 combinations of fourteen listed forms (both flags, the record
-// pointer with and without a named player, the amount read once, the assist reads, the related player re-read, the found
-// flag dedupe, the team byte argument, the fallback arm order, self/friendly order, `self` in the call, a record pointer
-// in the selection loop, three declaration orders, a history pointer for both loops): best 340 (1544 B: both flags,
-// `self` in the call and the history pointer), then 342 twice and 350; nothing at or under 350 without a flag set by a
-// test, and the unchanged body has the lowest aligned count of all (132, next 137). Body unchanged.
-// M3 lane 11 r119 (fast; masked = aligned count with registers and stack offsets masked, base 57): `j >= i` for both
-// dedupe not-found tests 356 (masked 59: half threaded, a jmp per loop); `friendly` as `bool friendly = false; if (...)
-// friendly = true;` 353 (masked 53: retail's tail, false store first); that with consider_team as the true default
-// cleared by its test 344 (masked 49; the head's code then equals retail's but for the three rotated slots and the +4
-// cursor); on that the killer tests as `if (killer != NONE) { if (killer == reported_player) ... } else if (datum...)`
-// 354 (1532 B, masked 45: retail's fallback block order); on that a record pointer for the selected entry 433 (1567 B).
-// The two flags and the arm order are match-only forms; together they are the closest structure so far.
-// The fallback still keeps the credited player in EBP and the history cursor stays biased by four.
-// Historical candidate from entry or selection, credited player before fallback 378/396;
-// candidate through fallback from entry or selection 324/366; shared candidate for validation
-// and assignment 396; reported provider result 353; selected provider result 446; credited player
-// through the primary award 353.
-// NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
-// damage-code slot but still exchanges the credited-player and victim-team slots.
-// M3 lane 3 r267 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880 and 0xd9640; base 353, aligned 179, 60 with registers and
-// stack offsets masked): the consideration flag as `reported_player == NONE || !function_1df560(...)` 353, the assist
-// admission as `!(player_index == reported_player || amount > assist_threshold)` 353, the selection loop's `else if
-// (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
-// damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
-// the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
-// M3 lane 4 r225 (fast with the file's functions, src/unknown_1967d0.cpp's and 0xd9640; control 353, aligned 179).
-// Reading: in the selected block retail keeps the record pointer in EAX and the record's player in EDX and gives the
-// callee-saved registers to the validation's masked index (EBP), data pointer (EBX) and salt copy (EDI), where ours
-// gives EBP to the player and EBX to the record. Tried: the selected block's validation written with function-scope
-// index and datum locals 403 (1596 B), all three validations written that way 403 (same code as the first: the two
-// locals alone move the frame); the selection loop's index as a long with the slots cast 355; `best` declared ahead
-// of `selected` 353 (same code); the object lookup ahead of the two tick windows 424.
-// M3 lane 14 r119 (fast with 0x1e9ce0/0x1ea770/0x1ea880, all MATCH each time; control 353): the assist stores reading
-// the record's player index again (retail's `mov edx, [ebx]` at each store) 392 (1564 B, the frame moves: first
-// difference +0x8); with the related player re-read for its store 392; retail's arm order (`if (killer != NONE) {...}
-// else if (reported valid)`, re-measured 363, 1532 B) with the assist re-reads 377 (1548 B); retail's arm order with the
-// team byte passed to 0x1df560 at the call 354 (1548 B); all four together 393 (1564 B). Note for later rounds: the
-// related-unit block loads the object table's data pointer before the 0xbaf80 call into ESI, where retail loads it
-// after the call into EDX (0xbaf80 only reads memory; matched callers 0xbba20/0x1c35f0 keep the pointer across it,
-// 0x138ab0 reloads it after).
-// Round 438: Victim-team, credited-player and damage-code homes remain rotated. Test the existing record layouts.
-// Read the victim team through the existing player record type 353.
-// Read the candidate team through the checked player record type 353.
-// Use the player record type for the credited team and unit in both credit branches 353.
-// Read the validated assisters through the player record type 353.
-// Use the real player record for the related-unit award team lookup 353.
-// Use the existing object header fields for all three object-header observations 353.
-// Test the table validity through the existing statistics record 353.
-// Use the existing player, object and statistics record layouts together 353.
-// NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
-// Timestamp at record entry/after player read/for a present player/after team admission
-// 417/417/459/353. Eligibility in those positions 463/463/459/353. NOT kept: earlier
-// reads or decisions grow the frame to 0x54 or 0x58. The late forms tie with the
-// amount-biased history cursor and rotated credited-player, victim-team and code homes.
-// M3 lane 15 r112 (fast = full 353, with the file's functions and 0xd9640): the consideration flag as `reported_player ==
-// NONE || !same_team(...)` 353; the assist loop's counter as a short 353 (same code each); the victim team as a ternary
-// initialiser 422; killer declared before killer_team 354; the fallback as a nested valid test followed by `if (killer !=
-// NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
-// are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
-// reported_player)` 332.
-// Record reference advanced inside the selection scan, assist scan, or both 479/375/469. Both scans from
-// one base as references or pointers 469/469. Pointer-end selection, assist, or both scans 499/379/526.
-// NOT kept: Every cursor form changes the 0x50 frame. The assist-only reference stays at 1548 bytes with
-// frame 0x4c.
-// Winner/fallback/both as record addresses in the indexed scan 445/483/476.
-// Winner/fallback/both with an end-sentinel cursor 539/491/511.
-// Both with a bounded cursor 511.
-// Indexed single-record join before recovering the ordinal 500.
-// NOT kept: The cursor restores the record base but pointer-valued selection adds code and displaces the native short ordinals.
-// Primary-award snapshots of code, credited handle, defeated handle, code/credited, code/defeated,
-// credited/defeated, and all three 353 each. All three with long award code 354. NOT kept: the
-// scoped snapshots tie or regress, and the credited-player home and repeated code load persist.
-// Attribution branches initialize killer/threshold/code 417/379/436.
-// Killer and threshold/killer and code/threshold and code 436/459/446.
-// All three in the selected or absent arm first 469/478. NOT kept: the
-// explicit defaults raise the score and leave the rotated homes unresolved.
-// Keep separate slots at the maximum test, update shared slot in the reported arm, conditional update,.
-// and validate other players first. Initial-maximum and no-greater-maximum tests: 380/412/412/412/378/394/394/394.
-// NOT kept: The maximum tests all raise the score. The separate-slot forms and the initial-maximum shared forms add 16 bytes. The victim-team/credit/code homes and amount-biased history cursor differ.
-// Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
-// fallback 358/358/416/416, with conditional code selection 358/358/416/416.
-// NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
-// Typed victim, history and credit, related credit, combinations and typed player locals 353
-// each. Existing unchecked lookup for victim, primary credit, secondary credit or all four
-// unchecked accesses 353 each. NOT kept: all tie with the rotated team, credit and code
-// homes and the amount-biased history cursor.
-// Indexed const record references in the selection/assist/both scans 353/353/353.
-// Reference to the history array alone or with both scan records 353/353.
-// Array and selected-record references 473, with a retained selected handle 496,
-// and with indexed references at both scans 473. NOT kept: the selected-record
-// forms grow the frame to 0x54 and leave the entry homes and selection bias.
-// Fixed-range tail tests for selection, assists, both, selection with long ordinal, assists with
-// short ordinal, selection end ordinal, assists end ordinal and both end ordinals.
-// Scores 509/353/509/509/353/509/353/509.
-// NOT kept: Assist-only tails tie. Selection tails allocate 0x54, move the object argument to EAX
-// and break the matched caller.
-// Shared victim/credit/both full-width player slots across pool and counter uses
-// 439/357/434, word slots 418/360/438, both unsigned full-width 434, credit slot
-// assigned with the selected handle 477.
-// NOT kept: all raise the score. The 357 form retains frame 0x50 but grows to 1553 bytes.
-// Separate declaration and initialization for victim team, credit or event code
-// 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
-// all three or all with the credited team 353/353. The three homes and the
-// amount-biased history cursor stay in place.
-// M3 lane 14 r135 (fast, control 353): the selection amount read once into a local inside the time test 454 (1578 B; the
-// walk moves to retail's +0x2f0 base, but selected drops to memory); killer, victim team and code as fields of one local
-// record (diagnostic) 369; 0x197160's code parameter typed byte 354 (the code is then loaded once and pushed twice as in
-// retail; 0x197160 still matches); `best` read through `selected` 353 (same code); the amount local with the byte code
-// parameter 454.
-// M3 lane 16 r165 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640, 0x197160; control 353): a typed record
-// pointer to the selected entry declared ahead of the damage code read 454 (1583 B); short indices for the two dedupe
-// searches 364 (1557 B); a short assist-loop index 353 (same code); `best` declared ahead of `selected` 353 (same code);
-// the reported slot declared after `selected` 358.
-// M3 lane 6 r222 (H2M_FAST with 0x1e9ce0, 0x1ea770, 0x1ea880, 0xd9640, 0x197160, all matched each time; control 353,
-// aligned 179; body unchanged). Rebuilt for their aligned listings, not their scores: the listed two flags + found-flag
-// dedupe + retail's arm order + team byte argument + assist and related re-reads 366 (1544 B, frame 0x4c: the shared
-// 0x2f0 base at +0x34 is gone); that with the selected-record pointer and the amount local 423 (1563 B, frame 0x50,
-// retail's 0x2f0 cursor, but -1 in EDX, the pool in EDI, the cursor in EBX, the counter in BP and `selected` in memory
-// where retail has EDI, ESI, EBP, BX and EDI); the record pointer alone 454 (1583 B, frame 0x54, -1 in ESI, pool EDI).
-// New spellings of the selection amount read once, each 454 at 1578 B with that same rotation: `if (!(time > recent))
-// continue;` ahead of an amount local, the amount local at function scope, the amount read ahead of the two-part test
-// (1583 B, frame 0x54), the amount local with `best` stored ahead of `selected`; on main `best` stored ahead of
-// `selected` 355. Reading: with the amount read once the pool leaves ESI (the register 0x16bae0 takes it in) for EDI
-// and is copied back at each call, which is what costs `selected` its register; main keeps retail's ESI/EDI/EBP/BX
-// roles only with the amount read twice (cursor +4).
-// M3 lane 7 r209 (h2m fast with 0x197160 and 0xd9640, MATCH; control 353). Reading: retail's killer lives in its home
-// at +0x14 (reloaded into EDX/EDI at the joins), the friendly flag is a stack byte in reported_player's dead slot (stored
-// false, then 1) and self a byte in object_index's dead slot. Tried: the killer fallback with the `killer != NONE` arm
-// first (retail's block order; an arm swap, diagnostic) 363 (1532 B); the assist stores reading the record's player index
-// 392 (1564 B: the cursor still +4); the selected entry's player index named for the datum test and the killer 403 (1596
-// B); the friendly test passed in the 0x1ea770 call (no local) 350 (1544 B: friendly then stays in AL where retail
-// keeps a stack byte; three points, not kept); self and friendly both in the call 359 (1535 B).
-// M3 lane 7 r211 (h2m fast with 0x197160, 0xd9640, 0x1ea770, 0x1ea5b0, matched ones MATCH; control 353). Reading: retail's
-// +0x14 home is the killer itself, reloaded per block (EDX at the joins, EDI in the killer block), and no long-lived value
-// holds a callee-saved register after the selection loop; ours keeps the killer in EBP, which rotates the three small
-// homes. Tried: the killer's address taken in an unused pointer 353; the killer read once through a `long const *` at the
-// 0x1ea770 call 353 (folded); the killer block on a by-value copy 353; the attribution (selected record, reported-player
-// fallback) as a forceinline helper writing the killer, code and threshold through pointers 353 (promoted; all the same
-// code); round 209's friendly test in the call plus the consideration flag true by default and cleared by the team test
-// 341 at 1544 B (a flag set inside a test, match-only; the direct form is 350).
-// M3 lane 8 r222 (H2M_FAST with 0x197160, 0xd9640, 0x1ea770 MATCH and 0x1ea5b0 at its 76 each run; control 353, aligned
-// 132, register- and offset-masked 35): the selection amount read once inside the time test re-measured 454 (aligned 217,
-// masked 58), the assist stores re-reading the record's player index re-measured 392 (1564 B; 167/43); both together 451
-// (1578 B; 206/50); both with the killer test's team taken from the player byte 416 (218/53); the assist re-read with the
-// team byte 392 (178/46); the selected entry bound as `s_damage_record const &` for the datum test, the killer and the
-// threshold, declared before or after the damage code read, 454 each (1583 B; 263/68 and 263/72: the same code as the
-// record pointer). No form here is closer than main's body on the masked count either. Body unchanged.
-// M3 lane 2 r134 (H2M_FAST with 0x197160, MATCH throughout; main 353): the self test written in the 0x1ea770 call 350
-// (1544 B, retail's length, but ESI/EBX are then popped before the friendly test where retail computes `self` first); a
-// `0 < assist_count` guard ahead of the first dedupe loop 353; both dedupe scans as a `for` with `break` 353; the killer's
-// team byte named as a char and passed to 0x1df560 as the byte 358 (1552 B); friendly as false then set by its test 353.
-// Body unchanged.
-// M3 lane 5 r233 (h2m fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0, 0xd9640 and 0x197160; control 353, aligned
-// 128/132, register-masked 52/56; body unchanged). Reading of retail's selected block: the record pointer and the
-// record's player sit in EAX and EDX and the validation's index, data pointer and salt copy take EBP, EBX and EDI, so
-// neither value is a long-lived register there; the killer is stored to its home at each assignment, held in EDX
-// through the fallback (which validates the reported player in EDI and copies it, `mov edx, edi`) and loaded into EDI
-// only at the top of the killer block, although EDX holds it on every path in. Tried for that split: victim, killer,
-// victim team and damage code as members of one local record in retail's home order (diagnostic) 384 (first
-// difference +0x8), without the victim 369 (listed), the killer alone in such a record 353 (same code: a lone member
-// is promoted like a plain local); the fallback validating a named copy of the reported player that then becomes the
-// killer 353 (same code, the copy folds); the killer block working on a named copy of the killer 353 (same code),
-// both 353; the two flags in retail's shape with the killer-block copy 344 (the listed flag forms' code).
-// M3 lane 2 r138 (h2m fast with 0x197160, 0xd9640, 0x1ea770, 0x1ea880, 0x1e9ce0; control 353, aligned 132, registers
-// masked 56): both bools in retail's start-then-set shape alone (`true`, cleared after the reported-team test; `false`,
-// set after the four friendly tests) 344 (1548 B, registers masked 49; flag forms, match-only); with the selection
-// amount named once for the compare and the best 358 (the cursor stays +0x2f4); the selected entry through a named
-// record pointer re-measured 454 (1583 B), on the flag shapes 449; the killer fallback written as `if (killer != NONE)
-// { if (killer == reported_player) ... } else if (valid) ...` 363 (1532 B). Body unchanged.
-// M3 lane 11 r156 (H2M fast with 0x1e9ce0/0x1ea770/0x1ea880/0xd9640/0x197160, all MATCH; control 353, aligned 179):
-// `long killer = NONE;` declared first 370; `bool hostile = false;` declared first 439 (first difference +0x8); the two
-// assist arrays declared first 353 (same code); the two assist counts declared first 451 (+0x8); the selection amount
-// read once inside the time test with the killer declared first 435 (1578 B). Body unchanged.
-// M3 lane 14 r149 (H2M_FAST with 0x197160, 0xd9640, 0x1ea770, all MATCH; control 353): `bool hostile = false;` declared
-// with the entry defaults 425 (first +0x8); `real best = -FLT_MAX;` declared there 410 (first +0x8); the selection test as
-// `(dword)recent < time && best < amount` 354; the assist gate as `0.0f < assist_threshold` 353; the selection loop's NONE
-// skip as an enclosing `if (player_index != NONE)` block 353 (the 353s the same code). Body unchanged.
+/* whether a player index already appears among the first `count` entries of a list */
+static inline bool player_list_contains(long const *players, long count, long player_index)
+{
+	for (long i = 0; i < count; ++i)
+		if (player_index == players[i]) return true;
+	return false;
+}
+
+/* a unit died: picks the player to credit (the heaviest recent damage record on the victim's object, else the
+   reported player), awards the kill or the betrayal, then the assists: every other recent damager above 40% of the
+   credited record's amount, and the driver of the vehicle the killer rides. The record pointer walks the history in
+   both loops (retail keeps the history's address in one home for both); the driver field is read at each use. */
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -1027,12 +473,16 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	long recent = function_146650() - real_to_long((real)g_510c54->field_2_3 * 6.0f);
 	s_object_damage_view *object = *(s_object_damage_view **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
 	short reported_slot = NONE;
-	bool consider_team = !(reported_player != NONE && function_1df560((short)victim_team, (short)reported_team));
+	bool consider_team = true;
+	if (reported_player != NONE && function_1df560((short)victim_team, (short)reported_team))
+		consider_team = false;
 	short selected = NONE;
 	real best = -FLT_MAX;
-	for (short i = 0; i < 4; ++i)
+	s_damage_record *record;
+	short i;
+	for (i = 0, record = object->history; i < 4; ++i, ++record)
 	{
-		long player_index = object->history[i].player_index;
+		long player_index = record->player_index;
 		if (player_index == NONE) continue;
 		if (player_index == reported_player) reported_slot = i;
 		else
@@ -1041,10 +491,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 			byte *player = record_pool_lookup(g_4e8c24, player_index);
 			if (!player || !function_1df560((short)victim_team, (char)player[0xc0])) continue;
 		}
-		if (object->history[i].time > (dword)recent && object->history[i].amount > best)
+		if (record->time > (dword)recent && record->amount > best)
 		{
 			selected = i;
-			best = object->history[i].amount;
+			best = record->amount;
 		}
 	}
 	if (selected == NONE) selected = reported_slot;
@@ -1053,24 +503,25 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	long assist_count = 0, other_count = 0;
 	if (selected != NONE)
 	{
+		s_damage_record const *selected_record = &object->history[selected];
 		damage_code = object->damage_codes[selected];
-		if (datum_get_inlined(g_4e8c24, object->history[selected].player_index))
+		if (datum_get_inlined(g_4e8c24, selected_record->player_index))
 		{
-			killer = object->history[selected].player_index;
-			assist_threshold = object->history[selected].amount * 0.4f;
+			killer = selected_record->player_index;
+			assist_threshold = selected_record->amount * 0.4f;
 		}
 	}
-	if (killer == NONE)
+	if (killer != NONE && killer == reported_player) damage_code = code;
+	if (killer == NONE && datum_get_inlined(g_4e8c24, reported_player))
 	{
-		if (datum_get_inlined(g_4e8c24, reported_player)) { killer = reported_player; damage_code = code; }
-	}
-	else if (killer == reported_player)
+		killer = reported_player;
 		damage_code = code;
+	}
 	if (killer != NONE)
 	{
 		byte *player = g_4e8c24->data + (killer & 0xffff) * 0x21c;
 		killer_team = (char)player[0xc0];
-		if (function_1df560((short)victim_team, (short)killer_team) && victim != NONE)
+		if (function_1df560((short)victim_team, (char)player[0xc0]) && victim != NONE)
 		{
 			function_197160(killer, victim, damage_code);
 			function_1ea5b0(killer, statistics, cutoff, damage_code);
@@ -1079,15 +530,20 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	}
 	long assists[5], other_assists[5];
 	if (assist_threshold > 0.0f && victim != NONE)
+	{
+		record = object->history;
 		for (long i = 0; i < 4; ++i)
 		{
-			long player_index = object->history[i].player_index;
-			byte *player = datum_get_inlined(g_4e8c24, player_index);
-			if (!player || player_index == killer ||
-				(player_index != reported_player && !(object->history[i].amount > assist_threshold))) continue;
-			if (function_1df560((short)victim_team, (char)player[0xc0])) assists[assist_count++] = player_index;
-			else other_assists[other_count++] = player_index;
+			byte *player = datum_get_inlined(g_4e8c24, record->player_index);
+			if (player && record->player_index != killer &&
+				(record->player_index == reported_player || record->amount > assist_threshold))
+			{
+				if (function_1df560((short)victim_team, (char)player[0xc0])) assists[assist_count++] = record->player_index;
+				else other_assists[other_count++] = record->player_index;
+			}
+			++record;
 		}
+	}
 	if (killer != NONE && victim != NONE)
 	{
 		byte *player = g_4e8c24->data + (killer & 0xffff) * 0x21c;
@@ -1097,20 +553,17 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 			if (killer_unit != NONE)
 			{
 				long root = function_baf80(killer_unit);
-				byte *header = g_4e0300->data + (root & 0xffff) * 12;
-				if ((1 << header[3]) & 3)
+				if ((1 << object_header_get(root)->type) & 3)
 				{
-					byte *root_unit = *(byte **)(header + 8);
-					long related = *(long *)(root_unit + 0x248);
-					if (related != NONE && related != killer_unit)
+					byte *root_unit = (byte *)object_get(root);
+					if (*(long *)(root_unit + 0x248) != NONE && *(long *)(root_unit + 0x248) != killer_unit)
 					{
-						byte *related_unit = *(byte **)(g_4e0300->data + (related & 0xffff) * 12 + 8);
-						long related_player = *(long *)(related_unit + 0x13c);
-						if (related_player != NONE)
+						byte *related_unit = (byte *)object_get(*(long *)(root_unit + 0x248));
+						if (*(long *)(related_unit + 0x13c) != NONE)
 						{
-							byte *other = g_4e8c24->data + (related_player & 0xffff) * 0x21c;
+							byte *other = g_4e8c24->data + (*(long *)(related_unit + 0x13c) & 0xffff) * 0x21c;
 							if (function_1df560((short)victim_team, (char)other[0xc0]) && (dword)assist_count < 5)
-								assists[assist_count++] = related_player;
+								assists[assist_count++] = *(long *)(related_unit + 0x13c);
 						}
 					}
 				}
@@ -1122,26 +575,31 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 		function_15ce70(killer, victim, hostile, damage_code);
 		if (killer != NONE)
 		{
-			function_196dd0(killer & 0xffff, 0, victim & 0xffff, 1);
-			function_196dd0(victim & 0xffff, 1, killer & 0xffff, 1);
+			long killer_absolute = killer & 0xffff;
+			long victim_absolute = victim & 0xffff;
+			function_196dd0(killer_absolute, 0, victim_absolute, 1);
+			function_196dd0(victim_absolute, 1, killer_absolute, 1);
 		}
 	}
 	for (long i = 0; i < assist_count; ++i)
 	{
-		long j = 0;
-		while (j < i && assists[i] != assists[j]) ++j;
-		if (j == i) { function_1e9ce0(assists[i], 8, statistics, 6, 1, true); *(dword *)g_4e9ae8 |= 0x20; }
+		if (!player_list_contains(assists, i, assists[i]))
+		{
+			function_1e9ce0(assists[i], 8, statistics, 6, 1, true);
+			*(dword *)g_4e9ae8 |= 0x20;
+		}
 	}
 	for (long i = 0; i < other_count; ++i)
 	{
-		long j = 0;
-		while (j < i && other_assists[i] != other_assists[j]) ++j;
-		if (j == i) function_1ea880(victim, other_assists[i], (s_object_values *)statistics);
+		if (!player_list_contains(other_assists, i, other_assists[i]))
+			function_1ea880(victim, other_assists[i], (s_object_values *)statistics);
 	}
 	if (victim != NONE)
 	{
 		bool self = reported_player == victim;
-		bool friendly = function_15eaf0() && victim_team != NONE && killer_team != NONE && victim_team == killer_team;
+		bool friendly = false;
+		if (function_15eaf0() && victim_team != NONE && killer_team != NONE && victim_team == killer_team)
+			friendly = true;
 		function_1ea770(damage_code, victim, statistics, killer, self, friendly);
 	}
 }

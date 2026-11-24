@@ -320,6 +320,13 @@ union s_6ec80
 // inverted (failure arm first) 5, the mask typed `long` 5, a typed session-player view of the players block for the loop 5
 // (the three the same code), the guard testing players first 89 (NONE EDI and zero ECX from the entry); mask and counter
 // declared before the guard and zeroed together inside it 227.
+// M3 lane 1 r162 (h2m fast with 0x6ec10/0x5b120, both MATCH; base 5; the mask zeroed in the guard re-measured 225, lane 2
+// r137's lead re-measured 48): on the 48 lead the guard inverted (failure arm first) 48 (same code), the data test ahead of
+// the mask loop 229 (978 B); the mask zeroed in the guard with the 0x49c8 NONE default in an else arm of `if (arg_1)` 228
+// (981 B), with that default as the declaration's initialiser 247; this body with the else-arm default 228 (982 B, but
+// aligned 3: every register is retail's, only the NONE store's place, its jump and the mask zero differ), with the default
+// as the declaration's initialiser 50 (aligned 2: that store runs ahead of the two flag stores). Re-measured: the mask
+// zeroed in an inverted guard 225.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

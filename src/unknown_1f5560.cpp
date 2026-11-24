@@ -1919,6 +1919,21 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // XMM5): values bound to const references so they stay apart: the radius read 307 (1156 B, first +0x4), the side test's
 // bool 249 (1184 B), the lateral offset 198, the forward minimum 198, the desired distance 198 (same code each). The XMM
 // numbering still follows the 0x210690/0x210770 call summaries (the held `inline` lead above). Body unchanged.
+// M3 lane 12 r182 (link-time lab, exact for the base: 0 rows against our listing, 4 s a variant; counts are lab
+// aligned / register-masked rows against retail, base 211 / 78; body unchanged). Dead-local phase scan K = 0..32
+// (diagnostic): 211 / 78 at every K but 2 and 3 (208 / 72), so the float order here is not a symbol-count state.
+// Single forms: the left arm y first 204 / 70; the not-left arm y first 193 / 79; the type-one arm y first 190 / 71;
+// the two adjustment adds y first 211 / 78 (same code); all four 207 / 74; the forward distance computed after the
+// forward minimum 205 / 64; the lateral sum x first, or the forward's origin sum y first 211 / 78 (same code each);
+// the negated radius named once for its four uses 184 / 63; the side adjustment written per arm without the planar
+// scale helper 213 / 43; the scale chosen by a conditional inside one helper call 211 / 113. A grid over all 128
+// combinations of seven of those (negated radius named, three arm orders, helper or per-arm adjustment, its add
+// order, late forward): best aligned 165 / 46 (not-left arm y first + per-arm adjustment, y first), best masked
+// 171 / 35 (left arm y first + per-arm adjustment). Left on the best forms: retail stores the lateral distance to
+// its home at once and keeps both center coordinates in registers (ours keeps the lateral in a register and spills
+// center.x), and after the type-one normalize retail loads both difference components and multiplies them by the
+// negated radius held in the zero register. The per-arm adjustment writes out an existing helper's body and the
+// arm orders are orders by score, so nothing is kept.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

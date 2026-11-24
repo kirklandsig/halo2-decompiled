@@ -2269,6 +2269,11 @@ struct s_actor_looking_structure_view
 // array declared after the best pair 23 (same code); the trace fraction as `trace.distance / 5.f` 23 (same code: it folds to
 // the 0.2 product); the best index stored before the best score 25; the selected direction as `directions[best_index]` at
 // each use (no pointer) 39; a per-candidate trace record inside the loop 144 (928 B). Restored.
+// M3 lane 15 r140 (h2m fast with 0x296e60/0x297660/0x2980d0/0x24590; control 23, 0x296e60 270): lane 3 r277's merged
+// helper (the dot ahead of the sine and cosine) re-measured 6 (0x296e60 282; left: cross i's second product and the
+// score's order); on it the score in two statements (`i*i + k*k`, then `+= j*j`) with 0-3 redundant pairs on the clamp
+// product 53/143 (928 B)/141 (927 B)/33; the score as `dot3f(&forward, &directions[i])` 145 (928 B), as
+// `dot3f(&directions[i], &forward)` 145 (928 B). Retail 0x296e60 runs each of its rotations as fsin, dot, fcos too.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

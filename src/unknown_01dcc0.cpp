@@ -549,6 +549,11 @@ long g_55e6c0;
 // local 29 (main's code); the clamp through a file-local forceinline helper taking the count 29 (the lead's code); 1..12
 // probe locals 29 each (no tie). Diagnostics: the call's count as `(long)(short)count` 54, as the stored field 130 (any
 // reference to the count at the call keeps the clamp value in EAX). All restored.
+// M3 lane 13 r151 (h2m fast with 0x1dc40/0x1db10, both MATCH; round 51's lead re-measured 29 at 484 B, aligned 18): on
+// the lead the register parameter `index` declared last (all callers in the file updated; 0x1d770 MATCH) 29 (the
+// lead's code: parameter numbering does not move the height/clamp choice); the offset declared right after the clamp
+// store 36, after the three zero stores 39; the pitch read from the stored width field 29, the `width - 1` term so 29
+// (both forwarded); re-measured the clamp after the packing 32 (483 B). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
