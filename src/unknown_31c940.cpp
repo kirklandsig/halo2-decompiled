@@ -990,9 +990,8 @@ static __forceinline float select_angular_limit(double velocity, float const &ta
 	float const &lower, float const &upper, float const &gain, float const &mass,
 	bool &active, __m128 &scalar, float &simd_scratch)
 {
-	double lower_error = (target - lower) * gain - velocity;
- simd_scratch = lower_error;
-	if (lower_error > 0.0f)
+	simd_scratch = (target - lower) * gain - velocity;
+	if (simd_scratch > 0.0f)
 	{
 		float const &positive_error = simd_scratch;
 		active = true;
