@@ -1670,14 +1670,15 @@ result+=2;
 				case 12:
 				{
 					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-					__m128 * velocity_b_pointer = &body_b.body->angular;
-					scalar_work.angular_b = velocity_b_pointer;
+					scalar_work.angular_b = &body_b.body->angular;
 					__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
 					inverse_b_pointer = &body_b.body->inverse_inertia;
 					__m128 *velocity_a_pointer = &a->angular;
 					do
 					{
 
+						// Retain this row's receiver; the next row observes the published home.
+						__m128 *velocity_b_pointer = scalar_work.angular_b;
 						__m128 w[5];
 						w[2]=terms[0];
 						float mass=terms[0].m128_f32[3];
@@ -1714,7 +1715,6 @@ result+=2;
 						w[0]=_mm_add_ps(w[0],w[1]);
 						*receiver=w[0];
 						result[-1]+=impulse;
-						velocity_b_pointer=scalar_work.angular_b;
 } while (*op == 12);
 
 					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
