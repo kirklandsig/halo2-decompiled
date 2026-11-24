@@ -1143,23 +1143,26 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 	float *velocity_b, __m128 const *const &inverse_b_pointer,
 	float const &upper, float const &lower, solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
 {
- __m128 w[5];
- w[0]=a->angular;
- w[1]=_mm_load_ps(velocity_b);
- w[2]=row->a;
- w[3]=row->b;
- w[1]=_mm_mul_ps(w[1],w[3]);
- w[0]=_mm_mul_ps(w[0],w[2]);
- w[0]=_mm_add_ps(w[0],w[1]);
- w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
- w[4]=_mm_shuffle_ps(w[0],w[0],0xaa);
- w[1]=_mm_add_ss(w[1],w[0]);
- w[4]=_mm_add_ss(w[4],w[1]);
- _mm_store_ss(&projection_pool.bounded_angular,w[4]);
+	// Reuse the captured inputs after each projection value is consumed.
+	struct { __m128 velocity_a, velocity_b, axis_a, axis_b; } inputs;
+	__m128 work_4;
+	inputs.velocity_a=a->angular;
+	inputs.velocity_b=_mm_load_ps(velocity_b);
+	inputs.axis_a=row->a;
+	inputs.axis_b=row->b;
+	inputs.velocity_b=_mm_mul_ps(inputs.velocity_b,inputs.axis_b);
+	inputs.velocity_a=_mm_mul_ps(inputs.velocity_a,inputs.axis_a);
+	inputs.velocity_a=_mm_add_ps(inputs.velocity_a,inputs.velocity_b);
+	inputs.velocity_b=_mm_shuffle_ps(inputs.velocity_a,inputs.velocity_a,0x55);
+	work_4=_mm_shuffle_ps(inputs.velocity_a,inputs.velocity_a,0xaa);
+	inputs.velocity_b=_mm_add_ss(inputs.velocity_b,inputs.velocity_a);
+	work_4=_mm_add_ss(work_4,inputs.velocity_b);
+	_mm_store_ss(&projection_pool.bounded_angular,work_4);
 // Keep the mass multiplication before the step scale, without an early
 	// float spill. Both clamps retain their divide-then-multiply sequence.
-	double mass_error = (target - projection_pool.bounded_angular) * mass;
-	float impulse = mass_error * load_error_scale(step);
+
+	mass = (target - projection_pool.bounded_angular) * mass;
+	float impulse = mass * load_error_scale(step);
 	if (impulse > upper)
 	{
 		float ratio = upper / impulse;
@@ -1171,20 +1174,24 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 		impulse = ratio * impulse;
 	}
 
- w[4]=a->inverse_inertia;
- simd_scratch=impulse;
- w[1]=_mm_load_ss(&simd_scratch);
- w[0]=_mm_shuffle_ps(w[1],w[1],0);
- w[0]=_mm_mul_ps(w[0],w[4]);
- w[4]=*inverse_b_pointer;
+	work_4=a->inverse_inertia;
+	simd_scratch=impulse;
+	inputs.velocity_b=_mm_load_ss(&simd_scratch);
+	inputs.velocity_a=_mm_shuffle_ps(inputs.velocity_b,inputs.velocity_b,0);
+	inputs.velocity_a=_mm_mul_ps(inputs.velocity_a,work_4);
+	work_4=*inverse_b_pointer;
 
- w[0]=_mm_mul_ps(w[0],w[2]);
- w[2]=a->angular;
- w[2]=_mm_add_ps(w[2],w[0]);
- a->angular=w[2];
- w[0]=_mm_load_ps(velocity_b);
-w[1]=_mm_shuffle_ps(w[1],w[1],0);w[1]=_mm_mul_ps(w[1],w[4]);
-w[1]=_mm_mul_ps(w[1],w[3]);w[0]=_mm_add_ps(w[0],w[1]);_mm_store_ps(velocity_b,w[0]);*result+=impulse;
+	inputs.velocity_a=_mm_mul_ps(inputs.velocity_a,inputs.axis_a);
+	inputs.axis_a=a->angular;
+	inputs.axis_a=_mm_add_ps(inputs.axis_a,inputs.velocity_a);
+ a->angular=inputs.axis_a;
+	inputs.velocity_a=_mm_load_ps(velocity_b);
+	inputs.velocity_b=_mm_shuffle_ps(inputs.velocity_b,inputs.velocity_b,0);
+	inputs.velocity_b=_mm_mul_ps(inputs.velocity_b,work_4);
+	inputs.velocity_b=_mm_mul_ps(inputs.velocity_b,inputs.axis_b);
+	inputs.velocity_a=_mm_add_ps(inputs.velocity_a,inputs.velocity_b);
+	_mm_store_ps(velocity_b,inputs.velocity_a);
+	*result+=impulse;
 }
 static __forceinline void solve_unilateral_linear(float target,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
