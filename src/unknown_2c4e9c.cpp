@@ -9,6 +9,7 @@
 #include "unknown_19b516.h"
 #include "unknown_234c64.h"
 #include "unknown_120d80.h"
+#include "saved_game_storage.h"
 
 // @flags /O1 /Oi /Gr
 
@@ -3874,9 +3875,6 @@ c_class_1473c9 *__stdcall function_2caab7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2cab0f(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2cab67(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2cabc2(s_screen_parameters *parameters);
-
-/* the error of the last saved game file operation */
-long g_55c154;
 
 // @retail 0x2c55f8
 c_game_engine_variant_category_list::c_game_engine_variant_category_list(word user_flags) :

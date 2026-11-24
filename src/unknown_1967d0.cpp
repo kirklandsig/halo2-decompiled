@@ -1069,6 +1069,22 @@ static inline long team_score_195ed0(long team)
 // moves to EDI, the entry test unchanged); as `if (0 < count) do ... while (++rank < count)` 156 (1210 B: the entry test
 // becomes a word test of AX but the count is spilled for the body); the team test reading the team mask into a named
 // local 100 (same code); re-measured the team read at each use (no `team` local) 216. Body unchanged.
+// M3 lane 2 r144 (h2m fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH unless noted; control 100, aligned
+// 58). Mixed views, the first loop left on g_510ddb and g_511a74: in the player loop the flag and the record through a
+// view of the results record at g_510cb0 (flag +0x12b, players +0x384) 333 (aligned 55: all four unrolled passes read
+// the flag after the copy and the 0xff store as retail, but the first loop then holds the flag in BL, loaded ahead of
+// the loop and stored after it); the flag alone through the view 333 (aligned 63, the same first loop); the record
+// alone through the view 100 (same code: the copy does not reach g_510ddb); flag, record and that loop's team entry
+// through the view 333 (aligned 55). So the first loop reloads the flag only while the player loop reads the same
+// symbol. Diagnostic, reverted (an undefined stand-in object of 0x510cb0's record with the flag, the players and the
+// team entries as fields, used by this function and by 0x196470 in place of g_510ddb, input_device() and g_511a74):
+// 76 here, 0x196470 158 (751 B), as lane 10 r120 measured; under it 0x196470 differs from retail only in the player
+// loop's NONE test (`cmp eax, players - 0xa4` for retail's index * 0xa4 counter in a stack cell), and its device
+// pointer formed by byte arithmetic from the record's address, through a file-local inline taking the record pointer,
+// through a `dword` cast of the record's address, or per pass from the players member 158 each (same code), through a
+// file-local const pointer 133 (760 B, the pointer is loaded). No form of 0x196470 found keeps its counter once the
+// players lie more than 0xa4 bytes into their symbol, so the one-object record stays a lead. Diagnostic sweep of the
+// local count (1 to 8 unused initialised longs at the top) 100 each, the same code.
 // Early results return 100; address cursor 155; unused-address continue 100; local-address continue 100;
 // shared world receiver 100; connectivity from the channel predicate 165; selected channel 141;
 // shared connectivity store 131. NOT kept: the flag still precedes the copy, and the shared store

@@ -2818,7 +2818,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000c1d90,2840,game,speed,a16 pad,,,0011f5f0 00141590 00163db0,src/unknown_0bffa0.cpp,todo
 000c28b0,919,game,speed,a16 pad,,,00030bf0 000c19f0 000c1a80 000c2c50,src/unknown_0bffa0.cpp,matched
 000c2c50,162,game,speed,a16 pad,,,000c19f0 000c35a0 001df080,src/unknown_0bffa0.cpp,matched
-000c2d00,1027,game,speed,a16 pad,,,000b8c40 000b8d30 000ba300 000c0840 000c28b0 0011bed0 00142570 0016640f 0016a8e0 001cac60,src/unknown_0bffa0.cpp,matched
+000c2d00,1027,game,speed,a16 pad,,,000b8c40 000b8d30 000ba300 000c0840 000c28b0 0011bed0 00142570 0016640f 0016a8e0 001cac60,src/unknown_0bffa0.cpp,near
 000c3110,42,game,speed,a16 pad,,,,src/unknown_0bffa0.cpp,matched
 000c3140,212,game,speed,a16 pad,,,,src/unknown_0bffa0.cpp,matched
 000c3220,58,game,speed,a16 pad,,,001cae40,src/unknown_0bffa0.cpp,matched
@@ -7607,7 +7607,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00215641,16,game,size,packed,,,001a4826 0021566f,src/unknown_215541.cpp,matched
 00215651,30,game,size,packed,,,,src/unknown_215541.cpp,matched
 0021566f,33,game,size,packed,,,00215513 00321379,src/unknown_215541.cpp,matched
-00215690,137,game,unknown,a16,,,0011ca80 00216440 0033039a,src/saved_game_storage.cpp,todo
+00215690,137,game,unknown,a16,,,0011ca80 00216440 0033039a,src/saved_game_storage.cpp,matched
 00215720,11,game,speed,a16 pad,,,,src/unknown_215720.cpp,matched
 00215730,83,game,speed,a16 pad,,,00125d60 00215810 002d2084,src/unknown_215720.cpp,matched
 00215790,48,game,speed,a16 pad,,,002164c0,src/saved_game_storage.cpp,matched
@@ -9709,7 +9709,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0028d9d0,126,game,speed,a16 pad,,,000baeb0,src/swarm.cpp,matched
 0028da50,93,game,speed,a16 pad,,,,src/swarm.cpp,matched
 0028dab0,287,game,speed,a16 pad,,,0016b840 001e4990 0028dbd0 0028e200,src/unknown_28dab0.cpp,matched
-0028dbd0,1209,game,speed,a16 pad,,,000b7930 000b7b40 000b8540 00141ce0 001e06b0 002104b0 0028da50 0028e320 0028f890,src/unknown_28dbd0.cpp,todo
+0028dbd0,1209,game,speed,a16 pad,,,000b7930 000b7b40 000b8540 00141ce0 001e06b0 002104b0 0028da50 0028e320 0028f890,src/unknown_28dbd0.cpp,matched
 0028e090,200,game,speed,a16 pad,,,0028e160,src/swarm.cpp,matched
 0028e160,157,game,speed,a16 pad,,,,src/swarm.cpp,matched
 0028e200,166,game,speed,a16 pad,,,0016ba40 0028e390,src/swarm.cpp,matched

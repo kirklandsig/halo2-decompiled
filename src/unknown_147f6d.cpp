@@ -16,6 +16,7 @@
 #include "unknown_234c64.h"
 #include "globals.h"
 #include "online_tasks.h"
+#include "saved_game_storage.h"
 #include <string.h>
 
 c_window_manager g_54d598;
@@ -1014,7 +1015,6 @@ void function_148ca8(long error, short controller_flags)
 bool __stdcall function_215f40(long arg_9db745, byte *buffer);
 void unicode_string_copy(word *destination, const word *source, long maximum_count);
 void function_238c21(long controller, long type, word *name, long maximum_count);
-extern long g_55c154;
 
 /* reads the name saved for the profile into the edited profile and opens the
    keyboard on it; tells the controller when it cannot be read */

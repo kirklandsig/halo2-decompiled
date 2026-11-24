@@ -1,17 +1,10 @@
 // @flags /O2 /Ob1 /Gr
-/* UNKNOWN_217370.CPP: taking the saved-game file lock (its globals live in
-   src/unknown_2157e0.cpp) */
+/* UNKNOWN_217370.CPP: taking the saved-game file lock (in the subsystem's
+   state, include/saved_game_storage.h) */
 
 #include "unknown_11c920.h"
+#include "saved_game_storage.h"
 #include <xtl.h>
-
-struct s_saved_game_file_lock
-{
-	bool free;
-	long file_index;
-	dword thread;
-};
-extern s_saved_game_file_lock g_saved_game_file_lock;
 
 void function_125d60(void);
 
