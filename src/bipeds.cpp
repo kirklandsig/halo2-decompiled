@@ -1842,6 +1842,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // local at the top of the function 638 (aligned 170); the globals local after the call 589 (aligned 131). Left on the
 // lead: the definition, material and point homes (35 rows of stack offsets), one byte-store pair, the order of the
 // g_510c54 rate quotient and the state test at +0x3f5 and the position rows near +0x9dd. Body unchanged.
+// On the walking preload, a void material address 137, named pill test 541, shared physics section 155,
+// animation flags reference 137, typed state 137, distinct case-four/five state 137, named recovery duration
+// 137, and named contact point 137. NOT kept: the preload stages a one-use settings pointer across a call
+// and the material and point homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4586,6 +4590,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // through cross3f 537 (same code); both through cross3f_staged 596 (2702 B, aligned 293); all four cross products of
 // the function through cross3f 595 (2703 B, aligned 306); the two later ones only (the overshoot side and the turned
 // rows) through cross3f 594 (retail's 2712 B, aligned 283). Body unchanged.
+// The changed and special result homes and the flight threshold spill still differ.
+// Shared turn-state byte, implicit or explicit zero test 629/629; named moving or stationary decision 601/601.
+// Special byte assigned in both arms, named for byte ordering, positive permission in both arms, or direct named
+// comparison 628/628/628/628. NOT kept: the best gains one against reduced control 602 and keeps that image's larger frame.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6393,6 +6401,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // needs forward i below axis j and k (cross rows) while its dot term stays above the k term (dot i, k, j): no symbol count
 // gives both (with two names ahead of the pointer the cross rows are retail's and the dot turns k, j, i). The lever stays
 // the rotation helper's own text, whose file was on the Avoid list again.
+// The first rotation still spills the cosine complement early and the final cross reloads forward j.
+// Existing early-cross rotation on forward, up, or both 143/143/144; paired with the other shared rotation
+// 143/188; forward field throughout with one or both early-cross rotations 154/154; both with staged side
+// cross 79. NOT kept: the best ties at 894 bytes and leaves the first difference at +0x107.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

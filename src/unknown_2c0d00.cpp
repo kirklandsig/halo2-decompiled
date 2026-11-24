@@ -931,6 +931,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the conditional store there, so not kept), both 920; the self-unit test as a nested `if (self_unit) { if (...)
 // continue; }` 925 (same code); the self-unit test ahead of the hidden-object test 923; the actor's unit type test with a
 // `(char)` cast 925.
+// The entry still reserves an extra dword and the optional unit competes with the classification byte.
+// Other-actor classification saved before geometry 928, both type-zero results saved early 946,
+// explicit actor guard 945, separate same-team branch 946, late classification declaration with both early
+// stores 901, conditional actor relationship 936, optional unit with the first or both early stores 916/929.
+// NOT kept: every frame remains 0x2cb0. The 901 form lengthens to 3760 bytes and moves the declaration and stores.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
