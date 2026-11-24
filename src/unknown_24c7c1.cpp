@@ -985,6 +985,14 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // leave the pair; only a forced scheduler height gives the match: the two reloads tie and keep code-generation order,
 // which follows the candidates' numbers (the cut walks run in ascending number and the later walk's reload is emitted
 // first; ours numbers the player before the offset). Permuter 600 s on the lead: nothing below 2 (51 tries).
+// M3 lane 6 r242 (H2M_FAST with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, all MATCH; control 80, aligned 70; body
+// unchanged). Lane 11 r165's 2 lead rebuilt on this tree (build/r242/lead-0x24cf66-2.patch; the r165 patch no longer applies):
+// 2 at 1889 B, the two reloads ahead of the split-screen test in the other order. They tie in the scheduler and keep the order
+// in which the allocator's last pass created their two pieces: the player's first, then the `index * 0x4e0` offset that the
+// first player lookup and the status lookup share (retail the other way round). On the lead: no `player` local with the
+// getter at each of its eight uses 513 (1904 B, frame 0x25c: retail keeps a home for the player); the player defined after
+// the timer and tutorial flags 487 (1888 B); the getter with a state-pointer local, with a result local, as `players + index`
+// or forceinline 2 each (same code); the status lookup assigned to the same `player` local 120 (the homes move).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
