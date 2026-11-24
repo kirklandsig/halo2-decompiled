@@ -890,10 +890,16 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
 // row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
 // and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
+// Interleaved running control and speed sums with four two-product schedules: third control square
+// before the root 231 each, after the root 280 each. NOT kept: the 0x28 frame remains, the first
+// SSE difference moves earlier to +0x50 and the schedule still diverges.
 // Explicit double CRT boundary at root/reversing arc/root plus reversing arc/steering arc/
 // root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
 // Explicit float CRT calls for the root, arcs and absolute values: 109.
 // NOT kept: the independent SSE square and x87 sum still diverge at +0x69.
+// The first SSE square still follows the x87 sum and unity still takes XMM2. Separate scalar/point outputs:
+// scaled arm first 219/219, raw arm first 225/225, raw initializer 301/301, component selection 171/171.
+// NOT kept: each form increases the score and length.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1957,6 +1963,13 @@ long function_10f5f0(long object_index);
 // initial flags 560 and bounds handle at activity entry 567.
 // NOT kept: the gain is one point at the same extent. Frame 0x1990 and separate
 // bounds and velocity homes persist.
+// Floor/ceiling names 561, gain/drag/radius names 561, ceiling-first and
+// radius-first reads 561/561, shared height error 561, named spring terms 567,
+// immutable samples 561, shared altitude-limit receiver 561. The frame stays
+// 0x1990 and the predicate stores and rolled reduction still differ.
+// First velocity sample scoped alone or with fall sample 561/561. Three separately scoped samples
+// 561, also with scoped names, aggregate names, bounds-scope matrix, branch-owned physics state or
+// matching velocity names 561 each. NOT kept: frame 0x1990 and distinct bounds and velocity homes persist.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3860,6 +3873,11 @@ real g_47ff30 = 2.5f;
 // groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
 // scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
 // return, but the acceleration spill stays at +0x20 and both velocity homes still differ.
+// Interleave up-vector producers and directional weights with three mass observations. Up i/j then up/left
+// weights before up k 704, early forward weight 707, up/left/forward weights interleaved 669, or all
+// three weights before up k 667. Existing final scale helpers give the same scores.
+// NOT kept: 669 and 667 recover frame 0xfc and retail length, but gain only three and five points and
+// leave the acceleration and velocity slots displaced.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5145,6 +5163,15 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Indexed projection removal with vehicle or shared direct cross at the facing, roll-axis and final-left outputs
 // 129/129, 118/118 and 114/114. Direct shared cross at all three 125. First cross through the facing up field 118.
 // NOT kept: the best four-point gain leaves the first cross at +0x108 and keeps the different sine and cosine homes.
+// Common matrix copy by value, conditional pointer, branch-assigned pointer,
+// or snapshot 224 each. Overlap-safe copy 224; early steady-state exit 234;
+// indexed projection with value or pointer copy 224/224. The shared copy
+// shortens the body and moves the first difference to +0x11. The projection
+// product, cross operands and trig homes still differ.
+// Shared default axis negation at the axis/sine/cosine phases 128/134/128;
+// with indexed projection 126, or with the direct final cross 124. Indexed projection
+// with reordered trig names or renamed vector workspaces 115/115; with both and
+// shared negation 126. NOT kept: best gain three. Cross operands and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6239,6 +6266,16 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // and wheel-speed channels, then three activation channels, both speeds and all
 // five: eight at 759. The 0x18 frame agrees. The entry definition and zero/result
 // registers still differ.
+// Excluded-gear result 759; reverse conditional or separate zero arms for
+// gear/reverse 760/760; definite results on all case edges with entry/default
+// removed/conditional gates 751/751/751; case-head zeroes 759; named gear ratios
+// 759. NOT kept: the 751 forms reach retail length and XMM1 for the result
+// but drop the entry zero and copy. Retail's excluded gear uses that entry
+// value directly at publication. The entry definition still differs.
+// Upper-first final bounds (branch or expression) 759/759; bound-left comparisons 759.
+// Signed gear range 757; zero wheel counter 759; complemented forward/reverse floor tests 752.
+// Word kind range 753; unsigned gear range 753. NOT kept: best gain seven at retail length.
+// Retail tests each gear and kind value separately. Entry definition and zero/result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7104,6 +7141,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Lateral input with force 1054, lateral output with torque 959, linear velocity with rotation axis 970.
 // Input/output, input/axis, output/axis and all three shared 1068/1054/970/1055.
 // All three with a scoped relative matrix 1145. NOT kept: the frame drops to 0xdc and the body shortens to 5043 bytes. The other forms keep frame 0xfc.
+// Independent transpose values 959, stage three 1032, stage six 1032, stage the two forward coefficients 969,
+// up pairs first 971, reciprocal-side reads first 971, forced inline 959, and forced inline with six staged 1032.
+// NOT kept: every form leaves frame 0xfc versus 0xd8 and ties or raises the score.
+// Pitch vertical read through the vehicle 1031, all three pitch inputs through the vehicle
+// 978, including the forward receiver established afterwards 978. Named horizontal root
+// through the receiver or vehicle 959/978, root and pitch before the receiver 978,
+// named squared input through the receiver or vehicle 959/978. NOT kept: the pitch
+// forms tie or raise the score without recovering the 0xd8 frame or entry registers.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

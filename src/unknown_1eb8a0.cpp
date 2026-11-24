@@ -991,6 +991,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 389 form the clamp factor selected ahead of t at all three clamps 690 (first +0x2, aligned 404), at the first 678,
 // at the first two 691; each loses the caller 0x1eb6f0. The aligned counts fall with every helper retail's code
 // shows, while the positional count rises until the entry and the clamps are right as well.
+// Both activation rise halves, fall halves, or both pairs named 711/711/612.
+// Both remainders from two subtractions 602, with named halves 613. Activation and
+// live fall stages 700, explicit duration arms 678, admitted remainder clamp 693.
+// NOT kept: the one-point gain is below the threshold; sampled velocity still lacks the EBX home.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1439,14 +1443,13 @@ bool function_1ed430(void *ragdoll, vector3f *direction, long *value)
 {
 	bool result = false;
 	s_movement_query_state *state = (s_movement_query_state *)ragdoll;
-	long *const *value_reference = &value;
 	if (state->time != NONE)
 	{
 		long current_time = g_510c54->game_time;
 		long limit = movement_round_ticks(g_510c54->field_2_3 * 0.1f);
 		if (current_time - state->time <= limit)
 		{
-			**value_reference = state->value;
+			*value = state->value;
 			*direction = state->direction;
 			result = true;
 		}

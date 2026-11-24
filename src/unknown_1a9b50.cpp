@@ -413,7 +413,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
-// score 389 (was 389): one note (the r125 header below gives the current state). Earlier 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
+// score 280 (was 389): one note (the m3 lane 13 r154 lines at its end give the current state). Earlier 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
 // Frame 0x40 agrees. The optional prop spills into the second argument home.
 // Earlier at 389 (was 389; 407 before m3 lane 2 r125; stacked header merged in m3 lane 16 r172): Frame 0x40 agrees. The optional prop spills into the second argument home.
 // Earlier 375 (was 375): The actor loaded after the settings call, with different actor, settings and prop homes.
@@ -968,6 +968,25 @@ extern point2f *g_468778;
 // or the slot gains 20: two of the facing dot's reads counted on the view instead of the pointer would do it. Forms: the facing dot through the facing pointer 410 (re-measure; the pointer 176 again, the same
 // rotation); the dot named ahead of the pointer through the view's fields 401 (1571 B, re-measure; it compiles as main,
 // view EBX and a separate lea), with the copy vector declared first 401, as a named bool 415 (1581 B).
+// M3 lane 13 r154 (H2M_FAST with 0x265d30, MATCH each run; kept form plain-checked with the file's 15 matched functions,
+// 0x1acda0, 0x1b4560 and 0x265d30, all MATCH): KEPT 389 -> 280 (1557 B): the actor's unit index read once into
+// `unit_index` ahead of the field_12 test and passed to both 0x110ab0 calls. Reading: retail's field_12 arm has
+// `mov ebp, [ebp + 0x18]; push ebp` (0x1aa1f4): the index is a value the allocator colours (it takes the actor's
+// register, free again there), not a temporary of the call expression; the facing arm reads it again for its call.
+// Left: retail reads the field at each call (ours once, in EDI), the prop pointer in arg_1's home (retail EBX), the
+// view in EBX with a separate `lea` for the facing pointer, and the prediction rows' XMM numbering. Forms: a one-use
+// local for the field_12 arm's call only 394 (1567 B, but aligned 61 against main's 124: the entry, that call, the
+// copies' scratch registers and the weight's XMM4 then are retail's); one-use locals at both calls 381 (1560 B); the
+// sibling form `!function_110ab0(unit_index = actor->unknown018)` at both calls 381; `long const` 280 (same code);
+// LEAD 262 (1555 B, not kept: a steering form): an inline function taking the index by value (`return
+// function_110ab0(unit_index);`) at both calls, or one taking the actor with the index read into a local inside it
+// (262 each; the same without that local 389); with it the -0.4 dot through the facing pointer 355 (1550 B), as
+// `dot3f(local_8, &actor)` 371 (1549 B), as `dot3f(&view->unknown2c, &actor)` 364 (1549 B), with the two planar
+// copies member by member 282 (1553 B). On the kept body: that dot3f 370 (1558 B), that with both member-wise planar
+// copies 371, the copies alone 363. Allocator reading on the dot3f form: the facing pointer ranks 176 and the slot 158,
+// so the pointer takes ESI; the pointer's 176 counts six values in the facing-dot block and in the 0.8 arm's copy
+// (the copied dwords are values because the planar copies read them later); with the planar copies member by member
+// the actor (154) and the slot (146) go first and the pointer takes EDI as retail, but the copies then cost bytes.
 // The 0x40 frame and settings home agree. The optional prop still spills into the input slot.
 // Native prop datum/node lookup 389/389, one prop-index read 395/395, null in the absent arm 370/370,
 // conditional distance limit 395/395. NOT kept: retail zeros EBX before the presence test. The absent-arm
@@ -1010,13 +1029,14 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 			local_2->field_2c = false;
 			local_2->field_14 = true;
 		}
+		long unit_index = local_0->unknown018;
 		if (local_2->field_12)
-			local_2->field_13 = !function_110ab0(local_0->unknown018);
+			local_2->field_13 = !function_110ab0(unit_index);
 		else if (local_3)
 		{
 			s_1aa0d2 *local_6 = (s_1aa0d2 *)function_25d690((s_prop_datum *)local_3);
 			s_prop_view_fields *local_7 = (s_prop_view_fields *)function_25d740((s_prop_node *)local_3);
-			if (!function_110ab0(local_0->unknown018))
+			if (!function_110ab0(unit_index))
 			{
 				vector3f const *local_8 = &local_7->unknown2c;
 				vector3f local_9;

@@ -521,6 +521,10 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Diagnostic (a test that folds away, not keepable): the getter as `local_2 ? local_2->get_data_4a00() : NULL` keeps it
 // out of line as in retail, 452 (1565 B), the listed `true ? ... : NULL` code. Body unchanged; still BLOCKED-BY 0x5b080's
 // call-site depth.
+// In round 641, the frame agrees. The second state still uses ESI and the getter still expands. Names for the candidate
+// receiver 376, both receivers 376, playlist index 376, index and settings 376, settings and roster 376, elapsed times
+// 376. Capturing the candidate only after the primary ready check 437; shared ratings and capacity rejection 445.
+// The names leave the relevant cells unchanged; the body is restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
