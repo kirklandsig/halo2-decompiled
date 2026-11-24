@@ -3082,6 +3082,8 @@ struct s_1cf531
  word field_2 : 4;
 };
 
+// score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
+// uses the saved impulse slot at 0x30.
 // MiniMax H (11-20): no new form, no lower score (2): the corrected vector still spills to 0x40 where retail keeps it in
 // the argument vector's own slot (0x30). The corrected vector copied into the argument vector before the scale call
 // measures 23 and the final product in its own temporary 65, so it stays a plain temporary.
@@ -3101,8 +3103,6 @@ struct s_1cf531
 // the way retail does but takes its own slot (94 with a named argument, 93 with a materialized temporary whose
 // slot MSVC does not share with the plain one), and the copy-propagation spelling (94) grows the frame. The two
 // remaining differences are the spill address and the folded operand address.
-// score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
-// uses the saved impulse slot at 0x30.
 // Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
 // folds its reload into the final `mulps`, ours stores it to 0x40. (Earlier first lines: the friction magnitude in
 // another dead slot, the element formed offset-first in retail, retail's y loaded early and stored after z; the
@@ -3197,6 +3197,17 @@ struct s_1cf531
 // block-local copy (also via operator=) is forwarded from local_7 and never stored. Reading: retail's 0x30 is written by
 // the copy, the correction and the final vector and folded once, so its folded read is a non-address-taken value packed
 // with the address-taken final vector; no spelling here gives that packing.
+// M3 lane 1 r164 (h2m fast, 2): the frame packing: local_13 is address-taken, so it interferes with every
+// value live across a call in its scope (the copy, the corrected vector across the scale call), and the corrected
+// vector joins the newest free 16-byte slot (the 0x40 temps). Forms: local_13 corrected in place with the final in an
+// inner block 93 (910 B; local_13 is then forwarded and the subtraction sinks past the scale call); the copy as an
+// in-place __m128 with the final in an inner block 93 (the copy is forwarded from local_7); a separate copy with the
+// final declared after the scale call 94 (copy forwarded, the final interferes with everything in its block); the copy
+// as an in-place __m128, the direction normalized in place in local_7 and the final in an inner block 61 (915 B: the
+// final then shares the copy's home, as in retail, but the subtraction sinks past the scale call); that with the speed
+// splat written into the subtraction 37 (905 B, the speed load sinks too). Lead: retail's 0x30 group is one register
+// value with four references (copy spill, reload, corrected spill, folded reload) plus a block-local final; nothing
+// found keeps the subtraction ahead of the scale call without an address-taken operand.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
