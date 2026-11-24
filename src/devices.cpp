@@ -1805,6 +1805,11 @@ bool function_108530(long device_index, long name)
 // (ramp_up_time > duration) ramp_up_time = duration;` 116, both 116; the half ramp-down as `0.5f * ramp_down_time` 116; both
 // half times as `/ 2.0f` 116 (all the same code); the ramp-up minimum ahead of the ramp-down zero clamp 138 (528 B, callers
 // 31/13).
+// The ramp-down time still stays in an SSE register across its upper bound.
+// Distance-only exit 116; terminal time, rate or both exits 116/116/116;
+// staged duration and numerator 146/116; published initial speed 116;
+// deceleration-only cruise snapshot 116. NOT kept: the staged duration grows
+// to 535 bytes and changes both callers' velocity convention. Other forms tie.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

@@ -1207,6 +1207,16 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // named 105; the key named for both arguments 105. The volume address as `volumes[volume_count++]` 115, with the camera
 // address named 87. Diagnostic (restored): a second use of the camera address (stored into the volume) 149 at 454 B, the
 // caller 2.
+// M3 lane 5 r243 (reduced image with 0x1730a0; control 105, the one-use offset local before the call re-measured 11).
+// Reading of the allocator on the 11 form: the key read twice from the entry is a CSE register candidate coloured
+// early into ECX, so the camera table becomes a late scratch temporary in EDX that cannot rise above the count store;
+// retail has the table in ECX from the block top and the key in EDX. With the key in EDX (diagnostic) it is 13: the table
+// load is still a late scratch temporary (now one step later in the EAX, ECX, EDX cycle), so both the key's register
+// and the scratch cycle have to move. The camera sum's operands sort offset first, table second (the table parameter
+// ranks lowest), the same roles as retail's. On the 11 form: the offset local declared bare at the function top 11, at
+// the top of the loop body 11 (its rank follows where it is assigned, not declared), assigned right after the entry
+// pointer 82, assigned ahead of the volume address 13; a named `key` for the product and the argument 105 (with the
+// offset local or without it: the key then stops being a CSE temporary and the plane lookup shifts as on this body).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1607,6 +1617,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // square-seeded cosine accumulators 381; early axis-derived complements 388.
 // NOT kept: cosine-first ties the reduced control. The square spills and unity
 // register remain different, and early field staging changes the frame.
+// M3 lane 5 r243 (reduced image, control 337): the residue is mostly code shape: ours evaluates three diagonal terms
+// `(1 - square) * c + square` on the x87 stack from spilled squares (fld unity, fsub, fmul, fadd) where retail keeps the
+// squares in XMM0/XMM2/XMM7 and uses subss/mulss/addss; the unity constant's register alone moves it to 325. In the
+// axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
+// 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
+// `c * (1 - square) + square` 337 (the same code: the product order is canonical).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2342,6 +2358,13 @@ struct s_pool_view_172840
 // bounds template before opposite-cluster selection or before clipping 55/55;
 // snapshot the rectangle value before selection 152. NOT kept: the tying forms
 // retain the 870-byte extent, exchanged scratch registers and long sentinel.
+// M3 lane 5 r243 (reduced image, control 55; round 160's key/next/portal/cluster store order re-measured 17). Reading:
+// in this block the stores follow the scratch registers' reuse (the key's ECX is reused for the portal, so the key store
+// precedes the portal load); on the 17 form no single register or scheduling choice on its own goes below 17
+// (diagnostic), so the store pair, the copy's ESI/EDI set-up and the recount's EDX/ECX pair are separate causes. On the 17 form: the cluster store ahead of the portal store 53 (870 B, five-byte sentinel); the
+// bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
+// stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
+// `== unknown00` with the arms swapped 22.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

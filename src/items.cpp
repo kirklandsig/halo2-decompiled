@@ -1839,6 +1839,10 @@ struct s_item_flags_view_10b850
 // common query vector with bound 880, and with direct cross 918.
 // NOT kept: the 918 form recovers frame 0x12c and first +0x3e, but shortens to
 // 4034 bytes and raises the score. The entry Boolean byte stores still differ.
+// One relocation decision shared with settling 885. A separate gravity test with one settled result
+// before sampling, beside carrier output, beside gravity or at the query 884/884/885/885.
+// A separate gravity test with one relocation result before sampling, beside carrier output or at the query 898/898/885.
+// NOT kept: each reserves 0x150 and shortens to 4066 bytes. Retail uses separate relocation and settling bytes.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
