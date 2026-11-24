@@ -945,6 +945,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // impulse through vector3f_scale with `s->distance = len3;` 684 (aligned 575), with the e3 test as `!(0.001f >= e3)` 688
 // (2900 B, aligned 499, the lowest aligned count so far: the rest is the three clamps' 12/8 factor order and the q/d
 // EBX home; lead patch build/r139/lead-0x1eb8a0-n2-aligned499.patch in the m3-lane15 worktree), all three 712.
+// EBX still holds the supplied direction. Clock refreshed after output copy, at active-output entry,
+// after the time product, or before the cap 600 each. Separate clock receivers for update,
+// inactive activation, or positive-time activation and output 602 each. Active-output refresh
+// with conditional reference-velocity fallback 600. NOT kept: gains of at most three,
+// length grows to 2888 bytes, and the +0x9 register load persists.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
