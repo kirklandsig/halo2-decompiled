@@ -469,7 +469,10 @@ static __forceinline __m128 apply_first_normal_positive_impulse(float const &sou
 // The first pair reloads B for inertia, then captures each update receiver.
 
 
-static __forceinline void apply_first_normal_fallback(float impulse, solver_linear_row_31e7b0 const *row,
+// The first fallback borrows its retained projection axis. The second borrows
+// row storage, which is read after the rounded SIMD input has been published.
+static __forceinline void apply_first_normal_fallback(float impulse, __m128 const &linear_axis,
+	solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
 {
 	// Keep accumulation wider than the float copy consumed by SIMD.
@@ -482,8 +485,8 @@ static __forceinline void apply_first_normal_fallback(float impulse, solver_line
 	__m128 inverse_b = b.body->inverse_inertia;
 	solver_scoped_body_fields_31c940 const &linear_body_b = b;
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), linear_axis);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), linear_axis);
 	a->linear = _mm_add_ps(a->linear, linear_a);
 	linear_body_b.body->linear = _mm_sub_ps(linear_body_b.body->linear, linear_b);
 	// Reload the axes after both linear writes, then form both contributions
@@ -693,11 +696,12 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		float candidate_b = error_b * axis[-1].m128_f32[3];
 		// Unordered candidates enter the second-row update, as in retail.
 		if (candidate_b <= 0.0f) break;
-		apply_first_normal_fallback(candidate_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, scalar_work.fallback_scalar);
+		apply_first_normal_fallback(candidate_b,
+		((solver_linear_row_31e7b0 *)(axis - 2))->linear, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, scalar_work.fallback_scalar);
 		return;
 	} while (false);
 	float candidate_a = scalar_work.first_error * axis[-4].m128_f32[3];
-	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result, scalar_work.fallback_scalar);
+	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, retained_axis, ((solver_linear_row_31e7b0 *)first_axis), a, b, result, scalar_work.fallback_scalar);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
