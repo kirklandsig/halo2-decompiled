@@ -450,6 +450,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
 // stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
 // orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
+// Unsigned-word or byte group 66/234; next deadline derived from the ordinal 372;
+// whole deadline-array pointer 103. With a named deadline: bulk target copy 367,
+// all polynomial products named 89, named forward squared length 87, or adjacent
+// basis addresses at the group update 94. NOT kept: the 89 form reaches retail
+// length and changes the polynomial. Naming the squared length shortens the
+// basis tail, and the adjacent addresses keep its first difference at +0x34b.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1201,6 +1207,23 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // named 105; the key named for both arguments 105. The volume address as `volumes[volume_count++]` 115, with the camera
 // address named 87. Diagnostic (restored): a second use of the camera address (stored into the volume) 149 at 454 B, the
 // caller 2.
+// On the separated camera-offset form: successor in for update 151, linked guard 151, projection
+// guard 151, both guards 151, result-controlled while 11, post-tested successor assignment 11.
+// Native camera byte array 105, with successor and linked guard 147. NOT kept: the 11 forms
+// require an exact match for the one-use offset and still exchange the camera base and key registers.
+// The for forms shorten the function and break the matched caller.
+// M3 lane 5 r243 (reduced image with 0x1730a0; control 105, the one-use offset local before the call re-measured 11).
+// Reading of the allocator on the 11 form: the key read twice from the entry is a CSE register candidate coloured
+// early into ECX, so the camera table becomes a late scratch temporary in EDX that cannot rise above the count store;
+// retail has the table in ECX from the block top and the key in EDX. With the key in EDX (diagnostic) it is 13: the table
+// load is still a late scratch temporary (now one step later in the EAX, ECX, EDX cycle), so both the key's register
+// and the scratch cycle have to move. The camera sum's operands sort offset first, table second (the table parameter
+// ranks lowest), the same roles as retail's. On the 11 form: the offset local declared bare at the function top 11, at
+// the top of the loop body 11 (its rank follows where it is assigned, not declared), assigned right after the entry
+// pointer 82, assigned ahead of the volume address 13; a named `key` for the product and the argument 105 (with the
+// offset local or without it: the key then stops being a CSE temporary and the plane lookup shifts as on this body).
+// Volume selected from the stored count, a signed end index, a named end pointer or the stored end pointer: 106 each.
+// The same four with a separate camera displacement score 84. NOT kept: the displacement has one use, the EDI save moves after the map-miss test and the camera table is still loaded late.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1595,6 +1618,18 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // M3 lane 5 r237 (H2M_FAST, reduced control 337): the file's other axis-angle builder and transform (the unused inline
 // pair above the view-setup helpers) for the first rotation only 386 (1425 B), both builders 360 (1455 B), the four
 // transforms 368 (1441 B), builders and transforms 359 (1473 B), the second builder only 352 (1464 B). Body unchanged.
+// Scalar square complements before sine or between sine and cosine 349/349.
+// Cosine-seeded diagonal accumulators 385; cosine-first products 337; early
+// complement accumulators 389; early complements in diagonal fields 354;
+// square-seeded cosine accumulators 381; early axis-derived complements 388.
+// NOT kept: cosine-first ties the reduced control. The square spills and unity
+// register remain different, and early field staging changes the frame.
+// M3 lane 5 r243 (reduced image, control 337): the residue is mostly code shape: ours evaluates three diagonal terms
+// `(1 - square) * c + square` on the x87 stack from spilled squares (fld unity, fsub, fmul, fadd) where retail keeps the
+// squares in XMM0/XMM2/XMM7 and uses subss/mulss/addss; the unity constant's register alone moves it to 325. In the
+// axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
+// 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
+// `c * (1 - square) + square` 337 (the same code: the product order is canonical).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1954,6 +1989,13 @@ struct s_point_pool_173520
 // unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
 // published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
 // for the bounds 194, and one viewport receiver after projection 128.
+// With the staged reservation, cap and corner bindings and widened recount: stride-selected start 166,
+// indexed clipped source 119, source end pointer 220, count-derived destination 176, negated forward
+// step 27, source cursor in loop header 121, source advance at the depth read 125, shared reverse
+// predicate with count plus step 188. NOT kept: the 27 form is 868 bytes, farther from retail's 865,
+// and the reservation and reference bindings require exact equality.
+// Reservation from a named end: prior start index, inline start index, pointer subtraction, or early end pointer, 48 each.
+// The same four with corner and clamp references score 25 at 865 bytes. NOT kept: they require the reference forms, and the address and state test still follow the count commit.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2325,6 +2367,18 @@ struct s_pool_view_172840
 // (link, key, cluster, portal) 34 34 34 56 34 52; (key, link, portal, cluster) 34 33 32 32 28 29, copy last 17; (key,
 // link, cluster, portal) 34 33 32 54 32 50, copy last 53; (link, key, portal, cluster) 34 34 34 34 30 31, copy last 19:
 // none below the 17 lead (all 868 B but the 50 to 56 forms, 869 or 870 B).
+// Native or positive clip status 56/56, short clip status 57; publish points through
+// the clip output record 150, or use that record through rollback 256. Capture the
+// bounds template before opposite-cluster selection or before clipping 55/55;
+// snapshot the rectangle value before selection 152. NOT kept: the tying forms
+// retain the 870-byte extent, exchanged scratch registers and long sentinel.
+// M3 lane 5 r243 (reduced image, control 55; round 160's key/next/portal/cluster store order re-measured 17). Reading:
+// in this block the stores follow the scratch registers' reuse (the key's ECX is reused for the portal, so the key store
+// precedes the portal load); on the 17 form no single register or scheduling choice on its own goes below 17
+// (diagnostic), so the store pair, the copy's ESI/EDI set-up and the recount's EDX/ECX pair are separate causes. On the 17 form: the cluster store ahead of the portal store 53 (870 B, five-byte sentinel); the
+// bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
+// stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
+// `== unknown00` with the arms swapped 22.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2732,6 +2786,12 @@ struct s_camera_reference_171830
 // pointer's), and a three-term dot always sums k, j, i; two stand-alone side vectors that differ only in the order of the
 // two pointer parameters come out with five of the six products the other way round, so the order here is set by the
 // function around the products, not by their spelling.
+// On the split plane path with the named distance: aggregate midpoint target 117, in-place center copy
+// 348, staged scale 118, point setter 119, paired refinement branches 117, miss-first endpoint 165,
+// initialized miss fraction 165, copied scale input 170. NOT kept: the 117 forms are three bytes longer
+// than retail and still differ in the center transport. The center-copy form also changes the caller.
+// Selected record before validity 275, selector resolved before record lookup 293, valid record carried into projection 112, carried plane pointer 276.
+// The combined or separate sign and plane tests give the same result for each form. NOT kept: the 112 forms grow to 1222 bytes, exchange lookup scratch registers and still clear zero ahead of the plane expression.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

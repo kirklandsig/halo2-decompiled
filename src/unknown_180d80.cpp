@@ -429,6 +429,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // 137/653/137. None kept: the pairs and the loop test are match-only forms. Left on the 48 form: the entry guard
 // (retail loads the strip record into EAX ahead of the saves), the count loop's 16-bit test, the count-sum and
 // vertex-counter slot pair, and the 0x13d370 argument's register; the short index gives the first two.
+// M3 lane 7 r225 (H2M_FAST, on the 48 form): the count sum renamed (two names either side of the vertex counter's in
+// sort order) 48 / 48; both renamed to role names 48 (names do not order this pair). Frame reading (diagnostic): the
+// frame is over 0x80 bytes, so slots sort by reference density; the count sum shares the densest slot with the strip
+// loop's short counter (11 references) and the vertex counter shares the next with a distance term (7), so the
+// vertex counter needs the denser slot for retail's pair. On the short-index form (59) the three centre sums are the
+// only change in the first 0x60 bytes; its call setups rotate as recorded above.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
