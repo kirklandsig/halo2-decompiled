@@ -2451,7 +2451,6 @@ struct s_unit_event
 // address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
 // where retail reads it after.
 // score 420 (was 420; 513 earlier): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
-// score 420 (was 420; earlier 513): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
 // Earlier detail: Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
@@ -2776,6 +2775,10 @@ struct s_unit_event
 // child-name test written name first as the section and seat tests are 421. Reading: retail loads the datum offset
 // into ESI at the second attachment lookup and keeps it (the shift's 1 then goes through the dead region home into
 // EDI); ours gives ESI to object_index from the 0xa8360 call on.
+// Separate permutation-array read and record address at entry, with region or direct table 439/556.
+// Record address after notifications 627 in all three forms. Record address after the region-state
+// write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
+// loads the region index into EBP and keeps frame 0x38, but adds 12 bytes and raises the score.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
