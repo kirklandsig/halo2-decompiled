@@ -1153,6 +1153,14 @@ void swarm_leader_detach(long actor_index);
 // pointer declared in the call's block 297; a NULL pointer assigned under `slot_index < 4` in the call's block 281
 // (964 B, a branch for the select); a named byte offset used for the type read and for the argument 299 (996 B).
 // Body unchanged (59).
+// M3 lane 13 r154 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59, the listed 4 form rebuilt: 4 at 980 B).
+// Scheduler reading of the slot loop's test block on the 4 form: the slot address (`lea eax <- edx, ebp`) is generated
+// before the type load and shared with it, so the handler load is given EDX after the address has read it and must
+// follow the `lea`; retail's handler reuses the type's ECX and the `lea` lands after the stop test. On the 4 form:
+// 0x1a80e0's spelling (slot pointer first, type read through it, `slot_index < 4 ? slot : 0`) 297 (996 B); a slot pointer
+// for the type read with the argument formed again 4 (same code); a short type local with the handler table read at the
+// test and at the call 297 (996 B); a NULL slot pointer set under `slot_index < 4` in the call's block 281 (964 B). On
+// main's body: `actor != other` alone 58 (one point). Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

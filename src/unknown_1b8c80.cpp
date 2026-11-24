@@ -2362,6 +2362,15 @@ void function_1f86a0(long actor_index);
 // condition 123; one element local shared by the loop and the tail 123; the flags read through a `byte const &` for
 // the mask and the 0x40 test 123; the entry as a pointer to const 123 (same code each); re-measured the no-mask form
 // with plain truth tests 244 (868 B). Body unchanged.
+// M3 lane 13 r154 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123, aligned 105). The
+// head's data-first lookup (retail loads the object table's data before the actor's index arithmetic and takes the
+// actor index in EDX): the object table's data bound to an `s_object_header_view *const &` ahead of the actor lookup and
+// indexed for the unit 130 (863 B, aligned 102: the actor index then arrives in EDX as retail, but the object data
+// loads ahead of the actor data, into ECX; match-only form); that reference declared after the actor lookup 222 (863 B);
+// that first form with the decline decided by an if/else flag 130. On the body: the state and selection views declared
+// ahead of the actor lookup (they come from the parameter) 126; the decline decided by `bool decline;` set in an if/else
+// on unknown86 123 (same code); the decline arm ending in `continue` with the accept test as its own `if` 123 (same
+// code). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
