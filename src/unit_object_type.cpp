@@ -1115,7 +1115,7 @@ bool function_d03b0(long unit_index)
 
 /* starts listing the units among the object's children */
 // @retail 0xd0590
-void function_d0590(s_unit_child_iterator *iterator, long object_index)
+void function_d0590(long object_index, s_unit_child_iterator *iterator)
 {
 	s_unit *object = UNIT_GET(object_index);
 

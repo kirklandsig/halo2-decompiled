@@ -1735,6 +1735,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // the selection scan through an entry pointer stepped with the index 568 (2175 B); the primary blend with `if (parameters)
 // { ... return true; } return false;` 571 (2176 B); direction2 rotated from a negated copy straight into the record 580
 // (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21 unless named; control 529): the scan as a pointer
+// stepped with a down-counter (`for (long remaining = count; remaining > 0; --remaining, ++entry)`) 579 (2171 B); the length
+// through magnitude3d ahead of the normal copy 528 (one point); the first luminance as `(...) * 2.0f` 529 (same code); `bool
+// result = false;` with `result = true;` opening the found block 573 (2172 B); the square from `record->length` read back
+// at both operands 586 (2166 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -440,6 +440,16 @@ static __forceinline long real_to_long(real value);
 // vector pointer for its store and the three sums, on this body, 376 (1854 B). Retail reads +0x10, +0x14/+0x18, +0x1c,
 // +0xc and +0x38 after the sign step and stores the seed once after the three draws. BLOCKED-BY 0x210850 as above. Body
 // unchanged.
+// M3 lane 11 r163 (H2M_FAST with 0x1fe410, 0x210850 and 0x2104b0 listed; control 373, difflib-aligned 324; body
+// unchanged). Reading of the entry: the allocator gives ESI to the random-state pointer (63), which this build keeps
+// from the head draw to the three later draws across the calls between them, and ranks the third input far below it
+// (3, or not worth a register), so the third input is reloaded from its stack slot; retail loads the third input into
+// ESI at the entry and reads the random-state global again into ECX ahead of the 0x1fe410 test and after that call.
+// Diagnostic, removed at once: an undefined function called after the 0x1fe410 statement 393 (1852 B): the third input
+// then sits in ESI from the entry as retail (the state pointer cannot live across the call); the same call inside the
+// 0x1fe410 arm 431 (1865 B, no change at the entry). Forms: the +0x1c limit named for its test and the 0x1fe410
+// argument 437 (1866 B); the sign step's state through the global, no pointer local 423 (re-measured); the +0x7a word
+// read into a local ahead of the actor lookup 426.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

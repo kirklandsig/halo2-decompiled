@@ -602,7 +602,7 @@ struct s_unit_child_iterator
  long next_index;
 };
 struct s_damage_object;
-void function_d0590(s_unit_child_iterator *iterator, long object_index);
+void function_d0590(long object_index, s_unit_child_iterator *iterator);
 s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 
 PRIVATE inline byte *request_unit(long object_index)
