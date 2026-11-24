@@ -914,6 +914,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // late member writes 130; planar i early 130; planar j early 137. Interleaved full and planar member
 // stores in four orders 406 each; full component initializer with the independent planar pair 406.
 // The full component forms shrink the frame and length. Body restored.
+// Four-byte planar transfers of I, J, both I-first or both J-first 269/314/335/335.
+// I copied before the full snapshot and J assigned afterward 272; I assigned before
+// and J copied afterward 314; both copied first 345; J copied before and I afterward 345.
+// All move the first difference earlier, even at retail extent.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
