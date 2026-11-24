@@ -1209,6 +1209,11 @@ real function_30bf0(vector3f *v);
 // value's address where this build keeps the time-scale pointer, so the parameter order is retail's to declare;
 // what is left of the body is retail's two x87 divisions by two_a and its rounding of the horizontal length.
 // MiniMax R (11-20): re-checked, no new form and no lower score (232): retail's stack arguments take 0x2c bytes where this build's take 0x28, so retail's signature carries one argument more than this one (both of its float arguments are four-byte floats there, so the extra four bytes are a further pointer argument), the frame is 0x28 against retail's 0x30, and the direction output arrives in esi, which this signature cannot express.
+// Round 479: Entry root still follows the gravity branches, with frame 0x28 versus 0x30.
+// Planar scalars, planar point, shared 2D difference with early 3D reconstruction 270/268/268;
+// horizontal test at the root 268; independently evaluated admission 284; late 3D reconstruction
+// from scalars, via the vector setter or from a planar point 265/265/266.
+// Planar point restores frame 0x30 at 994 bytes but leaves the first root after gravity. Body restored.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2505,7 +2510,7 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.
-// score 519 (was 535; 527 before round 1): Frame 0x184 agrees; the stack slots and the flag word differ, see below.
+// score 422 (was 498; 519 was 535; 527 before round 1): Frame 0x184 agrees; the stack slots and the flag word differ, see below.
 // Round 1 of #1061: full statement walk against retail found no behaviour difference (every offset, constant, condition,
 // callee and argument order agrees). Kept: `switch (mode) { case 2: case 4: ... }` for the a84e0 test (retail's movsx/sub/sub
 // chain; also settles the damage tail, 535 -> 527), native flag bits for the +0x12c tests and stores (child stores stay two
@@ -2523,6 +2528,11 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // common exit 527; saved-position role name 527; distinct direct/area damage names 527;
 // probe-table pointer loop 530; probe declarations reversed 527; all native flag tests/stores 533;
 // unsigned table index 539; material declared at entry 527; parent/Boolean declarations first 527.
+// Round 479: The existing parent-object bitfield gives the retail byte load, shift and test, 422 at 2171 bytes,
+// kept after the plain check. The header offset home and first flag load/OR/store sequence still differ.
+// Long/word header slot 507/522; shared pre-call pool and counting table 498; updated flag word 498;
+// shared child/detachment point 497 (one point, below the gain threshold); saved-parent name 498;
+// direct-victim branches 498.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2545,7 +2555,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 		byte *parent = (byte *)PROJECTILE_GET(*(long *)((byte *)projectile + 0x14));
 		long stuck_count = 0;
 
-		if (!(TEST_FIELD_BIT((*(byte *)(parent + 0x10a) >> 2) & 1)))
+		if (!(TEST_FIELD_BIT(((s_object_flags_10a const *)parent)->bit2)))
 		{
 			for (long child_index = *(long *)(parent + 0x10); child_index != NONE; )
 			{
@@ -2852,6 +2862,12 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // 1093 (4790 bytes, frame 0x114); reverted. The two per-arm calls and the two inlined uses are compiler-level, not
 // reachable from this source without writing 0xfaa30's body out by hand.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the velocity turn through include/axis_rotation.h's helper 1042 (4703 B). Restored.
+// Round 479: Frame 0x114 versus 0x118, with index EBX and definition ESI instead of EDI and EBX.
+// Shared long/word projectile slot 1064/1042; shared contrail index 1030; distinct step-time names 1030;
+// arming-word OR 1030; default fraction with conditional range fraction 1047; arming default first 1052;
+// computed motion predicate 1028 (two points). Shared point difference 1013 at 4682 bytes.
+// NOT kept: The point difference still flows through the inlined magnitude, and the score change comes
+// from a different later rotation schedule rather than the retail movement producer and call.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {

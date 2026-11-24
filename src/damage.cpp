@@ -2793,6 +2793,10 @@ struct s_unit_event
 // Forms: the index bound to a `long const &` for the lookup 420, for all three uses 420; the two notifications through
 // one attached index read again for the second 420 (all the same code); the region states named at the update 523
 // (1852 B); the vehicle block through the entry object pointer 528 (1884 B).
+// Round 479: Region ordinal and permutation record still exchange EBX/EBP.
+// Named section count with sentinel 420; bounded section index 450; bound-and-name section loop 450;
+// selecting the result after the loop 448; bound-and-label seat loop 420; both loop conditions 450;
+// word section kind 425; direct nonzero kind ranges 462. Body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

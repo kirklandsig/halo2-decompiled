@@ -910,6 +910,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // planar snapshot 346, failed restore 130, both snapshots 346, full snapshot and restore 130, both full
 // inputs 130, full snapshot plus restore and turned input 130, and all four facing transfers 346. The planar
 // copy moves the first difference earlier.
+// Round 479: Planar J and copied depth still exchange stores. Declare the planar pair first with
+// late member writes 130; planar i early 130; planar j early 137. Interleaved full and planar member
+// stores in four orders 406 each; full component initializer with the independent planar pair 406.
+// The full component forms shrink the frame and length. Body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
