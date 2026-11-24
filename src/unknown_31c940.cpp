@@ -445,12 +445,14 @@ static __forceinline void apply_first_normal_positive_impulse(float const &sourc
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_copy)
 {
 
+	// Capture inertia before the SIMD copy can replace one of its lanes.
 	// Use the stored float for accumulation and copy its bits for SIMD.
+	__m128 w[5];
+	w[2]=a->inverse_inertia;
 	float impulse=source;
 	memcpy(&simd_copy,&source,sizeof(simd_copy));
 	// Reuse the consumed projection values through both body updates.
-	__m128 w[5];
-	w[2]=a->inverse_inertia;
+
 	w[1]=_mm_load_ss(&simd_copy);
 	w[0]=_mm_shuffle_ps(w[1],w[1],0);
 	w[0]=_mm_mul_ps(w[0],w[2]);
@@ -493,11 +495,12 @@ static __forceinline void apply_first_normal_fallback(float impulse, solver_line
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
 {
 	// Keep accumulation wider than the float copy consumed by SIMD.
+	__m128 inertia_a=a->inverse_inertia;
 	float &rounded_impulse = simd_scratch;
 	float &store = rounded_impulse;
 	store = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 inverse_b = b.body->inverse_inertia;
 	solver_scoped_body_fields_31c940 const &linear_body_b = b;
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
