@@ -1220,7 +1220,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0006fd10,267,game,speed,a16 pad,,,0005a220 0005a400 0006f4b0 0006f700 0006fcc0,src/unknown_058dd0.cpp,matched
 0006fe20,82,game,speed,a16 pad,,,00058d90 0005a400,src/unknown_058dd0.cpp,matched
 0006fe80,12,game,speed,a16 pad,,,0006f0f0,src/unknown_058dd0.cpp,matched
-0006fe90,711,game,speed,a16 pad ebp,,,00059e50 0005a220 0005a520,src/network_session_client.cpp,todo
+0006fe90,711,game,speed,a16 pad ebp,,,00059e50 0005a220 0005a520,src/network_session_client.cpp,matched
 00070160,34,game,speed,a16 pad,,,003314b0,src/unknown_058dd0.cpp,matched
 00070190,226,game,speed,a16 pad,,,,src/network_session_client.cpp,matched
 00070280,739,game,speed,a16 pad ebp,,,0005a220 0005b1e0 0005b650 0005c350 0007ed20,src/unknown_058dd0.cpp,matched
