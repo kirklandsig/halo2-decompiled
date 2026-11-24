@@ -915,6 +915,21 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // for their second products (six loads, every product axis-first); in every form here only the bare indirection (axis i,
 // offset 0) sits on the other side of the direction, as the parameter-index rule for offset-0 operands predicts. Body
 // unchanged.
+// M3 lane 12 r183 (h2m fast; control 521, aligned distance 531; body unchanged). Frame reading: this frame is laid out
+// by reference density (references x 1000 / size, densest lowest) and a new object joins the newest slot it does not
+// interfere with. Retail's four-byte slots hold 29, 16, 11, 10, 8 and 5 references from the bottom with the result byte
+// (density 3000) above the first two; ours hold 31, 11, 10, 10, 10 and 8, so the byte sits one slot lower and every later
+// home is off. Retail's 16 are the loop's point cursor, the first angle total and the first rotation's cosine, and its
+// range local has a slot to itself; ours packs that cosine into the range local's slot. LEAD (a moved declaration, so
+// match-only; retail's own zero stores precede the angle limit): the two angle totals declared after the minimum block
+// 506 at 2886 B (aligned 373, first difference +0x40, the result byte and a 15-reference slot as retail); with a named sum
+// for the four ray lengths 506 (aligned 349). Forms: the range read into its local before the test with the early return
+// 667; that with a positive test, the body ending `return local_0;` and `return true;` last 637; the field test with the
+// range read first inside and the exit last 632; range first with one `return local_0;` 664; the four ray lengths from
+// one named sum 521 (aligned 507); the minimum's fraction named once 517; both 524; the angle limit computed after the
+// minimum block 553; the minimum block's two stores exchanged 651 (aligned 388); the reciprocal named in that block 522;
+// the sample local declared ahead of it 521; the minimum test written minimum-first 521 (same code); the lead on the
+// three exit forms 632/627/658.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -1140,6 +1140,16 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // through references 676/535/694 and through pointers 676/535/694.
 // Read back the queued seed for its distance test 763, with explicit first group count 746.
 // The candidate-only forms reproduce 535. The seed forms leave the spill displaced or change the prologue.
+// M3 lane 3 r304 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535; body
+// unchanged). Frame reading: the frame is ordered by memory references per byte, and a new 4-byte object joins the newest
+// cell it does not interfere with. Retail's densest cell (+0x10, 16 references) holds the first face, the integer scratch
+// that follows it and nine references of float spill scratch from the rotation block; ours keeps the first face and its
+// scratch in one cell (7 references) and the float scratch (the cosine and the first distance, 9) in another, so ours has
+// one more 4-byte cell, its lowest local is at +0xc for retail's +0x10, and every cell above is displaced: the homes
+// follow from which values the rotation block spills, not from names or declaration order. Forms: the rotate helper's
+// rows through one reused accumulator 579 (3663 B, first +0x7); its rows summed forward, left, up 535 (same code); the
+// first plane declared ahead of the first face 535 (same code); the cosine taken ahead of the sine 535 (same code); the
+// first face declared ahead of its loop 535 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

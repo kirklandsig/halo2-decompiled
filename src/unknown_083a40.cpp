@@ -1041,6 +1041,23 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `continue` chain (mask and flag, then the machine compare, then the controller/unknown test) 28; the swap test nested
 // with `slot != i` outside 322 (1091 B); the swap test held in a named bool 28; the last record's machine copied with
 // memcpy 28; the machine pointer as `machines + source->machine_index` 28 (the 28s the same code). Body unchanged.
+// M3 lane 6 r238 (H2M_FAST with 0x84e90, 0x84c90, 0x83370, 0x83c90 and 0x83570, MATCH each time; control 28). Two
+// causes. (1) The swap call: ours forms the update's address before it pushes the slot, retail pushes the slot and then
+// loads `updates` into the freed ECX; that is the argument order of a callee whose third parameter is the update and
+// whose last is the other index. (2) The occupant's key address `collection + X + Y + 4` (Y the walking player pointer,
+// X the loop-entry value that turns it into i * 0xb4): the optimiser orders the terms of a sum by an internal rank,
+// highest first, ours X, Y, collection (two late temporaries outrank the named pointer), retail collection, X, Y; the
+// collection term keeps its low rank whether the pointer is const, assigned after its declaration or written as a byte
+// offset from the watcher. Forms: the swap count bumped into a local in a statement of its own with
+// `&updates[local - 1]` in the call 28; `++*count;` as its own statement and `&updates[*count - 1]` 28 (same code each); a
+// post-increment into an index local 120 (1056 B). LEAD, not kept (the count rises): 0x84e90's parameters as (collection,
+// player, update, other) in its definition, its declaration and its one call (0x84e90 still MATCH) 32; the swap call's
+// argument setup is then retail's exactly and the occupied block's three reloads take retail's registers, so only cause
+// (2) is left, whose wrong pairing then swaps ECX/EDX through the key copy. On that lead: the occupant key through
+// `watcher->players.players[i]` 292 (1064 B), through `player` 291, `(collection->players + i)->key` 32,
+// `&collection->players[i]` as the copy's source 32, collection declared at function scope 221 (1088 B), the conflict
+// loop reading the collection pointer 264, collection declared inside the else arm (the first arm passing
+// `&watcher->players`) 32, declared just ahead of the slot search 32, both with the conflict loop on it 264.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
