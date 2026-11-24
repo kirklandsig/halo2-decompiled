@@ -5676,6 +5676,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // predicate 175 each. Direct zero predicate and named magnitude with equality or zero predicate
 // 169/169/169; zero-first equality 179. NOT kept: memmove adds a call and raises the caller's reduced
 // score. The zero-first test reaches 767 bytes but increases the score.
+// Select the live aim or returned forward for both crosses and the frame: ordinary,
+// first staged, second staged or both staged 152 each. Select a separately corrected
+// up with the ordinary cross, staged second cross or branch selection 194 each;
+// select both new axes 196. NOT kept: the live aim reads through the unit where
+// retail copies it and grows the body to 781 bytes. Separate up grows the frame to 0x5c.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6972,152 +6977,6 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
-// MiniMax I (11-16): no new form, no lower score (298): the weapon index and the mode still take ebx and edi where retail keeps them in edi and bx, the two weapon flag tests are still not stored in the readiness byte as retail stores them, and the shared readiness completion and the dead flag bytes still differ; the permuter over 300 s made ten tries and reached 277 against its baseline of 295 differing instructions (the check's 298), but that variant adds a local holding only the constant 6 and swaps the arguments of the two calls, which changes the behaviour and is not kept.
-// score 278 (was 298; earlier 300, 333): m3 lane 16 r120: both hand buffers `bool hands[4]` (0xcd7b0 writes modes[0..3], and
-// every other caller declares `bool modes[4]`; `[2]` overran) 298, kept: the frame homes are retail's (unit 0x14, weapon
-// 0x18, buffer 0x1c; aligned 233 -> 142). On 298: `hand = 0; if (mode == 5 || mode == 6 || mode == 7) hand = 1;` 278
-// (1052 B, retail's weapon EDI / mode BX; a value set before a test, the direct form scores 298: not kept); every `goto
-// done` as a return 318 and the two getters fed from `unit` 334 (both lose MATCH 0xc4820, 0xccab0, 0xcce00: the callers'
-// stack convention); mode 6's own readiness test dropped 304 (on 300), mode 4's 307, both 312; the second
-// `ready = true;` dropped 299; the two flag tests through one named bool, or assigned to `ready`, same code. Still
-// differing: retail stores both weapon flag-test bools into the shared ready/buffer byte (`and cl,1; mov [esp+0x64],cl;
-// jne`) and merges mode 4's and mode 6's request tails (0xcd2f0), so only mode 2's hand index is threaded; ours threads
-// modes 4 and 6 and lays out a second epilogue for mode 6's failure, which splits `result` into two homes.
-// MiniMax G (11-14): no new form, no lower score (300): the weapon index and the mode still take EBX and EDI where
-// retail keeps them in EDI and BX, the two weapon flag tests are still not stored in the readiness byte as retail
-// stores them, and the frame order (ours: hands 0x14, unit 0x18, weapon 0x1c; retail: unit 0x14, weapon 0x18,
-// hands 0x1c) still differs; the forms that fix one of those are in the notes below and none lowers the score.
-// MiniMax A (11-14): 272 (was 280): the two weapon flag tests and the readiness flag now live in the first byte of the
-// four-byte hand-modes buffer that 0xcd7b0 fills, so the flag values are stored into that byte as retail stores them
-// (`and cl,1` into the buffer) and the buffer is four bytes wide, as 0xcd7b0 writes four; the mode 3/4 buffer is four bytes
-// too, which puts the unit pointer at 0x14 and the weapon pointer at 0x18 as in retail. What still differs: retail keeps the
-// readiness byte at 0x13 and the buffer at 0x64, ours keeps them at 0x64 and 0x10, and the branch targets and the tail differ.
-// MiniMax A (11-14): 280 (was 300): the hand index is set to 0 and then to 1 in the mode 5-7 test, which gives retail's
-// register homes (weapon EDI, mode BX) and retail's length (1052 bytes); what still differs is retail's flag-7 bit materialised
-// with `and cl,1` and stored in the ready byte, retail's frame order (unit 0x14, weapon 0x18, hands 0x1c), the mode-2 path's
-// `xor esi,esi` and the duplicated epilogue.
-// Earlier 280 (was 333): the single exit with `default: __assume(0)` gave the stack convention.
-// MiniMax D (11-14): no new form, no lower score (300): the frame 0x50 and the single exit with the stack convention agree, but the weapon and mode still take EBX and EDI the other way round, and the two weapon flag tests are still not stored in the ready byte as in retail.
-// Earlier 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
-// (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; current frame 0x50
-// agrees (earlier 0x54); weapon/mode in EBX/EDI versus EDI/EBX,
-// and the two weapon flag tests are not stored in the ready byte as in retail.
-// Object flag 7 read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift (294 -> 279).
-// Retail's ready byte and the main hands array share one slot (unit_index's stack home, which also takes the
-// two flag tests' stores and the slot index spill): `ready` written as hands[0] with the flag tests stored into it
-// gives frame 0x50, the same size and 300 (293 with hands[1] cleared), but LTCG then passes the unit in ESI (ret 8),
-// which breaks the callers, so it is not kept; separately named hands and ready stay 333.
-// Two request homes 313; result first 313; shared exit 301; secondary modes first 294; branch-local requests 314.
-// With a trial `standard` marker (removed): plain body 320; single exit 320; modes 3/4 tested first 308;
-// `default: __assume(0)` 302; blocked local for the flag tests 320; one ready check after the mode
-// chain 329. Without it: either request renamed 333; hands declared at the top 333; hands in a bare
-// block 332 (frame 0x50).
-// Round 6 of #1049 (332 -> 300): most of the 32 extra bytes were the hand index: with `hand = ...` assigned in the
-// mode-2 branch and the mode 3-7 branch, LTCG threaded the mode tests and duplicated the chain (and put mode/weapon in
-// EDI/EBX, 333). One `hand = mode == 5 || mode == 6 || mode == 7;` after the mode branches gives 300 (1056 bytes).
-// `hand = 0; if (mode == 5 || mode == 6 || mode == 7) hand = 1;` there gives retail's register homes (weapon EDI,
-// mode BX) and size (280, 1052 bytes) but is not kept: a value set before a test, without a match. The three request locals are block-
-// scoped (modes 4, 6, 7 then share retail's [esp+0x40]; the case-1 one is [esp+0x20]), as is retail's frame.
-// Still differing: retail threads only mode 2 (`xor esi, esi; jmp` past the chain; `hand = 0` in the mode-2 branch
-// does it but then the chain is duplicated and mode/weapon swap registers: 318/312), retail's mode-6 request joins
-// mode 4's shared `test al, al; mov [ready], al; je done` (ours has its own, so the done block is laid out early
-// and the epilogue duplicated, the final `result = true` stored at [esp+0xb]); the frame order (ours: hands at
-// 0x14, unit 0x18, weapon 0x1c; retail: unit 0x14, weapon 0x18, hands 0x1c) and retail's two flag tests stored to
-// the shared ready/hands slot (ready as a scalar drops them; `hands[0]` as ready keeps them but takes the param
-// home for `result`, 274, 1056 bytes: not kept). Tried: ternary `hand` after the branches (300, as the plain form); `second_hands`
-// or `ready_request` declared at the top (no change); hand chain inside the else (318).
-// Walk against retail (b4M, 2026-11-06, statement by statement, 0xcd0c0-0xcd4b8): no logic difference found. Checked: the
-// object lookups (0xcd0d3-0xcd0f2), the flag-7 and +0x12c tests (0xcd0f6-0xcd123), cd6a0 args (0xcd129-0xcd12e), mode 2
-// (0xcd14b), the 3/4 and 5-7 chains (0xcd158-0xcd17c), mode 6's request type 0x13 (0xcd1d1-0xcd206), the 3/4 second hand
-// block (0xcd210-0xcd27b), mode 4's three paths (0xcd280-0xcd2f6), the hand index (0xcd300-0xcd316), cd7b0/hands[hand]
-// (0xcd327-0xcd344), the slot test and parent_index (+0x14) detach (0xcd34c-0xcd374), cea70 (0xcd37c-0xcd382), the
-// no-range-check jump table (0xcd38f, 0xcd4bc) with its cases (0xcd396-0xcd47b: types 8/0x12, +0x216/+0x217 stores, the
-// mode 1 slot compare at 0xcd3bd), the +0x13c test (0xcd47f-0xcd48a) and a8a30 for modes other than 1 and 7 (0xcd48f-0xcd4a3).
-// Every field, callee, argument, test direction and mode set equals retail's; only frame order, the weapon/mode registers and
-// the duplicated epilogue differ. The `(char)` casts on the two +0x216/+0x217 stores were dropped (same bytes). `weapon` is an
-// item, not a unit: s_unit's +0x12c is actor_index, so the flag read at +0x12c is cast (items.cpp calls it flags_12c).
-// Also tried: hand as a `switch (mode)` 283 (1052 bytes, but compiles the 5-7 test as a range compare, not retail's cmp
-// chain: not kept), `if/else` and `?:` for hand 300.
-// P457: main/secondary hand-output names and unit/weapon receiver names 300 each;
-// byte/wide function result 316/318; byte readiness and existing bit predicate 300/300.
-// NOT kept: ties or regressions. Native frame 0x50 confirmed; saved-register schedule,
-// object/hand homes, dead flag stores and shared request completion still differ.
-// MiniMax A (11-14): no new form, no lower score (272): the readiness flag and the four-byte hand
-// buffer still take each other's frame slots (ours: the flag at 0x64 and the buffer at 0x10; retail:
-// the flag at 0x13 and the buffer at 0x64), and swapping the two declarations changes nothing.
-// NOT kept (coordinator screen, MiniMax A 11-14): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
-// P494: unit-first acquisition 303; immutable receivers 300; entry readiness declaration 300;
-// nested secondary admission 300; separate missing-primary rejection 300; conditional mode-four
-// readiness 300; final hand query through readiness 300; success from readiness 295.
-// NOT kept: final result gains five, below eight; other forms tie or regress. Original body restored.
-// P528: Separate actual request headers and complete payload clears, sites 1/2/4/8,
-// readiness pair, raise pair, all and immediate headers first: 295/296/295/293/289/298/306/306.
-// NOT kept: independent gains at most five; 289 needs the combined form, others tie/regress
-// or shorten to 1040/1052. Native zero stores, readiness join and ownership still differ.
-// P541: Readiness callback results defined in complete success/failure arms: four independent sites, pairs, all and failure-first all:
-// 318/318/330/295/338/326/331/328. NOT kept: mode-six 295 gains only three; native mode/weapon registers, dead flag stores and shared readiness completion remain unresolved.
-// Original complete executable source and existing helper contracts restored.
-// MiniMax D (11-15): no new form, no lower score (298): the weapon index and the mode still take ebx and edi where retail keeps them in edi and bx, and the two weapon flag tests are still not stored in the readiness byte as retail stores them.
-// P546: Complete aggregate-zero requests at the four original sites, then value-initialized
-// requests at those sites: 295/296/295/333/318/310/353/335. NOT kept: best gain three
-// is below the gate; value initialization grows the extent. Native mode/weapon
-// ownership, dead flag stores and shared readiness completion remain.
-// P548: Terminal case-group orders 7/5/2/0, 7/2/5/0, 7/0/2/5, 5/7/2/0,
-// 5/2/7/0, 2/7/5/0, 2/5/7/0, 0/5/2/7: 289/287/289/297/295/295/295/296.
-// NOT kept: native physical order is 0/2/5/7; leading case 7 reverses the two
-// request homes. Mode/weapon, dead flag stores and readiness join still differ.
-// Original complete switch and body restored; four exact callers survive every trial.
-// P550: Complete initial admission including validation in bool/byte/short/long: four 290
-// at 1064 bytes; integrated nonzero request headers at modes four/six/one/seven
-// 295/296/295/333. Complete admission through existing readiness, expression/branch,
-// 290/290 at 1064. NOT kept: admission grows away from native 1052; new one-use
-// outcomes also require equality. Header gains are below eight. Original body restored;
-// native dead flag bytes and shared readiness completion remain.
-// P552: Complete failure-owned readiness in bool/byte/short/long; selected-hand bool/long/word; sign-
-// extended slot result.
-// Fast scores 343/343/350/347/298/295/298/291. NOT kept: no permitted confirmed gain; original body restored.
-// NOT kept: widened slot gains seven and widened hand gains three, both below the keep gate.
-// Round 170 (m3 lane 7, fast with 0xc4820/0xccab0/0xcce00/0x19ef40, all matched each time): the +0x12c test through
-// TEST_FIELD_BIT 298 (same code); the three admission tests as separate `goto done` ifs 298 (same code). P550's admission
-// through the existing readiness (`bool ready = !flag7 && !(+0x12c & 1) && function_cd6a0(...); if (!ready) goto done;`)
-// re-measured 290 at 1064 bytes: it gives retail's weapon EDI and mode BX homes (aligned differences 142 -> 105), but LTCG
-// then inlines 0xcbd50 at the mode 3/4 site, which retail (and this body) call out of line: that inline is the 12 extra
-// bytes. On it: assigned after a bare declaration 290; TEST_FIELD_BIT on +0x12c too 290; mode 4's inner readiness exit
-// dropped 301; mode 6's dropped 296; both 307. Lead: the admission form with the mode 3/4 0xcbd50 call kept out of line.
-// Round 407: saved masked unit slot 298; word unit slot 298; both masked slots at entry 321; masked unit
-// provider 304; both masked providers 311; shared secondary-mode predicate 316; flat setup chain 298; shared
-// immediate-raise predicate 323.
-// NOT kept: the word slot reaches 1052 bytes at the same score. The other forms tie or regress. The early
-// weapon/mode register assignment and readiness stores still differ.
-// MiniMax R (11-17): no new form, no lower score (298): the prologue differs - this build takes the first index in ebx before the frame is set up where retail takes it in edi from the stack - and the state pointer's index is taken through ebx where retail keeps it in ebp.
-// Round 433. Weapon and mode register allocation, dead flag stores and the shared post-request test still differ.
-// mode two fallthrough 305; validation produces readiness 291; hand after readiness 292; setup request workspace
-// 298; readiness defined by mode two and other paths 304; secondary compatibility produces readiness 298; shared
-// setup readiness before hand 331; mode setup cases 298.
-// NOT kept: the validation result reaches retail length at 291, a seven-point gain below the keep threshold.
-// Moving hand selection reaches the length at 292 with a smaller 0x4c frame. The common readiness form shortens
-// the body by 44 bytes.
-// m3 lane 1 r130 (fast with 0xc4820, 0xccab0, 0xcce00, 0x19ef40, all MATCH each time; kept form confirmed plain): kept,
-// 298 -> 278 at retail's 1052 bytes: ONE `if (!ready) goto done;` after the mode 3/4 and 5-7 arms in place of the test in
-// each of the mode 4 and mode 6 arms (retail's shared `test al, al; mov [esp + 0x64], al; je` at 0xcd2f0, reached by mode
-// 4's three arms and mode 6's request; only mode 2 is then threaded past the hand chain, as retail).
-// HELD (needs the owner's OK; build/r130/held-cd0c0.patch, full check 10771 matched, 0xcd0c0 gained, nothing lost):
-// MATCH with three more changes. (1) Each weapon flag test in its own named bool with its own `if` (`bool held = ...;
-// if (held) goto done; bool flagged = ...; if (flagged) goto done; if (!function_cd6a0(...)) goto done;`): retail's two
-// byte stores into unit_index's dead home, weapon EDI and mode BX, 278 -> 13 (first difference +0x2bd). (2) Case 7's
-// slot store ahead of its request clear: 13 -> 2. (3) 0xcea70 declared (slot_index, weapon_index, mode, unit_index) at its
-// definition and all five calls: 2 -> MATCH, with 0xcea70, 0xccf20, 0xce920 and 0xced30 still MATCH and 0xd09c0 4 -> 2.
-// Retail evidence for (3): each retail call that passes one constant and one register value (0xcd382, 0xce9a9,
-// 0xd0ac7) sets the constant up before the register copy, last to first for that order and not for main's. 0xcea70,
-// 0xce920 and 0xced30 are contributor code, so (3) is held, and (1) and (2) with it (a named bool used once and a
-// statement order, kept only with a match).
-// Tried on the way: the readiness byte as element 0 of the main hands buffer declared at the top 276 (1064 B; `result`
-// first 278: `result` takes the parameter home and the buffer 0x10); each flag test in a named bool read through a
-// `bool const &` 271, one such bool with two definitions 271, `ready` itself through the reference 271 (1064 B); that
-// with `hand = 0; if (...) hand = 1;` 268 (1056 B); with mode 6's own test dropped 279 (1076 B), mode 4's dropped 280
-// (1068 B), both dropped and no shared test 284 (1088 B); on the 13 form: slot_index as a long with `(short)` at its uses
-// 46, `(short)(long)slot_index` at the 0xcea70 call 13 (same code); on the held form: both named bools in one `||` test
-// 137, main's unnamed `||` test 278.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7127,8 +6986,17 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	bool ready;
 	short hand;
 
-	if (TEST_FIELD_BIT((weapon->object_flags >> 7) & 1) || *((byte *)weapon + 0x12c) & 1 ||
-		!function_cd6a0(unit_index, NONE, weapon_index))
+	bool held = TEST_FIELD_BIT((weapon->object_flags >> 7) & 1);
+	if (held)
+	{
+		goto done;
+	}
+	bool flagged = TEST_FIELD_BIT(*((byte *)weapon + 0x12c) & 1);
+	if (flagged)
+	{
+		goto done;
+	}
+	if (!function_cd6a0(unit_index, NONE, weapon_index))
 	{
 		goto done;
 	}
@@ -7247,8 +7115,8 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	case 7:
 		s_unit_request request;
 
-		memset(&request, 0, sizeof(request));
 		unit->unknown217 = slot_index;
+		memset(&request, 0, sizeof(request));
 		request.type = 0x12;
 		request.type17.unknown4 = true;
 		request.type17.unknown5 = true;
@@ -9919,6 +9787,11 @@ struct s_unit_melee_collision
 // product range 519/521/509; normal-first or byte copies with per-product range 531/531. NOT kept:
 // both setters with per-product range recover 0x17c and 2229 bytes but score 509, with the pool load
 // and fan registers still displaced.
+// A range read per component with a row-offset vector once per row or inside the ray loop
+// scored 489/532. A column-offset vector 532, both vectors with the row offset outside/inside
+// 492/533, scalar row products 493, aggregate row vector 489 and a whole-ray assignment 489.
+// NOT kept: the 0x17c forms shorten to 2205 bytes. Row products held across the inner
+// loop grow the frame to 0x184 and the body to at least 2240 bytes.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

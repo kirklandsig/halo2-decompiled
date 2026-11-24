@@ -5114,6 +5114,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 116/118/116/118/116/116/118. All with projection scope 118.
 // NOT kept: the 116 forms recover the projection prefix through +0x107 but
 // gain only two. The cross operand allocation and the sine/cosine homes remain.
+// Indexed projection removal with vehicle or shared direct cross at the facing, roll-axis and final-left outputs
+// 129/129, 118/118 and 114/114. Direct shared cross at all three 125. First cross through the facing up field 118.
+// NOT kept: the best four-point gain leaves the first cross at +0x108 and keeps the different sine and cosine homes.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
