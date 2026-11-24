@@ -4039,6 +4039,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // channel falls to -10 against the member's 24); the guarded two-return loop leaves both scores as they are (14 / 20);
 // the plain arm first (`if (!relay)`) 156 at retail's 488 B: the channel then outranks the member (30 against 18), but
 // a cursor-relative temporary spanning the loop (53) takes EBP ahead of both. Body unchanged.
+// Channel and packet ownership still differ at entry and the current member and route use different homes.
+// Typed relay, direct, both and size-derived wire entries with indexed packets: 139 each.
+// The same four with a walking cursor: 164 each. NOT kept: indexed forms fold to the opening
+// code, and walking forms shorten to 478 bytes and keep EBP away from the channel.
 // The channel still loses EBP in the tied forms. Forwarding-header storage with field or aggregate init
 // 139/139, separate forwarding header from fields or whole copy 159/146. Header declared before the loop
 // with the same four producers 139/154/159/146. NOT kept: separate headers add stores and enlarge the frame

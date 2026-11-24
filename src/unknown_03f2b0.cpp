@@ -1292,7 +1292,6 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
-// MiniMax I (11-19): no new form, no lower score (93): the 0x4bcc0 argument load still takes ecx where retail takes eax before the force push, retail's dead entry lea is still missing, the header global is still loaded second, the previous level is still a dword where retail keeps a byte, and the scratch rotation those leave stands.
 // score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
 // reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
 // into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry
@@ -1601,6 +1600,27 @@ struct s_133f70;
 // the listing runs one instruction out of step from there. On the first difference (plain body): `initial_level`
 // declared ahead of `failed` 95 [60, 31]; a named flag pointer for the call, a named level pointer for the call, and
 // the record cast written in place of `output` in the call 93 each (same code). Body unchanged.
+// MiniMax I (11-19): no new form, no lower score (93): the 0x4bcc0 argument load still takes ecx where retail takes eax before the force push, retail's dead entry lea is still missing, the header global is still loaded second, the previous level is still a dword where retail keeps a byte, and the scratch rotation those leave stands.
+// M3 lane 4 r259 (h2m fast with the r128 caller/callee list, which reproduces the plain 93; aligned and register-masked
+// counts in brackets, control [58, 29] of 382): an inline active-view-entry getter for the 0x4ed284 test 102 (1312 B;
+// retail's dead entry lea comes); that with a signed-char previous level read through an inline cache-record getter
+// (record + 0xbc added in two steps as retail, both pool sites line for line) and `success` declared first in the loop 307
+// (1312 B) [54, 17]; that with the header index named 307 (same code), as `(word)object_index` 315; that with the 0x3d430
+// call on the drawn-object local 336 (1322 B); that with the drawn object bound as `long const &` to *source_object 92 at
+// 1310 B, 382/382 instructions in lockstep [52, 16] (the previous-level test becomes retail's `cmp byte ptr [esp + 0x20],
+// 0xff` behind the two slot stores; one point and match-only forms, not kept); the previous level through an inline getter
+// taking the object index 306 [53, 17] (the first guard then loads *source_object ahead of its mode test as retail, but the
+// flags byte moves to DL and the previous test loads AL again); with that, the 0x3d430 argument in a named local 306, its
+// result named 306, the cache pointer's NULL declared ahead of the 0x3d430 call 306; a file-local inline copy of 0x3d430
+// (diagnostic) 307 and 92 (same code as the call). Reading: retail loads *source_object for the 0x3d430 guard in the join
+// block ahead of the mode test (`test eax, eax; mov ecx, [esi]; jl`), as if the value were evaluated on every path (the
+// guarded call and the next lookup both use it); every form here loads it inside the guarded arm, and that one temporary
+// sets the flags byte's register and whether the previous test reads memory. First difference (the distance into EAX
+// ahead of the force push): compile-only, 15 spellings of the 0x4bcc0 call (split declaration, short result, named cached
+// and level pointers, the failure count declared late, the record cast in the call, the distance through a const reference
+// or a copy, copies of force and override, `distance * 1.0f`, a cast) all keep ECX after the force push. The distance is
+// an expression temporary taken after the level-pointer lea (EAX, the rotation moving on to ECX); retail's EAX needs that
+// lea to leave the rotation alone (a preferred register) or the load to be made while ECX and EDX are still live.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

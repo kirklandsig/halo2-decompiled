@@ -450,6 +450,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
 // stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
 // orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
+// Failed-test disjunction and staged up publication 70. On the named deadline walk, staged up and
+// alternate normalizations 99; staged side and up 101; existing side cross and alternate normalizations
+// 92; reversed shared dot inputs 70; failed-test disjunction and staged up 101; both axis references
+// with staged up 101; signed copy and coefficient widths with staged up 148. NOT kept: The recovered
+// traversal still diverges in the correction, and the shared dot shortens the body.
 // Unsigned-word or byte group 66/234; next deadline derived from the ordinal 372;
 // whole deadline-array pointer 103. With a named deadline: bulk target copy 367,
 // all polynomial products named 89, named forward squared length 87, or adjacent
@@ -1632,6 +1637,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
 // 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
 // `c * (1 - square) + square` 337 (the same code: the product order is canonical).
+// Transform row accumulators 390; partial sums 346; terms formed one row at a time 356; all terms before output 453; partial and final terms before output 395.
+// Bounded alignment 337; separate reciprocal arms 352; named squared deviation 337. Reduced control 337.
+// NOT kept: the tied forms leave the opening unity register and two squares spilled. The staged row terms increase the frame.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2381,6 +2389,9 @@ struct s_pool_view_172840
 // bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
 // stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
 // `== unknown00` with the arms swapped 22.
+// Reserved pointer for recount 149, bounds 155, or both 148. Saved point start for commit 142 or both outcomes 255.
+// Shared post-clip offset 235; recount through clip record 256; explicit inherited-bit assignment 55.
+// NOT kept: retaining the reservation enlarges the frame, and the tied assignment still leaves the long sentinel.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

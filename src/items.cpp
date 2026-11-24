@@ -956,6 +956,9 @@ struct s_item_collision_bsp
 // The transformed-plane XMM homes and contact slot still differ. Angular impulse, contact point and travel speed slot names 190/190/190.
 // Conditional const axis 259; shared double-factor vector scale in the axial arm, fallback arm, both arms or at the joined spin 239/239/238/319.
 // NOT kept: the names tie and none of the scale forms recovers the pending x87 factor at a lower score.
+// Completed transformed-normal rows i/k/j, j/i/k, j/k/i, k/i/j, k/j/i: 193/196/196/197/194.
+// Overlapped row completion i/j, j/k, or all three in reverse: 201/198/195.
+// NOT kept: the native coefficient registers and rejection span still differ.
 // Plane-join homes differ and the real spin scale spills at the join. Wide axial, fallback or joined k
 // products 240/240/198, both initial pairs 194, axial plus k 242, fallback plus k 241, all products 241.
 // Wide scale with explicit real fallback rounding 237. NOT kept: wider products need a match. The joined
@@ -1310,6 +1313,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 130, scale final expression from lateral subtotal 130, shared marker transform pointer 165, ordinary dot for
 // alignment 130, shared fallback side cross 130, shared fallback result cross 130, staged axis cross and in-
 // place projection scale 151.
+// Shared double-factor scale with direct or staged cross, in-place or independent output,
+// and rounded or double reciprocal: 197 each at 869 bytes.
+// NOT kept: the 0xc0 frame remains and the scale expands as x87.
 // The scaled axis i still spills and the frame stays at 0xc0. Marker-up-first alignment, axis-first projection,
 // axis-first and forward-first rotation cross products, scalar-first diagonal, reversed axial and weighted cross
 // products, and axis-first rows through the shared setter all score 130.
@@ -1850,6 +1856,11 @@ struct s_item_flags_view_10b850
 // before sampling, beside carrier output, beside gravity or at the query 884/884/885/885.
 // A separate gravity test with one relocation result before sampling, beside carrier output or at the query 898/898/885.
 // NOT kept: each reserves 0x150 and shortens to 4066 bytes. Retail uses separate relocation and settling bytes.
+// The 0x154 frame still exceeds retail's 0x12c, and the entry Boolean homes differ.
+// Cap within contact kind 824, capped initialization 873, conditional lift 824, lift floor in
+// correction 824, shared inward speed 830, retained pre-impact projection 884, cap-result
+// arms 873, named scaled lift 824. NOT kept: ties or regressions. Retail recomputes the
+// normal projection after impact.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
