@@ -1530,6 +1530,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Setter alone 122; with the clamped interpolation initializer 120. NOT kept: the isolated
 // forms gain fewer than eight points. The 14 form needs an exact match for the moved
 // trig and field-of-view initializers, and its sine/cosine slots and pan setup still differ.
+// Mixed length-product operands, direction first on i, j, i/j, k, i/k or j/k,
+// and indexed j or i/k, all 397. NOT kept: j preloads but the length and zero
+// remain in exchanged registers, the normal rotates and the body grows.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

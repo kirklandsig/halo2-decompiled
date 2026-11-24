@@ -2279,6 +2279,18 @@ struct s_actor_looking_structure_view
 // the candidate for the copy, rotation, trace and score 139 (928 B); no result local, `return true` at the success and
 // `return false` at the end 221 (939 B); 0x2105b0 writing straight into the specification's vector (the in-place call and
 // the copy dropped) 154 (909 B).
+// M3 lane 13 r153 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23). Operand-rank reading
+// (the compiler sorts the operands of each product and each sum by a rank, descending): every read of the candidate goes
+// through the loop's one walking pointer and carries one rank level (6 here, +2 per redundant paren pair, mod 8); the axis
+// reads carry 1 (i), 2 (j) and 0 (k), j and k +2 per pair; forward's members rank by first mention (k at its clear, then j
+// and i in the score). Retail's rotation needs the candidate's k above the axis j, and the axis j at or above the
+// candidate's i and j, so no single level for the candidate gives it; the leads at 6, 9 and 11 are tie cases of it. A
+// two-statement score splits only the candidate's i from its j and k (`(j + k)` then `+= i` levels 2/4/4, `(i + k)` then
+// `+= j` 6/4/4, `(i + j)` then `+= k` 4/4/4); a named candidate pointer gives the candidate the axis's per-member levels
+// (6/4/2 against 1/4/2). Tried: the score through a `vector3f const *` to the candidate declared at the score 43; that
+// pointer handed to dot3f 32; the rotation run on a local copy that is stored to the array afterwards 195; the score
+// computed ahead of the fraction test 34; lane 3 r277's merged helper with the dot between the sine and the cosine
+// (retail's instruction order) 6 (0x296e60 273; the lead's code here, match-only).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
