@@ -1331,35 +1331,50 @@ struct solver_residual_pair_value_31c940
 	__forceinline solver_residual_pair_value_31c940(__m128 *cursor,
 		solver_velocity_31c940 *a, solver_velocity_31c940 *b)
 	{
-
-
 		solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)cursor;
-		// Retain both rows' inputs, reusing each vector after its last use.
-		__m128 work_a = row[0].a;
-		__m128 work_b = b->angular;
-		__m128 work_c = a->angular;
-		__m128 work_d = _mm_load_ps((float const *)&(row[1].linear));
-		__m128 work_e = _mm_load_ps((float const *)&(row[0].b));
-		__m128 work_f = row[1].a;
-		work_a = _mm_mul_ps(work_c, work_a);
-		__m128 work_g = _mm_load_ps((float const *)&(a->linear));
-		work_g = _mm_sub_ps(work_g, _mm_load_ps((float const *)&(b->linear)));
-		work_c = _mm_add_ps(_mm_mul_ps(work_c, work_f),
-		_mm_mul_ps(work_b, _mm_load_ps((float const *)&(row[1].b))));
-		work_d = _mm_add_ps(work_c, _mm_mul_ps(work_g, work_d));
-		work_c = _mm_add_ss(_mm_shuffle_ps(work_d, work_d, 0x55), work_d);
-		work_e = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_e));
-		work_e = _mm_add_ps(work_e,
-		_mm_mul_ps(work_g, _mm_load_ps((float const *)&(row[0].linear))));
-		work_b = _mm_add_ss(_mm_shuffle_ps(work_d, work_d, 0xaa), work_c);
-		second=work_b;
-		work_a = _mm_shuffle_ps(work_e, work_e, 0x55);
-		work_d = _mm_add_ss(_mm_shuffle_ps(work_e, work_e, 0xaa),
-		_mm_add_ss(work_a, work_e));
-		// Keep the second reduced vector live until the first residual is written.
-
-
-		first=work_d;
+		// Retain three consumed working values across the two projections.
+		// Reuse each input only after its final multiplication.
+		struct { __m128 first, temporary, other; } work;
+		__m128 second_sum;
+		__m128 contribution;
+		__m128 axis;
+		__m128 relative;
+		second_sum = a->angular;
+		work.temporary = row[0].a;
+		work.other = b->linear;
+		axis = row[0].b;
+		work.first = second_sum;
+		work.first = _mm_mul_ps(work.first, work.temporary);
+		work.temporary = row[1].a;
+		second_sum = _mm_mul_ps(second_sum, work.temporary);
+		work.temporary = a->linear;
+		work.temporary = _mm_sub_ps(work.temporary, work.other);
+		work.other = b->angular;
+		contribution = work.other;
+		relative = work.temporary;
+		contribution = _mm_mul_ps(contribution, axis);
+		axis = row[1].b;
+		work.other = _mm_mul_ps(work.other, axis);
+		axis = row[0].linear;
+		second_sum = _mm_add_ps(second_sum, work.other);
+		work.first = _mm_add_ps(work.first, contribution);
+		contribution = row[1].linear;
+		work.temporary = _mm_mul_ps(work.temporary, contribution);
+		second_sum = _mm_add_ps(second_sum, work.temporary);
+		work.temporary = _mm_shuffle_ps(second_sum, second_sum, 0x55);
+		work.temporary = _mm_add_ss(work.temporary, second_sum);
+		work.other = _mm_shuffle_ps(second_sum, second_sum, 0xaa);
+		second_sum = work.other;
+		second_sum = _mm_add_ss(second_sum, work.temporary);
+		second = second_sum;
+		relative = _mm_mul_ps(relative, axis);
+		work.first = _mm_add_ps(work.first, relative);
+		work.temporary = _mm_shuffle_ps(work.first, work.first, 0x55);
+		work.other = work.first;
+		work.temporary = _mm_add_ss(work.temporary, work.first);
+		work.other = _mm_shuffle_ps(work.other, work.other, 0xaa);
+		work.other = _mm_add_ss(work.other, work.temporary);
+		first = work.other;
 	}
 };
 typedef char solver_residual_pair_value_size_31c940[sizeof(solver_residual_pair_value_31c940) == 32 ? 1 : -1];
