@@ -1602,8 +1602,9 @@ def test_second_normal_angular_home_publication_follows_first_projection(solver_
         print(label,'second normal angular home4RM',hex(precision),flush=True)
 
 
+@pytest.mark.parametrize('initial_count',[-1,0,1,3])
 @pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
-def test_initial_iteration_count_precedes_counter_publication(solver_images,precision):
+def test_initial_iteration_count_precedes_counter_publication(solver_images,precision,initial_count):
     frame=STACK+32768-0xd0;step=frame+0x10
     retail,compiled,symbols=solver_images;snapshots={}
     for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
@@ -1615,11 +1616,47 @@ def test_initial_iteration_count_precedes_counter_publication(solver_images,prec
                 ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3);callbacks.append((terms,payload))
                 return_from_hook(uc)
             machine.mem_write(frame,b'\0'*208)
-            machine.mem_write(step,struct.pack('<7fi',0,0,0,0,1,0,0,1))
+            machine.mem_write(step,struct.pack('<7fi',0,0,0,0,1,0,0,initial_count))
             machine.mem_write(gate,b'\x01')
             snapshot=execute(machine,entry,data,[step,OPS,HEAP,HEAP+0x4000],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
-            assert callbacks==[(TERMS,OPS+32)],(label,precision,rounding,callbacks)
+            assert callbacks==([(TERMS,OPS+32)]if initial_count>0 else[]),(label,precision,rounding,callbacks)
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,callbacks)
             else:assert snapshots[rounding]==(snapshot,callbacks)
         print(label,'initial counter capture4RM',hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('pair_index',[0,1])
+@pytest.mark.parametrize('coefficient',['error','velocity'])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_coupled_scales_reload_after_first_error(solver_images,precision,pair_index,coefficient):
+    frame=STACK+32768-0xd0;slot=0x14 if pair_index==0 else 0x10
+    step=frame+slot-{'error':4,'velocity':8}[coefficient]
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0);n=pair_index+1
+            for i in range(n):
+                put(data,OPS+24+8*i,'If',3|(8<<8)|(5<<16),0)
+                put(data,TERMS+96*i,'24f',1,0,0,3,0,0,0,1,0,0,0,1,0,1,0,4,0,0,0,1,0,0,0,1)
+            callback_op=OPS+24+8*n
+            put(data,callback_op,'4I',14|(12<<8)|(2<<16),CALLBACK,0,0x400)
+            put(data,HEAP,'B',3)
+            for body in [HEAP,HEAP+0x80]:
+                put(data,body+0x10,'4f',1 if body==HEAP else 0,1 if body==HEAP else 0,0,0)
+                put(data,body+0x20,'4f',0,0,0,0);put(data,body+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'4f',0,0,0,0)
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3);callbacks.append((terms,payload))
+                # The synthetic boundary only caps iteration count: its word
+                # can overlap the retail counter, saved scale, or A home.
+                uc.mem_write(step+28,struct.pack('<i',1));return_from_hook(uc)
+            machine.mem_write(frame,b'\0'*208);machine.mem_write(step,struct.pack('<7fi',0,2,1,2,1,0,0,1));machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[step,OPS,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            assert callbacks==[(TERMS+96*n,callback_op+8)],(label,precision,rounding,pair_index,coefficient,callbacks)
+            observed=words(machine,HEAP+0x10,4);assert observed[:2]!=(0x3f800000,0x3f800000),(label,'inactive',observed)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,callbacks,observed)
+            else:assert snapshots[rounding]==(snapshot,callbacks,observed),(precision,rounding,pair_index,coefficient,observed)
+        print(label,'coupled first-error scale4RM',pair_index,coefficient,hex(precision),flush=True)
