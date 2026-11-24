@@ -1972,6 +1972,11 @@ static inline dword voice_get_player_mask_inlined(void);
 // an early `return false` 43 (0x53bb0 differs); the flag word tested before the bit 78 (0x53a20 MATCH, 0x54890 96); a
 // zero-default flag word 51; `!(f1 || f2)` in 0x53a20 and 0x54890 43, with 0x54890's test split in two `if`s 43. Only
 // forms that change 0x53bb0's own code stop an expansion, and none stops 0x54890's. Body unchanged.
+// M3 lane 4 r258 (H2M_FAST with 0x54890/0x53a20/0x53bb0/0x53b90 MATCH; control 64, 415 B, aligned 13): inner removal tests
+// written second flag first 65; `(flag1 | flag2) || mask test` 55 at 427 B (a padding artefact: aligned 16, masked 21, and
+// both queries always run where retail's flag1 exits early; not kept); mask test first then `flag1 | flag2` 80; mask test,
+// second flag, first flag 85; first flag, mask test, second flag 89. Retail expands both flag queries here (the second
+// only at this site), so the second needs `inline` on 0x53bb0, a held form.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

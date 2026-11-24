@@ -958,6 +958,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // computation in their own block 114 (same code), that with the bool timer 191 (1888 B); no `hud` local 115; the
 // player lookup ahead of `split_screen` 504 (1895 B); the timer flag set by an `if` after a zero default 115. Body
 // unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0x24ce9d/0x15f120/0x24cedf, all MATCH; control 114). Frame reading (this frame is over
+// 0x80 bytes, so slots sort by references x 1000 / size): our colour slot (color + both field_24, 25 refs, 1562) sorts
+// above the text-bounds slot (12 refs with three temporaries and the status game time, 1500), retail's the other way;
+// retail's three flag bytes sit below the bounds/origin slot although its scripted flag also has four references.
+// Forms: the first bottom from `bounds.top` 114; the status top stored first and the bottom from it 114; the status
+// step as `bounds.top += 0x12; bounds.bottom += 0x12;` 114; the text height tested and assigned as an expression 114
+// (all the same code); the total height as `height = text_height >= 0 ? text_height : 0;` 349 (1896 B).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
