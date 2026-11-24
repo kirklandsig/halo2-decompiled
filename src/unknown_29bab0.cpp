@@ -906,6 +906,23 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // With the setter's file (0x22bbca) added to the screen's list: the side point through the existing 2-D point setter,
 // declared here, 487 (3503 B, aligned 222, register-masked 123: a gain of 2, under the bar, homes unchanged); the setter
 // with the signed side distance written in both arguments (no local) 721 (3476 B).
+// M3 lane 15 r143 (fast screens with lane 15 r139's companion list; control 489 at 3503 B, aligned 202, 44 hunks left
+// once registers, stack offsets and addresses are masked; body unchanged). The count is two things at once: the frame's
+// home order, which any change to the set of locals moves (1, 2 or 3 unused locals at the top, diagnostic, 665 each at
+// retail's 3499 B with the first difference at +0x60), and about forty small structure differences that stay the same
+// in both frame states. Structure forms that add no local: both ratio clamps written `MIN(1.0f, ratio)`, which is
+// retail's `1.0 > ratio` compare with the ratio evaluated again in the taken arm, 488 (41 hunks), the first only 488,
+// the second only 489; with those, the half product of the squared ratio taken as its own statement ahead of the dot
+// clamp (`local_26 *= 0.5f;` after the divide, then `local_24 *= local_26;`) 502 (3506 B, 35 hunks: the half-angle
+// block is then retail's instruction for instruction but for register names, the square in place and the half
+// product between the compare and the jump), with the statement between the dot and its clamp 502 (39 hunks); the
+// scale factor read from field_50 ahead of the planar normalize (retail loads and stores it before the 0x2b400 call)
+// 489 on this body, 488 with the clamps, 502 with both (35 hunks; patch build/r143/lead-0x29bab0-structure.patch).
+// Forms that add a local: the side flag as a byte converted at the join (retail's `test al, al; setne al`) 663 with 0
+// to 3 unused locals, with both clamps 663, on the 35-hunk form 650 (3499 B, 50 hunks). Left after the 35-hunk form:
+// the side point's rows, the byte conversion, the scale factor's load order, the zero held in XMM1 through the stop
+// block, the five products of the frame-velocity block (retail keeps the object's axis on the left except its first
+// member) and the blend tail. Nothing kept: the two forms that lower the count gain one point.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
