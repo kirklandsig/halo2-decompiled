@@ -1758,6 +1758,17 @@ PRIVATE inline long score_string_list_1608e0()
 // one text buffer for all three 679; shared title and caption rectangle 679; separate optional
 // caption rectangles 679; shared row color 679; first palette color passed directly 721.
 // NOT kept: the frame and viewer register stay displaced, and direct palette access shortens the body.
+// M3 lane 11 r163 (H2M_FAST with 0x161420, 0x1600f0 and 0x1603f0; control 679, difflib-aligned 597; body unchanged).
+// Reading of the entry: the allocator colours x (140) ahead of the viewer record (63), and x's range runs from its
+// definition to the last header column because every later read of the row position is forwarded from the register, so
+// only EBX is free for it and the viewer falls to EDI; retail's x ends at the title (it re-reads the stored point after
+// the calls), takes EDI, and the viewer gets EBX with its index scaled ahead of the pushes. Diagnostic, removed at once:
+// the row position handed to an undefined function at the end of the body (so that it counts as captured) 667 (2879 B):
+// the viewer is then in EBX from +0xc and x in EDI as retail, the frame stays 0x798. So retail treats the row position
+// as captured and this build does not. Forms: the title bounds' left and top stored ahead of the title-text call with
+// right and bottom summed from them after it 679 (aligned 596); the title bounds' near edges read from the row position
+// with the far edges summed from its own left and top 679 (same code); `inline` on 0x1600f0's definition 679, on
+// 0x1603f0's 679, on both 679 (the same code each: the two row builders are not what captures the position).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
