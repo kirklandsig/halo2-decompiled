@@ -3917,6 +3917,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // zero-extended where retail sign-extends it, and the 0xe16b0 call's argument in a register where retail passes it
 // on the stack.
 // MiniMax R (11-20): re-checked, no new form and no lower score (324): the frame is 0x48 against retail's 0x4c, so every home is four bytes out, the biped index is read from [esp + 0x54] where retail reads it from [esp + 0x58], and the state byte at +0x34b is zero extended where retail sign extends it.
+// The frame remains 0x48 and the pre-call flag slot is absent. Delayed mass conversion with an aggregate
+// point 332, point setter 313, scalar point 494, and scalar point split around the integer conversion 494.
+// With total updated first 332, direct weighted scalars 494, weighted point initializer 509, and staged
+// weighted products 398. NOT kept: the setter recovers the 0x4c frame but grows to 1924 bytes and loads the
+// point before the mass call. Four other forms break the caller.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

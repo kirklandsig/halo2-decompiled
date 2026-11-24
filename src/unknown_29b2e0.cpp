@@ -894,6 +894,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // and without the planar pair first, 128-311 (0/0 with the pair first 128, 0/3 155, 1/3 208, 2/2 210, the rest 225 to
 // 311); 0-7 unused locals at the top x 0-3 pairs on the pitch difference with the pair first: 128/308/309/237,
 // 222/299/232/256, 219/296/232/256 (2 and 3 locals), 124/204/299/237 (4 to 7 locals); no match. Body unchanged.
+// The planar J and full-depth stores still exchange order. Fixed-size copies for the full snapshot 130,
+// planar snapshot 346, failed restore 130, both snapshots 346, full snapshot and restore 130, both full
+// inputs 130, full snapshot plus restore and turned input 130, and all four facing transfers 346. The planar
+// copy moves the first difference earlier.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
