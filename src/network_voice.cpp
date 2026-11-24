@@ -1977,6 +1977,14 @@ static inline dword voice_get_player_mask_inlined(void);
 // both queries always run where retail's flag1 exits early; not kept); mask test first then `flag1 | flag2` 80; mask test,
 // second flag, first flag 85; first flag, mask test, second flag 89. Retail expands both flag queries here (the second
 // only at this site), so the second needs `inline` on 0x53bb0, a held form.
+// Candidate and all-allow guards 85, muted-test conditional fallback 85,
+// selected rejection bit 83, admitted bit for test and clear 86, admitted
+// bit XOR/subtraction 92/92 (muted first). Current order with admitted bit
+// clear/XOR 65/67. The second port query remains out of line.
+// M3 lane 2 r147 (H2M_FAST with 0x54890, 0x53a20, 0x53bb0, 0x53b90, 0x53b40, all MATCH; control 64): the inner removal
+// tests in the two orders not yet listed, second flag, muted, first flag 65 and muted, second flag, first flag 85 (427 B);
+// the active word as a select 127; the muted word as a select 105; `~muted & remote` 64 (same code). The second port
+// query stays out of line in every form. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -4035,6 +4043,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // channel falls to -10 against the member's 24); the guarded two-return loop leaves both scores as they are (14 / 20);
 // the plain arm first (`if (!relay)`) 156 at retail's 488 B: the channel then outranks the member (30 against 18), but
 // a cursor-relative temporary spanning the loop (53) takes EBP ahead of both. Body unchanged.
+// Channel and packet ownership still differ at entry and the current member and route use different homes.
+// Typed relay, direct, both and size-derived wire entries with indexed packets: 139 each.
+// The same four with a walking cursor: 164 each. NOT kept: indexed forms fold to the opening
+// code, and walking forms shorten to 478 bytes and keep EBP away from the channel.
 // The channel still loses EBP in the tied forms. Forwarding-header storage with field or aggregate init
 // 139/139, separate forwarding header from fields or whole copy 159/146. Header declared before the loop
 // with the same four producers 139/154/159/146. NOT kept: separate headers add stores and enlarge the frame

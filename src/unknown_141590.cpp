@@ -1309,6 +1309,11 @@ void function_143250(
 // r4_r4 product with the operands exchanged 939, its r3_r3 product exchanged 939, the value declared const 939, written
 // `r2 * s35` 939, entry 27's first product as `s7_s2 * s35_r2` 939 (the same code each); its r4_r4 product declared
 // beside the r3_r3 product 1368 (10783 B). Body unchanged.
+// The extra dedicated scalar cell is still missing. Root-35 component-2 product before the component-1 axial
+// cube 1410, cube between weighted product and first use 1411, adjacent square consumers 939, adjacent
+// weighted component pairs 990. Root-105 component-1 square alongside component-3 1475, its pair after the
+// component-0 pair 945, its component-7 product alone beside component-0 1470, and four weighted squares
+// before their component-7 consumers 1556.
 // M3 lane 6 r240 (H2M_FAST with 0x143250 MATCH, 0x22850 209 and 0x23690 354 each run; control 939, offset-masked aligned
 // rows 214 in 109 runs). Reading of the first masked rows: band two's entry 0 store and the zero for entry 1 trail the
 // r6 * r4 product in retail and lead it here, and in entry 10 retail multiplies the bracket by s5_s15 ahead of the r4_r1
@@ -1321,6 +1326,15 @@ void function_143250(
 // (10793 B, frame 0x2fc, masked 184); both written out with the named value left for entry 27 1322 (10810 B, masked
 // 278); the r4_r4 product declared just ahead of the r3_r3 product 1368 (re-measured); both products with the named
 // value as the second operand 939 (same code). Body unchanged.
+// The extra dedicated scalar cell is still missing. Root-35 component-2 product before the component-1 axial
+// cube 1410, cube between weighted product and first use 1411, adjacent square consumers 939, adjacent
+// weighted component pairs 990. Root-105 component-1 square alongside component-3 1475, its pair after the
+// component-0 pair 945, its component-7 product alone beside component-0 1470, and four weighted squares
+// before their component-7 consumers 1556.
+// Round 467: in-place multiplies at the original weighted root-35 and root-105 product
+// producers 939/939, both 939, each pair of consumers 939/939, each producer with
+// its consumers 939/939, and both complete families 939. No change to the 0x2fc frame,
+// early basis spills or higher-band product homes.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

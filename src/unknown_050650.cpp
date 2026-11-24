@@ -1049,6 +1049,12 @@ struct s_collision_result_buffer_1697c0
 // renamed (slot-name order) 270 (same code); the pitch axis passed through a const pointer local 328 (frame 0xb0); the
 // candidate through a pointer local for both turns 334; both draws held as double 341 (1425 B, frame 0xb0, aligned 329
 // against 198); the candidate declared ahead of the draws and assigned after them 270 (same code). Body unchanged.
+// M3 lane 6 r241 (h2m fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23), 0x24590, 0x2980d0, 0x297a50; control 270):
+// the pitch axis set member by member with k first 282 (1437 B); the candidate copied member by member i, j, k 265 at
+// 1423 B (aligned 275 against 128), j, k, i 265 (same code), k, j, i 294; `clear` initialised true once before the loop
+// with no per-pass reset (the same behaviour) 328. Forcing single allocator decisions (69 of them) never matches (best
+// 266) and leaves the 22 operand-order differences (both rotations' products and the normalizer's j product, which
+// retail forms as j * scale) untouched, so the remaining work is operand rank, not register choice. Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2660,6 +2666,11 @@ struct s_actor_looking_turn_request
 // the end 536 (2012 B; aligned 365 / 156), with `bool valid` 614 (1932 B; 341 / 165); `bool valid` and `bool
 // looking_valid` re-measured 547 (1996 B; 366 / 175). Reading: the actor's pool offset retail spills at entry is read
 // once, by the output getter at the end, which this body already re-reads there. BLOCKED-BY 0x1fdd90 stands.
+// M3 lane 6 r241 (h2m fast with its fifteen listed callees and neighbours; control 442): the target point stored before
+// the 0x8000 flag 457 (2008 B); output_mode stored before the target-point block 451; the attention flag as one ternary
+// store 442 (same code); the turn test with the angle test first 449; the three flags declared ahead of the animation
+// state 442 (same code). Retail calls 0x1fdd90 first and tests the +0x48a byte after it, so a test-first order is not
+// retail's. Body unchanged.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

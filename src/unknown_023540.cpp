@@ -4345,6 +4345,20 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local, by both words with no shifted local, or a `long &` it is assigned through) 9 / 939 / 9, on B 5 / 941 / 5;
 // `exponent` declared bare at the top or after the selectors and set to 0 at the loop 9 / 9, on B 5 / 5; the stage-one
 // constant and input words stored right after the clear 149, on B 146. Body unchanged.
+// M3 lane 3 r306 (H2M_FAST, control 9; "rank" = the register allocator's colouring priority from a back-end trace): on
+// lane 8 r205's base B with no shifted local (re-measured 941) the whole body is retail's but for one ranking: the input
+// selector ranks 45 (one use each in its two blocks) and allow_negative 47, so allow_negative colours first and takes the
+// small flag's last free register; with input first, small is split as retail's (CL, copied to AL). Forced, as a
+// diagnostic (not source): input at 48 or allow_negative at 44 on that form is a byte match, reload pairs included. Two
+// points are needed: one candidate fewer in the entry block (14 there, allow_negative's +28) or one more in the
+// fixed-point or stage-one block that reads the input selector. The plain-return form (no result variable, `return
+// true;` / `return false;` at the failure label) removes the entry candidate and gives retail's selector block, but the
+// failure exit is then laid out inside mode zero 818 (also with no base B changes 818). New on the no-shifted-local
+// base B: the distance scaling as `low /= g_48565c; high /= g_48565c;` 941 (same code); `bool result = false;` declared
+// at the first failure test 1131; small as `bool small = high * 256.0f <= 1.0f && allow_small;` after the switch 1182
+// (4840 B: retail stores the false flag at the entry); case 0 as `allow_negative = allow_small = true;` 941 (same code).
+// On base B (re-measured 5) forced scheduler heights and ready times in the shift's region (98 of 1978) and picks,
+// ranks, cuts and flags (40) leave the shift (5).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

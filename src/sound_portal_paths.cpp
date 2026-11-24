@@ -784,6 +784,23 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the deep stores. Diagnostics (cuts, restored at once): without the 0x249d60 call the cluster ranks 128 and takes EBP;
 // without the 0x14b240 call 118 and EBP; without the sort call 106 and EBX. The 21 form's full diff is
 // build/r242/held-0x18dc90.patch. Still BLOCKED-BY 0x14b240's write summary for anything short of a match.
+// The 0x428 frame, starting-cluster register and in-loop BSP table loads are still open.
+// Select the distance bound, select the comparison, split first and repeat admissions,
+// or continue on rejection: 295/356/357/295. The same with call-scoped sort scratch
+// 280/352/353/280. NOT kept: the 280 forms recover the frame through the scratch scope
+// but still cache both BSP bases and keep the starting cluster in EBX.
+// M3 lane 16 r186 (H2M_FAST with 0x18d730, 0x14b240, 0x222150; body unchanged, 295). The frame's two extra words are the
+// two table bases this build keeps across the 0x14b240 call; retail reloads them because it takes that call as one
+// that may write memory (lane 13 r110). Re-measured on main's bodies: 0x14b240's in-plane subtraction through a
+// reference-bound local (the known may-write form; 0x14b240 and 0x222150 still match) 372 here at 1346 bytes and 370 in
+// the twin at 1353, with 0x18ae80 913, so main's two bodies are tuned to the no-write reading and only the full rewrite
+// (lane 15 r126's lead patch, 4 here and 8 in the twin) gains from it. Natural spellings of 0x14b240 tried for the
+// may-write reading, each still a byte match of 0x14b240 and each leaving this function at 295 and the twin at 287 (the
+// call still counts as writing nothing): the subtraction through vector3d_from_points3d on the two locals; the
+// projection through vector3f_scale and the subtraction through the points helper; the points helper taking
+// vector3f_scale's returned pointer as its first point; the subtraction reading through a named copy of that returned
+// pointer. A store has to go through a pointer or reference variable for the call to count as a writer; reads through
+// one do not. Still BLOCKED-BY 0x14b240's reading, whose fix raises 0x18ae80 (837) until that body is rewritten too.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
