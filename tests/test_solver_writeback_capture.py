@@ -3,7 +3,7 @@ import struct
 
 import pytest
 from test_solver_dispatch import (
-    HEAP, STACK, STOP, STEP, OPS, TERMS, IMPULSES, solver_images,
+    HEAP, STACK, STOP, STEP, OPS, TERMS, IMPULSES, FRICTION_RESULTS, solver_images,
     solver_case, put, address, execute, words,
 )
 
@@ -54,6 +54,46 @@ def test_friction_writeback_retains_time_at_each_output_boundary(
             assert output == expected, (kind, precision, rounding, local_home)
             snapshots.append((snapshot, output))
         assert snapshots[0] == snapshots[1]
+
+@pytest.mark.parametrize('kind', [7, 8])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_friction_writeback_reads_first_error_before_time_home(
+        solver_images, kind, precision):
+    for rounding in range(4):
+        data = solver_case(kind, 0)
+        put(data, STEP, '7fi', 0, 0, 0, 0, 1, 0, 0, 0)
+        frame = STACK + 32768 - 0xd0
+        # Only scalar writeback runs. Its first coefficient aliases the time
+        # home. Seed the defined stack inputs before the function prologue.
+        put(data, OPS + 4, 'I', frame + 4)
+        size, row_kind = (20, 5) if kind == 7 else (24, 6)
+        put(data, OPS + 24, 'I', kind | (size << 8) | (row_kind << 16))
+        put(data, OPS + 28, 'I', FRICTION_RESULTS)
+        put(data, OPS + 40, 'i', 8)
+        put(data, OPS + 24 + size, 'I', 0x400)
+        put(data, IMPULSES, '3f', 1.25, -2, 0.5)
+        expected = (0x3fa00000, 0x40000000, 0xc0000000, 0x40400000)
+        if kind == 8:
+            expected += (0x3f000000, 0x40800000)
+        expected_heap = bytearray(data)
+        put(expected_heap, FRICTION_RESULTS, str(len(expected)) + 'I', *expected)
+        retail, compiled, symbols = solver_images
+        snapshots = []
+        for machine, entry, gate in (
+                (retail, 0x31c940, 0x480c60),
+                (compiled, address(symbols, 'solve_operations_31c940'),
+                 address(symbols, 'g_480c60'))):
+            for offset, value in [(0x10, 2), (0x40, 3), (0x80, 4)]:
+                machine.mem_write(frame + offset, struct.pack('<f', value))
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES],
+                               precision=precision | (rounding << 10))
+            output = words(machine, FRICTION_RESULTS, len(expected))
+            assert output == expected, (kind, precision, rounding)
+            assert snapshot == (bytes(expected_heap), 1)
+            snapshots.append((snapshot, output))
+        assert snapshots[0] == snapshots[1]
+
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_paired_writeback_captures_step_after_first_output(solver_images, precision):

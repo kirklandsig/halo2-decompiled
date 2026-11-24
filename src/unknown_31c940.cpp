@@ -1897,10 +1897,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				long const &friction_stride = *(long const *)(op + 16);
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				*(float *)friction_result = result[0];
+				// Capture the error before publishing the pointer its input can alias.
+				float first_error = row[0].linear.m128_f32[3] * step->inverse_time;
 				float const *&inverse_time_pointer = scalar_work.writeback_time;
 				inverse_time_pointer = &step->inverse_time;
 				// The error output may replace the saved pointer for later rows.
-				*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * *inverse_time_pointer;
+				*(float *)(friction_result + 4) = first_error;
 				friction_result += friction_stride;
 				*(float *)friction_result = result[1];
 				*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * *inverse_time_pointer;
@@ -1914,10 +1916,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				long const &friction_stride = *(long const *)(op + 16);
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				*(float *)friction_result = result[0];
+				// Capture the error before publishing the pointer its input can alias.
+				float first_error = row[0].linear.m128_f32[3] * step->inverse_time;
 				float const *&inverse_time_pointer = scalar_work.writeback_time;
 				inverse_time_pointer = &step->inverse_time;
 				// The error output may replace the saved pointer for later rows.
-				*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * *inverse_time_pointer;
+				*(float *)(friction_result + 4) = first_error;
 				destination = 0;
 				friction_result += friction_stride;
 				*(float *)friction_result = result[1];
