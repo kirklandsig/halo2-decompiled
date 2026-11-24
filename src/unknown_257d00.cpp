@@ -2887,6 +2887,21 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Direct completion on rejection of the actor, paired target, single target or selector request 429 each.
 // Both target requests, actor and selector requests, all four requests, or separate guard exits 429 each.
 // NOT kept: the dispatch still reaches the late success block, with the original 20-byte excess.
+// M3 lane GA r1 (fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, aligned 165, masked 135; 0x258a00/0x258cf0/0x25a130
+// MATCH throughout; 28 trials, all restored): on main's 429 base (actor EBX, state EDI), tail flags/flags2 locals 431; direct
+// vector3f_assign from actor->unknown4d8 + tail flags/flags2 536; dropping case 13 + direct return 1 in cases 2/12/20 (no goto) 498
+// (masked 118); dropping case 13 + case 20 conditional clears + case 7/8 conditional flag + case 5 swapped arms + cases 9/11 actor-first +
+// iterator data/index/datum_index + ? 1 : 0 at +0x465 + second publish flag-first (keeping main's case 2/4/18 and goto local_31) 452
+// (2416 B, aligned 148, masked 90); + tail flags/flags2 454; + direct vector3f_assign 452; + case 20 first arm via `{ local_30 = 1;
+// goto local_31; }` 454 (2424 B, aligned 140, masked 82: keeps actor EBX / state EDI and matches retail's prologue, case 1, tail,
+// cases 7/8, 0, 5, 9, 10, 12, 11, 21, 14, case 20 return-1 epilogue and second publish, leaving only case 2/4's 20-byte length excess).
+// Adding case 18 held targets (614), case 4 dot3f (583), or case 2 aggregate copy on that base still exchanges actor/state even with
+// scalar local_6/local_20/local_22/+0x468/+0x470 copies and direct position.x/y/z in case 20's loop (614-658). On the 2380 B
+// retail-shaped lead (control 632, aligned 205, masked 66, actor EDI / state EBX): tail flags/flags2 locals drop score 632 -> 549
+// (2380 B, masked 70), and restoring `short local_30; goto local_31;` reaches 520 (2384 B, aligned 194, masked 63, retail's 32-bit
+// mov eax, 1 / xor eax, eax epilogues); case 2 destination-pointer scalar copy 627; + tail actor scalars 642; + tail flags/flags2 620;
+// direct vector3f_assign combo 651; request early return 1 in cases 6/18/21/14 632 (same code); case 12/20 direct return 1 639;
+// + direct position.x/y/z in case 20 642; + case 6 split global OR 604; without case 4 dot3f 649.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
