@@ -4077,6 +4077,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // without the long count 596. Reading (frame and colouring traces): ours has 17 dword cells against retail's 16, and
 // the weapon index (a parameter) is never coloured (live across 93 unreferenced blocks to the tail's marker calls), where
 // retail holds it in EBX from the entry to the fire call; no single forced allocator decision reaches retail.
+// M3 lane 2 r147 (H2M_FAST with 0x101db0 and 0x159dd0, control 593; al = aligned differing rows exact/register-masked,
+// 261/150 on this body): the fire call once after the if/else on `fired` 593 (same code; on the plain unit index 649, same
+// code); the owner-unit lookup declared first 631 (2497 B); the effect's remaining count stored in each arm of
+// `lower == upper` (retail stores in both arms and re-reads the field for the loop test at 0x10338b) 641 (2518 B, frame
+// 0x1c5c, al 284/163), with the plain unit index 657 (2502 B, al 227/129); the plain unit index alone re-measured 649
+// (2503 B, al 208/95, the closest structure: the definition and the barrel offset trade both register and home, EDI and
+// [esp+0x18] against retail's [esp+0x14] and EDI). Body unchanged.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4621,6 +4628,12 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // the heat byte's sum written `old + increment` 1412; the old value and the increment declared the other way round
 // 1412; the tick clamp as an if before the store 1412; the 0x194 validity test as nested ifs 1412 (the 1412s the same
 // code).
+// M3 lane 2 r147 (H2M_FAST, control 1412; al = aligned rows exact/register-masked/stack-masked/both, 909/708/703/520): a
+// bool result with down/up started false at the loop top and filled under `if (!blocked)` (pressed, released, then the
+// signed state byte) 1506 (5600 B); with blocked started false at entry and set in its own test 1517 (5600 B); the +0x20
+// ramp clamp tests against double literals 1453 (5724 B), with double stores too 1453 (same code); the first form with
+// the ramp clamps as double selects, the +0x1c clamps as float value selects and the complement written in place 1444
+// (5668 B, al 889/679/667/478). Body unchanged.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5296,6 +5309,16 @@ struct s_weapon_projectile_creation
 // call. The callee writes only xmm0 and retail's 0x293130 keeps xmm2 across it, and 307 of the 311 retail call sites
 // that keep an xmm register across a call fit exact kill sets of the callee, so retail does know the callee's set
 // and still does not carry the zero into the loop.
+// M3 lane 2 r147 (H2M_FAST, control 1121; al = aligned rows exact/register-masked/register-and-stack-masked, 771/553/287):
+// the projectile tag and count assigned in both arms of the barrel-0 override (retail reads +0x6a in each arm and
+// multiplies with a 16-bit imul, 0x104c2a) 1116 (5214 B; that arm is then retail's instruction for instruction); with the
+// delayed-shot test as `delayed > 0` (retail jbe) 1116; with the rejected target reset as two statements, object first
+// (retail's store order) 1116; with the target type as a long 1155 (5197 B); the third form with the projectile owner
+// filled in if/else arms (retail 0x104cd5..0x104d15) 1131 (5195 B, al 683/533/316), with the actor call in both arms of
+// the bit-8 test 1128 (5215 B, al 718/560/266); the third form with only the actor call in both arms 1159 (5245 B). The
+// 1116 forms gain 5, under the bar. Lead: retail builds the mark code at 0x104437 as a six-bit field inserted into an
+// uninitialised stack byte with bits 6-7 cleared, a one-byte bit-field record passed by value to 0x15cca0, which hands it
+// to 0x196ef0; typing that parameter reaches 0x197160 and its caller in another lane's file. Body unchanged.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
