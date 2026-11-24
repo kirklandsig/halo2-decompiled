@@ -363,6 +363,13 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // M3 lane 6 r236 (h2m fast with 0x2008fc 0x200891, control 14): both half extents as `0.5f * span * size` 14; only the
 // half height so 14; both as `size * 0.5f * span` 14; corners 2 and 3 copying corner 1's and 0's x and corner 3 copying
 // corner 2's y 32; the bounds copy source read as a `long` and offset as an integer 14 (the ADD stays). All restored.
+// M3 lane 13 r151 (h2m fast with 0x2008fc 0x200891, control 14; the bounds record through a one-use pointer re-measured
+// 12): the four corners through a new forceinline (corners, center, half width, half height) helper taking the extents
+// by value 14, on the record pointer 12 (same code: the copies fold); the half height's `* 0.5f` as its own statement
+// after the first x step 20, on the record pointer 18 (the pair becomes retail's but the 0.5 stays live in XMM7 and x
+// moves to XMM4); one function-scope sprite-record pointer shared by both passes 12 (the one-use pointer's code); the
+// top and bottom y edges named before the first x step 25, on the record pointer 23; only the left and right x edges
+// named after the step 39, on the record pointer 37. All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

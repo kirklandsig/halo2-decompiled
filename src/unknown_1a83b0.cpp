@@ -832,6 +832,10 @@ s_1a8a10 g_4453c0[] =
 // 17; the value array declared at the function's top 17; the result flag declared after the path-trace locals 17; the
 // table pointer initialised ahead of the sums 17; the facing copy typed as the facing's own 3D vector (only i and j set)
 // 17 (all the same code: j read once). Body unchanged.
+// M3 lane 15 r140 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17): the left sum read in
+// place from the actor (`i * y + (0 - j) * x`) with the forward sum from the copy 29; the left sum in two statements
+// (`i * y`, then `+= (0 - j) * x`) 17, with the negated term first 17, both sums so 17 (the split is folded: same code);
+// the forward sum in two statements (`i * x`, then `+= j * y`) 38. Body unchanged.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
