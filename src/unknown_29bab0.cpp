@@ -893,6 +893,19 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // both/pre-turn/input and pre-turn/actor and pre-turn/all seven forms score 654 in the reduced image.
 // All three points initialized from their two source fields 693. Reduced control 654, full 489.
 // NOT kept: the view forms tie and the coordinate initializers grow the frame.
+// M3 lane 3 r304 (h2m fast with lane 15 r139's companion list, which reads the full check's 489; control 489, aligned
+// 224, register-masked 125; body unchanged). Frame reading: this 0x88 frame is ordered by memory references per byte. The
+// position's home has 7 references and the home shared by the translated target, the second side distance and the path
+// output has 8, so the position sits above it; retail's second read of the position's y (the y row inside both arms of
+// the side select) is the one reference that puts the position below it, at +0x80. Forms: the side point through the
+// existing 2-D point setter 775 (3560 B: the setter's file is outside the reduced image, so the call stays out of line;
+// not a measure); the side point's y member assigned ahead of its x 708 (3488 B); one, two and three redundant pairs of
+// parentheses in the side point's rows 499/497/505 (aligned 234/230/238: main already sits on the best count phase); the
+// rows written product first, with either factor order, 489 (same code each); diagnostic: the y row written in each arm
+// of the side select 718 (3501 B: the compiler merges the two rows again, so retail's per-arm row is not two written rows).
+// With the setter's file (0x22bbca) added to the screen's list: the side point through the existing 2-D point setter,
+// declared here, 487 (3503 B, aligned 222, register-masked 123: a gain of 2, under the bar, homes unchanged); the setter
+// with the signed side distance written in both arguments (no local) 721 (3476 B).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

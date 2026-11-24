@@ -1074,6 +1074,15 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // retail (home +0x18 vs +0x1c). Left on that shape: retail keeps the three scaled rows and the three blend sums in
 // XMM2-4 and stores them after (the else arm's add-scaled reads the scaled rows from XMM2-4), ours stores each row at
 // once; the blend sums as `position.x += field` then one aggregate store 461 (1692 B). Body unchanged.
+// M3 lane 12 r183 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334; body unchanged). Reading: retail
+// loads the three real arguments once at the top of the scale step (XMM0/1/5) with the definition in EDI, computes the
+// three scaled rows and the age sum before any of their four stores and keeps the rows in XMM2-4 for the else arm. Forms:
+// the gate record indexed by `arg_2->effect_index` 335; the velocity record indexed by the local index 358 (1634 B); the
+// velocity pointer started at the default and set under `if (local_0 != NONE)` 348; the velocity in an if/else with a
+// named record pointer 334 (same code); the gate through a named record pointer and the bit-3 view 344; three named
+// scaled reals and a named age sum stored after all four 335; the scale step through the existing vector3f_scale in place
+// 354; vector3f_scale into a point local assigned as a whole after a named age 404 (1697 B); the age step ahead of the
+// in-place vector3f_scale 354.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

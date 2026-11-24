@@ -84,6 +84,7 @@ inline s_entry_420 *entry_420_get(long index)
 }
 
 long function_14de70(long local_player_index);
+s_entry_420 *function_1e8d50(long index);
 bool function_1e69d0(s_time_entry *entries, long type, long age_limit);
 bool function_1e7a10(long player, long index);
 long function_1e7a60(long player, long index);
@@ -154,18 +155,18 @@ struct s_unit_child_iterator
  long next_index;
 };
 struct s_damage_object;
-void function_d0590(s_unit_child_iterator *iterator, long object_index);
+void function_d0590(long object_index, s_unit_child_iterator *iterator);
 s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 
-PRIVATE inline byte *request_unit(long object_index, byte *headers)
-{
- return *(byte **)(headers + (object_index & 0xffff) * 12 + 8);
-}
+/* the unit behind an object index, a macro like request_weapon below: as an inline function its result stayed a
+   compiler temporary in case 16's last weapon lookup, which took the dying headers register */
+#define request_unit(object_index, headers) \
+ (*(byte **)((headers) + ((object_index) & 0xffff) * 12 + 8))
 
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
-// score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
+// score 96 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
 // into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
 // 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
 // with early returns, as a guard returning NULL then `table->entries + index`, and as one ternary 117 each (same code);
@@ -653,6 +654,25 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // test against `player->unit_index` 117 (the same code each); the existing 0x1e8d50 entry with the swapped helper order
 // 165, with the child test on `player->unit_index` 165 (2312 B each). Still BLOCKED-BY 0xd0590 (contributor; its file is
 // on this round's avoid list, so the held order was not re-measured). Body unchanged.
+// M3 lane 8 r232 (h2m fast with 0x1e83c0, 0x1e8d50, 0xd0590, 0xd05c0 and 0xdb210, all MATCH each run; fast and plain agree;
+// control 117). Kept: request_unit as a macro, 117 -> 96 at 2308 B: as an inline function its result stayed a compiler
+// temporary in case 16's last weapon lookup and took the dying headers register (ours `mov ebx, [ebx + edx*4 + 8]`, retail
+// a scratch EAX), which turned the scratch rotation of every block after it. Left at 96: the entry lookup's table/result
+// pair (the allocator ranks the table above the result, 20 against 18, and gives the first one EAX; retail has them the
+// other way round) and case 4's parent (ours ECX, retail ESI).
+// Applied 2026-11-24 by the machine 3 coordinator (0xd0590's owner told on #9; parameter changes rule): MATCH, plain
+// and in a full check (12363 matched, nothing lost, 0x1e7ab0 gained; 0xd0590, 0xd05c0, 0xdb210, 0x1e83c0 and 0x1e8d50 keep
+// their matches, 0xda110 stays 420), with three more changes on the macro: 0xd0590's parameters as (object_index, iterator)
+// at its definition, its three declarations and its four calls (retail's call here writes the iterator into ECX before the
+// parent into EDX, so the parent is still live when ECX is written and cannot take it); the entry through the existing
+// function_1e8d50 (the real callee: its second table read gives retail's table ECX / result EAX); and no `seats` local, the
+// definition's seat block read at both uses (the definition pointer then stays a variable and takes the dying index's EAX,
+// where the one-use local folded into a scratch temporary and turned the rotation). Each subset, fast: without the 0xd0590
+// order, the seat block alone 116, the seat block and the macro 95, the entry alone 164, the entry and the macro 144, the
+// entry and the seat block 163, all three 143 (2312 B); with the 0xd0590 order, alone 110, with the macro 89, with the seat
+// block 123, with the seat block and the macro 103, with the entry 156, with the entry and the macro 136, with the entry and
+// the seat block 21 (2308 B: only case 16's rotation left), with all three MATCH. The iterator passed to both calls through
+// a pointer local, without the 0xd0590 order, 144 (the parent keeps ECX). BLOCKED-BY 0xd0590 (contributor) for the match.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
@@ -660,7 +680,7 @@ bool function_1e7ab0(long local_index, long type)
  byte *data = (byte *)state;
  bool result = false;
  long player_index = function_14de70(local_index);
- s_entry_420 *entry = entry_420_get(type);
+ s_entry_420 *entry = function_1e8d50(type);
  if (player_index != NONE && entry &&
   (!(*((byte *)entry + 0x10) & 1) || g_4e6948->state != 2))
  {
@@ -704,17 +724,16 @@ bool function_1e7ab0(long local_index, long type)
       if (seat != NONE)
       {
        s_unit_definition const *definition = (s_unit_definition const *)g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
-       s_unit_seat_definition const *seats = (s_unit_seat_definition const *)definition->unit.seats.address;
-       s_unit_seat_definition const *seat_data = &seats[seat];
+       s_unit_seat_definition const *seat_data = &((s_unit_seat_definition const *)definition->unit.seats.address)[seat];
        if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
        {
         s_unit_child_iterator iterator;
-        function_d0590(&iterator, parent);
+        function_d0590(parent, &iterator);
         bool blocked = false;
         while (function_d05c0(&iterator))
         {
          if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
-          ((bool)seats[iterator.seat_index].flags.bit2))
+          ((bool)((s_unit_seat_definition const *)definition->unit.seats.address)[iterator.seat_index].flags.bit2))
          { blocked = true; break; }
         }
         if (!blocked) result = true;

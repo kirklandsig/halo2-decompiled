@@ -1828,6 +1828,20 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 636); turning computed ahead of the boost block 152 (main 615, 2832 B); the boost's `peak - 1` named 159; the spread
 // test as `!unknown1bc && flag` 145 (retail tests the flag first); the walking slowdown named (`slowdown * rate`) 586.
 // On the lead ours ends its code 4 bytes early (jump table +0xaf0 and 4 pad bytes, retail's table at +0xaf4).
+// M3 lane 15 r141 (fast screen with 0xdfa60, MATCH each time; control 158, aligned 140 rows). Retail loads the 0x134
+// globals block into ESI ahead of the 0xdfa60 call, forms unknown2e4 * its +0x78 field after the call (the biped field
+// loaded first) and multiplies (1 - product) by the call's result; this body calls first, loads the block after and
+// multiplies the result by (1 - product). LEAD 137 (aligned 125, first difference +0x84, same length; match-only: a
+// one-use pointer read ahead of a call): `byte *globals = *(byte **)((byte *)g_4e034c + 0x134);` ahead of the call
+// with `speed_scale = function_dfa60(...); speed_scale = (1.0f - biped->unknown2e4 * *(real *)(globals + 0x78)) *
+// speed_scale;` (patch build/r141/lead-0xdc5c0-137.patch); the same with the call's result in a one-use local 137
+// (same code). Parts: the globals local with the call left in the product 587 (aligned 133: a named pointer ranks
+// below the biped field, so the product's operands are retail's, but the call's result still multiplies first), with
+// the call written first 587 (same code); the call's result in a local alone 590 (aligned 136), kept in speed_scale
+// alone 590; the difference and the multiply as two statements 601 (2832 B), with the globals local 601; the globals
+// local at the top of the function 638 (aligned 170); the globals local after the call 589 (aligned 131). Left on the
+// lead: the definition, material and point homes (35 rows of stack offsets), one byte-store pair, the order of the
+// g_510c54 rate quotient and the state test at +0x3f5 and the position rows near +0x9dd. Body unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4561,6 +4575,17 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // under the bar); the names[1] ternary as if/else 553 (2719 B); with that bit-0 test: the wall flag through
 // field_bit_test 603 (2720 B), names[1] as if/else 551 (2718 B), turned copied first 531, flags_134 bit 11 or unit
 // flags bit 20 through field_bit_test 602 each (2719 B). Body unchanged.
+// M3 lane 15 r141 (plain checks with 0xe1c40, 0xdd360, 0xdc5c0, all unchanged; control 537, aligned 301; the reduced
+// image builds this body with a 0x7c frame, 598 to 602, whatever callers and callees are listed with it). Reading of the
+// first wall block: a product's operands are sorted by a rank, not by the written order (the six side products written
+// goal-first compile to the same code), and each biped field read ranks by a two-bit phase: here up.i 3, up.j 2, up.k 1,
+// goal.i 1, goal.j 0, goal.k 1. Retail's block (goal.j * up.k, up.j * goal.k, goal.k * up.i, up.j * goal.i, goal.i *
+// up.k, goal.j * up.i, then side * up.j, side * up.k and up.i * side in the facing rows) fits no single phase per field,
+// so retail read these through other expressions (inline products taking the two vectors by address would do it).
+// Forms: the first side and facing rows through the existing cross3f 543 (2716 B, aligned 287); the facing rows alone
+// through cross3f 537 (same code); both through cross3f_staged 596 (2702 B, aligned 293); all four cross products of
+// the function through cross3f 595 (2703 B, aligned 306); the two later ones only (the overshoot side and the turned
+// rows) through cross3f 594 (retail's 2712 B, aligned 283). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

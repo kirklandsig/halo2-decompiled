@@ -962,6 +962,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // already masked index 8; through an accessor with a NULL-initialised result and a named masked index 8; the four zeros
 // through a file-local reset helper taking the cache pointer after the lookup 8 (same code each), ahead of it 13.
 // Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117; the reference chain rebuilt
+// at 8, same eight lines). Allocator reading: on the chain the pass definition is the scratch pick that sits one cursor
+// step from retail's (ours EDX, retail EAX), so the material tag and definition follow (ours ECX/EDX, retail EDX and the
+// dying table's EDI); on main the in-place mask splits the head's table piece from the body's (ECX, hoisted above the
+// frame) where retail keeps one EDI web; no single forced colouring decision lowers main. On main: the tag as `dword`
+// with a `& 0xffff` fallback 152 (re-measure of round 40's form); the fallback indexed by `(unsigned short)` 117 (same
+// code); the instance read from the tag field as a short 117 (same code); the tag local passed to 0x1bbf0 130 (listed);
+// the four cache zeros between the definition's table read and the head element 121. Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
