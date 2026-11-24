@@ -1666,39 +1666,41 @@ result+=2;
 					do
 					{
 
- // Retain both axes through scalar selection, then reuse consumed
-						// projection values for the two body weights and inertia.
-						struct { __m128 velocity_a, velocity_b, axis_a, axis_b, inertia; } work;
+						// Retain the two projection inputs with the first angular axis.
+						// Reuse them for the consumed body-update values.
+						struct { __m128 velocity_a, velocity_b, axis_a; } work;
+						__m128 axis_b;
+						__m128 inertia;
 						work.velocity_a = a->angular;
 						work.velocity_b = velocity_b;
 						work.axis_a = ((solver_angular_row_31e7b0 *)terms)->a;
-						work.axis_b = ((solver_angular_row_31e7b0 *)terms)->b;
-						work.velocity_b = _mm_mul_ps(work.velocity_b, work.axis_b);
+						axis_b = ((solver_angular_row_31e7b0 *)terms)->b;
+						work.velocity_b = _mm_mul_ps(work.velocity_b, axis_b);
 						work.velocity_a = _mm_mul_ps(work.velocity_a, work.axis_a);
 						work.velocity_a = _mm_add_ps(work.velocity_a, work.velocity_b);
 						work.velocity_b = _mm_shuffle_ps(work.velocity_a, work.velocity_a, 0x55);
-						work.inertia = _mm_shuffle_ps(work.velocity_a, work.velocity_a, 0xaa);
+						inertia = _mm_shuffle_ps(work.velocity_a, work.velocity_a, 0xaa);
 						work.velocity_b = _mm_add_ss(work.velocity_b, work.velocity_a);
-						work.inertia = _mm_add_ss(work.inertia, work.velocity_b);
-						_mm_store_ss(&projection_pool.angular_limit, work.inertia);
+						inertia = _mm_add_ss(inertia, work.velocity_b);
+						_mm_store_ss(&projection_pool.angular_limit, inertia);
 						bool active;
 						float impulse = select_angular_limit(projection_pool.angular_limit * load_velocity_scale(step),
 						    ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], operation_float(op, 4), operation_float(op, 8),
 						    operation_float(op, 12), ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3], active, work.velocity_b, scalar_work.simd_scalar);
 						if (active)
 						{
-						    work.inertia = a->inverse_inertia;
+						    inertia = a->inverse_inertia;
 						    work.velocity_a = _mm_shuffle_ps(work.velocity_b, work.velocity_b, 0);
-						    work.velocity_a = _mm_mul_ps(work.velocity_a, work.inertia);
-						    work.inertia = scoped_b.body->inverse_inertia;
+						    work.velocity_a = _mm_mul_ps(work.velocity_a, inertia);
+						    inertia = scoped_b.body->inverse_inertia;
 						    work.velocity_a = _mm_mul_ps(work.velocity_a, work.axis_a);
 						    work.axis_a = a->angular;
 						    work.axis_a = _mm_add_ps(work.axis_a, work.velocity_a);
 						    a->angular = work.axis_a;
 						    work.velocity_a = velocity_b;
 						    work.velocity_b = _mm_shuffle_ps(work.velocity_b, work.velocity_b, 0);
-						    work.velocity_b = _mm_mul_ps(work.velocity_b, work.inertia);
-						    work.velocity_b = _mm_mul_ps(work.velocity_b, work.axis_b);
+						    work.velocity_b = _mm_mul_ps(work.velocity_b, inertia);
+						    work.velocity_b = _mm_mul_ps(work.velocity_b, axis_b);
 						    work.velocity_a = _mm_add_ps(work.velocity_a, work.velocity_b);
 						    velocity_b = work.velocity_a;
 						    *result += impulse;
