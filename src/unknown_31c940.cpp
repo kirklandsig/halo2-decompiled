@@ -1050,8 +1050,8 @@ __m128 work_1; __m128 work_3; __m128 work_4;
 	op+=4; terms+=3; ++result;
 	// Observe the current step after projection publication, which can alias a scale.
 	solver_step_31c940 *parameters=step;
-	double error_scale=parameters->error_scale;
- double velocity_scale=parameters->velocity_scale;
+	float error_scale=parameters->error_scale;
+	float velocity_scale=parameters->velocity_scale;
  float impulse=mass*(target*error_scale-projection_pool.linear_error*velocity_scale);
 
 	// A inertia precedes the rounded input; B inertia is read afterward.
