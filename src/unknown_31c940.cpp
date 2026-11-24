@@ -1221,7 +1221,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1993. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1992. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1576,19 +1576,23 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					__m128 *angular_b_pointer = &body_b.body->angular;
 					float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 					// Match the same mass-before-step-scale order as the angular path.
-					__m128 relative = _mm_sub_ps(a->linear, *linear_b_pointer);
-					__m128 angular = _mm_add_ps(
-						_mm_mul_ps(a->angular, ((solver_linear_row_31e7b0 *)terms)->a),
-						_mm_mul_ps(*angular_b_pointer, ((solver_linear_row_31e7b0 *)terms)->b));
-					__m128 axis = ((solver_linear_row_31e7b0 *)terms)->linear;
-					__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis));
-					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
 
-					_mm_store_ss(&projection_pool.bounded_linear, xyz);
-					// Preserve the linear axis through the clamp and the first update.
+					// Reuse the consumed projection vectors through the bounded update.
 					__m128 bounded_work[5];
-					bounded_work[4]=axis;
+					bounded_work[0]=*linear_b_pointer;
+					bounded_work[1]=a->linear;
+					bounded_work[2]=((solver_linear_row_31e7b0*)terms)->a;
+					bounded_work[3]=*angular_b_pointer;
+					bounded_work[4]=((solver_linear_row_31e7b0*)terms)->linear;
+					bounded_work[1]=_mm_sub_ps(bounded_work[1],bounded_work[0]);
+					bounded_work[0]=a->angular;
+					bounded_work[0]=_mm_mul_ps(bounded_work[0],bounded_work[2]);
+					bounded_work[2]=((solver_linear_row_31e7b0*)terms)->b;
+					bounded_work[3]=_mm_mul_ps(bounded_work[3],bounded_work[2]);
+					bounded_work[1]=_mm_mul_ps(bounded_work[1],bounded_work[4]);
+					bounded_work[0]=_mm_add_ps(bounded_work[0],bounded_work[3]);
+					bounded_work[0]=_mm_add_ps(bounded_work[0],bounded_work[1]);
+					sum_three_to_arena_31c940(bounded_work[0],projection_pool.bounded_linear);
 					double mass_error = (target - projection_pool.bounded_linear) * mass;
 					float impulse = mass_error * load_error_scale(step);
 					// Keep the divide followed by multiply on both clamp paths;
