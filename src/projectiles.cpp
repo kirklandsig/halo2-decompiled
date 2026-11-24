@@ -2583,6 +2583,11 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // Header pool still takes EDI before the first flag test, and the header offset and flag write use other homes.
 // Common datum entry 422; header accessor entry 422; entry table 422; common datum all lookups 422;
 // header accessor all lookups 422; typed parent view 422; typed parent and scale fields 422; resolved header local 422.
+// The 0x184 frame still spills the header offset at +0x30, and admission and mark share the flag load.
+// The child-count tag snapshot and single definition receiver shorten the body to 2175 bytes. named
+// point workspaces 360; named attachment and material slots 360; shared parent handle at admission 360;
+// cached tag during child count 410; dword admission shift 360; nested definition gate 360; named parent
+// and position fields 360; single definition receiver 410.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
