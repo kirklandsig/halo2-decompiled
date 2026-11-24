@@ -1977,6 +1977,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // both queries always run where retail's flag1 exits early; not kept); mask test first then `flag1 | flag2` 80; mask test,
 // second flag, first flag 85; first flag, mask test, second flag 89. Retail expands both flag queries here (the second
 // only at this site), so the second needs `inline` on 0x53bb0, a held form.
+// Candidate and all-allow guards 85, muted-test conditional fallback 85,
+// selected rejection bit 83, admitted bit for test and clear 86, admitted
+// bit XOR/subtraction 92/92 (muted first). Current order with admitted bit
+// clear/XOR 65/67. The second port query remains out of line.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
