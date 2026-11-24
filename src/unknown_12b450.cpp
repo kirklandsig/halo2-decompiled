@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "main_globals.h"
 #include "cache_copy_globals.h"
+#include "saved_game_storage.h"
 
 void function_2237d4(void);
 void __stdcall function_18f1c0(long reason);
@@ -55,8 +56,6 @@ void function_12b450(void);
 extern long g_4ed294;
 extern bool g_4ed39d;
 extern void *g_51ea14;
-extern bool g_55c14d;
-extern long g_55c150;
 extern bool g_510819;
 extern bool g_509340;
 extern bool g_4d8ba0;

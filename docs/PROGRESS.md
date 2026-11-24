@@ -2,6 +2,26 @@
 
 The newest entry comes first.
 
+## 2026-11-23: 10895 functions match
+
+```
+matched 10895 of 11326 game functions (2220748 of 2786206 bytes, 79.71%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, 0xc2d00 lost, a whole-program (/GL) layout flip in a file this PR doesn't touch, which the maintainer accepted for this match:
+- @Roasted-Codes's #1491: `0x215690` match.
+
+## 2026-11-23: 10895 functions match
+
+```
+matched 10895 of 11326 game functions (2221638 of 2786206 bytes, 79.74%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 327 (#1504): `0x28dbd0` match.
+
 ## 2026-11-23: 10894 functions match
 
 ```
