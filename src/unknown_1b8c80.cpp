@@ -1046,6 +1046,12 @@ extern "C" void _ReadWriteBarrier(void);
 // code). Matched functions found by a scan for a stack parameter loaded in the entry block and read after its branch
 // (0x1b22e0, 0x25fe50, 0x227600) read it on both paths or after the join; matched 0x1c14b0 (actor test, then a slot test)
 // loads the slot after the branch, as ours does here.
+// M3 lane 15 r140 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; aimed at keeping the state from being
+// copy-propagated into the slot): the state started NULL, then assigned from the slot ahead of the actor lookup 6; started
+// NULL and assigned after the lookup, then the barrier 6, the same without the barrier 44 (208 B); started NULL and
+// assigned after the barrier 6; declared bare and assigned after the lookup 6 (the 6s the same code: the dead first store
+// is removed before the copy is propagated). Matched functions that load a stack parameter in the entry block and read it
+// only on the fall-through path (0xa8dd0, 0xc40f0, 0x195820) use it in two sibling arms or through its address.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

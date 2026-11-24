@@ -2,9 +2,8 @@
 /* UNKNOWN_215720.CPP: a lifecycle callback (entry 9, field_10_2) */
 
 #include "unknown_11c920.h"
+#include "saved_game_storage.h"
 
-long g_55c158;
-extern void *g_51ea14;
 void function_216760(void);
 
 // @retail 0x215720
@@ -28,14 +27,6 @@ void function_2157c0(long selection)
 
 #include <xtl.h>
 
-extern bool g_55c14c;
-extern bool g_55c14d;
-struct s_51e9f8
-{
-    dword field_0;
-    dword field_4;
-};
-extern s_51e9f8 g_51e9f8;
 void function_125d60(void);
 void function_215810(void);
 void function_120d50(bool volatile *done, bool idle);

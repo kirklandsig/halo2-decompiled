@@ -4199,6 +4199,24 @@ extern vector3f *g_4687bc;
 // and the component assigned in that order 8; the component declared bare ahead of the material and assigned after it 8
 // (all the same code). Diagnostic: 1 to 7 dead initialised longs at the top 8 each with identical rows (the material's DX
 // and the element add's EDX/EAX choice do not follow the symbol-count phase). All restored.
+// M3 lane 2 r144 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the Havok tail (the 0xb67a0 call
+// through the 0x188180 call) as a file-local forceinline helper taking the component and the material by value, called
+// with the component lookup and `c_type_47f957(g_54e898)` as its arguments: (component, material) 8 (same code: each
+// argument is evaluated and bound right to left, so the material is still loaded and stored first); (material,
+// component) 10 (the lookup runs first and the material loads into AX after it). Compile-only screen (0.7 s a variant,
+// both sites as the check; the base's code at both sites unless noted): 0xb67a0 called as a const member function of a
+// view of the component (`this` in ECX); the lookup written out as separate statements (masked offset, pool, pool's
+// data) in all twelve orders around the material: with the pool's data read ahead of the material the pool takes EDX,
+// its data ECX and the material DX, its load at the block's top and its store after `mov ecx, esi`, in the other eight
+// orders the base's code; the rigid-body index assigned inside its test, typed `int` or `dword`, widened from a named
+// short, tested `>= 0` (only the test changes); 0xb67a0 called again for the subscript (the array still loads first);
+// the element by integer arithmetic with the array or the index first, by `(index * 3) << 5`, as `&data[index + 1] -
+// 1`; the node count read through the array ahead of the element pointer (a `lea` forms the element). Diagnostics
+// (screen): each of the 33 one-line statements ahead of the Havok block removed in turn leaves both sites as they are,
+// so both choices are made inside the block; with no effect-tag test the tag loads into EDX and the material takes CX
+// (the only free register); our build hands out a fresh scratch value EAX, then EDX, then ECX (the first one free),
+// reusing a dying operand's register in place, so retail's CX means EDX was still held where the material was placed,
+// and retail's `lea edx` means the index was not yet dead at the scale.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

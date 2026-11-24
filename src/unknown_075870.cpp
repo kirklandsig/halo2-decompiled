@@ -1453,6 +1453,14 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // 27). Diagnostic (network_frame_rate written out): the refresh word read ahead of the quotient or the product, its
 // tests after the clamp, 42/34: the refresh then takes retail's EDX and hoists, but the flag stays AL with the field
 // loads in DL, so the tail has two independent causes.
+// M3 lane 16 r183 (h2m fast; control 18; L = lane 12's `long const &` quotient with the `<=` clamp, 18): 1 to 7
+// initialised dead longs at the top, on main and on L, 18 each (the scratch choices are not numbering-dependent); the
+// shared rate test computing the frame rate itself (its frame-rate parameter dropped at all three callers) 18 (0x78190
+// 7, 0x79600 1), with the frame rate after the false default 20; 0x78190 marked `inline` and called for the tail 24; on L
+// the wanted flag read into a local ahead of the frame rate 17 (only that load hoists into DL, the flag stays AL), after
+// it 18, all three flags as locals 35; on L the refresh read ahead of the product with a wanted local 34, with three
+// flag locals 51; the tail as a call to 0x79600 marked `inline` 258 (948 B), with 0x78190 also `inline` 382 (902 B):
+// LTCG does not expand either here.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
