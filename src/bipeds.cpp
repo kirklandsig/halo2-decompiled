@@ -7313,6 +7313,9 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // Marker count selected by a zero default or by a conditional, with direct fields or a contact
 // block reference: short 80 in all four forms, long 88 in all four. The long result adds a sign
 // extension before testing, while the short keeps the scratch rotation at the marker load. Body restored.
+// The contact marker still loads into EDX where retail reuses EAX. With point copy or the point setter,
+// the read-only array scores 80/140, contact-block lvalue 80/140, named array address 83/142, and
+// selected name after the count guard 133/147. The original marker lookup and copy are restored.
 // @retail 0xe4d90
 void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marker)
 {
@@ -7571,6 +7574,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Bind the definition, state and animation-flag lvalues directly (each, each pair, all three,
 // and all three with a mutable definition): 586 each in the reduced image, same as its control.
 // The frame agrees, but the tag, state and animation-result homes are still cycled. Body restored.
+// Definition, state and animation ID spill homes still cycle. Typed unit access for state, control flags,
+// and the late timing read scores 586 for all seven combinations. A named view for both entry reads
+// also scores 586. The original body and include list are restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
