@@ -1145,13 +1145,20 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 	float *velocity_b, __m128 const *const &inverse_b_pointer,
 	float const &upper, float const &lower, solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
 {
-	__m128 axis_a = row->a, axis_b = row->b;
-	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(_mm_load_ps(velocity_b), axis_b));
-	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
-
-	_mm_store_ss(&projection_pool.bounded_angular, xyz);
-	// Keep the mass multiplication before the step scale, without an early
+ __m128 w[5];
+ w[0]=a->angular;
+ w[1]=_mm_load_ps(velocity_b);
+ w[2]=row->a;
+ w[3]=row->b;
+ w[1]=_mm_mul_ps(w[1],w[3]);
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[0]=_mm_add_ps(w[0],w[1]);
+ w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
+ w[4]=_mm_shuffle_ps(w[0],w[0],0xaa);
+ w[1]=_mm_add_ss(w[1],w[0]);
+ w[4]=_mm_add_ss(w[4],w[1]);
+ _mm_store_ss(&projection_pool.bounded_angular,w[4]);
+// Keep the mass multiplication before the step scale, without an early
 	// float spill. Both clamps retain their divide-then-multiply sequence.
 	double mass_error = (target - projection_pool.bounded_angular) * mass;
 	float impulse = mass_error * load_error_scale(step);
@@ -1165,27 +1172,22 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 		float ratio = lower / impulse;
 		impulse = ratio * impulse;
 	}
-	// Capture A inertia before the SIMD input can overwrite its lanes.
-	__m128 inertia_a=a->inverse_inertia;
-	// Only SIMD consumes this rounded copy; accumulation retains the x87 impulse.
-	float &rounded_impulse = simd_scratch;
-	rounded_impulse = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	// Retain both body weights before either angular velocity write.
-	__m128 weights[2];
-	weights[0] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
-	weights[1] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
-	// Reload A after projection for the bounded angular update.
-	a->angular = _mm_add_ps(_mm_load_ps((float const *)&a->angular), _mm_mul_ps(weights[0], axis_a));
-	_mm_store_ps(velocity_b, _mm_add_ps(_mm_load_ps(velocity_b),
-		_mm_mul_ps(weights[1], axis_b)));
-	*result += impulse;
+
+ w[4]=a->inverse_inertia;
+ simd_scratch=impulse;
+ w[1]=_mm_load_ss(&simd_scratch);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);
+ w[0]=_mm_mul_ps(w[0],w[4]);
+ w[4]=*inverse_b_pointer;
+
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=a->angular;
+ w[2]=_mm_add_ps(w[2],w[0]);
+ a->angular=w[2];
+ w[0]=_mm_load_ps(velocity_b);
+w[1]=_mm_shuffle_ps(w[1],w[1],0);w[1]=_mm_mul_ps(w[1],w[4]);
+w[1]=_mm_mul_ps(w[1],w[3]);w[0]=_mm_add_ps(w[0],w[1]);_mm_store_ps(velocity_b,w[0]);*result+=impulse;
 }
-
-// Preserve the captured linear axis through projection and update. The angular
-// axes reload after the linear stores, as required when rows overlap bodies.
-
-
 static __forceinline void solve_unilateral_linear(float target,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
 	__m128 &linear_b,__m128 *const & angular_b_pointer, solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
