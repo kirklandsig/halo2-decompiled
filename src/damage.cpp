@@ -2786,6 +2786,17 @@ struct s_unit_event
 // Record address after notifications 627 in all three forms. Record address after the region-state
 // write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
 // loads the region index into EBP and keeps frame 0x38, but adds 12 bytes and raises the score.
+// M3 lane 8 r235 (H2M_FAST with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420). Allocator reading: the permutation
+// pointer (priority 66) is coloured before the region index (58) and takes EBP, leaving EBX to the index; a forced
+// priority of 70 for the index gives retail's entry (first difference +0xc -> +0x59, semantic rows 110 -> 46), so the
+// index needs one more weighted reference in its range (entry to the region-state update) or the permutation fewer.
+// Forms: the index bound to a `long const &` for the lookup 420, for all three uses 420; the two notifications through
+// one attached index read again for the second 420 (all the same code); the region states named at the update 523
+// (1852 B); the vehicle block through the entry object pointer 528 (1884 B).
+// Round 479: Region ordinal and permutation record still exchange EBX/EBP.
+// Named section count with sentinel 420; bounded section index 450; bound-and-name section loop 450;
+// selecting the result after the loop 448; bound-and-label seat loop 420; both loop conditions 450;
+// word section kind 425; direct nonzero kind ranges 462. Body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5646,6 +5657,10 @@ struct s_damage_object_creation
 // Accumulate primary, secondary or both section masks before publication, from zero 199/198/243
 // or from the current flags 219/219/257. Unconditional mask intersections with primary or secondary
 // publication first 201/203. Each retains frame 0x13e0 and moves the first difference ahead of the original loop.
+// Remaining-distance comparison 181, inclusive last-section bound 224.
+// Model early guard, component early guard, split guards and combined early
+// guard 167 each. Reused component index and typed component lookups 167/167.
+// The section count still takes EDI and the node-loop pad remains absent.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

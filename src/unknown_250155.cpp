@@ -3266,6 +3266,16 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // loop's widget indices declared in reverse 85, the colour array ahead of the team locals 85 or last 85, the local search
 // ahead of the player lookup 120 (920 B), `in_matchmaking` declared first and assigned after the shown count 85. Still
 // BLOCKED-BY 0x53b40's chain for the players[i] reload. Body unchanged.
+// M3 lane 7 r226 (h2m fast with 0x2507c3/0x22f042, MATCH each run; control 87). Allocator reading of the last loop
+// (diagnostic): the four indices rank 45 each (5 + 15 + 15 in the three helper blocks, 10 in the call block) and
+// are coloured text_a, text_b, bitmap_a, bitmap_b (latest created first); after text_b takes EDI the colourer
+// re-costs and the screen's call-block piece (5 uses x 10 candidates = 50) takes EBX before bitmap_a, so both
+// bitmaps go to memory and the zero gets a register. One forced pick (text_b into EBX) lets bitmap_a be coloured
+// before the re-costing, and the last loop is then retail's code (screen reloaded, immediate zeros) with only
+// EBX/EDI exchanged (83 -> 33 on the chained default-arm form). Retail needs bitmap_a coloured before the screen's
+// piece. Forms: the default arm as one chain `*text_a = *text_b = *bitmap_b = *bitmap_a = NONE;` 93 (925 B), on
+// lane 16 r157's lead 84 (same as the lead), with a counter per loop 91; the five calls passing `0` for `false` 87;
+// `++i` in the last loop 87; the last loop's bitmap indices declared before the text indices 87 (same code each).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

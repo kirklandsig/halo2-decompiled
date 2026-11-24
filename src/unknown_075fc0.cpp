@@ -460,6 +460,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // with both 405; lane 4 r253's three pieces re-measured 356 (1372 B), with the nested floor 350 at 1369 B (aligned 177:
 // `this` EDI, zero EBX and the index EBP as retail, frame 0x30 for 0x34; a lead, it needs the match-only flag form), with
 // local_16 moved too 368; that 350 form with every channel field read through `channels[local_0]` 417 (1381 B). Body unchanged.
+// Counter record or separate words 411/411, explicit signed-high and unsigned-low comparison 415/415,
+// arithmetic composition 436, elapsed low shared with reset 410, with record 411, with explicit comparison
+// 415. Explicit comparison with early budget sentinels, output flag, both, or both plus host flag
+// 444/399/439/434. NOT kept: the 0x34 frame and retail length return on the split-comparison forms, but the
+// best at that extent is 399 and the NONE and zero homes still differ.
 // M3 lane 14 r152 (h2m fast with 0x75910, 0x76520, 0x765c0, 0x77940 and, where said, 0x89030, all MATCH each run; control 356;
 // aligned = rows of a sequence alignment with stack offsets masked, control 203; a per-register comparison of retail's
 // value ranges with ours: 34 of 118 placed differently). Lane 6 r239's lead rebuilt on today's body (the has-host flag
@@ -478,6 +483,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // first threshold is `setge; test; je` with no store of the result and its second a plain `jl`; the reliable-bytes
 // payload is formed early (`lea ebp, [ecx - 0x2d]`) with `false` stored in each failing arm; the channel's first
 // flag is read from memory again at both later uses, as here. Body unchanged.
+// In round 641, the frame and search register assignments stayed off retail. Const lookup channel 356; skip inactive
+// channels 356; pointer walk and index on hit 460; short search ordinal 436; nested lookup tests 356; shared clock
+// helper 356; observer and lookup names 356; budget and send-result names 356. The body and lookup were restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

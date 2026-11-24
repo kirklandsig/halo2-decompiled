@@ -435,6 +435,31 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // loop's short counter (11 references) and the vertex counter shares the next with a distance term (7), so the
 // vertex counter needs the denser slot for retail's pair. On the short-index form (59) the three centre sums are the
 // only change in the first 0x60 bytes; its call setups rotate as recorded above.
+// M3 lane 7 r226 (fast screen with 0x180b60 MATCH each run; control 91, aligned 61). The slot pair is a shared variable:
+// with the vertex loop's short counter reused as the strip loops' running base (no separate base local) the count sum
+// and the strip length share [esp+0x14] and the counter/base take [esp+0x10], as retail; alone 281 (2667 B, the
+// transform rows move one step), with the short count index 292, with the luminance red, blue, green 279, both 290,
+// with the luminance and the vertex loop under its own test 276. Row model (read from the compiler's operand ranks):
+// every matrix element load carries a count mod 4 taken where it is written, a product puts the vector component
+// first only when its element's count is 0, a parenthesis pair adds one to everything written after it, the shared
+// counter/base adds one, and the count loop's short index shared with the strip loop's index (or with the vertex
+// counter) adds two; retail's rows are x (3, 0, 2), y (2, 3, 1), z (1, 3, 1) in written order. So the eight pairs of
+// round 224 become seven on the shared counter/base (two in the distance terms, the five in the helper): long count
+// index 40 (aligned 20: left are the entry guard, the count loop, the count's scratch register and the loop pad),
+// short index 51 (aligned 35); with the short index declared once and shared with the strip loop the two caller pairs
+// go as well (five helper pairs only) 51, shared with the vertex counter instead 51, declared once but not shared 98
+// (51 with the two caller pairs). Left on the 51 forms: the three centre sums (lower field first), the scratch
+// registers of the 0x13d370 and 0x17cfa0 setups and of the vertex loop, and the pad. The sums: each field load takes
+// its count at the range test, the high field 2 and the low field 1 on the long index but 3 on the short one, and the
+// sum loads the higher count first; a pair round the first test's difference turns the second sum only, round all
+// three the second only; unchanged by the count sum declared ahead of the vector, the tests as `0.5f >= hi - lo` or
+// `!(hi - lo > 0.5f)`, a short count sum, the definition pointer declared after the vector, the vector cleared by
+// three assignments, one to four unused locals, a third use of either field. Helper forms on the shared-index form:
+// one accumulator per row 293/166/290/282 for zero to three caller pairs; the rows as one expression each in forward,
+// left, up order cannot fit at any step (its second and third elements share a count); two of the distance terms
+// declared first and assigned in the loop 87 (same code as without). No single forced register or reload decision
+// brings the call setups' scratch registers to retail's (100 tried). None kept: every form here needs the pairs
+// (match-only) to score. Patches in m3-lane7 build/r226/lead-180d80-*.patch.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

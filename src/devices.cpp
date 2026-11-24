@@ -1810,6 +1810,12 @@ bool function_108530(long device_index, long name)
 // staged duration and numerator 146/116; published initial speed 116;
 // deceleration-only cruise snapshot 116. NOT kept: the staged duration grows
 // to 535 bytes and changes both callers' velocity convention. Other forms tie.
+// M3 lane 7 r227 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B). Reading: the two
+// half times are tied in colouring priority (146 each); the half ramp-up colours first (made later), and a forced
+// diagnostic putting the half ramp-down first gives 81 (not source). Forms: the half ramp-down computed first, the
+// acceleration zero between, 123 (525 B, callers 31/13); the halves adjacent after the acceleration zero, down first,
+// 123 (525 B, callers 31/13), up first 116 (same code); both halves written out at their two uses 136 (callers
+// 26/28); the denominator from `remaining` re-measured 131 (528 B, callers 31/13).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1960,188 +1966,8 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 	return difference.k * difference.k + difference.j * difference.j + difference.i * difference.i;
 }
 
-// score 2 (was 2): the float argument is stored to the stack before edi is pushed; retail pushes edi first and
-// stores the float one slot higher. Round 23: had_animation set after the time / first in the block 43/44;
-// the animation as a const reference 203; sampled declared after the time 2; time before the animation 2.
-// Round 30: sampled at function scope 39; the animation direct-initialised 2; time declared beside speed and
-// assigned in the block 2; time computed after the first sample call 20; had_animation set before the node
-// lookup 31. Round 99: existing vector subtraction/length helpers 2; seconds divided by 30 2;
-// sampled renamed 2; start renamed 2; an independent duration matrix 13; step declared beside speed 2;
-// a forceinline distance helper 2; one shared distance local 33. All restored.
-// Round 134 (fast): a pointer local for channels[0] in both animation blocks 2; the same pointer in the first
-// block only 2; a const time 2; a const animation 2; the frame position named before the scale 2. Every form
-// keeps the fstp of the time between the 0.0f push and the animation push.
-// Round 31 (lane 18, fast): sampled at function scope beside start 39; the 1/30 factor written first 2; one
-// function-scope animation variable for both blocks 2; had_animation declared just before the flag test 10;
-// had_animation and speed declared after the matrices 2. All restored.
-// Round 70 (lane 10, fast): the time declared first in the block 2; the channel read as `channels->` 2; the sampled
-// matrix declared after the time 2; the 1/30 factor in a const local 2; `time *= 1.0f / 30.0f` 2. Compile-only (which
-// reproduces the order): 0-16 probe locals, `(void)&time`, a `(real)` cast and a named frame position move nothing.
-// Round 94 (fast): the animation default-constructed then assigned 2; `time - step` named in a nested test 2; speed
-// declared before had_animation 4; the state declared after both flags 2; the time renamed 2. With the time read only
-// by the second call (diagnostic) the fstp still precedes the animation push.
-// Round 58 (m3 lane 2, fast): the factor as the literal `0.033333335f` (as 0x0a76b0's file writes it) 2, written first 2;
-// the first call's time as integer `0` 2; the frame position named before the product 2; `(real)(frame / 30.0)` 5.
-// Diagnostic: 1 to 12 dead locals at the top (symbol count) 2 each, so the fstp slot is not a numbering tie.
-// Round 174 (m3 lane 4, fast): the first call reading the channel's animation id directly with the local named after it
-// 337 (1634 bytes); the time computed after the first sample call 20; the render model held as a pointer and cast at
-// each call 2; the time as `frame_position / 30.0f` 2; a const render model 2. LTCG harness (this file with the files of
-// the sampling, transform and object callees; not exact, but it shows the same swap): only the first call's render model
-// replaced by a constant (diagnostic, wrong value) puts the fstp after `push edi`, so the render model load's timing
-// sets it; a volatile render model (diagnostic), the time given to the first call, a label between the samples move nothing.
-// Round 75 (m3 lane 14, fast): the animation id through a file-local inline getter in both blocks 2; the time through an
-// inline seconds getter 2; both 2; `adjusted` copy-initialised at its declaration 2; the node index declared before the
-// time 2.
-// Round 172 (m3 lane 6, fast): a 600 s annealing permuter run (its full-image baseline alone took 924 s): 12 tries, none
-// below 2; `time - step` named before the step test 9; the animation id read from the channel at each of the three
-// sample calls (no local) 203. Same code: `time /= 30.0f` on the frame position; a `c_animation_channel const &`
-// for the animation id and the frame position. On round 174's render-model lead: the render model read through the tag
-// table at each of the five calls (no local) 532 (1744 bytes); computed inside the 0xbf5a0 block 424 (1681); the model's
-// render model index in a local used at its test and the lookup 317.
-// Round 94 (m3 lane 11, fast): the time assigned inside the first call's object expression (diagnostic, so its store
-// follows the animation push in source order) 2: the store's source position does not set the order; a block-local copy
-// of the render model for the block's three calls 2; a block-local copy of the state pointer 2; one function-scope
-// seconds variable shared with the later duration 315; the flag test in a named bool ahead of the matrix copy 352
-// (1633 bytes). Compile-only (same relative order as ours): the time declared first; the animation id read from the
-// channel at the first call. Reading across four builds: in ours, the compile-only copy and round 174's constant
-// render model the fstp is the eighth instruction after the branch, and in all of them except ours three instructions
-// separate it from the call (ours four, since the render model's reload opens the block); retail has both the reload
-// and three, as if that reload were not in the block when the store was placed.
-// M3 lane 12 r121 (fast, and a one-file LTCG harness with the callee files that reproduces the swap): the render model
-// declared at function scope 2; the animation and time read through a channel pointer local 2; the time computed first in
-// the flag block with the sampled matrix after it 2 (harness); the render model as `(long)(void *)` of the tag data 2; the
-// animation state fetched after the matrix copy 341 (harness positional; the prologue reorders). Diagnostics (harness,
-// reverted at once): the render model or the time address-exposed, or the render model volatile, same code.
-// M3 lane 16 r121 (fast): the matrix copy as memcpy 2; `register` on the render model 2; a function-scope channel pointer
-// for both blocks 2; diagnostics (reverted at once): the first call's render model as 0 346, with the fstp after the
-// animation push as retail, so the render model's reload sets the order in the real build too; 0x1cbf50 keeping the
-// unused argument by a bare address expression after its call 378 (the argument is dropped). A compile-only build gives
-// another argument order, so it cannot screen this.
-// M3 lane 9 r127 (fast): the second sample call reading the channel's animation id directly (the first keeps the local)
-// 330 (1634 bytes); the factor as `(real)(1.0 / 30.0)` 2; the first call's 0.0f through a start-time local 2; the
-// definition, model and render-model lookups through a file-local inline tag getter 2; a const state pointer with the
-// flag block reading the animation and time through a const channel reference declared first in the block 2.
-// M3 lane 4 r205 (fast): the sampling method's unused third parameter typed `void const *` (header, definition, four callers;
-// the local a pointer, so no conversion is pushed) 2; the nested tests as early returns of the false result 402; the time
-// assigned inside the first call's animation argument (its store after the 0.0f push in source order) 2, so the store's
-// position in the call does not set it either; the step tests nested 2; inverse and relative at the flag block's scope 2.
-// Diagnostic: the speed block's two calls given a constant render model (fewer uses of the local) 98, fstp unmoved.
-// Also r205: the animation state as a reference (member calls through it), the model or the definition as a const
-// reference, the flag block reading the animation id and time through a const channel reference, the frame position
-// as a `real const &`, 2 each (same code).
-// M3 lane 4 r207 (fast): the two flag-block sample calls through a file-local forceinline pair helper 11 (the fstp unmoved);
-// `start` scoped to the flag block with the second block sampling into its own `end` 13; the animation and the time
-// declared at function scope and assigned in the block 2; the state declared first in the function 2; the node test's
-// arms swapped (`node == NONE` first) 74. Diagnostics: with the orientation block removed the state takes EBX (no reload)
-// and the fstp follows `push edi` as in retail, while dropping only its second half keeps the reload and our order; the
-// state renamed to sort first or last 2. In every build the fstp is the eighth instruction after the flag branch;
-// retail's is ninth, as if the state's reload were not in the block when it was scheduled.
-// M3 lane 1 r117 (fast): the render model typed dword 2; the first sample call's render model through a `long const &`
-// 2; that call through an `s_animation_state *const &` to the state 2; the time assigned through a `real &` 2; the
-// first call's output through a matrix pointer local 2.
-// M3 lane 13 r108 (fast): the definition's model tag index in a local used at its test and lookup 317 (as round 174's
-// render-model index local); the step read from the frame globals at each of its three uses (no local) 185; the else
-// arm's inverse and relative declared the other way round 2; the orientation declared before the two quaternion
-// pointers 2; the speed as `(real)(sqrt(d) / step)` 2.
-// M3 lane 10 r120 (fast; control 2): compile-only probes of the flag block (the first call's arguments varied, 14 forms)
-// put the time's fstp after exactly five non-x87 instructions of its basic block every time (eighth with the fld and
-// the fmul), wherever the fld and the fmul land; retail's block has six before it, so retail's render-model load
-// `mov edx, [esp + 0x18]` was not in that block when it was scheduled: a block boundary after the load that emits no
-// code, as 0x1253d0's. Diagnostic (reverted at once): `if (render_model == 0) return false;` at the top of the flag block
-// 379, and the block after that test then has retail's order (the fstp after the animation push). Trials: the two
-// flag-block samples through a plain `inline` pair helper taking the block's locals 380 (called, not inlined); a plain
-// `inline` helper taking the channel and returning the animation and the time through references 372 (called); the two
-// reads under a dominated `if (device)` guard with a block-local copy of the render model 2 (same code); the first
-// sample's seconds as `DEVICE_PIN(0.0f, 0.0f, time)` 365 (1654 bytes, not folded); the two sample calls in a bare scope
-// 2 (same code). Compile-only: the processor-tuning and debug-information options leave the block's schedule alone, and
-// the time assigned inside any of the first call's arguments compiles to the same block.
-// M3 lane 11 r120 (a one-file LTCG harness that reproduces the swap; control 131 positional, first difference the fstp):
-// the first block's animation, time and two samples in a file-local forceinline helper taking the state, the channel and
-// the render model and returning the time (the render model a helper parameter) 319 (prologue reordered), the fstp still
-// after `push 0`; everything inside the 0xbf5a0 test as a forceinline body taking (index, name, seconds, device, render
-// model) 328, fstp unmoved; the three tag lookups through the shared TAG_GET macro 131 (same code). Diagnostic only (the
-// harness links the callee's old object, so its convention moved): the render model as a one-member aggregate argument.
-// Compile-only (no /GL) hoists the render model's load into EDI above the flag branch, so there the block starts at the fld.
-// M3 lane 5 r205 (fast): the render model through a file-local forceinline accessor taking the model 2; `__assume(render_model
-// != 0)` at the top of the flag block 2 (no block boundary, unlike the real test); the render model zero-initialised at
-// function scope and assigned at its lookup 2; had_animation set at the end of the flag block 270 (fstp unmoved); a const
-// channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
-// two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
-// pushes), so retail's x87 time needs both calls in one block.
-// M3 lane 4 r225 (fast; control 2). Compile-only study of the schedule (small functions with `fld; fmul; fstp` ahead of a
-// call's loads and pushes): the fstp lands at a fixed slot counted from the start of its scheduling region, index 7 (the
-// eighth instruction) when the fld is the region's first or second instruction, else six after the fld. A call starts a
-// region as its index 0; a label or the fall-through of a conditional jump starts one with nothing counted; lea, register
-// moves, pushes, movsx loads and stack loads count one each (imul three); the prologue's frame push is not counted and a
-// string copy is no region start. Ours follows it (mov edx 0, fld 1, fstp 7); retail's fstp at index 8 fits only a block
-// that starts at the fld, so retail's render-model load was outside the scheduled block (round 120's reading). Trials:
-// the animation id through an inline getter returning it by value 2 (same code); a named copy of the render model with
-// `__assume(copy != 0)` at the block top 2 (same code). Diagnostics (reverted at once): the matrix copy moved into the
-// flag block 379 (x87 instructions cross the copy, fstp again at index 7); a second way into the flag block that holds
-// the render model in a register (`!render_model ||` ahead of the flag test) 421 (no load in the block, fstp at index 7
-// behind `push edi`); the samplers' unused third parameter as a one-member aggregate with a converting constructor 2
-// (same code: promoted to a long).
-// M3 lane 15 r115 (fast; control 2). A scan of every x87 load / multiply-or-add / store chain in the retail image (193
-// chains): all the others that open a block follow the slot rule above, and this flag block is the only one with a stack
-// load first, the fld second and the store nine slots in, so the cause is local to this block. Trials: the sampling
-// method's matrix parameter declared first (definition, declaration and its three other callers; a diagnostic for the
-// declared order, reverted at once) 2 here with 0x16c110 121 and 0x16cfa0 136 lost, so the matrix is declared last;
-// the channel through a file-local inline accessor with a switch on the channel index, at each read 2, named once 2;
-// the animation state fetched again for the first sample 346 (1635 bytes). Diagnostics (reverted at once):
-// had_animation's initialiser moved after the matrix copy 10, the speed's 32, both 32, the flag block unchanged each
-// time: one or two more instructions ahead of the flag branch do not move the store, so the scheduler carries nothing
-// across the branch. Compile-only replica of the block (a matrix copy ahead of it, both locals spilled; 40 forms: a
-// block-local copy of the render model, a const reference, forceinline pair helpers, a one-member aggregate render
-// model with and without a constructor, one-pass loops, the copy written in both arms, switch accessors): the store
-// stays at the eighth slot in every one.
-// M3 lane 15 r118 (fast; control 2): the two quaternion pointers declared a first 12; the current matrix and its inverse
-// declared at the top of the orientation block 2; the state fetched ahead of the 0xbf5a0 test 12; the state read through
-// the inline accessor at every use (no local) 366 (1644 bytes); had_animation set right after the second sample 31.
-// Diagnostics (reverted at once): the orientation block's object as the device local 383 (the state then takes EBX, no
-// reload, and the fstp follows `push edi` at the same eighth slot); its first or second half removed 204/225 (our order);
-// one fabs test in place of nine 477 (our order), so the temporaries of the compare chain do not set the slot.
-// M3 lane 2 r119 (fast; control 2): a redundant `had_animation = false;` at the top of the flag block 2 (same code);
-// had_animation left uninitialised and cleared in an else arm of the flag block 170; the time computed ahead of the
-// flag test 71 (1636 B, not sunk into the block); the animation id read ahead of the flag test (the speed block
-// assigning the same local) 13: its load and spill then sit above the branch and the block's fstp follows `push edi` as
-// retail, so with `mov edi` out of the block the store reaches retail's slot; the animation read through a const
-// reference at both sample calls 2 (same code).
-// M3 lane 12 r161 (fast; control 2): the flag block's body in a one-pass do/while (diagnostic, a loop boundary ahead of
-// the fld) 301 (homes move); the flag test as a while with a closing break (diagnostic) 2 (same code); had_animation
-// and speed declared ahead of the state lookup 2; the flags read into a named word for the test 2 (both the same code);
-// `&& render_model` on the 0xbf5a0 test (diagnostic, a real test) 393 (1650 bytes).
-// M3 lane 2 r132 (h2m fast; control 2): had_animation initialised from the flag test and tested for the block (two
-// uses, no store inside) 396 (1635 B); the same declared right after the matrix copy 351 (1630 B: the flag is then
-// read as a dword `shr eax, 3; and al, 1` and the fstp stays after `push 0`); the first call's render model under a
-// real `!= NONE` test (diagnostic) 351 (1638 B); the first call reading the render model from the model tag again 398
-// (1655 B); the node lookup first in the flag block 369 (1652 B). Restored.
-// M3 lane 1 r147 (fast; control 2): the tick length read at the top of the flag block 350 (1635 bytes); the matrix copy
-// written in the flag block and again in an else arm (no hoist back above the branch) 303; a named copy of the time for
-// the second sample 2; a named copy of the animation for the first sample 2; the state as a const pointer 2 (all three
-// the same code: the copies are coalesced before scheduling).
-// BirchWoodGod (11-21, fast; control 2): a _ReadWriteBarrier at the top of the flag block 7 (the fld then opens the
-// block, but the fstp moves ahead of `push 0`); after the animation id 12; after the time 9; between the two samples 2
-// (same code); a block-local copy of the render model ahead of a barrier 7. None kept.
-// M3 lane 3 r295 (h2m fast; control 2): `long node;` declared at the top of the flag block and assigned at the lookup 2
-// (same code); a redundant `speed = 0.0f;` at the top of the flag block 342 (1636 B, the store is emitted); a redundant
-// `result = false;` there 2 (same code); speed declared at function scope beside the result 48; had_animation declared
-// there 92.
-// M3 lane 13 r141 (h2m fast; control 2): had_animation set right after the first sample call 34; the node index
-// declared at the top of the 0xbf5a0 block 2; the render model renamed to sort before the other locals (symbol
-// order) 2; the animation renamed to sort after the time 2; had_animation renamed to sort first 2 (the 2s the same
-// code: local names do not move the fstp).
-// M3 lane 2 r136 (h2m fast with 0x107cc0; control 2): the render model's test and the 0xbf5a0 call as one `&&` with the
-// lookup in a comma expression (diagnostic) 2; the three matrices declared in one statement 2; the two flag-block samples
-// in the other order (the timed one first) 16; the object matrix built into `adjusted` and copied to `original` 5;
-// `original` and `adjusted` declared at function scope 7. Compile-only replica of the flag block (rm and the state
-// spilled, the animation a field load; it reproduces our order exactly): 16 spellings of the time, the animation read,
-// the flag test and the render model (a copy, a temp written at each use, a block-scoped call) keep the store at slot 7;
-// only reading the animation ahead of the branch moves it, as round 119 found. Restored.
-// M3 lane 13 r144 (h2m fast; control 2): the time and both samples through a file-local forceinline pair helper 2;
-// the flag test negated with an empty first arm and the block in the else arm 2; the first sample's zero time named
-// `real const start_time` 2; the animation and the time `const` 2 (the four the same code); the first sample reading
-// the id through a `c_animation_channel const &` to channel 0, 328. Reading: retail's fstp is where a scheduling region
-// opening at the fld would put it, so its render-model reload acts as if it lay outside the block (an edge reload).
+// The time is the frame position converted to seconds with an explicit (real) cast, as 0x10fa80 writes its frame
+// conversions; retail stores it after the animation id's push, which the plain product does not give.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -2172,7 +1998,7 @@ bool __stdcall function_107ed0(long device_index, long name, real seconds)
 						{
 							transform4x3f sampled;
 							c_type_709360 animation = device->channels[0].animation_id;
-							real time = device->channels[0].frame_position * (1.0f / 30.0f);
+							real time = (real)(device->channels[0].frame_position * (1.0f / 30.0f));
 							state->animation_matrix_get(animation, 0.0f, render_model, &start);
 							state->animation_matrix_get(animation, time, render_model, &sampled);
 							long node = state->node_find(0xd000533);

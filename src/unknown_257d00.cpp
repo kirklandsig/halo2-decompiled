@@ -2051,7 +2051,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 429 (was 429; m3 lane 2 r139 unchanged, its lines just above the marker; m3 lane 5 r233 unchanged; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 429 (was 429): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// m3 lane 2 r139 unchanged, its lines just above the marker; m3 lane 5 r233 unchanged; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged.
 // Earlier header line, a stack merged here in m3 lane 2 r139: 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier header line, a stack merged here in m3 lane 4 r256: 429 (was 429; m3 lane 13 r147, m3 lane 5 r233, m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; two stacked header lines merged here, r147): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
@@ -2884,6 +2885,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Direct acceptance exits, type 19 first or notification first, 483/479 with a success return after dispatch.
 // Joined acceptance exits in the same orders 483/479. Running the tail only on a pending result 609 in all four forms.
 // NOT kept: the 2400-byte forms narrow the length gap but keep the late dispatch success branch and raise the score.
+// Direct completion on rejection of the actor, paired target, single target or selector request 429 each.
+// Both target requests, actor and selector requests, all four requests, or separate guard exits 429 each.
+// NOT kept: the dispatch still reaches the late success block, with the original 20-byte excess.
+// State flags, facing timer and direction through the native state and existing
+// facing declarations, in seven subsets and with both facing fields from their view,
+// 429 each. NOT kept: the dispatch span and late completion block are unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -1783,6 +1783,12 @@ PRIVATE inline long score_string_list_1608e0()
 // before the clamp 685. Retail's two evaluations of the score-column test (once inside the name width, once for
 // the score width in its own stack cell) are a computed value written at each use, so lane 4 r213's lead stays
 // match-only.
+// Caption rectangle holds horizontal origin. Named score member, read-only bytes, typed buffer and typed players each 688.
+// Explicit availability branches 723. Typed teams, both tables and shared engine-state selection each 690. All 2856 B.
+// Earlier caption rectangle 679; title rectangle beside row position 679;
+// earlier foreground / foreground and caption rectangle 679/679. Height, scores and
+// row-total names in two orders 679/679. Entry row and caption declarations, with or
+// without separate title declaration, 679/679. Frame, viewer and origin homes still differ.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

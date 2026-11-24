@@ -518,6 +518,9 @@ extern real g_4c9798[36];
 // which needs the cursor back on EAX twice: one more integer temporary ahead of the flags word and one more ahead of
 // the size-limit bits, or neither the tag word nor the flags word taken from the cursor. Named locals fold away before
 // the scratch registers are handed out, so none of the six forms adds one.
+// Initial direction captured once 378 or per row 399; whole scaled/negated/both row values 185/183/190;
+// scale/negate/both helper results before publication 323/321/323. The row values retain the 0x28 frame. The EDX
+// flag load and held rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

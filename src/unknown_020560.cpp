@@ -1494,6 +1494,13 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // (members assigned, length_sq3f) 628, the projection alone in one 575 (2135 B); the delta formed inside scan 2 after the
 // offset 571 (2198 B, not hoisted) on either base; offset and delta as one two-element array, offset first, 593 (2146 B) on
 // the entries field and 433 on the samples local; the delta at +4 of a local aggregate 549 (diagnostic). Body unchanged.
+// The 0x2c frame, second induction address and first-component spill are still missing. Reusing the candidate
+// with the ordered dot product, nested/skip: shared difference 646/646, live entries 623/623,
+// scan-scope offset 646/646, aggregate difference 649/649. The original second scan is restored.
+// The second scan still lacks its separate candidate-X store and alternating induction addresses.
+// Shared offset with the two squared-length helpers 646/646; separate offset in opening sum order 418/418
+// with either dot operand order; separate offset in k/j/i sum order 416/416, NOT kept: changed grouping and
+// two-point gain. Squared-length helper for nearest alone or both scans 418/418.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

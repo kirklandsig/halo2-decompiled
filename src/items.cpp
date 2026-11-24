@@ -956,10 +956,20 @@ struct s_item_collision_bsp
 // The transformed-plane XMM homes and contact slot still differ. Angular impulse, contact point and travel speed slot names 190/190/190.
 // Conditional const axis 259; shared double-factor vector scale in the axial arm, fallback arm, both arms or at the joined spin 239/239/238/319.
 // NOT kept: the names tie and none of the scale forms recovers the pending x87 factor at a lower score.
+// Completed transformed-normal rows i/k/j, j/i/k, j/k/i, k/i/j, k/j/i: 193/196/196/197/194.
+// Overlapped row completion i/j, j/k, or all three in reverse: 201/198/195.
+// NOT kept: the native coefficient registers and rejection span still differ.
 // Plane-join homes differ and the real spin scale spills at the join. Wide axial, fallback or joined k
 // products 240/240/198, both initial pairs 194, axial plus k 242, fallback plus k 241, all products 241.
 // Wide scale with explicit real fallback rounding 237. NOT kept: wider products need a match. The joined
 // k alone restores the +0x28 speed slot but shortens the body to 1342 bytes.
+// Embedded rotation with direct translation, fully direct instance, or separately bound origin 190 each.
+// Shared basis rotation into the plane, separate normal, separate normal through distance, early scaled
+// distance or in-place queried plane 336/312/333/336/303. NOT kept: the shared rotation forms change
+// sum grouping and shorten the body. The normal and contact-point XMM homes still differ.
+// Coefficient-first products across all left, up and forward rows, separately and in every combination,
+// 190 each. All three axes with coefficient-first translation products 190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1310,9 +1320,19 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 130, scale final expression from lateral subtotal 130, shared marker transform pointer 165, ordinary dot for
 // alignment 130, shared fallback side cross 130, shared fallback result cross 130, staged axis cross and in-
 // place projection scale 151.
+// Shared double-factor scale with direct or staged cross, in-place or independent output,
+// and rounded or double reciprocal: 197 each at 869 bytes.
+// NOT kept: the 0xc0 frame remains and the scale expands as x87.
 // The scaled axis i still spills and the frame stays at 0xc0. Marker-up-first alignment, axis-first projection,
 // axis-first and forward-first rotation cross products, scalar-first diagonal, reversed axial and weighted cross
 // products, and axis-first rows through the shared setter all score 130.
+// Transform-left axis workspace 212. Common projection home with half-root update, final setter or
+// forward scalars 151 each; separate weighted cross 267, staged cross with common weight 267,
+// scaled-axis initializer 206 and scaled coefficients 206. NOT kept: the 151 forms recover 0xb4
+// and 848 bytes but raise the score. The initial alignment and scaled-axis register order still differ.
+// Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
+// separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
+// NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1850,6 +1870,14 @@ struct s_item_flags_view_10b850
 // before sampling, beside carrier output, beside gravity or at the query 884/884/885/885.
 // A separate gravity test with one relocation result before sampling, beside carrier output or at the query 898/898/885.
 // NOT kept: each reserves 0x150 and shortens to 4066 bytes. Retail uses separate relocation and settling bytes.
+// The 0x154 frame still exceeds retail's 0x12c, and the entry Boolean homes differ.
+// Cap within contact kind 824, capped initialization 873, conditional lift 824, lift floor in
+// correction 824, shared inward speed 830, retained pre-impact projection 884, cap-result
+// arms 873, named scaled lift 824. NOT kept: ties or regressions. Retail recomputes the
+// normal projection after impact.
+// Ray as lateral cross output with direct or staged cross and coordinate or shared point difference
+// 901/902/909/914. With single-precision absolute value 879/880/885/892. NOT kept: all reduce the frame
+// to 0x13c but shorten the body and raise the score. The entry Boolean stores still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -2495,6 +2523,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // saved long countdown 194/194, short terminal count 190/190, or long terminal count 190/190.
 // NOT kept: the +0xf byte home returns, but the body shortens to 870–874 bytes against retail's 892
 // and the release-flag operations still differ.
+// Paired event-point coordinate passes, ascending/descending, with separate buffers with returned
+// point 140/140 or filled point 171/171, common buffer with returned point 171/171 or filled
+// point 158/158. The return byte, release mask and point homes still differ.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -894,6 +894,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // and without the planar pair first, 128-311 (0/0 with the pair first 128, 0/3 155, 1/3 208, 2/2 210, the rest 225 to
 // 311); 0-7 unused locals at the top x 0-3 pairs on the pitch difference with the pair first: 128/308/309/237,
 // 222/299/232/256, 219/296/232/256 (2 and 3 locals), 124/204/299/237 (4 to 7 locals); no match. Body unchanged.
+// The planar J and full-depth stores still exchange order. Fixed-size copies for the full snapshot 130,
+// planar snapshot 346, failed restore 130, both snapshots 346, full snapshot and restore 130, both full
+// inputs 130, full snapshot plus restore and turned input 130, and all four facing transfers 346. The planar
+// copy moves the first difference earlier.
 // M3 lane 13 r153 (h2m fast with 0x29b990 and 0x170d70, both MATCH each run; control 130, aligned 162). Rank levels of the
 // first rotation here: axis i 0, j 4, k 2 against the facing copy's three members just above level 0, so retail (axis i and k
 // above the members, j below) needs i off level 0 and j and k four levels on. The degree factor written as a parenthesised
@@ -906,6 +910,13 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // planar snapshot 346, failed restore 130, both snapshots 346, full snapshot and restore 130, both full
 // inputs 130, full snapshot plus restore and turned input 130, and all four facing transfers 346. The planar
 // copy moves the first difference earlier.
+// Round 479: Planar J and copied depth still exchange stores. Declare the planar pair first with
+// late member writes 130; planar i early 130; planar j early 137. Interleaved full and planar member
+// stores in four orders 406 each; full component initializer with the independent planar pair 406.
+// The full component forms shrink the frame and length. Body restored.
+// Round 469: whole-value conditional at the pitch calculation 379. Immediate branch
+// choosing the pitch comparison input 365, and the branch at the angle use 368. Five
+// input and projection name orders tie 130. The projected J/depth stores remain exchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
