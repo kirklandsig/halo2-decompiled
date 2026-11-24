@@ -395,6 +395,10 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // whole body turn the vector helpers into calls (2682 B), so the difference is in the sorted path only. Retail's two
 // flag bytes have 4 and 3 references, as ours; what packs them is the sorted loop counter's cell gaining the owner
 // lookup's result. Still BLOCKED-BY 0x262a30. Body unchanged.
+// In round 641, the flags still take distinct frame words. Result and selected index names 440; index, score and sort
+// workspace names 440; sorted array scoped to selection 440; path records after the empty-count return 440; in-range
+// continue 440; finite comparison before invalidation 480; default reference as two members 780; chosen reference as
+// two member assignments 577. The sorted evaluator still expands and the owner lookup remains a call. Body restored.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

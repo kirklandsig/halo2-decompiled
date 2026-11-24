@@ -1350,6 +1350,14 @@ void function_1e3b60(long actor_index);
 // 466 (1648 B); a plain `short` maximum 446 (1620 B); the release pair written at case 2's failing test 442; the
 // two flags declared after the 0x263670 call 443 (same code). Retail expands 0x2641c0 here; its noinline
 // declaration sits in a file another lane held this round. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0).
+// M3 lane 7 r227 (fast with 0x262ba0, 0x263210, 0x264330 and 0x265680; 25 here in every form): in 0x262ba0, the
+// case-3, case-2 and completion view pointers each declared in its own block (no function-scope view) 404 (same code);
+// that with the walk through the existing 0x26be00/0x26be30 443 (1616 B). Readings: forcing the actor index's
+// colouring priority in 0x262ba0 (73 forced decisions, diagnostic) fixes its frame (0xa0) at best but never makes it a
+// register argument; in a plain compile of 0x262ba0 (no link-time code generation) the actor index sits in EDI and is
+// re-read from its stack home six times (EDI goes to the view pointers), and none of the forms above changes that
+// count. Retail keeps the loop index in a stack cell (the walk's iterator) and the actor index in EBX. Still
+// BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

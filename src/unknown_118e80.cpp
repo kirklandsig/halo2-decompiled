@@ -639,6 +639,18 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // as `dot3f(&new_forward, &object->forward)` with the pointers declared forward first 17; both pointers declared beside
 // `up` and `new_forward` at the top of the else arm 108; `new_forward` and `up` declared separately, forward first 15.
 // Still BLOCKED-BY 0x1faf80 (its definition is in src/unknown_1fa590.cpp, another lane's file this round).
+// M3 lane 1 r166 (h2m fast with 0x11f0d0, 0x1faf80, 0x109290 and 0x118700; control 15). Reading of the reassociation
+// sort: a component read through a pointer local ranks 8 + 0x2000 x (the pointer's symbol number mod 8), and the
+// symbol numbers follow declaration order (`object_up` 0x10, `object_forward` 0x11), so the object's up.i ranks below
+// the local's (retail's order) and its forward.i above (ours). Retail's order in both products needs both pointers at
+// numbers that are multiples of 8. Forms: `object_forward` declared at the else arm's top 108; `object_up` there with
+// `object_forward` ahead of the position block 108; both pointers declared ahead of the position block 15; the three
+// else-arm vectors in one declaration 15 (same code); the forward agreement tested first 27. Diagnostics (unused locals between the two pointers, not
+// keepable): three 15 (forward pointer 0x14, rank 0x18008), seven 13 (the forward agreement's i product becomes
+// retail's); seven together with 0x1faf80's parameters as (object_index, facing, settings, control, threshold, turn)
+// give a byte MATCH here (0x1faf80 2: on that order its test's facing operand rises from a tie with forward.i to above
+// it; its forward pointer declared after `up` or after `left` 4/4, 1-5 unused locals ahead of it 2/6/4/4/4). Still
+// BLOCKED-BY 0x1faf80 (its call in src/bipeds.cpp and that file's declaration, another lane's file this round).
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1728,6 +1740,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // hoisted loads need the store gone, and without it only the bool formal gives retail's byte spill. Still BLOCKED-BY
 // 0x1c4b00 (one of its declarations is in src/unknown_1cec30.cpp, another lane's file this round, and contributor
 // 0xe24f0 rises with the bool formal).
+// M3 lane 1 r166 (h2m fast with 0x1197b0, 0x11f0d0, 0x1faf80, 0x109290 and 0x1c4b00; control 14): the +0x88 copy by
+// memcpy 14; the re-fetched object pointer `*const` 14 (both the same code); the move output's byte member passed as
+// the force 43 (1035 B); the object looked up ahead of the 0x119bc0 call 16; the force passed as `local_force ? 1 : 0`
+// 95 (1038 B). Still BLOCKED-BY 0x1c4b00 (three of its declarations sit in other lanes' files this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
