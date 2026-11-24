@@ -1051,6 +1051,19 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // four candidates), so the session is coloured first and takes ESI; with the index ranked first the pair form leaves 14
 // (the copy loop's scratch step). On the pair: a named session player record pointer in the player loop 49; the pair set
 // under the flag test alone 46; the pair assigned players first 46; the output buffer entry named 46.
+// M3 lane 5 r243 (reduced image with 0x6e500, 0x72700, 0x6e910, 0x5c5c0 and 0x5b080; control 22). Reading of the
+// allocator: on this opening the two opening addresses are scratch temporaries, so the EAX, ECX, EDX scratch cycle
+// reaches the summary lea one step after retail's (EDX for EAX) and every later scratch pick follows. The NULL-preset
+// pair makes both addresses register candidates, which restores retail's cycle, but its flag-arm block references the
+// session twice among four candidates, so the session ranks 95 against the player index's 86 (85 against 86 here). With
+// the index ranked first the pair leaves 14 (the copy loop: its output pointer takes ECX ahead of the member count, so the
+// count's spill moves ahead of the two leas); with a `for` copy the output takes EDX but the player loop's bit takes EAX
+// and the mask read folds (92 even with the ranking fixed). The player loop's latch is the only block that references the
+// index and not the session, so one more candidate referenced there moves the index about 10 against the session. On the
+// pair: the output buffer walked by its own pointer 54, that with the session player record walked too 54 (the latch's
+// candidate count does not change), the member count bound by `long const &` 46, the countdown declared ahead of the copy
+// index 46. On this opening: one stored players pointer set under `flag && &first` 215, the pair with the second address
+// set under a test of the first 215 (the address tests fold).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
