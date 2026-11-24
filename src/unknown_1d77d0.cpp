@@ -372,6 +372,13 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // `if ((unsigned long)type > 5) __assume(0);` ahead of the switch with the default kept 22; the builder `__forceinline`
 // with external linkage 22; the builder returning through an out-parameter 22; the builder calling 0x1d0150 itself 22
 // (the four 22s the same code).
+// Round 225 (m3 lane 7, h2m fast): the builder's whole body written into the loop body 445 (first +0x50; its tail is
+// still ours, so the unreachable default does not act through the inline helper); the six cases in reverse order 434
+// (+0xc); the unreachable default between cases 2 and 3 22; the found path's clear test as nested ifs 22; the `|= 0x400`
+// ahead of the clear test 41 (1828 B); the switch on `(unsigned long)type` 22, on the iterator's short type 22.
+// Diagnostic (range check, not retail): case 5 written as the default with no `__assume(0)` 459 (1828 B), and its
+// tail is retail's (`or dword ptr [ecx+4],0x400` whole, the size guard into the found path's epilogue): any form
+// with no unreachable block lays the found path out ahead of the exit, as retail does.
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

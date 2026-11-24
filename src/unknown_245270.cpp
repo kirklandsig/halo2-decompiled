@@ -1042,6 +1042,10 @@ void function_245400(s_source_245400 const *source, long index,
 // immutable widened codes in facing 165, or immutable codes with normals
 // resolved at the cross 212. NOT kept: 0x24 frame and separate material homes
 // still differ. Delayed plane-table forms also change the matched caller.
+// Packed material difference for all tests, signed or unsigned word 229/238. Promoted outer difference
+// with separate sides and low-index/side-only tests 214/208. Native outer equality with packed
+// side-only test 210/222. Unsigned side-only/side-mask tests 234, and early packed equality rejection 229.
+// NOT kept: none recovers retail's frame and each raises the score and changes the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

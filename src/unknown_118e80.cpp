@@ -631,6 +631,14 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // pointers `vector3f *const` 15, in one declaration 15, as `vector3f &` references for the tests and stores 15 (the three
 // the same code); the agreement test as `!(a >= 0.9999f) || !(b >= 0.9999f)` 19; the turn-velocity store ahead of the
 // dispatch block 80.
+// M3 lane 5 r243 (reduced image with 0x1faf80, 0x118700 and 0x11f0d0; control 15). Reading of the reassociation sort:
+// each agreement's i product puts the higher-ranked operand in memory and loads the other first; in the up agreement the
+// object's up.i outranks the local's (retail's order), in the forward agreement the local's new_forward.i (and its j and
+// k) rank about 0x2000 above the object's forward.i, so the object's is loaded first. Forms: the field pointers declared
+// forward first 15; `vector3f const *` pointers for the tests only, the stores through `object->` 15; the forward test
+// as `dot3f(&new_forward, &object->forward)` with the pointers declared forward first 17; both pointers declared beside
+// `up` and `new_forward` at the top of the else arm 108; `new_forward` and `up` declared separately, forward first 15.
+// Still BLOCKED-BY 0x1faf80 (its definition is in src/unknown_1fa590.cpp, another lane's file this round).
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1712,6 +1720,14 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // call 40, the result `bool const` 40 (both the same code); `inline` on 0xb7740's definition with
 // `function_b7740(arg_0, &local_11.field_c, NULL, true)` for the lookup and copy 279 (ten callers lost: it then expands
 // everywhere). Still BLOCKED-BY 0x1c4b00 and 0xb7740.
+// M3 lane 5 r243 (reduced image with 0x119bc0 and 0x1c4b00; control 14): the member set from the call and the local read
+// back from it 97; the re-fetched object held as a pointer to its +0x88 vector 14; the member and the local set in one
+// assignment 14 (same code); the member store after the copy with that vector pointer 11, with the re-fetched pointer
+// declared bare ahead of the call 11 (round 133's statement-order lead, a gain of 3: the force is still widened by
+// `movzx`). Reading: the member store into the move output blocks the copy's source loads (same local), so retail's
+// hoisted loads need the store gone, and without it only the bool formal gives retail's byte spill. Still BLOCKED-BY
+// 0x1c4b00 (one of its declarations is in src/unknown_1cec30.cpp, another lane's file this round, and contributor
+// 0xe24f0 rises with the bool formal).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
