@@ -754,27 +754,7 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	// Keep the first-row fallback in both source paths. The compiler merges
 	// that tail while retaining retail's unordered second-row branch direction.
 	// Nonpositive and unordered first impulses take the single-row path.
-	if (!(load_stored_impulse(scalar_work.pair_a) > 0.0f))
-	{
-		float candidate_b = error_b * normal_axes[-1].m128_f32[3];
-		if (candidate_b <= 0.0f)
-		{
-			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
-			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
-				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
-				first_linear_axis, result, scalar_work.fallback_scalar);
-
-		}
-		else
-		{
-			apply_second_pair_fallback(candidate_b,
-				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, linear_b_pointer, angular_b_pointer,
-				b.body->inverse_inertia, normal_axes[-2], result + 1, scalar_work.fallback_scalar);
-
-		}
-
-	}
-	else
+	if (load_stored_impulse(scalar_work.pair_a) > 0.0f)
 	{
 		if (load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
 		{
@@ -793,6 +773,26 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
 				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
 				first_linear_axis, result, scalar_work.fallback_scalar);
+
+		}
+
+	}
+	else
+	{
+		float candidate_b = error_b * normal_axes[-1].m128_f32[3];
+		if (candidate_b <= 0.0f)
+		{
+			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
+			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
+				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
+				first_linear_axis, result, scalar_work.fallback_scalar);
+
+		}
+		else
+		{
+			apply_second_pair_fallback(candidate_b,
+				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, linear_b_pointer, angular_b_pointer,
+				b.body->inverse_inertia, normal_axes[-2], result + 1, scalar_work.fallback_scalar);
 
 		}
 
@@ -939,9 +939,11 @@ static __forceinline void solve_linear_error_cursor_31c940(float target,float ma
 	solver_step_31c940 *parameters=step;
 	float impulse=mass*(target*parameters->error_scale-projection_pool.linear_error*parameters->velocity_scale);
 
+	// A inertia precedes the rounded input; B inertia is read afterward.
+	work[3]=a->inverse_inertia;
 	simd_scratch=impulse;
 	work[1]=_mm_load_ss(&simd_scratch);
-	work[3]=a->inverse_inertia;
+
 	work[0]=_mm_shuffle_ps(work[1],work[1],0);
 	work[0]=_mm_mul_ps(work[0],work[3]);
 	work[3]=*inverse_b;
@@ -1279,7 +1281,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1958. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1955. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.

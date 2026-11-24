@@ -532,3 +532,38 @@ def test_spin_first_projection_precedes_linear_home(solver_images,precision):
             assert snapshot[1]==1
             snapshots.append((snapshot,projection))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_linear_error_a_inertia_precedes_scalar_copy(solver_images,precision):
+    frame=STACK+32768-0xd0
+    # A inertia W overlaps the rounded SIMD input at frame+0x1c.
+    # Retail reads inertia before writing that input. With the old zero W,
+    # A angular W must preserve the retained B pointer at frame+0x0c.
+    body_a=frame-0x20
+    body_b=HEAP+0x80
+    for rounding in range(4):
+        data=solver_case(13,0)
+        put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,body_b)
+        put(data,OPS+24,'2I',13|(4<<8)|(3<<16),0x400)
+        put(data,TERMS,'12f',0,0,0,1,0,0,0,1,0,0,0,0)
+        put(data,HEAP,'B',3)
+        put(data,body_b+0x10,'4f',0,0,0,0)
+        put(data,body_b+0x20,'4f',0,0,0,0)
+        put(data,body_b+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'f',0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in ((retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))):
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*16)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            b_home=words(machine,frame+0xc,1)
+            assert b_home==(body_b,),('retail'if machine is retail else'compiled',precision,rounding,b_home)
+            assert words(machine,IMPULSES,1)==(0x3f800000,)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,b_home))
+        assert snapshots[0]==snapshots[1]
