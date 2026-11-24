@@ -2365,6 +2365,10 @@ bool function_1900a5(long index);
 // unavailable reset before promotion 658 or vacancy 658, team-first eligibility 646,
 // nested vacancy 643, available vacancy first 649. NOT kept: the equal scores leave the
 // cursor at properties and the other forms raise the score.
+// Valid record pointer as a conditional or guarded assignment 759/759, cleared after
+// binding 726, and chosen from a bound record 765. Valid identity pointer 758/758,
+// valid properties pointer 749, and bound record with identity gate 758.
+// NOT kept: the record result at retail length still changes the cursor and scores 726.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

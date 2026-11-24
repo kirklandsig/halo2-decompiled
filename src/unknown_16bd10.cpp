@@ -1533,6 +1533,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Mixed length-product operands, direction first on i, j, i/j, k, i/k or j/k,
 // and indexed j or i/k, all 397. NOT kept: j preloads but the length and zero
 // remain in exchanged registers, the normal rotates and the body grows.
+// Use the normal assignment result as the left/right input to the offset dot 126/394 or length dot 134/399.
+// Initializing the length at its calculation gives the same scores. Length first preloads j into XMM0.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

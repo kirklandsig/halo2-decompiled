@@ -932,6 +932,13 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // 14/18); every pair written descending (case 10 height first, 14/18 [4][c][8], 15/19 [c][8][0]) 8 (each block then in
 // source order). The pairs keep source order (case 20 always [c][8]) unless the 12/13 and 14/18 zeros are both
 // ascending, when cases 10, 12/13 and 14/18 all come out descending (15/19 keeps its order).
+// M3 lane 1 r166 (h2m fast with 0x19be0/0x19ca0, both MATCH each time): the sizes in a local transform (forward.i
+// width, left.j height, every other member zero) read by the cases in the matched sibling 0x1b790's switch layout 6
+// (all three pairs flip); width and height in a point2f 2 (same code); textual case orders: all descending 104 (688 B),
+// 13 above 12 2 (same code), 13/12 first 39, 14/18/15/19 first 60, 20 first 54; case 13 falling into case 12 with
+// 14/18 and 15/19 as combined labels at retail's block positions: 12's zeros ascending (chain or two statements) 6,
+// with only 14/18 combined 6, the labels in case order 34, 12's zeros descending 2 (same code). So the flip is not a
+// count of blocks ending in the pair: it fires whenever the 12/13 zero pair has the order of 14/18's last two zeros.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
