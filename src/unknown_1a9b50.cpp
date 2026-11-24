@@ -987,6 +987,10 @@ extern point2f *g_468778;
 // so the pointer takes ESI; the pointer's 176 counts six values in the facing-dot block and in the 0.8 arm's copy
 // (the copied dwords are values because the planar copies read them later); with the planar copies member by member
 // the actor (154) and the slot (146) go first and the pointer takes EDI as retail, but the copies then cost bytes.
+// The 0x40 frame and settings home agree. The optional prop still spills into the input slot.
+// Native prop datum/node lookup 389/389, one prop-index read 395/395, null in the absent arm 370/370,
+// conditional distance limit 395/395. NOT kept: retail zeros EBX before the presence test. The absent-arm
+// forms move the zero and leave the spill. The typed receivers alone tie.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1607,6 +1611,10 @@ static __forceinline long real_to_long(real value);
 // (an always-true test in front of the getter site): `else if (!field_18 && local_1)` on the computed result 489
 // (1904 B, 0x25d740 a call, object-speed root a call), with `&& local_0` too 490. Re-measured: result preset false 495,
 // rejection written first 382, computed result 508, that with magnitude3d 508 (both expanded), magnitude3d alone 468.
+// Checked prop index or missing arm first 382/496; assign the prop in every
+// branch or handle no metadata first 415/415; checked index with read-only metadata
+// 382. Usable prop index selected first, missing index arm first, or exhaustive pointer
+// assignment from the selected index 382/496/473. NOT kept: the tying forms still send rejection to the late exit.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

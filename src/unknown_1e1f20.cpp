@@ -1161,6 +1161,11 @@ void swarm_leader_detach(long actor_index);
 // for the type read with the argument formed again 4 (same code); a short type local with the handler table read at the
 // test and at the call 297 (996 B); a NULL slot pointer set under `slot_index < 4` in the call's block 281 (964 B). On
 // main's body: `actor != other` alone 58 (one point). Body unchanged (59).
+// With the false-then-set definition Boolean and actor-first compare, slot type through a member
+// pointer 4/4, header view 4/4, or fixed-size copy 297/297 with stop-member/guard forms.
+// Direct type with stop member pointer 4, and const slot record with guard declaration 4.
+// NOT kept: the six 980-byte forms still form the slot address before the handler test.
+// The fixed-size copies grow the frame to 0x24 and keep the early address.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

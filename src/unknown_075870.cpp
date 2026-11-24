@@ -1461,6 +1461,14 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // it 18, all three flags as locals 35; on L the refresh read ahead of the product with a wanted local 34, with three
 // flag locals 51; the tail as a call to 0x79600 marked `inline` 258 (948 B), with 0x78190 also `inline` 382 (902 B):
 // LTCG does not expand either here.
+// M3 lane 1 r164 (h2m fast with 0x78190 and 0x79600; on lane 12's form L, 18 with retail's clamp): on L only two
+// register picks differ, and neither is a ranking: the rate test's result and the refresh word each take EAX, the
+// first free register, where retail has EDX (nothing interfering wants EAX); with both picked as EDX L is byte for byte
+// retail's, with only the result 8. Forms on L: the wanted flag in a local right before the test call 18 (same code,
+// forward substituted; a repeat); `bool limited = false;` then assigned the test 18 (same code); the frame rate
+// passed straight into the test 18 (same code); the burst stored before the result 19; the test's first condition as
+// the result's initialiser in the shared helper 44 (0x78190 28); the clamp after the test 59. Diagnostic (held form):
+// 0x78190 marked `inline` and called on L 24 (0x79600 then 133), with the same EAX picks in the tail.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {

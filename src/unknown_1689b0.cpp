@@ -1458,6 +1458,16 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // 27 (retail's preheader load and reload, but loaded ahead of the count guard and in EAX, the count in EDX); that inside
 // an explicit `if (0 < count)` guard 24 (retail's layout, scratch registers rotated: tick EAX, element pointer ECX,
 // index EDX against retail's EDX/EAX/EAX); that with the dword world mask 218 (898 bytes).
+// M3 lane 1 r164 (h2m fast over this file's markers, 23): with the dword mask (41) the allocator ranks the mask above
+// the BSP pointer, 44 vs 22 (the mask's three references in the entry block weigh 48 there), so the mask takes EDI
+// (already saved) first; with the mask ranked below the pointer the function reads 19, only the tick rows left. The
+// tick's value is one allocator candidate from the increment ahead of the cluster loop through the whole cluster
+// loop (live, unreferenced, in every object-loop block), so it ranks far below zero and is read at each use; a
+// callee writing the tick, or an opaque store ahead of the instance loop (diagnostics, reverted), leave it so.
+// Forms: the instance as a short with the table indexed directly 64; the dword mask with the query tested in the
+// condition (no found local) 41; the first test on `flags & 1` with the dword mask declared in the block 41 (same
+// code); the instance's mark through a `long &` to the table entry 57; the cluster mark test as a `!=` block around
+// the instance and object parts 23 (same code).
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)
@@ -2333,6 +2343,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 99); as `dot3f(point, &plane normal) - d` 584 (masked 116); without the tally order 584 (110), without the early reset
 // 585 (114), with the square ahead of the loop 585 (116), with the ray arm first 617 (2904 B, masked 191). Frame 0xb968
 // in every one.
+// Initial-radius local for the clearance seeds, with query, square, both,
+// reverse ray, query and ray, square and ray, or all three
+// 562/562/560/560/560/560/558/558. NOT kept: all grow to 2889 bytes;
+// the tally homes and pre-branch square remain.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

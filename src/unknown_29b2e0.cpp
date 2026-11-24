@@ -902,6 +902,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // move, one pitch field read moves from level 0 to 6); both turn clamps' lower bounds named 292 (1706 B, frame 0x28); the
 // shared lower bound of the first two clamps named 295 (1706 B, frame 0x28); the turn limit field read once into a local
 // for both limits 291 (1706 B, frame 0x28); the shared limit computed ahead of the pitch difference 167. Body unchanged.
+// The planar J and full-depth stores still exchange order. Fixed-size copies for the full snapshot 130,
+// planar snapshot 346, failed restore 130, both snapshots 346, full snapshot and restore 130, both full
+// inputs 130, full snapshot plus restore and turned input 130, and all four facing transfers 346. The planar
+// copy moves the first difference earlier.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

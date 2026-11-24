@@ -2371,6 +2371,11 @@ void function_1f86a0(long actor_index);
 // ahead of the actor lookup (they come from the parameter) 126; the decline decided by `bool decline;` set in an if/else
 // on unknown86 123 (same code); the decline arm ending in `continue` with the accept test as its own `if` 123 (same
 // code). Body unchanged.
+// P657: Typed slot-data member 148; one selection guard around root rejection/admission 237/260;
+// three-way agreement with a default or exhaustive tests 263/252; agreement-first rejection/admission
+// 256/252; named selection requirement 248; rejection set by the three tests 240; entry name 123.
+// NOT kept: all keep frame 0x10; the three-way result frees the mask but the full flags byte takes BL.
+// The opening loop still spills the entry in place of the mask, and the actor index arrives in ECX.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
