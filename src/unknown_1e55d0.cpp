@@ -454,6 +454,16 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // the shape from the input 312 (1172 B), every shape test reading it 344 (1192 B); the capsule placement-constructed
 // and never destroyed (diagnostic) 325 with the same four losses; with the 0xdc370 diagnostic 307 (losses unchanged).
 // Body unchanged; BLOCKED-BY 0x1ec690 and 0xdc370's placement.
+// M3 lane 8 r235 (H2M_FAST with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH; control 319). Why the
+// 0x1ec690 draft loses four matches (diagnostics on the draft, restored): with it on, this body's tail holds the object
+// index in EBX and the velocity address in ESI at the 0xb7740 / 0x1c4b00 calls (main and retail the other way), and
+// 0x1c4b00's linear register argument follows that caller. The draft without its sphere-selection block keeps all four
+// (this body 348: move pointer in retail's EBX, but the input in EAX and the state still in ESI); the block reduced to
+// a loop computing the clamped radius from a hoisted margin still loses them, the loop with only the subtraction or only
+// the clamp keeps them, an empty real body keeps them (305 at 1164 B). Forms: the component through the pool data bound
+// to a const reference (data loaded before the mask, as retail) 318; on it the input's shape field bound to a
+// `c_z_shape_view *const &` 326 (1188 B), the body's current shape so bound 319, both 331 (1192 B), the tail's object
+// index read through the physics parameter 318, the countdown byte bound to a `byte &` 318.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

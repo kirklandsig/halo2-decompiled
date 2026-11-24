@@ -1265,6 +1265,11 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // from object_get() 293 (825 B, aligned 74); the header through slot_handler.h's object_header_get 170; final_matrices
 // read once through the parameter's own address 170, with the object_get() local 293 (same code each: the entry roles stay
 // object_index EDX / parameter ESI). Body unchanged.
+// M3 lane 6 r241 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): `sample`
+// as a long 253 (830 B); the three early exits returning input_matrices with `result` declared after the early tests 240
+// (830 B, other code); the node loop's counter declared ahead of the loop 240, the final test with explicit `!= NULL` and
+// `!= 0` 240 (same code each). Forcing single allocator decisions (24) never matches (best 239); leaving `object` out of the
+// registers gives retail's 0x4c frame but 259. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

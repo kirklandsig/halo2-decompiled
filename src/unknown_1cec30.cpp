@@ -3208,6 +3208,19 @@ struct s_1cf531
 // splat written into the subtraction 37 (905 B, the speed load sinks too). Lead: retail's 0x30 group is one register
 // value with four references (copy spill, reload, corrected spill, folded reload) plus a block-local final; nothing
 // found keeps the subtraction ahead of the scale call without an address-taken operand.
+// M3 lane 14 r153 (fast screen, 2): the impulse bound as `hkVector4 &impulse = local_13` and corrected in place through
+// it, with a separate final vector passed to the call: 89 (905 B; the subtraction stays ahead of the scale call and the
+// final product folds the 0x30 reload as retail, but the final takes a new slot); that final in an inner block 90 (the
+// copy is then forwarded from local_7, frame 0x44); that with the direction normalized in place in local_7 (no local_18)
+// 7 (905 B: copy, corrected and the folded reload all at 0x30; left: the copy store sits after `push ebx` where retail
+// stores it before the vtable load, and the block-local final takes 0x40, retail 0x30); the same without the reference
+// 61 (the subtraction sinks past the scale call). On the 7 form: the final in local_13 itself through the reference,
+// passed to the call, 23 (908 B: the copy store moves to retail's place, the reload is no longer folded); the final
+// initialised from the impulse, the reference declared at the copy, the final as a splat then an in-place product, the
+// final passed through a const reference: 7 each (same code); the copy in a block ending at the subtraction with the
+// corrected value an `__m128` declared outside it 61, without the reference 61. Reading: the final (2 references) is
+// packed after the rsqrt temporary (3) and joins that temporary's 0x40 slot; the copy store keeps retail's place only
+// when the copy's address reaches a call, and the fold only when it does not.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
