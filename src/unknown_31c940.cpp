@@ -2237,8 +2237,10 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				do
 				{
 					*(float *)destination = *result;
+					// Retain stride after the impulse, before the error can replace it.
+					long output_stride = state.writing.stride;
 					*(float *)(destination + 4) = terms[0].m128_f32[3] * *inverse_time_pointer;
-					destination += state.writing.stride;
+					destination += output_stride;
 					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 					++result; op += op[1];
 				} while (*(signed char *)op == state.writing.kind);
@@ -2251,8 +2253,10 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				do
 				{
 					*(float *)destination = *result;
+					// Capture between the two outputs, including overlapping stack homes.
+					long output_stride = state.writing.stride;
 					*(float *)(destination + 4) = terms[1].m128_f32[3] * *inverse_time_pointer;
-					destination += state.writing.stride;
+					destination += output_stride;
 					terms = (__m128 *)((s_angular_cursor_31c520 *)terms)->offset(1);
 					++result; op += op[1];
 				} while (*(signed char *)op == state.writing.kind);

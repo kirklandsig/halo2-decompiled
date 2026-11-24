@@ -1905,3 +1905,60 @@ def test_iteration_scales_are_captured_before_saved_error_publication(
             else:
                 assert snapshots[rounding] == (snapshot, calls), (precision, rounding, aliased)
         print(label, 'saved-scale capture 4RM', hex(precision), aliased, scale_words, flush=True)
+
+
+@pytest.mark.parametrize('kind', [2, 4, 5, 6, 9, 10, 11, 12, 13])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('overwrite', ['error', 'impulse'])
+def test_single_writeback_captures_stride_between_outputs(
+        solver_images, kind, precision, overwrite):
+    from test_solver_dispatch import OP_LAYOUT
+
+    # Retail reads stride after publishing the impulse, before publishing the
+    # residual error. Either output can overlap its physical stack home.
+    frame = STACK + 32768 - 0xd0
+    retail, compiled, symbols = solver_images
+    for rounding in range(4):
+        for new_stride in (16, 32):
+            data = solver_case(kind, 2)
+            put(data, STEP, '7fi', 0, 0, 0, 0, 1, 0, 0, 0)
+            size, row_kind = OP_LAYOUT[kind]
+            linear = kind in (2, 5, 6, 11, 13)
+            row_size, coefficient = (48, 12) if linear else (32, 28)
+            destination = frame + (0x20 if overwrite == 'error' else 0x24)
+            put(data, OPS + 8, 'I', destination)
+            put(data, OPS + 20, 'I', 8)
+            for row in range(2):
+                put(data, OPS + 24 + row * size, 'I',
+                    kind | size << 8 | row_kind << 16)
+            put(data, OPS + 24 + 2 * size, 'I', 0x400)
+            put(data, TERMS + coefficient, 'I',
+                new_stride if overwrite == 'error' else kind)
+            put(data, TERMS + row_size + coefficient, 'f', 1)
+            put(data, IMPULSES, '2I',
+                0x11223344 if overwrite == 'error' else new_stride, kind)
+
+            expected = bytearray(0x38)
+            struct.pack_into('<I', expected, 4, new_stride)
+            if overwrite == 'error':
+                struct.pack_into('<I', expected, 0, 0x11223344)
+                struct.pack_into('<I', expected, 12, 0x3f800000)
+            else:
+                struct.pack_into('<2I', expected, 4 + new_stride,
+                                 kind, 0x3f800000)
+            # The sentinel publishes kind zero after both output records.
+            struct.pack_into('<I', expected, 8, 0)
+
+            for label, machine, entry, gate in (
+                    ('retail', retail, 0x31c940, 0x480c60),
+                    ('compiled', compiled,
+                     address(symbols, 'solve_operations_31c940'),
+                     address(symbols, 'g_480c60'))):
+                machine.mem_write(frame + 12, b'\0' * 176)
+                machine.mem_write(gate, b'\x01')
+                snapshot = execute(machine, entry, data,
+                                   [STEP, OPS, HEAP, IMPULSES],
+                                   precision=precision | (rounding << 10))
+                context = label, kind, precision, rounding, overwrite, new_stride
+                assert snapshot == (bytes(data), 1), context
+                assert bytes(machine.mem_read(frame + 0x20, len(expected))) == expected, context
