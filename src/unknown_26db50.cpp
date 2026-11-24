@@ -1271,11 +1271,6 @@ struct s_record_collision_view
 // `0.5f * g_4687b0->n[component]` 26; the endpoint as `origin->x + direction.i * trace_distance` 26 (all the same code: the
 // dot order follows statement order, not operand order); the rotation's axis through a named `vector3f const *` local 42; the
 // direction copied member by member through a `vector3f const *` source local 232 (1081 B). All restored.
-// M3 lane 16 r183 (h2m fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26): the 0.1 offset rows through
-// `n[0..2]` indices 26 (same code); the pathfinding selection between the sine/cosine and the rotation call 144 (1095 B);
-// the trace result declared at the top of the spoke body 26; `point` declared there 26 (same code each); an early `return
-// result;` after a NONE first lookup in place of the enclosing test 250 (1089 B); re-measured: the lift counter as a
-// short 176 (1094 B). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
