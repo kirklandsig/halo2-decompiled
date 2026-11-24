@@ -2270,6 +2270,29 @@ bool function_17afd0(long effect_index, long value);
 // (504 B); the else arm as `draw = !view_pass && !(attached && mode == 2)` on P 124 (505 B), on this body 88 (501 B);
 // `bool same_view = owner != NONE && g == owner;` ahead of the availability, cleared by `if (!available)` 147 (473 B), or
 // in the availability's else arm 147 (473 B). All restored.
+// M3 lane 4 r257 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction, 138 at 510 B).
+// Measured ranking on P (the allocator colours by weight, heaviest first, ties to the value created later): the view
+// 28, same_view 24, availability 22, owner 22, effect index 18. same_view takes EBX ahead of the availability, and the
+// owner takes EDI ahead of the effect index, which is then left EBP. Diagnostic (forced ranking, not source): P with
+// same_view ranked below the availability and the owner below the effect index is retail byte for byte, so P is
+// retail's source shape and exactly two rank pairs differ: same_view needs 4 less (or the availability 4 more) and
+// the effect index 6 more than the owner (one more reference to it, or one more value referenced in the block that
+// loads and tests it). Forms that give the first pair naturally, 121 at 502 B each (same_view's two store blocks
+// retail's, availability BL, only NONE EBX / pool data EBP / owner EDI / effect index EBP left; forcing the owner
+// below the effect index on them matches): attached as `available ? effect_index != NONE && call : false`; as an
+// if/else on `available` with a false else arm, either arm first; as `bool attached = available; if (attached)
+// attached = effect_index != NONE && call;`. On the conditional-expression form: the owner NONE-defaulted then set
+// 122 (500 B), the owner as one conditional expression 121, the owner's arms swapped under `== NONE` 125, the
+// effect index read after the second definition call 123. On P: attached false by default and set by one `if` 146
+// (518 B); attached as an if/else of constants 138; the availability as nested ifs 138; the camera flag declared
+// ahead of same_view 138; same_view as an if/else of constants 138; the camera flag declared ahead of the draw
+// compare 138; attached with its last two terms in parentheses 138; attached as nested conditional expressions 129
+// (505 B), as `available && effect_index != NONE ? call : false` 129, as nested ifs under a false default 125
+// (503 B), as `(available ? effect_index != NONE : false) && call` 149 (507 B). Lane 8 r135's both-arms form
+// re-measured 17 at 498 B with either arm first: its second copy of the effect test and call is what lifts the
+// effect index above the owner there; its tail stays in the true arm where retail's sits after the false arm. On P,
+// attached as `(same_view || available) && effect_index != NONE && call` 125 (504 B), on this body 12 (same code);
+// attached as `same_view ? effect test and call : available && effect test and call` on P 91 (500 B). Restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

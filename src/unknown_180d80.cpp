@@ -409,6 +409,26 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // in up, left, forward order 280 and in forward, up, left order 280 (2666 B each); this x row with the y and z rows term
 // by term in up, left, forward order 140 (2683 B). The count sum and the vertex counter renamed to sort either way
 // round 91/91/91 (same code: the slot pair ignores names).
+// M3 lane 7 r224 (fast screen with 0x180b60 MATCH each run; control 91, aligned 61, register-masked 26). The transform
+// rows do flip: a redundant parenthesis pair shifts the operand order of every product written after it by one step,
+// each row is right at one step of four, and the pairs in the caller count ahead of all four inlined copies. One pair
+// on a single helper product 289-295 (2659-2667 B); one, two, three pairs in the vertex loop's three distance terms
+// 289/282/288 (the x row is retail's with three); three there plus one on the x row's forward product, or on the x
+// row's stored sum, 75 at 2683 B (x and z rows exact in all four copies); plus both 287 (y row exact, z row off); plus
+// the y row's left product, the y row's stored sum and the z row's forward product (eight pairs: 3 ahead, 2 between
+// x and y, 3 between y and z) 52 at 2683 B, all four copies byte for byte; a doubled or tripled pair in one place
+// counts the same (52). On the 52 form: luminance spelled red, blue, green 50; the vertex loop under its own test
+// (lane 8 r195's form) 50; both 48 (aligned 28, masked 10); the short count-loop index 63 (first difference +0x9f:
+// entry and count loop exact, the three centre sums turn, the 0x13d370 and 0x17cfa0 setups rotate), with the other
+// two 59 (aligned 43, masked 14). On that 59 form: pairs round the centre sums in eleven placements 59 (the sums
+// never turn; such a pair counts like a caller pair, and four or five ahead of the helper 301-306); the sums spelled
+// lower field first 59 (same code), as three assignments then three adds 617, assign-add per component 306. Without
+// pairs on the short index: one to seven unused locals (diagnostic) 173-221, sums unturned (their operands keep one
+// rank pair at every symbol count, another with the long index); a named strip-count local for the guard and count
+// loop 173, also for the strip loop 656, read just before the count loop 173; the same three on the 48 form
+// 137/653/137. None kept: the pairs and the loop test are match-only forms. Left on the 48 form: the entry guard
+// (retail loads the strip record into EAX ahead of the saves), the count loop's 16-bit test, the count-sum and
+// vertex-counter slot pair, and the 0x13d370 argument's register; the short index gives the first two.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

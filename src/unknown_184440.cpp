@@ -568,6 +568,26 @@ __forceinline bool function_184448(long arg_0)
 // material lookup through the existing global_material_get in place of its body written out 978 (head identical, later
 // homes move), with the one-use index folded into the call 978; the edge side as a bool re-measured 981; the two early
 // returns as nested blocks 965 (same code). Body unchanged.
+// M3 lane 7 r224 (fast screen with the callers 0x9cca0/0x184060/0x184250, all MATCH each run; control 965, aligned 938,
+// register-and-slot-masked 454, frame 0x11d4). Lane 11 r131's two saved leads rebuilt: the 952 lead 952 (frame 0x11cc,
+// aligned 888, masked 363) and the structural lead 975 (4573 B, frame 0x11c4, aligned 803, masked 252). Lane 16 r176's
+// diagnostic (the two 0x48e70 calls sent to a same-file copy declared `__declspec(noinline) inline`, which gives
+// retail's reloads after each call) had only been measured on this body (1014, re-measured, aligned 929); on the
+// leads: 952 lead 1033 (4651 B, frame back to 0x11d4, aligned 803, masked 346), structural lead 977 (4602 B, frame
+// 0x11c4, aligned 756, masked 247). New forms read from retail's sample loop: (A) the two random cell offsets named
+// ahead of the two scaled sums (retail stores each to a float home, 0x120/0x124, and adds it with addss to a
+// cvtsi2ss of the column and to the row's hoisted float; ours folds the sum into the x87 chain with fiadd): on this
+// body 1012 (4559 B, frame 0x11cc as retail, aligned 973, masked 432); (C) the zero-velocity copy and the force
+// record lookup ahead of the sample normalize (lane 10 r106's order) re-measured 981 (aligned 992, masked 430); both
+// 1014 (4556 B, frame 0x11cc, masked 415). On the structural lead with the diagnostic: A 840 (4572 B, aligned 666,
+// masked 244), C 969 (4603 B, aligned 756, masked 220), A and C 822 at retail's 4590 B and retail's 994 instructions
+// (aligned 648, masked 221; frame 0x11c4, so two dword homes are still missing: retail's slot run ends at +0x12c with
+// +0xf4 and +0x104 never referenced); the structural lead with A and C but without the diagnostic 1004 (4516 B, frame
+// 0x11bc). None kept: every one is a match-only form (one-use locals, moved declarations) and the 822 needs `inline`
+// on 0x48e70's definition, which is another machine's file and a held form. Left on the 822 form: the start face's
+// group read (retail forms the element address with a lea and reads +6 through it), the worklist cursor zeroed ahead
+// of the six bounds stores, the per-face bounds constants loaded at the face-loop top, and the product order in the
+// plane transform. Body unchanged; still BLOCKED-BY 0x48e70.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
