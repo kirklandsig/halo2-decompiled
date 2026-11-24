@@ -3602,6 +3602,18 @@ struct s_ammo_conversion_entry
 // More tail forms on the 51 form (H2M_FAST): the sound picked by if/else 51, both NONE compares written constant first 51
 // (same phase each), the other's definition re-derived through the pool for the sound 110 (747 B), `retained` as false
 // plus an if 136 (741 B).
+// M3 lane 11 r164 (H2M_FAST with 0xa88a0, 0x1896c0, both MATCH; round 157's 51 lead rebuilt, 51). Reading on the lead:
+// the loop's ECX/EDX pair is a colouring order: the `i * 16` magazine offset (priority 166) is coloured before `source`
+// (156) and takes ECX first; retail's pair follows when `source` outranks it. `source` loses 96 for being live but
+// unreferenced across the conversion scan (16 blocks); the offset gains 128 in the loop head (eight candidates
+// referenced there). With the offset forced into EDX (a diagnostic, not source) the lead measures 14, the loop exact and
+// only the tail's scratch phase left (from the 0xa88a0 argument setup on the cursor starts one register later than
+// retail's). Tried on the lead: `source` set to NULL in the conversion arm after the scan (not at its declaration) 162;
+// set to NULL at the start of the conversion arm 173 (732 B); the other definition's type byte read once into a local
+// (with the forced offset) 130 (an extra frame cell); the magazine definition pointer formed only in the conversion arm,
+// the loop head reading the field through the definition, 208 (713 B); the same-definition sum read through `source`
+// for both operands (re-measured: it does flip the loop pair) 204 (718 B: the weapon and the other weapon swap
+// EBX/EBP and the loop entry changes).
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3712,10 +3724,13 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 {
     s_weapon_unit *unit = (s_weapon_unit *)function_badc0(unit_index, 3);
-    return unit ? unit->player_index : NONE;
+    long result = NONE;
+    if (unit)
+        result = unit->player_index;
+    return result;
 }
 
-// score 603 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
+// score 593 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
 // where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
 // MiniMax I (11-20): no new form, no lower score (636): the prologue keeps the barrel index in EBX where retail keeps the weapon index, reads the barrel's flag byte into CL where retail tests it in memory, and the definition sits at [esp+0x28] where retail has it at [esp+0x14], so the copy-out loop and the rest of the body differ as well.
 // MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
@@ -4015,6 +4030,18 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // hoists a 16-bit load and reuses it for the `|=`; compile-only, the test as dword/long/word-masked/operands swapped, the
 // `|=` as an assignment or without its cast, and named mask/index/ticks fields in the barrel record: same code each (with
 // no `|=` at all, diagnostic, the hoist becomes retail's movzx and the bit goes to EBX as retail). Body unchanged.
+// M3 lane 11 r164 (H2M_FAST with 0x101db0, 0x159dd0, 0x101b10, 0x101b80, all MATCH; control 603). Behaviour fix: the
+// marker-name call passed the weapon and barrel indices to 0x101b10 the other way round; retail sets up ECX = the barrel
+// index and EDX = the weapon index there, the definition's order, as the matched 0x101b80 does (603, same count). Kept
+// (593 at retail's 2533 B): the marker count as a `long` (retail sign-extends 0xb8d30's short result once and compares
+// and divides the dword) 599 alone; with the second event call's trigger as `barrel_index ? 2 : 1` (retail computes
+// `setne; inc` again there; ours kept the first call's `barrel_index != 0` in a stack cell) 596; with the first call's
+// arguments as selects too 596; with the player-index helper as a single-exit result preset to NONE (retail's `or ecx,
+// -1` there) 593 (both calls written as selects, so one spelling). Measured without parts: without the long count 597,
+// without the second call's select 598; the effect target as a select in the 0xd03e0 call on the kept set 594, on the set
+// without the long count 596. Reading (frame and colouring traces): ours has 17 dword cells against retail's 16, and
+// the weapon index (a parameter) is never coloured (live across 93 unreferenced blocks to the tail's marker calls), where
+// retail holds it in EBX from the entry to the fire call; no single forced allocator decision reaches retail.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4126,7 +4153,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
         barrel->value06 += (short)(burst + 1);
         ++WEAPON_BYTE_AT(barrel, 0x2e);
         WEAPON_LONG_AT(weapon, 0x248) = g_510c54->game_time;
-        function_105fa0(weapon_index, failure ? (barrel_index != 0) + 3 : (barrel_index != 0) + 1);
+        function_105fa0(weapon_index, failure ? (barrel_index ? 4 : 3) : (barrel_index ? 2 : 1));
         s_weapon *updated = WEAPON_GET(weapon_index);
         s_weapon_barrel_definition *updated_definition = &WEAPON_DEFINITION(updated)->barrels[barrel_index];
         if (updated_definition->value_9c > 0.0f && !TEST_FIELD_BIT(updated_definition->flag4))
@@ -4150,7 +4177,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             WEAPON_REAL_AT(weapon, 0x180) = 1.0f;
         if (!TEST_FIELD_BIT(definition->flag26))
             function_101db0(weapon_index, barrel_definition->value_a8);
-        function_1058b0(weapon_index, (barrel_index != 0) + 1, false);
+        function_1058b0(weapon_index, barrel_index ? 2 : 1, false);
         if (!failure)
         {
             barrel->flag1 = true;
@@ -4188,9 +4215,9 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
     if (WEAPON_BIT_AT(barrel_definition, 0, 12))
     {
         s_object_marker markers[64];
-        long marker_name = function_101b10(weapon_index, barrel_index);
+        long marker_name = function_101b10(barrel_index, weapon_index);
         long owner_index = function_101ec0(weapon_index);
-        short count = function_b8d30(owner_index, marker_name, markers, 64, false);
+        long count = function_b8d30(owner_index, marker_name, markers, 64, false);
         if (count >= 1)
         {
             long selected = WEAPON_BYTE_AT(barrel, 0x2e) % count;
@@ -4549,6 +4576,16 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // state-change tag and the cooling rate: `increasing ? WEAPON_LONG_AT(definition, 0x248) : WEAPON_LONG_AT(definition,
 // 0x250)` 1412 (aligned 1447, masked 1153; retail's shape), the rate the same way 1417, both 1416 (aligned 1443, masked
 // 1146). Body unchanged.
+// M3 lane 11 r164 (H2M_FAST with 0x105e80; control 1412). Reading of the frame: it is under 0x80 bytes, so its cells keep
+// the order they were made in (reference count, then the order each reached its count), and the dead argument home is
+// tried first: our barrel-loop `active` byte takes the weapon index's argument home (ours holds the index in a register
+// through the barrel loop, so its home is dead there); retail reads the index from its home in that loop and gives
+// `active` the byte cell it shares with `up`. Retail's frame also has a byte result, a byte for behaviour 4's control
+// bit and a cell for the heat byte's old value that ours does not, so the 0x34/0x38 gap is several cells, not one.
+// Tried: the player default stored after the scale override (retail's NONE store follows the override's test) 1437;
+// the heat byte's sum written `old + increment` 1412; the old value and the increment declared the other way round
+// 1412; the tick clamp as an if before the store 1412; the 0x194 validity test as nested ifs 1412 (the 1412s the same
+// code).
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

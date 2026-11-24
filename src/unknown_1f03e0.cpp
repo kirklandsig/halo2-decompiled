@@ -755,6 +755,32 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
 // `0.0f == function_30bf0(&axis)` 236; the acceptance test as `0.0f < shape_dot(cross, axis)` 235 (same code); both
 // forward tests as `0.0f == function_30bf0(&forward)` 238 (1240 B); all four 239 (1240 B); the inactive arm's `0.0f ==
 // function_30bf0(forward_result)` 235 (1241 B). Body unchanged.
+// M3 lane 2 r145 (H2M_FAST with 0x1e5af0/0x30bf0, both MATCH in every run; control 235, aligned 132, 38 with registers
+// masked; body unchanged). Retail's rotation block read instruction by instruction: it forms the cross's j and k terms
+// right after the dot, then row i with the cross's i term computed inside it (limited.j loaded again, times axis.k from
+// memory), then rows j and k, and stores k, i, j; row i's first product copies the dot and multiplies by axis.i, row j
+// multiplies axis.j in place by the dot and row k loads axis.k again. LEAD, not kept (the cross helper's j and k terms
+// written out as two named reals with the i term in its row; build/r145/lead-1f1460-inplace-170.patch): with the dot as
+// the bare sum `axis.i * limited.i + axis.j * limited.j + axis.k * limited.k` (the compiler reverses it to retail's
+// (k + j) + i and copies limited's components as retail does) 170 at 1235 B (aligned 122, masked 28), sine and cosine in
+// retail's cells, the dot's three products and rows j and k retail's instructions; with rows j and k grouped
+// `(axis.j * dot + limited.j * cosine) - cross_j * sine` 166 at 1231 B (lead-1f1460-inplace-166.patch). On that form:
+// the dot limited-first 175, through dot3f either way 175, through shape_dot either way 173, parenthesized (k + j) + i
+// limited-first 237 or axis-first 237, bare k, j, i 239; row i's products spelled either way (four forms) the same
+// code; row i's terms reordered 170 (same code) or 237/239 (three orders); rows j and k's terms reordered 229, 285, 281,
+// 227, or all three rows `limited * cosine` first 281; the two cross terms declared ahead of the dot 238; the factor
+// `1.0f - cosine` in a named real 170 (same code); row i's result in a named real stored after rows j and k 235; one
+// `dot` real declared ahead of axis for both dots 282 (1259 B), the rotation's alone 170 (same code); `limited`
+// declared ahead of axis 175/170 (same code as its base); the block as a file-local inline taking (vector, axis, sine,
+// cosine) with three dot spellings 271 each (1250 B). With the cross helper kept: rows i, j, k 233, with dot3f 232, the
+// axis-first grouped dot 232, shape_dot(axis, limited) 234, the bare axis-first dot 234, bare limited-first 232; main's
+// rows with the bare axis-first dot 253 (1248 B). Diagnostics on the lead, removed (unused initialised longs: at the
+// function top 1-7 give 171, 294 at retail's 1229 B, 167, 170, 170, 234, 235; ahead of `limited` or ahead of axis 1-4
+// give 170, 167, 167, 170; redundant parentheses around the angle product 1-3 give 171, 167 at 1231 B, 171; a 64-form
+// grid of four dot forms by those two paddings, best 167): no phase matches. Left on the lead: row i still multiplies
+// axis.i in place by the dot where retail copies the dot, the row-i cross term loads axis.k and multiplies by limited.j
+// from memory where retail loads limited.j, and the allocator still ranks the row-i result first (it takes XMM0 where
+// retail has the row-k result, the dot in XMM1 and the row-i result in XMM4), so up stays in XMM4-6.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -1552,6 +1578,15 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // arm's cross retail loads up.i and up.k and leaves up.j as the memory operand (ours loads only up.i), and its last
 // add-scaled loads up.i where ours copies the scale; 0x1faf80 shows the same up.k tie on its evidenced parameter order
 // (see 0x1197b0's note in src/unknown_118e80.cpp). Body unchanged.
+// M3 lane 2 r145 (H2M_FAST with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 234; body unchanged). Entry block
+// read from the allocator and the scheduler: the damping bit takes EDX only when the direct bit's ECX is already live
+// across it, so retail computes direct ahead of damping (flags declared flying, direct, damping, gravity: 230,
+// re-measured, a declaration order and four points); the gravity store and the input lea tie in the scheduler and fall
+// back to source order, so retail's store-then-lea says the input pointer is set after the flags. With both (input
+// declared last) the entry block is exact to +0x3d, 246: the first scaled product then copies the speed and multiplies
+// by [input] where retail (and main) load [input] and multiply by the speed register, which lifts the speed load two
+// rows early. On that order: the first arm's scale reading `&state->input` 480 (3055 B); the input pointer declared
+// between damping and gravity 262; right after flying 244. No placement gives both the entry order and the product side.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -2068,6 +2103,30 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // against XMM6 written zero-first: `0.0f != contact_normalize(&desired)` 424 (2073 B; the zero test moves after the
 // scale, aligned 213 -> 167), `0.0f > desired.k` 413 (same code), `0.0f == length_sq3f(...)` 448 (2073 B), all three 446
 // (2073 B); the final loop's `*speed < projection` 413 (same code). Body unchanged.
+// M3 lane 2 r145 (H2M_FAST with 0x1f19c0, 0x1f2e60 and 0x1f2a80, all MATCH unless noted; control 413 at 2089 B, aligned
+// 185, 78 with registers masked; body unchanged). Allocator reading: the entry zero is one float candidate live from the
+// entry to the final loop, ranked -100 (27 blocks crossed unreferenced), so it gets no register and is re-formed at each
+// use; retail keeps it in XMM6 to the normalize test. Diagnostics: the final loop's `0.0f - dot` as `-0.0f - dot` 413
+// (same code), as `1.0f - dot` (wrong code) 418, the zero still re-formed. Forms: the one-contact arm's scaled normal
+// named (`vector3f along; vector3f_scale(normal, minimum, &along);` then the three subtractions) 435 at 2109 B, through
+// vector3d_from_points3d 443. A 16-form grid on the named `along` of {`switch (count)` with case 1 first (retail's `dec
+// eax; je; dec eax; jne` chain), the file's bit-3 helper at both settings tests, the stepping bit held in a bool before the
+// final loop (retail's [esp+0x84] byte), `count` without volatile}: 414-575; on the 482 form (all four) the fallback
+// setting `minimum = -1.0f; selected = 0;` ahead of the negation 283 at retail's 2084 B (aligned 80, masked 36; the entry
+// zero then takes XMM6 as retail), the two stores after the negation and ahead of the copy 283, minimum used as the
+// negation's factor 281 (aligned 83), the negation through vector3f_scale(normal, -1.0f, &desired) 481 (2116 B); without
+// the named `along` (that 482 set and fallback order) 438-439 at 2077 B. LEAD, not kept (a switch for an if chain, a
+// one-use bool and a statement order, all match-only; build/r145/lead-1f2250-279.patch): that 283 form with `long count
+// = 0;` declared between the two NONE stores 281 and the first loop reading the contact count in its head 279 (aligned
+// 78, masked 33). Each part dropped from the 279 form: the declaration place 281, volatile count 367, the first loop's
+// local count 281, the bit-3 helper 420, the fallback order 477 (2116 B), the named `along` 423 (2096 B), the stepping
+// bool 375 (2077 B), the switch 548 (2103 B). On 279: the inner loop's candidate computed from the list base per index
+// 472 (2062 B, 0x1f19c0 lost, 103); unused initialised longs at the top (diagnostic) 1-7 give 279, 277, 279, 279, 279,
+// 279, 279. Left on 279: desired.j and desired.k in each other's XMM1/XMM2 from the first loop to the normalize test (the
+// k component ranks first, 72 against 61, from its `< 0` test and `*= 30` blocks; retail colours j first), the
+// normalize's three scalings, the inner loop's candidate pointer (retail keeps it in [esp+0x20] and steps it in EBX), the
+// dot's first product (retail's accumulator holds the j product), the count-2 arm's address forms and cross operand
+// sides, the final loop's height sum (retail loads the request height first) and its projection's first product.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
