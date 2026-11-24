@@ -2352,6 +2352,16 @@ void function_1f86a0(long actor_index);
 // result takes EBX across the second root call and the entry is reloaded from its home after it, the actor stays in EDI
 // and the mask is the only value left without a register; ours gives the root EDI (reloading the actor every pass) and
 // the mask BL. Body unchanged.
+// M3 lane 3 r305 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123). Allocator reading:
+// in the first colouring pass the allocator ranks the mask byte above the loop entry, 88 against 45 (the mask's copy
+// and `and` count three references in the loop's first block, which references eight values, where the entry counts
+// one), so the mask takes EBX and the entry is split into pieces with no register; the flags byte load is a shared
+// value whose 0x40 use is re-read from memory. In the no-mask-local form the shared flags byte and the shared mask
+// rank 56 each against the entry's 45, the flags byte takes EBX and the mask is spilled as retail. Retail needs the
+// entry ranked above both (it would win a tie at 56, being created later). Forms: the entry declared in the `while`
+// condition 123; one element local shared by the loop and the tail 123; the flags read through a `byte const &` for
+// the mask and the 0x40 test 123; the entry as a pointer to const 123 (same code each); re-measured the no-mask form
+// with plain truth tests 244 (868 B). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
