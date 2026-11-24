@@ -2909,6 +2909,10 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // Index EBX and definition ESI still differ from retail's EDI and EBX.
 // Step-to-average or average-to-step velocity 1030/1030; library velocity copies 1030;
 // speed from step or average copy 1037/1038; named speed square 1030; vector setters 1048; speed before copies 1030.
+// Frame 0x114 and index EBX still differ. One live velocity field pointer or
+// reference, formed at entry, before the motion loop or inside it: 1048 each.
+// Loop pointer with iteration-local collision record 1049, with endpoint at its
+// producer 1048. NOT kept: the frame remains 0x114 and each body is shorter.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {

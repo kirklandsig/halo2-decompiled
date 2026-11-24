@@ -945,6 +945,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // scaled side or up contribution 519/525, both 554. Shared i-k-j rotation projection 524,
 // immutable origin copy 518. NOT kept: first-axis definite assignment recovers the success
 // byte home, but shortens the body and leaves the early zero in XMM1.
+// The success byte remains at ESP+0x13. On the outer-origin positive-range form,
+// fallback cross by product then subtraction, axis/direction first and two row orders:
+// 333 each. Component arrays for axis, direction or both 331 each. Single reads
+// of the three axis components 478. NOT kept: the outer-origin form requires a match,
+// and the fallback cross still folds the wrong input into its multiply.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

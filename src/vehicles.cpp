@@ -5172,6 +5172,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // with indexed projection 126, or with the direct final cross 124. Indexed projection
 // with reordered trig names or renamed vector workspaces 115/115; with both and
 // shared negation 126. NOT kept: best gain three. Cross operands and trig homes still differ.
+// Projection input order and trig homes still differ. Indexed subtraction
+// with a rotated up, forward or both row pointers before or after the copy
+// 118/121/121 in each placement. Mixed pointer/reference pairs 121 each.
+// NOT kept: the first difference moves to +0x82 in the j/k dot products.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -7154,6 +7158,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // through the receiver or vehicle 959/978, root and pitch before the receiver 978,
 // named squared input through the receiver or vehicle 959/978. NOT kept: the pitch
 // forms tie or raise the score without recovering the 0xd8 frame or entry registers.
+// Frame 0xfc versus 0xd8 persists. Transpose after current basis, desired
+// selection, driver tilt or bank with in-place product 1052/1086/1051/1041.
+// With separate scoped relative product 1139/1173/1155/1073. NOT kept:
+// the separate product reaches 0xdc but shortens the body and raises the score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

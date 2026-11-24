@@ -2175,6 +2175,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // result 373, nested readiness result 371, admission conditional 172. Scope after the
 // suppression query 357, shared suppression result 378, nonsuppressed overlay result 179,
 // complete optical guard 185. The unit and mode homes still exchange.
+// Unit and mode spill slots remain exchanged. Named blend-weight or blend-rate
+// field pointers, references or mixed pairs 172 in all eight forms. The later
+// weight address still shares the fourth spring slot instead of the unit slot.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
