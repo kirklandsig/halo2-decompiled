@@ -2184,6 +2184,10 @@ real function_30bf0(vector3f *vector);
 // the direction2 negate; the final clamp's compare placed ahead of the previous component's store. With 0xd37f0's body
 // as main has it and the shared rotate reading the axis live this body reads 426 to 497 in all 48 combinations of its
 // own forms without the early square, so the two functions change together or not at all.
+// In round 641, retail turns direction2 in place; the original turn input and helper leave 12 extra frame bytes. Shared negate into
+// direction2 then in-place turn 479; shared axis turn on direction2 475, on the local then publish 485; private turn
+// in place on the local then publish 495. The x-z-y basis dot for the normal 474; early tag-table pointer 395
+// (0x3db00 lost in preview); shared negate in place on direction1 479, shared negate into direction0 471. Body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
