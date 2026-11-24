@@ -883,6 +883,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // component, before the second input component, at the start of the forward copy, before input rotation,
 // after speed root, before speed root, or before the velocity copy: 111/122/118/118/118/278/133/141.
 // NOT kept: the earliest form moves the first difference earlier; the others keep +0x69 and raise the score.
+// Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
+// row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
+// and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -5111,6 +5114,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 116/118/116/118/116/116/118. All with projection scope 118.
 // NOT kept: the 116 forms recover the projection prefix through +0x107 but
 // gain only two. The cross operand allocation and the sine/cosine homes remain.
+// Indexed projection removal with vehicle or shared direct cross at the facing, roll-axis and final-left outputs
+// 129/129, 118/118 and 114/114. Direct shared cross at all three 125. First cross through the facing up field 118.
+// NOT kept: the best four-point gain leaves the first cross at +0x108 and keeps the different sine and cosine homes.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -7060,6 +7066,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // One drive word with masked Boolean/shifted byte/shifted Boolean/masked byte boost
 // 1083/1108/1108/1083; the same forms with the consumed flip matrix as the relative output
 // 1063/1128/1128/1063. NOT kept: scores rise and matrix output forms shorten below retail length.
+// Shared facing/current/state orientation with spent flip output and five forward/up/cross orders
+// 1062/1041/1174/1157/1157. Cross of the copied rows 1121, scoped quaternion 1157, state memcpy 1174.
+// NOT kept: the frame reaches 0xdc, but the handle and displacement stay exchanged and the body shortens.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

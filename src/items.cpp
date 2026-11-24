@@ -1834,6 +1834,10 @@ struct s_item_flags_view_10b850
 // 0x154. Entry flag bytes and low motion homes still differ.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the four item_spin_vector calls through include/axis_rotation.h's helper (the item's axis, sine and
 // cosine) 865 (4143 B); the first two only 829. Restored.
+// One relocation decision shared with settling 885. A separate gravity test with one settled result
+// before sampling, beside carrier output, beside gravity or at the query 884/884/885/885.
+// A separate gravity test with one relocation result before sampling, beside carrier output or at the query 898/898/885.
+// NOT kept: each reserves 0x150 and shortens to 4066 bytes. Retail uses separate relocation and settling bytes.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

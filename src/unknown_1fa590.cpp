@@ -591,6 +591,13 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // ahead of the base scaling 127 (1149 bytes: the call moves ahead of the scaling, retail calls it after; not kept);
 // the active offset declared ahead of the angle 132 (same code). Left as before: the active sine store and the dot's
 // i term (retail forward->i first), the idle first cross's i row (retail loads g first) and its j/k rows.
+// M3 lane 1 r164 (h2m fast with 0xc7840, 0x30bf0 and 0x1eb8a0, base 132): the 12 extra bytes are the idle arm's products
+// that load the forward component and multiply by the register value (`movss reg, mem; mulss reg, reg`, 9 bytes) where
+// retail copies the register value and multiplies by memory (8 bytes). Forms: the idle base's zero test as
+// `0.0f == function_30bf0(&base)` 131; the angle test as `0.0f == angle` 82 (1169 B; not kept: the compare then folds
+// the angle's load, `ucomiss xmm0, [mem]`, unlike retail's `movss xmm1, [mem]; ucomiss xmm1, xmm0`, and the gain is only
+// the idle arm realigning behind 4 fewer bytes); the active zero test as `0.0f == function_30bf0(forward)` 133; the
+// tick test as `0 < *ticks` 132 (same code); the idle sine computed ahead of the cosine 132 (same code).
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {

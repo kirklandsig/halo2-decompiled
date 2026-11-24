@@ -392,6 +392,12 @@ void function_254200(void)
 // code). Measured against the count with two probe stores (one unit short of the flip): the four vertex position calls
 // in member form, the index-taking lookup helper, the real-parameter readiness wrapper and the primitive start in C form
 // add nothing.
+// M3 lane 7 r225 (H2M_FAST, control 4): both readiness tests written `!= NULL` 4; the chosen bitmap tested `!= NULL` 4;
+// the draw-ready flag tested `!= 0` 4; all three 4; the two dimension locals declared width first 4 (all the same
+// code). Reading of the back end (diagnostic): the slow-path block after the second and third reservations holds the
+// three reloads, all at the same scheduling height, so the scheduler keeps their insertion order (x, y + size, depth);
+// one forced decision, the y + size reload's height lowered by one, gives retail's order in the first of the two
+// groups (4 -> 2). No source form here changes that height or the insertion order.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -876,6 +882,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // limits then fall differently); the first texture and dimension block written out as 0x254490 has it, in place of the
 // 0x14390 call, 512 (2289 B); the scale's half named ahead of the 0x1cf50 call for the first two texture calls 436
 // (2316 B).
+// M3 lane 7 r225 (H2M_FAST, control 2): the first pixel-shader clear as a value-initialised aggregate assignment 576
+// (2287 B); the first 0x14390 call's priority as an integer zero 2; the first texture call's upper coordinate written
+// `0.5f + arg_1 * 0.5f` 2; the colour pointer itself const 2; the offset quad's half size as an if/else assignment 2
+// (same code each). Diagnostic reading: the swapped pair sits in a slow-path block after a reservation where both loads
+// have equal scheduling height (as 0x254490's group); a 20-decision what-if search found no single forced decision
+// that fixes it.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
