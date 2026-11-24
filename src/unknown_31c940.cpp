@@ -72,7 +72,7 @@ typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
 struct solver_work_prefix_31c940 {
  union { stored_word_31c940 pair_b; __m128 const *inverse_b; float const *writeback_time; };
  union { stored_word_31c940 first_error; __m128 *angular_b; };
- union { stored_word_31c940 fallback_scalar; float const *friction_scale; solver_linear_row_31e7b0 const *next_circular; };
+ union { float fallback_scalar; float const *friction_scale; solver_linear_row_31e7b0 const *next_circular; };
 };
 struct solver_simd_word_31c940 {float value;};
 struct solver_work_tail_31c940 {
@@ -81,7 +81,7 @@ struct solver_work_tail_31c940 {
 struct solver_scalar_work_31c940 {
  stored_word_31c940 &pair_b;__m128 const *&inverse_b;float const *&writeback_time;
  stored_word_31c940 &first_error;__m128 *&angular_b;
- stored_word_31c940 &fallback_scalar;float const *&friction_scale;solver_linear_row_31e7b0 const *&next_circular;
+ float &fallback_scalar;float const *&friction_scale;solver_linear_row_31e7b0 const *&next_circular;
  float &simd_scalar;
  stored_word_31c940 &pair_a;__m128 *&linear_b;float *&linear_floats_b;solver_linear_row_31e7b0 const *&next_normal;
  __forceinline solver_scalar_work_31c940(solver_work_prefix_31c940 &prefix,solver_simd_word_31c940 &simd_word,solver_work_tail_31c940 &tail):
@@ -1180,57 +1180,58 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 static __forceinline void solve_unilateral_linear(float target,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
 	__m128 &linear_b,__m128 *const & angular_b_pointer, solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
-{// Reuse the five real projection values; retain the linear axis for the update.
-	__m128 work[5];
-	work[0]=linear_b;
-	work[1]=a->linear;
-	work[2]=row->a;
-	work[3]=*angular_b_pointer;
-	work[4]=row->linear;
-	work[1]=_mm_sub_ps(work[1],work[0]);
-	work[0]=a->angular;
-	work[0]=_mm_mul_ps(work[0],work[2]);
-	work[2]=row->b;
-	work[3]=_mm_mul_ps(work[3],work[2]);
-	work[1]=_mm_mul_ps(work[1],work[4]);
-	work[0]=_mm_add_ps(work[0],work[3]);
-	work[0]=_mm_add_ps(work[0],work[1]);
-	sum_three_to_arena_31c940(work[0],projection_pool.unilateral_linear);
-	__m128 axis_linear=work[4];
+{
+	// Reuse the five projection values for the weighted body updates.
+	__m128 work_1 = a->linear;
+	__m128 work_0 = linear_b;
+	__m128 work_2 = row->a;
+	__m128 work_3 = *angular_b_pointer;
+	__m128 axis_linear = row->linear;
+	work_1 = _mm_sub_ps(work_1, work_0);
+	work_0 = a->angular;
+	work_0 = _mm_mul_ps(work_0, work_2);
+	work_2 = row->b;
+	work_3 = _mm_mul_ps(work_3, work_2);
+	work_1 = _mm_mul_ps(work_1, axis_linear);
+	work_0 = _mm_add_ps(work_0, work_3);
+	work_0 = _mm_add_ps(work_0, work_1);
+	sum_three_to_arena_31c940(work_0, projection_pool.unilateral_linear);
 	solver_step_31c940 *parameters = step;
 	float error = target * parameters->error_scale - projection_pool.unilateral_linear * parameters->velocity_scale;
 	if (error > 0.0f)
 	{
 		float impulse = error * row->a.m128_f32[3];
-		__m128 inertia_a=a->inverse_inertia;
+		work_2 = a->inverse_inertia;
 		simd_scratch = impulse;
-		__m128 scalar = _mm_load_ss(&simd_scratch);
-		__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
-		__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b.body->inverse_inertia);
-		// Capture B before either body write can replace its saved address.
-		__m128 *const angular_receiver = angular_b_pointer;
-
-		// Form both linear contributions before reloading and writing either body.
-		__m128 linear_delta[2] =
-		{
-			_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear),
-			_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear)
-		};
-		// Reload A for the update instead of retaining its projection load.
-		a->linear = _mm_add_ps(_mm_load_ps((float const *)&a->linear), linear_delta[0]);
-		linear_b = _mm_sub_ps(linear_b, linear_delta[1]);
-		// Both linear deltas are consumed before the angular axes reload.
-		// Reuse their first vector through the angular contributions and A write.
-		linear_delta[0]=row->a;
-		change_a=_mm_mul_ps(change_a,linear_delta[0]);
-		linear_delta[0]=row->b;
-		change_b=_mm_mul_ps(change_b,linear_delta[0]);
-		linear_delta[0]=a->angular;
-		linear_delta[0]=_mm_add_ps(linear_delta[0],change_a);
-		a->angular=linear_delta[0];
-		change_a=*angular_receiver;
-		change_a=_mm_add_ps(change_a,change_b);
-		*angular_receiver=change_a;
+		work_1 = _mm_load_ss(&simd_scratch);
+		work_0 = _mm_shuffle_ps(work_1, work_1, 0);
+		work_0 = _mm_mul_ps(work_0, work_2);
+		work_2 = b.body->inverse_inertia;
+		work_1 = _mm_shuffle_ps(work_1, work_1, 0);
+		work_1 = _mm_mul_ps(work_1, work_2);
+		// Retain B angular before either body write can replace its home.
+		__m128 *angular_b_address = angular_b_pointer;
+		work_2 = _mm_shuffle_ps(work_0, work_0, 0xff);
+		work_2 = _mm_mul_ps(work_2, axis_linear);
+		work_3 = _mm_shuffle_ps(work_1, work_1, 0xff);
+		work_3 = _mm_mul_ps(work_3, axis_linear);
+		axis_linear = a->linear;
+		axis_linear = _mm_add_ps(axis_linear, work_2);
+		a->linear = axis_linear;
+		work_2 = linear_b;
+		work_2 = _mm_sub_ps(work_2, work_3);
+		linear_b = work_2;
+		// Angular axes reload after both linear writes.
+		work_2 = row->a;
+		work_0 = _mm_mul_ps(work_0, work_2);
+		work_2 = row->b;
+		work_1 = _mm_mul_ps(work_1, work_2);
+		work_2 = a->angular;
+		work_2 = _mm_add_ps(work_2, work_0);
+		a->angular = work_2;
+		work_0 = *angular_b_address;
+		work_0 = _mm_add_ps(work_0, work_1);
+		*angular_b_address = work_0;
 		*result += impulse;
 	}
 }
