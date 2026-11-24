@@ -1074,6 +1074,9 @@ void function_245400(s_source_245400 const *source, long index,
 // with that emission 169, paired encoded-field references 167.
 // NOT kept: these recover the 0x2c frame and retain the 783-byte extent, but the surface
 // and material table registers still differ and every score rises.
+// One copied normal with direct/staged cross, first or second 248/241 each.
+// In-place staged cross initialized on admission 236/233 or at decoding 221/218.
+// NOT kept: all increase the score and grow past 783 bytes. The frame and separate side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

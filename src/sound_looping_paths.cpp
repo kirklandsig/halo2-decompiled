@@ -979,6 +979,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // under the positive extent 875/887, with a live-count cursor 892/893, or with a
 // fixed populated range 890/850. NOT kept: all raise the score and retain the
 // 0x4dc frame; the existing-count, target-count and query-buffer homes still differ.
+// The 0x4dc frame, EBP entry zero and target and query homes persist. Attenuation and flag snapshots
+// keep retail length but raise the score. The conversion count and target cursor forms shorten the body.
+// pre-walk attenuation 839; pre-walk attenuation with long query count 911; post-selection flags
+// snapshot 838; shared flags and pre-walk attenuation 838; converted count published once 953; target
+// end pointer 949; primary from both cluster outcomes 932; completed target append and primary result
+// 930.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
