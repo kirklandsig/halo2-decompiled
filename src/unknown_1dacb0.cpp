@@ -1679,6 +1679,15 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // the result and the iterator in that order with every other value in a dead parameter home; ours differs only by the mode
 // output taking found_mode's home, which follows the second request's registers (retail: `this` in EBX reloaded once at
 // the first loop's exit, the mode copied once into EBP, the +0x34 table pointer left in its home). Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH; control 812). Allocator reading: the found
+// mode (11 home references) takes found_mode's dead home because the second request gives EBX to the shared mode-table
+// temp and EBP to `this`, and the found mode's piece over the root kinds ranks below both and stays in memory; the entry
+// ECX/EDX pair is the class (priority 30) colouring before the NONE constant (27), whose piece also covers the three
+// output defaults (a forced class-in-EDX pick alone gives 958). Forms: the outputs declared ahead of the iterator with
+// the iterator stored graph, step, entries, then keys (retail's store order) 812 (both twins); that on the siblings'
+// found-flag loop with the inner return kept 994 (2837 B), without it 755 (match-only, as listed); the iterator declared
+// at the top of the function 812 (both twins); on the 755 form the first request keyed by the iterator's own key fields
+// 1020 (2875 B). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
