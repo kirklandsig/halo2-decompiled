@@ -216,26 +216,43 @@ static __forceinline void apply_angular(float const &impulse, solver_angular_row
 
 
 static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
+	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch,__m128 (&w)[5])
 {
-	// Keep accumulation wider than the float copy consumed by SIMD.
-	float &rounded_impulse = simd_scratch;
-	float &store = rounded_impulse;
-	store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b.body->inverse_inertia);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	b.body->linear = _mm_sub_ps(b.body->linear, linear_b);
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	__m128 angular_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_b = _mm_mul_ps(change_b, row->b);
-	a->angular = _mm_add_ps(a->angular, angular_a);
-	b.body->angular = _mm_add_ps(b.body->angular, angular_b);
-	*result += impulse;
+	// The caller retains the projected linear axis in w[4].
+
+	simd_scratch=impulse;
+	w[2]=a->inverse_inertia;
+
+	w[1]=_mm_load_ss(&simd_scratch);
+	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=b.body->inverse_inertia;
+
+	w[1]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+	w[2]=_mm_mul_ps(w[2],w[4]);
+	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+	w[3]=_mm_mul_ps(w[3],w[4]);
+	w[4]=a->linear;
+	w[4]=_mm_add_ps(w[4],w[2]);
+	a->linear=w[4];
+	w[2]=b.body->linear;
+	w[2]=_mm_sub_ps(w[2],w[3]);
+	b.body->linear=w[2];
+	// Angular axes reload after both linear writes.
+	w[2]=row->a;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=row->b;
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=a->angular;
+	w[2]=_mm_add_ps(w[2],w[0]);
+	a->angular=w[2];
+	w[0]=b.body->angular;
+	w[0]=_mm_add_ps(w[0],w[1]);
+	b.body->angular=w[0];
+	*result+=impulse;
+
 }
 
 static __forceinline void apply_circular_linear(float impulse, solver_linear_row_31e7b0 const *row,
@@ -1196,7 +1213,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2017. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2013. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1552,6 +1569,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
 
 					_mm_store_ss(&projection_pool.bounded_linear, xyz);
+					// Preserve the linear axis through the clamp and the first update.
+					__m128 bounded_work[5];
+					bounded_work[4]=axis;
 					double mass_error = (target - projection_pool.bounded_linear) * mass;
 					float impulse = mass_error * load_error_scale(step);
 					// Keep the divide followed by multiply on both clamp paths;
@@ -1567,7 +1587,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 						impulse = ratio * impulse;
 					}
 					// Reload the saved A receiver at the bounded update boundary.
-					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), state.solving.a_home, scoped_b, result, scalar_work.simd_scalar);
+					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), state.solving.a_home, scoped_b, result, scalar_work.simd_scalar, bounded_work);
 					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 					a = state.solving.a_home; ++result; op += 16;
 				} while (*op == 5);
