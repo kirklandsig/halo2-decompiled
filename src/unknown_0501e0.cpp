@@ -828,6 +828,18 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // restored): both views through it in place 218 (masked 144), with the limits in the condition 256 (1117 B, masked 115),
 // separate outputs 304 (1083 B) and 310 (1075 B); on the in-place form with the limits in the condition, K = 1..16
 // unused locals ahead of the calls 256 for K 1-14 and 261 for 15, 16 (masked 115 to 125, lowest at K 0-2). Body unchanged.
+// M3 lane 12 r183 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221; body unchanged). On the macro
+// statement lead (re-measured 226 at 1136 B): the second view written back into the second offset vector 226 (same code);
+// that with the orthographic segment kept in the same vector (one address-taken vector for the second offset, its view
+// and the segment) 226 at 1136 B with frame 0x14, which is retail's storage (that vector plus two scratch cells); the
+// first view in place 299 (1177 B); both in place 299. With main's inline helper in place of the macro: the first view
+// into its own vector, the second in place, six offset statements (second point first), the limits in the condition and
+// the shared segment vector 260 (1114 B); without the shared segment 260; with the two offset loops 282 (1102 B); with
+// main's named limits 220 (1112 B, one point); that with the loops 288. Float register ranking on the 226 lead: retail
+// gives XMM0/2/4 to the first view's scaled copy, XMM1/3/5 to the first offsets and then the first view's results, XMM6
+// to the scale and XMM7 to the coefficient it carries; the lead keeps the second offset's x in XMM0 across the first
+// view, so the copy takes XMM3/4/5, the results XMM2/6/1 and the scale XMM7 (it ranks 186 against 190 for the two
+// second-view temporaries coloured just ahead of it).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

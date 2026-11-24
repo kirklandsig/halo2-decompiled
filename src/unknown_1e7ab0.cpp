@@ -84,6 +84,7 @@ inline s_entry_420 *entry_420_get(long index)
 }
 
 long function_14de70(long local_player_index);
+s_entry_420 *function_1e8d50(long index);
 bool function_1e69d0(s_time_entry *entries, long type, long age_limit);
 bool function_1e7a10(long player, long index);
 long function_1e7a60(long player, long index);
@@ -154,7 +155,7 @@ struct s_unit_child_iterator
  long next_index;
 };
 struct s_damage_object;
-void function_d0590(s_unit_child_iterator *iterator, long object_index);
+void function_d0590(long object_index, s_unit_child_iterator *iterator);
 s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 
 /* the unit behind an object index, a macro like request_weapon below: as an inline function its result stayed a
@@ -659,7 +660,7 @@ s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 // a scratch EAX), which turned the scratch rotation of every block after it. Left at 96: the entry lookup's table/result
 // pair (the allocator ranks the table above the result, 20 against 18, and gives the first one EAX; retail has them the
 // other way round) and case 4's parent (ours ECX, retail ESI).
-// HELD (needs the owner's OK; build/r232/held-0x1e7ab0.patch on this tree, held-0x1e7ab0.vs-head.patch on main): MATCH, plain
+// Applied 2026-11-24 by the machine 3 coordinator (0xd0590's owner told on #9; parameter changes rule): MATCH, plain
 // and in a full check (12363 matched, nothing lost, 0x1e7ab0 gained; 0xd0590, 0xd05c0, 0xdb210, 0x1e83c0 and 0x1e8d50 keep
 // their matches, 0xda110 stays 420), with three more changes on the macro: 0xd0590's parameters as (object_index, iterator)
 // at its definition, its three declarations and its four calls (retail's call here writes the iterator into ECX before the
@@ -679,7 +680,7 @@ bool function_1e7ab0(long local_index, long type)
  byte *data = (byte *)state;
  bool result = false;
  long player_index = function_14de70(local_index);
- s_entry_420 *entry = entry_420_get(type);
+ s_entry_420 *entry = function_1e8d50(type);
  if (player_index != NONE && entry &&
   (!(*((byte *)entry + 0x10) & 1) || g_4e6948->state != 2))
  {
@@ -723,17 +724,16 @@ bool function_1e7ab0(long local_index, long type)
       if (seat != NONE)
       {
        s_unit_definition const *definition = (s_unit_definition const *)g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
-       s_unit_seat_definition const *seats = (s_unit_seat_definition const *)definition->unit.seats.address;
-       s_unit_seat_definition const *seat_data = &seats[seat];
+       s_unit_seat_definition const *seat_data = &((s_unit_seat_definition const *)definition->unit.seats.address)[seat];
        if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
        {
         s_unit_child_iterator iterator;
-        function_d0590(&iterator, parent);
+        function_d0590(parent, &iterator);
         bool blocked = false;
         while (function_d05c0(&iterator))
         {
          if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
-          ((bool)seats[iterator.seat_index].flags.bit2))
+          ((bool)((s_unit_seat_definition const *)definition->unit.seats.address)[iterator.seat_index].flags.bit2))
          { blocked = true; break; }
         }
         if (!blocked) result = true;

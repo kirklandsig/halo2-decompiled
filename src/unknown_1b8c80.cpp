@@ -1052,6 +1052,18 @@ extern "C" void _ReadWriteBarrier(void);
 // assigned after the barrier 6; declared bare and assigned after the lookup 6 (the 6s the same code: the dead first store
 // is removed before the copy is propagated). Matched functions that load a stack parameter in the entry block and read it
 // only on the fall-through path (0xa8dd0, 0xc40f0, 0x195820) use it in two sibling arms or through its address.
+// M3 lane 6 r238 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6). Reading from the allocator's side: the slot
+// is a register candidate over the NONE block and the flags arm only, and its load from the parameter home is placed in
+// front of its first use, which is after the branch; retail's load sits in the entry block after the pool and data loads
+// (it takes ECX once the pool pointer is dead and is scheduled ahead of the mask), so retail's slot is defined in the
+// entry block after the actor lookup, and with ECX and EDX both held there the 0x26c compare stays on memory without a
+// barrier. Diagnostic (a volatile read of the parameter after the lookup, with the barrier; never in the tree): 31, and
+// no single forced register or schedule choice on it gives retail's code, so that anchored read is not retail's shape
+// either. No barrier: the state set NULL in an else arm of the busy test 44 (208 B); the state started NULL and assigned
+// from the slot at the head of the NONE block 44; the busy field in a named long read after the state 44; the actor
+// looked up through a `long const &` to the index parameter 44; the slot read through a `s_slot *const &` to the
+// parameter 44; the state read through a `s_slot_4c *const &` to the state local 44. With the barrier: the actor looked up
+// through a `long const &` to the index parameter 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

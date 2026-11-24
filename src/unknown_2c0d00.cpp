@@ -920,6 +920,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (3740 B: frame 0x2cac, retail's straight/aligned byte homes and the 0x26c field loaded into a register as retail, but
 // actor_index in EDX and the zero in EDI); the entry declarations as actor, self_unit, the three flags, then the four
 // shorts 925 (same code but two rows); both 932. Body unchanged.
+// M3 lane 12 r183 (h2m fast with the three callers and five callees as above; control 925, aligned distance 657; body
+// unchanged). Frame reading: retail's frame is four bytes smaller because self_unit lives in EBP through the loop and the
+// skip flag in a stack byte that packs with the other six flags; ours keeps the skip flag in BL and self_unit in a
+// four-byte home. LEAD, not kept (retail stores 0 to the restricted flag ahead of the unit/ignore test and 1 under the
+// bit test, so this is not its source, and the declaration moves): `bool restricted_spheres = TEST_FIELD_BIT(...)`
+// after the unit/ignore `continue` with `if (!restricted_spheres && <no-obstacle bit>) continue;` 886 at 3744 B (aligned
+// 597): the entry is then retail's instruction for instruction (actor_index EBX, zero EBP, six stores from EBP, three
+// flag bytes) with frame 0x2cb4. Forms: the device flag as one boolean expression 915 at 3760 B (aligned 592; retail has
+// the conditional store there, so not kept), both 920; the self-unit test as a nested `if (self_unit) { if (...)
+// continue; }` 925 (same code); the self-unit test ahead of the hidden-object test 923; the actor's unit type test with a
+// `(char)` cast 925.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
