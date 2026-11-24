@@ -1688,6 +1688,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // found-flag loop with the inner return kept 994 (2837 B), without it 755 (match-only, as listed); the iterator declared
 // at the top of the function 812 (both twins); on the 755 form the first request keyed by the iterator's own key fields
 // 1020 (2875 B). Body unchanged.
+// Class/NONE allocation, iterator output homes and second-request mode and graph registers still differ.
+// Early disabled-request return in the per-type, per-kind, inheritance helper or any combination;
+// early missing-type return in the per-type helper: 812 each.
+// NOT kept: the inlined code keeps the original mode-table and mode lifetimes.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2330,6 +2334,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // would take a register. Forms: the request helper taking its mode by `long const &` 812; all three keys by `long const
 // &` 812; the kinds helper's mode by `long const &` 812; the graph by `s_graph_tag *const &` 812; the second request in
 // its own `if (result.index != NONE)` block after the first 812 (same code each).
+// Class/NONE allocation and the result, candidate and iterator output homes still differ.
+// Iterator defaults from the invalid result index for mode, class, mode/class, type,
+// mode/type, class/type, all three and a chained assignment: 812 each.
+// NOT kept: each form folds to the existing entry constant and leaves the same homes.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

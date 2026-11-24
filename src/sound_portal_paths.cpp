@@ -760,6 +760,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the deep stores. Diagnostics (cuts, restored at once): without the 0x249d60 call the cluster ranks 128 and takes EBP;
 // without the 0x14b240 call 118 and EBP; without the sort call 106 and EBX. The 21 form's full diff is
 // build/r242/held-0x18dc90.patch. Still BLOCKED-BY 0x14b240's write summary for anything short of a match.
+// The 0x428 frame, starting-cluster register and in-loop BSP table loads are still open.
+// Select the distance bound, select the comparison, split first and repeat admissions,
+// or continue on rejection: 295/356/357/295. The same with call-scoped sort scratch
+// 280/352/353/280. NOT kept: the 280 forms recover the frame through the scratch scope
+// but still cache both BSP bases and keep the starting cluster in EBX.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
