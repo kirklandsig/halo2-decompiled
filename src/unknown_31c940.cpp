@@ -1043,7 +1043,8 @@ static __forceinline void solve_unilateral_linear(float target,
 	}
 }
 
-static __forceinline void update_linear_limit_values(float impulse, solver_linear_row_31e7b0 const *row,
+
+static __forceinline void update_linear_limit_values(float impulse, solver_linear_row_31e7b0 const *row,__m128 const &linear_axis,
  solver_velocity_31c940 *a, __m128 const &inverse_b,
  float *linear_b,__m128 *const & angular_b_pointer, float *result, float &simd_scratch)
 {
@@ -1051,11 +1052,13 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
 	__m128 scalar = _mm_load_ss(&simd_scratch);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	// Capture B's angular receiver before either body is written.
+	__m128 *angular_receiver=angular_b_pointer;
 	// Capture both linear contributions before either body write.
 	__m128 linear_contribution[2] =
 	{
-		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear),
-		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear)
+		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), linear_axis),
+		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), linear_axis)
 	};
 	a->linear = _mm_add_ps(a->linear, linear_contribution[0]);
 	_mm_store_ps(linear_b, _mm_sub_ps(_mm_load_ps(linear_b), linear_contribution[1]));
@@ -1066,7 +1069,7 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
 		_mm_mul_ps(change_b, row->b)
 	};
 	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
-	(*angular_b_pointer) = _mm_add_ps((*angular_b_pointer), angular_contribution[1]);
+	(*angular_receiver) = _mm_add_ps((*angular_receiver), angular_contribution[1]);
 	*result += impulse;
 }
 
@@ -1213,7 +1216,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2013. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1984. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1526,9 +1529,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					work_a = _mm_mul_ps(work_a, row->a);
 					__m128 work_c = row->b;
 					work_c = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_c));
+					// The lower update keeps this axis; the upper update reads the row again.
+					__m128 first_linear_axis=row->linear;
 					work_b = _mm_add_ps(work_c,
 						_mm_mul_ps(_mm_sub_ps(_mm_load_ps((float const *)&(a->linear)),
-							*(__m128 const *)linear_b_pointer), row->linear));
+							*(__m128 const *)linear_b_pointer), first_linear_axis));
 					sum_three_to_arena_31c940(work_b, projection_pool.linear_bounds);
 					// Capture the step pointer for velocity and the first bound. The
 					// second bound reloads it after any first-bound result write.
@@ -1536,10 +1541,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					float velocity = projection_pool.linear_bounds * parameters->velocity_scale;
 					float low = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 4)) * parameters->error_scale - velocity;
 					if (low > 0.0f)
-						update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
+						update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), first_linear_axis, a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
 					float high = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 8)) * load_error_scale(step) - velocity;
 					if (high < 0.0f)
-						update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
+						update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), ((solver_linear_row_31e7b0 *)terms)->linear, a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
 					terms += 3; ++result; op += 12;
 				} while (*op == 11);
 
