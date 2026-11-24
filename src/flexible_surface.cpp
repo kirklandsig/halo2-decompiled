@@ -982,6 +982,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // time scaled after draw 120/127/193/135.
 // NOT kept: 122 and 120 both move the single-use interval read ahead of
 // the seed update. The 120 form also leaves the 0x1c frame.
+// The random sample and sine still share a word in the 0x1c frame. Limit the rotated global
+// into the spent axis or separate result, with vector/field publication 197/193 and 197/198.
+// Rotate a snapshot, then limit into the global, in place, or into the spent axis with vector/field
+// publication 168/199/202/215. NOT kept: the direct-global output ties the opening extent and
+// raises the score. Other destinations add copies, and none recovers the 0x20 frame.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

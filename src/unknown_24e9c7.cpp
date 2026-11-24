@@ -766,6 +766,9 @@ struct s_24e9c7_points
 // values as a point initialised `{ size * -forward_j }` with y assigned after, the side from it, 190 (764 B); the side
 // point initialised that way and scaled in place by the half width 190 (764 B). Also across i as
 // `-placement->forward_j * size` 125 and across j declared ahead of across i 125 (same code each).
+// In-place perpendicular scaling after one upper corner with reverse scalars, direct negation,
+// reverse scalars at first use, or subtraction 172/152/163/152. After both upper corners
+// 154/151/142/151. NOT kept: the return slot stays high or the frame grows.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

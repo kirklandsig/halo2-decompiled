@@ -1911,6 +1911,12 @@ void function_2294a0(
 // (and with it the component's own home, frame 0x70) needs the address kept as a value. Forms, all folded back into
 // `[edi + 0x68]`: the component through the pool data bound to a const reference 490; a position pointer local at all
 // eleven uses 484; that pointer bound as `point3f *const &` 485; a `point3f &` local 484; pool reference + pointer 489.
+// Shared separation with point setter, scaled add, half-separation helper, in-place half-separation, or staged half offsets 231/485/379/454/456.
+// Averaged-position setter, both setters, and staged midpoint with x-z-y squared dot 509/242/236.
+// In-place full separation, indexed additions, separate midpoint, or in-place separation with setter 485/396/383/232.
+// Staged midpoint with one position pointer, displacement first, both, or precomputed coordinates 485/231/485/485.
+// Staged midpoint with shared scaler before copy, direct scale, rejection continuation, or continuation with scaler and copy 231/242/231/231.
+// NOT kept: the best setter form recovers the 0x70 frame and EBX position base but grows to 1988 bytes and groups the last two coordinate calculations before the first store.
 // @retail 0x228770
 void function_228770(
 	long impact_index,

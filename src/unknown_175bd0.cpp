@@ -2462,6 +2462,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the top and assigned after a type lookup with no block 184; the spawn's location index stored ahead of the colour
 // reads 184; multiplied queried ahead of tinted 182 (572 B). Forced ranks of colour A/B and the system's first piece
 // (22 single decisions) stay at 178 or above.
+// BSP base passed at the zone calls or captured at successful advancement,
+// with the location pointer or the cluster word, 128 each. The four forms
+// with an early color A capture give 187 each. The frame reaches 0x44 there,
+// with 572 bytes and the system still in EDI.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4015,6 +4019,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // address read 92 at 337 bytes (system ESI, next index EDI, type object EBX, colour B EDI, definition spilled and read
 // for each call as retail; left the system index in ECX, the effect pool base not held in EBX, frame 0x4c; 0x176f60 18,
 // so not kept); that with the type lookup's definition named 92 (same), without the address read 103 (331 B).
+// Actual pooled effect, system and definition object references, each alone,
+// each pair and all three 93 each. All three with the particle-location
+// object reference 93. The system/successor registers and 0x4c frame persist.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

@@ -1219,6 +1219,12 @@ real function_30bf0(vector3f *v);
 // conditional cap 273, direct optional pointer reads 274, forced first with direct reads 274,
 // shared solve result 276, with conditional cap 276 or direct optional reads 276. Restored.
 // The early rounded root and separate divisions still differ at frame 0x28 versus 0x30.
+// Round 668: early linear fallback with full/positive-only/extent-first/selected-extent
+// gate 232/251/252/274; the same gates with a linear-first branch and one result
+// 216/265/249/268. NOT kept: the 216 form (983 bytes, plain check) swaps the arms and
+// returns through one exit, both match-only forms. In it the fallback loses its extra
+// distance-pointer load and keeps the retail argument setup. Frame 0x28/0x30, delayed
+// rounded horizontal root and shared reciprocal remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1547,6 +1553,10 @@ extern vector3f *g_4687ac;
 // with its original declaration, scoped end, scoped aggregate or existing point setter:
 // 184 each. Reload radius after normalization on the same forms: 195 each.
 // NOT kept: all shrink the frame to 0x3c and raise the score.
+// Stage the cross in place over the lateral displacement or up-vector copy, with
+// original or bounded initial ray, 177/179 and 189/191. Consuming the same local for
+// the negative endpoint gives the same scores. NOT kept: frame, extent and score
+// do not agree with the retail allocation.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -2386,6 +2396,11 @@ real function_17c900(short function_type, real input);
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
+// Round 668: lookup index address read with point copy/setter/memcpy 351/374/351;
+// drift salt address read with point copy/setter/memcpy 366/389/366, direct turn
+// exit 364, direct turn and drift exits 332. NOT kept: the 332 form recovers
+// entry through +0x4f but reads its own parameter through its address and is nonexact.
+// Original frame 0x30 and index/output transport difference remain.
 	long salt = projectile_index >> 16;
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
@@ -2536,7 +2551,7 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.
-// score 422 (was 498; 519 was 535; 527 before round 1): Frame 0x184 agrees; the stack slots and the flag word differ, see below.
+// score 360 (was 422): Frame 0x184 agrees. The header offset and early flag read still use different homes.
 // Round 1 of #1061: full statement walk against retail found no behaviour difference (every offset, constant, condition,
 // callee and argument order agrees). Kept: `switch (mode) { case 2: case 4: ... }` for the a84e0 test (retail's movsx/sub/sub
 // chain; also settles the damage tail, 535 -> 527), native flag bits for the +0x12c tests and stores (child stores stay two
@@ -2559,6 +2574,10 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // Long/word header slot 507/522; shared pre-call pool and counting table 498; updated flag word 498;
 // shared child/detachment point 497 (one point, below the gain threshold); saved-parent name 498;
 // direct-victim branches 498.
+// Dword bit setter at entry 435, child stores 360, entry and child 376, material 475.
+// Entry and material 386, child and material 356, all setters 372, all with dword entry test 372.
+// Child marks kept. The two separate OR and store pairs use retail's registers and the body reaches retail length.
+// The entry reload, attached-state slots, and late material flag hold still differ.
 // Header pool still takes EDI before the first flag test, and the header offset and flag write use other homes.
 // Common datum entry 422; header accessor entry 422; entry table 422; common datum all lookups 422;
 // header accessor all lookups 422; typed parent view 422; typed parent and scale fields 422; resolved header local 422.
@@ -2613,8 +2632,8 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 					{
 						point3f point;
 
-						child->flags.unknown6 = true;
-						child->flags.unknown12 = true;
+						bit_vector_set((dword *)&child->flags, 6, true);
+						bit_vector_set((dword *)&child->flags, 12, true);
 						child->unknown158 = 0.0f;
 						child->unknown160 = 0.0f;
 						function_b9dd0(child_index, &point);
@@ -2897,6 +2916,11 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // computed motion predicate 1028 (two points). Shared point difference 1013 at 4682 bytes.
 // NOT kept: The point difference still flows through the inlined magnitude, and the score change comes
 // from a different later rotation schedule rather than the retail movement producer and call.
+// Frame remains 0x114 versus 0x118. Active-range distance product 1047, traveled distance 1046,
+// both 1034, range limit 1052, product and limit 1038, traveled and limit 1037, all three 1034.
+// Explicit full-step outcomes and both distances 1006 at retail length. NOT kept: the traveled-distance
+// snapshot removes retail's reload for the subtraction, and the frame still differs. Both field reads
+// with the named product 1030, zero range first 1027. NOT kept: the three-point gain shortens the body.
 // Index EBX and definition ESI still differ from retail's EDI and EBX.
 // Step-to-average or average-to-step velocity 1030/1030; library velocity copies 1030;
 // speed from step or average copy 1037/1038; named speed square 1030; vector setters 1048; speed before copies 1030.
