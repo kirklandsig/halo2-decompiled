@@ -105,7 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 838 (was 838): r143 unchanged; the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 838 (was 838): r143, m3 lane 8 r221, m3 lane 11 r152 and r158 unchanged (r152's line just above the marker); the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
@@ -669,6 +669,72 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // aligned 299: the whole entry block, frame and `push ebx` are then retail's to the loop head, where this body still keeps the
 // element list's data pointer in a register (retail re-reads it; r141's 780 removal form). With r141's list local moved to the
 // removal as well 739 at 4254 B (aligned 239; three match-only forms together). Body unchanged.
+// M3 lane 8 r221 (full checks unless marked). The removal as the
+// shared Havok array's existing `remove_at` (s_havok_array08 typed in include/unknown_1cec30.h with the existing
+// growable-array members macro, the loop head reading the component's field) 780 (h2m fast and full, 4264 B), but the
+// full check loses matched 0x54590 (two loads swapped at +0xff) and gains 0xc2d00, 0x24cf66 114 -> 115; with all four
+// arrays of that header typed the same way (a second change, as the coordinator advises for a lone 0x54590 loss) the
+// identical result. Diagnostic: lane 11 r141's hand-written 780 body with the header untouched loses nothing (only
+// 0x1d24a0 moves), so the header's members, not the body, flip the 0x54590/0xc2d00 pair. Restored. On main's body
+// (h2m fast): the type mask as `long` 838 and the four running-maximum updates as conditionals 838 (same code each).
+// M3 lane 7 r215 (H2M_FAST, single address; control 838, difflib-aligned 386 here). Lead, under the keep bar (4
+// points): the object-type byte in a `long` local read by both mask tests (`(1 << type) & 1`, `(1 << type) & 0x1000`,
+// no mask local) 834 at 4256 B: the dispatch block is then retail's byte for byte (`movzx ecx`, the header table in
+// EDX; aligned 384). The two tests written on the byte itself with no local 852 (4259 B: `lea` + `mov cl`); the mask
+// local with a `(long)` cast on the byte 838 (same code). With the type local and field_5c read at its two uses (lane
+// 13 r140's frame form, 843 alone at 4242 B) 838 at 4243 B, frame 0x1d4, first difference +0x14, aligned 365. Diagnostic,
+// restored at once: an indirect call right after the attached-object lookup (0xbadc0 made opaque) 820 at 4262 B, aligned
+// 333: the list is then in EBX with the element pointer formed by `shl eax, 3; add` as retail, but EBX is still saved
+// with EBP around the loop and the frame is still 0x1d8, so neither follows from 0xbadc0's write summary; with the
+// type local too 864 (4261 B). Body unchanged.
+// M3 lane 11 r152 (h2m fast; control 838). Retail re-reads both angular coefficients at each use (the test, the
+// 0x1d2280 arguments, the 0xa75d0 product) and gives the four 0x1d2280 fraction outputs four homes (+0x108, +0xec,
+// +0xd8, +0x3c), where this body shares one fraction local between the second limit block and the angular block.
+// The coefficients read at each use 871 (4225 B, frame 0x1cc); the shared fraction split into one per block 836
+// (frame 0x1dc); both 848 (frame 0x1d4 = retail's, first difference `push ebx`). With the removal through the
+// existing remove_at (the array typed with the growable-array members, the head reading the field): alone 780,
+// with the reads 808, with the split 776, with both 775 (full check too: the loop head, frame and fraction homes are
+// retail's), but the full check again loses matched 0x54590 and gains 0xc2d00, so not kept. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST, single address; control 838, difflib-aligned 386): r215's object-type long local (the mask
+// written at both tests) with the angular block's fraction split off into its own local 831 (4256 B, aligned 339; 7
+// points and the mask computed at each use, so not kept); that with the angular coefficients read at each use 843
+// (4226 B, aligned 267, first difference +0x14); the two level bytes read ahead of the two step conversions 837 (a
+// statement order, one point); the swap-remove through a named elements pointer 885 (4259 B); the second limit block's
+// fraction split off instead of the angular block's 836 (aligned 341, the same count as lane 11 r152's split). The loop
+// head stays BLOCKED-BY 0xbadc0 (its file is on this round's avoid list). Body unchanged.
+// M3 lane 11 r158 (h2m fast, single address; control 838): the angular coefficients read at each use with one fraction
+// local per block (r152's 848, re-measured at 4225 B, frame 0x1d4, first difference `push ebx`); on it the loop counter
+// at function scope 848, the list local at function scope set before the entry test and used by it 848 (same code
+// each), the object type in a long local for both mask tests 843 (4226 B), one flags-word local for the four record bit
+// tests 884 (4230 B); on the body `if (!local_21) continue;` as a block around the rest 838 (same code). Body unchanged.
+// M3 lane 3 r302 (H2M_FAST, single address; control 838 at 4255 B, difflib-aligned exact/register-masked 386/299): the
+// list bound as `s_havok_array08 *const &` to the component's field 927 (4277 B); the element as `s_1d24a0 &` 838 (same
+// code); main's mix of `local_15` and direct `field_1` reads made uniform: the field at every use 934 (4271 B), the local at
+// every later use 862 (4253 B). One `real response_fraction;` declared inside each of the two blocks that share it (the
+// same name in both scopes; retail gives the four fraction outputs four homes) 836 (aligned 341/260: a structural gain of
+// 45 rows, 2 points positional, under the bar); with both angular coefficients read at each use 848 at 4225 B (aligned
+// 269/172, frame 0x1d4 = retail's, first difference `push ebx`), with only field_5c at each use 848 (4242 B, 332/246).
+// Lead (match-only, a moved declaration): those two plus lane 11 r141's list local at the removal (the head reading the
+// field) 775 at 4234 B, aligned 206/149, the same 775 as r152's remove_at form but with no header change. The loop head
+// stays BLOCKED-BY 0xbadc0's write summary (src/unknown_0bad50.cpp, on this round's avoid list). Body unchanged.
+// M3 lane 7 r224 (fast screen, single address; control 838 at 4255 B, aligned exact / register-and-slot-masked 386/123).
+// Rebuilt: both angular coefficients at each use with a fraction local of the angular block's own 848 (4225 B,
+// 269/116, frame 0x1d4, first difference `push ebx`); that with lane 11 r141's list local at the removal 775 (4234 B,
+// 206/91). On the 775 form the allocator's view of the tail was read for the first time: retail's `push ebx` at the
+// entry needs an EBX reference outside the loop, since forcing any one of the three tail values (either level or the
+// target) into EBX moves the push to the entry and nothing else (775 -> 736, forced, not source); retail's tail shows
+// no EBX, so the reference is one the final code no longer has. Retail keeps the first level in EDX and the target in
+// ECX, which needs the target coloured ahead of the first level (ours ranks the level 28 against the target's 18: the
+// level is live but unreferenced over the six blocks of the target's compare and step). Source forms on the 775 form:
+// the first level's step ahead of the target test (lane 11 r141's 807 form on main's body, re-measured 807 at 4259 B,
+// 374/122) 740 (4237 B, 187/89: `push ebx` at the entry, the step's load in EBX); the record's bit-1 flag declared
+// ahead of its bit-2 flag 761 (195/85); both 726 (4237 B, 176/83), the lowest count so far; the object type in a long
+// local for both mask tests (lane 7 r215's form) on the 775 form 840, with the flag order 827, on the 740 form 802, on
+// the 726 form 789 (it helps main's body only). None kept: the 726 form is four match-only forms together (two moved
+// declarations, a statement order, the coefficient reads) and is 22 bytes short of retail. Left on it: retail
+// multiplies field_28 by the rate in source order at both uses in the second limit arm where ours loads the rate
+// first, the same side swap at the scale products of both limit arms, the flag pairs' store order, and the tail's
+// ECX/EDX roles. Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

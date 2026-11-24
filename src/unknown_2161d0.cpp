@@ -1,6 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
 #include "unknown_2accd0.h"
+#include "saved_game_storage.h"
 #include <string.h>
 
 struct s_profile_file_location
@@ -26,7 +27,6 @@ struct s_cached_profile_files
 };
 
 extern void *g_51ea14;
-extern long g_55c154;
 
 void function_125d60(void);
 bool function_216800(long file_index, void *location);

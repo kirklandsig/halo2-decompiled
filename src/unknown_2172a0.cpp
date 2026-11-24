@@ -4,21 +4,8 @@
    moving the last entry into its place (lane H) */
 
 #include "unknown_11c920.h"
+#include "saved_game_storage.h"
 #include <string.h>
-
-struct s_55c164
-{
-	void *field0;
-	byte unknown04[0x40];
-};
-
-/* the count and the entries are one structure (unknown_2157e0.cpp) */
-struct s_55c160
-{
-	long count;
-	s_55c164 entries[16];
-};
-extern s_55c160 g_55c160_table;
 
 // @retail 0x2172a0
 void function_2172a0(long handle)
@@ -28,7 +15,7 @@ void function_2172a0(long handle)
 
 	for (i = 0; i < count; i++)
 	{
-		long entry = (long)g_55c160_table.entries[i].field0;
+		long entry = (long)g_55c160_table.entries[i].file_index;
 
 		if (entry != NONE && entry == handle)
 		{

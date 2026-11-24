@@ -7,7 +7,6 @@
 #include <xtl.h>
 
 extern void *g_51ea14;
-extern long g_55c280;
 bool function_1249f0(long memory_unit, char *drive_letter);
 char *function_216400(long memory_unit, char *buffer, short capacity);
 bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long language);
@@ -19,7 +18,6 @@ struct s_saved_game_drive
 };
 
 extern s_saved_game_drive g_4e61c0;
-extern long g_55c154;
 char *function_11c9c0(char *buffer, long maximum_count, char const *format, ...);
 void unicode_string_snprintf(word *buffer, long maximum_count, word const *format, ...);
 
@@ -91,7 +89,6 @@ long function_217480(long type)
 	return 0x1e0;
 }
 
-extern long g_55c158;
 word const *g_470054 = L": ";
 long saved_game_type_get_name_id(long type);
 bool unicode_string_list_has_string(long tag_index, long string_handle);
@@ -135,7 +132,6 @@ bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long
 	return true;
 }
 
-extern long g_55c280;
 dword function_217b70(word const *text);
 
 // @retail 0x216e50

@@ -1115,7 +1115,7 @@ bool function_d03b0(long unit_index)
 
 /* starts listing the units among the object's children */
 // @retail 0xd0590
-void function_d0590(s_unit_child_iterator *iterator, long object_index)
+void function_d0590(long object_index, s_unit_child_iterator *iterator)
 {
 	s_unit *object = UNIT_GET(object_index);
 
@@ -3251,6 +3251,11 @@ void function_c5740(long unit_index, bool start)
 // common header type for both acquisitions, pool reference, common post-gate headers only,
 // read-only arrays, and early masked unit index with separate arrays: 97 each.
 // NOT kept: the same header data stays live across the gate and the material stays in BP.
+// Combined direct-slot gate or its failed arm first 97/97; conditional slot and separate fallback
+// tags 123; returned weapon or final definition call 97/97; borrowed fallback or weapon tag fields
+// 100/90; immutable tag values and returned final call 97. NOT kept: 90 gains seven at 350 bytes and
+// leaves the different prologue, pool-data lifetime and a spare field-address instruction. The
+// 331-byte form changes 0xcf040.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5662,6 +5667,15 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // 169/169/169/169. Named forward terms before or after the transverse sum: real 169/169,
 // double 197/197. NOT kept: the copy and real terms leave the early up.i read. The double
 // terms enlarge the body and change the caller's reduced score.
+// Typed two-mode limit record 169; native bitfield enables 169; indexed mode 206;
+// paired angles with typed limits 169; const aim copy 169; separately published corrected up
+// 210; transform declared with the basis 169; scoped basis with paired angles 169.
+// NOT kept: the indexed mode moves the first difference into setup. The separate correction
+// enlarges the frame and body. The other forms still preload up.i and consume the forward scale.
+// Full forward memmove with staged second cross, ordinary crosses, a bound aim source or a zero
+// predicate 175 each. Direct zero predicate and named magnitude with equality or zero predicate
+// 169/169/169; zero-first equality 179. NOT kept: memmove adds a call and raises the caller's reduced
+// score. The zero-first test reaches 767 bytes but increases the score.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9892,6 +9906,15 @@ struct s_unit_melee_collision
 // range read at each product 529/529/536/536.
 // NOT kept: all repeated-range forms recover the 0x17c frame. The pool forms align through the
 // first argument load (first difference +0xd) but reach 2243 bytes, and every repeated-range score rises.
+// Typed weapon tag view with cached range 484, with per-product range 531. On the per-product
+// form: signed int ordinals 531; named row and column weights 531; attack slot ordinal 532;
+// consistent direct unit aim through the ray rows 521; shared self-damage direction negation
+// 531; typed collision plane 531. NOT kept: the repeated loads recover 0x17c but shorten
+// the body by at least 13 bytes and raise the score. The unit and fan homes still differ.
+// Point setter, normal setter or both with the range snapshot 494/494/506; the same forms with per-
+// product range 519/521/509; normal-first or byte copies with per-product range 531/531. NOT kept:
+// both setters with per-product range recover 0x17c and 2229 bytes but score 509, with the pool load
+// and fan registers still displaced.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

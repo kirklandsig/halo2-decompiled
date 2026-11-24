@@ -1040,6 +1040,28 @@ bool function_e4050(long object_index);
 // avoid file). Use-count forms for the EDI/EBX swap, each the same code (44): 0xe4050 passed the player's field; the unit
 // object looked up from the field; the walk's root started from the field; the continue test on the field with the unit
 // read after it. A single exit (`result = true; break;` at the four exits) 144 (450 B).
+// M3 lane 16 r176 (H2M_FAST with 0xbaf80 and 0x226190, both MATCH; control 43): the parent walk as a for loop 43; the
+// walk stepping through the parent rather than the root 43; no player local (the datum read through the iterator at
+// the unit read and the three exits) 43; the walk under a redundant `if (parent != NONE)` 43 (all the same code); the
+// vehicle arm first (`!= NONE`) 114 (408 B). Still BLOCKED-BY 0xbaf80.
+// M3 lane 8 r228 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): the
+// iterator set-up as `iterator.datum_index = iterator.index = NONE;` 43; the kind byte named once for its two tests 43;
+// `player` declared at function scope 43; the vehicle arm's 0xbaf40 result named before 0xbadc0 43; the root object
+// named as a const pointer for the bit-18 test 43 (all the same code). Still BLOCKED-BY 0xbaf80.
+// M3 lane 11 r161 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): on the
+// `dword current` NONE-root walk (re-measured 171, 405 B): the walk variable bound through a `dword &` 171, the root
+// through a `long &` 171, the unit as `long const &` to the player's field 171, no player local (the datum read
+// through the iterator at the unit read and the exits) 171 (all the same code); the bit-18 exit storing the unit
+// local 189 (387 B). Still BLOCKED-BY 0xbaf80.
+// M3 lane 15 r142 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80, all MATCH; control 43). Allocator reading of
+// the kept body: the unit (priority 64) colours ahead of the unit object (50) and the player datum (32), so it takes EDI
+// and the datum is left EBX; all three are one value each after CSE, so field-read spellings cannot move them. On the
+// `dword current` NONE-root walk (re-measured 171, 405 B) the unit (90) takes EAX because the walk's step object sits in
+// ECX; with the unit alone put in EBX (a forced diagnostic, not source) only 6 rows are left: retail copies the unit into
+// the walk variable before the unit-object lookup and tests that copy, ours tests the unit and copies after. So retail's
+// unit is coloured after the datum and the unit object with EAX held by the step object. New forms: on that walk the
+// walk variable, the lookup, then the NONE root 171; the walk variable and the root ahead of the lookup 82 (433 B); the
+// step object named from the root 171; the unit declared bare and assigned before its test 171.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2375,7 +2397,7 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax E (11-20): no new form, no lower score (703): retail holds two separate request homes (the 0x1b request at esp+0x44 and the 0x16 request at esp+0x64) where this build shares one, so retail's frame is 0x74 against our 0x4c; giving the 0x16 request its own local reproduces retail's request setup but leaves the frame 8 bytes short and scores 806.
 // MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
 // MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
-// score 703 (was 701): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
+// score 703 (was 703; 701 before round 218): 703 at 2742 bytes in round 218's baseline with the body unchanged (701 at 2740 before); frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
 // still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
 // files this lane may not edit, so the body stands.
@@ -2630,6 +2652,29 @@ static __forceinline long player_round_ticks(real value)
 // second from 100) and 0xccd20 from 64; there the 0x80 test nested or repeated changes neither at 81. Trials: the 0x80 site
 // as `if (actions & 0x80) { bool dropped = ... || ...; if (dropped) ... }` 703; the 0xccd20 site nested under
 // `if (buttons & 0x10)` 703; both 703 (34 calls still); the last request through the existing 0xe68c0 725 (2698 B, a call).
+// M3 lane 16 r176 (H2M_FAST with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970, unchanged each run; control 703):
+// the attack target as `long target = NONE; if (function_bae20(input[+0x30], 3)) target = input[+0x30];` 699 (2740 B:
+// retail's `or edi, -1; call; test eax, eax; cmovne edi, esi`, a gain of four, under the bar), with the input word in a
+// named local 699, as one conditional initialiser 707 (2746 B), with the activity clamp and `cmovg` forms of round 101
+// 699; the lunge count as `(short)(lunge + 1)` 699 (2740 B), with the target form 700; `1.0f > progress` written
+// `progress < 1.0f` 703; the lunge distance summed x, y, z 703; the first 4-bit clear as a word mask 704. Still
+// BLOCKED-BY 0xe68c0 (its /Ob1 file keeps the last request out of line), 0x151b80 and 0xccd20.
+// M3 lane 8 r228 (H2M_FAST with 0x151b80 (5), 0x151aa0 (43), 0x151940, 0x14f2e0 and 0x14e970; control 703): the
+// 0x212/0x213 slot test through the entry `unit` pointer 702 (2736 B); `player` and `unit` initialised at their
+// declarations 703 (same code); the idle block's parent test on `parent_index` 704 (2744 B); the +0x238 object named
+// once for its test and the 0x151ea0 argument 703 (same code); the activity tests on `buttons` with no copy 721
+// (2714 B). Still BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 11 r161 (H2M_FAST with 0x151b80 (5), 0x151aa0 (43), 0x151940, 0x14f2e0 and 0x14e970; control 703): the
+// target candidate formed at each of its four calls (retail re-forms the lea at each) 710 (2744 B); the idle decay read
+// from the settings at each use 717 (2749 B); the tick scale read at each use 702 (2741 B, under the bar); no `actions`
+// reference 703; the three target-latch references dropped for the player fields 703 (both the same code). Still
+// BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 15 r142 (H2M_FAST with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970; control 703; 722 rows against
+// retail's 714, every row after the 0x80 site shifted, aligned exact/register-masked 452/170): the 0x80 test as
+// `(signed char)input[0x1c] < 0` 703; the 0x60 block's weapon looked up after its two flags 703 (both the same code);
+// the last two weapon lookups in the other order 709 (2747 B); `idle = 0; rest = 0;` as two statements 703; the attack
+// target preset NONE and set from the input on the 0xbae20 test 699 (2740 B; lane 16's form, a gain of four). Still
+// BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3351,6 +3396,32 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // 105; the busy test with its arms swapped 120; the vehicle arm as `if (vehicle && vehicle[0x34c] > 0) busy = true;` 117.
 // Reading: ours loads the globals pointer into EDI at loop 1's head each pass and uses it for the busy store; retail reloads
 // it at the store itself. BLOCKED-BY 0xb8540 (its draft still loses 23 functions when enabled, see its file).
+// M3 lane 16 r176 (H2M_FAST with lane 4 r242's list, all MATCH, 0x14f2e0 included; control 103): the position copied
+// before `last_unit` is assigned (retail stores the unit after forming the position address) 101 (a statement order
+// worth two, under the bar); that copy as a memcpy 101, memcpy with the unit assigned first 103 (same code as the
+// assignments); `failed` declared after loop 2's set-up 108 (612 B); loop 2's unit test first 107; `if (last_unit ==
+// NONE) return;` 103; the final store under `if (!failed)` 103 (same code). Retail loads the three position words
+// before storing them (x ECX, y EDX, z EAX); ours interleaves. Still BLOCKED-BY 0xb8540/0xb7b40.
+// M3 lane 8 r228 (H2M_FAST with lane 4 r242's list, all MATCH; control 103): the body after the 0x9e test nested under
+// `if (globals->unknown9e)` 103 (same code); loop 2's player as a const pointer 103 (same code); loop 2 on its own
+// iterator local 155 (597 B); loop 1 testing the player's field before naming `unit` 103 (same code); the root walk and
+// the vehicle test through the file's typed unit/vehicle view 103 (same code). Still BLOCKED-BY 0xb8540/0xb7b40.
+// M3 lane 11 r161 (H2M_FAST with lane 4 r242's list, all MATCH; control 103): both g_4e8c20 stores through the file's
+// players_globals_14f2e0() 103; the prologue's pointer from it 103; the position read through a const pointer formed
+// before `last_unit` is set 103; `last_unit` through a `long &` 103; `unit == root` 103; the root started at NONE 103;
+// loop 1 with no player local 103 (all the same code); the busy arms swapped 120; the vehicle arm first 117.
+// Diagnostics, not kept: the root-equals-unit arm passing `root` to 0xbadc0/0xe4050 139 (598 B) and `last_unit = unit`
+// 141 (596 B), both first difference +0x3e: the prologue then takes retail's ESI, both g_4e8c20 stores reload at their
+// use and the position copy is retail's three loads then three stores; with the second the unit takes ESI and NONE EDX
+// as in retail. So the EDI globals web follows the loop-1 priorities (retail: unit ESI, datum EDI, pool EBX, index
+// EBP; ours: datum ESI, unit EDI shared with the hoisted g_4e8c20 reloads), not only the stubbed callee summaries.
+// Both iterator set-ups taking g_4e8c24 directly (no `players` local) 141 (610 B) but aligned 77 against 79 (registers
+// masked 36 against 38): the iterator's data store ahead of loop 1 goes, as in retail (a lead, not kept).
+// M3 lane 15 r142 (H2M_FAST with round 34's widened image, control 103, aligned exact/register-masked 79/18): loop 2's
+// flag word named once for its two tests 103; the busy arm as `busy = function_badc0(unit, 1) ? function_e4050(unit) :
+// false;` 103; the datum index read ahead of loop 2's tests 103 (all the same code); the root-differs arm first with the
+// unit arm as `else if` 117; the last unit named, its position copied, then stored 101 (round 34's 101 family, a gain of
+// two, not kept). Still the one globals web (BLOCKED-BY 0xb8540/0xb7b40 stubs and 0xe4050's asm rounding, as above).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

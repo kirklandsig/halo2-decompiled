@@ -11,6 +11,7 @@
 #include <xtl.h>
 #include "main_messages.h"
 #include "cache_copy_globals.h"
+#include "saved_game_storage.h"
 
 /* unknown_12de70.cpp: the geometry cache's pending loads */
 extern long g_4e64a0;
@@ -21,8 +22,6 @@ bool g_4ed39d;
 bool g_4ed39e;
 dword g_4ed3a0;
 long g_4e6470;
-
-bool g_55c14c;
 
 void function_593e0(void);
 

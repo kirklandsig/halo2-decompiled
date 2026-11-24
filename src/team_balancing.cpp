@@ -1071,6 +1071,16 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // the scan and copy in a forced-inline helper returning the next party 34 (same code); the clamp in a named local 34
 // (same code); the copy loop reading through the stepped party-list pointer 82 (172 B); the fill through a slot pointer
 // from the copy's end (`*slot++ = next_party`) 35. Still BLOCKED-BY 0x7e210.
+// M3 lane 16 r176 (H2M_FAST with 0x91e30 MATCH and 0x7e210 871 each run; control 34): the copy loop under a redundant
+// `if (0 < player_count)` 34; the fill under `if (player_count < total)` 34; both guards 34 (the real build, not a first
+// pass; same code each); the fill value through a no-op conversion, `(dword)`, `(int)` and `(unsigned int)` 34 each (same
+// code: only a conversion that emits an instruction moves the load after the count and destination). Still BLOCKED-BY 0x7e210.
+// M3 lane 1 r159 (H2M_FAST with 0x91e30 MATCH; control 34): the largest party tracked from NONE with the fill `largest +
+// 1` 82 (173 B); the fill continuing the copy loop's index (`for (; i < total; i++)`) 70 (next_party then held in a register
+// with cmovle); the parameters in retail's call-setup order (extra_count, party_indices, player_count; definition, the
+// caller's declaration and its call) re-measured 35, on it the fill counted by extra_count (`parties[player_count + i]`)
+// 62, and the total as `extra_count + player_count` with the entry named once and copied first 76. The player count still
+// arrives in EDX: the fill value is still loaded ahead of the count and destination. Body unchanged.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

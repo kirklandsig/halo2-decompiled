@@ -441,6 +441,25 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // change it) 409 (1370 B); `bool local_2 = false;` declared ahead of the search 399 (1372 B); the pacing test as
 // `!(local_17 > 0.0f && 1.0f / local_22 > local_17)` 356 (same count); local_5's NONE declared beside local_18 403
 // (1376 B). Re-measured: the snapshot and reset through the 64-bit view 429 (1330 B). Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356 at 1374 B;
+// aligned = difflib count of unmatched instructions with addresses, registers and stack offsets masked [mnemonic only],
+// control 98 [57]): snapshot and reset through the 64-bit view with the zero-rate exit as `return local_2;` 393 (1354 B)
+// [99, 49]; the has-host result started false and set in the call's arm (retail stores the zero at entry and the 1 in the
+// arm, match-only flag form) 402 (1376 B) [101, 58]; the three together 355 (1372 B, frame 0x30 for retail's 0x34) [82,
+// 46]; on that, the second threshold as `if (local_6 < 48) goto done;` 401 (1373 B) [86, 51], the first as `if (!(local_23
+// >= local_13)) goto done;` 360 (1369 B) [80, 46]. Reading: retail's done block (`mov al, [esp + 0x48]` and the first
+// epilogue) sits after the capacity arm with the zero-rate test falling into it, so the zero-rate exit is a goto there,
+// and retail's local_2 is never stored by the first threshold (setge/test straight into the jump). Body unchanged.
+// M3 lane 5 r240 (H2M_FAST with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356): the window
+// query's result read through a `bool const &` at both tests 409 (1378 B); the channel pointer declared `const` 356 (same
+// code); the send test written `!local_8 && (callback || window)` 419 (1356 B); the connection pointer bound by a const
+// reference 409 (1378 B). Diagnostic, reverted at once: the owner query's result cast to a byte at its test 355 (only
+// the `test al, al` row: retail truncates the 32-bit result there). Body unchanged.
+// M3 lane 6 r239 (fast with 0x75910/0x76520/0x765c0/0x77940, all MATCH; control 356, aligned 195): the payload floor nested
+// under one sign test with local_16 beside local_7 405 (1369 B), with the zero-rate exit as `return local_2;` 404 (1355 B),
+// with both 405; lane 4 r253's three pieces re-measured 356 (1372 B), with the nested floor 350 at 1369 B (aligned 177:
+// `this` EDI, zero EBX and the index EBP as retail, frame 0x30 for 0x34; a lead, it needs the match-only flag form), with
+// local_16 moved too 368; that 350 form with every channel field read through `channels[local_0]` 417 (1381 B). Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

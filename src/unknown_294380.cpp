@@ -109,7 +109,7 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
 // score 252 (was 252): three slot pairs swapped against retail (walk position/offset, record spill/centroid sum, object
-// spill/nearest distance), see below.
+// spill/nearest distance), see below; m3 lane 16 r179 unchanged (its lines just above the marker).
 // MiniMax C (11-11): no new form, no lower score; the fast check scores this function 280 at 3717 bytes, where the
 // note's 252 is the full build's count, and retail's dead store of zero to the speed vector's i is still missing, so
 // the walk head keeps its pad and every later slot stays off; the three-member local struct lead (274 on the fast
@@ -363,6 +363,58 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // gives every tie group from last-use order except the five 4-reference cells, whose base order here is record, nearest,
 // count, object, sum (record, object, count, nearest, sum with three strengths named); retail's layout needs sum, object,
 // count, nearest, record. What orders register spill homes against address-taken locals in that base list is not found.
+// M3 lane 2 r135 (a one-object frame screen, lane 4 r239's kit, printing each home by name; identical code is scored by
+// identity): the 3.0 guard moved inside the clamp helper 0x294b56 with the callers' guards dropped 252 (identical code:
+// the jumps thread); the flock-flag test as `(flags & 0x10) == 0` 252 (identical code); the speed vector and the steering
+// direction as one two-member local aggregate, +2 instructions (the direction then lives in memory, frame 0xdc kept);
+// 0x2949aa taking the wander state member instead of the record, +5 instructions; 0x2949aa taking the steering vector by
+// value, +9 instructions. Slot map read off the listing: retail and this build agree at every frame offset except the three
+// pairs (retail's walk position, not the offset, shares the post-walk vector's slot); on the three-strengths form the
+// four-reference group reads object, count, nearest, record, sum (retail object, count, nearest, sum, record), and lane 4's
+// tie model reaches retail's group from no input order with that home set. Body unchanged.
+// M3 lane 8 r223 (h2m fast, control 280 at 3717 B; the plain build stays 252): the neighbour count as `long` 526 (3716 B);
+// compare sides swapped at the nearest-distance test (`local_26 < local_10`) 280, at the cone test (cosine on the left)
+// 638 (3716 B), at the radius test (`local_26 < radius && 0.0f < local_26`) 280, at the separation test (squared
+// distance on the left) 280 (same code where 280). Body unchanged.
+// M3 lane 12 r176 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; control 252, aligned 90, masked 32;
+// operand-side sites read from both listings: the field_70 product, the k/j/i preload before 0x295600, the xmm0/xmm3 reload
+// after 0xb75a0, the second dot of both 0x2949aa copies, the scaled centre's y/z and the nearest fallback's i row): the
+// helper's second dot as `dot3f(arg_1, &previous)` 455 (3712 B, aligned 84, masked 26: the first copy's dot becomes retail's
+// `mulss xmm3, [ebx + 0x28]`, the second copy's stays a fresh load); on it the add-scaled helper's i row as `v * s`, its j
+// and k rows as `s * v`, and the first dot swapped as well, 462 fast each (same code). Diagnostic (removed): 1-7 initialised
+// dead locals on the swapped form move the first copy, the second copy (right at 5 and 6) and the field_70 product (right
+// at 5) but never the preload, the reload, the centre or the fallback row. Body unchanged.
+// M3 lane 6 r231 (plain with 0x293b30, MATCH each time; control 252): the nearest-distance arm first under the negated
+// radius test 252 (identical code); the walk's member pointer declared in the `while` condition 252 (identical code); the
+// separation total accumulated before its scaled offset is added 655 (3719 B); the two k clears as one chained assignment
+// 254; 0x2949aa reading through a pointer to the member's wander state 583 (3734 B). Body unchanged.
+// M3 lane 16 r179 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; the fast image builds this body at 280,
+// so fast only screened): the walk radius read into a named local at its five uses, fast 780 (3744 B); the centroid
+// block's inner and outer limits named, fast 543 (3719 B); the walk's separation limit named, fast 685 (3708 B); the
+// object's forward through a named pointer at its three reads, fast 630 (3709 B). Lead (statement order, match-only):
+// the request's second vector assigned before its forward, plain 248 (fast 276): the tail stores then follow retail's
+// order. Body unchanged.
+// M3 lane 6 r235 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all MATCH; control 252, aligned 90, masked 25;
+// the fast image builds this body at 280): one, two and three redundant pairs around the half radius product 252 each,
+// one pair around the centroid block's strength product 252 (same code each: these pairs move no operand side here);
+// lane 12 r176's `dot3f(arg_1, &previous)` with one pair 455 (3712 B, the pair inert); the speed vector declared without
+// its `*g_4687a4` initialiser 797 (3683 B: the copy is not dead code here) and as `{ 0.0f, 0.0f, 0.0f }` with the three
+// zero stores dropped 797 (3683 B). Body unchanged.
+// M3 lane 2 r143 (h2m fast with 0x293b30, 0x293d30, 0x294050 and 0x295600; this body builds at 280 there, 252 plain,
+// so equal scores were compared listing by listing): the final nearest test as `local_10 < 3.402823466e38f` 280 (same
+// code); the count incremented ahead of the three centroid sums 281; the sums written `local_9.x = local_24.x +
+// local_9.x` 280 (same code); the nearest arm storing the point before the distance 283; the centroid test as `local_15
+// != 0` 280 (`je` for `jle`, otherwise the same code). Body unchanged.
+// M3 lane 12 r183 (h2m fast listing 0x293b30, 0x293d30, 0x294050, 0x295600, 0x11c380 and 0x293130 with this function:
+// with the last two the reduced image builds it at 252 like the full build; control 252; body unchanged). Frame reading:
+// the five density-1000 slots are created count, nearest, object (+ centroid distance), record (+ `3 - total`), centroid
+// sum, and the back end's unstable density sort leaves them nearest, count, object, record, sum (retail object, count,
+// nearest, sum, record); with this slot set no creation order that keeps the packing order gives retail's, so retail's
+// slot set differs. The walk's position and offset tie at 10 references and the one whose tenth reference comes first
+// shares the post-walk vector's slot (ours the offset, last read by the separation term; retail the position). Forms: the
+// centroid sum and count ahead of the separation block 770 (3771 B); between the alignment and separation terms 770; the
+// nearest arm first under the negated radius test 252 (same code), with the sum ahead of the separation block 770; the
+// nearest point copied by components 275 (3727 B).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

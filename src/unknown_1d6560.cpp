@@ -100,7 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
-// score 96 (was 96): The object type is read in both kind routes and the build starts with the owner chain. Retail reads the header data and type once at entry and keeps the body in ESI.
+// score 96 (was 96; m3 lane 2 r139 and m3 lane 13 r149 unchanged, their lines just above the marker): The object type is read in both kind routes and the build starts with the owner chain. Retail reads the header data and type once at entry and keeps the body in ESI.
 // MiniMax D (11-20, round 132): no new form, no lower score (96): the body is unchanged. The permuter refuses this
 // function in the reduced image (the reduced image scores 96 differing instructions, the full image 87), so the
 // full-image search was run instead and it reached its time limit with no better form; the one-read type still needs
@@ -129,8 +129,8 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
 // reads the type once.
 // MiniMax S (11-16): score 96 (was 96): no new form kept; the 24-point form (the type read once, the headers in
-// ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach its
-// score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
+// ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach
+// its score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
 // Earlier at 96 (was 96; m3 lane 8 r166 and r172 near the end; a score line, moved below the first in round 252): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
@@ -696,6 +696,60 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct handle or shared case-zero handle 132/132, with promoted type 135/135, and with
 // the whole rigid-body reference 117/117. NOT kept: the 88 forms make the handle a one-use copy
 // and retain the flags address where retail keeps the body. The other single-type forms lose the caller.
+// M3 lane 11 r151 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): retail masks the object index again in case 0
+// although the entry already masked it, so the type was read once at entry with the object-index local used twice (the
+// entry read and case 0's havok_object_get(object_index)), no one-use local: with `(word)object_index` at the entry 98 at
+// 256 B [13] (case 0 re-masks as retail, the entry gives `movzx` and the component/index registers swap); with `& 0xffff`
+// at the entry 133 (220 B) [213] (the mask is shared); with the rigid body declared first 98 [13]; with the type read
+// ahead of the rigid body 86 (260 B) [9]; with a long type 94 [13]. Body unchanged.
+// More r151 forms: a twice-used header-array local (the type through `headers[(word)object_index]`, case 0 through
+// `headers[object_index & 0xffff].object`) 98 [13]; the same with the header array declared first 57 at 256 B [13]
+// (the component then arrives in EDX and the index in EAX, so the caller's setup changes); with the type read ahead of
+// the rigid body 86 (260 B) [9].
+// M3 lane 16 r172 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 118's one-read form rebuilt 28 at 256 B
+// [0]. On it: a diagnostic store of the header array and the object index to two probe globals after the type read 110
+// [9] (the object index then takes ECX as retail, but the incoming index moves to EDX; reverted); the type through
+// `headers[component->object_index & 0xffff]` with case 0 through havok_object_get(object_index) 102 [13], with case 0
+// through `headers[object_index & 0xffff].object` 102 [13]; the absolute index from the component's field first and the
+// object-index local after it 28 [0] (same code); the absolute index from the field with no object-index local 101 [0].
+// Body unchanged.
+// M3 lane 14 r145 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]; body unchanged). Round 118's one-read form rebuilt 28 at
+// 256 B [0]. Diagnostics on it, each removed at once: 1, 2, 3 and 5 dead initialised locals at each of seven places (after the object
+// index, the absolute index, the rigid body, the header array, the type, inside the kind-7 block, ahead of the main switch) 28 [0]
+// every time, so the entry's colouring has no symbol-position phase either; a store of 0, 1, 2, 4, 5, -1, 0x2001, 256, 7 or 0x90 to a
+// probe global at the top 107 or ahead of the main switch 94 (268 B, [0]): the entry's load order does not move for any value (not
+// the global-before-stack tie). Re-measured header-early orders that keep the caller: object index, header array, absolute index,
+// rigid body, type 83 byte / 91 long [0]; object index, absolute index, header array, rigid body, type 88 / 97 [0]; with the rigid body
+// after the type 106 [9] / 124 [194]. In each the object-index read comes first and frees EAX, so the pool pointer takes EAX and the
+// object index EDX; retail reads the component after the header array and the body chain (component still in EAX, pool pointer straight
+// into EDX, the incoming index copied to ESI), which every source order that reads the pool first loses with the caller's registers.
+// M3 lane 15 r132 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): the one-read form (object index, absolute index,
+// rigid body, header array, byte type, case 0 through havok_object_get with the s_object_flags_10a bit2 view) rebuilt 28 at
+// 256 B [0] (aligned 23, register-masked 13), long type 89 [0]; left only the entry permutation (ours header array ESI,
+// object index EDX, rigid body in place in ECX; retail header array EDX loaded ahead of the pushes, object index ECX,
+// rigid body ESI through `mov esi, ecx`). On it: the object index as `long const &` bound to the component's field 96
+// (caller 208); the absolute index, the header array and the rigid body each bound by a const reference 28 [0] (same code
+// each). Body unchanged.
+// M3 lane 11 r157 (H2M_FAST, caller 0x1d5bf0 in brackets, 0 = MATCH; control 96 [0]). Entry statements as header array
+// (H), object index (O), rigid body (R) and a byte type local (T, `headers[object_index & 0xffff].type`, case 0 through
+// havok_object_get(object_index)), no absolute-index local: HORT 88 [13], HROT 96 [13], OHRT 84 [13], ORHT 96 [13], RHOT 94
+// [13], ROHT 96 [13], HOTR 88 [11], OHTR 92 [9]. With the absolute-index local (A) and case 0 through
+// havok_object_get(component->object_index), every order with O before A before T and H before T: OARHT (round 60's
+// one-read form) 28 [0], OAHRT 88 [0], OHART 83 [0], OHRAT 25 [13], HORAT 25 [13], HOART 83 [2], ORAHT 94 [13], ORHAT 94
+// [13], ROAHT 96 [13], ROHAT 96 [13], RHOAT 96 [13], HROAT 94 [13], OAHTR 111 [9] (268 B), OHATR 106 [9], HOATR 106 [11];
+// OARHT with case 0 through havok_object_get(object_index) 101 [0]. In every caller-keeping order the object index is
+// read first into EDX and the header array takes ESI; retail reads the header array first into EDX, copies the incoming
+// index to ESI for the rigid body and gives the object index ECX. Body unchanged.
+// M3 lane 2 r139 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): one `byte type` local read at the entry (after
+// the rigid body) with the kind-7 route as `return type == 1 ? 0xc : 1;` 104 (240 B) [13]; that with case 0 through
+// havok_object_get(object_index) 136 (216 B) [213] (the mask is then shared, where retail masks again in case 0); the type
+// local declared ahead of the rigid body 137 [213]; the rigid body declared after the kind-7 route (where it is first
+// needed) 137 [213]; the kind-7 route kept as its switch on the type local 133 (220 B) [213]. Body unchanged.
+// M3 lane 13 r149 (H2M_FAST, caller 0x1d5bf0 matched in every run; control 96): round 60's one-read form rebuilt 24 at
+// 256 B (only the entry differs: ours object index EDX, header array ESI, rigid body ECX in place; retail ECX, EDX, ESI).
+// On it: the header-array local declared first and assigned in place 24, the rigid-body local declared first 24, both
+// 24, `long result` ahead of the type 24, the header array through a file-local forceinline accessor 24, the object
+// index through a forceinline component accessor 24 (all the same code). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

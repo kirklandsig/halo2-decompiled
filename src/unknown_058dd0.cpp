@@ -745,145 +745,9 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
-// score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
-// the mode and member index take esi; separate case 7 and 8 labels (retail's direct
-// table) with an inline compare-and-update helper 47, an inline id-compare helper 48,
-// a member-index local 47, an id copy 47, the mode in a local 47; a state local 43;
-// cases grouped by outcome 43; a do/while (false) join 43; an early return on an equal
-// id 43; a goto single exit 43; copies of this before, after or at the call 43 (all
-// compile-only). With 0x58d90 inlined by the link (its file at /Ob1, a diagnostic) the
-// table is retail's but this stays in edx (47); only /Os or /G7, which compare the mode
-// in memory, give retail's push ebx.
-// MiniMax I (11-06): no new form, no lower score (43). Retail copies this to EBX at entry and
-// gives EDX to the mode and then to the member index, EBP to the id and EAX to the session; ours
-// keeps this in EDX, so the mode and the member index share ESI and the id takes EBX, and every
-// instruction of the function shifts by the missing push ebx. Retail's head needs this and the id
-// live across a call, which there is the inlined busy-state test; our 0x58d90 stays out of line
-// (its own file is /Ob0 and is not editable from here), and with that test written inline there
-// is no call at all, so the mode and the index take ESI instead of EDX. Separate case 7 and case 8
-// bodies give retail's direct 7-entry table and its single flag block but score 47; with the
-// member index read into a local before the switch the head matches (this in EBX, the id in EBP)
-// and the score is 24, but that form rests on a one-use local, which the review keeps only with a
-// byte match, so it is not committed here. The mode and the index share EDX in retail only because
-// the mode dies before the index is read; ours reads the member index late but in ESI.
-// MiniMax B (11-05): no new form, no lower score (43); separate case 7 and case 8 bodies give retail's direct 7-entry table but 47, and an early member-index read gives retail's head (this copied to EBX) but 24 without an exact match, so it is not kept; 26 further forms (early reads of the mode, the type and the index, nested and inverted tests, an explicit default, state-2 case values, a client copy, an inverted flag test, id copies) measured 45-68; still differs in the this/mode/id register homes and in the two-level case table.
-// MiniMax I (11-04, machine 3, second pass; not kept, m3 review: the 24 rests on a one-use member-index local
-// read before the switch, kept only with a byte match; the case split alone is 47): 24 with separate case 7 and case 8 bodies, which give
-// retail's direct 7-entry table, and reading the member index into a local before the switch gives
-// retail's head: `this` copied to EBX at entry and the id in EBP. What is left is that our index load
-// is hoisted above the switch (retail reads it after the type test), so the mode takes ESI where retail
-// gives EDX to the mode and the index, the id's stack slot is [esp+0x10] against retail's [esp+0xc],
-// and the epilogue pops ebp and esi the other way round. The index has to be live across the switch
-// for the register plan to match, and a local read there is hoisted out of the switch's continuation
-// block, so the two cannot be had together from this file.
-// MiniMax I (11-04, machine 3): no new form, no lower score; retail copies this to EBX at entry (a
-// pointer-class register) and gives EDX to the mode and the member index and EBP to the id, while ours
-// keeps this in EDX, so the mode, the index and the address share ESI and the id takes EBX. Retail's
-// direct 7-entry table needs 0x58d90's result-variable switch, which keeps this in EDX, and only a use
-// of this or the id after the 0x6d380 call moves this to EBX, which retail has not: an if-chain of the
-// seven states moves this to EBX but has no table and leaves the mode in memory. Twenty further
-// spellings of the result-variable switch (the mode, state, type, index and flag in locals, the type
-// test first, early returns, a cast mode, the address or the id in a local, a client copy or a const
-// copy or a reference of this, the busy test as one condition, a do/while(0) round the call, a comma
-// expression, a call through a function pointer, a dead test of this after the call) all keep this in
-// EDX.
-// MiniMax S (11-01): no new form, no lower score; the switch still lowers to a byte-index table and this stays in EDX where retail copies it to EBX at entry, so the mode and the member index take ESI instead of EDX and the id takes EBX instead of EBP.
-// MiniMax B (11-04b): no new form, no lower score; retail's inlined busy-state switch still needs 0x58d90's own file, which this lane may not edit.
-// Round 81: the 0x6d380 call written twice (a diagnostic) gives retail's head exactly (this in
-// ebx, id in ebp, mode and index in edx): retail allocates as if this and id were live across a
-// call; with only this live across one, id still takes edx. Separate case 7 and 8 bodies 47; a
-// busy flag set by the switch 47; an early return on an equal id 43; session at each use 46; one
-// combined condition 43; harness: a memcmp result local (worse), a sized compare helper, a __stdcall
-// member or __cdecl callee, /arch:SSE, /G7, /Ob1, /Ox or /G5 all keep this in edx.
-// Round 84: an early return on the mode and type 43; session read in the switch and the local
-// after it 43; the type tested before the mode 43; memcmp operands swapped 47; a return after the
-// call 43; harness: one && condition with the memcmp, cases 3 and 5 left to the default, an id
-// copy: no change. Calling the existing busy-state test out of line puts this in ebx (as any call
-// before the compare does), but retail has that switch inline.
-// in memory, give retail's push ebx. Round 11: the existing 0x58d90 called in the test 100 (stays
-// out of line, 84 bytes); an early return on the mode/type test, the mode test outer with the type
-// and id tests inside and a member id pointer local 43 each (same code); the session read at each
-// use (no local) worse (this in eax). Compile-only, all with this in edx: 32 combinations of the
-// condition shape (also the type test first), truthy memcmp, a copy of this as the call argument and
-// grouped or separate case 7/8; an inline copy of 0x58d90's body gives retail's direct table only.
-// Lane 13 r14: the existing 0x58d90 called with a `__forceinline` declaration in this file stays
-// out of line (its /Ob0 definition) 100, as a plain call 100; the type test first 43; memcmp with
-// the id first 47; the memcmp folded into the mode/type condition 43.
-// Round 84: an early return on the mode and type 43; session read in the switch and the local
-// after it 43; the type tested before the mode 43; memcmp operands swapped 47; a return after the
-// call 43; harness: one && condition with the memcmp, cases 3 and 5 left to the default, an id
-// copy: no change. Calling the existing busy-state test out of line puts this in ebx (as any call
-// before the compare does), but retail has that switch inline.
-// Round 90 (fast): the switch as 0x58d90's own result-variable form (retail's direct table) with an
-// early return or joined into the condition 45/45 (diagnostic: a hand copy of the helper); memcmp size
-// as sizeof(s_session_id), an equal-id return before the call and a return after it 43 each
-// (identical). BLOCKED-BY 0x58d90: retail inlines that existing helper, ours stays out of line (/Ob0).
-// Round 183 (lane 3, fast): a member pointer named for the memcmp 43; a client copy of this carrying
-// the session read and the call 43; case 7/8 as `if (!flag) break; return;` 43; the mode/type test as an
-// early return before the compare 43; a named differs result with sizeof(s_session_id) 43 (all the same
-// code). The function is virtual (standard thiscall), so no caller or convention lever applies.
-// Round 31 (lane 13): compile-only, a second 0x6d380 call or 0x58d90 called out of line give retail's
-// `push ebx; mov ebx, ecx`; 0x58d90's result-variable switch as a forceinline helper (early return,
-// joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
-// explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
-// (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
-// Round 275: existing busy predicate with a separate producer force-inline declaration, bool/byte/
-// short/long results and early/combined admission, eight forms 100 each (84 bytes). Predicate remains
-// out of line; original body and producer declaration restored. This/id register ownership remains.
-// Round 113 (lane 8): separate case 7 and case 8 bodies (0x58d90's own form) re-measured 47 (plain check
-// agrees): retail's direct 7-entry jump table, and the only difference left is `this` in EDX where retail
-// moves it to EBX at entry (mode/index then take ESI for retail's EDX, id EBX for retail's EBP). On that
-// base: the compare reading `session->` while the switch uses `s` 50; id read once through its address 47;
-// a member pointer local 47; a `client` copy of this 47; cases 2/4/6 grouped 47. The file is /O2 /Gr and
-// 0x58d90's own file /O2 /Ob0, which keeps it out of line here where retail inlines it (a flags lead for
-// the user, not tried).
-// Round 131 (lane 5, fast), on separate case 7 and 8 bodies (direct table, re-measured 47): mode, type and
-// id tests in one condition 47; an early return on mode/type 47; an equal-id early return 47; case 7/8 as
-// `if (!flag) break; return;` 65 (148 bytes); the type tested before the mode 49. `mov ecx, 2` is the
-// `repe cmpsd` count reused for the mode compare (ours has it too); retail allocates as if the compare
-// clobbered EDX (this in EBX, id in EBP). Original grouped body restored.
-// Round 25 (lane 17, fast): 0x6d380 as a __stdcall member of c_session_client (definition, declaration and
-// both calls) 43 (same code); the compare and call inside the switch's default with cases 2/4/6 breaking 43;
-// early returns on the mode/type test and on an equal id 43; those early returns with separate case 7 and 8
-// bodies 47; the in-switch compare with separate case 7 and 8 bodies 47. In every form mode and member index
-// take a callee-saved register because this already holds EDX; retail colours mode/index first (EDX).
-// Round 71 (lane 9, fast): a `client` copy of this passed to the call 43; a member pointer declared with
-// `s` before the switch 48 (with separate case 7/8 bodies 49); the id compare as a named bool 43; an early
-// return on mode/type before the compare 43; a local pointer for the memcmp's first operand 43; a return
-// after the call 43. Compile-only diagnostic: a second identical 0x6d380 call after the first gives retail's
-// whole head (this in EBX, id in EBP, mode and index in EDX), so retail allocated this as if live across a
-// call; the only candidate is the busy-state switch, which retail inlines and ours keeps out of line.
-// Round 300: update consumer/provider/both inline declarations 43 each;
-// both force-inline 449. With the existing state-predicate call, the same
-// contracts give 100/100/100/400. All declarations and original body restored.
-// Round 28 (m3 lane 18, fast): the existing 0x58d90 called 100 (84 bytes, out of line), with a `__forceinline`
-// declaration here 100 (still out of line: its /Ob0 file); the mode/type test as a guard return 43; memcmp
-// tested for truth 43; the busy states as one if-condition 73 (113 bytes). Still BLOCKED-BY 0x58d90's /Ob0
-// file (retail inlines it here: direct 7-entry table and `this` in EBX as if live across the inlined call).
-// Round 145 (m3 lane 6, fast): /Ob0 dropped from 0x58d90's file with the switch as a call to it 47 (inlined,
-// direct table, this still in edx; 10 matched 0x58d90 callers then inline it too, so not kept); separate case 7/8
-// bodies 47; with a const id pointer 47 (round 113's member-id pointer and client copy re-measured 47/47).
-// MiniMax B (11-04): no new form, no lower score; still blocked by 0x58d90's /Ob0 file,
-// which keeps retail's inlined busy-state switch out of line here, so `this` stays in EDX
-// instead of retail's EBX and the switch keeps its two-level table.
-// M399: Read-only actual session pointee/session binding/id binding, seven nonempty subsets 43 each;
-// all with immediate const memcmp result 51 at 139/136 bytes. NOT kept: ties or a longer nonexact one-use result.
-// Original entire body restored; this/mode/id register homes and compressed versus direct case table remain.
-// M401: Actual admitted identity/recipient pointer results, nested/combined/conditional/guarded:
-// 44/44/44/50 and 43/43/43/50. NOT kept: no exact match; pointer-result flags and aliases restored.
-// Original cases, comparison and update call restored; this/mode/id homes and compressed case table remain.
-// Round 82 (m3 lane 10; a compile-only harness reproduces this listing exactly: every case-set,
-// condition, early-return or inline-helper spelling gives one of two codes, grouped 7/8 or the split 7/8
-// direct table): the id compare through the existing memcmp wrapper function_xf5684f (LTCG-inlined) with
-// split case 7/8 bodies 47 plain (identical code); /Ob0 dropped from 0x58d90's file with the switch as
-// `if (function_058d90(s)) return;` 47 plain (inlined, this still in edx) and ten matched 0x58d90 callers
-// lost; the whole body in a forced-inline helper taking the client and the id 43 (same code); split 7/8
-// with explicit cases 0, 1, 9 and a default 47; split 7/8 with an empty equal-id arm and the call in the
-// else 47. Compile-only: the memcmp replaced by an external call puts this in esi (retail allocates this
-// and id as if live across something that clobbers eax/ecx/edx, but the repe cmpsd here does not).
-// 463: direct two-word identity comparison in address order, reversed, both tests, and XOR/OR
-// 50/50/65/50; with separate states 7 and 8, 50/50/62/50. NOT kept: all regress and
-// replace the retail intrinsic sequence; receiver and ID register homes remain different.
+// The member index is a named local with a reference bound to it, so it is not folded
+// back into the member address: it takes EDX ahead of this, which moves this to EBX as
+// in retail. Cases 7 and 8 written apart give retail's direct seven-entry jump table.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
@@ -901,6 +765,11 @@ void c_session_client::function_06dbd0(const s_session_id *id)
 	case 6:
 		return;
 	case 7:
+		if (s->flag7420)
+		{
+			return;
+		}
+		break;
 	case 8:
 		if (s->flag7420)
 		{
@@ -910,7 +779,9 @@ void c_session_client::function_06dbd0(const s_session_id *id)
 	}
 	if (mode == 2 && s->type == 1)
 	{
-		if (memcmp(&s->members[s->current_member].id, id, sizeof(*id)) != 0)
+		long member_index = s->current_member;
+		long &index = member_index;
+		if (memcmp(&s->members[index].id, id, sizeof(*id)) != 0)
 		{
 			function_06d380(this, id);
 		}

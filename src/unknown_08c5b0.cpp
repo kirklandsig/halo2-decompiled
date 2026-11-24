@@ -335,6 +335,43 @@ static inline long bungienet_user_voice_setting(short kind)
 // if/else on that pointer 11 (the setting then takes EDX); the kind test inside the availability helper with the setting
 // as one ternary on it 11; the payload getter single-exit (`payload = NULL; if (kind == 1) { if (available) payload =
 // ...; }`) with a ternary on it 11; the first two with a plain read 32/32 (95 B, folded compare).
+// M3 lane 3 r295 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): plain reads: the kind through an inline
+// accessor on the request returning the result word 32 (95 B, folded compare), the accessor returning `short const &` bound
+// to a `short const &` local 32 (95 B), `short kind = 0; kind = request->kind;` 32 (95 B); the availability tests nested in
+// the selector (two `if`s on the header's fields, each failing arm giving 1) with the existing read 4 (same code), with a
+// plain read 32 (95 B).
+// M3 lane 13 r141 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with the existing kind read:
+// the kind local `short const` 4; the controller index declared ahead of the kind and assigned after it 4; the kind
+// renamed `result` (the received message's result word, so it sorts after `controller_index`) 4 (the three 4s the
+// same code); `changed` declared first 33 (94 B); the selector taking `long` 4 (same code: the widening folds).
+// M3 lane 2 r136 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with plain reads (no volatile): a
+// `long` kind local passed to a `long` selector parameter 32 (95 B); an `int` kind local 32 (95 B); the kind arm as
+// `setting = available ? payload : 1;` in the selector 32 (95 B); the availability helper single-exit (`bool available`)
+// 32 (95 B); the selector seeded `setting = 1` with the payload setting read into a local ahead of the kind test 16 (96 B:
+// the compare still folds, `cmp word ptr [eax + 0xe], cx` with the 1 in ECX). Re-measured: seeded `setting = 1` with
+// `kind == 1 && available` in place 30 (94 B).
+// M3 lane 13 r144 (h2m fast with 0x8c5b0, MATCH each run; control 4), diagnostics with plain reads (no volatile):
+// `__assume(kind >= 0 && kind <= 2)` after the reads 4 (the volatile read's code), `__assume(kind != 0 && kind != 2)` 4,
+// `__assume(kind == 0 || kind == 1 || kind == 2)` 32 (95 B, folded); the selector's last arm as `else if (kind != 1)`
+// (an implied test) 4; the selector seeded 1 with `switch (kind)` on case 1 and empty `case 0: case 2:` arms 30. All
+// restored.
+// M3 lane 1 r156 (h2m fast with 0x8c5b0, MATCH each run; control 4), all with the existing kind read: the selector as
+// `if (kind == 1 && available) return payload; return 1;` 11; no old-setting local with the change test as
+// `controller->voice_setting != setting` 5; the selector seeded `setting = 1` with `kind == 1 && available` and the
+// availability helper as one returned expression 15; the payload setting read into a local at the selector's top 10.
+// Diagnostic (a repeated test, not keepable): `kind == 1 ? selector(kind) : 1` at the call 4 (same code).
+// M3 lane 1 r158 (h2m fast with 0x8c5b0, MATCH each run; control 4), all with the existing kind read: the header's kind
+// read into a local in the availability helper 4; the kind declared, then assigned 4; the handler taking an untyped
+// request pointer cast to the request inside 4; both fields read through a pointer to the result word (`fields[0]`,
+// the index at the next dword) 4; the payload read through a const reference in the selector 4 (all the same code).
+// M3 lane 8 r226 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with a reference-bound plain kind
+// read (no volatile; 4 alone): the controller index read through a reference-bound copy of the request pointer 4; the
+// kind read through that copy with the index through the parameter 4; the controller index read into a reference-bound
+// local as well 4 (the three 4s the same code); the setting built through a reference (`selected = 1;` then the test
+// storing the block's setting) 15 (the 1 takes ECX ahead of the compare, kind DX). Diagnostic: the controller index
+// read from the message header global in place of the request 11 (101 B): the request still takes EAX and dies at the
+// kind's load, so the kind lands in AX only because EAX is free again; retail's ECX request means the kind was given
+// EAX before the request was placed, which here only the two late-merged compares of r104 reproduce.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

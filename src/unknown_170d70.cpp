@@ -414,10 +414,42 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // scoped rotation-first equality 357, reversed time-test spelling 94, flag-first snap test 100.
 // NOT kept: the first and seventh forms recover both traversal slots through +0x34a at 1396 bytes, but
 // regress. The rotation tests grow the body to 1431 bytes and lose the opening schedule.
+// With the named deadline: signed ordinal declared before cursor 94; early cursor advance 215;
+// existing i-k-j basis dot 70, with successful early exit 70; both squared-length deviations
+// computed before tests 131; alternate normalization of both axes 92; deadline array extent 95;
+// staged side cross 94. NOT kept: the 94 and 92 forms recover the traversal through +0x34a
+// at 1396 bytes. The dot forms shorten to 1389 bytes. The correction and normalization still differ.
 // The indexed deadline and short ordinal still exchange slots. Indexed post-test 134/134, indexed deadline
 // reference 88 or with post-test 143, independent deadline reference 121 or with post-test 127,
 // independent deadline value with post-test 121, and reference with advance at read 289. NOT kept: the
 // independent forms restore the traversal homes but grow the orientation tail.
+// M3 lane 8 r225 (h2m fast, control 64): the whole check-and-repair tail as a file-local helper taking forward and up:
+// `inline` stays a call 993 (631 B); `__forceinline` 110 at retail length 1395 B (both normalizes then load as
+// retail, the cross section is one instruction long); with the explicit time cursor 125 (1413 B: the loop and both
+// length tests are retail's, the dot and cross are not). Inside the forced helper: left through cross3f 110, left and
+// up through cross3f 126, both through cross3f_staged 117, up alone staged 117 or through cross3f 126, the dot
+// through dot3f either way 110; the corrected up computed in the six orders and stored j, k, i: i-first orders 117,
+// k or j-k first orders 60 (1392 B); without the helper 70 (i first) / 119 (others). The helper taking one basis
+// pointer 117 (kji 142), taking the channel array 446; up as `forward + 1` in the body 64. Dead locals inside the
+// helper change nothing (diagnostic); caller-side phases 1..7 on the helper form 88/112/112/112/116/157/125,
+// with the explicit cursor 121/123/123/123/96/91/121. Lead (match-only: a one-caller helper and statement orders
+// picked by score): in the forced helper, the 36 compute x store orders of the corrected up give 56 (1392 B) for
+// j-i-k, j-k-i or k-j-i computed and stored k first (k-i-j or k-j-i), 60 with j stored first, 117 with i computed
+// first; on 56 the dot through dot3f or left through cross3f 60; with the explicit time cursor the six compute
+// orders 124/124/124/128/128/128 (1413 B). On 56 the loop slots, the dot's k-i-j order, the cross section's
+// schedule and the first normalize's j product still differ.
+// M3 lane 5 r237 (H2M_FAST, control 64): `group` renamed channel, ordinal, a or zone 64 each (same code: the cursor and
+// ordinal homes do not follow names); the loop's pointer advances with the six coefficient pointers ahead of value and
+// velocity 228 (1415 B), all advances ahead of current/target 215 (1397 B), value moved after first (retail's EBP add
+// position) 78, the coefficient advances reversed then velocity and value 241 (1415 B). Body unchanged.
+// M3 lane 13 r152 (h2m fast with 0x16fe90, MATCH; control 64). Frame reading: the time step's compiler pointer and the group
+// counter both have four references; equal counts go to the one referenced first, and the counter's zero comes ahead of
+// the pointer's set-up, so the counter gets the lower home (retail sets the pointer first and gives it the lower home).
+// On the explicit read-only time cursor stepped last (125 at 1413 B, aligned 35 against main's 65; loop exact): the up pointer
+// declared ahead of forward 125; the time step read without the const cast 255; left through the file's cross product helper
+// 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
+// stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
+// orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1127,11 +1159,48 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // volume address 105; the product as `entry->key * 0x1bc + cameras` 105; the camera table copied into a local, read once
 // through its own address, or bound by const reference at the top of the admitted block 105 each (the copy folds and the
 // table still loads into EDX after the count store).
+// named projection result 105; projection result with separate camera displacement 11; selected camera
+// record reference 22; byte camera record and named projection result 22; portal table in present arm
+// 105; portal displacement in non-sentinel alternative 105; projection result with leading volume field
+// 105; named projection result and portal table 105.
+// NOT kept: The 11-point form requires the one-use camera displacement and still loads the base late,
+// exchanges the base and key registers, pushes the key too early, and transfers distance through EAX.
+// The 22-point forms require a one-use camera binding. The other forms reproduce 105.
+// Native int camera displacement 11; camera row advanced from a shared key 105;
+// entry address before capacity with separate displacement 127; reserved volume reference
+// 11; positive capacity arm 11; pool array address with early displacement 13; const key
+// field reference 11; native plane array width 11. NOT kept: the lower scores retain the
+// one-use displacement and miss the early camera-table load and key/offset register schedule.
+// Entry address before capacity also changes the caller.
 // The camera base is still loaded late and the first push precedes the complete camera address. Indexed
 // key 105, indexed key and bounds 106, read-only projection entry 105, camera row reference after or
 // before the count store 13/13, leading record byte 105, count member reference 105, and count member with
 // camera row reference 13. NOT kept: the 13 forms use a one-use camera binding and still exchange
 // camera/key registers.
+// Earlier at 105 (was 129).
+// M3 lane 3 r299 (H2M_FAST with 0x1730a0, MATCH at every run; control 105, the one-use offset local rebuilt 11): the map
+// parameter (retail's EDX) declared second, third or fourth among the stack parameters with the caller's call updated:
+// 105 each, and 11 each on the offset form (the caller matches at every position, so the position does not order the
+// camera sum). One to three dead initialised locals, or the key named, ahead of the call: 105 with the plane lookup
+// unchanged. On the offset form: the camera table copied into a local ahead of the count store 11, bound by const
+// reference there 11, copied and then bound 11 (all fold); bound by const reference with the product in the call 105.
+// The key for the push or for the product read through pool->entries[entry_index] 13/13 (two loads). Reading: the
+// scratch registers go round EAX, ECX, EDX in evaluation order; retail evaluates the table before the key (ECX, then
+// EDX) and ours the key first, the same reversal as 0x172840's recount. The camera record through a forced-inline
+// accessor in the call, parameters (table, key) or (key, table): 105 each (folds into the call's push order).
+// M3 lane 7 r220 (H2M_FAST with 0x1730a0, MATCH at every run; control 105; leads re-measured: offset local 11, camera
+// address local after the volume address 22, between the count store and the volume address 13). Reading: in retail the
+// camera sum is complete before the key is pushed, with the table in ECX from the block top and the key in EDX; every form
+// below leaves the key pushed ahead of the add. A forced-inline projection helper around the 0x163db0 call taking (cameras,
+// entry, volume), the same with the volume address formed in its argument, taking (volume, entry, cameras) or taking
+// (cameras, key, rectangle, volume) by value: 105 each (same code). The camera record through a 0x1bc-byte record type
+// indexed in the call 105; the table viewed as a record holding a member array, indexed in the call 105, named 22. The
+// camera address local declared at function scope 22; bound by `const &` and passed through the reference, as bytes or
+// as the typed camera pointer, 22/22; that with the key named too 22; the table bound by `const &` 22; the rectangle
+// address or the projection result named beside it 22/22 (all the 22 lead's code). The key and the camera address both
+// named 105; the key named for both arguments 105. The volume address as `volumes[volume_count++]` 115, with the camera
+// address named 87. Diagnostic (restored): a second use of the camera address (stored into the volume) 149 at 454 B, the
+// caller 2.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1507,6 +1576,25 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // scale and sum 407/382, scaled-add 396, complements before trig 390, aggregate
 // complements 369, retained scalar squares with vector scaling 415. NOT kept: all enlarge
 // the 0x50 frame and regress from the 337 reduced control. Unity and square homes still differ.
+// Pass rounded sine at the matrix call, named there or named at angle production
+// 363/330/378 against the 337 reduced control. Cosine counterparts 367/358/351.
+// Pass cosine and its complement at the call or angle producer 350/376.
+// NOT kept: the 330 form shortens to 1445 bytes, loads unity into XMM3 and
+// still spills two squares. Cosine inputs grow the frame to 0x54.
+// Diagonal-field squares before/after trig 370/337. Diagonal-field complements or cosine products 370/383.
+// Symmetric positive-field sine or cosine contributions 345/350. Square plus sine fields 358, diagonal and
+// symmetric cosine fields 380 (reduced control 337). NOT kept: the tied form grows to 1473 bytes, and the other
+// allocations score higher. Unity and the two square spills still differ.
+// M3 lane 8 r225 (h2m fast, reduced control 337): retail squares each difference as fld/fmul from its own spill,
+// interleaved with the SSE rows; ours converts each once and squares on the x87 stack. The differences held in a
+// vector with stores k, j, i / i, j, k / k, i, j and the squares summed k, j, i, or summed i, j, k: 353 each (1444 B,
+// the tail still loads all three first); both sides cast to double 337; the differences as doubles 396 (1417 B);
+// the squares summed x, y, z 337; the rows computed x, y, z 337. The matrix stored transposed (tij - s*k at +0xc as
+// retail) with the transform reading it transposed 358 (1453 B); a second matrix for the second rotation, declared
+// there or at the top, 344 (1442 B).
+// M3 lane 5 r237 (H2M_FAST, reduced control 337): the file's other axis-angle builder and transform (the unused inline
+// pair above the view-setup helpers) for the first rotation only 386 (1425 B), both builders 360 (1455 B), the four
+// transforms 368 (1441 B), builders and transforms 359 (1473 B), the second builder only 352 (1464 B). Body unchanged.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1695,7 +1783,7 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ.
+// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ (r237: a 2 lead, below).
 // Earlier at 37 (was 45). the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
 // The reservation publishes the pointer before the pool count and state test. The stride spill,
 // cap reload, corner loads, and recount registers still differ.
@@ -1833,6 +1921,39 @@ struct s_point_pool_173520
 // (the helper folds to the same tree); the clipped count itself as the down-counter 9; `inside` at function scope 9; the
 // cursor declared ahead of the index and step 9; the pool view at the block top 9; an ascending vertex index with a
 // per-iteration vertex pointer 990 (1471 B, unrolled).
+// signed word clip result 226; unsigned word clip result 226; published count for countdown 166; signed
+// word countdown 41; unsigned word countdown 41; typed inside copy extent 115; typed inside view with a
+// shared extent 134; published countdown and count-first recount 166.
+// NOT kept: The two 16-bit countdowns give 41 at 864 bytes. The published-count forms reach retail
+// length and advance the first difference to +0x105 but shift the loop's working registers and score
+// 166. The typed inside copy forms shorten the body and raise the score. The pointer still publishes
+// ahead of the arena commit and state test in the opening source.
+// Staged reservation and cap with a positive-count scope 24, zero-default index 167, forward-default stride 162,
+// and paired reverse selection 167. Signed-short clip count 226 or staged 224. Shared viewport count 115. Unused
+// reservation trim 190. NOT kept: the 24 form needs an exact match for its reservation and cap binding. The
+// pool/state order, stride spill and recount remain.
+// M3 lane 5 r237 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). Lead 2 (match-only, 865 B): on the 9
+// lead the recount's count read through `long const &used = result->count;` with `pool->count = (result->points -
+// pool->points) + used;` 2 (recount exact: points ESI, count ECX); `long used = result->count; long &total = used; total
+// += ...; pool->count = total;` 2; `total = difference; total += count` through the reference 10; a `short const &` 9.
+// Left on the 2 lead: only `mov [esp + 0x1c], ecx` (step * 8) after the clipped cursor's lea where retail stores it
+// first. On the 2 lead: step as `long const &` to its selection 2, the index start through a `long const &` 2, `long
+// const &stride = step` in the update 2, the cursor start through a `point3f const *const &` 152, the countdown from a
+// `long const &` to the clip count 2, `remaining` declared ahead of index and step 2, `&result->points[index]` 2, index
+// and step in one if/else on the state 166; the guarded loop as `do { ... } while (--remaining)` 65 (869 B), as a do-while
+// with `--remaining` in the body 65 (869 B), as `while (remaining != 0)` 2; permuter 74 tries in 600 s, best 2.
+// M3 lane 15 r138 (H2M_FAST; round 237's 2 lead rebuilt, 2 at 865 B; left: the stride spill `mov [esp + 0x1c], ecx`
+// after the cursor's `lea edx, [esp + 0x328]` in the loop preheader, where retail stores it first). On the 2 lead: the
+// cursor declared ahead of index and step 2; the cursor declared right after the clip call 2; `&clipped[0]` 2;
+// `remaining` ahead of the cursor 2; the inverse computed ahead of the destination point 2; the guard on `count` with
+// `remaining` kept 2; `index += step` ahead of `++cursor` 121 (863 B); permuter (seed 13821, anneal, 600 s) 69 tries,
+// best 2.
+// Round 114: The typed pool used for capacity and reservation 37, pool count increment before the point expression 42.
+// With the staged reservation, separate bound and cap reads, and the long count reference: signed winding arithmetic
+// 158, forward defaults 167, step after point selection 40, cursor in the loop increment 121, short step 166, and
+// unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
+// published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
+// for the bounds 194, and one viewport receiver after projection 128.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1954,6 +2075,7 @@ struct s_pool_view_172840
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
 // score 55 (was 134): The 0x30 frame and flag homes agree. The link and key scratch registers, signed cluster publication and sentinel encoding still differ.
+// Earlier at 55 (was 134).
 // Earlier at 134 (was 134). The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
 // The selected cluster and portal stores exchange scratch registers with the link and key, and
 // the sentinel load adds two bytes to the publication block.
@@ -2161,12 +2283,48 @@ struct s_pool_view_172840
 // code); the copy through a forced-inline memcpy wrapper that sets up the source first (the form of the copy helper in
 // src/unknown_1932c0.cpp) 55 / 17 (same code: `mov edi, eax` still precedes `add esi, 0x2c`). NOT kept: store orders
 // are match-only.
+// cluster field selection reused for list insertion 153; explicit cluster field cases 143; box-typed
+// default copy 55; bound box used for default and update 55; clip output bounds member 55; recount by
+// subtracting the reverse displacement 122; commit entry count from captured index 55; named clipped
+// count 55.
+// NOT kept: The bounds views, captured entry count and named clipped count reproduce 55. The signed-
+// field selection changes the frame and removes the retail list argument lifetime. The reverse
+// displacement grows to 872 bytes. The predecessor/key allocation and long sentinel encoding remain on
+// the opening body.
+// Read-only dequeued entry 55; allocated entry reference 55; narrow opposite endpoint update 55;
+// const narrow endpoint with late widening 55; named clip result 55; native clip views for both
+// inputs and output count/points 256; reservation counter postincrement after capacities 55;
+// default bounds by native fields 56. NOT kept: the native clip views move the frame. The native
+// bounds fields remove one byte and still load the link and key into exchanged scratch registers.
 // The successful-clip publisher still widens the cluster before the key store and gives AX to the portal.
 // Signed cluster from its field immediately after its store 19, after both IDs 71, or after both unset
 // links 71; direct field selection 59, branch field selection 137, chained short 150, and signed branch
 // join with a named predecessor or insertion short 151/151. NOT kept: the 19 form uses a one-use field
 // binding and emits cluster first and key after portal, whereas retail publishes link, key, cluster,
 // portal.
+// M3 lane 3 r299 (H2M_FAST, control 55; round 160's key/next/portal/cluster store order rebuilt, 17). Reading of the
+// publication block: the scratch registers go round EAX, ECX, EDX in evaluation order, so retail evaluates the key before
+// the link, the portal before the widening, the copy's source before its destination and the entry count before the point
+// difference; ours takes each pair the other way round. Two by-value forced-inline setters (link and key, cluster and
+// portal) 55 (same code). 1-10, 12, 14, 16, 20, 24, 28, 32 and 40 dead initialised locals after the flags on the 17 form:
+// 17 at every count; 4, 8, 12, 16 and 24 ahead of the storage pointer: 17 each (not a symbol-count state). The recount on
+// the 17 form: storage through the macro at both uses 42 (871 B, the base folds to `sub 0x6c08`); the point difference
+// named first 17; the count named first 17; `(data + count) - points` 106 (872 B, shl and lea); the difference stored and
+// the count added by `+=` 105 (871 B); the count first with the difference cast 17; a byte-pointer difference shifted by
+// 3 17; the difference or the count cast to unsigned 17/17/17; `data - (points - count)` 106; the difference, the whole
+// recount (long count, short count or the entry as its argument) and the count or the count and points through
+// forced-inline helpers 17 each (same code). Nothing kept.
+// M3 lane 7 r220 (H2M_FAST, control 55; round 160's key/link/portal/cluster store order re-measured 17 at 868 B, with the
+// two sentinel stores in field order 19). Reading of retail's block: the key is loaded (ECX) ahead of the link (DX); the
+// link store goes out when EDX is taken for the default rectangle pointer and the key store when ECX is taken for the
+// portal index; the selected cluster is widened only before its own store. A forced-inline by-value setter for the link and
+// the key with parameters (entry, key, link) or (entry, link, key), the link passed as a short or as a long narrowed in
+// the setter, the key parameter unsigned (a converting argument), or both by `const &`: 55 each (same code). A short copy
+// of the dequeued value made where it is read, used for the link store, 55; the key parameter typed unsigned 55. The
+// rectangle copy at each place among the six scalar stores (first to sixth; last is the order itself), for the orders
+// (link, key, cluster, portal) 34 34 34 56 34 52; (key, link, portal, cluster) 34 33 32 32 28 29, copy last 17; (key,
+// link, cluster, portal) 34 33 32 54 32 50, copy last 53; (link, key, portal, cluster) 34 34 34 34 30 31, copy last 19:
+// none below the 17 lead (all 868 B but the 50 to 56 forms, 869 or 870 B).
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2505,6 +2663,75 @@ struct s_camera_reference_171830
 // flag 155, signed reference byte 263, split signed result stores 263, unsigned reference
 // threshold 264, and constrained comparison assignment 291. NOT kept: packed views
 // leave the early zero unchanged, while signed and split forms lengthen the plane path.
+// Center fused coordinate loop 371, separate rear and center loops 391, indexed rear alone 391, indexed center
+// alone 386, indexed scale with shared negation 391, indexed update of copied center 384, copied forward with
+// loop and negation 399, explicit plane admission plus fused loop 390. NOT kept: each grows beyond 1219 bytes
+// and raises the score. Plane-exit zero and center scheduling remain.
+// Plane products accumulated, subtotal named, indexed accumulation, or all
+// products named with the plane arm first 281/287/281/284 or the unconditional
+// arm first 283/287/283/282. NOT kept: all keep the lookup branch difference
+// and grow the body. The zero and center SSE schedule remain displaced.
+// M3 lane 3 r299 (H2M_FAST with 0x170fd0 and 0x171d00, both MATCH unless noted; control 155). Counts in brackets are
+// difflib-aligned differing rows (build/r299/adiff.py; the positional 155 is mostly a one-row shift): control [36] = plane
+// block 7 (zero loaded ahead of the flag branch, one shared flag store, the i product's sides), centre 18, cross product 10
+// (five of its six products load the other operand), tail 1. KEPT (same code, 155): the refinement loop calls the existing
+// 0x171d00 in place of its body written out (LTCG inlines it there); the sample loop through the same call 263 [60] and
+// both loops 263 [57], because the refinement loop's target products then change sides, so the sample loop stays written out.
+// LEAD, not kept (a one-use local; build/r299/lead-0x171830-named-distance.patch): the flagged arm first with the distance
+// named, `if (reference & 0x80) { real plane_distance = plane_distance_to_point(&entry->plane, point); if (plane_distance <
+// 0.0f) narrow = true; } else narrow = true;` 117 at 1222 B [25 with the kept call, 28 without]: the plane block (zero made
+// after the products in XMM1, two flag stores) and all six cross products are then retail's; left are the centre's i product
+// (retail copies the depth and multiplies by forward->i in memory, ours loads forward->i) and the refinement loop's target
+// (retail i and j loaded, k multiplied in place with the midpoint in XMM0; ours j through a copy and the midpoint in XMM3).
+// Other plane forms: the existing plane-distance helper in the `||` test 281 [36] (the i product right, a jump and padding
+// ahead of the sample loop); the nested arms with the helper call in the test 281 [36]; not-flagged arm first 282/283
+// [40/37]; a bool-returning forced-inline wrapper around the helper, the hand-written dot or with (point, plane) parameters
+// 152 at 1222 B [45-47] (cross products right, zero still ahead of the branch, refinement target changed); the same wrapper
+// taking the distance 152 [45]; a named bool 152 [45]; an identity wrapper on the distance 281 [36]; the whole cluster test
+// as a bool-returning inline (one result, early returns, or returned expression) 281/301/289/289 [36-38]; the flag assigned
+// from the bool expression 284 [36]; with the distance named: hand-written dot 152 [47], not-flagged arm first 288 [58],
+// flag assigned from the compare 275 [30], assignment inside the `||` test 274 [31]. On the lead: 1-8 dead longs or floats
+// at the top, after the cross product or in the refinement block 117-127 [28-36] (period 8, never the centre or the target);
+// the 19 other parameter orders 117-119 [28-30] and 1-12 unread leading parameters 117-126 [28-36]; the centre as the
+// existing scale and negate helpers 267 [56], unary minus 261 [43], products or sums written the other way round 117 [28]
+// (same code), the centre through the existing vector sum 124 [34], the depth unnamed 119 [34], scale helper then subtract
+// 266 [51], `point->x + (0.0f - back.i)` forms 92-93 at 1219 B [38-41] (the plane block and cross product then go back to the
+// control's), negate then scaled sum 275 [62]; the 35 other orders of the rear-vector and centre rows 119-269 [30-61]; the
+// rear vector and centre as aggregate initialisers or through the existing setters 117/124 [25-28]; the cross product
+// through cross3f and either loop's target through vector3f_add_scaled, in all combinations with the calls, 117-120
+// [25-31]; the refinement products' eight written operand orders 117 [28] (same code); one-use probes between the cross
+// product and the refinement target (the sum, the sign, the distance, the axis index, the side scale through the helper)
+// 117-121 [28-32]. On the control: 1-16 dead locals at the top 155 except 4 and 12 (256) and 5 (177), ahead of the cross
+// product or the flag 155/257; the 19 other parameter orders 155-157 [34-40] (forward must stay ahead of up; with up first
+// the caller is 2); the scale-and-negate centre 158 [40]. Diagnostics (reverted): with the plane test removed or cut to one
+// product the cross products take retail's sides but the point then arrives in EBX; 0-7 unread parameters ahead of forward
+// and 0-3 behind it [33-58].
+// M3 lane 8 r225 (h2m fast, control 155): every product of the side cross loads the forward field first where
+// retail follows the written order, and the center block keeps depth live one product longer. The nine parameter
+// interleavings retail's call allows (ECX forward before EAX up; point, distance, offset on the stack) 155 each;
+// forward, up, point or distance renamed 155 each; the narrow test as a flagged arm then `else narrow = true`
+// 155 (zero on the left 155), as `if (!flag) ... else if (plane)` 282, as one assigned disjunction 283; the j
+// product written forward first, the z sum back first, both 155, the back stores i, k, j 157; the side written
+// straight into the second offset and scaled in place 155; both offsets through vector3f_scale 263, with the
+// side through cross3f 263.
+// M3 lane 7 r220 (H2M_FAST with 0x170fd0 and 0x171d00, MATCH at every run; control 155; counts in brackets are
+// difflib-aligned differing rows, control [36]). Reading: retail's centre is three products first (depth copied times
+// forward->i from memory, forward->j loaded times depth, depth in place times forward->k), then the three subtractions
+// from zero, then the sums, which looked like vector-wide steps. Sweep of five plane forms by six centre forms by two side
+// forms (60 builds). Centre forms: the existing scale, negate and sum helpers; scale and negate helpers with the sums
+// written out; products, then `0.0f -` each, then the sums as three groups of statements; scale helper then written
+// negations; scale into one vector and negate into a second: one code for all five. Side vector through cross3f(up,
+// forward): same code as written out, at every form. Control plane test: centre written out 155 [36], the five grouped
+// centres 158 [40]. Flagged arm first with the plane-distance helper in the test and `else narrow = true`: 281 at
+// 1235 B [36], grouped centres 282 [44], [42]. Flagged arm first with the dot written out: the control's code (155 [36],
+// 158 [40]). The named-distance lead: 117 at 1222 B [25], grouped centres 267 [55], [53]. The distance named with the dot
+// written out: 152 at 1222 B [44], grouped centres 286 at 1238 B [59]. On the lead [25] the centre's i product and the
+// refinement target are what is left (ours stores the midpoint after the k product and copies it for the j row; retail
+// stores it ahead of the k product and multiplies in place). Stand-alone compiles: one product of two field loads comes
+// out in one operand order whichever way it is written (the load with a field offset first, then the first-declared
+// pointer's), and a three-term dot always sums k, j, i; two stand-alone side vectors that differ only in the order of the
+// two pointer parameters come out with five of the six products the other way round, so the order here is set by the
+// function around the products, not by their spelling.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2594,23 +2821,14 @@ void function_171830(point3f const *point, vector3f const *forward,
 		for (long remaining = 10; remaining; --remaining)
 		{
 			real middle = (upper + lower) * 0.5f;
-			bool hit = false;
-			s_segment_collision collision;
-			collision.material = NONE;
 			point3f target;
 			target.x = best_offset->i * middle + center.x;
 			target.y = best_offset->j * middle + center.y;
 			target.z = best_offset->k * middle + center.z;
-			long flags = 0x808c0f;
-			if (narrow) flags = 0x808c0d;
-			vector3f direction;
-			vector3d_from_points3d(point, &target, &direction);
 			real found_fraction;
-			if (function_1697c0(flags, point, &direction, NONE, NONE,
-				(s_collision_result_1697c0 *)&collision))
+			bool hit = function_171d00(point, &target, &found_fraction, narrow);
+			if (hit)
 			{
-				found_fraction = collision.fraction;
-				hit = true;
 				if (fabs(found_fraction - upper_fraction) < 0.1f)
 				{
 					upper = middle;
