@@ -1887,6 +1887,10 @@ long function_1e4a10(long index);
 // (0.0f - vitality)` 8 (same code); the body damage stored ahead of the end lookup and the 0xb58c0 call 43 (883 bytes);
 // the stun bounds into a NULL-initialised local tested after the type test 8 (same code); the vitality clamp as an
 // if/else store 206 (885 bytes).
+// M3 lane 5 r241 (H2M_FAST), at 8: the shield damage store as `shield_damage * inverse_maximum_shield` 8, the stun test
+// as `threshold < shield_damage` 8, the multiplier test as nested ifs 8, the stun seconds as `stun_time * rate` 8 (all
+// four the same code); the tail through `DAMAGE_OBJECT(object_index)` at both uses with no `object` refresh 10 (the
+// reload orders stay); re-measured: the multiplier declared right after the category bool 206 (901 bytes).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2396,7 +2400,7 @@ struct s_unit_child_iterator
 	long next_index;
 };
 
-void function_d0590(s_unit_child_iterator *iterator, long object_index);
+void function_d0590(long object_index, s_unit_child_iterator *iterator);
 s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 void __stdcall function_b9b90(long object_index, bool disable);
 void function_b9c60(long object_index, bool flag);
@@ -2803,7 +2807,7 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 			s_unit_definition *definition = (s_unit_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 			s_unit_child_iterator iterator;
 
-			function_d0590(&iterator, object_index);
+			function_d0590(object_index, &iterator);
 			while (function_d05c0(&iterator))
 			{
 				if (iterator.seat_index != NONE)
@@ -3025,7 +3029,7 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 		{
 			s_unit_child_iterator iterator;
 
-			function_d0590(&iterator, object_index);
+			function_d0590(object_index, &iterator);
 			while (function_d05c0(&iterator))
 			{
 				if (iterator.seat_index == seat_index)
@@ -4070,7 +4074,7 @@ void __stdcall function_db210(s_type_1e6529 const *data, long vehicle_index)
 	s_type_1e6529 rider_data = *data;
 	s_unit_child_iterator iterator;
 
-	function_d0590(&iterator, vehicle_index);
+	function_d0590(vehicle_index, &iterator);
 	rider_data.flags |= 0x200;
 	while (function_d05c0(&iterator))
 	{

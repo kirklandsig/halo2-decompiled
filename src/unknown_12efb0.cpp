@@ -987,6 +987,25 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // second named local for the tests with the first kept for the lookup and the 0x131030 argument 666 (same code, on this
 // body 607: the copy folds, no `mov edx, eax`); the result declared without an initialiser and assigned after the
 // handled flag 668; the handled flag declared ahead of the out index 669.
+// M3 lane 8 r232 (h2m fast with 0x130f60, 0x1317a0 and 0x12eb00, all MATCH each run; control 607 at 3832 B, aligned 487,
+// register/stack-masked 220; body unchanged). Frame reading: this frame's homes are sorted by references x 1000 / size
+// with an unstable order among equal densities, so any form that adds or drops one home moves the clears and the
+// accumulator homes together (the +0x2e first differences below) and the positional count cannot fall before the home
+// count is retail's. Retail's own listing re-reads the palette byte for the source-index store (`movsx edx, byte ptr [esi +
+// 0x6f]` after the accumulator calls), compares it as a byte at the top and sign-extends it once ahead of the previous-index
+// branch for a lookup shaped like the listed getter. Forms: a char slot local 700 (re-measure); the char local with a named
+// long index for the bounds and the entry 751 (3842 B, first +0x2e, masked 228), that index also for the source-index store
+// 751, with the NULL inside the lookup arm 751 / 751 (same code each); the short local with the long index 797 (3862 B); the
+// char local with a file-local inline lookup taking a long index (NULL first, the global and the bounds inside) 689 at
+// retail's 3817 B (masked 219: slot BL, NONE EDX, result EAX, record ESI), the same as one conditional expression 689; the
+// short local with that lookup 604 (3822 B, re-measure of the listed 604); the byte read at each use with that lookup 600 at
+// 3817 B (masked 228; slot CL as retail, NONE EDX for retail's EAX, record EDI for retail's EBX, the sign extension inside
+// the lookup arm), with a named cluster index for the lookup and the three `== arg_0` tests 600 (masked 220, the listed
+// form); the byte at each use with a long index local and no lookup function 666 (3827 B, masked 217; re-measure). None
+// kept: the lookup is a new one-caller helper (match-only) and 600 is 7 under the control. Diagnostic, reverted at once: an
+// undefined stand-in for 0x130f60 on the 600 form keeps the cluster index in a callee-saved register across the call
+// (EBX, retail EDI; 747 at 3855 B because the stand-in takes the standard convention), so retail's index in EDI is what a
+// call without a memory summary gives, as the earlier "the build knows 0x130f60 writes nothing" line says.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

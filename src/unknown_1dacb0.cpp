@@ -2309,6 +2309,18 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // EBP zero), so the loop between the requests is what costs the graph its register. The second request without its loop:
 // mode in EBP at the join and the table address read from memory as retail, the graph in EBX but loaded at the first
 // resource loop. No source form found yet that keeps the graph in EBX across the first inheritance loop.
+// M3 lane 12 r183 (h2m fast with the twin, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70 and 0x1ddd00, all but the twins MATCH;
+// control 812; body unchanged). Frame reading: the 4-byte homes are packed most-referenced first and each tries the dead
+// argument homes first. Retail's shared mode-table address has 10 home references (one store, nine reads by the two
+// requests) and the found mode 8, so the table address takes found_mode's dead home, the outputs get new slots mode,
+// class, type with the result above, and the candidate joins the table address; ours has the found mode at 11 (read at
+// all eight kinds) and the table address at 7, so the found mode takes that home. Both counts follow from the second
+// request: retail holds the graph in EBX and the found mode in EBP and reads the table address from memory; ours gives
+// EBX to the table address (kinds 2 to 5) and EBP to the graph, whose piece runs into the second inheritance loop where
+// EBX is the inherited graph's. The allocator ranks that table-address piece just above the point where the found mode
+// would take a register. Forms: the request helper taking its mode by `long const &` 812; all three keys by `long const
+// &` 812; the kinds helper's mode by `long const &` 812; the graph by `s_graph_tag *const &` 812; the second request in
+// its own `if (result.index != NONE)` block after the first 812 (same code each).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
