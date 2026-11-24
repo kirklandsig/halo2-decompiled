@@ -373,17 +373,15 @@ static __forceinline void apply_circular_second_fields(float impulse,
 
 
 
-static __forceinline void apply_linear_spilled(float const &source, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_copy)
+static __forceinline void apply_linear_spilled(float const &source, __m128 scalar, solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result)
 {
-	// These normal-pair impulses have already been spilled to float. Load that
-	// value for accumulation and copy its bits into the SIMD scalar.
-	float impulse = source;
-
-	memcpy(&simd_copy, &source, sizeof(simd_copy));
+	// The previous update already captured the SIMD value. Accumulation reads
+	// this stored source after that update publishes its result.
 	__m128 work_a, work_b, work_c, work_d, work_e;
 	work_c=a->inverse_inertia;
-	work_b=_mm_load_ss(&simd_copy);
+	float impulse = source;
+	work_b=scalar;
 	work_e=row->linear;
 	work_a=_mm_shuffle_ps(work_b, work_b, 0);
 	work_a=_mm_mul_ps(work_a, work_c);
@@ -425,8 +423,8 @@ static __forceinline void apply_linear_spilled(float const &source, solver_linea
 // Capture B's angular receiver after the linear writes, before either angular write.
 
 
-static __forceinline void apply_first_normal_positive_impulse(float const &source, __m128 const &linear_axis,__m128 const *angular_axes,
-	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_copy)
+static __forceinline __m128 apply_first_normal_positive_impulse(float const &source, __m128 const &linear_axis,__m128 const *angular_axes,
+	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_copy, float const &second_source, float &second_copy)
 {
 
 	// Capture inertia before the SIMD copy can replace one of its lanes.
@@ -469,7 +467,12 @@ static __forceinline void apply_first_normal_positive_impulse(float const &sourc
 	w[0]=angular_body_b->angular;
 	w[0]=_mm_add_ps(w[0],w[1]);
 	angular_body_b->angular=w[0];
-	*result+=impulse;
+	// Capture the next SIMD input before a result store can replace either source or copy.
+	float accumulated=*result+impulse;
+	memcpy(&second_copy,&second_source,sizeof(second_copy));
+	w[1]=_mm_load_ss(&second_copy);
+	*result=accumulated;
+	return w[1];
 }
 
 // The first pair reloads B for inertia, then captures each update receiver.
@@ -690,8 +693,8 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		{
 			if (scalar_work.pair_b > 0.0f)
 			{
-				apply_first_normal_positive_impulse(scalar_work.pair_a, retained_axis,axis-4, a, b, result, projection_pool.normal_first_a_copy);
-				apply_linear_spilled(scalar_work.pair_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, projection_pool.normal_first_b_copy);
+				__m128 second_scalar=apply_first_normal_positive_impulse(scalar_work.pair_a, retained_axis,axis-4, a, b, result, projection_pool.normal_first_a_copy, scalar_work.pair_b, projection_pool.normal_first_b_copy);
+				apply_linear_spilled(scalar_work.pair_b, second_scalar, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 				return;
 			}
 			break;
@@ -1386,7 +1389,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2077. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2083. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.

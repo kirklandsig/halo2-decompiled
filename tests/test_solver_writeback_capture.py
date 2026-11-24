@@ -1225,3 +1225,32 @@ def test_second_normal_positive_inertia_precedes_copy(solver_images,precision,ro
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,observed)
             else:assert snapshots[rounding]==(snapshot,observed)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+@pytest.mark.parametrize('writer',['second_impulse10','simd_copya0'])
+def test_first_normal_second_simd_capture_precedes_first_result(solver_images,precision,writer):
+    frame=STACK+32768-0xd0
+    output=frame+(0x10 if writer=='second_impulse10'else 0xa0)
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+24,'3I',3|(8<<8)|(5<<16),0,0x400)
+            put(data,TERMS,'24f',0,0,0,1 if writer=='second_impulse10'else 2,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for b in [HEAP,HEAP+0x80]:
+                for offset in [0x10,0x20]:put(data,b+offset,'4f',0,0,0,0)
+                put(data,b+0x30,'4f',1,1,1,1)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(frame+0xa0,b'\0'*8)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            observed=words(machine,output,2)
+            expected=(0x40000000,0x40400000 if writer=='second_impulse10'else 0x3f800000)
+            assert observed==expected,(label,writer,precision,rounding,observed,expected)
+            assert words(machine,HEAP+0x10,1)==(0x3f800000,),(label,writer,precision,rounding,words(machine,HEAP+0x10,4))
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,observed)
+            else:assert snapshots[rounding]==(snapshot,observed)
