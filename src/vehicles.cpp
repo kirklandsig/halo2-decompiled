@@ -7176,6 +7176,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // through the receiver or vehicle 959/978, root and pitch before the receiver 978,
 // named squared input through the receiver or vehicle 959/978. NOT kept: the pitch
 // forms tie or raise the score without recovering the 0xd8 frame or entry registers.
+// The 0xfc matrix frame and the vehicle handle and stride registers still differ.
+// current basis at multiply 1179, late current with separate relative matrix 1217.
+// current and relative scope 1217, late basis with reused rotation output 1209.
+// early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
+// scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
+// NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

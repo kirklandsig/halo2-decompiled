@@ -3655,6 +3655,12 @@ struct s_ammo_conversion_entry
 // Destination, source and tag-array lvalues, single and paired loop-entry bindings 190 each;
 // all three bound together at loop entry or per iteration 190 each. Saved destination and
 // conversion-key registers remain different.
+// The 0x20 frame agrees. The destination weapon and conversion key still use different saved registers.
+// separate source-magazine selections 234, separate selections with positive acquisition 226.
+// separate selections with one exit 227, conditional source pointer with positive acquisition 216.
+// shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
+// transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
+// NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
