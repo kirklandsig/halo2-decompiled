@@ -1229,8 +1229,8 @@ static __forceinline void decode_solver_header_31c940(unsigned char *&op,
 {
 	solver_header_31c940 *header = (solver_header_31c940 *)op;
 	a = header->a;
-	a_home = a;
 	b = header->b;
+	a_home = a;
 	terms = header->terms;
 	op += sizeof(*header);
 }
@@ -1278,19 +1278,23 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			// for the three-axis friction record. Longer runs redispatch here.
 			case 3:
 			{
+				// Read the following opcode after the row writes and before advancing.
+				signed char next_pair_kind;
 				{
 					solve_contact_pair(step, op, normal_axes, terms, a, scoped_b, result, scalar_work, projection_pool);
+					next_pair_kind = *((signed char *)op + 8);
 					terms += 6; normal_axes += 6; result += 2; op += 8;
 
 				}
-				if (*op != 3) continue;
+				if (next_pair_kind != 3) continue;
 				{
 					solve_second_contact_pair(step, op, terms, normal_axes, a, scoped_b, result, scalar_work, projection_pool);
+					next_pair_kind = *((signed char *)op + 8);
 					terms += 6;  result += 2; op += 8;
 
 				}
 
-				if (*op != 8) { normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128)); continue; }
+				if (next_pair_kind != 8) { normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128)); continue; }
 				break;
 			}
 			// Continue below the switch for the shared spinning-friction path.
@@ -1893,9 +1897,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				long const &friction_stride = *(long const *)(op + 16);
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				*(float *)friction_result = result[0];
-				*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
 				float const *&inverse_time_pointer = scalar_work.writeback_time;
 				inverse_time_pointer = &step->inverse_time;
+				// The error output may replace the saved pointer for later rows.
+				*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * *inverse_time_pointer;
 				friction_result += friction_stride;
 				*(float *)friction_result = result[1];
 				*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * *inverse_time_pointer;
@@ -1909,9 +1914,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				long const &friction_stride = *(long const *)(op + 16);
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				*(float *)friction_result = result[0];
-				*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
 				float const *&inverse_time_pointer = scalar_work.writeback_time;
 				inverse_time_pointer = &step->inverse_time;
+				// The error output may replace the saved pointer for later rows.
+				*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * *inverse_time_pointer;
 				destination = 0;
 				friction_result += friction_stride;
 				*(float *)friction_result = result[1];

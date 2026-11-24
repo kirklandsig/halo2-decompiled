@@ -1,11 +1,59 @@
-"""Differential coverage for paired writeback with aliased input arguments."""
+"""Differential coverage for aliased solver inputs and writeback storage."""
 import struct
 
 import pytest
 from test_solver_dispatch import (
-    HEAP, STACK, STEP, OPS, TERMS, IMPULSES, solver_images,
+    HEAP, STACK, STOP, STEP, OPS, TERMS, IMPULSES, solver_images,
     solver_case, put, address, execute, words,
 )
+
+
+@pytest.mark.parametrize('kind', [7, 8])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('local_home', [False, True])
+def test_friction_writeback_retains_time_at_each_output_boundary(
+        solver_images, kind, precision, local_home):
+    for rounding in range(4):
+        data = solver_case(kind, 0)
+        replacement_step = STEP + 0x100
+        put(data, STEP, '7fi', 0, 0, 0, 0, 1, 0, 0, 0)
+        put(data, replacement_step, '7fi', 0, 0, 0, 0, 2, 0, 0, 0)
+        size, row_kind = (20, 5) if kind == 7 else (24, 6)
+        # Retail aligns ESP, reserves 0xB4 bytes, then saves three registers.
+        # Alias either the incoming step argument or its retained time home.
+        output_address = STACK + 32768
+        replacement = replacement_step
+        if local_home:
+            output_address += -0xd0 + 0xc
+            replacement += 16
+        put(data, OPS + 24, 'I', kind | (size << 8) | (row_kind << 16))
+        put(data, OPS + 28, 'I', output_address)
+        put(data, OPS + 40, 'i', 8)
+        put(data, OPS + 24 + size, 'I', 0x400)
+        # Preserve the return word in the incoming-argument case. The first
+        # error stores a pointer's exact float representation into the alias.
+        put(data, IMPULSES, '3I', STOP, 0x3f800000, 0x3f000000)
+        put(data, TERMS + 12, 'I', replacement)
+        put(data, TERMS + 60, 'f', 2)
+        put(data, TERMS + 124, 'f', -3)
+        expected = (STOP, replacement, 0x3f800000,
+                    0x40800000 if local_home else 0x40000000)
+        if kind == 8:
+            expected += (0x3f000000, 0xc0c00000 if local_home else 0xc0400000)
+        retail, compiled, symbols = solver_images
+        snapshots = []
+        for machine, entry, gate in (
+                (retail, 0x31c940, 0x480c60),
+                (compiled, address(symbols, 'solve_operations_31c940'),
+                 address(symbols, 'g_480c60'))):
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES],
+                               precision=precision | (rounding << 10))
+            output = words(machine, output_address, len(expected))
+            assert snapshot == (bytes(data), 1)
+            assert output == expected, (kind, precision, rounding, local_home)
+            snapshots.append((snapshot, output))
+        assert snapshots[0] == snapshots[1]
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_paired_writeback_captures_step_after_first_output(solver_images, precision):
