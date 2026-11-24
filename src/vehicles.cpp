@@ -7065,6 +7065,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Shared facing/current/state orientation with spent flip output and five forward/up/cross orders
 // 1062/1041/1174/1157/1157. Cross of the copied rows 1121, scoped quaternion 1157, state memcpy 1174.
 // NOT kept: the frame reaches 0xdc, but the handle and displacement stay exchanged and the body shortens.
+// Lateral input with force 1054, lateral output with torque 959, linear velocity with rotation axis 970.
+// Input/output, input/axis, output/axis and all three shared 1068/1054/970/1055.
+// All three with a scoped relative matrix 1145. NOT kept: the frame drops to 0xdc and the body shortens to 5043 bytes. The other forms keep frame 0xfc.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

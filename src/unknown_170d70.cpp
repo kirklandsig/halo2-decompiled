@@ -1211,6 +1211,8 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // the top of the loop body 11 (its rank follows where it is assigned, not declared), assigned right after the entry
 // pointer 82, assigned ahead of the volume address 13; a named `key` for the product and the argument 105 (with the
 // offset local or without it: the key then stops being a CSE temporary and the plane lookup shifts as on this body).
+// Volume selected from the stored count, a signed end index, a named end pointer or the stored end pointer: 106 each.
+// The same four with a separate camera displacement score 84. NOT kept: the displacement has one use, the EDI save moves after the map-miss test and the camera table is still loaded late.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1970,6 +1972,8 @@ struct s_point_pool_173520
 // unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
 // published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
 // for the bounds 194, and one viewport receiver after projection 128.
+// Reservation from a named end: prior start index, inline start index, pointer subtraction, or early end pointer, 48 each.
+// The same four with corner and clamp references score 25 at 865 bytes. NOT kept: they require the reference forms, and the address and state test still follow the count commit.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2755,6 +2759,8 @@ struct s_camera_reference_171830
 // pointer's), and a three-term dot always sums k, j, i; two stand-alone side vectors that differ only in the order of the
 // two pointer parameters come out with five of the six products the other way round, so the order here is set by the
 // function around the products, not by their spelling.
+// Selected record before validity 275, selector resolved before record lookup 293, valid record carried into projection 112, carried plane pointer 276.
+// The combined or separate sign and plane tests give the same result for each form. NOT kept: the 112 forms grow to 1222 bytes, exchange lookup scratch registers and still clear zero ahead of the plane expression.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
