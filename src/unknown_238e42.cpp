@@ -1427,6 +1427,12 @@ bool __stdcall function_2399da(long controller_index)
 // identity from the selection getter again 147 (465 B); one `1 << controller_index` mask local for the six dialogs 176
 // (418 B); the member's rank in a plain long local for the permission test 90. Re-measured: `long const rank` 90; the
 // identity test inverted 90; the identity declared first 90. Identity ECX / rank EAX remain.
+// M3 lane 6 r237 (H2M_FAST with 0xac050, 0xac360 and 0x2399da, all MATCH; control 90, aligned 12, register-masked 2):
+// the removal test held in a bool computed ahead of the permission test 106 (439 B; the identity then takes EDX, the
+// id test's temporary EAX); the requested rank copied into a local at the top of the function, before any call 90; the
+// task-index test and the 0x1487c3 call written in each dispatch arm 90 (the tails are cross-jumped back into one);
+// `register` on the identity local 90 (same code each); re-measured `xuid->qwUserID != 0` 90. Identity ECX / rank EAX
+// remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -332,6 +332,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // reordered: field2e ahead of field1c 20; field2e right after the constructor 38; field10 after the angle call 32;
 // field10, field1c and field2e all ahead of the angle call 35; field10 ahead of the position 19 (same code). The
 // transform keeps EBX and the point's y EBP in all five. Body unchanged.
+// M3 lane 15 r140 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the angle pair
+// written to a local vector2f, then assigned to field14, 71 (486 B); the initial point as `g_468788[0]` 19; the else arm's
+// copies through `(**local_4)` 19; the inline transform helper's rows built in a local vector, then assigned through its
+// output, 110 (494 B); field10 as `(short)NONE` 19 (the 19s the same code). Body unchanged.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

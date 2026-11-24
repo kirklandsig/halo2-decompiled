@@ -1342,18 +1342,6 @@ bool sound_playback_update_location(long sound_index)
 
 /* ---- gains in decibels, held as real bits ---- */
 
-/* a sound class's volume fade (g_502118, unknown_221490.cpp) */
-struct s_sound_class_fade
-{
-	dword target;
-	s_decibels current;
-	real time;
-	byte flags;
-	byte unknownd[3];
-};
-
-extern s_sound_class_fade *g_502118;
-
 long sound_definition_gain_lower(s_sound_definition const *definition);
 long sound_definition_gain_upper(s_sound_definition const *definition);
 real function_2195f0(real decibels);

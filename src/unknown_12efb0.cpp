@@ -977,6 +977,16 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the destination taken as `real (&)[6]` 607, both parameters as references 607 (all identical code). Diagnostic (the
 // helper's body written out at its three sites, reverted): 701 (3843 B), the three publications in retail's order
 // (aligned groups 123 -> 106) but an earlier mulss operand swapped. Body unchanged.
+// M3 lane 4 r256 (H2M_FAST with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH each run; control 607 at 3832 B,
+// aligned 354, masked 147; body unchanged). Asked whether the top cause (the 0x130f60 result moved to EDX with NONE in
+// EAX) is a tie that follows the number of locals, as operand ties elsewhere do. It is not: 1 to 8 unused initialised
+// longs at the top (diagnostic) on this body 607, 606, 606, 606, 608, 608, 607, 607, and on the palette byte read at each
+// use (re-measured 666 at 3827 B) 666, 666, 664, 664, 665, 667, 667 for 1 to 7; the instructions after the call are the
+// same in every one (result in EAX, NONE in ECX here and in EDX on the per-use byte). On the per-use byte: the result
+// declared first with a NONE initialiser and assigned at the call (two definitions) 666 (same code); the result in a
+// second named local for the tests with the first kept for the lookup and the 0x131030 argument 666 (same code, on this
+// body 607: the copy folds, no `mov edx, eax`); the result declared without an initialiser and assigned after the
+// handled flag 668; the handled flag declared ahead of the out index 669.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
