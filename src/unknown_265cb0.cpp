@@ -1116,6 +1116,10 @@ real function_30bf0(vector3f *vector);
 // The initial result remains four bytes high and the clip output still shares the seat-count slot.
 // Setting the secondary tier then promoting it scores 136 with long, short, unsigned long and int.
 // Starting with the near tier then demoting it scores 138 with all four. The original tier test is restored.
+// Common radius rejection write: nested positive branches and nested negative comparison/branches
+// 225/229/225; joined positive comparison/branches and joined negative comparison/branches
+// 225/225/229/225; three radius states 229. NOT kept: all shrink the frame to 0x34c and raise the score.
+// The first result store and clip-fraction spill still occupy different slots.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

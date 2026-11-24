@@ -5686,6 +5686,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // up with the ordinary cross, staged second cross or branch selection 194 each;
 // select both new axes 196. NOT kept: the live aim reads through the unit where
 // retail copies it and grows the body to 781 bytes. Separate up grows the frame to 0x5c.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
