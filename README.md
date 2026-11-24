@@ -295,6 +295,14 @@ history credits each change to its author.
 
 Want to be on this list? See [How to help](#how-to-help).
 
+## Related projects
+
+- [halo2-recomp](https://github.com/dalves408/halo2-recomp) by
+  [dalves408](https://github.com/dalves408): a static recompilation of the
+  Xbox game (with title update 1.5) to native Windows x64, with a Direct3D 11
+  renderer. It translates the game's machine code automatically instead of
+  recreating its source as this project does. You bring your own disc.
+
 ## Credits
 
 - [halo-symbol-atlas](https://github.com/tinkerer-red/halo-symbol-atlas)
