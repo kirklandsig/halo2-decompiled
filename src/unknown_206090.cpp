@@ -991,6 +991,19 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the statement whose else arm is the skip call; retail's wheel loop head is unpadded only because it would need 12
 // bytes. `do {} while (false);` after the hit/skip statement, at the end of the contact loop's body, or both: 1346 each
 // (same code, no new padding). Body unchanged.
+// M3 lane GB r1 (fast with 0x2056e0, MATCH each run; control 1346, 6243/6238 B, frame 0x5d0, aligned exact/reg-masked
+// 1419/883). Diagnostic `/Ob1` flag 1346 (same code). Retail XBE scan: 0x206090 is the only function with a non-loop
+// 16-byte pad immediately after a `call` (0x207639 call 0x2079f0 -> 0x207640; and 0x20740a -> 0x207420). Tried 10 forms:
+// line 1233 float-product magnitude as double accumulator 1371 (aligned 1486/903) or float expr 1371 (1490/903);
+// inline add-unique helper with early return for duplicate-impact search 1342 (6243 B, 1455/1455 insns, 1417/881:
+// reproduces 0x2073cf-0x20740f instruction-for-instruction; 4 pts / 1-caller helper, NOT kept); that + lazy 0.2s 1350
+// (846); retail final impact loop (fresh pool count/reads, list ptr inside match, lazy 0.2s, direct return) 1491 (6303 B,
+// 1405/828); direct proj56 + normal_copy in proj58 1407 (6288 B, 0x5e0); shared normalize_inline + add-unique + direct
+// proj56 1475 (6160 B, 0x5cc); combined retail shapes on direct magnitude (direct i,j,k mag, straight-line scale, unstaged
+// k,j,i cross at all 4 sites, float wave, in-place contact vel, early slip sqrt, float line 1233 mag, add-unique, retail
+// final loop + direct return) 1672 (5973 B, frame 0x580, aligned 970/631); that + direct proj56 + normal_copy + found-first
+// tail 1600 (6047 B, 0x598, 956/669); that + contact ptr 1571 (6076 B, 0x598, 960/641). NOT kept: contact loop stays
+// strength-reduced in all forms; body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -1497,6 +1497,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The 0x2c frame, second induction address and first-component spill are still missing. Reusing the candidate
 // with the ordered dot product, nested/skip: shared difference 646/646, live entries 623/623,
 // scan-scope offset 646/646, aggregate difference 649/649. The original second scan is restored.
+// M3 lane GB r1 (fast with 0x22750, 0x22c30 and 0x24550, all MATCH each run; control 418, 2094/2122 B, frame 0x1c).
+// Tried 15 forms: 3-pass component loops for delta on samples 766 (2286 B, 0x24), on source->entries with first ahead
+// 807 (2317 B, 0x2c), with threaded second tail 807, with samples kept 789 (0x28), with reversed distance_sq3f 879;
+// 3-pass component loop for offset on samples 1184 (1467 B, suppresses 4x unroll), on entries 1239, both 1126, delta
+// loop + dvec loop on entries/samples 1148/1112; delta via existing vector3f_assign on samples 418 (2094 B, al 266/255),
+// on entries with first ahead 554 (2112 B, 0x20, al 162/115), aggregate init on entries 554 (same code), assign + second
+// vector3d_from_points3d + length_sq3f on entries 558 (al 196/116) and on samples 416 (2094 B, al 249/247; 2 pts, NOT
+// kept). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

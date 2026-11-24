@@ -144,7 +144,7 @@ struct s_ease_input
 };
 
 bool function_109fd0(long object_index, vector3f *velocity);
-long function_1eb8a0(s_ease_state *s, bool update, vector3f *a, point3f *b,
+void function_1eb8a0(s_ease_state *s, bool update, vector3f *a, point3f *b,
 	s_ease_output *out, real dt, vector3f *d, vector3f *q, point3f *pos);
 
 // @retail 0x1eb6f0
@@ -184,7 +184,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 603 (was 603): r131, m3 lane 1 r154 and lane 16 r179 unchanged (delta helper forms below; r154 and r179 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
+// score 567 (was 603): GB r1 plain-confirmed 603 -> 567 (2877/2881 B, exact 734/734 insns, all 17 other file functions MATCH): void return, s->counter++ with closing test reading the field, inline PIN((double)s->alignment * 1.5, 0.75, 3.5) inside step (moves pops ahead of closing test), g_510c54 read consistently at every use (no globals local), one-use ticks dropped at all three vector3f_scale calls, and existing vector3f_add_scaled(&qr, &nq, back, position) at both settle arms. Still differs: q vs d in EBX at entry, 12/8 factor selected before t at the three clamps, and output ramp schedule.
+// Earlier 603 (was 603): r131, m3 lane 1 r154 and lane 16 r179 unchanged (delta helper forms below; r154 and r179 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
 // r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
 // MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // The score was 636 before the settle factor.
@@ -991,8 +992,16 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 389 form the clamp factor selected ahead of t at all three clamps 690 (first +0x2, aligned 404), at the first 678,
 // at the first two 691; each loses the caller 0x1eb6f0. The aligned counts fall with every helper retail's code
 // shows, while the positional count rises until the entry and the clamps are right as well.
+// GB r1 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0 MATCH; control 603, masked 281; 19 trials): kept (plain-confirmed 567,
+// 2877 B, exact 734/734 insns, all 17 other file functions MATCH): void return + s->counter++ + inline double PIN in step
+// (596) + g_510c54 read consistently everywhere without globals local (591) + one-use ticks dropped at all 3 vector3f_scale
+// calls (591) + existing vector3f_add_scaled(&qr, &nq, back, position) at both settle arms (567, masked 268). Other trials
+// on 596: dropping one-use ticks alone 596; + dropping len4/ratio/m2 596 (with no globals 591); reading s->counter directly
+// 596 (with no globals 591); two-caller activation ramp helper 688; vector3f_add_scaled at both settle arms keeping globals
+// local 573 (exact 734 insns), at all three output vector3f sites 681 (683 keeping globals, 678 dropping len4/ratio/m2/back);
+// named rem_cnt = 3.f - cnt 702 (694 with all 3 add_scaled); e3 <= 0.001f arm first 623; complemented settle guard 654.
 // @retail 0x1eb8a0
-long function_1eb8a0(
+void function_1eb8a0(
 	s_ease_state *s,
 	bool update,
 	vector3f *a,
@@ -1003,7 +1012,6 @@ long function_1eb8a0(
 	vector3f *q,
 	point3f *pos)
 {
-	s_game_time_globals *globals = g_510c54;
 	bool fail = false;
 
 	if (update)
@@ -1022,7 +1030,7 @@ long function_1eb8a0(
 				if (!(0.001f > t))
 				{
 					real k = s->fast ? 12.f : 8.f;
-					real cap = globals->rate * k;
+					real cap = g_510c54->rate * k;
 					e = t > cap ? cap : t;
 				}
 				real third = e * 0.33333334f;
@@ -1053,7 +1061,7 @@ long function_1eb8a0(
 					delta.k = delta.k * scale;
 				}
 
-				real f = globals->rate * n * v;
+				real f = g_510c54->rate * n * v;
 				s->impulse.i = a->i * f;
 				s->impulse.j = a->j * f;
 				s->impulse.k = a->k * f;
@@ -1073,7 +1081,7 @@ long function_1eb8a0(
 				if (!(0.001f > t2))
 				{
 					real k2 = s->fast ? 12.f : 8.f;
-					real cap2 = globals->rate * k2;
+					real cap2 = g_510c54->rate * k2;
 					e2 = t2 > cap2 ? cap2 : t2;
 				}
 				real third2 = e2 * 0.33333334f;
@@ -1144,7 +1152,7 @@ long function_1eb8a0(
 				if (!(0.001f > t3))
 				{
 					real k3 = s->fast ? 12.f : 8.f;
-					real cap3 = globals->rate * k3;
+					real cap3 = g_510c54->rate * k3;
 					e3 = t3 > cap3 ? cap3 : t3;
 				}
 		long counter = s->counter;
@@ -1152,7 +1160,7 @@ long function_1eb8a0(
 		real w = s->direction.k * q->k + s->direction.j * q->j + q->i * s->direction.i;
 		if (counter == 0)
 			q = g_4687a4;
-		w = w * globals->rate;
+		w = w * g_510c54->rate;
 		vector3f qr;
 		qr.i = q->i;
 		qr.j = q->j;
@@ -1162,9 +1170,9 @@ long function_1eb8a0(
 		real hi = (e3 - third3) * 3.f * 0.5f;
 		if (lo < 0.f)
 			lo = 0.f;
-		qr.i = qr.i * globals->rate;
-		qr.j = qr.j * globals->rate;
-		qr.k = qr.k * globals->rate;
+		qr.i = qr.i * g_510c54->rate;
+		qr.j = qr.j * g_510c54->rate;
+		qr.k = qr.k * g_510c54->rate;
 		vector3f dl;
 		vector3d_from_points3d(pos, &s->target, &dl);
 		real dist = magnitude3d(&dl);
@@ -1179,22 +1187,19 @@ long function_1eb8a0(
 					position->i = s->direction.i * f + qr.i;
 					position->j = s->direction.j * f + qr.j;
 					position->k = s->direction.k * f + qr.k;
-					real ticks = (real)globals->field_2_3;
-					vector3f_scale(position, ticks, position);
+					vector3f_scale(position, (real)g_510c54->field_2_3, position);
 					s->ticks_left = (long)((dist - (((3.f - cnt) - 0.5f) * e3 * 0.5f + hi)) / e3 + (3.f - cnt) + 3.f + 0.5f);
 				}
 				else
 				{
 					*position = qr;
-					real ticks = (real)globals->field_2_3;
-					vector3f_scale(position, ticks, position);
+					vector3f_scale(position, (real)g_510c54->field_2_3, position);
 					s->ticks_left = (long)((dist - hi) / e3 + 3.f - 0.5f);
 				}
 			}
 			else
 			{
-				double v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
-				real step = (real)(globals->rate * v);
+				real step = (real)(g_510c54->rate * PIN((double)s->alignment * 1.5, 0.75, 3.5));
 				vector3f nq = qr;
 				real len = (real)sqrt(length_sq3f(&qr));
 				real nlen = function_30bf0(&nq);
@@ -1213,11 +1218,8 @@ long function_1eb8a0(
 						real len4 = MIN(m, len);
 						real ratio = dist / hi - 0.5f;
 						real back = 0.f - len4;
-						position->j = nq.j * back + qr.j;
-						position->i = nq.i * back + qr.i;
-						position->k = nq.k * back + qr.k;
-						real ticks = (real)globals->field_2_3;
-						vector3f_scale(position, ticks, position);
+						vector3f_add_scaled(&qr, &nq, back, position);
+						vector3f_scale(position, (real)g_510c54->field_2_3, position);
 						s->ticks_left = (long)ratio;
 					}
 					else
@@ -1231,9 +1233,7 @@ long function_1eb8a0(
 					real m = (s->settle_distance + step) * 0.33333334f;
 					real m2 = MIN(m, len);
 					real back = 0.f - m2;
-					position->i = back * nq.i + qr.i;
-					position->j = nq.j * back + qr.j;
-					position->k = nq.k * back + qr.k;
+					vector3f_add_scaled(&qr, &nq, back, position);
 					if (step > len - m + 0.001f)
 					{
 						fail = true;
@@ -1250,13 +1250,11 @@ long function_1eb8a0(
 		}
 	}
 
-	long new_counter = s->counter + 1;
-	s->counter = new_counter;
-	if (!fail && s->ticks_left > 0 && new_counter < s->duration + 6)
+	s->counter++;
+	if (!fail && s->ticks_left > 0 && s->counter < s->duration + 6)
 		out->flags &= ~4;
 	else
 		out->flags |= 4;
-	return new_counter;
 }
 
 struct s_unknown_object

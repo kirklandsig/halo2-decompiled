@@ -1335,6 +1335,12 @@ void function_143250(
 // producers 939/939, both 939, each pair of consumers 939/939, each producer with
 // its consumers 939/939, and both complete families 939. No change to the 0x2fc frame,
 // early basis spills or higher-band product homes.
+// GB r1 (fast with 0x143250 MATCH; control 939, masked 152): inlining band-3 product locals into matrix[0..48] (all 2454,
+// band-2 copies only 2103, 3+ factor triples 1678, root products 2034, the 5 preamble-mismatched locals with 0x143250 retail
+// param order 1648 at frame 0x300) and inlining band-2 product locals 1869 all confirm retail declared those intermediates;
+// inlining r1_r1_r8 1233, r2_r0_r6+r5_r4_r7 1493, r1_r1_r8+s105_r1_r1+param order 1453; 0x143250 retail param order
+// (n, matrix, coefficients, out) + matrix[28] T1-(T2+T3) grouping 936 (10781 B, below keep bar), + m23/m25 factoring 1150;
+// band-2 s5_s15 factoring + param order 1712. Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
