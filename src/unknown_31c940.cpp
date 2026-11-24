@@ -692,27 +692,24 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 	float const &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
 	scalar_work.pair_b = mass_b * error_b + scalar_work.first_error * operation_float(op, 4);
-	// A rejected second-row candidate joins the same first-row fallback as a failed
-	// positive pair. Keep the positive pair before the second-row fallback.
-	do
+	// Nonpositive and unordered first impulses use the single-row path.
+	if (!(scalar_work.pair_a > 0.0f))
 	{
-		if (scalar_work.pair_a > 0.0f)
-		{
-			if (scalar_work.pair_b > 0.0f)
-			{
-				__m128 second_scalar=apply_first_normal_positive_impulse(scalar_work.pair_a, retained_axis,axis-4, a, b, result, projection_pool.normal_first_a_copy, scalar_work.pair_b, projection_pool.normal_first_b_copy);
-				apply_linear_spilled(scalar_work.pair_b, second_scalar, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
-				return;
-			}
-			break;
-		}
 		float candidate_b = error_b * axis[-1].m128_f32[3];
-		// Unordered candidates enter the second-row update, as in retail.
-		if (candidate_b <= 0.0f) break;
-		apply_first_normal_fallback(candidate_b, true,
-		((solver_linear_row_31e7b0 *)(axis - 2))->linear, axis - 1, a, b, result + 1, scalar_work.fallback_scalar);
+		// Unordered second candidates enter the update, as in retail.
+		if (!(candidate_b <= 0.0f))
+		{
+			apply_first_normal_fallback(candidate_b, true,
+				((solver_linear_row_31e7b0 *)(axis - 2))->linear, axis - 1, a, b, result + 1, scalar_work.fallback_scalar);
+			return;
+		}
+	}
+	else if (scalar_work.pair_b > 0.0f)
+	{
+		__m128 second_scalar=apply_first_normal_positive_impulse(scalar_work.pair_a, retained_axis,axis-4, a, b, result, projection_pool.normal_first_a_copy, scalar_work.pair_b, projection_pool.normal_first_b_copy);
+		apply_linear_spilled(scalar_work.pair_b, second_scalar, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 		return;
-	} while (false);
+	}
 	float candidate_a = scalar_work.first_error * axis[-4].m128_f32[3];
 	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, false, retained_axis, axis - 4, a, b, result, scalar_work.fallback_scalar);
 }
