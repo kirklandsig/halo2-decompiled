@@ -1138,6 +1138,21 @@ void swarm_leader_detach(long actor_index);
 // both the type read and the argument 4 (same code); the handler bound by `s_slot_handler const &`, its stop tested and
 // called through it 297 (996 B); the loop's actor pointer bound by `s_actor_view *const &` 4 (same code); the stop bound
 // by `t_slot_proc const &` to the handler's field 299 (996 B). Body unchanged (59).
+// M3 lane 4 r257 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at
+// 980 B). Measured cause of the last 4: on that form the code is generated slot address first, then the type load;
+// the three loop temporaries then take scratch registers in turn (type ECX, offset EDX, handler EDX again because the
+// address has already consumed the offset), and the handler overwriting EDX is what pins the `lea` ahead of it in the
+// schedule. Retail generates the address last (after the stop test): the offset is still live when the handler is
+// loaded, EAX is already bound to the address, so the handler reuses the type's ECX. So retail's slot address is
+// materialised after its first use inside the type load, not ahead of it. Forced schedule changes in that block (30
+// tried) leave the 4, as expected from that reading. On the 4 form: a plain slot pointer taken after the stop read
+// and ahead of the test, the call passing `slot_index < 4 ? slot : NULL` 297 (996 B, frame 0x24: the listed
+// whole-allocation flip, in which the actor's pool offset keeps EBX through the memory loop and the actor index
+// stays on the stack in the slot loop); that with a `short` type local 297; that with the pointer declared ahead of
+// the stop read and assigned after it 297; the pointer assigned inside the type read's index expression 297; the
+// pointer declared in the call's block 297; a NULL pointer assigned under `slot_index < 4` in the call's block 281
+// (964 B, a branch for the select); a named byte offset used for the type read and for the argument 299 (996 B).
+// Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {
