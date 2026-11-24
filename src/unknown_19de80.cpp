@@ -991,6 +991,14 @@ static inline bool teams_enabled_19e1c0()
 // each name arm with its own differently named length local, assigned to the result 732 or returned 732 (same code).
 // So neither a separate variable, a separate helper instance nor a return keeps identical arms apart here; retail's
 // arms were never identical when its merge ran, and what kept them apart is not found.
+// M3 lane 8 r231 (h2m fast with 0x19e0f0, MATCH each run; control 390, plain result 691). Reading: each of retail's name
+// arms makes four rotating scratch loads (the token, the wcslen argument, the copy's text address, the destination), so
+// the next arm starts one register on and no two arms are the same code; with the token in a callee-saved register ours
+// makes three, every arm starts alike and the arms join. On the plain result, all 691 (same code): `(void)remaining;` as
+// the first statement; the token read through an aggregate view of its own address at every use (folded); the token as
+// a by-value one-member aggregate parameter with 0x19e0f0's pointer type and call changed to suit (diagnostic: the member
+// is enregistered like the pointer; 390 on the kept result); `remaining` typed dword with a `long capacity` copy used
+// everywhere; a `capacity` copy reduced by the result ahead of the return. Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

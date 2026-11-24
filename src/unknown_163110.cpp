@@ -1285,6 +1285,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // negations 119; the normal negated from `forward` again (the copy read by the dot only) 452 (1819 B); the distance
 // negated ahead of the normal's negations 143 (first +0xae); the dot's terms written j, k, i 133 (first +0xaf); the i
 // product added to a parenthesised k + j 145. Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x1648d0 and 0x320b0, both MATCH each run; control 115): the segment flags typed bool 115
+// (same code); the planes typed plane3f and read through its scalar members (`planes[0].i`, `plane->j`) 115 (same code);
+// the classification index typed short 648 (1579 B: the loop is no longer unrolled); the pass index typed short 363; the
+// `negated` vector declared with the top locals 115 (same code). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

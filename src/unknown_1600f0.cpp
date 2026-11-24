@@ -1748,6 +1748,12 @@ PRIVATE inline long score_string_list_1608e0()
 // header rectangle variable (diagnostic, a cast) 640 at frame 0x7a0, still no reload. So neither an address-taking
 // inline helper nor sharing the header rectangle's storage makes this build read the origin again after that call;
 // lane 6's diagnostic (the origin's address stored in a global) is still the only form that does.
+// M3 lane 8 r231 (h2m fast with 0x161420, 0x1600f0 and 0x1603f0; control 679): the scroll clamp through a file-local inline
+// function `pin_real(real x, real lower, real upper)` (the shape other files use) 734 (2840 B: the limit is then converted
+// ahead of the zero test and the value loaded once, where retail tests the global first and converts in the else arm);
+// that with the height not volatile 739 (2840 B); with the title and header fades through it too 734 (2840 B); only the two
+// fades through it 679 (same code); the function with `real const &` parameters 738 (2840 B); an in-place form taking
+// the scroll element by reference 734 (2840 B). Retail's clamp has the macro's lazy shape, so it stays a macro here.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
