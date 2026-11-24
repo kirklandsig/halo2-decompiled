@@ -1331,6 +1331,10 @@ void function_143250(
 // weighted component pairs 990. Root-105 component-1 square alongside component-3 1475, its pair after the
 // component-0 pair 945, its component-7 product alone beside component-0 1470, and four weighted squares
 // before their component-7 consumers 1556.
+// Round 467: in-place multiplies at the original weighted root-35 and root-105 product
+// producers 939/939, both 939, each pair of consumers 939/939, each producer with
+// its consumers 939/939, and both complete families 939. No change to the 0x2fc frame,
+// early basis spills or higher-band product homes.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
