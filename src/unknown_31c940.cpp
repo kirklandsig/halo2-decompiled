@@ -668,9 +668,10 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	unsigned char *op, __m128 *terms, __m128 *normal_axes, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
 	float *result, solver_scalar_work_31c940 &scalar_work, solver_scalar_arena_31c940 &projection_pool)
 {
+
 	solver_scoped_body_fields_31c940 const &body_b = b;
 	scalar_work.linear_cursor=&body_b.body->linear;
- __m128 *const &linear_b_pointer=scalar_work.linear_cursor;
+	__m128 *const &linear_b_pointer=scalar_work.linear_cursor;
 	__m128 *&angular_b_pointer = scalar_work.angular_b;
 	angular_b_pointer = &body_b.body->angular;
 	__m128 first_linear_axis = terms[0];
@@ -683,9 +684,9 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	solver_step_31c940 *parameters = step;
 	// Retail spills the first error and both coupled impulses to 32-bit storage.
 	scalar_work.pair_b = target_a * parameters->error_scale
-		- projection_pool.normal_second_projection_a * parameters->velocity_scale;
+	- projection_pool.normal_second_projection_a * parameters->velocity_scale;
 	float error_b = normal_axes[-2].m128_f32[3] * parameters->error_scale
-		- projection_pool.normal_second_projection_b * parameters->velocity_scale;
+	- projection_pool.normal_second_projection_b * parameters->velocity_scale;
 	float const &mass_a_source = normal_axes[-3].m128_f32[3];
 	float mass_a = mass_a_source;
 	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a, (float const &)scalar_work.pair_b,
@@ -697,7 +698,28 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		(float const &)scalar_work.pair_b, operation_float(op, 4));
 	// Keep the first-row fallback in both source paths. The compiler merges
 	// that tail while retaining retail's unordered second-row branch direction.
-	if (load_stored_impulse(scalar_work.pair_a) > 0.0f)
+	// Nonpositive and unordered first impulses take the single-row path.
+	if (!(load_stored_impulse(scalar_work.pair_a) > 0.0f))
+	{
+		float candidate_b = error_b * normal_axes[-1].m128_f32[3];
+		if (candidate_b <= 0.0f)
+		{
+			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
+			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
+				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
+				first_linear_axis, result, scalar_work.fallback_scalar);
+
+		}
+		else
+		{
+			apply_second_pair_fallback(candidate_b,
+				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, linear_b_pointer, angular_b_pointer,
+				b.body->inverse_inertia, normal_axes[-2], result + 1, scalar_work.fallback_scalar);
+
+		}
+
+	}
+	else
 	{
 		if (load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
 		{
@@ -708,34 +730,17 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 			apply_second_pair_second_impulse(scalar_work.fallback_scalar,
 				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, linear_b_pointer, angular_b_pointer,
 				*scalar_work.inverse_b, result + 1, projection_pool.normal_second_b_copy);
-			return;
-		}
-		{
-			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
-			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
-				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
-				first_linear_axis, result, scalar_work.fallback_scalar);
-			return;
-		}
-	}
-	else
-	{
-		float candidate_b = error_b * normal_axes[-1].m128_f32[3];
-		if (candidate_b <= 0.0f)
-		{
-			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
-			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
-				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
-				first_linear_axis, result, scalar_work.fallback_scalar);
-			return;
+
 		}
 		else
 		{
-			apply_second_pair_fallback(candidate_b,
-				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, linear_b_pointer, angular_b_pointer,
-				b.body->inverse_inertia, normal_axes[-2], result + 1, scalar_work.fallback_scalar);
-			return;
+			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
+			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
+				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body->inverse_inertia,
+				first_linear_axis, result, scalar_work.fallback_scalar);
+
 		}
+
 	}
 }
 
@@ -1191,7 +1196,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2024. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2021. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
