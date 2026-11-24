@@ -234,12 +234,14 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 	w[2]=_mm_mul_ps(w[2],w[4]);
 	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
 	w[3]=_mm_mul_ps(w[3],w[4]);
+	// Retain B through all four updates before A can overwrite its saved home.
+	solver_velocity_31c940 *const update_b=b.body;
 	w[4]=a->linear;
 	w[4]=_mm_add_ps(w[4],w[2]);
 	a->linear=w[4];
-	w[2]=b.body->linear;
+	w[2]=update_b->linear;
 	w[2]=_mm_sub_ps(w[2],w[3]);
-	b.body->linear=w[2];
+	update_b->linear=w[2];
 	// Angular axes reload after both linear writes.
 	w[2]=row->a;
 	w[0]=_mm_mul_ps(w[0],w[2]);
@@ -248,9 +250,9 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 	w[2]=a->angular;
 	w[2]=_mm_add_ps(w[2],w[0]);
 	a->angular=w[2];
-	w[0]=b.body->angular;
+	w[0]=update_b->angular;
 	w[0]=_mm_add_ps(w[0],w[1]);
-	b.body->angular=w[0];
+	update_b->angular=w[0];
 	*result+=impulse;
 
 }
@@ -1219,7 +1221,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1982. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1993. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.

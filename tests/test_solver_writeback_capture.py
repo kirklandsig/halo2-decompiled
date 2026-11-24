@@ -3,8 +3,8 @@ import struct
 
 import pytest
 from test_solver_dispatch import (
-    HEAP, STACK, STOP, STEP, OPS, TERMS, IMPULSES, FRICTION_RESULTS, solver_images,
-    solver_case, put, address, execute, words,
+    HEAP, STACK, STOP, STEP, OPS, TERMS, IMPULSES, FRICTION_RESULTS, CALLBACK, solver_images,
+    solver_case, put, address, execute, words, return_from_hook,
 )
 
 
@@ -260,3 +260,58 @@ def test_linear_limit_reloads_step_between_bounds(solver_images, precision):
                 assert observed == [replacement_step]
             snapshots.append((snapshot, output))
         assert snapshots[0] == snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_bounded_linear_retains_b_receivers_before_a_write(solver_images,precision):
+    from unicorn.x86_const import UC_X86_REG_ESP
+
+    def as_float(bits):
+        return struct.unpack('<f',struct.pack('<I',bits))[0]
+
+    frame=STACK+32768-0xd0
+    body_a=frame-0x10
+    original_b=HEAP+0x80
+    replacement_b=original_b+0x100
+    delta=as_float(replacement_b)-as_float(original_b)
+    for rounding in range(4):
+        data=solver_case(5,0)
+        put(data,STEP,'7fi',0,1/delta,0,0,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,original_b)
+        put(data,OPS+24,'3I',14|(12<<8)|(2<<16),CALLBACK,0)
+        put(data,OPS+36,'I2fI',5|(16<<8)|(3<<16),2,-2,0)
+        put(data,OPS+52,'I',0x400)
+        put(data,TERMS,'12f',0,0,0,delta,0,0,0,1,1,0,0,0)
+        put(data,HEAP,'B',3)
+        put(data,original_b+0x10,'4f',0,0,0,0)
+        put(data,original_b+0x20,'4f',0,0,0,0)
+        put(data,original_b+0x30,'4f',1,1,1,0)
+        put(data,replacement_b+0x10,'4f',0,0,0,0)
+        put(data,replacement_b+0x20,'4f',0,0,0,0)
+        put(data,IMPULSES,'f',0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in (
+                (retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))):
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3)
+                callbacks.append((terms,payload))
+                # A's inertia W aliases the iteration word. The callback is
+                # the sole synthetic boundary; the solver arithmetic is real.
+                uc.mem_write(frame+0x2c,struct.pack('<I',0x3f800000))
+                return_from_hook(uc)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            actual_pointer=words(machine,frame+0xc,1)[0]
+            assert callbacks==[(TERMS,OPS+32)]
+            assert actual_pointer==replacement_b,('pointer',precision,rounding,hex(actual_pointer),hex(replacement_b))
+            old_output=words(machine,original_b+0x20,4)
+            new_output=words(machine,replacement_b+0x20,4)
+            assert old_output==(0x3f800000,0,0,0),('retail'if machine is retail else'compiled',precision,rounding,old_output,new_output)
+            assert new_output==(0,0,0,0)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,old_output,new_output,actual_pointer,callbacks))
+        assert snapshots[0]==snapshots[1]
