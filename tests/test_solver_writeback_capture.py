@@ -1962,3 +1962,48 @@ def test_single_writeback_captures_stride_between_outputs(
                 context = label, kind, precision, rounding, overwrite, new_stride
                 assert snapshot == (bytes(data), 1), context
                 assert bytes(machine.mem_read(frame + 0x20, len(expected))) == expected, context
+
+
+@pytest.mark.parametrize('kind', [2, 4, 5, 6, 9, 10, 11, 12, 13])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_single_writeback_captures_time_pointer_before_impulse(
+        solver_images, kind, precision):
+    from test_solver_dispatch import OP_LAYOUT
+
+    # The first impulse replaces the inverse-time pointer's stack home.
+    # This row still uses the old pointer; the next row reads the replacement.
+    frame = STACK + 32768 - 0xd0
+    retail, compiled, symbols = solver_images
+    for rounding in range(4):
+        for replacement_time in (2, 3):
+            data = solver_case(kind, 2)
+            put(data, STEP, '7fi', 0, 0, 0, 0, 1, 0, 0, 0)
+            replacement = STEP + 0x100
+            put(data, replacement, 'f', replacement_time)
+            size, row_kind = OP_LAYOUT[kind]
+            linear = kind in (2, 5, 6, 11, 13)
+            row_size, coefficient = (48, 12) if linear else (32, 28)
+            put(data, OPS + 8, 'I', frame + 0x10)
+            put(data, OPS + 20, 'I', 8)
+            for row in range(2):
+                put(data, OPS + 24 + row * size, 'I',
+                    kind | size << 8 | row_kind << 16)
+            put(data, OPS + 24 + 2 * size, 'I', 0x400)
+            put(data, TERMS + coefficient, 'f', 2)
+            put(data, TERMS + row_size + coefficient, 'f', 4)
+            put(data, IMPULSES, '2I', replacement, 0x3f800000)
+            expected = struct.pack('<IfIf', replacement, 2,
+                                   0x3f800000, 4 * replacement_time)
+            for label, machine, entry, gate in (
+                    ('retail', retail, 0x31c940, 0x480c60),
+                    ('compiled', compiled,
+                     address(symbols, 'solve_operations_31c940'),
+                     address(symbols, 'g_480c60'))):
+                machine.mem_write(frame + 12, b'\0' * 176)
+                machine.mem_write(gate, b'\x01')
+                snapshot = execute(machine, entry, data,
+                                   [STEP, OPS, HEAP, IMPULSES],
+                                   precision=precision | (rounding << 10))
+                context = label, kind, precision, rounding, replacement_time
+                assert snapshot == (bytes(data), 1), context
+                assert bytes(machine.mem_read(frame + 0x10, len(expected))) == expected, context
