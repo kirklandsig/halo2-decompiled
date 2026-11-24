@@ -1688,6 +1688,27 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // found-flag loop with the inner return kept 994 (2837 B), without it 755 (match-only, as listed); the iterator declared
 // at the top of the function 812 (both twins); on the 755 form the first request keyed by the iterator's own key fields
 // 1020 (2875 B). Body unchanged.
+// M3 lane 12 r185 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812;
+// body unchanged; each form measured on both twins with the same counts). The three optional outputs stored through one
+// inline setter 812 (same code); that on the siblings' flag loop with the outputs and the result as one record 732 (same
+// code); 0x1dd9d0 and both requests through one shared inline helper 3541 (294 B: it stays a call), the helper forced
+// inline 812 (same code); on the 732 form the per-pass candidate assigned and read through a pointer local 732, the
+// lookup through an inline helper with an out-pointer 732 (same code each). Diagnostics on the 732 form, removed at
+// once: one extra zero store beside the inheritance counter 735 (a scratch zero for that block only; 0x1dc8c0 lost,
+// 231); the candidate in a one-element array 732 (same code); the candidate and the named pointer as one per-pass
+// record 778; the candidate's address handed to an undefined function 1011 (2857 B). Allocator reading on the 732 form
+// (337 of 352 register webs then sit where retail has them): the zero constant is one value for the whole function, cut
+// into pieces wherever no register is left for it; a piece is worth a register only when its memory stores of zero
+// outnumber its one set-up, and compares against it count nothing. Retail's EBP zero is the piece from the fifth
+// kind's first test to the two counter stores (two stores, one set-up). With only the second request compiled that
+// piece exists here too: the zero's piece is cut after the output stores, restarts at the first kind with EBP free,
+// loses kinds one to four to the mode and keeps the rest. With both requests the zero's piece runs unbroken from the
+// search loop, where the found-mode pointer holds EBP, so it only ever has ESI (free until the NONE constant is
+// coloured, which happens last), and the first kind's list pointer then takes that: the piece is cut down to the
+// counter store's block alone (one store, one set-up, not worth a register). Without the zero in EBP the graph
+// pointer's second-request piece runs on through the second inheritance loop with EBP free, ranks below the
+// mode-table address (-313 against -74) and loses EBX to it. One cause is left on the 732 form: what takes ESI between
+// the search loop and the first request early enough to cut the zero's piece there.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2330,6 +2351,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // would take a register. Forms: the request helper taking its mode by `long const &` 812; all three keys by `long const
 // &` 812; the kinds helper's mode by `long const &` 812; the graph by `s_graph_tag *const &` 812; the second request in
 // its own `if (result.index != NONE)` block after the first 812 (same code each).
+// M3 lane 12 r185 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH; control 812; body
+// unchanged; the forms and the allocator reading are in 0x1db170's note). The three optional outputs stored through
+// one inline setter 812 (same code); 0x1dd9d0 and both requests through one shared inline helper 3541 (294 B: it stays
+// a call), forced inline 812 (same code); the siblings' flag loop with the outputs and the result as one record
+// re-measured here 732 (first difference +0x2d1), on it the per-pass candidate through a pointer local 732 and the
+// lookup through an inline helper with an out-pointer 732 (same code each).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

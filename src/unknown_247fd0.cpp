@@ -1083,6 +1083,17 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // scaled reals and a named age sum stored after all four 335; the scale step through the existing vector3f_scale in place
 // 354; vector3f_scale into a point local assigned as a whole after a named age 404 (1697 B); the age step ahead of the
 // in-place vector3f_scale 354.
+// M3 lane 2 r146 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334, aligned 188, 72 with registers and
+// stack offsets masked; body unchanged). Read against retail again: the age copy goes through an XMM register (`movss`
+// load and store, an integer move here and in the matched sibling), the three real arguments are all loaded right after the
+// 0x249170 call, and the blend's three sums stay in XMM2-4 until they are added to the position (ours keeps them in the
+// workspace record). Forms: the cache block in the sibling's spelling (`local_2 != arg_0->field_50`, the owner stored
+// first, then the clear) 346 (aligned 184, masked 68); the cleared flags named, the owner stored, then the flags stored
+// (retail's load, mask, owner store, flags store) 346 (same code as the sibling's spelling: retail's order appears, the
+// rows after it shift); the blend as three scalar reals 390 (1617 B, aligned 173: the workspace record loses its first
+// member's use and the frame shrinks); the blend written inside the three sums after the rotation call 392 (1617 B,
+// aligned 197); the sibling's cache spelling with the scalar blend 383 (1617 B, aligned 170, masked 65), with the blend
+// inside the sums 383 (aligned 194); the named cleared flags with the scalar blend 383 (same code).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
