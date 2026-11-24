@@ -1098,6 +1098,10 @@ static inline long team_score_195ed0(long team)
 // char with named presence 299. NOT kept: the copy still follows the flag read.
 // Combined sentinel and inactive-team decision with char, short or long
 // 274/295/329. NOT kept: all grow the player loop and retain the early flag read.
+// Separate score-table and mode admission 163, admitted score returned directly 170,
+// native short score field 100, native mask and bit locals 100. Nested connectivity
+// guards 165, initial machine-admission result 141, shared local-address marker 136,
+// connectivity assigned by guard arm 141. The teams flag still leads the player copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

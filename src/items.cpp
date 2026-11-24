@@ -2506,6 +2506,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // saved long countdown 194/194, short terminal count 190/190, or long terminal count 190/190.
 // NOT kept: the +0xf byte home returns, but the body shortens to 870–874 bytes against retail's 892
 // and the release-flag operations still differ.
+// Paired event-point coordinate passes, ascending/descending, with separate buffers with returned
+// point 140/140 or filled point 171/171, common buffer with returned point 171/171 or filled
+// point 158/158. The return byte, release mask and point homes still differ.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
