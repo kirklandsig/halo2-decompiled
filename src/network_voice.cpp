@@ -4039,6 +4039,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // channel falls to -10 against the member's 24); the guarded two-return loop leaves both scores as they are (14 / 20);
 // the plain arm first (`if (!relay)`) 156 at retail's 488 B: the channel then outranks the member (30 against 18), but
 // a cursor-relative temporary spanning the loop (53) takes EBP ahead of both. Body unchanged.
+// The channel still loses EBP in the tied forms. Forwarding-header storage with field or aggregate init
+// 139/139, separate forwarding header from fields or whole copy 159/146. Header declared before the loop
+// with the same four producers 139/154/159/146. NOT kept: separate headers add stores and enlarge the frame
+// or body, and outer value initialization shortens the body without restoring EBP.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

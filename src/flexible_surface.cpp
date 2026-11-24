@@ -1258,6 +1258,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // the object index in a local, as matched 0x1171a0 and 0x117a80 write theirs, 303 (aligned 42, masked 14; a one-use local, so
 // match-only); the material index as a default overridden under `== NONE` 376, as an if/else with the tag arm first 318.
 // Body unchanged.
+// With the material call's two stack arguments, full baseline 280. Lighting byte pointer
+// from the cache offset or typed cache member, respectively: ternary 280/280, NULL before
+// lookup 273/273, success arm first 280/280, absent arm first 280/280. NOT kept: seven-point
+// gain is below the threshold. Record spill and draw-state expansion still differ. Body restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

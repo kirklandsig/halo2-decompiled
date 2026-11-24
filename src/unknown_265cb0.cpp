@@ -1100,6 +1100,19 @@ real function_30bf0(vector3f *vector);
 // index 84; `short const` seat count 84; `real const` range alone, re-measured, 84 (an earlier round listed 81) and with
 // the scaled range const 84 (all the same code). A forced-decision search ran 10 of 45 decisions in 20 minutes on this
 // loaded machine before it was stopped (none matched; the closest, the first delta row's register moved, 102). Body unchanged.
+// M3 lane 6 r240 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84, aligned 55). Reading of the
+// operand ranks: in the second seat cross retail multiplies the stored side members by forward.k from memory, so there the
+// side members' value numbers rank above forward.k's load (0x14008 here) and below forward.i's (0x1a008); this body's side
+// values are numbered 0x117c0 and 0x12c00. Diagnostic (reverted): 336 unused initialised longs at the function top raise
+// them to 0x145c0 / 0x14600 and give retail's second cross and retail's 1308 B, 53 (aligned 51); what is left then is the
+// range's first register, the first cross's two subtrahends and the homes. The numbers belong to this function alone:
+// its definition moved to the end of the file 84 (same code), 400 extra file-scope longs defined or only declared 84 (same
+// code), 336 unused uninitialised longs 84 (same code). So retail's body creates about 323 to 875 more local symbols
+// ahead of the seat loop than this one (the 0x266640 note in this file reads 254 to 1278 for its own head). First cross:
+// its six loads rank up (0, 4, 6) and forward (5, 0, 2) in eighths; retail's two subtrahends need the up axis's first
+// member at or above forward.k and its second at or above forward.i. Forms: the up axis through a pointer local in the
+// occupant block 90 (1308 B: up becomes (6, 0, 6), the i subtrahend flips too), the same pointer ahead of the seat loop
+// 156; `forward` declared after `side, up` 84 (same code). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

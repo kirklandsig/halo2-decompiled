@@ -530,6 +530,11 @@ const dword g_455978[81] = {
 // release expanded; the do-while alone 328, same code); with the loop under `if (0 < local_6)` and its counter zeroed
 // ahead of it 331 (2057 B: retail's call skeleton, 0x11bed0 called, first release expanded, second called; entry
 // registers EBX/EDI swapped); that guard alone 373 (2011 B). BLOCKED-BY 0x279740 (/Ob1 file; needs the held `inline`).
+// Exclusion defined on the bounds path by branches or a conditional 430/464,
+// with absent-path defaults 494/494; null volume on the absent path 430,
+// with both defaults in their arms 485 or conditional exclusion 460;
+// publish the volume after selecting the exclusion 465.
+// NOT kept: the retail homes and selective call expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

@@ -1846,6 +1846,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // local at the top of the function 638 (aligned 170); the globals local after the call 589 (aligned 131). Left on the
 // lead: the definition, material and point homes (35 rows of stack offsets), one byte-store pair, the order of the
 // g_510c54 rate quotient and the state test at +0x3f5 and the position rows near +0x9dd. Body unchanged.
+// On the walking preload, a void material address 137, named pill test 541, shared physics section 155,
+// animation flags reference 137, typed state 137, distinct case-four/five state 137, named recovery duration
+// 137, and named contact point 137. NOT kept: the preload stages a one-use settings pointer across a call
+// and the material and point homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3921,6 +3925,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // zero-extended where retail sign-extends it, and the 0xe16b0 call's argument in a register where retail passes it
 // on the stack.
 // MiniMax R (11-20): re-checked, no new form and no lower score (324): the frame is 0x48 against retail's 0x4c, so every home is four bytes out, the biped index is read from [esp + 0x54] where retail reads it from [esp + 0x58], and the state byte at +0x34b is zero extended where retail sign extends it.
+// The frame remains 0x48 and the pre-call flag slot is absent. Delayed mass conversion with an aggregate
+// point 332, point setter 313, scalar point 494, and scalar point split around the integer conversion 494.
+// With total updated first 332, direct weighted scalars 494, weighted point initializer 509, and staged
+// weighted products 398. NOT kept: the setter recovers the 0x4c frame but grows to 1924 bytes and loads the
+// point before the mass call. Four other forms break the caller.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4594,6 +4603,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // through cross3f 537 (same code); both through cross3f_staged 596 (2702 B, aligned 293); all four cross products of
 // the function through cross3f 595 (2703 B, aligned 306); the two later ones only (the overshoot side and the turned
 // rows) through cross3f 594 (retail's 2712 B, aligned 283). Body unchanged.
+// The changed and special result homes and the flight threshold spill still differ.
+// Shared turn-state byte, implicit or explicit zero test 629/629; named moving or stationary decision 601/601.
+// Special byte assigned in both arms, named for byte ordering, positive permission in both arms, or direct named
+// comparison 628/628/628/628. NOT kept: the best gains one against reduced control 602 and keeps that image's larger frame.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6405,6 +6418,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // needs forward i below axis j and k (cross rows) while its dot term stays above the k term (dot i, k, j): no symbol count
 // gives both (with two names ahead of the pointer the cross rows are retail's and the dot turns k, j, i). The lever stays
 // the rotation helper's own text, whose file was on the Avoid list again.
+// The first rotation still spills the cosine complement early and the final cross reloads forward j.
+// Existing early-cross rotation on forward, up, or both 143/143/144; paired with the other shared rotation
+// 143/188; forward field throughout with one or both early-cross rotations 154/154; both with staged side
+// cross 79. NOT kept: the best ties at 894 bytes and leaves the first difference at +0x107.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -7215,6 +7232,9 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // Forms: the count compare written `count > marker` 82; the zone as a default-constructed c_type_47f957 read through
 // `&zone.m_index` 126 (masked 17, retail's word store of NONE); the marker test negated with the arms swapped 80, the
 // flags_c0 test through TEST_FIELD_BIT 80, the definition through the byte-pointer macro 80 (same code each).
+// Marker count selected by a zero default or by a conditional, with direct fields or a contact
+// block reference: short 80 in all four forms, long 88 in all four. The long result adds a sign
+// extension before testing, while the short keeps the scratch rotation at the marker load. Body restored.
 // @retail 0xe4d90
 void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marker)
 {
@@ -7470,6 +7490,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // copy of the physics mode for the 4/5 test (retail's movzx and dword compares) 589, a mix with the direct reads, not kept;
 // `still = false` with `still = true` under the query (retail's stores at 0xe253b and 0xe2551) 660. Combined with the name
 // local and the bitfield stores: settle local 609, chained copy + bit view 632, mode copy 608.
+// Bind the definition, state and animation-flag lvalues directly (each, each pair, all three,
+// and all three with a mutable definition): 586 each in the reduced image, same as its control.
+// The frame agrees, but the tag, state and animation-result homes are still cycled. Body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

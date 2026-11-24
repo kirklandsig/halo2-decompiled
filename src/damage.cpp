@@ -5639,6 +5639,10 @@ struct s_damage_object_creation
 // used for both tests and stores 222 (779 B); one loop per mask, both bounded by the field 237 (843 B); the count
 // started at zero outside the info test and set inside it, the loop after the test 172; a guarded do-while
 // (diagnostic) 167; the latch written `section_count > i` 167 (same code).
+// Shared section/node count at lookup or entry, each with or without one scan
+// ordinal, scoped count names, and shared count with read-only or conditional
+// information record: seven at 167. Shared count from the nullable record 182.
+// The section bound still takes EDI in the tie forms and the node-loop pad differs.
 // Accumulate primary, secondary or both section masks before publication, from zero 199/198/243
 // or from the current flags 219/219/257. Unconditional mask intersections with primary or secondary
 // publication first 201/203. Each retains frame 0x13e0 and moves the first difference ahead of the original loop.
