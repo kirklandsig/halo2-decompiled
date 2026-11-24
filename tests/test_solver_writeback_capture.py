@@ -567,3 +567,40 @@ def test_linear_error_a_inertia_precedes_scalar_copy(solver_images,precision):
             assert snapshot[1]==1
             snapshots.append((snapshot,b_home))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_angular_error_a_inertia_precedes_scalar_copy(solver_images,precision):
+    # A's inverse-inertia W aliases the rounded SIMD-input word.
+    # Retail captures its old zero before that word becomes float one.
+    case='a_inertia'
+    frame=STACK+32768-0xd0
+    body_a=frame-0x20
+    body_b=HEAP+0x80
+    for rounding in range(4):
+        data=solver_case(12,0)
+        put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,body_b)
+        put(data,OPS+24,'2I',12|(4<<8)|(4<<16),0x400)
+        rows=(0,0,0,1,0,0,0,1)
+        put(data,TERMS,'8f',*rows)
+        put(data,HEAP,'B',3)
+        for body in [body_b]:
+            put(data,body+0x10,'4f',0,0,0,0)
+            put(data,body+0x20,'4f',0,0,0,0)
+            put(data,body+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'f',0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in [(retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            label='retail'if machine is retail else'compiled'
+            observed=words(machine,frame+0xc,1)
+            assert observed==(body_b,),(label,case,precision,rounding,observed)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,observed))
+        assert snapshots[0]==snapshots[1]

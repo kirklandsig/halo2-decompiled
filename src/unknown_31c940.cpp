@@ -891,12 +891,14 @@ static __forceinline void update_angular_values(float impulse,
 	__m128 &velocity_a,__m128 *const & velocity_b_pointer,
 	__m128 const &inverse_a,__m128 const *const & inverse_b_pointer, float *result, float &simd_scratch)
 {
+	// Retail captures A inertia before the rounded SIMD input is stored.
+	__m128 captured_inertia_a = inverse_a;
 	simd_scratch = impulse;
 	__m128 scalar = _mm_load_ss(&simd_scratch);
 	// Form both inertia-weighted impulses before either velocity write.
 	__m128 inertia_contribution[2] =
 	{
-		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a),
+		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), captured_inertia_a),
 		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), (*inverse_b_pointer))
 	};
 	__m128 change_a = inertia_contribution[0];
