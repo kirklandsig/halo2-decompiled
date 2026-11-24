@@ -2360,6 +2360,11 @@ bool function_1900a5(long index);
 // Single task-index read with direct guard, selected status, initialized readiness, guarded readiness,
 // conditional readiness, initialized offline result, default status or an offline early return:
 // 643/643/643/754/754/643/643/643. The opening status comparison and first user cursor still differ.
+// The logon comparison and properties-based user cursor still differ.
+// Successful refresh continue 643, with scoped team result 643, direct admission result 643,
+// unavailable reset before promotion 658 or vacancy 658, team-first eligibility 646,
+// nested vacancy 643, available vacancy first 649. NOT kept: the equal scores leave the
+// cursor at properties and the other forms raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -496,465 +496,31 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	s_structure_vertex_block const *block = &section->vertex_blocks[0];
 	point3f const *vertices = (point3f const *)(block->data + block->offset);
 
+	/* retail leaves the result unset on a miss: its three expanded calls share the
+	   flag's byte and only ever store true to it */
+	bool result;
 	if (vertices && index >= 0 && index < block->count)
 	{
 		*point = vertices[index];
-		return true;
+		result = true;
 	}
-	return false;
+	return result;
 }
-// score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
-// the range and plane homes; the 0x11e800 pointer registers now agree (lane 5 r197). One note: the two earlier score
-// lines below are kept as "Earlier score line".
-// MiniMax B (11-20): no new form, no lower score (172): the prologue still differs in one more place - retail interleaves
-// the point's three stores with its pushes (the third component at [esp+0x34] after the first push and the second at
-// [esp+0x38] after three), while this build stores the third component before any push and the second after two, so the
-// BSP in EBX against EBP and the push order still decide the frame's slot heights: BLOCKED-BY 0x11e800.
-// MiniMax I (11-17): no lower score (172): clearing the definition once at its declaration and dropping the else
-// branch's clear measures 208 (726 bytes), so the definition's two clears are not what holds the prologue apart.
-// MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
-// MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
-// MiniMax R (11-16): no new form, no lower score (172): retail pushes EBX first and keeps the BSP root in EBX with the section in its own home, where this build keeps the BSP in EBP and the section in EBX, and the frame's slot order follows that allocation; the permuter's six tries reach no variant under 172.
-// MiniMax D (11-14): no new form, no lower score (172): the frame 0x58 agrees, but the BSP global still sits in ebp where retail keeps it in ebx, and the prologue still pushes two registers where retail pushes three.
-// MiniMax G (11-13): no new form, no lower score (172): the BSP global sits in ebp where retail
-// keeps it in ebx, the prologue's push order and the frame's slot heights differ, and the 0x11e800
-// clone hands its four pointers over in another register order: BLOCKED-BY 0x11e800.
-// MiniMax H (11-12): no new form, no lower score (172): our prologue still keeps the BSP global in ebp and defers the ebp and esi pushes where retail pushes ebx first, and our zero constant still takes ebx where retail gives it to edi.
-// MiniMax H (11-11): no new form, no lower score (172); the BSP pointer still lands in EBP where retail keeps it in EBX, the frame's slots sit one word apart from retail's, and the four pointers of the 0x11e800 call are handed over in another register order, that callee being in another file.
-// MiniMax E (11-10, run 73): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx where we keep it in ebp, and the promoted clone of 0x11e800 hands its four pointers over in another register order (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in another file.
-// MiniMax D (11-11): no new form, no lower score (172): the BSP pointer still lands in EBP where retail keeps it in EBX, and the body is still seven bytes longer than retail's 726.
-// MiniMax G (11-11): no new form, no lower score (172): the first difference is at +0x16, in the prologue - ours stores the lightmap index into [esp+0x30] and loads the BSP base into ebp, retail pushes ebx first and keeps the BSP base in ebx; the frame's slots agree (0x58) and the 0x11e800 callee's registers are in another file, so this stays BLOCKED-BY 0x11e800.
-// MiniMax D (11-06, run 49): no new form, no lower score (172); the promoted clone of function_11e800 still hands the four pointers to different registers (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in src/unknown_11cb00.cpp, not this lane's file.
-// MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
-// function_11e800 hands the four pointers to different registers. Retail calls it with
-// ECX=arg1, EDX=arg2, EAX=arg3, ESI=arg4; our build calls it with ECX=arg1, EDX=arg2, ESI=arg3,
-// EAX=arg4 (checked at our 0x407628 against retail's 0x14aebb). The assignment comes from the
-// callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
-// so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
-// Also still different: the BSP/section carriers and the plane/instance stack homes.
-// MiniMax E (11-07): no new form, no lower score; the BSP and section carriers and the range and
-// plane homes are unchanged, and the vertex block still waits on 0x11e800's registers.
-// MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
-// 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
-// section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
-// MiniMax D (11-06): no new form, no lower score (172); the prologue still keeps the BSP in EBP and
-// the section in EBX where retail keeps the BSP in EBX and the section in its stack home, the range,
-// plane and instance homes are rotated and the 0x16e1b0 output homes and the vertex joins still
-// differ; BLOCKED-BY 0x11e800 (its v0/v1/v2 registers) and by 0x16e1b0, both in other files.
-// MiniMax C (11-14): no new form, no lower score (172): retail holds the BSP global in EBX and keeps the section in its stack
-// home, this build keeps the BSP in EBP, and retail's third point component is stored at [esp+0x34]; the permuter's 315 seconds
-// (six tries) found nothing below 166: BLOCKED-BY 0x11e800.
-// MiniMax C (11-15): no new form, no lower score (172): retail zeroes its result byte next to the section's dword home
-// ([esp+0x13] against [esp+0x14]) before the type branch, this build keeps the result in a register, and declaring the result
-// above the branch so the zeroing lands in the prologue measures 197, so the body stands. The BSP global still takes EBX in retail
-// and EBP here, and the section pointer still takes retail's stack home against this build's EDX.
-// MiniMax I (11-15): no new form, no lower score (172): the frame is retail's 0x58, retail keeps the BSP global in EBX with the section in a stack home while this build keeps the section in EBX and the BSP in EBP, and the range, the plane and the vertex-join homes still differ.
-// MiniMax S (11-15): no new form, no lower score (172): retail holds the BSP global in EBX and keeps the section in its stack home while this build keeps the BSP in EBP and the section in EDX, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in src/unknown_11cb00.cpp): BLOCKED-BY 0x11e800.
-// MiniMax A (11-18): no new form tried this round, no lower score (172): retail still keeps the BSP global in EBX and
-// the section in its stack home where this build keeps the section in EBX and the BSP in EBP, so the prologue's push
-// order and the frame's slot heights differ, and the promoted clone of 0x11e800 still hands its four pointers over in
-// another register order (retail ecx, edx, eax, esi). That callee's body lives in src/unknown_11cb00.cpp, which this
-// lane may not edit: BLOCKED-BY 0x11e800.
-// MiniMax E (11-20): no new form, no lower score (172): the BSP stays in EBP here and the section in EBX where retail
-// keeps the BSP in EBX with the section in its stack home, and the vertex flag is initialised here where retail sets
-// it only when a vertex exists: BLOCKED-BY 0x11e800.
-// Earlier score line (172, was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
-// the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
-// vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
-// tested only after the first vertex); that uninitialised success-only flag gives 165 (163 with
-// other declaration orders; 119 with an uninitialised definition), but it reads an uninitialised
-// flag and drops the checks on the second and third vertices, so HEAD's body stays.
-// M3 lane 3 r268 (fast with 0x14a8e0, 0x14af40, 0xd47d0, all MATCH): lane 7 r123's form rebuilt (vertex getter's
-// result left unset on a miss, result/definition/section initialised at their declarations, unknown18 stored before
-// part_index) 208 with a bool result, 222 (736 bytes) with the byte result; on it the clear as a one-field memset 208
-// (same code), the type tests as a switch 218, and the declarations as definition, section, result 133 (733 bytes: no
-// zero register, the section's NULL store through the definition's EDI as retail, but the range never takes EBP in
-// the head, so EBP is pushed only before the loop and every home sits four bytes low; the section then stays in EDX
-// into the loop and NONE takes ESI); range declared first on that 133 (same code). Diagnostic: without the clear the
-// 133 form puts the range in EBP as retail (182, 729 bytes). Not kept: a declaration order picked by score and the
-// unset getter result give no match.
-// Tried: output declarations reordered 185; outputs renamed 185; part index/unknown stores swapped
-// 185; bool result 197; success-only flag 235, with bool result 221; instance index at each use
-// 226/227/201; vertex loop with a break 287; inverted ternaries 165; surface range index at each use
-// 191; flag initialised false 232; early return without a section 127 (an epilogue retail lacks;
-// realignment only); BSP reads at use 217; conditional section selection 229; direct success returns
-// 243; instance reads at use 213; relative triangle-range counter 206; reference table before
-// traversal 221; instance case first 232; byte success result 185; result-controlled traversal 205;
-// reference table and result traversal 216; index-first/output-first fetch contracts 185/185;
-// filled-point return 185; native span inputs 238; actual validity publication 185; triangle query
-// into result 217; validity-byte name 185; read-only section 185; shared residency 203; first-fetch
-// validity 185; strip-input cursor 221; residency/first 203; residency/cursor 208; first/cursor 221;
-// all three 208; both invariant geometry tables on the byte-result body 241; byte vertex validity 185;
-// range index at use 199; cached range end 183 (below gate); later plane 211; native strip start 220;
-// external section source 191; active section reference 185; surface table before walk 205; source
-// and table 244; plane reads at use 225; collision record reference 185; long success/validity
-// 192/185; native range 211; native reference 225; native section 216; native BSP 272; native
-// collision 256; range and reference 218; section and range 227; collision and reference 248;
-// BSP/range/block references 185/185/185; native block value 330; vertex count/memory copy 185/185;
-// native strip-word input 257; range plus block references 185; failure accumulator bool/byte
-// 185/185; signed byte/word fetch result 185/185; negative-index guard first 211; index test before
-// data 208; failure plus early guard 211; failure accumulator plus signed-byte fetch 185; range/plane,
-// range/instance, plane/instance and all metadata reads at every use 225/217/226/223, with BSP also
-// read at every use 231/221/232/222; private point setter 230; dword index 258; both 256; dword fetch
-// result 185; result with setter/index/both 230/258/256; complete input point captured before the
-// shared setter 319; validity output pointer/reference/byte 185/185/185; predicate-produced bool/byte
-// 185/185; predicate byte with native block 185; Boolean/byte outputs with native block 185/185;
-// final failure bool/byte/short/long 182/182/192/194 (three-point best dropped); existing point setter
-// 231; cluster reads at use 216; setter/cluster 245; instance receiver at use 188; setter/instance 228;
-// both receivers 220; setter/both 251; native coordinate initializer 231; separate source/query points
-// with entry/default initialization byte 233/233, bool 222/222, CRT byte 233/233, bool 222/222;
-// eligible source-point return with section/block inputs and aggregate/CRT caller copies 266 each;
-// validity assigned only on failure with those four forms 192 each; native-byte geometry,
-// metadata/ordinal, query/triangle workspace and part-output lexical homes 185 each, all groups 185;
-// two-use collision discriminator, reused reference surface ordinal and readonly BSP/instance inputs,
-// all seven combinations 185 each; combined unsigned discriminator 185; part/residency/transform
-// provider inline contracts, singles, pairs, all and all with separate noinline declarations 185 each
-// (transform forms lose reduced controls 0x31590/0x168d60, also 0x23d030 without noinline); native/
-// const fetch source capture with aggregate/library publication 185 each, each with query memmove
-// 207; range declared before section 185; BSP declared last 186; range or BSP local renamed 185/185
-// (spill slots unchanged); section local renamed 185 (names move neither slots nor registers);
-// vertex fetches as one && chain with the triangle test 257 (677 bytes); vertex helper taking the
-// block, read once per triangle 238; vertex getter returning the point or NULL 255; nested ifs in
-// place of the continues 185 (same code), with the result in the loop test 221.
-// Round 380: geometry-join byte/signed-byte result with source-owned definition and
-// residency-owned section default subsets 208/172/216/217 each; original entry byte/bool
-// result with source-owned definition 195/207. Branch-owned definition null default
-// and geometry-join byte result 172 (733/726 bytes), plain confirmed; retained.
-// Frame 0x58 agrees; BSP/section residence, range/plane homes and vertex joins remain.
-// Round 384: strip receiver after readonly part lookup with original/readonly
-// strip/reference/both 201/201/201/201; each with the two-use native first-index snapshot
-// 230/230/230/230.
-// Original strip acquisition, native byte result and complete defined-failure body restored;
-// BSP/section and range/plane homes remain.
-// Round 249: Complete pointer/lower/upper eligibility exits in all six orders
-// 185/188/208/210/187/186; native bool/byte bounds predicates 254/254. Original
-// defined-failure helper and complete query restored; BSP/section homes remain.
-// Round 223: Signed/unsigned word masked-plane storage with original/reference-base/surface-base/both table selections 213/188/214/210/215/196/216/224. Original full-width plane, table selectors and defined vertex failures restored.
-// Round 165: actual instance-table predicate shared at both selections, crossed with
-// native byte fetch and the reused surface ordinal, 228 in all four forms; the same
-// four with a canonical Boolean query result 232 each. Predicate shortens the frame;
-// original long instance lifetime, helper, byte result and defined failures restored.
-// Geometry-join Boolean result 182 (726 bytes); native byte fetch 172; both 182;
-// initialized single-exit fetch 172, with Boolean result/byte fetch/both 182/172/182;
-// complete result/fetch graph with readonly section 182. Original helper and result restored.
-// Round 32 on branch-owned definition/result-at-join: all BSP observations 234;
-// all collision metadata observations 228; CRT query snapshot 172; BSP/metadata 231;
-// BSP/copy 234; metadata/copy 228; all 231, instance-first all 222. Original body restored.
-// Round 251: bounded vertex byte/signed-byte/word/unsigned-long ordinals
-// 259/259/259/172; each with a complete post-geometry range-end expression
-// 269/269/269/196. Original ordinal and bounds restored; frame/BSP/section and
-// defined vertex joins remain.
-// Round 387: BSP/section carriers and range/plane homes remain. Native fetch output/section/both
-// references 172 each; remaining index-output-section, output-index-section and section-output-
-// index contracts 172 each; output reference with index-first and both references with output-
-// first 172 each. Original query and complete defined-failure helper restored.
-// Round 387: Three further native fetch reference contracts, index-output-section with section
-// reference, output-index-section with point reference and section-output-index with both
-// references: 172 each. Eight new reference contracts total; three pointer-only order observations
-// are additional. Complete original query and defined-failure helper restored.
-// Round 393: native external cluster/instance/triangle references in seven subsets
-// 172 each; all with native surface reference 172. Original receivers and defined-failure body restored.
-// Round 228 on the branch-owned geometry join: filled-output pointer success with native
-// section/output references and index-first order, all eight contracts 172 each. Original
-// Boolean fetch, defined failures and caller roles restored; BSP/section residence remains.
-// Round 400: Existing vertex getter as a section member with bool/byte/word/long results
-// 172/172/172/172; as a vertex-block member
-// 172/172/172/172. Every defined failure and suppressed later fetch restored.
-// Round 185: Direct collision-point transform input with aggregate/library/overlap-safe/shared-
-// setter copies at entry 199/199/205/243; case-owned copies 251/251/257/296. Original in-place
-// transform, point capture, defined vertex failures, complete body and include set restored.
-// Round 187: Native byte-data/offset versus point-table fetch inputs, long/word count and
-// early/result-first eligibility, all eight 235. Original fetch contract and body restored.
-// Round 403: real triangle-reference cursor with readonly metadata/surface table/range
-// bound/vertex cursor combinations 210/210/211/193/213/210/213; complete graph
-// with Boolean result 224. Original traversal and defined-failure body restored.
-// Round 207: native point-value getter with bool/byte/long/dword validity outputs,
-// default-first result 284/284/278/278; eligibility-owned return 284/284/278/278.
-// Frames 0x68/0x6c and shorter code regress; original Boolean fetch and defined failures restored.
-// Round 426: captured instance key through publication with long/short/word/dword plane storage 232/180/197/232; Boolean results 242/187/194/242. Original collision observations and defined vertex failures restored.
-// Round 229: failure-only in/out validity on the original point-output helper, bool/byte/short/long
-// pointer outputs 172/172/172/172; references 172/172/172/172. Original helper, defined failures and query restored.
-// Round 185 (lane 3, fast): the 0x16e1b0 outputs declared part index, unknown, part offset 172
-// (same slots: retail's part offset/unknown/part index homes stay swapped); the BSP declared before
-// the point copy 172; the vertex helper forced inline 172; the three fetches as one && expression
-// 264 (681 bytes); `if (!section) return false;` 211 (726 bytes). Retail's skip after a missing
-// first vertex tests a flag no path initialises, so no defined-failure form reproduces it.
-// Round 61 (m3 lane 9, fast): retail's vertex flag (a byte set after each successful fetch, never cleared
-// and never initialised, tested only when the first fetch fails; 0x11e800 is called whatever the second and
-// third fetches gave) written as `if (get(v0)) found = true; else if (!found) continue; if (get(v1)) found =
-// true; if (get(v2)) found = true;`: with `bool found = false;` 232 (756 bytes; aligned 51 against 99: the
-// BSP takes EBX with retail's spill and the vertex block lines up), uninitialised 226 (aligned 50); with a
-// bool result 207/212 (aligned 49/46); result and flag declared at the top 246/229, a byte result at the top
-// 240/243; `definition = NULL` at its declaration 245, an uninitialised definition 257, with the
-// uninitialised flag 280; `unknown` renamed `a_unknown`/`z_unknown` 226/226 (names move no homes). Left on
-// the best flag form: the instance index in EBP (retail ECX, with the range in EBP), NONE held in EDX for
-// three compares, the 0x16e1b0 unknown/part-index homes and BLOCKED-BY 0x11e800 (its v0/v1/v2/point
-// registers). Any defined initial value adds a store retail lacks, and the flag is set in a test, so none of
-// these is kept.
-// Round 138 (m3 lane 5, fast; retail zeroes a byte at esp+0x13 and the definition in EDI at entry): `definition = NULL`
-// at its declaration with the byte result declared among the locals 209 (727 bytes); with the result declared first
-// 185 (726 bytes); with the BSP declared before the point 217; section before definition 209; a bool result 217.
-// Round 123 (m3 lane 7, fast; plain agrees): retail's vertex byte at esp+0x12 is one slot written on each
-// hit, tested only after the first miss and never initialised: the vertex getter's own result left unset on
-// a miss (`bool result; if (ok) { *point = ...; result = true; } return result;`), inlined once in the
-// `valid = valid && ...` loop and unrolled. With it the 66-instruction vertex block is exactly retail's:
-// alone 226 (751 bytes, aligned 40 against 75); with a bool result 212; with `definition = NULL` at its
-// declaration 219, bool 205; result, definition, section declared in that order after the instance index
-// 208 at 726 bytes (aligned 20; rsd/drs 208, dsr/sdr 137, srd 220); then unknown18 stored before
-// part_index 208 (aligned 16: the 0x16e1b0 output slots then as retail; the 22 other store orders worse).
-// On that: `unknown` renamed (7 names) 208; output declaration orders 208; `section != NULL` 208; range
-// declared first 208; declarations at the function top/after the BSP 220/220; result at the other entry
-// positions 220-221; field locals moved after the group 216-224; `!count` 208; section NULL as a statement
-// 208; permuter 198 (a volatile only). Left: VC keeps constant 0 in EBP (retail gives EBP to the range at the
-// join and tests with `test`), which shifts the positional score, and BLOCKED-BY 0x11e800's registers.
-// Round 216 (m3 lane 3, fast): a bool result declared first with definition and section NULL at their declarations
-// (no branch NULL stores) 197 (713 bytes); the section declared first, before the point copy 172 (same code); the byte
-// result cleared before the type branches 197 (742 bytes); the surface test written as one plane comparison (no
-// surface local) 201; the 0x16e1b0 call moved after the vertex fetches 282 (774 bytes). Body restored.
-// MiniMax E (11-08): no new form, no lower score: our frame's store slots are shifted (we store to esp+0x30 where retail stores to esp+0x34) and we do not push ebx first.
-// MiniMax E (11-09): no new form, no lower score: our frame's store slots are shifted (we store to esp+0x30 where retail stores to esp+0x34) and we do not push ebx first.
-// Round 82 (m3 lane 10, fast, control 172, aligned 99): the type tests as a switch with the instance case
-// second and the NULL definition in a default 217 (728 bytes); the unknown18 clear before the byte result's
-// declaration 172 (same code); the published instance index from the instance-index local 232 (720 bytes,
-// and callers 0xd47d0/0x14af40 lose their match: the convention moves); both reference/surface selections
-// tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
-// (no pointer local) 221 (747 bytes).
-// MiniMax B (11-11): no new form, no lower score (172): our body is seven bytes longer than retail's 726;
-// retail pushes ebx first and keeps the BSP base in EBX with the section in its stack home, we keep the BSP
-// base in EBP and the section in EBX; retail's range, plane and instance homes sit one word higher than
-// ours, its three vertex fetches are unrolled where ours are a loop, its two 0x16e1b0 output homes are
-// swapped against ours, and the promoted clone of 0x11e800 takes its four pointers in another register order
-// (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax), that callee living in another file.
-// MiniMax I (11-11): no new form, no lower score (172): the three 0x16e1b0 output homes follow the
-// call's argument positions (arg3 to esp+0x34, arg4 to esp+0x38, arg5 to esp+0x3c) and not the
-// declaration order (swapping the two output declarations is byte-identical); retail keeps the
-// always-zero output at esp+0x38 and the range index at esp+0x34, so its two homes are swapped
-// against ours, and its tail stores esp+0x34 into part_index and esp+0x38 into unknown18 where we
-// store them the other way round. Swapping the two arguments (with or without the two field
-// assignments) reproduces one side of the swap only, and the whole frame's other slots and the
-// ebx/ebp split differ as well.
-// MiniMax D (11-10): no new form, no lower score (172): the BSP pointer still lands in EBP where retail
-// keeps it in EBX, so the cluster pointer takes EDX here and EBP there, and the section, BSP and instance
-// slots sit one word apart; a const BSP pointer compiles the same code.
-// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 172 (726 bytes against retail's 726); the difference is the frame's shape (our slots sit one word lower than retail's and we do not push ebx first) and the 0x11e800 callee's registers, which are outside this file.
-// MiniMax S (11-10): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx, we keep it in ebp and defer the ebp and esi pushes, so the prologue order differs although the frame slots agree; our zero constant takes ebx where retail gives it to edi.
-// MiniMax R (11-10): no new form, no lower score (172): the result as a bool (182), the result declared first (212/197) and four orders of the prologue reads (172/172/223/172) all leave retail's push-ebx-first prologue and its BSP in EBX unreproduced.
-// MiniMax A (11-12): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx while
-// this build keeps it in ebp and defers the ebp and esi pushes, so the prologue order differs although the frame's
-// slots agree, and 0x11e800's argument registers are decided by that callee's body in another file; the permuter
-// (300 s, annealed) was stopped by the run's time limit without a result.
-// MiniMax B (11-13): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx with the section in a stack home, ours keeps the BSP in ebp and the section in a register; the promoted clone of 0x11e800 takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee being in another file.
-// MiniMax A (11-14): no new form, no lower score (172): retail still keeps the BSP global in ebx
-// and pushes ebx first while this build keeps it in ebp and defers the ebp and esi pushes, and the
-// zero flag's frame slot is exchanged with the global's; the only spelling left is a declaration
-// order change (the bsp assignment before the point copy), which the rules ask to be reported
-// rather than made.
-// m3 lane 6 r181 (fast, control 172 = plain; aligned/register-masked 99/54): the vertex loop as `valid && vertex < 3` with
-// a plain assignment 273 (675 B: the loop is no longer unrolled); same code as the control: the vertex flag declared at
-// function scope beside the result and reset per triangle, the reference and surface selections as if/else statements.
-// Re-measured: the byte result declared first with `definition = NULL` at its declaration 185 (726 B, aligned 97/54; now
-// `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
-// MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
-// MiniMax C (11-16): no new form, no lower score (172): retail still holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
-// MiniMax I (11-17): no new form, no lower score (172): the prologue still pushes ebx first and keeps the BSP global in ebx
-// where this build keeps it in ebp and defers the ebp and esi pushes, and the 0x11e800 call still hands its four pointers
-// over in another register order (retail ecx, edx, eax, esi); that callee's body is in another file: BLOCKED-BY 0x11e800.
-// MiniMax I (11-17): no new form, no lower score.
-// b8B (11-17) walk against retail, fast build on r836: fields, offsets, branch senses, loop shape and callees
-// agree (type 1 at 0x14acb5, type 3 at 0x14acee, loop 0x14ad82-0x14aee0, fill 0x14aef4); no behaviour error
-// found. Order differences, both measured above and not applied: retail zeroes the result byte at 0x14aca2,
-// before the type test's jne at 0x14acb3, and clears the definition once at 0x14ac9d with no clear in the type-1
-// block or the else path; ours does both after the type test. Retail returns the byte raw (0x14aee6, 0x14af28)
-// where ours adds test/setne; `bool result` measures 182 (726 bytes), not kept. Retail tests only the first
-// vertex's fetch (0x14ae25 reads a byte at esp+0x12 that no path initialises; 0x14ae1e/0x14ae63/0x14ae9a set it
-// to 1) and calls 0x11e800 at 0x14aebb whatever the second and third fetches gave, with stale vertices; ours
-// skips the triangle when any fetch fails (NULL data at 0x14adf6, bad strip index). `if (!get(v0)) continue;
-// get(v1); get(v2);` with a defined failure measures 182 (192 with a bool result); with the getter's result left
-// unset on a miss and a bool result 200 (731 bytes), its vertex block equals retail's in opcodes except the
-// stores at 0x14ae63/0x14ae9a (dropped as dead) and the swapped flag and result slots. The else path reads an
-// unset range at 0x14ad52, harmless (section NULL). The 0x16e1b0 homes and the 0x11e800 registers are unchanged:
-// BLOCKED-BY 0x11e800.
-// MiniMax S (11-17): no new form, no lower score (172): retail still holds the BSP global in ebx and pushes
-// ebx first while this build keeps the BSP in ebp and defers the ebp and esi pushes, and the 0x11e800 call
-// still takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee's body
-// being in another file: BLOCKED-BY 0x11e800.
-// MiniMax A (11-17): no new form kept, no lower score (172): a null definition with a byte result moved to the top scores 209 and the byte result alone 197, and swapping the section and range declarations gives the same code; what is left is that retail holds the BSP global in ebx and pushes ebx first while this build keeps it in ebp and defers the ebp and esi pushes, and the 0x11e800 call still takes its four pointers in another register order, that callee's body being in src/unknown_11cb00.cpp, which this lane may not edit. BLOCKED-BY 0x11e800.
-// M3 lane 5 r197 (fast with 0x14a8e0, 0x14af40 and 0xd47d0, all MATCH throughout; aligned exact counts in brackets, base
-// [95]; body restored). The 0x11e800 blocker above is out of date: the call's four pointer registers (ECX, EDX, EAX, ESI)
-// now agree with retail in this body and in the forms below. Lane 7 r123's form re-applied to this tree (vertex getter's
-// result left unset on a miss, `bool result = false`, `definition = NULL` and `section = NULL` at their declarations in
-// the order result, definition, section, no NULL stores in the branches, unknown18 stored before part_index) 208 at 726 B
-// [19]; every one of the 19 comes from one cause: ours keeps a zero in EBP from the entry to the unknown18 clear (`xor
-// ebp, ebp`; section's NULL store, the count test, the section test and the clear all use it), where retail has no zero
-// register (section's NULL store reuses the definition's EDI, `test eax, eax` twice, an immediate clear) and gives EBP to
-// the range before the loop (`lea ebp` in the type-1 arm, reloaded at the join). On that form: declaration orders
-// definition/result/section and result/section/definition 208 [19] (same code), definition/section/result and
-// section/definition/result 133 at 733 B [75], section/result/definition 220 at 744 B [76]; section cleared through a
-// chained assignment from the definition 208 [19] (same code); the count test as `!count` 208 [19], as `(dword)count < 1`
-// or `count < 1` 209 [20]; `section != NULL` 208 [19]. Diagnostics, reverted at once: without the unknown18 clear 182 (729
-// B, no zero register, range in EBP, section's store through EDI); section left uninitialised 221 (no zero register); the
-// clear written as a float zero 208 at 730 B [35] (no zero register, but xorps/movss and EBP unused before the loop);
-// without the count test's early return 236 (708 B, no zero register); one more range read ahead of the loop 227 (zero
-// still in EBP). So the zero register appears only when both dword zero stores (section, unknown18) are in the body, and
-// range does not outrank it. Not kept: 208 is a rise, and 133 is a declaration order picked by score with [75] aligned.
-// M3 lane 4 r222 (fast with 0x14a8e0, 0x14af40 and 0xd47d0, all matched; control 172, aligned 97; an LTCG screen with named
-// homes, build/r222/scr.py, scores variants by aligned rows). Round 197's 208 form re-measured: 208 at 726 B, aligned 19, the
-// zero in EBP the only cause. On it: `bool result = false` declared ahead of instance_index (first, or at any of four
-// positions before it) 221 at 739 B: the zero register goes, section's NULL store comes from the definition's EDI and the
-// section test and the clear are retail's, but instance_index then holds EBP for the whole body (retail gives EBP to range
-// before the loop, keeps instance_index in memory and NONE in EDX inside the loop): aligned 35, and six further declaration
-// orders around it 34-37 (screen); that with the type-3 instance read from the collision record 221 (739 B, aligned 39); the
-// definition cleared in the type-1 and else arms 222 (730 B); the point copy declared after the others 221 (726 B, aligned
-// 37); the count test returning `result` 208 (the same code as the lead); range's bare declaration at eight positions the
-// same code; 1 to 6 dead locals ahead of the body keep the zero (not a symbol-count state); a const instance_index on the
-// result-first form the same code. So the zero/instance_index claim on EBP follows the order of result's and
-// instance_index's declarations, and range never wins it here. 19 of the 24 orders of the instance_index, result,
-// definition and section declarations (screen): three states only, aligned 19 (the lead's), 36-37 (result ahead of
-// instance_index) and 70-75 (section ahead of result).
-// M3 lane 13 r115 (fast, 0x14a8e0, 0x14af40, 0xd47d0 MATCH throughout; all restored): lane 7 r123's form rebuilt 208 at
-// 726 B (zero still in EBP); on it: definition and section cleared by statements after the declarations 208; the empty
-// count's early return giving `result` 208; `if (!section) return result;` with the loop unnested 212; the count test
-// as `!= 0` around the rest of the arm, no early return 227 (707 B); the section declared as a const pointer 208.
-// m3 lane 11 r130 (fast with 0x14a8e0, 0x14af40 and 0xd47d0, all matched): lane 7 r123's form rebuilt, 208 at 726 B. Why
-// the zero takes EBP: retail's type-1 arm keeps range in EBP across the 0x12de70 call (stored to its home just before the
-// call, reused at the join), so with BSP, cluster, range and the cleared definition every callee-saved register is busy
-// there and no zero register can form; ours spills range at once (EDX) and VC gives the free EBP to the zero used by the
-// section's NULL store, the count test, the section test and the clear. On the 208 form: the cluster indexed straight
-// from the range table with range taken after it 208 (same code); range taken after the call 254 (755 B); the type-3
-// instance read from the collision record 208; the loop index at function scope 208; `section != NULL` with the count
-// test as `!count` returning result 208 (same code each).
-// M3 lane 14 r126 (fast with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH unless noted; control 172 at 733 B, aligned
-// [exact, stack masked, registers masked] 95/77/48; body unchanged). Reading of retail first: 0x16e1b0 takes the section
-// in EBX, so retail loads the section from its home right at that call (`mov ebx, [esp+0x14]`), copies it for the vertex
-// block (`mov eax, ebx; mov eax, [eax+0x3c]`) and reloads the BSP into EBX only after a failed triangle; the range is
-// loaded into EBP at the end of the type-3 arm (`mov ebp, [esp+0x18]`, the type-1 arm jumps past it with EBP still
-// holding it), ahead of the section test. Round 268's lead rebuilt (the getter's result unset on a miss, definition NULL
-// at its declaration, `bool result` after section, unknown18 stored before part_index) 133 at 733 B, 75/68/25: every
-// line left on it is EBP (this build does not use EBP before the loop and pushes it there; retail pushes it in the
-// prologue and gives it to the range from the arms to the loop's first test). New forms, on the control / on that lead:
-// the section's address discarded (`(void)&section;`), and the range's too, 172 / 133 (same code); the section set
-// through an inline helper taking the block info, the sections field's address and `&section` 172 / 133 (same code: the
-// address does not survive the expansion); the same helper as a template over the cluster and the definition 231 (714 B)
-// / 209 (726 B) (the two copies fold into one out-of-line function, even forced inline); the triangle search loop as a
-// forced-inline helper returning true from inside the loop 196 on the lead (735 B, 53/44/32: the section is then loaded
-// at the 0x16e1b0 call as retail, but the result takes BL, the BSP EBP and there are two exits), plain `inline` 642 (the
-// helper stays out of line, 311 B, and 0x14af40 and 0xd47d0 lose their match with the clear inside it); that helper with
-// the clear and the section test inside 223 (714 B); with a `bool *found` out flag 133 (the lead's code); with its own
-// result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
-// (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
-// does). Nothing kept: no form gains on the control, and the lead needs an exact match.
-// M3 lane 7 r200 (fast with 0x14a8e0/0x14af40/0xd47d0/0x16e1b0, all MATCH throughout; control 172): round 268's lead
-// rebuilt (the vertex getter's result unset on a miss, definition and section NULL at their declarations, result after
-// section, no else arm, unknown18 stored before part_index) with a byte result 146 (743 B: the BSP in EBX as retail, but
-// the byte goes back through test/setne), with a bool result 133 (733 B). On 133: 1 to 8 dead initialised longs ahead of
-// the body (diagnostic) 133 at every count, so not a symbol-order tie; a per-iteration copy of the section for the
-// indices, the 0x16e1b0 call and the vertex reads 133; the 0x16e1b0 outputs and the vertex array declared at function
-// scope 133; range as a const pointer 133. Left on 133: ours keeps the section in EDX from the join into the loop (NONE
-// then takes ESI), where retail reloads the section at the 0x16e1b0 call and gives EBP to the range from the arms to
-// the loop's first test. Body unchanged.
-// M3 lane 6 r212 (fast with 0x14a8e0/0x14af40/0xd47d0, all MATCH; aligned [exact, stack masked, registers masked]): lane
-// 7 r123's lead re-measured 208 at 726 B [19, 19, 15] and its definition/section/result order 133 at 733 B [75, 68, 25];
-// on each, the loop bound written `range->count + range->first` 208/133 (same code); on 133 the range as a const pointer,
-// the loop's first index named before the loop, and the declarations as definition, section, range, result 133 each (same
-// code). In the 133 form EBP is pushed only before the loop, at its first use, so range never holds EBP in the head as in
-// retail.
-// frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
-// MiniMax D (11-20): no new form, no lower score (172): the frame 0x58 still agrees, but retail keeps the BSP in EBX and the
-// section in its own stack home where this build keeps the BSP in EBP and the section in EBX; the range and plane homes rotate and
-// the four pointers of the 0x11e800 call sit in another register order, and the permuter's 35 variants found nothing below it.
-// Earlier score line (172, was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
-// the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
-// M3 lane 2 r124 (fast with 0x14a8e0/0x14af40/0xd47d0/0x16e1b0, all MATCH each run; control 172; body unchanged). Loop
-// shapes, untried above: the triangle loop bottom-tested under its range test (`if (i < first + count) do { ... } while
-// (++i < first + count);`) 205 (711 B); the vertex loop bottom-tested (`do { ...; vertex++; } while (vertex < 3);`) 263
-// (686 B: no longer unrolled); both 263; a count guard around the triangle loop (`if (0 < range->count) for (...)`) 199
-// (743 B); the three fetches as three statements (`valid = get(0); valid = valid && get(1); valid = valid && get(2);`)
-// 172 (same code).
-// Collision point transfer by coordinates 230, standard copy or backward copy 197 each.
-// Vertex transfer by coordinates 252, standard copy or backward copy 270 each. Both transfers
-// with forward or backward copy 284 each. The entry copy reaches 726 bytes but changes the early save order.
-// M3 lane 7 r205 (H2M fast with 0x14a8e0, 0x14af40 and 0xd47d0, all MATCH each run; control 172 at 733 B). Round 268's
-// lead rebuilt (the vertex getter's result unset on a miss, definition and section NULL at their declarations, bool result
-// after section, no else arm, unknown18 stored before part_index) 133 at 733 B; every line left on it is EBP (retail
-// pushes it in the prologue and gives it to the range from the arms to the loop's first test, ours pushes it before the
-// loop) and the section, which ours keeps in EDX from its test into the loop where retail reloads it at the 0x16e1b0
-// call. On 133: the unknown18 clear moved ahead of the type tests 237 (744 B); the strip-index pointer taken after the
-// 0x16e1b0 call 194 (734 B); `section != NULL` with the loop index declared in the block 133 (same code). On the body:
-// the strip-index pointer after the 0x16e1b0 call 202 (736 B); the vertex loop as `vertex < 3 && valid` with a plain
-// assignment 263 (686 B). Body unchanged.
-// M3 lane 7 r207 (h2m fast with 0x14a8e0, 0x14af40, 0xd47d0, all MATCH; control 172): the surface-index test as a
-// nested if 172, the vertex array at function scope 172, the three 0x16e1b0 outputs at function scope 172, the vertex
-// test as `if (valid) valid = ...` 172 (all the same code); the strip-index pointer formed after the 0x16e1b0 call 202
-// (736 B).
-// M3 lane 12 r171 (H2M fast; control 172, aligned 95, register-masked 48): result (bool), definition and section set at
-// their declarations in that order with no else arm and unknown18 stored ahead of part_index, the vertex getter unchanged,
-// 198 (713 B, aligned 84, masked 39); the vertex getter's result left unset on a miss alone 226 (751 B, aligned 46, masked
-// 38: retail's miss path re-reads that result's home, so retail's getter has this shape); the BSP local declared ahead of
-// the point copy 172 (same code); the three vertex fetches as an && chain inside the triangle test 264 (681 B); the
-// reference table selected by the instance test, then indexed, 220 (727 B). Retail's success stores run part_offset,
-// lightmap part, part_index, unknown18, cluster, instance (this body's order). Body unchanged.
-// M3 lane 1 r148 (H2M fast; control 172): lane 3 r268's lead re-measured 133 (733 B; 217 at 717 B without the vertex
-// getter's success-only result). On that lead every remaining row is EBP and the frame offsets it shifts: retail gives
-// EBP to the range in the type-1 arm and the join (home +0x18, reloaded at the join edge from the type-3 arm) and keeps
-// the section in memory in the loop; ours pushes EBP only before the loop and holds the section in EDX from the join
-// test into the loop (NONE then takes ESI). Diagnostic: without the unknown18 clear the range takes EBP (182, 729 B)
-// but the section stays in EDX. On the lead: the loop index declared at function scope 133, the range declared first
-// 133, the section declared ahead of the definition 133, the range typed const 133 (all the same code); the loop bound
-// in a local 209; the unknown18 clear at the top 237 (744 B). Body unchanged.
-// M3 lane 3 r297 (H2M fast with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH each run; control 172 at 733 B,
-// aligned [exact, stack masked, registers masked] 95/77/48; body unchanged). Re-measured: lane 7 r123's form (result,
-// definition, section set at their declarations, the vertex getter's result unset on a miss, no else arm, unknown18
-// stored before part_index) 208 at 726 B [19/19/15], its definition/section/result order 133 at 733 B [75/68/25].
-// Retail's head also reads the instance index once into ECX and uses that register in the type-3 arm (ours reloads its
-// home there), and keeps the BSP in EBX with a home, as the 208 form does. On the 208 form: the triangle loop as a
-// forced-inline helper returning true from inside the loop, called as `if (section && helper(...)) result = true;` 208
-// (same code); called as `result = helper(...)` under the section test 196 (735 B) [53/44/32]; with the section test, or
-// the clear and the section test, inside the helper 223 (714 B) [66/59/46]; returned directly with no result local 223;
-// that helper with the instance index bound to `collision->instance_index` and no instance local 241 (738 B) [87/89/28],
-// with result declared last or first 242 each. Declaration orders of the function-scope locals (p point, b BSP, x range
-// index, n plane index, i instance index, r result, d definition, s section, g range): pbxnirdsg (the form) 208;
-// gpbxnirds, pbxngirds and pbxnirsdg 208 (same code); pbxinrdsg 216 [24/24/20]; pbixnrdsg 217 [28/25/21]; ipbxnrdsg 224
-// [32/29/23]; bxnirdsgp 221 [36/34/34] (all eight keep the zero in EBP); pbxnridsg 221 [38/35/24], rpbxnidsg 221
-// [36/33/22], pbxnrdsig, pbxnrdsgi and rdspbxnig 220 [37/35/24] (739 B: no zero register, the instance index takes EBP);
-// pbxnisrdg 220 (744 B) [76/69/27]; range set to NULL at its declaration 240 (745 B) [94/96/40]. The zero register stays
-// exactly when the instance index is declared ahead of result; the range takes EBP in none of them.
-// M3 lane 1 r159 (H2M_FAST with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH; control 172): `bool result` for the
-// byte result 182 (726 B: the section still in EBX, the BSP in EBP); the definition cleared at its declaration with no
-// else arm re-measured 208 (726 B); on that, the count test as `!definition->surface_range_count` 208 and the section test
-// as `section != NULL` 208 (the same code); `bool result` with the vertex getter's result set only on a hit 212 (741 B).
-// Reading of the 208 form: a zero constant takes EBP (`xor ebp, ebp`) for the section's NULL store, the count test, the
-// section test and the unknown18 clear, where retail stores the section's NULL from the definition's EDI, tests with
-// `test eax, eax`, clears with an immediate and gives EBP to the range in the type-1 arm and the join. Body unchanged.
-// M3 lane 11 r163 (H2M_FAST with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH each run; control 172; body
-// unchanged). Lane 7 r123's form rebuilt 208 at 726 B, aligned 19. Reading of its one cause: the zero is the last
-// candidate the allocator colours (a constant web from the section's NULL, five references, weighted cost 1, EBP the
-// only register left). The range's candidate from the type-1 arm to the loop's set-up is weighed before it and is not
-// coloured: its four references are worth 8 and its adjustments take 8, so its cost is 0 and its two one-block pieces
-// take EDX and EAX. Retail colours that candidate (EBP across the 0x12de70 call, re-read at the top of the join), which
-// leaves no register for the zero. So one more reference of the range between the arm and the loop, or one adjustment
-// fewer, is what the form needs. On it: the section tested through a const reference 208 (same code); the section
-// assigned through a reference in both arms 208 (same code); the type-3 arm's range assigned after the 0x142700 call
-// 97 at 726 B (the zero register goes, unknown18's clear and the section test are retail's, but the definition takes
-// EBP and the range index EDI, and retail assigns the range ahead of that call: a statement order against retail's
-// own, not kept; build/r163/lead-0x14ac60-97.patch); the type-1 arm's range assigned after the section lookup 254
-// (755 B); the loop's bound named once 220 (731 B); the range's first and count read into two locals ahead of the
-// loop 220 (731 B); the type-1 cluster index read from the BSP's table instead of through the range 208 (same code);
-// `section && range->count > 0` as the loop's guard 226 (740 B, the zero still in EBP).
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
 	point3f point = collision->point;
+	bool result = false;
 	s_structure_bsp_view *bsp = (s_structure_bsp_view *)g_4e0348;
 	long surface_range_index = collision->surface_range_index;
 	long plane_index = collision->plane_index & 0x7fff;
-	long instance_index = collision->instance_index;
-	s_structure_instanced_geometry_definition *definition;
+	s_structure_instanced_geometry_definition *definition = NULL;
 	s_structure_section *section = NULL;
+	long instance_index = collision->instance_index;
 	s_structure_surface_range *range;
 
 	if (collision->type == 1)
 	{
-		definition = NULL;
 		range = &bsp->surface_ranges[surface_range_index];
 		s_structure_cluster_view *cluster = &bsp->clusters[range->cluster_index];
 
@@ -979,13 +545,13 @@ bool structure_get_lightmap_triangle(s_structure_collision_result const *collisi
 			section = &definition->sections[0];
 		}
 	}
-
 	else
 	{
-		definition = NULL;
+		/* a statement the release build compiles out: retail keeps this arm's join as
+		   its own block (the range is re-read there for the paths that skip type 1) */
+		do {} while (false);
 	}
 
-	byte result = false;
 	triangle->unknown18 = 0;
 	if (section)
 	{
@@ -1025,8 +591,8 @@ bool structure_get_lightmap_triangle(s_structure_collision_result const *collisi
 			{
 				triangle->part_offset = part_offset;
 				triangle->lightmap_part_index = reference->part_index;
-				triangle->part_index = part_index;
 				triangle->unknown18 = unknown;
+				triangle->part_index = part_index;
 				triangle->cluster_index = range->cluster_index;
 				triangle->instance_index = collision->instance_index;
 				result = true;

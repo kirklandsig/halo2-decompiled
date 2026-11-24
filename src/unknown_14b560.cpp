@@ -3048,7 +3048,10 @@ bool function_14e970(long, long, point3f const *);
 struct s_unknown_13bf00;
 extern s_unknown_13bf00 *g_510c50;
 
-/* data_datum_iterator_next (0x6b380), which retail inlines here */
+/* data_datum_iterator_next (0x6b380), which retail inlines into function_14cdd0's first loop. The element's
+   address has a local of its own: retail computes it in a scratch register and copies it into the datum's register at
+   the end of the found arm, which keeps the address arithmetic out of the datum's range (the unit then outranks the
+   datum for the first callee-saved register). */
 static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 {
     s_record_pool *data = iterator->data;
@@ -3057,9 +3060,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 
     if (index != NONE)
     {
-        datum = data->data + data->size * index;
+        byte *address = data->data + data->size * index;
         iterator->index = index;
-        iterator->datum_index = (*(short *)datum << 16) | index;
+        iterator->datum_index = (*(short *)address << 16) | index;
+        datum = address;
     }
     else
     {
@@ -3071,357 +3075,6 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
-// MiniMax E (11-20): no new form, no lower score (103): the whole gap is the players-globals pointer, which our build keeps in EDI across both loops where retail keeps it in ESI and reloads it late; that choice follows from what the loop's callees write to g_4e8c20, and those callees live in other files.
-// MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
-// MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
-// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
-// function where retail loads it into ESI and reloads it after the busy check and again before the
-// final store, and the two loops swap the datum and unit registers with it; the reduced image
-// overstates this body, the full build gives the same 103 at retail's 611 bytes.
-// MiniMax A (11-19): no new form, no lower score (103): the players globals are still kept in one web across both loops in EDI, where retail reloads g_4e8c20 into ESI, ECX and EAX; the body is unchanged. BLOCKED-BY the 0xb8540/0xb7b40 drafts in other files.
-// MiniMax R run 92 (11-17): no new form, no lower score (103): the players-globals pointer still stays in edi where
-// retail keeps it in esi, and the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may
-// not edit.
-// MiniMax C (11-16): no new form, no lower score (103): the players-globals pointer is still kept in edi across both
-// loops where retail keeps it in esi, and the 0x16bc00 call is still expanded here where retail calls it out of line;
-// the stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue.
-// MiniMax E (11-16): no new form, no lower score (103): our build keeps the players-globals pointer in edi across both loops where retail keeps it in esi and reloads it late, and retail inlines the status test that this build calls out of line; that callee lives in src/unknown_13bf00.cpp, and the stubs 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20.
-// MiniMax I (11-16): no new form, no lower score (103 on the full build, 193 on the reduced one): the globals
-// pointer still ends up in EDI where retail keeps it in ESI, and the two loops still swap the datum and unit
-// registers with it; the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may not
-// edit.
-// MiniMax C (11-15): no new form, no lower score (103): the body stands as found.
-// MiniMax H (11-14): no new form, no lower score (103): retail's listing loads the flag's global
-// (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
-// while this build loads the globals pointer first and takes the field's address with a lea, so the
-// two loads come in the other order from the first instruction on; the body is unchanged.
-// MiniMax G (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail loads it into ESI and
-// reloads it after the busy check and again before the final store, and the two loops still swap the datum and unit registers with it; the
-// stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue, and the reduced image overstates this body.
-// MiniMax H (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail
-// loads it into ESI and reloads it late, and retail inlines the status test that this build calls out of line; that
-// callee is in src/unknown_13bf00.cpp, which this lane may not edit, and the reduced image overstates this body.
-// MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
-// reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
-// (173), writing the status after the countdown (181) and giving the second loop its own iterator
-// (171 on the full build) all leave it at or above the baseline. On the full build the body is
-// retail's length (611 bytes, first difference +0x8) and the whole difference is the register the
-// globals pointer takes: ours keeps g_4e8c20 in edi where retail has it in esi, and the two loops
-// swap the datum and unit registers with it.
-// MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
-// the globals pointer is still carried in edi to the end of the function where retail loads it into
-// esi and reloads it after the busy check and again before the final store, and the callees that
-// could show the store to that global are in other lanes' files.
-// MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one): the
-// reduced image overstates this body, since the plain build gives the same 103 and the same 611 bytes
-// for the named `globals` local and for reading g_4e8c20 at every use; what still differs is the register
-// alone - ours keeps the pointer in edi to the end of the function where retail has it in esi - and the
-// callees that decide that summary are in other lanes' files.
-// Earlier: reading g_4e8c20 directly at every use instead of through the named
-// `globals` local builds to the same bytes in the full build (611 = 611, first difference
-// +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the
-// pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
-// retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
-// has ESI, so the two roles are swapped.
-// MiniMax S (11-10): no new form, no lower score (193): retail keeps g_4e8c20 in esi and reloads it after the busy check and again before the final store, ours carries it in edi to the end of the function, so the pointer's role and the iterator's index array still swap registers.
-// MiniMax C (11-09): no new form, no lower score (103); the busy block is instruction for
-// instruction retail's, and the second loop's failure test already has retail's shape (the first
-// call's failure jumps straight to the flag store), so what is left all follows from the globals
-// pointer's register: retail loads g_4e8c20 into esi at the head and reloads it after the busy
-// check and again before the final store, ours carries it in edi to the end of the function and
-// reloads it only at the join after the failure store. Our build keeps the pointer across the
-// calls, so the callees it calls are summarised as never writing that global, and those callees
-// are in other lanes' files.
-// MiniMax H (11-07): no new form, no lower score; the globals pointer and the iterator's index
-// array still swap registers, and the two globals are still read in the other order, so the
-// reduced image still scores 193.
-// MiniMax H (11-04, run 33): the two stores through the named `globals` local again lower the
-// reduced image (193 -> 180), but the full build measured that form at 180 against the 103
-// baseline, so it is reverted; no lower score.
-// MiniMax H (11-04): no new form, no lower score; the globals pointer and the iterator's index array still swap registers.
-// MiniMax E (11-06): no new form, no lower score; the globals pointer stays in EDI here and in ESI in
-// retail, and the iterator's index array takes the other register, because our load of g_4e8c20
-// survives the out-of-line 0x6b380 step (LTCG sees that step write only the iterator).
-// Earlier: the store through the named `globals` local was tried again and scored
-// 180 in the full build against the 103 baseline, so it was reverted; the globals pointer stays
-// live in EDI through both iterator loops and retail keeps it in ESI, reloading it only at the
-// two stores; target/point homes still differ.
-// target/point homes still differ.
-// Earlier: the global is kept in EDI here and in ESI in retail,
-// so the prologue saves the other registers and the field that is written
-// afterwards is reached through a different base register.
-// pool through a helper parameter 141; no pool local 141; busy by duplicated
-// store plus continue 123; position through a pointer local 103; wide busy 134;
-// failed after the iterator init 108; failed at function scope 128; body wrapped
-// in the unit test 103; the existing out-of-line root helper called with its
-// noinline removed inlines to the same 103 but regresses 0x14e200 17 -> 534 and
-// 0x31910 139 -> 201, so the attribute and the written-out walk stay.
-// Round 415: retained unit 141; existing point setter 117; both 134; unsigned retained handle 103;
-// unit/setter/both with unsigned handle 141/117/134; setter with direct component receivers 130.
-// Original body restored.
-// Round 423: stage status published at the join as short/long/byte 191/191/163;
-// each with early globals scope 191/191/163; short status with retry accumulation 178,
-// also with early scope 178. Complete original body restored.
-// Round 433: Existing first iterator with direct data observations, returned datum ownership and
-// exhaustion-first arms; direct-data forced expansion; fast 103/103/103/102/102/102/102/103.
-// Original body and existing helper restored.
-// Round 51: the cause is the final `unknown9e = false` store: our build keeps the globals pointer
-// (EDI) available across both loops for it, reloading it on loop 1's back edge and after each loop-2
-// call, so `last_unit` takes EBP and the loop-1 registers swap; retail reloads the global only at that
-// store and keeps it in ESI for the prologue tests alone. On an LTCG env link (this file, its closure
-// and 0x13cb40's file; equal to the full listing; aligned counts against 77): the existing
-// players_globals_14f2e0() for the in-loop store, or for both stores 77; busy arm first 79;
-// `if (!failed)` store 77; global re-read into `globals` before the store 77; the store through
-// `globals` 73 (the global takes ESI as retail, but 618 bytes: the field address is kept on the
-// stack); `globals` scoped to the prologue 77; `failed` declared with the loop-1 locals 81.
-// Round 47: the EDI global is g_4e8c20 promoted from the entry read to the final
-// `unknown9e = false` (reloaded after the loop calls): LTCG sees a path with no possible
-// write of it (unknown9f set, no loop trips), retail reads it fresh at the end and keeps
-// globals in ESI. Final store through the getter 103; with the `= 6` store too 103;
-// `if (!failed)` final store 103; status block reading the global at each use 103; second
-// loop's own iterator 155; one unit_index for 0xcc170's out value and the last unit 103/103.
-// Diagnostics, not kept: final store to another global 91; an opaque call after the
-// status block 91 (retail prologue); g_4e8c20's address taken 91 but 21 matches lost;
-// 0x16bc00 built without link-time code generation 90 but 98 lost; 0x6b380 through a
-// pointer 146; 0x6b380 as the record-pool step on its +4 fields 103.
-// Round 131 (lane 4): ours reloads the global into EDI after the second loop's 0x14f2e0/0x14e970
-// calls and carries it through the 0x6b380 calls to the final store; retail loads it at the store.
-// The status block in its own braces 103, the entry pointer through players_globals_14f2e0() 103,
-// the busy store through the entry local 103 (all the same code); last_unit = NONE declared at the
-// function's top 157 (612 bytes); `if (last_unit == NONE) return;` before the second loop 103.
-// Round 244: joint busy/retry-failure byte, signed-byte and paired short/long
-// carriers 193/193/193/193/193/193/198/190 (fast control 193, 592 bytes);
-// paired long saves only three and is dropped. Existing-sibling control remains
-// 193; full baseline 103. Original predicate domains and body restored.
-// Round 34 (m3 lane 2; `--fast` with 0x14f2e0, 0x14e970, 0x6b380, 0x16bc00, 0xcc170, 0x1ca670, 0xbadc0 and
-// 0xe4050 in the image builds this function as the full build, 103; alone it is 193 at 592 bytes): with an
-// opaque call after the status block (diagnostic, not kept) the prologue is retail's, but loop 1 still swaps
-// the player pointer and the unit (ours ESI/EDI, retail EDI/ESI). The unit index read straight from the
-// iterator's datum (no player local) 103 (same code); the root walk as a while loop 103 (same); `last_unit =
-// unit` 141 (596 bytes); last_position copied before last_unit is set 101 (two, not kept); the root walk
-// starting from the unit's parent 159 (625 bytes).
-// Lane 9 round 67 (plain; fast controls 193 here): loop 1 through the real 0x6b380 180 (562 bytes: LTCG keeps
-// it out of line there too, so the inline copy stays); loop 2 reading iterator.datum_index at each call 103
-// (same code); the busy tests as `a && b` expressions 117; loop 1's unit test as a nested block instead of
-// `continue` 103; single exit (countdown and status tests enclosing, `if (!failed)` store) 103. Diagnostic:
-// 0x6b380 built without link-time code generation 146, ten matched callers lost (it is LTCG in retail).
-// Round 48 (m3 lane 11, plain; --fast gives 193 here): the root walk as a do-while 103 (same code); the
-// final store through `globals` under `if (!failed)` 176 (618 bytes). The hoisted g_4e8c20 load passes
-// only the out-of-line 0x6b380 call: loop 2 stepping through the inline copy (0x16bc00 called directly)
-// gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
-// 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
-// loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
-// Round 50 (lane 1, plain checks): with the final store aimed at another global (diagnostic) 88: the
-// prologue then matches; left are loop 1's datum/unit in ESI/EDI swapped and NONE not kept in EDX after
-// the 0x16bc00 call (retail `or edx,-1; cmp eax,edx`, reused for the NONE store, the last-unit test and
-// loop 2's set-up). Loop 1 on the record-pool iterator (current + cursor, data_iterator_next_calling) with
-// loop 2's own datum iterator 155; the header's data_datum_iterator_next_called 103; loop 2 in 0x14d3a0's
-// word-flags/continue form 103; position copied before the last unit is stored 101; loop 1's body nested
-// under `unit != NONE` 103. On that 101 form: loop 2 in 0x14d3a0's form 101, `if (!failed)` final store 101,
-// busy store through `globals` 101, `if (last_unit == NONE) return;` before loop 2 101.
-// Round 48 (m3 lane 11, plain; --fast gives 193 here): the root walk as a do-while 103 (same code); the
-// final store through `globals` under `if (!failed)` 176 (618 bytes). The hoisted g_4e8c20 load passes
-// only the out-of-line 0x6b380 call: loop 2 stepping through the inline copy (0x16bc00 called directly)
-// gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
-// 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
-// loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
-// Round 75 (lane 12, plain): busy and final stores through `globals` 180 (605 bytes); no `globals` local, the
-// global read at every prologue use 103 (same code); loop 2 passing iterator.datum_index at both
-// calls 103; last_position declared before last_unit 103; both declared at the top 157 (612 bytes).
-// Retail pops EDI before loop 2 and keeps last_unit in memory there; ours carries the global in EDI
-// through the out-of-line 0x6b380 step to the final store.
-// Round 288: Normalized first-iterator result in byte/char/short/long, each with signed/dword next
-// index, 103/103/103/103/103/103/103/103. All tie with full-context controls; original bool/long
-// helper, all iterator stores, traversal, copies, globals observations and whole body restored.
-// Global-pointer web and target/point homes remain.
-// Round 117 (m3 lane 8, fast, where this body builds 592 bytes and 193): last_position declared first, busy
-// declared at the loop-body top, failed at function scope, iterator.datum_index read at each use in loop 2: 193 each
-// (same code); the pool global read at each iterator init 213 (576 bytes). Matched retail callers of 0x6b380 neither
-// confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
-// 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
-// iterator, so our build promotes g_4e8c20 into EDI through both loops.
-// Round 46 (m3 lane 2, fast with the callees above; plain confirmed): the split failure test in loop 2, as
-// `if (!a) failed = true; else if (!b) failed = true;` or as a failure store with `continue` before the 0x14e970
-// test, 91 each (608 bytes, the same code: the prologue keeps the globals in ESI and the final store reloads the
-// global, as retail), not kept: two identical failure arms. A lead: what retail has there is a second failure
-// path. The busy store after loop 1 behind a flag 158; last_unit declared before the pool local 103; root
-// initialised NONE 103; `succeeded` polarity 103; one `spawned` result through both calls 103. On the 91 body:
-// loop 1 without the datum_index init 91; busy arm first 106; position copied before last_unit is set 89; unit
-// declared before the player 91; no player local 91. Left at 91: loop 1's datum/unit in ESI/EDI (retail EDI/ESI),
-// immediate NONEs where retail keeps -1 in EDX, the iterator.data store before loop 1, last_unit in EBP.
-// Round 53 (fast image widened as in round 34, control 103): `succeeded` flag with the store under `if (succeeded)`
-// 103; status block as an inline helper taking the globals 234 (557 bytes); second pass as an inline helper 260 (478
-// bytes, stays out of line); named pointer assigned at the final store 103; status test through the global 103;
-// early return when no last unit 103.
-// Round 78 (m3 lane 1, fast with the round 34 image, control 103): iterator set up before the last-unit sentinel
-// 103; loop 1 through the header's data_datum_iterator_next_inlined 210 (661 bytes); the loop-2 failure
-// test as `!(a && b)` 103; the root == unit arm passing root to 0xbadc0/0xe4050 139 (598 bytes: prologue then ESI as
-// retail, but NONE takes EDI); 0xcc170's out value declared at the top 103; no pool local 141 (confirms round 117).
-// Re-measured round 46's two failure arms: 91 (608 bytes), still not a keepable form (flag set by if/else-if).
-// Round 70 (m3 lane 13, fast with the round 34 image): the two loops as a forceinline helper 310 (745 bytes); the
-// status block as a forceinline helper returning bool 337 (729 bytes); `busy = function_badc0(unit, 1) &&
-// function_e4050(unit);` 105; `busy = vehicle && vehicle[0x34c] > 0;` 117; the first iterator with a brace initialiser
-// 103. Cause found, BLOCKED-BY 0xe4050: its rounding is the inline-asm real_to_long, and any memory effect LTCG cannot
-// see through in 0xe4050 (that asm, a bare asm nop, a store through a pointer, a call) gives this function the EDI
-// globals pointer. 0xe4050 with a plain cast instead (diagnostic; 0xe4050 then 44) gives retail's ESI prologue here
-// (138 at 595 bytes, NONE then held in ESI through loop 1); a store to g_4e8c20 itself in 0xe4050 does not change
-// that. No asm-free spelling of the fld/fistp rounding is known under /arch:SSE (/QIfist is rejected with it, and an
-// asm-free /QIfist helper in its own file stays a call).
-// MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
-// loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
-// the other file decides the globals pointer.
-// Round 71 (m3 lane 15, fast with round 34's widened image; control 103): cause of the globals web, by diagnostics
-// (reverted): a direct write of g_4e8c20 in the 0xb8540 or 0xb7b40 stub (both reached from 0x14f2e0 in loop 2) gives
-// 91 at 608 bytes with retail's ESI prologue and the final store's own reload, while an opaque store through a pointer
-// in that stub leaves 103: our link sees nothing on loop 2's call tree write that global because those two are stubs.
-// BLOCKED-BY 0xb8540 (its real body is disabled: enabling it loses 23 matches) and 0xb7b40 (its draft does not match).
-// Left at 91: loop 1's datum/unit ESI/EDI (retail EDI/ESI), the iterator.data store before loop 1, immediate NONEs.
-// Trials: status codes in a byte local stored once at the join 163 (576 bytes), in a short 191 (592; both as in the
-// reduced image); loop 2's set-up without re-storing iterator.data 117 (608); loop 1's NONE test on the field with the
-// unit read after it 103 (same code); `busy` declared at the loop-body top 103 (same code; round 117 measured it only
-// in the reduced image).
-// Round 107 (m3 lane 9, fast with round 34's widened image, 103; first measurements in this reproducing image of
-// families listed only at the 193 image): busy and failed as `byte` 103 (same code), as `long` 104 (607 B); the
-// status published at the join as a `byte` local 163 (576 B; the prologue then keeps g_4e8c20 in ESI as retail, first
-// difference +0x3e, and the final store reloads the global as retail, but the status block stores once and loop 1
-// still swaps datum/unit ESI/EDI), as a `short` local 191 (592 B); busy declared at the loop-body top 103 (same
-// code). Re-measured: each loop with its own iterator, loop 2's declared in its block, 155 (597 B; the listed
-// second-loop iterator form; loop 1's iterator then lives in registers and no datum index is formed). Retail's loop 1
-// keeps the iterator's data and index in EBX/EBP and stores only datum and datum index into the iterator loop 2 uses;
-// ours also stores `iterator.data` before loop 1. BLOCKED-BY 0xe4050 stands; the status-block lead shows the globals
-// web also depends on how the status codes are stored.
-// MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
-// loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
-// the other file decides the globals pointer.
-// M3 lane 8 r161 (fast in round 34's widened image with 0x14d3a0 listed, all matched callees still MATCH; control 103,
-// register-masked aligned 25): loop 1's unit as `dword` 112; `s_player const *player` 103; the vehicle through this
-// file's typed view (`vehicle->unknown34c > 0`) 103; the last unit read straight from the iterator's datum 103; loop 1's
-// player pointer and unit declared at function scope 103 (the last four the same code). Also repeated by mistake, not a
-// trial: round 71's NONE test on the field with the unit read after it, 103 again.
-// BLOCKED-BY 0xb8540 and 0xb7b40 (stubs, so nothing on loop 2's call tree is seen to write g_4e8c20) and 0xe4050 stand.
-// Body unchanged.
-// Round 101 (m3 lane 1, fast in round 34's widened image, control 103): loop 1's busy test with the vehicle arm first
-// (`root != unit`) 117; busy as two conditional expressions (`badc0 ? e4050 : false`, `vehicle ? [0x34c] > 0 : false`)
-// 103 (same code); busy set by `&&` tests 117; loop 2's flags word in a named local used twice 103 (same code). Kept:
-// the 0x1121 flag read through the typed `g_4e6948->flag1121` 103 (same code, no raw offset cast).
-// MiniMax S (11-15): no new form, no lower score (plain 103, fast 193): the fast build of this function is not
-// faithful (193 against the plain 103), so only the plain check measures it. What still differs: our build keeps the
-// players-globals pointer in EDI across both loops where retail keeps it in ESI and reloads it late, and retail
-// inlines the status test that this build calls out of line; that callee is in src/unknown_13bf00.cpp, and the stubs
-// 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20: BLOCKED-BY 0xb8540, 0xb7b40 and
-// 0xe4050. The loop 1 busy test with the vehicle arm first, the busy test as two conditional expressions, the busy
-// test set by `&&` and loop 2's flags word in a named local all leave the same code.
-// Earlier 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
-// where retail has ESI and late reloads; the same source scores 103 on its own.
-// Earlier 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
-// where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
-// out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
-// MiniMax I (11-17): no new form, no lower score (plain 103, fast 193 - the fast build of this function is not
-// faithful): our build still keeps the players-globals pointer in EDI across both loops where retail keeps it in
-// ESI and reloads it late, and retail still inlines the status test this build calls out of line.
-// m3 lane 10 r115 (fast in round 34's widened image with 0x14d3a0 listed, every listed callee as in the baseline;
-// control 103 = the full build's 103; body unchanged; the two stacked score lines above are relabelled `Earlier`). Same
-// code as the body (not trials): the busy test in a forced-inline bool helper with early returns; both iterator set-ups
-// through one forced-inline begin helper; the prologue's globals as a reference instead of a pointer; the loop-1 player
-// through a reference; `value` and `last_position` declared at the function's top; the countdown read into a local for
-// its test and its decrement. New, both worse: the last position copied by components through a position pointer 117
-// (625 B); the pause test called once into a bool used for the countdown and the status 177 (611 B; retail re-reads
-// the byte at both tests). Every other code-changing natural form I found is listed above. BLOCKED-BY 0xb8540 and
-// 0xb7b40 stands (both still disabled stubs, so nothing on loop 2's call tree is seen to write g_4e8c20 and our build
-// carries it in EDI to the final store); 0xe4050 now matches and the web is unchanged. What follows from the web, as
-// before: loop 1's datum and unit swap ESI/EDI, NONE is an immediate where retail keeps -1 in EDX, the last unit sits
-// in EBP where retail keeps it in memory for loop 2.
-// M3 lane 4 r215 (fast with round 34's widened image + 0x14d3a0 and 0x13cb40, control 103; aligned/masked = difflib-aligned
-// exact/register-masked counts, control 75/18): loop 2's two player tests through the `flags` bitfields 103, `globals` as a
-// const pointer 103, loop 2's datum as `s_player const *` 103, its index local renamed player_index 103 (all the same code); the
-// failures counted in a `long` (`++failures`, `if (failures) return;`) 150 (588 B; aligned 53, masked 13). Re-measured as a
-// base only: round 46's split failure test 91 (608 B, aligned 55, masked 13; flag form, not keepable without a match); left on
-// it is loop 1's inlined iterator step (retail keeps NONE in EDX and datum/unit in EDI/ESI, and stores no iterator.data before
-// loop 1). BLOCKED-BY 0xb8540/0xb7b40 stands (both still disabled stubs: nothing on loop 2's call tree is seen to write g_4e8c20).
-// M3 lane 1 r128 (fast in round 34's widened image, control 103): 0xb7b40's disabled draft enabled with its stub removed
-// (its type callbacks are indirect calls that could reach the players init/dispose entries) 103 in the fast and the full
-// check (nothing lost there any more; 0xb7b40 607), so the indirect calls do not release the EDI globals pointer; the
-// root walk through the existing 0xbaf80 172 (578 B, a call); `busy` declared ahead of the root walk 103; loop 2 set up
-// from the pool global again 141; the pool local bound by const reference 154 (624 B). BLOCKED-BY 0xb8540 stands.
-// M3 lane 5 r211 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103; 0x14f2e0 5 there as in the full
-// build): retail materialises NONE in EDX right after loop 1's 0x16bc00 call and reuses it for the exhausted iterator's
-// datum index, the last-unit test (against memory) and loop 2's set-up; ours uses immediates and loads the last unit into
-// EBP, which follows from the globals web. The prologue's globals pointer bound through a `s_players_globals *const &` 178
-// (the countdown becomes a memory decrement); the last unit through a `long const &` for its test and the 0x14e970 call
-// 103, the busy flag through a `bool const &` 103, loop 1's player pointer through a `s_player *const &` 103 (each the
-// same code); a second globals pointer taken at entry for the busy store and the final store 182 (606 B).
-// MiniMax C (11-19): no new form, no lower score (103): retail's loop 1 steps the pool itself, with the pool in EBX, the
-// index in EBP and no store of the iterator's data field before it, while ours keeps the shared iterator; writing that
-// step into the loop does not reach retail's shape either (the reduced image 214 against 193, the plain check 103).
-// M3 lane 1 r133 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40, every listed callee as in the baseline; control
-// 103): retail stores the iterator's data field once, in loop 2's set-up; ours stores it ahead of loop 1 and again there.
-// Diagnostic, not kept: loop 1 stepping the pool local with an index local of its own through a second inline step
-// helper (pool, index, iterator), storing only the datum and the datum index, 141 (611 B: the store ahead of loop 1 goes
-// and the last unit's NONE store takes its place as in retail, but the globals pointer keeps EDI and the rows shift).
-// Same code as the body: the final store under `if (!failed)`; the iterator declared ahead of the last unit and its
-// position; `globals->unknown9e == false`; loop 2's set-up with the data field stored last. BLOCKED-BY 0xb8540 stands.
-// M3 lane 2 r117 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103, aligned 79, register-masked
-// 26). Diagnostics (reverted at once): a call to an unresolved function after loop 2 gives 94 at 613 B with retail's
-// ESI prologue and the final store's own reload (first difference +0x3e, aligned 60), the same call inside loop 2 109
-// (616 B), inside loop 1 137 (617 B): what retail's link saw and ours does not is a write of g_4e8c20 on every path
-// into the final store. `inline` on 0x6b380's definition, alone or with a pin, 103 (same code; a full check with it
-// moves no function at all), on 0x16bc00's 210 (661 B: it expands into loop 1), on 0xe4050's and on 0xbaf40/0xbaf80's
-// 103 (full checks; they lose matched callers elsewhere). Source forms: the final store through a local read after
-// loop 2 103, that local bound by const reference 103, the `= 6` store through such a local 103, both 103, the final
-// store under `if (!failed)` through a local 103, the `= 6` store through the prologue's pointer 103 (all the same
-// code); the final store through the prologue's pointer 176 (618 B). BLOCKED-BY 0xb8540 stands.
-// M3 lane 6 r218 (fast with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00, 0x6b380; control
-// 103). Checked in retail: only 0x14b4b0 and 0x14b560 write g_4e8c20, nothing calls either directly (both sit in the
-// subsystem table), and the global's address is never taken, so no direct call from loop 2 reaches a write; indirect
-// calls are already on loop 2's call tree through matched functions here (0xa7870 -> 0x8a400, 0xb75a0 -> 0x109290,
-// 0xe68c0 -> 0xe6900) and do not release the pointer. What is left as the cause is the object code's call cycle: retail's
-// loop 2 calls into it (through 0xb75a0, 0xb7b40, 0xb8540), where a caller has no finished summary of its callee and
-// reloads; our cycle is cut at the stubs. BLOCKED-BY 0xb8540 and 0xb7b40 stands. Forms that add an implied or repeated
-// test to change the estimated weights of the blocks (the estimate that decides link-time expansions and, in 0xd5de0,
-// float register priorities), all 103 with the same code: `else if (busy)` on the `= 6` store; the rest of the function
-// under `if (globals->unknown9c == 0)` in place of the early return; the final store under `if (!failed && last_unit !=
-// NONE)`; `if (root != NONE)` ahead of the busy test; `!busy && unit != NONE`; `last_unit != NONE &&` ahead of loop 2's
-// player tests.
-// M3 lane 4 r242 (H2M_FAST with 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00 and 0x6b380,
-// all MATCH but 0x14f2e0 (5, as in the full build); control 103; with only 0x14d3a0 and 0x13cb40 listed the same body is
-// 193 at 592 B, so that list is needed for a faithful screen): loop 1 stepped by include/data_iterator.h's existing
-// data_datum_iterator_next_called in place of the file's copy 155 (597 B), loop 2 through it as well 173 (566 B, first
-// difference +0x3e: the prologue then takes ESI as retail, but loop 2's out-of-line step is gone); loop 2's datum index
-// passed as `iterator.datum_index` at both calls 103; both set-ups as `iterator.datum_index = iterator.index = NONE;`
-// 103; loop 1's body nested under `if (unit != NONE)` in place of the `continue` 103 (all three the same code).
-// BLOCKED-BY 0xb8540 stands.
-// M3 lane 4 r244 (h2m fast with r242's list: 0x14d3a0, 0x13cb40, 0x14f2e0, 0x14e970, 0xcc170, 0x1ca670, 0xe4050, 0x16bc00,
-// 0x6b380; control 103; body unchanged): the root walk from a NONE root as `while (current != NONE) { root = current; ... }`
-// 103 (same code); the position copied member by member through a point pointer 117 (625 B); `busy = badc0(..) && e4050(..)`
-// 105; the busy test with its arms swapped 120; the vehicle arm as `if (vehicle && vehicle[0x34c] > 0) busy = true;` 117.
-// Reading: ours loads the globals pointer into EDI at loop 1's head each pass and uses it for the busy store; retail reloads
-// it at the store itself. BLOCKED-BY 0xb8540 (its draft still loses 23 functions when enabled, see its file).
-// M3 lane 16 r176 (H2M_FAST with lane 4 r242's list, all MATCH, 0x14f2e0 included; control 103): the position copied
-// before `last_unit` is assigned (retail stores the unit after forming the position address) 101 (a statement order
-// worth two, under the bar); that copy as a memcpy 101, memcpy with the unit assigned first 103 (same code as the
-// assignments); `failed` declared after loop 2's set-up 108 (612 B); loop 2's unit test first 107; `if (last_unit ==
-// NONE) return;` 103; the final store under `if (!failed)` 103 (same code). Retail loads the three position words
-// before storing them (x ECX, y EDX, z EAX); ours interleaves. Still BLOCKED-BY 0xb8540/0xb7b40.
-// M3 lane 8 r228 (H2M_FAST with lane 4 r242's list, all MATCH; control 103): the body after the 0x9e test nested under
-// `if (globals->unknown9e)` 103 (same code); loop 2's player as a const pointer 103 (same code); loop 2 on its own
-// iterator local 155 (597 B); loop 1 testing the player's field before naming `unit` 103 (same code); the root walk and
-// the vehicle test through the file's typed unit/vehicle view 103 (same code). Still BLOCKED-BY 0xb8540/0xb7b40.
-// M3 lane 11 r161 (H2M_FAST with lane 4 r242's list, all MATCH; control 103): both g_4e8c20 stores through the file's
-// players_globals_14f2e0() 103; the prologue's pointer from it 103; the position read through a const pointer formed
-// before `last_unit` is set 103; `last_unit` through a `long &` 103; `unit == root` 103; the root started at NONE 103;
-// loop 1 with no player local 103 (all the same code); the busy arms swapped 120; the vehicle arm first 117.
-// Diagnostics, not kept: the root-equals-unit arm passing `root` to 0xbadc0/0xe4050 139 (598 B) and `last_unit = unit`
-// 141 (596 B), both first difference +0x3e: the prologue then takes retail's ESI, both g_4e8c20 stores reload at their
-// use and the position copy is retail's three loads then three stores; with the second the unit takes ESI and NONE EDX
-// as in retail. So the EDI globals web follows the loop-1 priorities (retail: unit ESI, datum EDI, pool EBX, index
-// EBP; ours: datum ESI, unit EDI shared with the hoisted g_4e8c20 reloads), not only the stubbed callee summaries.
-// Both iterator set-ups taking g_4e8c24 directly (no `players` local) 141 (610 B) but aligned 77 against 79 (registers
-// masked 36 against 38): the iterator's data store ahead of loop 1 goes, as in retail (a lead, not kept).
-// M3 lane 15 r142 (H2M_FAST with round 34's widened image, control 103, aligned exact/register-masked 79/18): loop 2's
-// flag word named once for its two tests 103; the busy arm as `busy = function_badc0(unit, 1) ? function_e4050(unit) :
-// false;` 103; the datum index read ahead of loop 2's tests 103 (all the same code); the root-differs arm first with the
-// unit arm as `else if` 117; the last unit named, its position copied, then stored 101 (round 34's 101 family, a gain of
-// two, not kept). Still the one globals web (BLOCKED-BY 0xb8540/0xb7b40 stubs and 0xe4050's asm rounding, as above).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
@@ -3442,11 +3095,10 @@ void function_14cdd0(void)
         }
     }
     if (globals->unknown9c != 0) return;
-    s_record_pool *players = g_4e8c24;
     long last_unit = NONE;
     point3f last_position;
     s_data_datum_iterator iterator;
-    iterator.data = players;
+    iterator.data = g_4e8c24;
     iterator.index = NONE;
     iterator.datum_index = NONE;
     while (player_datum_iterator_next(&iterator))
@@ -3468,15 +3120,16 @@ void function_14cdd0(void)
         }
         if (!busy)
         {
+            byte *unit_object = object_get_unchecked(player->unit_index);
             last_unit = player->unit_index;
-            last_position = *(point3f *)(object_get_unchecked(last_unit) + 0x30);
+            last_position = *(point3f *)(unit_object + 0x30);
         }
         else ((s_players_globals *)g_4e8c20)->unknown9c = 6;
     }
     if (last_unit != NONE)
     {
         bool failed = false;
-        iterator.data = players;
+        iterator.data = g_4e8c24;
         iterator.index = NONE;
         iterator.datum_index = NONE;
         while (data_datum_iterator_next(&iterator))

@@ -1028,6 +1028,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // ahead of the lowest scan 270; the body ending in `return` with `if (!left_start) continue; if (differ) continue;` 357
 // (669 B, 0x239d50 8). A forced-decision search on the 236 form (40 single decisions) finds nothing below 236: the
 // register exchange and the rotated loop are not one allocator decision away.
+// M3 lane 8 r234 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 137, masked 56; body
+// unchanged). Frame view: here the hull count (12 references) joins the dead indices argument home and the dword departure flag
+// makes the sixth cell; in retail a one-byte flag is packed first into that argument home, so the hull count opens the frame
+// (+0x10), and that needs the count's own home still live, which is the count staying in memory through the pass loop. Thirty
+// forced single allocator decisions on main's body (colour picks, priorities, range cuts): none below 144. Forms: the departure
+// update as `if (!left_start) left_start = points2d_differ(...)` 162; `current` as a long 281 (746 B, 0x239d50 34); the lowest
+// scan's index as a long 645 (1095 B: the scan unrolls); `hull_count = pass + 1` ahead of the index store 207; the departure
+// flag declared after the lowest scan 240.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1647,6 +1655,15 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // code); the kept-point bit as `point_mask && TEST_FLAG(...)` 252 (880 B); `result = 0` set just ahead of the loop 255.
 // Reading: the count's dword load is a cross-block CSE of `count` that only appears when the guard is in the source (the
 // rotated loop test is formed after CSE here), which is why the repeated `count > 0` guard reproduces it. Body unchanged.
+// M3 lane 8 r234 (H2M_FAST with 0x239e50, 0x239d50 and 0x239b80; control 129, aligned 85, masked 20; body unchanged). Allocator
+// reading: the count's candidate over the entry, the loop guard and the tail has three references and a weighted cost of exactly
+// 0, so it is not coloured; the previous side (cost 12, priority 10) then takes ECX. One more reference of the count in that
+// range makes its cost positive, it takes ECX first and the previous side has no byte register left, which is retail's entry
+// (and why the repeated `count > 0` guard reproduces it). A forced decision that leaves the previous side uncoloured gives the
+// closest structure (209 positional, 5 structural rows from 19); changing either candidate's priority alone changes nothing.
+// Forms: the previous side started true and cleared under `if (!(previous_distance >= 0.f))` 132; started false and set 130;
+// as `previous_distance >= 0.f ? true : false` 129 and `!(previous_distance < 0.f)` 129 (same code each); one `inside` at
+// function scope set at entry and copied into the previous side 200.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
