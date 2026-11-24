@@ -237,24 +237,7 @@ static __forceinline void circular_second_projection_fields(solver_linear_row_31
 
 
 
-static __forceinline void apply_angular(float const &impulse, solver_angular_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
-{
-	// Keep the x87 impulse for accumulation; only the SIMD copy rounds here.
-	float &rounded_impulse = simd_scratch;
-	float &rounded_store = rounded_impulse;
-	rounded_store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b.body->inverse_inertia);
-	// Retail captures both axes before either body update. A row can overlap
-	// body storage, so updating A must not change the axis subsequently used by B.
-	__m128 axis_a = row->a;
-	__m128 axis_b = row->b;
-	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
-	b.body->angular = _mm_add_ps(b.body->angular, _mm_mul_ps(change_b, axis_b));
-	*result += impulse;
-}
+
 
 
 static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 const *row,
@@ -338,6 +321,7 @@ static __forceinline __m128 const *apply_circular_first_fields(float impulse,
 	w[0]=_mm_add_ps(w[0],w[1]);
 	*angular_b=w[0];
 	// Read the old accumulation before publishing the next row; its store may redirect that row.
+	// Read the result before publishing a next row that its store can redirect.
 	float accumulated=*result+impulse;
 	next_row_home=row+1;
 	inverse_b=inverse_home;
@@ -582,36 +566,94 @@ static __forceinline void project_spin_angular_velocity(solver_angular_row_31e7b
 	sum_three_to_arena_31c940(_mm_add_ps(_mm_mul_ps(_mm_load_ps((float const *)&(a->angular)), row->a), _mm_mul_ps(angular_b, row->b)), projection_output);
 }
 
-static __forceinline void apply_spin_linear(double impulse, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a,__m128 *const & linear_b_pointer, __m128 &angular_velocity_b,
-	__m128 const *const &inverse_b_pointer, float *result, float &simd_scratch)
+static __forceinline __m128 const *apply_spin_first_fields(double impulse,
+ solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,
+ __m128 inertia_a,__m128 linear_axis,__m128 *const &linear_home,__m128 &angular_b,
+ __m128 const *const &inverse_home,solver_linear_row_31e7b0 const *&next_row_home,
+ float *result,float &simd_copy)
 {
-	// Keep accumulation wider than the float copy consumed by SIMD.
-	float &rounded_impulse = simd_scratch;
-	rounded_impulse = impulse;
-	__m128 input_a = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
-	__m128 input_b = _mm_load_ss(&rounded_impulse);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), *inverse_b_pointer);
-	// Capture both linear contributions before either body write.
-	__m128 linear_contribution[2] =
-	{
-		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear),
-		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear)
-	};
-	a->linear = _mm_add_ps(a->linear, linear_contribution[0]);
-	(*linear_b_pointer) = _mm_sub_ps((*linear_b_pointer), linear_contribution[1]);
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	// Capture both angular contributions before either body write.
-	__m128 angular_contribution[2] =
-	{
-		_mm_mul_ps(change_a, row->a),
-		_mm_mul_ps(change_b, row->b)
-	};
-	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
-	angular_velocity_b = _mm_add_ps(angular_velocity_b, angular_contribution[1]);
-	*result += impulse;
+	__m128 w[5];
+	w[2]=inertia_a;
+	w[4]=linear_axis;
+	simd_copy=impulse;
+	w[1]=_mm_load_ss(&simd_copy);
+	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=*inverse_home;
+	w[1]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	__m128 *linear_receiver=linear_home;
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+	w[2]=_mm_mul_ps(w[2],w[4]);
+	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+	w[3]=_mm_mul_ps(w[3],w[4]);
+	w[4]=a->linear;
+	w[4]=_mm_add_ps(w[4],w[2]);
+	a->linear=w[4];
+	w[2]=*linear_receiver;
+	w[2]=_mm_sub_ps(w[2],w[3]);
+	*linear_receiver=w[2];
+	w[2]=row->a;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=row->b;
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=a->angular;
+	w[2]=_mm_add_ps(w[2],w[0]);
+	a->angular=w[2];
+	w[0]=angular_b;
+	w[0]=_mm_add_ps(w[0],w[1]);
+	angular_b=w[0];
+	float accumulated=*result+impulse;
+	next_row_home=row+1;
+	__m128 const *inverse_b=inverse_home;
+	*result=accumulated;
+	return inverse_b;
+}
+static __forceinline unsigned long apply_spin_second_fields(double impulse,
+ solver_linear_row_31e7b0 const *const &row_home,__m128 *&row_cursor,
+ solver_velocity_31c940 *a,__m128 *const &linear_home,__m128 &angular_b,
+ __m128 const *inverse_b,float const &spin_source,float *result,float &simd_copy)
+{
+	__m128 w[5];
+	w[2]=a->inverse_inertia;
+	simd_copy=impulse;
+	w[3]=*inverse_b;
+	w[1]=_mm_load_ss(&simd_copy);
+	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[1]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_mul_ps(w[1],w[3]);
+	row_cursor=(__m128 *)row_home;
+	w[4]=*row_cursor;
+	__m128 *linear_receiver=linear_home;
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+	w[2]=_mm_mul_ps(w[2],w[4]);
+	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+	w[3]=_mm_mul_ps(w[3],w[4]);
+	w[4]=a->linear;
+	w[4]=_mm_add_ps(w[4],w[2]);
+	a->linear=w[4];
+	w[2]=*linear_receiver;
+	w[2]=_mm_sub_ps(w[2],w[3]);
+	*linear_receiver=w[2];
+	// Linear writes can redirect the row used for the angular axes.
+	row_cursor=(__m128 *)row_home+1;
+	w[2]=*row_cursor++;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=*row_cursor;
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=a->angular;
+	w[2]=_mm_add_ps(w[2],w[0]);
+	a->angular=w[2];
+	w[0]=angular_b;
+	w[0]=_mm_add_ps(w[0],w[1]);
+	angular_b=w[0];
+	float accumulated=*result+impulse;
+	// Keep the SIMD bits even when the result store replaces the spin source.
+	unsigned long spin_bits;
+	memcpy(&spin_bits,&spin_source,sizeof(spin_bits));
+	*result=accumulated;
+	return spin_bits;
 }
 
 // Retain the first row's unshifted cursor alongside the second row's B axis.
@@ -1342,7 +1384,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2105. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2077. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1830,14 +1872,41 @@ result+=2;
 						spin->b.m128_f32[3] *= factor;
 					}
 					// Scale and round spin before either linear update can change ((solver_linear_row_31e7b0 *)terms) storage.
-					scalar_work.first_error = impulse_spin * operation_float(op, 20);
+					// Capture both values before spin and inverse-pointer publication.
+__m128 first_inertia_a=a->inverse_inertia;
+__m128 first_linear_axis=((solver_linear_row_31e7b0 *)terms)->linear;
+solver_velocity_31c940 *inverse_body_b=body_b.body;
+scalar_work.first_error = impulse_spin * operation_float(op, 20);
 					__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
-					inverse_b_pointer = &scoped_b.body->inverse_inertia;
-					apply_spin_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a,
-						linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result, scalar_work.fallback_scalar);
-					apply_spin_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a,
-						linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result + 1, scalar_work.simd_scalar);
-					apply_angular(scalar_work.first_error, spin, a, scoped_b, result + 2, projection_pool.spin_angular_copy);
+					inverse_b_pointer = &inverse_body_b->inverse_inertia;
+					__m128 const *second_inverse_b=apply_spin_first_fields(impulse_a,((solver_linear_row_31e7b0 *)terms),a,
+ first_inertia_a,first_linear_axis,linear_b_pointer,*angular_b_pointer,inverse_b_pointer,scalar_work.next_circular,result,scalar_work.fallback_scalar);
+unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circular,normal_axes,a,
+ linear_b_pointer,*angular_b_pointer,second_inverse_b,scalar_work.first_error,result+1,scalar_work.simd_scalar);
+{
+						// Accumulation sees the new source; SIMD consumes the pre-store snapshot.
+						__m128 w[5];
+						w[2]=a->inverse_inertia;
+						float impulse=scalar_work.first_error;
+						memcpy(&projection_pool.spin_angular_copy,&spin_bits,sizeof(projection_pool.spin_angular_copy));
+						w[1]=_mm_load_ss(&projection_pool.spin_angular_copy);
+						w[0]=_mm_shuffle_ps(w[1],w[1],0);
+						w[0]=_mm_mul_ps(w[0],w[2]);
+						w[2]=*inverse_b_pointer;
+						w[1]=_mm_shuffle_ps(w[1],w[1],0);
+						w[1]=_mm_mul_ps(w[1],w[2]);
+						w[2]=spin->a;
+						w[0]=_mm_mul_ps(w[0],w[2]);
+						w[2]=spin->b;
+						w[1]=_mm_mul_ps(w[1],w[2]);
+						w[2]=a->angular;
+						w[2]=_mm_add_ps(w[2],w[0]);
+						a->angular=w[2];
+						w[0]=(*angular_b_pointer);
+						w[0]=_mm_add_ps(w[0],w[1]);
+						(*angular_b_pointer)=w[0];
+						*(result+2)+=impulse;
+					}
 					terms += 8; result += 3;
 					op += 24;
 

@@ -1012,3 +1012,186 @@ def test_second_normal_fallback_a_inertia_precedes_copy(solver_images,precision,
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,observed)
             else:assert snapshots[rounding]==(snapshot,observed)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+@pytest.mark.parametrize('writer',['input18','spin14','inverse10'])
+def test_spin_first_inertia_capture_precedes_publications(solver_images,precision,writer):
+    frame=STACK+32768-0xd0
+    body_a=frame-0x20
+    body_b=HEAP+0x80
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(8,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',body_a,body_b)
+            put(data,OPS+24,'IIffIfI',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,2,8,1e38 if writer=='spin14'else 1,0x400)
+            target=1e-38 if writer=='inverse10'else 1
+            mass=1e38 if writer=='inverse10'else 1
+            axis=[0,0,0,0];axis[{'inverse10':0,'spin14':1,'input18':2}[writer]]=1
+            spin_target=1e-38 if writer=='spin14'else 0
+            spin_mass=1 if writer=='spin14'else 0
+            put(data,TERMS,'32f',0,0,0,target,*axis,0,0,0,mass,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,spin_mass,0,0,0,spin_target)
+            put(data,HEAP,'B',3)
+            for offset in [0x10,0x20]:put(data,body_b+offset,'4f',0,0,0,0)
+            put(data,body_b+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'3f',0,0,0)
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*16)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            assert snapshot[1]==1
+            assert words(machine,IMPULSES,1)!=(0,),(label,writer,precision,rounding)
+            if label=='retail':snapshots[rounding]=snapshot
+            else:assert snapshots[rounding]==snapshot,(writer,precision,rounding)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_spin_first_retains_linear_axis_before_publications(solver_images,precision):
+    frame=STACK+32768-0xd0
+    rows=frame+0x10
+    a,b=HEAP+0x100,HEAP+0x200
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(8,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS,'6I',0x11801,rows,HEAP+0x4000,a,b,8)
+            put(data,OPS+24,'IIffIfI',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,2,8,1,0x400)
+            put(data,HEAP,'B',3)
+            for body in [a,b]:
+                for offset in [0x10,0x20]:put(data,body+offset,'4f',0,0,0,0)
+                put(data,body+0x30,'4f',1,1,1,1)
+            output=HEAP+0x5000
+            put(data,output,'3f',0,0,0)
+            machine.mem_write(rows,struct.pack('<32f',.125,.25,.5,1,0,0,0,0,0,0,0,1,*([0.0]*20)))
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            linear_a=words(machine,a+0x10,4);linear_b=words(machine,b+0x10,4)
+            assert linear_a==(0x3f800000,0,0,0x3f800000),(label,precision,rounding,linear_a,linear_b)
+            assert linear_b==(0xbf800000,0,0,0xbf800000),(label,precision,rounding,linear_a,linear_b)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,linear_a,linear_b)
+            else:assert snapshots[rounding]==(snapshot,linear_a,linear_b)
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_spin_second_row_follows_published_result_alias(solver_images,precision):
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    frame=STACK+32768-0xd0
+    output=frame+0x18
+    redirected=TERMS+0x400
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(8,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+24,'IIffIfI',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,2,8,1,0x400)
+            put(data,TERMS,'32f',0,0,0,as_float(redirected)/2,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,*([0.0]*8))
+            put(data,redirected,'12f',1,0,0,0,*([0.0]*8))
+            put(data,HEAP,'B',3)
+            for body in [HEAP,HEAP+0x80]:
+                for offset in [0x10,0x20]:put(data,body+offset,'4f',0,0,0,0)
+                put(data,body+0x30,'4f',1,1,1,1)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            linear_a=words(machine,HEAP+0x10,4);linear_b=words(machine,HEAP+0x90,4)
+            assert words(machine,output,1)==(redirected,),(label,precision,rounding,words(machine,output,3))
+            assert linear_a[0]==0x3f800000 and linear_b[0]==0xbf800000,(label,precision,rounding,linear_a,linear_b)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,linear_a,linear_b)
+            else:assert snapshots[rounding]==(snapshot,linear_a,linear_b)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_spin_rows_retain_each_linear_receiver(solver_images,precision):
+    from unicorn.x86_const import UC_X86_REG_ESP
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    def as_bits(value):return struct.unpack('<I',struct.pack('<f',value))[0]
+    frame=STACK+32768-0xd0
+    a=frame+0x10
+    original=HEAP+0x80;replacement=original+0x100;final=original+0x200
+    delta=as_float(replacement+0x10)-as_float(original+0x10)
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(8,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,original)
+            put(data,OPS+24,'3I',14|(12<<8)|(2<<16),CALLBACK,0)
+            put(data,OPS+36,'IIffIfI',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,10,8,1,0x400)
+            put(data,TERMS,'32f',delta,0,0,delta,0,0,0,0,0,0,0,1/delta,delta,0,0,delta,0,0,0,0,0,0,0,1/delta,*([0.0]*8))
+            put(data,HEAP,'B',3)
+            for b in [original,replacement,final]:
+                for offset in [0x10,0x20]:put(data,b+offset,'4f',0,0,0,0)
+                put(data,b+0x30,'4f',1,1,1,1)
+            output=HEAP+0x5000;put(data,output,'3f',0,0,0)
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3);callbacks.append((terms,payload))
+                uc.mem_write(frame+0x2c,struct.pack('<f',1))
+                uc.mem_write(frame+0x4c,struct.pack('<f',1))
+                return_from_hook(uc)
+            machine.mem_write(frame+0x10,b'\0'*80)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            expected=(as_bits(-delta),0,0,as_bits(-delta))
+            original_value=words(machine,original+0x10,4);replacement_value=words(machine,replacement+0x10,4)
+            assert original_value==expected,(label,precision,rounding,original_value,replacement_value)
+            assert replacement_value==expected,(label,precision,rounding,original_value,replacement_value)
+            assert words(machine,final+0x10,4)==(0,0,0,0)
+            assert callbacks==[(TERMS,OPS+32)]
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,callbacks)
+            else:assert snapshots[rounding]==(snapshot,callbacks)
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_spin_final_simd_bits_precede_second_result_store(solver_images,precision):
+    frame=STACK+32768-0xd0;output=frame+0x10
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(8,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+24,'IIffIfI',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,2,8,1,0x400)
+            put(data,TERMS,'32f',*([0.0]*12),0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for b in [HEAP,HEAP+0x80]:
+                for offset in [0x10,0x20]:put(data,b+offset,'4f',0,0,0,0)
+                put(data,b+0x30,'4f',1,1,1,1)
+            machine.mem_write(frame+0x10,b'\0'*32);machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            angular=words(machine,HEAP+0x20,4)
+            assert angular[0]==0x3f800000,(label,precision,rounding,angular,words(machine,output,3))
+            assert words(machine,frame+0x14,1)==(0x40000000,)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,angular)
+            else:assert snapshots[rounding]==(snapshot,angular)
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_spin_final_inertia_precedes_simd_copy(solver_images,precision):
+    frame=STACK+32768-0xd0;a=frame+0x60;b=HEAP+0x80
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(8,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,b)
+            put(data,OPS+24,'IIffIfI',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,2,8,1,0x400)
+            put(data,TERMS,'32f',*([0.0]*24),0,0,1,1,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for offset in [0x10,0x20]:put(data,b+offset,'4f',0,0,0,0)
+            put(data,b+0x30,'4f',1,1,1,1)
+            output=HEAP+0x5000;put(data,output,'3f',0,0,0)
+            machine.mem_write(frame+0x70,b'\0'*48);machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            observed=words(machine,frame+0x88,1)
+            assert observed==(0,),(label,precision,rounding,observed)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,observed)
+            else:assert snapshots[rounding]==(snapshot,observed)
