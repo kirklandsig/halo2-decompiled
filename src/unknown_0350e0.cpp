@@ -2952,6 +2952,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 187, subtotal and Y-first stores 375, named projected/reflected rows 500, ordered delta and subtotal 500,
 // ordered delta and Y-first stores 375. NOT kept: the subtotal and separate setters improve only together and
 // compute X before Y, while retail publishes Y first.
+// M3 lane 11 r162 (H2M_FAST with 0x2df00 MATCH and 0x2f2d0 142; control 281): lane 3 r299's saved records and count as one
+// global aggregate (0x2df00 updated to it, still matched) 278; `delta` assigned i, j, k 280; both 277 (difflib-aligned 149
+// against main's 142); both with the opacity arms under a negated test 274; that with the vertex-data value through PIN
+// 267 (two match-only parts: the swapped arms and PIN at one of five clamp sites). Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -6213,11 +6217,13 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// MiniMax H (11-06): score 251 (was 251): no new form, no lower score.
+// score 251 (was 251): frame 0x74 versus 0x70, early zero and portal/fog loop homes remain. BLOCKED-BY 0x38450 and
+// 0x391f0 for a byte match (their argument registers follow their own unmatched bodies, see the end of this note).
+// MiniMax H (11-06): no new form, no lower score.
 // The frame is 0x74 against retail's 0x70 and the value saved right after the index test sits at [esp+0x30]
 // where retail keeps it at [esp+0x2c]; we zero a register before the test where retail zeroes one after it,
 // and the portal and fog loop bodies and their homes still differ.
-// score 251 (was 251): frame 0x74 versus 0x70, early zero and portal/fog loop homes remain.
+// Earlier: frame 0x74 versus 0x70, early zero and portal/fog loop homes remain.
 // Earlier short-fog gain 272 -> 251; 257 with a volatile counter was not retained.
 // MiniMax R (11-01): no new form, no lower score.
 // earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
@@ -6333,6 +6339,21 @@ bool __stdcall function_391f0(void *state);
 // block inside it and a break (257, drops retail's jmp at 0x36d45 but regresses). Retail passes 0x38450's state in ebx
 // (0x36e84) and pushes 0x391f0's (0x36efa); ours pushes the first and passes the second in eax. That follows the
 // unmatched callee bodies, not this function.
+// M3 lane 11 r162 (H2M_FAST; control 251, difflib-aligned 173, register-masked 131). Reading: our frame's bottom dword
+// (+0x10) is never used; the current-cluster word is kept in a slot where retail re-reads the global. A long local for the
+// guard and the row pointer with the loop compare still reading the global (a mixed read, match-only) gives retail's
+// `movsx ebx; cmp ebx, -1` front and its in-loop re-read: 302 (frame 0x6c, masked 115; fog then keeps EBP instead of
+// retail's ECX plus slot). Forms: the step passed as the global at the call 249 (masked 131); the plane through the
+// existing plane_distance_to_point with the camera position global, no camera locals, 251 (masked 124, retail's y, z, x
+// product order; with `-` for `0.0f -` the same code); that with a `point3f` camera copy 320 (frame 0x7c); the side search
+// with a found flag and break 257 (retail's `jmp` exit, no `side == 2` test); the portal walk as `for (long remaining =
+// count; remaining > 0; --remaining, ++portals)` with the step global 256 (retail's load/dec/store latch); `portals[k]`
+// with a k < count for 290 (not strength-reduced, bound re-read); the visible indices read inside the loop 263 with the
+// step global; a long count 293; plane helper + step global 249; + the for walk 256; + the in-loop indices 289; all five
+// 257; plane helper + step + in-loop indices 270. With the long-local mix: + plane helper 302 (masked 104); + step 263; +
+// found flag 275; all four 263 (masked 100); + the for walk 277 (masked 98); + in-loop indices 295 (masked 95, unmasked
+// 146). The zero stays one register hoisted to the entry in every form (retail makes it per block, xorps inside the
+// portal loop); without the timestamp block it is hoisted ahead of loop 1 (diagnostic 334).
 // The cached current cluster and the frame 0x74 versus 0x70 remain. Short camera-cluster snapshot 269; compare cluster records 272; direct visible ordinal 275; visible-list end pointer 266; portal end pointer 307.
 // Portal distance before the current-cluster case 288; common fog-distance candidate 278; conditional minimum update 251.
 // NOT kept: the record identity and visible cursor shrink the frame to 0x6c; the common candidate shortens to 1005 bytes. None beats the opening score.
