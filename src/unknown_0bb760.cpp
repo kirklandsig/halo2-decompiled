@@ -1042,6 +1042,9 @@ void function_3dd10(long object_index, bool force);
 // of that form 137 each (no effect); on it, the selection loop as `for (long j = 0; j < choice_count; ++j)` with the break
 // 153 (aligned 40), the clamp rows through a `color3f *current = &output[i]` 152 (1019 B, aligned 8: only the selection
 // add's operand form toggles; the variant store and the 1.0 edge load stay).
+// The bank ordinal still sinks below the entry guard; count and mask homes remain different. Empty-bank single exit 197, guarded while 77, tint block reference 86, admitted tint base 311.
+// Returned HSV inputs 200, returned RGB bank color 309, shared absolute/signed hue difference 184, two signed half-turn bounds 203.
+// NOT kept: the guarded while ties. The single exit puts the ordinal store in place and swaps the saved object and tint registers.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

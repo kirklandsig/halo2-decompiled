@@ -995,6 +995,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // iterator's cell at fifteen sites, because the expanded sampler's 0x38-byte copy and 0x2640c0's output register take
 // ESI and EDI inside the loop. Still BLOCKED-BY 0x2641c0's expansion (0x264210 expands it too once the noinline
 // declaration goes) and the release site's 0x25c820 expansion.
+// M3 lane 16 r183 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all MATCH; control 404): the
+// context record declared ahead of the motion record 404; the two flags declared after the 0x263670 call 404; the prior
+// state read ahead of the next link 404; case 1's tracking pointer declared in its own block 404; the prior state as a
+// `word` at both uses 404 (all the same code). All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

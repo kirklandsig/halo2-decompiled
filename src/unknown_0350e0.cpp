@@ -534,6 +534,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // own input) 367 (1751 B), in the first pass only 333 (one point, same frame); the rows rotated up, left, forward in
 // both passes 334. Retail builds both matrices (both fsin before any rotation) and scalar-replaces most of the first
 // matrix: only forward.j, left.i, forward.k and left.k are stored to it.
+// The first-axis load order and square spills remain. First/second/both full transform workspaces 349/367/373.
+// Axis reference/native array 334/334; row-result initializer/setter 334/334; independent immutable turn results 334.
+// NOT kept: transform workspaces increase the 0x90 frame and the extent. All remaining forms tie.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -6351,6 +6354,9 @@ bool __stdcall function_391f0(void *state);
 // found flag 275; all four 263 (masked 100); + the for walk 277 (masked 98); + in-loop indices 295 (masked 95, unmasked
 // 146). The zero stays one register hoisted to the entry in every form (retail makes it per block, xorps inside the
 // portal loop); without the timestamp block it is hoisted ahead of loop 1 (diagnostic 334).
+// The cached current cluster and the frame 0x74 versus 0x70 remain. Short camera-cluster snapshot 269; compare cluster records 272; direct visible ordinal 275; visible-list end pointer 266; portal end pointer 307.
+// Portal distance before the current-cluster case 288; common fog-distance candidate 278; conditional minimum update 251.
+// NOT kept: the record identity and visible cursor shrink the frame to 0x6c; the common candidate shortens to 1005 bytes. None beats the opening score.
 // @retail 0x36b50
 void function_36b50()
 {

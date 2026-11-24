@@ -1002,6 +1002,19 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull count and `indices[hull_count++] = current;` 246 (749 B); with the departure flag declared ahead of the classifier
 // call 249; with a long departure flag 241 (752 B); with the closure as `if (!left_start || differ) continue; return
 // hull_count;` 360 (667 B). Body unchanged.
+// M3 lane 4 r256 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 84; body unchanged).
+// 1 to 4 unused initialised longs at the top of main's body (diagnostic) 144 each, 1 to 7 on the completion-flag body
+// with `current` initialised at function scope 114 each, 1 to 3 on the flag body with `current` set after the call 216
+// each (all the same code: this function does not follow the local count). The count declared `long` with `(short)count`
+// at its five uses, on main 144 and on the flag body 216 (same code in both, and 0x239d50 drops to 11: the parameter is a
+// short). On the flag body (216 at 791 B, aligned 50): memcpy for the compaction 235 (755 B: it expands in line, so
+// retail's CRT call is the overlapping copy as written), the candidate bound through a `short point_count = count` copy
+// declared in the pass loop 216 (same code: the copy folds), `current` initialised at function scope 114 (re-measure),
+// that with memcpy 218. Reading of the 114 form against retail: the two are mirror images at entry. Retail loads points
+// into its register (ESI) and copies it to the classifier's argument register, loads the count straight into the
+// argument register and never gives it one of its own; ours loads the count into its own register and copies that to
+// the argument, and loads points straight into the argument register. So the count outranks points here and ranks below
+// both points and the hull count in retail; no spelling of the count's reads changes that rank.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -2304,6 +2304,17 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // and `inside` moved up after the distance 618. Diagnostic on the named-successor form, restored: 1 to 10 dead
 // initialised longs at the top 619, 620, 609, 610, 611, 611, 576, 619, 619, 619 (frame 0xb968 in every one). Body
 // unchanged.
+// M3 lane 4 r256 (h2m fast with 0x16a440, 0x120790, 0x2469b0, 0xc2d00 and 0x17a380; control 551 at 2877 B, aligned 363,
+// register-masked 191; body unchanged). The named-successor edge loop (zero-based, `(vertex + 1) % point_count` named at
+// its top) re-measured 619 (2904 B, frame 0xb968). Diagnostic grid, one no-op float multiply on the `opposite` scale
+// against 0 to 7 unused longs at the top: on main 553, 560, 560, 560, 557, 556, 555, 555, on the named-successor loop
+// 619, 619, 620, 609, 610, 611, 611, 576 (the multiply is inert here: each column equals the unused-long sweep
+// alone, and no cell brings the frame back). The side test's dot as dot3f(&side, &plane normal) 551, the perpendicular
+// dot as dot3f(&relative, &perpendicular) 551, both 551 (same code each). The projection's `0.0f - distance` in a
+// three-use named local 565 (2893 B: the three projected rows then share one negated value, but the distance and cross
+// rows reorder), with the side test's dot swapped 554 (2883 B), with the perpendicular dot swapped 565, with both 554;
+// 1 to 7 unused longs on the named-local form with the side dot swapped (diagnostic) 565, 565, 564, 555, 555, 555, 543
+// (2878 B, aligned 348).
 // Out-of-reach prism continue 551; candidate-default clamp 584; shared scaled-vector candidate 582;
 // shared along-edge subtraction and i-k-j dot 559; shared separation and midpoint subtraction 558;
 // both staged crosses 552; shared ray-miss sums 576; inside-first normal test 555.
