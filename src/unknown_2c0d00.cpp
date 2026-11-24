@@ -2505,6 +2505,12 @@ long function_1fa7f0(void);
 // side as `!side` at the call with `side = !side;` at the loop end 434 (1715 B); the endpoint pointer declared ahead of
 // the previous pointer 459 (1754 B); the start point built ahead of the 0x2c2a70 call 453 (1755 B); the edge declared
 // first in the loop body 400, after type and link 400 (same code each). Body unchanged.
+// P657: Native positioned tangent/trace endpoint 436; both tangent addresses from the selected step 400;
+// complementary orientation flipped between tangents 446; direct remaining-attempt count 399.
+// Length/endpoint/retry/opposite-side names 400/400/400/400; start z first 398; target z between
+// start x/y with start z last 399. NOT kept: the complementary side restores frame 0x10c and the
+// source-radius home, but raises the score and moves the extent away from retail. The other
+// forms retain frame 0x114, count in BX and the spilled edge, with at most two points gained.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
