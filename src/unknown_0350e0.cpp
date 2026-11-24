@@ -548,6 +548,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // and the sine products in i, k, j order 323 (same code as the lead). The lead's one x87 sine product (the i product,
 // both operands in memory) is what the capture removes. Changing the register or the colouring rank of any one XMM value
 // on the lead comes no nearer than 323, so what is left is several allocation choices together, not one near miss.
+// M3 lane 6 r241 (h2m fast with 0x137ed0, matched throughout; control 334): the builder taking the axis by value (the
+// callers passing the global vectors) 387 (1817 B, frame 0x8c); `first` and `second` each declared at its builder 334
+// (same code); the cross terms grouped `(inverse * axis->j) * axis->i` 344 (1791 B); `matrix3x3 second, first;` 334
+// (same code); forward.i's diagonal stored right after `inverse` 346 (1793 B). Diagnostic (reverted): 1 to 7 dead
+// initialised longs at the top 334/334/334/342/342/342/342; the axis loads stay j, k, i (absolute addresses, so no
+// pointer-numbering effect), only their registers move. Retail re-reads the axis for the cross terms because its in-place
+// sine products overwrite i and k. Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5021,6 +5028,14 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // emits `fld st(2); fmulp st(1)`): in the random step, the sum written value-first 486 and `random * 2.0f - 1.0f` 486
 // (same code each), the clamp as two early returns 513 (2004 B), the offset named before the product 513 (2004 B), the
 // fraction kept as a double 486 (same code). Body unchanged.
+// M3 lane 6 r241 (h2m fast with 0x36b50; control 486, aligned 353): retail's else arm copies the strength as a dword
+// (read at its use) and both arms store the phase before the fade; on this body the strength read at its use in both
+// arms with the phase stored first 494 (2024 B), that with the distance computed in each arm 491 (2041 B), that with the
+// projection helper writing through an output pointer 541 (1979 B, frame 0x44); only the phase store moved first 488
+// (2038 B); only the strength local dropped 504 (2017 B). Frame reading: retail's 0x38 holds the two flag bytes, ten
+// dwords and one 12-byte home shared by the previous camera position and each element's old position; ours adds four
+// 8-byte projection results (the by-value returns stay in memory) and gives `old` its own slot (it interferes with the
+// first projection result, which shares the previous position's slot). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6110,6 +6125,19 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // NOT kept: All four color forms recover 0xe0. The early depth and origin-initialized color forms gain six
 // points and grow to 1826 bytes. Their first differing spill still keeps the radius at +0xc. The scalar
 // versions of those two forms tie the baseline. Both collision and basis controls stay matched.
+// M3 lane 6 r241 (h2m fast with 0x1697c0/0x141710, both matched; control 231, aligned 165; "col" = the colour as a
+// color4f with alpha stored and 1.0f passed for the rest, 225 at 1826 B re-measured). Reading: retail adds each corner
+// row as up, left, forward in all four corners (the matched 0x142570's order expanded in place, then the origin add and
+// the bias); our helper's x row sorts forward first because x's leaves are numbered after z's. Diagnostic (reverted):
+// `inline` on 0x142570's definition and that call with vector3f_add and the bias at each corner, with col, 355 (1822 B,
+// aligned 147: frame 0xe0 and radius at +8 as retail); its body as a file-local helper 355 (same code); each offset
+// written into its corner and transformed in place 355 (member stores x y z / x z y / z x y 355, y x z / y z x / z y x
+// 357; positives as `radius * 1.0f` 355; through real_point3d_set 355; one offset reused through the setter 362); all
+// four offsets first 383 (frame 0xdc); the origin added per component 438 (1764 B, aligned 138), as `origin + corner`
+// 438; the corner helper calling the transform helper, then vector3f_add and the bias 375 (1797 B, aligned 143; either
+// add order 375): only this nested form gives retail's add order in all 12 rows, leaving the XMM choice per corner and
+// retail's two kept offset-y stores (+0x64, +0x70) of corners 2 and 3. All copy 0x142570's body or need `inline` on it
+// (match-only / held). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
