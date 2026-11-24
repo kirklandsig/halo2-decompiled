@@ -7918,6 +7918,10 @@ public:
 // 507 at retail length, and existing single-weapon rounds query 532.
 // NOT kept: masked unit gains two with a 0x40 frame, and the deferred lookup
 // gains one with an earlier difference. The refill call boundary remains.
+// Single magazine classification 515, capacity guard with loaded precedence 512, scan mask 526,
+// paired Boolean accumulation 526, provisional empty result 494, usable and empty counts 518,
+// loaded count 508, any usable and all empty 508. NOT kept: the provisional result reaches 1785
+// bytes but writes the final flag inside the scan, clears it afterwards and leaves the early spills.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {

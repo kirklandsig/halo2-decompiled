@@ -2877,6 +2877,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // conditional clears 555 (2396 B); without case 18's locals 639 (2368 B); without dot3f 612 (2400 B). To turn it
 // without the own-parameter read the actor's piece has to gain 39 on the state's; no declaration order, name or
 // case spelling tried so far moves either count by more than 2.
+// Playback result reused as ticks 490, stopped result in the tick selection 429, separate running
+// and stopped stores 592/592, playback fallthrough to countdown 432, facing fallthrough to countdown
+// 429, playback fallthrough with separate stores 474 or retained timer result 491. NOT kept: the
+// best forms tie at 2416 bytes and the dispatch still reaches a late success epilogue.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
