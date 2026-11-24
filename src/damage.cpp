@@ -2786,6 +2786,13 @@ struct s_unit_event
 // Record address after notifications 627 in all three forms. Record address after the region-state
 // write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
 // loads the region index into EBP and keeps frame 0x38, but adds 12 bytes and raises the score.
+// M3 lane 8 r235 (H2M_FAST with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420). Allocator reading: the permutation
+// pointer (priority 66) is coloured before the region index (58) and takes EBP, leaving EBX to the index; a forced
+// priority of 70 for the index gives retail's entry (first difference +0xc -> +0x59, semantic rows 110 -> 46), so the
+// index needs one more weighted reference in its range (entry to the region-state update) or the permutation fewer.
+// Forms: the index bound to a `long const &` for the lookup 420, for all three uses 420; the two notifications through
+// one attached index read again for the second 420 (all the same code); the region states named at the update 523
+// (1852 B); the vehicle block through the entry object pointer 528 (1884 B).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
