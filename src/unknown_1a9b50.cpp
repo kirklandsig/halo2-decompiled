@@ -1587,6 +1587,10 @@ static __forceinline long real_to_long(real value);
 // (an always-true test in front of the getter site): `else if (!field_18 && local_1)` on the computed result 489
 // (1904 B, 0x25d740 a call, object-speed root a call), with `&& local_0` too 490. Re-measured: result preset false 495,
 // rejection written first 382, computed result 508, that with magnitude3d 508 (both expanded), magnitude3d alone 468.
+// Checked prop index or missing arm first 382/496; assign the prop in every
+// branch or handle no metadata first 415/415; checked index with read-only metadata
+// 382. Usable prop index selected first, missing index arm first, or exhaustive pointer
+// assignment from the selected index 382/496/473. NOT kept: the tying forms still send rejection to the late exit.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -450,6 +450,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
 // stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
 // orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
+// Unsigned-word or byte group 66/234; next deadline derived from the ordinal 372;
+// whole deadline-array pointer 103. With a named deadline: bulk target copy 367,
+// all polynomial products named 89, named forward squared length 87, or adjacent
+// basis addresses at the group update 94. NOT kept: the 89 form reaches retail
+// length and changes the polynomial. Naming the squared length shortens the
+// basis tail, and the adjacent addresses keep its first difference at +0x34b.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1595,6 +1601,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // M3 lane 5 r237 (H2M_FAST, reduced control 337): the file's other axis-angle builder and transform (the unused inline
 // pair above the view-setup helpers) for the first rotation only 386 (1425 B), both builders 360 (1455 B), the four
 // transforms 368 (1441 B), builders and transforms 359 (1473 B), the second builder only 352 (1464 B). Body unchanged.
+// Scalar square complements before sine or between sine and cosine 349/349.
+// Cosine-seeded diagonal accumulators 385; cosine-first products 337; early
+// complement accumulators 389; early complements in diagonal fields 354;
+// square-seeded cosine accumulators 381; early axis-derived complements 388.
+// NOT kept: cosine-first ties the reduced control. The square spills and unity
+// register remain different, and early field staging changes the frame.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2325,6 +2337,11 @@ struct s_pool_view_172840
 // (link, key, cluster, portal) 34 34 34 56 34 52; (key, link, portal, cluster) 34 33 32 32 28 29, copy last 17; (key,
 // link, cluster, portal) 34 33 32 54 32 50, copy last 53; (link, key, portal, cluster) 34 34 34 34 30 31, copy last 19:
 // none below the 17 lead (all 868 B but the 50 to 56 forms, 869 or 870 B).
+// Native or positive clip status 56/56, short clip status 57; publish points through
+// the clip output record 150, or use that record through rollback 256. Capture the
+// bounds template before opposite-cluster selection or before clipping 55/55;
+// snapshot the rectangle value before selection 152. NOT kept: the tying forms
+// retain the 870-byte extent, exchanged scratch registers and long sentinel.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

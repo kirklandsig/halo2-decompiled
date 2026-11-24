@@ -3256,6 +3256,11 @@ void function_c5740(long unit_index, bool start)
 // 100/90; immutable tag values and returned final call 97. NOT kept: 90 gains seven at 350 bytes and
 // leaves the different prologue, pool-data lifetime and a spare field-address instruction. The
 // 331-byte form changes 0xcf040.
+// Whole effect link by reference or pointer 90/90; scalar effect index pointer 90.
+// Set the typed material member before or after the root lookup, or for both
+// playback paths 97/97/97. Immutable initial unit and slot 97; definition
+// presence before the weapon gate 115. NOT kept: the 90 forms gain
+// seven, add a field address and leave the entry registers and pool reload different.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
