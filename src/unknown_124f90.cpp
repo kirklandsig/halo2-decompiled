@@ -1342,18 +1342,6 @@ bool sound_playback_update_location(long sound_index)
 
 /* ---- gains in decibels, held as real bits ---- */
 
-/* a sound class's volume fade (g_502118, unknown_221490.cpp) */
-struct s_sound_class_fade
-{
-	dword target;
-	s_decibels current;
-	real time;
-	byte flags;
-	byte unknownd[3];
-};
-
-extern s_sound_class_fade *g_502118;
-
 long sound_definition_gain_lower(s_sound_definition const *definition);
 long sound_definition_gain_upper(s_sound_definition const *definition);
 real function_2195f0(real decibels);
@@ -1904,6 +1892,36 @@ long function_2197f0(real gain);
 // spellings, three clamp shapes and both time-sum orders all keep elapsed in XMM2; a deletion bisect moves elapsed to
 // XMM3 only when arm 2's interpolation or both arms of the other ambience branch are removed (the XMM colours are
 // coupled across branches, not set by arm 1 alone). Body unchanged.
+// The composite elapsed and reciprocal registers and separate gain load still differ. Immutable decibel base gain
+// for both same-ambience attacks 180, hold 178, release 180, attacks and hold 180, attacks and release 180,
+// hold and release 180, all 180. A scalar base gain for all phases before accumulation scored 173.
+// NOT kept because the decibel forms add bytes and the scalar form moves the first difference into the prologue.
+// M3 lane 12 r175 (H2M_FAST with 0x1251e0/0x221810, both matched; control 87; D0 above re-measured 125 at 678 B): on this
+// body, elapsed read through a `real const &` bound to its local 97 (685 B); a fade-out local for the two window tests
+// with the product reading the field 102 (685 B); the product's fade-out through a trivial file-local accessor 87 (same
+// code); arm 1 alone as `gain += ...` 87 (same code: the add is still interpolation plus the gain from memory); arm 1 alone
+// written interpolation first 157 (688 B: the gain copy takes a new stack slot). Body unchanged.
+// M3 lane 7 r220 (compile-only screens of this file alone, scored against retail with stack and global references masked,
+// control 60; H2M_FAST with 0x1251e0/0x221810 for the confirmations, control 87). Reading: on the division form with a
+// fade-out local the first arm has retail's instruction order and only the XMM numbers differ; retail's fade-out value
+// stays in XMM1 from the window test (reciprocal 2, elapsed 3, one 4), a named local takes the last register (4) and the
+// window test then adds the hold time first, and without a name the product re-reads the field. Division form without the
+// local, product `(e - hold) / fade_in * fade_out`, `fade_out * ((e - hold) / fade_in)` or `(e - hold) * fade_out /
+// fade_in`, clamp `1.0f > q ? q : 1.0f` or `q < 1.0f ? q : 1.0f`: masked 55/55, 59/59, 55/55 (H2M_FAST 125 at 678 B).
+// The same six with the fade-out local read just before the window test, declared uninitialised ahead of `elapsed` and
+// assigned before the window test, declared at the top of the function and assigned there, or assigned inside the window
+// test's first comparison: masked 76 each (H2M_FAST 128 at 678 B for each of the four places). The kept inverse form with
+// the local at the first three places: masked 80 each (H2M_FAST 92). The declaration point does not move the register.
+// M3 lane 14 r151 (fast screen with 0x1251e0/0x221810, both matched; control 87). Reading (allocator trace): no single
+// forced allocator decision changes the count (80 tried: every rank and pick of the float values); in this build the
+// window test's fade-out load never becomes a value that lives into arm 1 (the product reads the field again), while
+// retail's product reuses that load in XMM1, which is what pushes the reciprocal, elapsed and 1.0 one register up; so
+// the cause is the reuse, not the ranking. Forms: the product written in retail's order `(elapsed - hold) * inverse *
+// fade_out` reading the field 87 (the product reassociates to fade-out second, from memory); the product in two steps
+// with a named ramp `(elapsed - hold) * inverse`, then `ramp * fade_out` 87; the whole fade-out term named and then
+// added to the ambience difference 87 (same code); the time sum written product first 87;
+// the fade-in copy and the reciprocal computed ahead of the window test 181 (633 B); re-measured: the eager clamp
+// `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3778,6 +3796,15 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
+// advance differs at +0x6b.
+// M3 lane 15 r138 (H2M_FAST): 0x128020's loop-top `sounds = g_4e637c;` 8 (same code); with the sound pointer as
+// `(s_sound_playback *)sounds->data + index` ahead of the start test 157 (561 B); the start test and the pointer both
+// through `sounds` after that reload 8; the advance reading the global at both calls with no `sounds` reload 8; no
+// `sounds` local at all (entry, loop top and advance through the global) 8; the all-global advance with `sounds =
+// g_4e637c` last (the earlier 17 form) 8 on this base; `default: __assume(0);` first in the switch 8; `case 1:
+// continue; default: __assume(0);` both ahead of case 0 8. With the assumed default every advance spelling loads the
+// pool ahead of the ternary.
 // MiniMax C (11-20): no new form, no lower score (8): the pool reload still lands ahead of the next-slot diamond in every form
 // tried this round (the seed as its own statement ahead of the reload, the advance as two body statements with the mode-1 arm
 // broken instead of continued, and the seed through a comma), and retail's mode dispatch (`movsx eax, ax; sub eax, 0; jne`)
@@ -3799,8 +3826,6 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
 // MiniMax G (11-20): no new form, no lower score (8): the pool reload is still scheduled before the next-slot selection - retail loads the pool after the next-index ternary's join and re-reads it on every path into the advance, while this build reloads it only where the body clobbered the register and lets the branch into the loop advance skip it; the seed as its own statement ahead of the reload, the reload inside the search call's argument and both pool uses through the global all score the same 8.
-// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
-// advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
 // `case 1: continue;` arm and an unreachable `default: __assume(0);`, and the pitch range is computed inside case 0
 // where retail computes it: every register, the `sub eax, 0` dispatch and case 0 are retail's. Left: the loop end's
@@ -4030,6 +4055,26 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // the admitted datum directly from its low word 91. NOT kept: The shared calls remain out of line and shorten the
 // body. A native word slot retains 558 bytes at 168. Advancing the admitted slot directly removes the retail
 // sentinel branch and shortens the body.
+// M3 lane 11 r160 (fast): the hoist comes from the loop top reading the pool global (the macro): with the start test
+// and the sound pointer read through `sounds` the loop end's load stays in the loop end (round 181's 6 form, re-measured
+// 6: the load then sits in the compare block ahead of the next-index ternary). Barriers after the entry, at the loop
+// top or a volatile index change nothing (8/8/171). The existing record_pool_next_used at the loop end 183, at both
+// sites 293; held form (`inline` on its definition) 91 at either (517 bytes: load after the ternary, 0x16bc00 called),
+// with `inline` on 0x16bc00 too 8 (main's code, hoisted). On the 6 base: the loop end as `datum(g, find(g, next)),
+// sounds = g` 17 (retail's loop end plus a `mov esi, ebp` copy); a named next index, then `sounds = g_4e637c`, then the
+// datum and find through `sounds` 25 (every instruction retail's, but the pool takes ESI where retail has EBP; the
+// embedded `data_datum_index(sounds = g_4e637c, ...)` is the same code); on that: the datum through the global 40, the
+// find through the global 25, the entry through the global 163/27/25, the pointer declared before the start test 162, a
+// named playback array for the loop top 160, the start test through the macro 157; 1..8 probe locals 25 each (no tie).
+// M3 lane 5 r241 (H2M_FAST), at 8: the latch scan through the existing for-loop twin data_next_absolute_index_inlined
+// 8 (same code); the reload written in both arms of the next-index ternary 162 (559 bytes: VC hoists the common load into
+// the compare block); the latch as a forced-inline step shaped like 0x16bbc0 (if/else start, scan, NONE result) with
+// the global or `sounds` passed 8/8 (same code); the next index named first with the macro loop top 8 (same code). On
+// the loop top through `sounds` with the next index named first (the 25 form, re-measured 25): the scan through the
+// for-loop twin 25, the start test only through `sounds` 173 (572 bytes), the pointer only through `sounds` 157 (561
+// bytes), the pointer declared through `sounds` ahead of the start test 162 (561 bytes). Reading: with the loop top reading the global, the latch's load is a CSE temporary placed at the latch head;
+// a user-variable definition keeps its place after the ternary, but its shorter range then takes ESI ahead of the scan
+// temporaries (retail: the scan result in ESI, the pool in EBP).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4905,10 +4950,49 @@ struct s_128ca0
 // the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
 // every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
 // initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
+// The shared decibel addition's by-value operand updated with the compound operation or decoded
+// member before returning 257/257. Direct/named construction from the decoded sum 177/177.
+// Const-reference operand with copied result, direct constructor, returned compound sum, or
+// named decoded sum 177/308/48/308. NOT kept: copying the operand and returning the compound
+// sum ties. The other forms shorten the function and some change the matched gain producer.
+// Round 463. Valid-arm byte, char, long or short count with direct sentinel publication 208/208/208/212.
+// With staged pin gain producers, shifted pending test and direct channel read 194/194/201/205. The
+// direct sentinel shifts registers at +0x12a and keeps the count comparisons displaced.
 // First, second or both gain scopes ending at the packet write 48 each. Separate decibel
 // operands with permutation first, processed bits first, or both scoped to publication 48 each.
 // Channel arguments named after publication, with or without scoped gain objects, 48 each.
 // The two scratch-register exchanges and full-width synchronization sentinel still differ.
+// M3 lane 6 r230 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17;
+// Lc = L with `char count = NONE`, re-measured 204): the definitions view named once for the range and bound lookups on
+// L 17, on Lc 204 (same code each); on Lc the flag cleared before the decrement 203 (1053 B); the count block as a
+// function in the controller file 166 (1017 B, it stays a call); on Lc the four statements after the range lookup
+// (permutation P, field_34 store Z, effect-index store E, bound B) in the 22 orders not listed above: PZBE 216, PEZB
+// 208, PEBZ 210, PBZE 218, PBEZ 218, ZPEB 209, ZPBE 221, ZEPB 78, ZEBP 82, ZBPE 44, ZBEP 81, EPZB 79, EPBZ 79, EZPB 78,
+// EZBP 82, EBPZ 82, EBZP 82, BPEZ 45, BZPE 44, BZEP 81, BEPZ 82, BEZP 82. With the bound early the first controller
+// block and the count block are retail's and only the pitch block's registers move. Body unchanged.
+// M3 lane 12 r175 (H2M_FAST with 0x1293f0, matched; control 48; L = the LEAD 17 above, rebuilt from its patch, re-measured
+// 17; Lc = L with `char count = NONE`, re-measured 204): on Lc, the count through a reference bound to a char local 204, the
+// first block's two NONE tests written constant-first 204; on L, `short count = NONE` 111 (1056 B: the count block's
+// `or edx, -1` and both register compares are retail's with no upstream shift, but the extraction adds `movzx dx, dl` and
+// the second pin's scratch registers then rotate one step), `long count = NONE` 118 (extraction `xor edx, edx` / `and edx,
+// 0x7f`, the rest of the block and the second pin as retail), `word count = NONE` 115 (0xffff is shared with the lookup's
+// mask: `mov edx, 0xffff`, `and eax, edx`). Body unchanged.
+// M3 lane 15 r135 (h2m fast with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt from its patch,
+// re-measured 17; Lc = L with `char count = NONE`, re-measured 204): on L the char count declared at the function's top 248
+// (1074 B), at the top of the not-yet-started arm 237 (1074 B), just before function_21f720 198 (1056 B), just before the
+// chunk-queue call 199 (1056 B); on this body `char count = NONE` in place 203 (1054 B), declared just before function_21f720
+// 197 (1056 B). Every char form keeps the scratch shift at the pitch-range index (+0x12a); a declaration live across a call
+// lengthens the frame. Body unchanged.
+// M3 lane 14 r150 (h2m fast with 0x1293f0, MATCH throughout; control 48, aligned 36). The aligned rows: both pins'
+// scratch pair (the gain byte and the bits' copy trade registers), the field_c store one row late at the first pin, the
+// count's `or dl, 0xff` with immediate compares for retail's `or edx, -1` and register compares, the tail's rotation
+// after the second pin, and the second pending test with the constant 8 in EBX. Tried: the processed bits bound by a
+// `s_decibels const &` to the local and passed as the sum's right operand in both pins 48 (same code); the
+// permutation's gain bound by a const reference to its converted value, then summed, in both pins 152 (1062 B: the
+// gain is stored and reloaded); the voice's current permutation named in the second arm's test for the test and the
+// gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
+// is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
+// field_c store 48 (same code: the store still follows the index load).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5255,6 +5339,17 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // local itself initialised to NONE at the loop top and copied after the if/else 531 (2284 B); the else arm as one
 // chained assignment 484 (same code); the loop head as `function_14de70(...) != NONE` 530 (2298 B). MiniMax E's left
 // rows k, j, i re-measured 432 (the anchor stays +0xb8; not kept, a statement order).
+// M3 lane 7 r220 (H2M_FAST with 0x220790, MATCH unless noted; control 484, difflib-aligned rows [471]). Rotate helper:
+// its four quaternion locals dropped (fields read at each use) 488 at 2310 B [461]; declared j, k, w, i 484 (same code);
+// k, j, w, i 490 at 2312 B [494]; w, j, k, i 446 at 2323 B [486] (a declaration order, not kept; the body moves further
+// from retail's length); only w named 491 at 2314 B [461]; only i, j, k named 481 at 2305 B [471]; only i named 485 at
+// 2307 B [459]; only j and k named 1049 at 1726 B (the helper is then called, not expanded). Loop head: the unit index
+// declared at the loop top as NONE and assigned in the player arm 484 (same code); the player index the same way 484
+// (same code); the else arm's cluster store first 484 (same code). The location declared at the loop top with both fields
+// NONE and one pair of listener stores after the if/else 531 at 2284 B [538]; the same with the stores kept in both arms,
+// the else arm reading the location, 525 at 2294 B [519]: retail's `or esi, -1` head and immediate compares in the player
+// arm appear, but the location's two NONE stores are emitted at the loop top, the 0x155760 result is still spilled and EBX
+// goes to the player-state cursor that retail keeps in memory.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

@@ -539,6 +539,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
 // score 1346 (was 1346): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// Earlier header line, a second stacked score line merged here in m3 lane 13 r149: 1346 (was 1346; m3 lane 2 r139, m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// Earlier header line, a stack merged here in m3 lane 2 r139: 1346 (was 1346; m3 lane 8 r221 and m3 lane 5 r234 unchanged, its line just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // header line, 1375 (was 1375), sits further up this file).
 // (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
@@ -900,6 +902,77 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // outputs declared local_5 first 1346 (same code); on the i, j, k form, the contact cross written into the contact's
 // velocity field with the base velocity added there 1419 (6185 B); the scale helper copying its input vector (retail
 // copies the normal before the projection at 0x206d0c) with the magnitude read directly 1543 (6358 B, frame 0x5e8).
+// M3 lane 12 r174 (h2m fast with 0x2056e0, MATCH each run; control 1346): the first loop's offset rows through the
+// existing vector3d_from_points3d(&field_60, element + 0x34, local_9) 1379; the definition row pointer declared ahead of
+// the element pointer 1347; the torque pointer declared ahead of the offset pointer 1346 (same code); the ground probe's
+// component reused from the entry lookup (same index) 1453; the probe's component index read at the loop top 1431.
+// Diagnostic, the magnitude read directly (1624, 5990 B, frame 0x590): 1426 instructions against retail's 1455; between
+// the two 0x2078f0 skip calls 425/439, and the three tail calls sit in another block order (119/72, then 8/60
+// instructions), so most of the byte shortfall is displacement size and tail block order. Body unchanged.
+// M3 lane 8 r221 (h2m fast with 0x2056e0, MATCH each run; control 1346): lane 2 r119's lead rebuilt (magnitude read in
+// place, the contact cross straight into field_4c, local_64 ahead of local_63, the root ahead of the normalised copy)
+// 1618 (5977 B); that with `(dword)` on every contact index 1618 (same code); the duplicate-impact search with a found
+// flag set at the match and `if (!found && ...)` 1342 (6243 B; four points, a flag set inside a test: match-only); the
+// handbrake bit as `(... & 2) != 0` 1346 (same code); the first loop's wheel record read at each of its six uses (no
+// local_8) 1446. Body unchanged.
+// M3 lane 1 r154 (H2M_FAST with 0x2056e0, MATCH each run; control 1346): the magnitude helper reading its input directly
+// re-measured 1624 (5990 B); its stack references then follow retail's map (the same counts per offset, ours 4 bytes
+// higher from the middle of the frame up: 0x158/0x15a and 0x1e4/0x1e8 for retail's 0x154/0x156 and 0x1e0/0x1e4; 133
+// references at +0x80 or above in both), so the 248 missing bytes are not displacement size: retail has 25 more movss,
+// 9 more mulss, 6 fewer fld/fmul, three imul and a second ret. On that direct form: local_5 declared before local_4 1624
+// (same code); the ray record local_19 declared at function scope 1608; the scale helper as three component statements
+// 1649 (5974 B); the two normalisations through the existing normalize3d 1609 (5990 B). Body unchanged.
+// M3 lane 5 r234 (h2m fast with 0x2056e0, MATCH each run; control 1346). Retail materialises `field_82 || field_83` into
+// DL right after the field_90 store and tests it at the local_65 choice, recomputing the `||` at both impact calls; at
+// that choice it reads local_58/local_60 straight from their homes where ours copies them into the magnitude snapshot.
+// A named bool for the `||` ahead of the friction ternaries, tested at the choice, 1431 (6262 B); declared at the friction
+// block's top and used at the choice and both impact calls 1440 (6195 B), that with the first loop's cross through
+// function_206092 1442 (6195 B; function_206092 alone re-measured 1405 at 6238 B); the friction ternaries in the order
+// local_62, local_64, local_63 on this body 1346 (same code); the else arm's residual as `local_60 = local_58;` then three
+// in-place `-=` 1426 (6259 B). All restored.
+// M3 lane 11 r157 (H2M_FAST with 0x2056e0, MATCH each run; control 1346, aligned 1399, register-masked 1100). The frame's
+// scalar area is 0x44 bytes (17 cells) larger than retail's (cells 0x10..0x1ac against 0x10..0x168; the aggregates then
+// start 0x44 higher). The first loop's cross through function_206092 1405 (6238 B, aligned 1403, masked 1126: retail's
+// length but further off); the steering factor's product written field_8c first 1346 (same code: ours still loads field_8c
+// first where retail loads the definition's +0x30 first); the sign applied as `*=` 1346 (same code), as a negation under
+// an if 1396; local_13's sign factor in reals 1402. Body unchanged.
+// M3 lane 2 r139 (h2m fast with 0x2056e0, MATCH each run; control 1346, register-masked aligned 896). Retail aligns two
+// forward-only joins in the contact pass as if they were loop heads (0x207420 after the impact block and its skip arm,
+// padded behind a `jmp`; the latch 0x207640 behind `mov edi, edi`) and does not align the wheel loop's head, where ours
+// pads the wheel loop and neither join. Forms: the disabled contact's skip call with `continue` at the top of the pass
+// (no else) 1351 (6238 B, retail's length; masked 908), with the result returned as `return !local_34 && ... ;` 1349
+// (6243 B), with the magnitude helper reading its input directly 1634 (5990 B) and with both 1618 (6006 B); the wheel
+// loop's cross through function_206092 re-measured 1405, with the `continue` 1425 (6211 B), with both other forms 1411
+// (6238 B). The `continue` form does not pad the latch. Body unchanged.
+// M3 lane 13 r149 (H2M_FAST with 0x2056e0, MATCH each run; control 1346): one `long local_6` counter for the wheel and
+// contact loops (retail keeps both counters in one slot) 1345 (frame unchanged, ours already shares the slot); that on the
+// direct magnitude helper (re-measured 1624, 5990 B, frame 0x590) 1626; in the slip arm, the sqrt of 0.9 times the friction
+// term computed ahead of the normalisation of the copied direction (retail interleaves that sqrt with the copy) 1428 (6256
+// B); that with the scale helper as three component statements 1371 (6224 B); both on the direct magnitude helper 1665
+// (5986 B). LEAD, not kept: with the straight-line scale and the direct magnitude, the slip arm is retail's shape (the
+// normalised components stay in XMM registers, the factor is formed in SSE, three mulss and three stores) and the opcode
+// census moves to retail's (mulss 118 -> 126 against 127, fld 35 -> 32 against 29): retail's scale helper is straight-line
+// and its normalisation scalar-replaces the copy. Retail still has 25 more movss, three imul (the contact loop indexed from
+// its counter each pass) and a second ret. Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0x2056e0, MATCH each run; control 1346). Reading: retail's two exits are `mov eax, 1` and
+// `xor eax, eax` each with its own `add esp; ret`, the four pops ahead of the final tests (only EAX, ECX and EDX used
+// there), the shape matched bool functions such as 0x1ecef0 get from `return a && b ...;`. Here every spelling gives one
+// exit with `xor al, al` set ahead of the tests and `mov al, 1`: the result as `if (...) return true; return false;` 1345
+// (retail's 6238 B, frame 0x5cc: the result's cell goes), as `return !local_34 && ...;` 1345 (same code), as an early
+// `return false` on the negated chain 1345 (same code; the fast check flags these as building differently from the full
+// build); the magnitude helper reading its input directly 1624 (5990 B, frame 0x590) with or without the two returns.
+// The 0x5d0 frame and velocity homes remain. Typed point pointer/reference/direct access 1346/1346/1413.
+// Base-first shared point/both velocity sums 1346/1346; shared output sums 1346; read-only point definition 1346; ray-origin aggregate 1426.
+// NOT kept: direct typed reads reach 6238 bytes but regress at the same frame. The ray aggregate grows the body and the other forms tie.
+// M3 lane 12 r184 (h2m fast with 0x2056e0, MATCH each run; control 1346, aligned distance 1727; opcode census against
+// retail). The scale helper straight-line re-measured 1412 (6238 B, aligned 1514, frame 0x44 -> 0x3c over retail's); with
+// the magnitude read in place re-measured 1649 (5974 B, aligned 1514, frame exactly retail's 0x58c, 264 bytes short: 28
+// fewer movss, 7 fewer mulss, six more each of fld/fmul/fstp = the slip arm's factor and scale in x87 where retail
+// stores the early sqrt as a float and scales in SSE); the slip arm's sqrt ahead of the copy and normalisation
+// re-measured 1428 (6256 B, aligned 1477); all three 1665 (5986 B, aligned 1447, then 25 movss short). New on that
+// combination: the ending as `if (...) return true; return false;` 1619 (6031 B, aligned 1421, 9 movss short, but two
+// epilogues with 8 pops against retail's 4 pops ahead of the final tests); as one `return a && b && c && d;` 1621 (6002
+// B, aligned 1437). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -2280,6 +2280,79 @@ bool function_1900a5(long index);
 // 637 (diagnostic). Reading: the positional count is set by the request loop's instruction count (ours is 10 short ahead of
 // its 0x1934f0 call: retail's request flag in DL and the two counts stored before the clock) and by the polls' range
 // chains, neither keepable without a match.
+// output-driven user ordinal with ordered bound 816; output-driven user ordinal with equality bound 816;
+// separate slot test 643; separate identity sentinel test 643; nested slot and identity tests 643;
+// unavailable variant early continue 658; team exclusion early continue 643; three availability arms
+// 658.
+// NOT kept: The nested tests and team exclusion reproduce 643. The output cursor grows to 2910 bytes,
+// and the explicit unavailable path changes the branch layout. The user base and logon comparison remain
+// different.
+// The logon compare and validity-based cursor home still differ. A user cursor deriving the cache index scored 773,
+// with direct cache indexing 777. A cache cursor deriving the user index scored 816, with the user bound once 795.
+// Relational and equality bounds had identical scores. NOT kept because all forms added bytes and differences.
+// M3 lane 11 r154 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / masked 298 by
+// difflib with addresses, then registers too, masked): the opening test through the existing online_logon_connected()
+// with online_tasks.h included 743 (aligned 697, masked 304), as this file's own `connected` switch idiom 743, the helper's
+// result held in a named bool 743, `g_467214 != NONE && online_logon_connected()` 743 (all the same code: retail's `dec
+// eax`, but the users loop then loses its alignment pad: at that offset retail pads 9 bytes, a `jmp` over a 7-byte `lea`,
+// where ours drops a pad over 7 bytes). Diagnostic, reverted at once (the one flag trial): `/arch:SSE` on this file 759
+// (aligned 691), with the switch idiom 690 (aligned 687): 0x1900a5's expansion then selects with retail's `cmovne` (its
+// own file is SSE), but the users loop pad is still missing, so the pad is not the flag. Lead for the user: retail's
+// 0x1900a5 expansion here uses cmov, so retail built this function with `/arch:SSE`.
+// M3 lane 3 r298 (h2m fast with 0x75790, 0x749b0, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / registers
+// masked 298): `inline` on 0x75790's definition (the completion loop's only out-of-line callee, to drop its memory
+// summary) 643 (same code: the property count is still hoisted); the users loop's group index as `dword` 715 (2878 B);
+// the team and failed flags renamed to sort first, or those two and the valid flag renamed to sort last, 643 each (same
+// code: the shared byte cell stays at +0x17 against retail's +0x13); the delay as an `else if` / `else` pair 643 (same
+// code, still `setg`).
+// M3 lane 12 r178 (h2m fast, control 643 at 2862 B; rows 157 to the end are all one or more instructions off, so a real
+// fix only shows once the instruction counts ahead of it agree). Diagnostic, restored: with this file's `connected`
+// switch idiom for the logon test (retail's `dec eax`, 743) and the users loop bounded by an undefined extern instead of
+// 4, the loop head gets its `jmp` + pad again (758, 2878 B): the build pads a loop head by more than 7 bytes only when
+// the trip count is not a known constant, so retail's 9-byte pad says its users loop was not a constant-count loop when
+// the pad was decided (it has the pad with the user getters expanded, lane 7 r185's lead). Loop spellings on the
+// switch idiom, none brings the pad back: a `short` index 750, a `dword` index 750, do/while with `++group < 4` 743, the
+// bound as the user table's element count 743; without the idiom the `short` and `dword` indices 715 / 715 (2878 B), the
+// do/while 643 (same code). A 32-combination grid of five forms on the current body (a: the switch idiom; b: the
+// builder's free space named and tested `> 0`; c: the last request time in a two-use local ahead of the request test;
+// d: the last write time in a two-use local ahead of the write test; f: `failed = true` in the incomplete arm): a 743,
+// b 663, c 645, d 637, f 679, ab 758, ac 743, ad 744, af 776, bc 666, bd 662, bf 695, cd 639, cf 681, df 678, abc 758,
+// abd 756, abf 789, acd 744, acf 776, adf 775, bcd 665, bcf 698, bdf 695, cdf 680, abcd 756, abcf 789, abdf 789, acdf 775,
+// bcdf 698, abcdf 789 (sizes 2814 to 2862 B). The lowest is d alone, 6 under the control and under the keep bar.
+// Reading of retail's request loop (0x74d40 to 0x74f2b), for the next round: a byte flag in DL is set for state 1
+// and the state-4 time test jumps past its test; the record cursor (EBX, +0x14 into the record) and a property cursor
+// (EBP, stepped by 0x60) are both carried; the count 6 sits in ESI for the count store, the `properties_used` add (ahead
+// of the fill loop) and the fill loop's bound; `existing`, `records_used` and `properties_used` stay in their homes
+// inside the scan loop and are loaded into ESI/EDI at the inner latch. Retail's write poll tests the range first
+// (`state < 0` to the release, `state <= 1` to the return) and `state == 2` inside it.
+// M3 lane 6 r233 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643, aligned 699 / masked 256):
+// the property fill written through the global property array (`g_50cbf8[properties_used + j]`, no record re-reads),
+// bound `record->count` 677 (2894 B); bound 6 with `properties_used += 6` 669 (2846 B); those two with the last write
+// time in a two-use local 678 / 669; bound 6 with `+= 6` and the free space named (`record_space`, `property_space`,
+// tested `> 0`) 645 at retail's 2862 B (aligned 453 / masked 258: the frame grows to 0xc8, and with no aliasing store
+// the player state stays in EBP, where retail re-reads it, so the property cursor loses EBP); that with the last write
+// local 645; bound 6 with `+= record->count` and the named space 645; bound `record->count` with the named space 689.
+// Reading: retail re-reads the state after the fill, so its fill stores go through a pointer that may alias it.
+// M3 lane 2 r143 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643): the two request counts
+// zeroed by one chained assignment 643 (same code); the clock read ahead of the two zeroed counts 646; the write poll's
+// pending test as `state == 0 || state == 1` 643 (same code); the received count as `dword` 643 (same code); `if (received
+// != 6) failed = true;` for the `failed = failed || ...` update 679 (2830 B). Reading: retail lays out the request's
+// failure arm (the expanded restore loop, then the failure count) ahead of the read poll, and tests that poll's range
+// (`jl`, `cmp 1; jle`, `cmp 2; jne`) before the completion block. Body unchanged.
+// M3 lane 4 r256 (h2m fast with 0x72700, 0x75890 and 0x75870; control 643 at 2862 B, aligned 440; body unchanged). The
+// function does not answer to names, declaration order or the number of locals: the request outputs' third local renamed
+// to sort first or last 643 / 643, the team flag renamed to sort first or last 643 / 643 (same-size slots do not follow
+// the names here: retail has the request's third output at +0x28 beside the other two, ours at +0x30; the team byte at
+// +0x13, ours +0x17), the flag pair declared team first 643, the request outputs declared third-first, or in three other
+// orders 643 each, and 1 to 8 unused initialised longs at the top (diagnostic) 643 each; every one is the same code.
+// What is left is not a spelling: the users cursor (retail the record itself in a stack cell, with the copy chain of
+// expanded pointer getters), the slot test's conditional move and the elapsed-time copy, as the lines above record.
+// M3 lane 2 r145 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643; body unchanged): the delay
+// as `> 3 ? 300000 : 2000` (retail's `setle` and 0x7d0 base; an arm swap, match-only) 640; that with the last request
+// time in a two-use local 642; with the last write time in a two-use local 634 (the local alone 637, re-measured); with
+// both locals 636; the write poll's pending range as an early return ahead of the state-2 test 643 (same code), nested
+// under `state >= 0` 643 (same code); either with the last write local 660 (2846 B), with both locals 662. The 634 form
+// needs the arm swap, so nothing is kept.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

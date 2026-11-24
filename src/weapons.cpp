@@ -1973,6 +1973,74 @@ static inline bool unit_dual_wielding(long unit_index)
 // getter 21; both helpers `__forceinline` 2; the existing weapon_get_owner_unit_index in place of the holder helper 2
 // (same code; on main's body 17, same code); redundant parens around the animation test, the put-away NONE test, the
 // gate's state read, the 0xc9d00 argument, the holder call or the animation-pointer sum 2 each (same code).
+// M3 lane 3 r296 (H2M_FAST with 0xc9d00 and 0x1058b0, both MATCH each time): the 2 form rebuilt (2: lookup 4
+// `[esi+ecx+8]` where retail has `[ecx+esi+8]`, the put-away lookup the reverse). On the 0xc9d00-call form: early returns
+// in place of `result` (gate `if (!immediate && !replaceable) return false;`, `return true`) 121 (520 B); `result`
+// declared bare and assigned false in an else arm 121 (520 B), with weapon_get_102e10 at lookup 1 121. On the 2 form:
+// the animation test and the holder helper both through weapon_get_102e10 2; the put-away pointer `s_weapon const *` 2;
+// renames of the put-away pointer, `current` and `weapon` 2 each (inert).
+// M3 lane 4 r249 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time), on the 2 form rebuilt (2): the holder helper's
+// weapon read as `(&headers[index])->weapon` (0x101f20's spelling) 2; the weapon-kind value set in an if/else with no
+// initialiser 39; the holder and dual-wield tests in one inline helper taking the weapon index 2; the definition read
+// through a second weapon lookup 2 (the 2s the same code); the animation test's index cast to short before the mask 104
+// (545 B, the offset is no longer shared).
+// M3 lane 1 r157 (h2m fast with 0xc9d00 and 0x1058b0, both MATCH each time; control 17). Rebuilt: the 2 form (0xc9d00 call,
+// `result` first, weapon_get_102e10 at lookup 1) 2, the two rows left being base/index swaps (animation-test lookup `[esi +
+// ecx + 8]` for retail's `[ecx + esi + 8]`, put-away lookup the reverse), and the plain 0xc9d00-call form 27. Retail's own
+// 0x1058b0 and 0xc9d00 are data-first at every lookup, and retail's `mov eax, ecx` here is 0xc9d00's `mov eax, [pool +
+// 0x44]` forwarded from the put-away lookup's register, so retail's put-away data load is a single-use load when the
+// lookup is formed. On the 2 form, a file-local inline accessor returning the pool's header array as a one-pointer
+// aggregate by value (the form that matched 0x151b80): at the put-away lookup 14 (533 B: that lookup takes retail's `[esi
+// + eax + 8]`, but its data goes to EAX and 0xc9d00's load stays a second load, no copy); at the animation-test lookup
+// 206 (583 B, an 8-byte frame); at both 207 (584 B); at lookup 3 19 (533 B); at lookup 1 in place of the getter 20; at all
+// five 135 (551 B); in the dual-wield helper 201 (579 B). Pool-copy spellings (`s_record_pool *objects = g_4e0300;`
+// read once) in the dual-wield helper 2, that with a result flag as 0xcd660 has it 2, in the holder helper 2, in both 2
+// (all the same code). The state block as a call to the existing 0x1058b0 (`if (function_1058b0(weapon_index, 10,
+// immediate))`) re-measured 117 (503 B: 0x101f20 and 0xcd660 stay calls, every lookup data-first), with
+// weapon_get_102e10 at lookup 1 151 (525 B), that with `result` first 151. Diagnostic (a forced-inline file-local twin
+// of 0x1058b0's body with its own weapon index, state and force parameters, reverted): with the getter and `result`
+// first 2 (the 2 form's code), `result` after the loops 27, the result taken straight from the twin 49 (534 B), no
+// getter 27; so inlined formals do not move the two lookups either. Diagnostic on 0xc9d00's own lookups (a scratch edit of
+// its file, restored at once; the file is another lane's this round), with the 2 form here: its first unit read, both
+// reads, or both with no pool copy through a by-value header-array accessor 78 (540 B) each, and 0xc9d00 itself 83 and
+// 0x1058b0 49 with them, so 0xc9d00's reads are plain and the by-value form is not what separates its data load.
+// M3 lane 13 r145 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 0xc9d00-call form rebuilt 27, with
+// `result` first 4, with weapon_get_102e10 at lookup 1 as well 2): on the 2 form one, two or three redundant parenthesis
+// pairs around the b7360 argument, the lookup-3 initialiser, the gate's state read or the animation test's lookup 2 each
+// (twelve forms, same code: the address operand orders ignore parens). Diagnostics on the 2 form: the dual-wield test
+// removed 116 (501 B) or the whole holder test removed 239 (421 B) leave lookup 4 offset-first and the put-away lookup
+// data-first, so lookup 4's order does not come from its data load being shared with the unit lookups. On the
+// 0xc9d00-call form the put-away pointer as `current` reassigned 27 (same code); the 0xc9d00 call's unit argument read
+// again through the getter 67 (on the 2 form 42).
+// M3 lane 14 r149 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 2 form rebuilt 2): on the 2 form,
+// lookup 4 indexed by `(word)weapon_index` 104 (545 B, the offset is no longer shared); the put-away lookup indexed so 58
+// (536 B); the animation test as `NONE != ...` 2; the put-away NONE test as `NONE != put_away->unit_index` 2; the
+// dual-wield test written in the condition through WEAPON_UNIT_GET with no helper 2 (the 2s the same code).
+// M3 lane 14 r150 (h2m fast with 0xc9d00 and 0x1058b0, MATCH each time; control 17; the 2 form rebuilt 2, O O O O D against
+// retail's O O O D O). A two-use pool local (`s_record_pool *objects = g_4e0300;` in the gate block) is the first form
+// that gives the animation-test lookup retail's `[ecx + esi + 8]` at 532 B: with a named animation-test pointer through it
+// (the holder's two fields read through that pointer) and the dual-wield unit looked up through it as well 2, but the two
+// rows left are then lookup 3 and the put-away lookup, both data-first (O O D D D): a macro lookup whose pool load is
+// followed by a pool local's own load of the global takes that local as its pool and goes data-first, which is also what
+// 0xc9d00's pool copy does to the put-away lookup in every 0xc9d00-call form. On that form: the local declared after or
+// ahead of the b7360 call 2 (same code), at the function's top 197 (576 B); `result` after lookup 3 27, no getter at lookup
+// 1 4 (D D D D D), both 27; the getter at lookup 3, at the put-away lookup, at both 2 (same code); a second macro lookup
+// beside lookup 3 for the gate's state read 2 (same code: equal lookups fold to one), a second one at the put-away test or
+// for 0xc9d00's unit argument 42. Lookup 3 keeps its order only when another macro lookup follows the local: the test
+// through the local with the holder helper as is 206 (583 B: lookup 3 O, lookup 4 D, but the helper's lookup is repeated
+// through a `mov edx, ecx` copy and the frame grows), the test and the holder each through the local with the dual-wield
+// helper as is 200 (579 B). The local used once (the dual-wield helper as is) 2, and a two-use header-array local in its
+// place 2 (both the 2 form's code: they are forwarded). Diagnostics: the three helpers as functions of another unit that
+// the link-time inliner expands 2 (the 2 form's code, so the order is not set per unit); the existing 0xbf5a0 for the
+// animation test 106 (547 B, it stays a call). Left: a form that puts only the animation-test group on a pool local
+// without that local, or 0xc9d00's, taking over the lookups ahead of them.
+// M3 lane 7 r223 (h2m fast; control 17): the reassociation order reads each lookup as ADD(offset, pool data, 8), a
+// CSE temp ranked by its value-table number and a single-use data load ranked above every temp; on every 0xc9d00-call
+// form the put-away lookup's reloaded data is used once (0xc9d00's own load stays a separate value, later forwarded as
+// `mov eax, ecx`), so it stays data-first. Tried: weapon_get_102e10 at every subset of the six weapon lookups (63 forms
+// on this body) 15 with lookup 1 in the subset, 17 without; that with `result` declared first 15; that with the put-away
+// re-fetch assigned to `weapon` 152 (526 B). Diagnostics (reverted): on the 2 form a dead holder-unit lookup ahead of
+// the 0xc9d00 call 42; 0xc9d00's second read through UNIT_GET (its own file) 41, with 0xc9d00 at 131.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -3511,10 +3579,41 @@ struct s_ammo_conversion_entry
 // Conversion candidate as mutable or const reference before the match test 214/214;
 // with an unequal-entry continue 214/214; the same four forms as a pointer 214/214/214/214.
 // NOT kept: all shorten the body to 712 bytes and leave the first saved-register difference.
+// Promoted ordinal for both destination rows 211, both runtime rows 190, definition and source 190,
+// all three 190, all three with runtime row declared first 197, and source branch only 190.
+// Same-definition predicate with separate source observations 234, also with shared source key 234.
+// NOT kept: The four ties preserve the exchanged saved roles. Both separate-source forms grow to 760 bytes.
 // Retail saves EBP for the destination and defers EDI until the magazine loop. The frame is 0x20 in both.
 // Conversion miss joined as zero, success/failure first 190/190; arm-owned source with both joins 218/218.
 // Conditional conversion cap at the join 190; signed pickup amount short/long 200/207; short with joined miss 200.
 // NOT kept: the joined conversion paths tie or shorten the body, and holding the pickup amount adds a frame word. The caller and both callee controls retain their scores.
+// M3 lane 11 r157 (H2M_FAST; control 190): lane 2 r110's 52 lead rebuilt 52; on it the conversion clamp written like the
+// unloaded clamp (`count > available ? available : count`) 51 at 731 B, register-masked 2 (retail's 16-bit count load and
+// flag store order then agree); left only the loop's ECX/EDX pair (offset 16 in ECX for retail's EDX, base and source in
+// EDX for retail's ECX) and the tail's scratch phase from the 0xa88a0 call on. Compile-only screens on the 51 form (the
+// loop's pair reproduces there): the four sum forms, source/transfer declaration places and order, the magazine
+// definition first (pair right, index in ECX and base in EDI), references to the magazine, definition or source, a long
+// index or available, a redundant loop guard, flag initialisation orders, compare operand orders, `continue` for the
+// capacity and mode tests, the clamp as if/MIN/swapped ternaries: the pair never flips; with no clamp in the same-
+// definition arm (diagnostic) it does. Available clamped in place with a `continue` on a scan miss 165 (fast; offset 16
+// right, available and source then swap ECX/ESI). Tail: the call's count in a named long or short local, the sound
+// store as a block, the existing-object pointer for the last lookup 51 each (same phase). On main's body the gt clamp
+// alone 190 (same code). Lead saved as build/r157/lead-0xffc60-51.patch. Permuter on the 51 form (900 s, 66 tries): best 51.
+// More tail forms on the 51 form (H2M_FAST): the sound picked by if/else 51, both NONE compares written constant first 51
+// (same phase each), the other's definition re-derived through the pool for the sound 110 (747 B), `retained` as false
+// plus an if 136 (741 B).
+// M3 lane 11 r164 (H2M_FAST with 0xa88a0, 0x1896c0, both MATCH; round 157's 51 lead rebuilt, 51). Reading on the lead:
+// the loop's ECX/EDX pair is a colouring order: the `i * 16` magazine offset (priority 166) is coloured before `source`
+// (156) and takes ECX first; retail's pair follows when `source` outranks it. `source` loses 96 for being live but
+// unreferenced across the conversion scan (16 blocks); the offset gains 128 in the loop head (eight candidates
+// referenced there). With the offset forced into EDX (a diagnostic, not source) the lead measures 14, the loop exact and
+// only the tail's scratch phase left (from the 0xa88a0 argument setup on the cursor starts one register later than
+// retail's). Tried on the lead: `source` set to NULL in the conversion arm after the scan (not at its declaration) 162;
+// set to NULL at the start of the conversion arm 173 (732 B); the other definition's type byte read once into a local
+// (with the forced offset) 130 (an extra frame cell); the magazine definition pointer formed only in the conversion arm,
+// the loop head reading the field through the definition, 208 (713 B); the same-definition sum read through `source`
+// for both operands (re-measured: it does flip the loop pair) 204 (718 B: the weapon and the other weapon swap
+// EBX/EBP and the loop entry changes).
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3625,10 +3724,13 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 {
     s_weapon_unit *unit = (s_weapon_unit *)function_badc0(unit_index, 3);
-    return unit ? unit->player_index : NONE;
+    long result = NONE;
+    if (unit)
+        result = unit->player_index;
+    return result;
 }
 
-// score 603 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
+// score 593 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
 // where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
 // MiniMax I (11-20): no new form, no lower score (636): the prologue keeps the barrel index in EBX where retail keeps the weapon index, reads the barrel's flag byte into CL where retail tests it in memory, and the definition sits at [esp+0x28] where retail has it at [esp+0x14], so the copy-out loop and the rest of the body differ as well.
 // MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
@@ -3880,6 +3982,66 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // the sentinel test 603. NOT kept: the 568 form shares the first selector load
 // with sign extension where retail reads twice. The later binding restores
 // those reads and ties. Required rounds and the original field reads restored.
+// M3 lane 3 r301 (fast with 0x101db0 and 0x159dd0 listed, which agrees with the plain check; control 603). Reached 566
+// (2538 bytes): `scale_a = 0.0f` in the not-fired arm (retail stores it there at 0x103462, as in the other two arms)
+// 574; with the player-index helper's result preset and set under its test (retail's `or ecx, -1` at 0x10379c) 570;
+// with the marker count as a long (retail sign-extends the call result once at 0x1038c3, then compares and divides a
+// dword) 570; the three 566. On the kept form with the target select: the effect target as a select in the 0xd03e0
+// call 566 (2537 bytes, no gain, not kept); the event arguments as constant selects 591; the notification written in
+// each arm of the rounds test 603; the unit index plain 648 (2508 bytes, frame 0x1c60), with the magazine definition
+// declared first 605 (2540 bytes).
+// Review (r301): not kept. The not-fired `scale_a = 0.0f` repeats the declaration's zero (a redundant statement counts
+// only with a match); without it the preset helper result and the long count read 598, under the 8-point bar, so
+// main's body stays at 603. The 574/566 steps and the 555 set above are leads for a match.
+// The closest structure reached (aligned difference count 285 against main's 349, register-masked 105 against 184,
+// 634 instructions as retail): the unit index plain, the magazine definition declared before the magazine pointer, the
+// barrel pointer declared right after the weapon (0x104150's order: the prologue then computes in retail's order and
+// the homes are retail's, [esp+0x14] definition, [esp+0x18] barrel offset, [esp+0x24] unit index), the constant
+// selects, the not-fired store, the target select, the notification in each arm, the preset helper and the long count:
+// 555 (2525 bytes, frame 0x1c5c). It needs both declaration orders, which count only with a match; without them the
+// same set reads 627 (645 without the notification form, and 638 / 626 / 632 / 625 / 625 less one form each).
+// Steps toward it, all on the plain unit index: alone 648 (2506 bytes); the magazine definition first 571 (2538
+// bytes; the fired block from 0x10355f is then retail's nearly instruction for instruction); the barrel pointer first
+// on that 617, without the magazine order 651; on the barrel-first form the constant selects 627, the not-fired store
+// 595, the target select 617, the three 632 (2545 bytes); on those the notification in each arm 629 (2533 bytes,
+// frame 0x1c5c), the preset helper 630, the long count 628.
+// What is left there is one entry role: retail loads the weapon index into EBX right after `push ebx`, keeps the
+// barrel offset in EDI and never gives the definition a register; this build keeps the definition in EDI and the
+// offset in EBX and reads the weapon index from its home. A second 0xb7360 call at the entry (a diagnostic: one more
+// unconditional use of the weapon index) gives retail's set, the definition computed in ECX and stored, with the
+// weapon index in EDI and the offset in EBX, 631; the same extra use in the fired block 623, at the tail 604 or as
+// the notification in each arm does not move it, nor do one or two fewer definition uses in the fired block (645,
+// 667) or the owner lookup written in place (same code; with fresh weapon lookups 626). The same call at the top of
+// the effect block (a diagnostic) 507 (2541 bytes, frame 0x1c60): it stops the random-state pointer being loaded
+// ahead of the effect tests, where retail loads it at each use.
+// On the kept 566 form, none lower: the effect entry pointer formed ahead of the two barrel stores in the selection
+// loop (retail loads the effect table before them) 631 (2524 bytes, frame 0x1c5c, register-masked 148 against 180);
+// the shake amount of the 0x187510 call named before the call 566 (same code); `burst + 1` named before the two
+// barrel stores 566 (same code); the effect mode as a long 611; the barrel pointer declared right after the weapon
+// 568; the magazine definition declared first 649 (2551 bytes, frame 0x1c60).
+// M3 lane 11 r157 (plain; control 603): ours keeps `barrel_index != 0` from the 0x105fa0 argument in a stack cell for the
+// 0x1058b0 call (the extra frame word: `mov [esp+0x24], eax` in both arms, `inc` of the reload later); retail recomputes it
+// there with xor/cmp/setne/inc. The second call's trigger as `barrel_index ? 2 : 1` 600 at 2538 B (aligned 349 -> 320; the
+// reduced image then has retail's 0x1c60 frame, the full one still 0x1c64: the magazine pointer and the movsx'd loaded
+// count still take two cells where retail keeps the magazine definition in EBX); that with the unit index not volatile 646
+// at 2507 B (aligned 255, register-masked 153 against 238: structurally the closest form so far); both trigger arguments
+// as ternaries 636 fast (same code as the first); the first as `(barrel_index != 0) + (failure ? 3 : 1)` 631 fast at 2512 B.
+// The effect loop: retail hoists `movzx eax, word` for the mask test and reloads the mask (xor/mov) for the `|=`, ours
+// hoists a 16-bit load and reuses it for the `|=`; compile-only, the test as dword/long/word-masked/operands swapped, the
+// `|=` as an assignment or without its cast, and named mask/index/ticks fields in the barrel record: same code each (with
+// no `|=` at all, diagnostic, the hoist becomes retail's movzx and the bit goes to EBX as retail). Body unchanged.
+// M3 lane 11 r164 (H2M_FAST with 0x101db0, 0x159dd0, 0x101b10, 0x101b80, all MATCH; control 603). Behaviour fix: the
+// marker-name call passed the weapon and barrel indices to 0x101b10 the other way round; retail sets up ECX = the barrel
+// index and EDX = the weapon index there, the definition's order, as the matched 0x101b80 does (603, same count). Kept
+// (593 at retail's 2533 B): the marker count as a `long` (retail sign-extends 0xb8d30's short result once and compares
+// and divides the dword) 599 alone; with the second event call's trigger as `barrel_index ? 2 : 1` (retail computes
+// `setne; inc` again there; ours kept the first call's `barrel_index != 0` in a stack cell) 596; with the first call's
+// arguments as selects too 596; with the player-index helper as a single-exit result preset to NONE (retail's `or ecx,
+// -1` there) 593 (both calls written as selects, so one spelling). Measured without parts: without the long count 597,
+// without the second call's select 598; the effect target as a select in the 0xd03e0 call on the kept set 594, on the set
+// without the long count 596. Reading (frame and colouring traces): ours has 17 dword cells against retail's 16, and
+// the weapon index (a parameter) is never coloured (live across 93 unreferenced blocks to the tail's marker calls), where
+// retail holds it in EBX from the entry to the fire call; no single forced allocator decision reaches retail.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -3991,7 +4153,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
         barrel->value06 += (short)(burst + 1);
         ++WEAPON_BYTE_AT(barrel, 0x2e);
         WEAPON_LONG_AT(weapon, 0x248) = g_510c54->game_time;
-        function_105fa0(weapon_index, failure ? (barrel_index != 0) + 3 : (barrel_index != 0) + 1);
+        function_105fa0(weapon_index, failure ? (barrel_index ? 4 : 3) : (barrel_index ? 2 : 1));
         s_weapon *updated = WEAPON_GET(weapon_index);
         s_weapon_barrel_definition *updated_definition = &WEAPON_DEFINITION(updated)->barrels[barrel_index];
         if (updated_definition->value_9c > 0.0f && !TEST_FIELD_BIT(updated_definition->flag4))
@@ -4015,7 +4177,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             WEAPON_REAL_AT(weapon, 0x180) = 1.0f;
         if (!TEST_FIELD_BIT(definition->flag26))
             function_101db0(weapon_index, barrel_definition->value_a8);
-        function_1058b0(weapon_index, (barrel_index != 0) + 1, false);
+        function_1058b0(weapon_index, barrel_index ? 2 : 1, false);
         if (!failure)
         {
             barrel->flag1 = true;
@@ -4053,9 +4215,9 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
     if (WEAPON_BIT_AT(barrel_definition, 0, 12))
     {
         s_object_marker markers[64];
-        long marker_name = function_101b10(weapon_index, barrel_index);
+        long marker_name = function_101b10(barrel_index, weapon_index);
         long owner_index = function_101ec0(weapon_index);
-        short count = function_b8d30(owner_index, marker_name, markers, 64, false);
+        long count = function_b8d30(owner_index, marker_name, markers, 64, false);
         if (count >= 1)
         {
             long selected = WEAPON_BYTE_AT(barrel, 0x2e) % count;
@@ -4396,6 +4558,34 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // for presence/absence 1422/1422. Shared trigger test from the signed player
 // index 1419 or from a selected index 1442. NOT kept: all regress and
 // hold a 0x30 frame against retail's 0x38. The signed player index is restored.
+// M3 lane 3 r301 (fast, control 1412): lane 4's saved reconstruction re-measured on today's file 1661 (5872 bytes).
+// On it, diagnostics for the EBP contest between the weapon index and the weapon pointer: one fewer unconditional use
+// of the index at the entry 1686, another 1661, both 1675; the animation offset read from the weapon pointer instead
+// of a fresh lookup 1664 (5856 bytes), with both 1670: the weapon index keeps EBP from the entry in all of them. On
+// this body: the barrel's stop tests as an else-if chain with finished/stopped declared ahead of the blocked test
+// 1437 (5704 bytes), the chain alone 1436, the animation offset from the weapon pointer 1477 (5652 bytes; retail
+// looks the weapon up again there through the saved header offset), both 1466, the owner lookup nested in the scale
+// call 1412 (same code).
+// M3 lane 11 r157 (H2M_FAST; control 1412 at 5684 B, aligned 1450, register-masked 1158): retail holds the 0x105e80
+// result as a byte (BL, stored to its byte cell at each set and read back at the return); `bool result` 1494 (5616 B).
+// The flags word at weapon+0x16c: retail tests its bits with a byte load and shr/test and sets/clears them with byte
+// memory RMWs (one word load at the overheated read); a word bitfield record there (eight one-bit fields overlaid on the word)
+// with every 0x16c access in this body through it 1419 (same length; the clears become retail's memory RMW, the sets a
+// word RMW); byte bitfields 1412 (same code as the byte macro); word bitfields with the tests through TEST_FIELD_BIT 1487
+// (5716 B); the 0xf9 clear as a word `&=` or two bit clears 1447 each. Retail branches with a load in each arm for the
+// state-change tag and the cooling rate: `increasing ? WEAPON_LONG_AT(definition, 0x248) : WEAPON_LONG_AT(definition,
+// 0x250)` 1412 (aligned 1447, masked 1153; retail's shape), the rate the same way 1417, both 1416 (aligned 1443, masked
+// 1146). Body unchanged.
+// M3 lane 11 r164 (H2M_FAST with 0x105e80; control 1412). Reading of the frame: it is under 0x80 bytes, so its cells keep
+// the order they were made in (reference count, then the order each reached its count), and the dead argument home is
+// tried first: our barrel-loop `active` byte takes the weapon index's argument home (ours holds the index in a register
+// through the barrel loop, so its home is dead there); retail reads the index from its home in that loop and gives
+// `active` the byte cell it shares with `up`. Retail's frame also has a byte result, a byte for behaviour 4's control
+// bit and a cell for the heat byte's old value that ours does not, so the 0x34/0x38 gap is several cells, not one.
+// Tried: the player default stored after the scale override (retail's NONE store follows the override's test) 1437;
+// the heat byte's sum written `old + increment` 1412; the old value and the increment declared the other way round
+// 1412; the tick clamp as an if before the store 1412; the 0x194 validity test as nested ifs 1412 (the 1412s the same
+// code).
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5043,6 +5233,9 @@ struct s_weapon_projectile_creation
 // 1215. Shared dot and projected products before complete result or direct output
 // 1138/1215. NOT kept: the 0x1e9c frame forms shorten the body to 5125–5141 bytes
 // and raise the score. The separate clipping point and opening rotation remain.
+// Rotation result by value, explicit destination, returned destination, or staged component stores:
+// saved axis 1121/1121/1121/1239, direct marker axis 1141/1141/1141/1273.
+// NOT kept: the saved-axis result forms tie. The separate clipped point and retail frame remain.
 // The rotation still needs the retail scalar homes at the 0x1e98 frame.
 // Dot before cosine, cross before cosine, dot then cross, or cross then dot:
 // vector result 1121 each, staged scalar result stores 1239 each.
@@ -5051,6 +5244,23 @@ struct s_weapon_projectile_creation
 // separate results 1214/1210, direct marker input with separate results 1273/1273, or direct marker input
 // with a shared result 1142/1142. NOT kept: one result for the saved inputs recovers 0x1e98 and first +0x75
 // at 5195 bytes, but raises the score. The separate trace point and original rotations remain.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both weapon_emission_rotate calls through include/axis_rotation.h's helper 1190 (5150 B). Restored.
+// M3 lane 3 r301 (fast, control 1121; lane 8's saved lead re-measured 1039): each marker's position read through a
+// pointer inside the averaging loop (three uses) 1121: the loop is then retail's instruction for instruction, the
+// pointer anchored at z (1040 on the lead); a lead, no gain here. The scaling after it as `reciprocal * average.x`,
+// `average.x *= 1.0f / (real)marker_count`, `average.x /= count`, through a pointer to the average or with (real)
+// casts on the products: the same code each in a compile-only screen (retail multiplies the sums in place). The game
+// mode through a long-returning inline accessor used by the function and the mode-4 helper 1121 (same code).
+// Diagnostics on the lead: compiled without link-time code generation it shows retail's seven zero sites exactly
+// (xmm0 at the marker loop top, xmm1 at the speed clamp, a memory compare for the aim test, xmm7 after the 0xb7930
+// call, after the cone call and in the unit-velocity block, a memory compare after the creation call); an
+// unsummarised call right after the 0xb7930 call gives the same seven sites in the linked image and loads all three
+// direction components into registers ahead of the speed dot product, 1096 (5216 bytes); the three loop-top resets as
+// integer stores 962 (5199 bytes, frame 0x1ea0; a cast that only steers). So the open cause is one fact: retail sets
+// the zero again after the 0xb7930 call in the projectile loop (0x104d91) where this build keeps xmm7 across that
+// call. The callee writes only xmm0 and retail's 0x293130 keeps xmm2 across it, and 307 of the 311 retail call sites
+// that keep an xmm register across a call fit exact kill sets of the callee, so retail does know the callee's set
+// and still does not carry the zero into the loop.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

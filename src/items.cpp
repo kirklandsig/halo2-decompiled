@@ -946,6 +946,16 @@ struct s_item_collision_bsp
 // separate aggregates 269/269, separate vector setters 269/269, reused row setter 194/194,
 // and a three-axis matrix 273/273. NOT kept: the reused row leaves the normal coefficients
 // in other registers at 1366 bytes. The other forms grow to 1392 bytes.
+// Dead normal scaled in place with field point publication 247 / In-place scale and point setter 247 /
+// In-place scale and indexed point publication 247 / In-place scale and translated marker copy 283 /
+// Marker point translated in place 200 / Corrected coordinates in dead normal with setter 247 /
+// Corrected coordinates in dead normal with point initializer 247 / Corrected coordinates in dead normal
+// by index 247.
+// NOT kept: Reusing the normal makes the contact block longer, and the marker-point form reaches 200 at
+// 1378 bytes. The earlier instance-plane coefficient homes still differ.
+// The transformed-plane XMM homes and contact slot still differ. Angular impulse, contact point and travel speed slot names 190/190/190.
+// Conditional const axis 259; shared double-factor vector scale in the axial arm, fallback arm, both arms or at the joined spin 239/239/238/319.
+// NOT kept: the names tie and none of the scale forms recovers the pending x87 factor at a lower score.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1281,6 +1291,21 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // same-tree projection 245, cross before root 245, early half-root 249, half-root after projection 245,
 // named doubled scalar 245. NOT kept: removing the scaled-axis address this way retains the frame
 // excess and grows the body to 909–919 bytes.
+// Scale and accumulate projection 200 / Native projection-product loop 168 / In-place scale and
+// projection with setter 188 / In-place last-use components 205 / In-place deferred rows 174 / Split
+// alignment with in-place setter 166 / In-place workspace in both branches 161 / Shared cross and
+// uniform rotation loop 220.
+// NOT kept: The both-branch workspace recovers frame 0xb4 and 848 bytes at 161 differences. The
+// alignment and projection-product forms also recover the frame and raise the score. Retail still
+// retains the scaled axis in different registers.
+// The 0xc0 frame and scaled-axis spill remain. Output cross/scale with scalar or vector capture 200/234.
+// Separate cross scaled into output, with a final setter or scalar capture 183/202.
+// Separate alignment via the item/shared dot with output cross 167/167, with separate cross 168/168.
+// NOT kept: the best output-plus-dot forms recover 0xb4 but raise the score and remain seven bytes long.
+// The scaled axis spill and initial product order remain. scale projection in place 151, name lateral subtotal
+// 130, scale final expression from lateral subtotal 130, shared marker transform pointer 165, ordinary dot for
+// alignment 130, shared fallback side cross 130, shared fallback result cross 130, staged axis cross and in-
+// place projection scale 151.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1800,6 +1825,15 @@ struct s_item_flags_view_10b850
 // copied-origin component or indexed integration 886/905, early ray setter 824,
 // paired point and displacement setters 824, and component writes through the query origin 824.
 // NOT kept: the tied forms retain the 0x154 frame. The point setter alone shortens the body and the copied-origin forms grow it.
+// Shared forward/up spin cosine, sine, or both 852/853/848; shared axis 932;
+// axis with cosine, sine, or both 872/878/878; all with shared cosine complement 861.
+// NOT kept: all raise the score and retain or expand the 0x154 frame. Entry Boolean and motion homes remain.
+// Settle eligibility from floor fallback, conditional fallback, slow gate, slow selection, rejected-floor
+// fallback, surface arms, qualified publication, shared support and bounce rejection
+// 859/862/871/871/892/886/817/875/903. NOT kept: the seven-point lead grows to 4099 bytes and retains frame
+// 0x154. Entry flag bytes and low motion homes still differ.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the four item_spin_vector calls through include/axis_rotation.h's helper (the item's axis, sine and
+// cosine) 865 (4143 B); the first two only 829. Restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

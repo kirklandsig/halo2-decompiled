@@ -76,16 +76,22 @@ address range or by source file:
    - You may claim one source file, or an address range of up to 0x2000
      bytes, inside any maintainer lane, and the lanes then leave it alone.
    - Only another person's claim (an `@user` row) is off limits.
-   - A claim with no activity for two weeks lapses.
+   - A claim stays held while it shows work: a pushed match or score gain
+     on one of its functions within 48 hours of the claim, and again within
+     every 48 hours after that. Otherwise it lapses and its functions are
+     open to everyone. Earlier work and credit stay, and it can be claimed
+     again.
    - Havok, the physics library (rows with `owner` `third:havok`, mostly
      `0x2d0000`–`0x31ffff`), is open for claims the same way.
      `python tools/ready.py --owner third:havok` lists the ready functions,
      and [docs/DECOMPILING.md](docs/DECOMPILING.md#havok) has its flags and
      conventions.
    - Merged work is open for follow-up, but ask its author first, on the
-     issue or on their pull request. If they haven't answered within 7 days,
+     issue or on their pull request. If they haven't answered within 48 hours,
      others may go ahead. The author's work and credit stay, and the change
-     is noted on the issue.
+     is noted on the issue. Functions in merged work that don't match yet
+     follow the 48-hour rule above: without a pushed match or score gain
+     on them, they open to everyone.
 
    `python tools/open_work.py --claims claims.md` lists what is open, with
    the claim line to use. It takes a saved copy of the issue. A group of

@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "axis_rotation.h"
 #include "reciprocal_normalize.h"
 
 struct s_shape_contact;
@@ -680,7 +681,6 @@ struct s_physics_initial_state
  long material;
 };
 
-void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* src/unknown_1eb8a0.cpp */
 
 PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f *result)
 {
@@ -701,7 +701,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // vector's component with `movaps` and multiplies the axis from memory, ours loads the axis and multiplies by the vector's
 // register, and that swap moves the whole rotation block's register roles.
 // MiniMax I (11-20): no new form, no lower score (114): the first difference is still inside the shared rotation helper, whose source lives in another file, so the block copies and the side crosses are not this file's to change.
-// score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// score 111 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
 // axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated
 // vector's or the axis's components before the call, all 64 subsets: the axis reads change nothing, any vector read
@@ -1372,6 +1372,33 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // j/k with the axis's j/k differs. The shared rotation helper's dot written out `v.j*a.j + v.k*a.k + v.i*a.i` 111 (1393 B,
 // products unchanged), written axis-first 111 (same code); its cross terms computed j, k, i 114 and its rows projection
 // term first 114 (same code); the rotated copy renamed 114 (same code). Helper and body restored.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 111 (1393 B; plain
+// check agrees, every matched function of the file unchanged). KEPT as the shared spelling (count lowered).
+// M3 lane 14 r148 (fast; control 111): one redundant paren pair around a float expression (a velocity row, the rotation
+// angle product, the small-angle test) 109/110 at retail's 1382 B, two pairs 122/123 (1389 B), three 189/190 (1362 B);
+// around a bare identifier or the trig arguments 111 (no change): a period-4 shift of the later code, the rotation's
+// four products never move (steering, under the bar, not kept); the velocity rows reading `state->scale` at each use
+// 194 (1391 B), with one paren pair 197 (1382 B); the axis through a `vector3f const &` to `state->up` 111 (same code).
+// M3 lane 3 r302 (H2M_FAST with 0x1e5af0 and 0x1eb640, MATCH each run; control 111 at 1393 B, aligned exact/register-
+// masked 73/57). Same code (111 each): the rotation angle written `g_510c54->rate * angle`; `angle` declared ahead of
+// `movement`; the two cross vectors declared new-first. Lane 11 r141's single store re-measured on this base (the goal
+// copied into `rotated` under the side test, the flag set there, no early return, the one `state->forward = rotated;`
+// store) 111 at 1393 B but aligned 52/45 (both exits retail's load-all-then-store; a positional tie, not kept); with the
+// moved-away flag preset false and set by its `if` 108 at 1391 B, aligned 49/42 (match-only flag form); on that, the
+// side-dot product's operands swapped 108 (same code), the two cross calls swapped 94 at 1382 B but aligned 99/76
+// (positional only). Left on the 108 form: the rotation helper's four products (axis component loaded first where
+// retail copies the vector's register), the old cross's two products and the side dots' evaluation order. Body unchanged.
+// M3 lane 5 r242 (control 111 at 1393 B; A = instructions left unpaired after aligning the two listings, 76 at the
+// control; body unchanged). How the product sides are chosen: the operands of each float product are sorted by a rank,
+// equal ranks keeping their written order. In this build the axis' j and k reads (memory through the state pointer)
+// rank above every local, the rotated copy's three components, the projection and the two cross terms rank as locals
+// below them, and the axis' i read ranks below all of those; retail's sides need the copy's j and k at or above the
+// axis' j and k with the copy's i and the projection still under them, so retail's j and k do not rank as plain locals
+// of this function. Forms: one local for the movement vector and the rotated copy (retail's two share one home) 178
+// (A 205: the copy's components still rank as locals and every axis read is loaded first). Diagnostics on a file-local
+// copy of the rotation helper, each reverted at once: only the i component named 152 (A 187); no component named 112
+// (A 105); j and k named 118 (A 84); all three named 192 (A 185). None turns the four products of the copy's j and k
+// with the axis' j and k.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
@@ -1426,7 +1453,7 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
   {
    vector3f rotated = state->forward;
    real rotation = angle * g_510c54->rate;
-   rotate_direction(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
+   function_x84d9e8(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
    if (c && turning)
    {
     real alignment = dot3f(facing_goal, &state->forward);

@@ -223,6 +223,8 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
+// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax G (11-19): no new form, no lower score (334): the gate byte is still read from the folded address
 // (`mov al, byte [eax+edx+2]`) into AL and stored at [esp+0x1f], where retail adds the base to the index first, reads
 // the byte into DL and stores it at [esp+0x1b]; a pointer local for the datum (418), the shift chain in one statement
@@ -233,8 +235,6 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // imul eax,eax,0x190; add eax,edx` and reads the flag byte at `[eax+2]` where ours uses the two-register address
 // `[eax+edx+2]`, and the flag mask chain starts from `xor edx,edx; mov dx, word [ebp+2]` where ours zeroes EAX;
 // binding the datum to a pointer local of its own does not change the code (334). Body unchanged.
-// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
-// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
 // only adds a local holding a constant, which is on the reverted list, and one point is under the bar anyway; an
 // annealed run (19 tries) found nothing below the 334 of the baseline in either image.
@@ -1033,6 +1033,56 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // kept): the else arm's add-scaled as three field statements on the 358 form 356 (1652 B, aligned 121), alone on main 343.
 // Left on the 358 form: the scale rows' stores ahead of the y/z products, the 0x173ba0 argument setup, the collision call's
 // argument order and homes, and the gate's folded address. Body unchanged.
+// M3 lane 4 r247 (fast, 0x247fd0/0x248cc0 matched in each): the blended position as its own point3f (out of the grouped
+// workspace) 406 (1601 B, frame shrinks), with the workspace member left in place (unused, diagnostic) 390 (1617 B, the blend
+// sums then stay in XMM2-4 as retail); the in-loop lookup through the inline particle_object_for_tag 371 (1696 B), both lookups
+// through it 371 (same code, the first stays a call); in-loop lookup plus the separate position 361, with the unused member 359
+// (1648 B). Body unchanged.
+// M3 lane 2 r134 (H2M_FAST with 0x247fd0 and 0x248cc0, both MATCH throughout; main 334): diagnostic, reverted at once:
+// `optimize("", off)` then `optimize("gy", on)` around this function 334 (same code: no speed preference does not unfold
+// the base+index sites). Forms: the gate's effect record named and read through a `const &` 355 (first +0x43: the entry is
+// retail's to the flag update but for the flag byte's and the definition's homes, and the first draw's store into the
+// record member then shifts the rest); the age copy through a `real const &` to the field 334 (integer move); the 5-way
+// random pick in 0x247fd0's spelling 334; the allocated record indexed as 0x247fd0 does 334; on lane 1 r135's 317 lead
+// (re-measured 317, 1665 B) the velocity's effect record bound the same way under an if 322 (the prologue changes). Body
+// unchanged.
+// M3 lane 5 r235 (h2m fast with 0x247fd0 and 0x248cc0, both MATCH each time; control 334, aligned 246): the first draw into
+// its own scalar real with the workspace member kept 392 (the `fst` to the member goes, retail's draw, but the later
+// homes shift; aligned 248), with the member dropped 395; that scalar draw plus the cache test as `local_2 != arg_0->field_50`
+// 392; that cache test alone 333 (retail's `cmp ebp, [esi + 0x50]`, one point, under the bar); with the clear also written
+// `arg_0->field_44 = arg_0->field_44 & ~0xf80f` 333 (still the read-modify-write `and [esi + 0x44]`, where retail loads,
+// masks and stores). Body unchanged.
+// M3 lane 15 r136 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334): the three later draws each into
+// a block-scoped sample local 338; the allocation list linked through a `long *` to the list head 334 (same code); the gate
+// and the bit-4 test both through the bitfields (`flag3` of the effect, `flag4` of the definition) 361; the child link
+// call re-deriving the child record as 0x247fd0 does 335 (1654 B); the velocity selection testing the system's effect
+// index field instead of `local_0` 411; re-measured, the collision result declared ahead of the workspace 334. Body
+// unchanged.
+// M3 lane 6 r234 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334): the scale rows as compound
+// `*= arg_7` 334; the kind test as `!local_3->unknown0c` 334 (retail loads the word into AX from the definition held
+// in EDI and tests it; ours compares memory through a reload); the bit-4 test as a plain `& 0x10` mask 334 (still
+// `shr al, 4; test al, 1`); the blend's x row written like y and z 334; y and z written like x 334 (same code in every
+// one). Body unchanged.
+// M3 lane 6 r237 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334, aligned/masked 188/72 by a
+// difflib count): the blend as its own point3f re-measured 406 (as lane 4 r247); the 0x173ba0 call and the
+// mask OR through the existing method 0x173c10 (`function_173c10(0xf80f)` on the value cache) 334 (same code: it expands
+// to main's instructions); the 3-bit draw stored as an explicit `& 0x1fff | draw << 13` 334 (same code). The sibling
+// 0x247fd0's spellings together (in-loop particle_object_for_tag, if/else reciprocal, `local_2 != field_50` with field_50
+// stored first) with the blend as a point3f and the first draw in `last_sample`: 415 at 1664 B, frame 0xa0 [145/62]; plus
+// that sibling's named tag/effect index locals and `(short)` ordinal in the 0x173fd0 call 414 at 1660 B [140/56]; plus the
+// collision result padded to 0x5c (diagnostic wrapper) 412 at 1660 B, frame 0xb0 [133/54], the definition then in EDI as
+// retail (home +0x18 vs +0x1c). Left on that shape: retail keeps the three scaled rows and the three blend sums in
+// XMM2-4 and stores them after (the else arm's add-scaled reads the scaled rows from XMM2-4), ours stores each row at
+// once; the blend sums as `position.x += field` then one aggregate store 461 (1692 B). Body unchanged.
+// M3 lane 12 r183 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334; body unchanged). Reading: retail
+// loads the three real arguments once at the top of the scale step (XMM0/1/5) with the definition in EDI, computes the
+// three scaled rows and the age sum before any of their four stores and keeps the rows in XMM2-4 for the else arm. Forms:
+// the gate record indexed by `arg_2->effect_index` 335; the velocity record indexed by the local index 358 (1634 B); the
+// velocity pointer started at the default and set under `if (local_0 != NONE)` 348; the velocity in an if/else with a
+// named record pointer 334 (same code); the gate through a named record pointer and the bit-3 view 344; three named
+// scaled reals and a named age sum stored after all four 335; the scale step through the existing vector3f_scale in place
+// 354; vector3f_scale into a point local assigned as a whole after a named age 404 (1697 B); the age step ahead of the
+// in-place vector3f_scale 354.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

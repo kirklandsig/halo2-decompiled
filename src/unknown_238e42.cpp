@@ -1418,6 +1418,27 @@ bool __stdcall function_2399da(long controller_index)
 // ahead of the rank 90 (same code: names do not break this tie either); the task index initialised to NONE at its
 // declaration 90 (same code); the rank-3 test as `rank != 3` with the set-rank arm first 92; the identity as a
 // non-const pointer 90 (same code); may_change as `(flags & 0x800) != 0` 90 (same code). Identity ECX/rank EAX remain.
+// M3 lane 6 r229 (single-address H2M_FAST, control 90): the selected identity bound to a const reference for its test and
+// the removal call 90; the requested rank bound to a `long const &` 90; both 90; a second named identity pointer for the
+// removal call 90; the rank read once through its parameter's address into a local 90; every rank use through a
+// parameter-address pointer 90 (all the same code). Identity ECX / rank EAX remain.
+// M3 lane 2 r141 (H2M_FAST with 0xac050, 0xac360, 0x2399da, all MATCH; control 90): a second identity pointer local
+// for the test and the removal call 90; the permission test held in a named bool 90; the removal call taking the
+// identity from the selection getter again 147 (465 B); one `1 << controller_index` mask local for the six dialogs 176
+// (418 B); the member's rank in a plain long local for the permission test 90. Re-measured: `long const rank` 90; the
+// identity test inverted 90; the identity declared first 90. Identity ECX / rank EAX remain.
+// M3 lane 6 r237 (H2M_FAST with 0xac050, 0xac360 and 0x2399da, all MATCH; control 90, aligned 12, register-masked 2):
+// the removal test held in a bool computed ahead of the permission test 106 (439 B; the identity then takes EDX, the
+// id test's temporary EAX); the requested rank copied into a local at the top of the function, before any call 90; the
+// task-index test and the 0x1487c3 call written in each dispatch arm 90 (the tails are cross-jumped back into one);
+// `register` on the identity local 90 (same code each); re-measured `xuid->qwUserID != 0` 90. Identity ECX / rank EAX
+// remain.
+// M3 lane 6 r239 (fast with 0xac050/0xac360/0x2399da/0x23955e/0x2b278e/0x239a3d, all MATCH; control 90, aligned 14): the
+// allocator ranks the requested rank (15) above the identity's reload piece (6: four blocks where it is live and unused
+// between the identity test and the removal), so the rank takes EAX first; forcing the rank to ECX, or splitting the
+// identity's range before the removal use, gives a byte match (diagnostics only). Forms: the member identity copy after the
+// name copy 119 (431 B); explicit `!= NULL` / `!= 0` in the identity test 90 (same code); the permission compare as
+// `2 <= own_rank && member_rank < own_rank` 91; `NONE == rank` 90 (same code). Body unchanged.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

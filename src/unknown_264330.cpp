@@ -932,6 +932,87 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 473 (1580 B); diagnostics, noinline dropped: with the flags after the call 509 (1696 B, still `ret 4`: the expansion alone
 // does not give retail's EAX convention), with the `for` walk 454 (1640 B, `ret 4`). BLOCKED-BY 0x2641c0's expansion and the
 // stacked actor index, as before.
+// M3 lane 1 r152 (h2m fast with 0x1e34e0 25 throughout; control 404): the sampler's result tested directly, `sample = false`
+// only on failure (`if (!0x2641c0(...)) sample = false; else if (update && ...)`) 460 (1652 B), the same with the success
+// arm first and the failure in an else 460 (retail stores the false only on the failure path, but the form adds 28 bytes);
+// a `__forceinline` redeclaration of 0x2641c0 just ahead of this body 404 (same code: the definition's noinline wins, and
+// 0x265680 / 0x264210 / 0x2641c0 stay matched); case 3's decrement as an if/else on the tracked-prop test 404 (same code);
+// the closing reset as a flag set under the view test with one shared maximum store 421 (1644 B).
+// M3 lane 13 r142 (h2m fast with 0x1e34e0, 25 throughout; control 404): the release calls written at case 3's underflow test
+// (retail's block order: its `jge` skips them) with case 2's and case 3's first gotos jumping there, `goto tracking_complete`
+// gone and the decrement written in the subtraction, 404 (the same code: the release block is placed and 0x25c820 expanded
+// exactly as before, so written depth does not move that inline here); diagnostic, the three flags as members of one local
+// aggregate 394 (1616 B, frame 0xa0 as retail, `update` still scalarised into BL, so the actor index stays stacked; a
+// grouping steer, not kept); `update` as a long 404 (it keeps EBX as a long); the 0x2641c0 result tested directly with
+// `sample = false` only on its failed path (retail's store) 460 (1652 B), with the long `update` 454 (1648 B). All restored.
+// M3 lane 15 r130 (H2M_FAST with 0x1e34e0 25 and 0x263210 MATCH throughout; control 404): `maximum` as a plain word,
+// long, dword or short 432 each (1620 B); the tracked prop index (actor +0x338) read once into a named local for its two
+// tests 423 (1616 B, frame 0xa0); the maximum compare written `(short)maximum < value` 405; `update` assigned false in
+// the else arm instead of at its declaration 439 (1616 B); both flags assigned false in the else arm 428. Diagnostic,
+// reverted at once: the flags as volatile locals 428 / 418 (EBX then goes to the prop index) and every form keeps
+// `ret 4`, so the flags' register is not what keeps the actor index on the stack; the retail call graph has no cycle
+// through this function or its caller.
+// M3 lane 13 r143 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all three MATCH; control 404):
+// the byte view `p` fetched by its own prop_ref_get instead of a copy of `node` 438 (1624 B); the release pair through a
+// file-local forceinline helper at the label 404 (same code: 0x25c820 still expanded there); the two flags declared ahead
+// of the prop lookup 404 (same code); `update` declared on its own just ahead of the sampling test, after the 0x263670
+// call 405; `index` declared at function scope and assigned at the loop top 404 (same code). Retail's listing keeps all
+// three flags (+0x11/+0x12/+0x13), `next` (+0x18) and `maximum` (a dword at +0x1c) in memory with EBX the actor index
+// for the whole function. All restored.
+// M3 lane 3 r298 (h2m fast with 0x1e34e0, 25 there throughout; control 404 at 1624 B): `sample`/`update` as `char` 404;
+// the prop index `long const` 404; the 0x25d610 test nested under `if (sample && update)` 404; the sample counter through
+// a `short &` bound to its field 404 (same code each); diagnostic, the prop walk as a do-while under `if (next != NONE)`
+// 464 (1584 B). The actor index stays a stack argument in each. Still BLOCKED-BY 0x2641c0's noinline declaration.
+// M3 lane 6 r232 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all three MATCH; control 404):
+// sample/update declared at function scope and cleared at the loop top 404 (re-measured); `short old_state` 404 (same code); the
+// flags declared `update, sample` 402 (1620 B; EBX still the sample flag in the loop); a `long const` actor parameter 404;
+// sampled_one declared ahead of maximum 404. All restored.
+// M3 lane 3 r300 (h2m fast with 0x1e34e0 (25 throughout), 0x2641c0, 0x264210, 0x265680, 0x263210, 0x264330, all MATCH;
+// control 404): the maximum as `short volatile` 404; `short old_state` 404; `long const index` 404; the byte view declared
+// ahead of the node pointer 404; the state switch's cases in numeric order 404 (all the same code). Diagnostic: 0x2641c0's
+// noinline declaration dropped 509 (1696 B; 0x264210 114). All restored.
+// M3 lane 8 r229 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x263670, 0x264210, 0x2641c0, 0x264330, 0x265680,
+// 0x25c820, 0x26be00 and 0x26be30, all MATCH unless said; control 404 at 1624 B, aligned 317, register-masked 278; body
+// unchanged; every form keeps `ret 4`). New forms: the state switch as a forceinline predicate (false = release) with the
+// release pair under its test, in place of the two gotos, 470 (1656 B, frame 0xa0), on the walk through 0x26be00/0x26be30
+// 445 (1620 B); an unread actor-index parameter added to 0x263670 (definition, declaration and call; 0x263670 stays
+// matched) 404 (the same code: a parameter the callee drops is no reference for the EBX choice), on the walk 443; the
+// sampler's result tested directly on the walk 442 (1628 B), with the predicate 443 (1636 B), on this body 460 (re-measure).
+// Diagnostics, each reverted at once (N = 0x2641c0's noinline declaration dropped, which loses 0x264210 at 114 each time):
+// N 509 (1696 B); N with the release pair written in each arm 572 (1744 B), also without the three inline_depth pragmas
+// 758 (1892 B); N on the walk 497 (1680 B, frame 0xa0, masked 242), with the release pair in each arm 534 (1704 B), also
+// without the pragmas 720 (1852 B); the release pair in each arm alone 488 (1680 B), on the walk 548 (1712 B); N with the
+// predicate 536 (1724 B), on the walk 538 (1704 B, masked 239); N with the sampler tested directly on the walk 529 (1696 B,
+// masked 233), with the predicate 545 (1712 B); N with the unread parameter 509, on the walk 497 (same code as without it).
+// One unconditional reference to the actor index at the loop top (a store to a global, diagnostic) 455 (1636 B), on the
+// walk 406 (1628 B), with N on the walk 495; a second one at the loop tail 436 (1616 B, frame 0xa8), on the walk 415 (1620 B,
+// frame 0xa0), with N on the walk 522: unconditional loop references do not move the argument off the stack either.
+// Reading of the calls: with the sampler expanded on the walk this build makes retail's 34 calls plus one, and the one
+// is the release site, where 0x25c820 is expanded (its inner 0x25c780 call) beside case 1's own 0x25c820 call; retail
+// has one 0x25c820 call that both paths share. Every form above keeps exactly one expansion of 0x25c820 (the release
+// pair in each arm expands the first site in source order only). Retail clears the sample flag only on the sampler's failed
+// path and reads the update flag from its stack byte after the expanded sampler; it reloads the prop index from the
+// iterator's cell at fifteen sites, because the expanded sampler's 0x38-byte copy and 0x2640c0's output register take
+// ESI and EDI inside the loop. Still BLOCKED-BY 0x2641c0's expansion (0x264210 expands it too once the noinline
+// declaration goes) and the release site's 0x25c820 expansion.
+// M3 lane 16 r183 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all MATCH; control 404): the
+// context record declared ahead of the motion record 404; the two flags declared after the 0x263670 call 404; the prior
+// state read ahead of the next link 404; case 1's tracking pointer declared in its own block 404; the prior state as a
+// `word` at both uses 404 (all the same code). All restored.
+// M3 lane 5 r242 (H2M_FAST with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, 0x2641c0, 0x264210 and
+// 0x264b50; control 404 at 1624 B; body unchanged). The allocator's ranking in this body: the node 634 (EBP); the
+// `update` byte 30, which takes EBX in the first pass because BL is the only byte register that survives the calls; the
+// actor index over its whole range -56 (its references add 228, the 61 blocks it only lives through take 284), so it is
+// cut into pieces and its stack home is read again; the prop index 134 once split (EDI). With `update` kept out of the
+// registers (a forced compile, not source) the frame is retail's 0xa0 and the first difference moves to +0x6, the
+// argument's stack read; with the actor index's largest piece ranked first instead, the node moves to EBX and the count
+// rises (440). So the frame follows from `update` losing BL, as it does once the sampler is expanded between its store
+// and its test (four or five more blocks it lives through unread), and the register argument needs the actor index's
+// whole range above zero on top of that. Forms: the tail's maximum store written in each exit (retail has three
+// returns), as `if (...) { ++; store; return; } store;` 421 (1644 B), as if/else arms 421 (same code), with the NONE
+// test first 421 (same code); `sample = true; update = true;` as two statements 404 (same code); the node fetched from
+// `next` ahead of `long index = next;` 438 (1616 B, retail's length). Still BLOCKED-BY 0x2641c0's expansion (its
+// noinline declaration is in a file another lane holds this round) and the release site's 0x25c820 expansion.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

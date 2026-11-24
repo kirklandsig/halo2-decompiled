@@ -4244,7 +4244,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 295 (was 295; r126, r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
+// score 295 (was 295; r239, r126, r286, r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; what is left
 // is in the paragraph below (the two stacked score lines merged in r286).
 // earlier header line (merged in r126): 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
 // and acknowledgement is laid out early. Rounds 275 and 234 kept the round 208 score.
@@ -4697,6 +4697,29 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // written `goto accepted;` 100 (homes back, but the test folds into the final return); the channel-7 jump alone 94 (same
 // code); the kept arms `return true;` 103 (1270 B), as two tests each `return true;` 131 (1269 B), as `if (same || better)
 // return result = true;` ahead of the plain store 237 (frame 0xe0).
+// M3 lane 16 r180 (H2M_FAST with 0x5e3f0, MATCH each run; main 295, aligned 149). Lane 1 r144's 44 lead rebuilt from its
+// L9 body, 44 (aligned 21). On it: the result as the element of a one-element array bound by reference 44 (same code:
+// scalar-replaced); diagnostic, reverted at once: the result's address held in a volatile pointer local 359 (every exit
+// then reads the result byte back as retail does, but the homes rotate (result +9) and the kept arms and the accept block
+// are unchanged, so an escaped result is not what retail has). On main's body: the result declared ahead of the state
+// read 295 (same code); the identity compare moved down to the timeout test 384 (1231 B); the timed-out arm with one
+// identity copy and `*reason = identity_equal ? 4 : 6` 323 (1229 B, as lane 3 r242 found); the acknowledgement block
+// through a named member-state pointer 309 (1246 B). Body unchanged.
+// M3 lane 5 r239 (H2M_FAST with 0x5e3f0, MATCH each run; main 295; lane 1 r144's 44 lead rebuilt from its diff, 44). On the
+// 44 lead: the kept arms `result = true; if (same || better) return true;` 44 (same code). On main: the kept arms `return
+// true;` 307 (1273 B); the state-8 exit `return true;` 339 (1266 B); the refused block written at its test, no label, 295
+// (same code); every exit through `done:` 313 (1280 B), with the post-disconnect `if (result) goto done; return result;`
+// 328 (1286 B). Reading: retail's final return is a join that holds the result in AL (the state-8 edge stores 1 and
+// reloads it, the kept arms and the post-disconnect true edge arrive with AL set, the reason exits reload the byte).
+// Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x5e3f0, MATCH each run; main 295). Both builds keep the result byte in its home from
+// entry; ours rematerialises the false at the reason exits where retail reads the home back, the behaviour of a local
+// whose constant is not propagated. On main: the result cleared by `memset(&result, 0, sizeof(result))` 321 (+0x1b,
+// scalar-replaced); the acknowledgement block moved after the final `done:` return 295 (same code); the sibling
+// 0x5e3f0's `long owner = session->value10;` ahead of the timeout call 360, with its `__assume(host_state != NULL)`
+// 360; the session state read at each test with no state local 299 (+0x16). Diagnostic (compiler setting, reverted):
+// global optimisation off around the body 809 (1643 B), so retail's reloads are not a whole-function setting. Body
+// unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

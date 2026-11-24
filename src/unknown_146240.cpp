@@ -67,6 +67,7 @@ PRIVATE inline void rotate_scalars_146320(vector3f *v, real axis_i, real axis_j,
 // (544 bytes; any operand order, `*=`, k-j-i order the same); scalars for the cross terms 91/97/77; in place with
 // the division written per statement (kept) 66; same inside the `> 0` block 73; after the angle 81; helper taking
 // the axis by pointer 66.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): rotate_scalars_146320 through include/axis_rotation.h's helper on the axis local 93 (552 B). Restored.
 // @retail 0x146320
 void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle)
 {
