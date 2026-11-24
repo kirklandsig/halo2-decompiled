@@ -1000,6 +1000,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 596 (with no globals 591); two-caller activation ramp helper 688; vector3f_add_scaled at both settle arms keeping globals
 // local 573 (exact 734 insns), at all three output vector3f sites 681 (683 keeping globals, 678 dropping len4/ratio/m2/back);
 // named rem_cnt = 3.f - cnt 702 (694 with all 3 add_scaled); e3 <= 0.001f arm first 623; complemented settle guard 654.
+// Both activation rise halves, fall halves, or both pairs named 711/711/612.
+// Both remainders from two subtractions 602, with named halves 613. Activation and
+// live fall stages 700, explicit duration arms 678, admitted remainder clamp 693.
+// NOT kept: the one-point gain is below the threshold; sampled velocity still lacks the EBX home.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

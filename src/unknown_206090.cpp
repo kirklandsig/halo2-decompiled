@@ -1004,6 +1004,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // final loop + direct return) 1672 (5973 B, frame 0x580, aligned 970/631); that + direct proj56 + normal_copy + found-first
 // tail 1600 (6047 B, 0x598, 956/669); that + contact ptr 1571 (6076 B, 0x598, 960/641). NOT kept: contact loop stays
 // strength-reduced in all forms; body restored.
+// Contact-normal ramp numerator 1344 at 6238 bytes, angle range 1404, both 1381.
+// Named quotient 1344, named limited fraction 1346, live quotient in explicit arms
+// 1350, one quotient in explicit arms 1344, and quotient limited in place 1424.
+// NOT kept: best gain two points, with the same 0x5d0 frame and displaced velocity homes.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

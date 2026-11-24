@@ -842,6 +842,13 @@ s_1a8a10 g_4453c0[] =
 // back); its case 3 also the default 141 (540 B); the input point copied into a local and the first switch reading it 129
 // (548 B); the first switch's cases written 3, 2, 1, 0 79; `return` of the 0x1f57f0 result in place and `return false` at
 // the end with no result local 216 (584 B; 0x1a8c30 49).
+// M3 lane 1 r166 (h2m fast with 0x1a8c30, MATCH; control 17): round 115's frame-transform lead rebuilt (31; every
+// instruction retail's, xmm numbering left). Allocator reading of its xmm class: ours colours the temporary (120) to
+// XMM0, i (100) and j (100, ties above the zero's) to XMM1/XMM2, the zero (100) to XMM3, the i copy (80) to XMM4, x (76)
+// to XMM5 and y (a later piece) to XMM6; retail's numbering needs the zero ahead of i and j and both x and y ahead of the
+// copy, three counts at once (a single forced decision gives 23 at best, 60 tried). On the lead: stores in index order
+// 32; the negations read back from the stored [0]/[2] 34; the perpendicular's i as unary minus 31; x and y named from
+// the point for both sums 31; the perpendicular's j from the copy's i 32. Body unchanged.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

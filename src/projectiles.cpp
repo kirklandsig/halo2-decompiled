@@ -1215,6 +1215,10 @@ real function_30bf0(vector3f *v);
 // horizontal test at the root 268; independently evaluated admission 284; late 3D reconstruction
 // from scalars, via the vector setter or from a planar point 265/265/266.
 // Planar point restores frame 0x30 at 994 bytes but leaves the first root after gravity. Body restored.
+// Round 469: launch speed carried in the input speed parameter 273, forced branch first 273,
+// conditional cap 273, direct optional pointer reads 274, forced first with direct reads 274,
+// shared solve result 276, with conditional cap 276 or direct optional reads 276. Restored.
+// The early rounded root and separate divisions still differ at frame 0x28 versus 0x30.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1539,6 +1543,10 @@ extern vector3f *g_4687ac;
 // only and lands the opposite end in the side's slots; the three ray queries still inline 0x16a040, whose defining
 // file is not this lane's: BLOCKED-BY 0x16a040.
 // MiniMax R (11-20): re-checked, no new form and no lower score (163): the frame is 0x48 against retail's 0x34, so every home is out by a different amount, and the tag table is loaded before the unit entry where retail loads it after: BLOCKED-BY 0x16a040.
+// Endpoint/query homes and tag residency still differ. Early positive displacement
+// with its original declaration, scoped end, scoped aggregate or existing point setter:
+// 184 each. Reload radius after normalization on the same forms: 195 each.
+// NOT kept: all shrink the frame to 0x3c and raise the score.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -2372,6 +2380,9 @@ real function_17c900(short function_type, real input);
 // unmasked until conversion 365/365, separate salt offsets 365/365, or masks applied in place
 // 365/365 (direct tick reads / one shared tick). The 0x30 frame stays, index remains in EAX,
 // and the output is still stacked.
+// Round 469: pitch/yaw offsets at entry 377, yaw/pitch at entry 373, pitch/yaw in the drift arm 347,
+// and yaw/pitch there 359. Turn/drift/both point setters used as publication results 396/390/390,
+// both with entry offsets 421. The one-point drift form is below the keep threshold. Restored.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2548,6 +2559,9 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // Long/word header slot 507/522; shared pre-call pool and counting table 498; updated flag word 498;
 // shared child/detachment point 497 (one point, below the gain threshold); saved-parent name 498;
 // direct-victim branches 498.
+// Header pool still takes EDI before the first flag test, and the header offset and flag write use other homes.
+// Common datum entry 422; header accessor entry 422; entry table 422; common datum all lookups 422;
+// header accessor all lookups 422; typed parent view 422; typed parent and scale fields 422; resolved header local 422.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2850,7 +2864,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the projectile index in EBX where retail keeps it in EDI; the range check's 0xfaa30 call is emitted at all five of our uses
 // where retail inlines it at two of them and calls it twice, and the merged inline on magnitude3d expands that helper at our
 // second use.
-// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
+// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x114 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
 // common rotated output 1096; both common 1069; existing state helper 1050/1131; complete guidance/roll inputs 994,
@@ -2883,6 +2897,9 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // computed motion predicate 1028 (two points). Shared point difference 1013 at 4682 bytes.
 // NOT kept: The point difference still flows through the inlined magnitude, and the score change comes
 // from a different later rotation schedule rather than the retail movement producer and call.
+// Index EBX and definition ESI still differ from retail's EDI and EBX.
+// Step-to-average or average-to-step velocity 1030/1030; library velocity copies 1030;
+// speed from step or average copy 1037/1038; named speed square 1030; vector setters 1048; speed before copies 1030.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -3303,10 +3320,9 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // so it is reverted.
 // MiniMax I (11-15): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, the velocity arrives on the stack where retail takes it in a register, and 0xfd7d0's register arguments still differ, which is the callee's own split.
 // MiniMax S (11-15): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, the velocity arrives on the stack where retail takes it in eax, and the callee 0xfd7d0 still takes its projectile index in eax and three of its six out-pointers in ecx, edx and edi; reordering that declaration trades 0xfd7d0's own score for this one's length.
-// score 1196 (was 1220): the frame is 0x220 against retail's 0x218, the velocity arrives on the stack where retail
-// takes it in eax, and 0xfd7d0's register arguments (retail takes the projectile index in eax and three of the six
-// out-pointers in ecx, edx and edi) still differ; that split is the compiler's choice for the callee.
-// score 1190: Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// score 1146 (was 1160): Frame 0x21c versus retail's 0x218. Velocity arrives in EAX.
+// The material store is now a word, but its home, the definition register and normalization still differ.
+// Earlier builds reserved 0x220, stacked velocity and assigned 0xfd7d0's output registers differently.
 // Round 1 of #1061 (logic walk against retail, all blocks): no statement-level behaviour difference found except the
 // two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
 // push edx`): `long collision_count` 1190 -> 1180 (4848 -> 4836 bytes) and caller 0xf8eb0 then pushes it as retail
@@ -3391,13 +3407,18 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // MiniMax E (11-17): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity still
 // arrives on the stack where retail takes it in eax, and retail's own parameter order for the callee 0xfd7d0 differs from this
 // one, a change the rules forbid, so retail's order is reported instead.
+// Signed-short material kept at 1146 and 4828/4828 bytes. Early primary/secondary
+// scale defaults 1159/1214, with short material 1145/1172. Both defaults 1209,
+// with short material 1166. Existing material class throughout 1213. NOT kept:
+// the extra primary-default change gains one beyond the short material, and the
+// other forms regress. Frame and definition homes still differ.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
-	long material_index = collision->unknown24;
+	short material_index = collision->unknown24;
 	vector3f direction = *velocity;
 	real speed = normalize_inline(&direction);
 	real scale_a = 1.0f;
@@ -3573,7 +3594,7 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 		goto no_effects;
 	}
 	function_fd7d0(projectile_index, &effects[0], &effects[1], &effects[2], &collision->point, (byte const *)definition,
-		effect_type, c_type_47f957((short)material_index), &sounds[0], &sounds[1], &sounds[2]);
+		effect_type, c_type_47f957(material_index), &sounds[0], &sounds[1], &sounds[2]);
 no_effects:
 
 	if (g_4e6948->mode != 4 && (collision->type == 1 || collision->type == 3) && (collision->unknown58 & 8))

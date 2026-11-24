@@ -1505,6 +1505,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // on entries with first ahead 554 (2112 B, 0x20, al 162/115), aggregate init on entries 554 (same code), assign + second
 // vector3d_from_points3d + length_sq3f on entries 558 (al 196/116) and on samples 416 (2094 B, al 249/247; 2 pts, NOT
 // kept). Body unchanged.
+// The second scan still lacks its separate candidate-X store and alternating induction addresses.
+// Shared offset with the two squared-length helpers 646/646; separate offset in opening sum order 418/418
+// with either dot operand order; separate offset in k/j/i sum order 416/416, NOT kept: changed grouping and
+// two-point gain. Squared-length helper for nearest alone or both scans 418/418.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

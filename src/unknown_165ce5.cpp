@@ -2165,6 +2165,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // update and events 320; handle with update receiver 320; post-play channel pointer or reference 340/340;
 // direct validity and clear with that frame receiver 340; default callback with admitted handle 411.
 // The unit/mode homes and restart-channel register still differ.
+// The unit and mode slots still need retail order. Three-state overlay in enum/byte: nested promotion 420/421,
+// eligible selection 413/423, exclusive selection 424/407, nested conditional 424/407.
+// NOT kept: every result shortens the body and raises the score.
+// Activity preset on physical admission with readiness rejection 345, fully admitted
+// result 373, nested readiness result 371, admission conditional 172. Scope after the
+// suppression query 357, shared suppression result 378, nonsuppressed overlay result 179,
+// complete optical guard 185. The unit and mode homes still exchange.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

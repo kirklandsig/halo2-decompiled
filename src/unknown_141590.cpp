@@ -1341,6 +1341,9 @@ void function_143250(
 // inlining r1_r1_r8 1233, r2_r0_r6+r5_r4_r7 1493, r1_r1_r8+s105_r1_r1+param order 1453; 0x143250 retail param order
 // (n, matrix, coefficients, out) + matrix[28] T1-(T2+T3) grouping 936 (10781 B, below keep bar), + m23/m25 factoring 1150;
 // band-2 s5_s15 factoring + param order 1712. Body unchanged.
+// Third-band mixed terms named at 21/27 and 35/41 939/945. Square terms at those pairs 1183/939.
+// Grouped sums before or after scaling 939/939. All terms staged at 21/27 or 35/41 939/939.
+// NOT kept: the shared spill home and 0x2fc frame persist.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
