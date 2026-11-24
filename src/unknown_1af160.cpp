@@ -332,6 +332,22 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // pointer local (one symbol fewer in their shared cell) 12; a second actor pointer copied at the top of the not-equal
 // arm for the two late actor uses 12; a second prop-node pointer copied for the second 0x25d690 call 12 (same code
 // each: the copies fold). So the tie order follows neither the symbol count nor any of these declarations.
+// M3 lane 11 r164 (h2m fast with 0x1e1f20, MATCH; control 12). Reading: the frame is over 0x80 bytes, so its 4-byte
+// cells are ordered by reference density, and both swapped pairs are density ties (actor cell and the actor-offset
+// temporary's cell 1000 each, prop node and bool output 500 each) whose order follows the order the cells were made.
+// Ours makes the offset temporary's cell before the bool output's because the temporary reaches its second reference
+// (the equal arm's flag clear) before the bool output reaches its second (the 0x2626b0 argument); with those two the
+// other way round, both pairs come out as retail's. Tried: the outer test written `!REFERENCE_EQUAL` with the
+// not-equal arm first 187 (978 B: every entry home and the 0x262b40 result's cell now retail's, but the arms are laid
+// out the other way round); the equal arm ending in its own release and `return local_5` with the rest unindented 196
+// (same homes as main, the result then loaded into BL); the flag clear moved after the if/else as `if (!local_5)
+// actor_get(arg_0)->unknown040 = false;` (the equal arm's else keeping only `local_5 = false;`) 31 at 974 B: both home
+// pairs are retail's and the layout too, left only the clear block, where the result store comes before the clear
+// (retail stores it after the clear and the release argument load) and the three scratch registers rotate (ours EAX,
+// ECX, EDX; retail ECX, EDX, EAX); the clear and the result store both carried by a new bool flag set in the else arm
+// 173 (977 B: the empty else sends the block to the end); the threaded form with `local_5 = false;` repeated after
+// the clear 173 (977 B, the first store dropped as dead, the same layout). Lead: the 31 form (a flag tested after the
+// if/else, kept only with a byte match); its clear block needs the result store after the clear in one block.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

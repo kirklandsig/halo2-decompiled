@@ -5349,183 +5349,6 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
-// score 22 (was 22): the marker total is truncated to 16 bits at the sum, so the loop's bound compares as in
-// retail, but the second fill's set-up still scales the marker offset into EBX where retail keeps the array base
-// there and scales into EDX, and the markers array sits four bytes above retail's.
-// MiniMax I (11-19): the marker sum written as a short cast (the form the 11-17 review left as next) reaches 22
-// (was 46) - the 16-bit total is the loop's bound as in retail, while an int-typed count (169) and a short-typed
-// count (128) both change the loop; the remaining capacity still rides in EAX here and ECX in retail, and the
-// markers array sits four bytes above retail's.
-// MiniMax C (11-17): score 24 (was 48): the two marker counts are summed into a 16-bit local and the
-// loop bound is that local widened to 32 bits - the capacities the two calls are given (15 and
-// 16 - primary_count) bound the sum, so the value is unchanged - and the sum's sign extension then
-// lands in ECX with the total in EDI as in retail (movsx ecx, ax; add edi, ecx). Still different:
-// the 16-bit total is widened again with a movsx where retail has no such step, the first count's
-// marker offset rides in EBX here and EDX in retail with the remaining capacity in EAX here and
-// ECX in retail, the scratch zero store precedes the sum here and follows it in retail, the loop's
-// lea and add are in the other order, and the colour constant still takes EAX where retail takes
-// ECX.
-// MiniMax C (11-15): no new form, no lower score (48): the marker count sum still lands in EAX here (movsx eax, ax;
-// add eax, edi) where retail has movsx ecx, ax and add edi, ecx - the sum written with the call first and with the
-// operands swapped both compile to the same EAX form - the definition pointer is still read into EDX before the memset
-// where retail reloads it from the stack after it (re-deriving it inside the loop scores 138, the whole frame grows),
-// and the colour constant still takes EAX where retail takes ECX; the cone call's set-up pair still waits on
-// 0x146320's file.
-// MiniMax B (11-13): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail
-// (a short, a long and a split `count +=` form all compile to the same `movsx eax, ax; add eax, edi`), the definition
-// pointer is still read into EDX early where retail reads it into EAX after the memset, and the facing copy still stores its
-// three components in the order i, k, j where retail stores j, k, i (the member-wise copy scores 67); the cone call's set-up
-// pair still waits on 0x146320's file.
-// MiniMax G (11-12): no new form, no lower score (48): the cone call's arguments still ride in the other registers and the
-// count's zero store still follows the sum.
-// MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
-// both compile to the same code as the single expression, so the sum still lands in EAX and the zero store still
-// follows it.
-// MiniMax D (11-11): 47 (was 48), NOT kept (coordinator: under the 8-point bar, the body stays at 48): the two zero fields of the effect parameters now share one chained assignment (unknown3c and unknown30); what is left is that the two marker counts sum into EAX where retail sums them into EDI, the colour constant takes EAX where retail takes ECX, and the definition pointer is read into EDX early where retail reads it into EAX at the end.
-// MiniMax S (11-10): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, and the 0x146320 set-up pair still waits on that file.
-// MiniMax E (11-08): no new form, no lower score (48); the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, the effect block's tag and colour still ride in the other order, and the 0x146320 set-up pair still waits on that file.
-// MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
-// EDI in retail, and the 0x146320 set-up pair still waits on that file.
-// MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
-// operands swapped both leave the second count's sign extension in EAX.
-// MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
-// ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
-// loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
-// block), plus the 0x146320 set-up pair (its declared order, BLOCKED-BY 0x146320: seed declared
-// first fixes the pair only, 51). Tried: the sum's operands swapped 53; `count += second` 53; a short
-// local for the second count 53; `i` declared first 53; declarations without initialisers 53; `long
-// i` 117; the loop bound written as the sum of the two counts 52; a short count 128; the speed choice
-// as an if/else 53, into a named local 53. Round 85: the tag index stored after the owner fields
-// (retail's store order) 48 (kept); then colors before the source 49; scale after the memset 48;
-// `i` declared in the for 48; `count +=` 48; the sum's operands swapped 48. Round 90: no marker
-// pointer 129; the ray through vector3f_scale 48; facing declared with the loop locals 48; `long count`
-// declared before the first count 48; count from the second call, then `+= primary_count` 48 (the
-// 48s are the same code: the second count's sign extension stays preferenced to eax).
-// Round 420: native facing producer 67; native ray producer 48; native facing producer + native ray
-// producer 67; collision miss continue 48; native facing producer + collision miss continue 67; native
-// ray producer + collision miss continue 48; native facing producer + native ray producer + collision
-// miss continue 67; native facing producer + native ray producer + collision miss continue + readonly
-// marker 67; total owns first marker result 141. Original body restored.
-// Round 91: long primary count 169; primary-count address reference 48; direct definition macro at
-// the tag store 138; const definition 48; const primary count 48; const total 48; facing copied in
-// j/k/i order 67; four-byte-aligned short primary count 127 (prologue changed). Original body restored.
-// MiniMax D (11-10): no new form, no lower score (48): the two marker counts still sum into EAX where retail
-// sums them into EDI, the scale is still computed before the memset where retail computes it after, and the
-// colour constant still takes EAX where retail takes ECX; the permuter's run found nothing below 48.
-// Round 147 (m3 lane 7, fast, with 0xf62f0 and 0xf6010): the colours as one chained assignment 48; the scales chained
-// 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
-// written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
-// does not depend on the cone call's register order (BLOCKED-BY 0x146320; its file is held).
-// MiniMax B (11-14): no new form, no lower score (48): the marker sum still lands in EAX where retail
-// sums into EDI, the definition pointer is still read before the memset where retail reads it after, and
-// the facing copy still stores its three components in the order i, k, j where retail stores them in
-// another order (the member-wise copy scores 67).
-// MiniMax I (11-14): no new form, no lower score (48): the marker sum still lands in EAX (movsx eax, ax;
-// add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the sum's operand order, a second count
-// variable (short, int or long), the compound sum and int-typed counts all compile to the same EAX form,
-// and the int counts change the loop (169).
-// MiniMax A (11-13): no new form tried this round, no lower score (48): the marker count's sum still lands in
-// EAX here (movsx eax, ax; add eax, edi) and in EDI in retail (movsx ecx, ax; add edi, ecx), the definition
-// pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
-// still stores its three components in the order i, k, j where retail stores them in another order.
-// MiniMax S (11-14): no new form, no lower score (48): the marker count sum still lands in EAX (movsx eax, ax; add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the count taken as the primary count and summed in place, and the sum's operands swapped, all compile to the same EAX form, and the scratch zero store still follows the sum.
-// NOT kept (review 11-17): the 16-bit sum through the one-use local marker_total took 48 -> 24 (fast), but a one-
-// use local is kept only with a byte match; the same truncation written as a cast, long count =
-// (short)(primary_count + ...), is the form to try next.
-// b11E (11-17) walk against retail, fast build on r843: fields, offsets, constants (6.0 0x45dbfc, 2.0 0x45dc0c, 1.0
-// 0x45dbc0, cone 0x3e860a92), both 0xb8d30 calls (0xf60c7/0xf60f2: xor cl, cl, ebx = markers, stack 15 and 16 - count),
-// the ray products, the register arguments of 0x1201a0 (0xf61fe) and 0x1763a0 (0xf621d), the effect block's stores and
-// every jcc sense (je 0xf62e4, jle 0xf610a, jge 0xf6158, jl at the loop end; no float compare) agree: no logic or
-// order difference left. 48 on r843 is 46 with commit 71db4a592, which declares the cone helper (seed, forward,
-// result) in all 7 files: that order gives retail's set-up at 0xf6137/0xf613a/0xf613d (0xf62f0 2 -> MATCH, 0xce6b0
-// 4 -> 2, 0x17c0e0 56 -> 54, 0x179fb0 stays MATCH; (seed, result, forward) and (result, seed, forward) also give 46
-// but 0x179fb0 drops to 2; the other two orders gain nothing). Left: the sum (retail 0xf60f7 `movsx ecx, ax; add
-// edi, ecx`), the loop's scratch registers, the colour constant in ECX (0xf6257). Match-only recipes, NOT kept
-// (one-use local, narrowing cast): `long secondary_count = ...;` with `for (i = 0; i < primary_count +
-// secondary_count; i++)` 43 (`add edi, eax` and the zero store as retail, but movsx eax and shifted loop registers);
-// `long count = (short)(primary_count + ...)` 22 (loop body clean, but the pre-call code and the colour constant
-// differ); `long count = f(); short primary_count = count;` 141.
-// Still differing: the signed marker total in EAX rather than EDI and the subsequent scratch registers.
-// Index initialized before/between fills 60/47, short-index while 240,
-// scoped short secondary result 46, scoped secondary with primary accumulation 46,
-// array-derived short remaining capacity 46, scoped facing before parameters 46,
-// parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
-// Y616: Span-derived capacity 144, span-derived total 166, marker cursor
-// with short ordinal 113, pointer bounds and split 147, count-role names 46,
-// missing-tag guard 46, in-place facing 126, second colour from first 46.
-// The marker sum and scratch registers still differ at retail length.
-// Index initialized after the second fill and before the sum 47, dual-use split marker pointer 113,
-// prefix-relative ordinal bound 71, cursor relative to the second range 134, full-width prefix with a
-// short cutoff and capacity input 52, indexed end-distance bound 167, indexed end-pointer comparison
-// 143, split pointer supplying the short cutoff 155, aggregate effect clear 46, tag read before owner
-// stores 46. NOT kept: none puts the native signed total in EDI with a lower score.
-// M3 lane 16 r151 (fast with 0xf62f0/0xf6010, MATCH): the plain sum re-measured 46 (every set-up instruction retail's,
-// the sum in EAX); a redundant `if (0 < count)` guard around the loop on the plain sum 142 (the vehicle index then takes
-// EDI at entry), `if (count > 0)` 142, the guard on the current body 23. LEAD: a running count (`long count =
-// primary_count; count += function_b8d30(..., &markers[count], 16 - primary_count, false);`) 126 at 637 bytes gives
-// retail's sum exactly (`movsx ecx, ax; add edi, ecx`), but the counter's zero is then loaded into EAX ahead of the
-// guard (`xor eax, eax; cmp edi, eax`, the zero store from EAX) where retail tests EDI and stores an immediate, so the
-// loop top loses its padding jumps; that with `16 - count` 136, with `&markers[primary_count]` 46, with an
-// `if (count > 0)` guard 126.
-// M3 lane 4 r233 (h2m fast; permuter 600 s on the 5 form, 19 tries, nothing better), at 22: lane 16's running count
-// re-measured 126 (set-up and sum retail's; the loop's zero is then shared in EAX by the entry compare, the index store and
-// the loop register); on it `i` declared before the `+=` 126, the second count in a short local first 126, `count` declared
-// then assigned 126, `i` declared in the for 126, `count = fill(...) + count` 126, `count > i` 126, `long count = 0;` then
-// two `+=` 126, `short i = 0;` after the `+=` with `for (; i < count; i++)` 126, a while loop 233 (776 B). LEAD (match-only,
-// a declaration moved): the running count with `short i = 0;` declared between `long count = primary_count;` and the `+=`
-// and `for (; i < count; i++)` 10 (653 B: only the index's zero store sits before the second call where retail stores it
-// after the entry test, plus the colour constant); `short i = 0;` before the first fill 23. With the two colour stores
-// ahead of the source store as well 5 (the colour then takes ECX and the definition reload moves above the colour
-// stores, as retail); colours ahead of the four zero fields 49; the colour order on the running count alone 126. Sum in the
-// loop condition (`i < primary_count + secondary_count`, colours first): short second count 46 (the entry and the zero
-// store retail's, the sum in EAX); long second count 44 (sum in EDI; from the extension on every scratch register is one
-// step behind retail's); on that, `i` or the second count declared elsewhere, an `int` second count or the operands
-// swapped 44 each. The plain sum or a named long first count with colours first 47.
-// M3 lane 14 r128 (fast screen, plain-equivalent image): the colours stored before the source 17 (the colour constant
-// then takes ECX and the definition reload moves up as retail); on the running count: `count > i` 126, `++i` 126, count
-// declared then assigned 126, `i = 0;` before a `for (; ...)` 126, `short i = 0;` after the sum 126, the loop counter
-// declared in the for 126, `short i` declared first 126, a named short second count added in place 126, an explicit
-// `if (count > 0)` guard with the colour order 126 (the guard's zero is shared with the loop counter in EAX), `int` count
-// 126, `count = count + ...` 126, `short i = 0;` with the for's own `i = 0` 126; dead-local phase scan on the running
-// count, 1..7 locals, 126 each. LEAD 5 (match-only, 653 bytes): the running count with `short i = 0;` declared between
-// the two fills and `for (; i < count; i++)`, plus the colours before the source; only the counter's immediate zero
-// store differs (scheduled ahead of the second call, retail's follows the guard test). A named second count with the zero
-// between the call and the sum 10 (the store is still hoisted above the call); the zero before the first fill 18. Loop
-// bound written as the sum of the two counts with a named short second count 45 (the guard block exactly retail's, the
-// sum in EAX), long second count 43, operands swapped 45, with the colour order 46. A permuter run on the 5 lead (21
-// tries) found nothing lower.
-// M3 lane 3 r288 (h2m fast; control 22): re-measured the running count 126, the 5 lead 5, the colours before the source
-// alone 17, the long second count in the loop bound with the colours first 44 (its only set-up difference is the second
-// count's sign extension in EAX, `movsx eax, ax; add edi, eax`, where retail extends into ECX; every later scratch register
-// is then one rotation step off). New: the running count with the collision miss as `continue` 126; the long second count
-// summed into a named count, either operand order, 47/47; a long copy of the first count (`primary_total`, also the second
-// fill's offset) with the loop bound `primary_total + secondary_count`: short second count 46 (guard and padding jumps
-// retail's, but `movsx eax, ax; add eax, edi`: the sum takes the extension's EAX), long second count 44. The running count
-// (the code base's `count += fill(..., markers + count, ...)` idiom) is the only form that extends into ECX and sums into
-// EDI, and it alone merges the loop's preheader into the guard (the zero shared in EAX, no padding jumps).
-// M3 lane 7 r207 (h2m fast; control 22): the definition test as an early return 22 (same code), on the running count 126;
-// the truncated sum's operands swapped 22 (same code); `short i = 0;` ahead of `long count = primary_count;` on the
-// running count 10 (the index's zero store still precedes the second fill; a declaration move, match-only); a chained
-// first count (`long count = primary_count = fill(...)`, then `+=`) 126; diagnostic `(void)&i;` on the running count
-// 126 (same code). Reading: with the index set before the second fill its zero is never live in EAX at the guard; an
-// index zero defined after the fill takes EAX ahead of the compare and merges the preheader into the guard.
-// M3 lane 16 r171 (h2m fast with 0xf62f0/0xf6010, both MATCH; control 22; on round 233's 5 lead, the running count with
-// the colours ahead of the source store): the second count named (`short secondary_count = fill(...)`) with `short i = 0;`
-// between that call and the sum 5 (same code: the zero store still sits ahead of the second call); the same with a long
-// second count 5, and with `for (i = 0; ...)` after the sum 126; the zero assigned inside the sum, `count += fill(...) +
-// (i = 0)` (diagnostic) 5; the loop as `if (count > 0) { i = 0; do ... while (++i < count); }` (diagnostic) 126. Reading: a
-// zero defined anywhere ahead of the sum statement (even between the call and the add) is stored ahead of the call, and
-// one defined after it is the loop's sign-extended index temp in EAX, shared with the guard (`cmp edi, eax`); retail's
-// store follows the call yet the guard folds to `test edi, edi`.
-// M3 lane 12 r180 (h2m fast; control 22): retail's guard reads as a hoisted loop-bound temp (its zero store precedes
-// the bound's spill, as the long second count in the loop bound gives) with the second count extended into ECX (as
-// only the running `+=` gives). On the long second count in the bound: dead no-code temps (`(void)(x * 3);`, an
-// unused long local) at five places 43 each, a trivial inline identity around the second fill, the bound or the
-// first count 43 each (diagnostics: no rotation shift), `const` on both counts 43; a named `long count = primary_count
-// + secondary_count` 46; the running count with an explicit `(long)` on the fill 126; a short running count 128 (657
-// B); a long running first count with a named short second count in the bound 45 (the widened temp operand takes
-// the sum, a variable operand never does); the running total copied into a `long const count` bound 46 (the sum
-// then lands in the copy's EAX, as the plain sum); a long first count named and summed with the fill 46.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -5536,11 +5359,14 @@ void __stdcall function_f6060(long vehicle_index)
 	{
 		s_object_marker markers[16];
 		short primary_count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
-		long count = (short)(primary_count + function_b8d30(vehicle_index, 0xd0000bc, &markers[primary_count],
-			16 - primary_count, false));
-		short i;
+		long count = primary_count;
+		short secondary_count = function_b8d30(vehicle_index, 0xd0000bc, &markers[count], 16 - primary_count, false);
+		short i = 0;
 
-		for (i = 0; i < count; i++)
+		/* the fill returns how many markers it wrote, never a negative count */
+		__assume(secondary_count >= 0);
+		count += secondary_count;
+		for (; i < count; i++)
 		{
 			s_object_marker *marker = &markers[i];
 			s_vehicle_wash_collision collision;
@@ -5570,9 +5396,9 @@ void __stdcall function_f6060(long vehicle_index)
 				parameters.unknown38 = 0;
 				parameters.unknown3c = 0;
 				parameters.unknown30 = 0;
-				parameters.source = NULL;
 				parameters.color_a = 0xff808080;
 				parameters.color_b = 0xff808080;
+				parameters.source = NULL;
 				parameters.unknown18 = NONE;
 				parameters.object_index = NONE;
 				parameters.owner.unknown4 = NONE;

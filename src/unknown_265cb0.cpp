@@ -1090,6 +1090,16 @@ real function_30bf0(vector3f *vector);
 // vehicle index inline, the 3/2 result as a conditional, either cross through the staged helper 57/12 each (same
 // code). A random search over 150 combinations of those forms (with and without K = 5) reached 54/10 at best
 // (delta helper + b maximum first + both dot3f forms). No form here lowers the count.
+// M3 lane 16 r184 (H2M_FAST with 0x263740 and 0x26d370, both MATCH; control 84, aligned 57, masked 20). Tracer reading:
+// the range's first piece is one register candidate from the settings read to the facing call (blocks 1 to 16, 4
+// references, priority 29), coloured after the clip and loop values that hold XMM0/XMM1 in that span, so it loads into
+// XMM2 where retail loads it into XMM0 (retail's piece ends at the store). The frame packer sorts these cells by
+// references per byte (result, range, scale and the counter/amount cell all 1250; the facing maxima 1000), so retail's
+// order (facing maxima below scale, range above the motion/side cell) needs the facing maxima denser and the range
+// thinner than here. Tried: the delta as a brace initialiser 84; `real const` scaled range 84; `long const` vehicle
+// index 84; `short const` seat count 84; `real const` range alone, re-measured, 84 (an earlier round listed 81) and with
+// the scaled range const 84 (all the same code). A forced-decision search ran 10 of 45 decisions in 20 minutes on this
+// loaded machine before it was stopped (none matched; the closest, the first delta row's register moved, 102). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -3114,6 +3124,18 @@ real function_2683f0(long actor_index, long node_index, short type)
 // same code: matched 0x1e23c0 forms the same CSE'd product and gets retail's data-first order, so the order is this body's
 // context, not a spelling); strongest/best declared ahead of the actor 170; all three dots through dot3f 158, the relative and
 // facing dots alone 158 (same code: the sum order is canonical and the direction still reads from memory). Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and 0x25d810, all MATCH; control 158, aligned 96,
+// masked 50). Reading of the head's `[eax + ecx + 0x58]` (tracer rank view): the add is ordered by rank, highest first;
+// the product is the common subexpression shared with the actor lookup, and a compiler temporary ranks by its symbol
+// number (here 0x702, rank 0x1e040), above the reloaded table field (0x18008), so the product becomes the base. Retail's
+// data-first order needs that temporary's number, modulo 0x800, at or below 0x400: about 254 to 1278 more symbols ahead
+// of it than this body creates. Diagnostic (reverted): 256 and 300 unused initialised longs at the top flip the head to
+// retail's order, 157, first difference +0x428. The calls are already retail's, so retail's extra symbols would come
+// from helpers expanded inline where this body writes their code out (the two player searches are 0x1c8150/0x1c8180's
+// bodies, which stay calls from here). Tried: the distance test ahead of the established and retain flags 172; retain
+// declared after the distance test 163; the relative maximum as a ternary 158; the reference test as `!(... >= 1)` 158
+// (same code each); the players iterator's NONE fields stored before its table 160, datum index first 160, chained 160.
+// Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
