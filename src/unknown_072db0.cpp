@@ -2380,6 +2380,10 @@ bool function_1900a5(long index);
 // member ternary + `failed = true` in else 674 (same via `g_509454[group]`); both poll switches alone 700, with `query_time_now`
 // + `last_write` 683; request `dl` flag alone 639 (2878 B), with `last_write` 636 (2878 B, under keep bar and flag form).
 // Restored (body unchanged); `s_search_value_globals` lead saved in build/ga1/74aa0_t14_full_combo.log.
+// Valid record pointer as a conditional or guarded assignment 759/759, cleared after
+// binding 726, and chosen from a bound record 765. Valid identity pointer 758/758,
+// valid properties pointer 749, and bound record with identity gate 758.
+// NOT kept: the record result at retail length still changes the cursor and scores 726.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

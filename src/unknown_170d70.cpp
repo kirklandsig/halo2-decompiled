@@ -461,6 +461,8 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // basis addresses at the group update 94. NOT kept: the 89 form reaches retail
 // length and changes the polynomial. Naming the squared length shortens the
 // basis tail, and the adjacent addresses keep its first difference at +0x34b.
+// Named deadline with exchanged multiplication reads in k, i, j, ki, kj, ij or kij scores 94 each.
+// Staging the kij dot after both length tests scores 92. All reach +0x34b at 1396 bytes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1638,6 +1640,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
 // 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
 // `c * (1 - square) + square` 337 (the same code: the product order is canonical).
+// Builder inline or automatic 761/761, automatic transform 337, both automatic 761
+// (reduced control 337). Symmetric pairs before diagonals 359, negative or positive
+// partners first 368/373, late second and third squares 375. NOT kept: the builder
+// needs forced expansion in this image, and the coefficient forms change the frame.
 // Transform row accumulators 390; partial sums 346; terms formed one row at a time 356; all terms before output 453; partial and final terms before output 395.
 // Bounded alignment 337; separate reciprocal arms 352; named squared deviation 337. Reduced control 337.
 // NOT kept: the tied forms leave the opening unity register and two squares spilled. The staged row terms increase the frame.
@@ -2394,6 +2400,10 @@ struct s_pool_view_172840
 // bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
 // stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
 // `== unknown00` with the arms swapped 22.
+// Count-first recount and native successful or rollback point difference 55/55/55.
+// Clipped base or count live across the bit copy 128/126, shared arena origin 275,
+// immutable wide cluster 55, shared short list index 150. The key and predecessor
+// allocation and long sentinel remain in the tying forms.
 // Reserved pointer for recount 149, bounds 155, or both 148. Saved point start for commit 142 or both outcomes 255.
 // Shared post-clip offset 235; recount through clip record 256; explicit inherited-bit assignment 55.
 // NOT kept: retaining the reservation enlarges the frame, and the tied assignment still leaves the long sentinel.

@@ -1023,6 +1023,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // motion and context records declared at function scope 404; `view` declared ahead of `tracking` 404; the 0x264b50 test
 // nested under its own `if (sample)` 404 (the same code each). Still BLOCKED-BY 0x2641c0's expansion here (and not in
 // 0x264210) and the release site's 0x25c820 expansion.
+// Sampling update derived from the prior and current walk state, with bool/byte/short/long
+// snapshots before node refresh 427/427/444/440 and after refresh 440/440/438/440.
+// The later short and long reach frame 0xa0 and 1616 bytes, with a stacked actor and higher scores.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

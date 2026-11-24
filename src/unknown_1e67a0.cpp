@@ -1413,6 +1413,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // a named pointer local for the rotation and both side dots 145 (1395 B), for the rotation only and declared ahead of
 // the copy 163 (retail's 1382 B, aligned 143); the `up` parameter as the rotation's axis 356 (1385 B), for the side
 // dots too 373 (1361 B). Body unchanged.
+// Positive/complementary combined turn admission before sampling 336/336, before velocity
+// publication 208/208, before the angle gate 204/204, and before the forward copy 193/193.
+// The rotation multiplicands, side products and final direction copies still differ.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

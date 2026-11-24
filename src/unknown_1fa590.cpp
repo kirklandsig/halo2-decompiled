@@ -598,6 +598,15 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // the angle's load, `ucomiss xmm0, [mem]`, unlike retail's `movss xmm1, [mem]; ucomiss xmm1, xmm0`, and the gain is only
 // the idle arm realigning behind 4 fewer bytes); the active zero test as `0.0f == function_30bf0(forward)` 133; the
 // tick test as `0 < *ticks` 132 (same code); the idle sine computed ahead of the cosine 132 (same code).
+// M3 lane 7 r227 (fast with 0xc7840, 0x30bf0 and 0x1eb8a0, base 132; caller 0x1e5af0 listed). Reading: retail passes
+// state in EAX, up in ECX and forward in EBX (0x1e5af0 passes its own register arguments straight through, so its
+// call shows no setup order). A component read at offset 0 through a pointer parameter ranks by the parameter's
+// number from the end of the list, so forward.i ranks below up.i here (2 against 4), where retail's active dot needs
+// it above; the idle crosses also need the global's j/k loads ranked above forward's j/k, which follow the address
+// temporaries' numbering, ours the other way round. Parameter orders, definition + declaration + call together: forward,
+// up, state, ticks 130 (0x1e5af0 MATCH); forward, up, ticks, state 130 (MATCH); state, forward, up, ticks 296 (0x1e5af0
+// 47); forward, state, up, ticks 295 (47); state, ticks, forward, up 296 (47). On the first: the first idle cross through
+// cross3f_staged 130, the second 130, both 146. Not kept (an order picked by score without a match).
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {

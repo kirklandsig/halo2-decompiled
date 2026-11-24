@@ -1876,6 +1876,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // call, 0x73530 MATCH); positive nested 5-term `&&` admission + 0x63220 + long histogram 1157 (2464 B, 0x63220 a call,
 // 0x73530 MATCH); single-exit + 0x63220 + long histogram with summary read before variant_index/variant 914 (0x73530 8).
 // Confirms every form that inlines both the opening 0x192e60 and 0x63220 spills session off EAX and breaks 0x73530 (8).
+// Round 469: cached machine-scan count with conditional false store/Boolean AND/logical
+// update 871/878/858. Pointer range with the same updates 883/879/863. Cursor advanced
+// at the comparison with conditional false store or Boolean AND 883/880. NOT kept: 858
+// loses 0x73530. The 863 range and repeated result stores differ from retail's countdown
+// and conditional false store. Frame 0xd0 versus 0xb4 and lookup expansion remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
