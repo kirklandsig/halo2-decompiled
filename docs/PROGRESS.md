@@ -2,6 +2,16 @@
 
 The newest entry comes first.
 
+## 2026-11-24: 10914 functions match
+
+```
+matched 10914 of 11326 game functions (2237233 of 2786206 bytes, 80.30%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, none lost:
+- @Roasted-Codes's #1526: `0x6fe90` match.
+
 ## 2026-11-24: 10913 functions match
 
 ```
