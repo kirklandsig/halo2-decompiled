@@ -970,6 +970,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // with a `& 0xffff` fallback 152 (re-measure of round 40's form); the fallback indexed by `(unsigned short)` 117 (same
 // code); the instance read from the tag field as a short 117 (same code); the tag local passed to 0x1bbf0 130 (listed);
 // the four cache zeros between the definition's table read and the head element 121. Body unchanged.
+// Typed render index or directory group with signed-slot delta 148/148, unsigned remainder 152/152,
+// scaled byte displacement 113/113, signed-slot correction 172/172, or mask before displacement 152/152.
+// NOT kept: the four-point displacement gain is below threshold and shifts before masking; retail masks first.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
