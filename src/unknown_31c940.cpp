@@ -315,19 +315,20 @@ static __forceinline void apply_linear_spilled(float const &source, solver_linea
 	work_a=_mm_shuffle_ps(work_b, work_b, 0);
 	work_a=_mm_mul_ps(work_a, work_c);
 	work_c=b.body->inverse_inertia;
-	solver_scoped_body_fields_31c940 const &linear_body_b = b;
 	work_b=_mm_shuffle_ps(work_b, work_b, 0);
 	work_b=_mm_mul_ps(work_b, work_c);
 	work_c=_mm_shuffle_ps(work_a, work_a, 0xff);
 	work_c=_mm_mul_ps(work_c, work_e);
 	work_d=_mm_shuffle_ps(work_b, work_b, 0xff);
 	work_d=_mm_mul_ps(work_d, work_e);
+	// Retain the linear receiver before A can replace the saved B body.
+	solver_velocity_31c940 *const linear_body_b=b.body;
 	work_e=a->linear;
 	work_e=_mm_add_ps(work_e, work_c);
 	a->linear=work_e;
-	work_c=linear_body_b.body->linear;
+	work_c=linear_body_b->linear;
 	work_c=_mm_sub_ps(work_c, work_d);
-	linear_body_b.body->linear=work_c;
+	linear_body_b->linear=work_c;
 	work_c=row->a;
 	solver_scoped_body_fields_31c940 const &angular_body_b = b;
 	work_a=_mm_mul_ps(work_a, work_c);

@@ -315,3 +315,60 @@ def test_bounded_linear_retains_b_receivers_before_a_write(solver_images,precisi
             assert snapshot[1]==1
             snapshots.append((snapshot,old_output,new_output,actual_pointer,callbacks))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_keeps_linear_receiver_before_a_write(solver_images,precision):
+    from unicorn.x86_const import UC_X86_REG_ESP
+
+    def as_float(bits):
+        return struct.unpack('<f',struct.pack('<I',bits))[0]
+
+    def as_bits(value):
+        return struct.unpack('<I',struct.pack('<f',value))[0]
+
+    frame=STACK+32768-0xd0
+    body_a=frame-0x10
+    original_b=HEAP+0x80
+    replacement_b=original_b+0x100
+    delta=as_float(replacement_b)-as_float(original_b)
+    for rounding in range(4):
+        data=solver_case(3,0)
+        put(data,STEP,'7fi',0,1,1,0,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,original_b)
+        put(data,OPS+24,'3I',14|(12<<8)|(2<<16),CALLBACK,0)
+        put(data,OPS+36,'IfI',3|(8<<8)|(5<<16),0,0x400)
+        put(data,TERMS,'24f',
+            0,0,0,0, 0,1,0,0, 0,0,0,1,
+            0,0,0,delta, 0,0,0,0, 0,0,0,1/delta)
+        put(data,HEAP,'B',3)
+        for body in (original_b,replacement_b):
+            put(data,body+0x10,'4f',0,0,0,0)
+            put(data,body+0x20,'4f',0,0,0,0)
+            put(data,body+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'2f',0,0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in ((retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))):
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3)
+                callbacks.append((terms,payload))
+                uc.mem_write(frame+0x14,struct.pack('<f',-1))
+                uc.mem_write(frame+0x2c,struct.pack('<f',1))
+                return_from_hook(uc)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            assert callbacks==[(TERMS,OPS+32)]
+            actual_pointer=words(machine,frame+0xc,1)[0]
+            assert actual_pointer==replacement_b,('pointer',precision,rounding,hex(actual_pointer))
+            old_linear=words(machine,original_b+0x10,4)
+            new_linear=words(machine,replacement_b+0x10,4)
+            assert old_linear==(0,0,0,as_bits(-delta)),('retail'if machine is retail else'compiled',precision,rounding,old_linear,new_linear)
+            assert new_linear==(0,0,0,0)
+            assert words(machine,IMPULSES,2)==(0x3f800000,0x3f800000)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,old_linear,new_linear,actual_pointer,callbacks))
+        assert snapshots[0]==snapshots[1]
