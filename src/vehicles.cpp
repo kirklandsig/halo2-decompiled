@@ -1957,6 +1957,10 @@ long function_10f5f0(long object_index);
 // initial flags 560 and bounds handle at activity entry 567.
 // NOT kept: the gain is one point at the same extent. Frame 0x1990 and separate
 // bounds and velocity homes persist.
+// Floor/ceiling names 561, gain/drag/radius names 561, ceiling-first and
+// radius-first reads 561/561, shared height error 561, named spring terms 567,
+// immutable samples 561, shared altitude-limit receiver 561. The frame stays
+// 0x1990 and the predicate stores and rolled reduction still differ.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5145,6 +5149,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Indexed projection removal with vehicle or shared direct cross at the facing, roll-axis and final-left outputs
 // 129/129, 118/118 and 114/114. Direct shared cross at all three 125. First cross through the facing up field 118.
 // NOT kept: the best four-point gain leaves the first cross at +0x108 and keeps the different sine and cosine homes.
+// Common matrix copy by value, conditional pointer, branch-assigned pointer,
+// or snapshot 224 each. Overlap-safe copy 224; early steady-state exit 234;
+// indexed projection with value or pointer copy 224/224. The shared copy
+// shortens the body and moves the first difference to +0x11. The projection
+// product, cross operands and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6239,6 +6248,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // and wheel-speed channels, then three activation channels, both speeds and all
 // five: eight at 759. The 0x18 frame agrees. The entry definition and zero/result
 // registers still differ.
+// Excluded-gear result 759; reverse conditional or separate zero arms for
+// gear/reverse 760/760; definite results on all case edges with entry/default
+// removed/conditional gates 751/751/751; case-head zeroes 759; named gear ratios
+// 759. NOT kept: the 751 forms reach retail length and XMM1 for the result
+// but drop the entry zero and copy. Retail's excluded gear uses that entry
+// value directly at publication. The entry definition still differs.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

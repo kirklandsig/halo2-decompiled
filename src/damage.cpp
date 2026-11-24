@@ -5657,6 +5657,10 @@ struct s_damage_object_creation
 // Accumulate primary, secondary or both section masks before publication, from zero 199/198/243
 // or from the current flags 219/219/257. Unconditional mask intersections with primary or secondary
 // publication first 201/203. Each retains frame 0x13e0 and moves the first difference ahead of the original loop.
+// Remaining-distance comparison 181, inclusive last-section bound 224.
+// Model early guard, component early guard, split guards and combined early
+// guard 167 each. Reused component index and typed component lookups 167/167.
+// The section count still takes EDI and the node-loop pad remains absent.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
