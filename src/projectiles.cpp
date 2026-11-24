@@ -1543,6 +1543,10 @@ extern vector3f *g_4687ac;
 // with its original declaration, scoped end, scoped aggregate or existing point setter:
 // 184 each. Reload radius after normalization on the same forms: 195 each.
 // NOT kept: all shrink the frame to 0x3c and raise the score.
+// Stage the cross in place over the lateral displacement or up-vector copy, with
+// original or bounded initial ray, 177/179 and 189/191. Consuming the same local for
+// the negative endpoint gives the same scores. NOT kept: frame, extent and score
+// do not agree with the retail allocation.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {

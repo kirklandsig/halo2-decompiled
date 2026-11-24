@@ -518,6 +518,10 @@ extern real g_4c9798[36];
 // which needs the cursor back on EAX twice: one more integer temporary ahead of the flags word and one more ahead of
 // the size-limit bits, or neither the tag word nor the flags word taken from the cursor. Named locals fold away before
 // the scratch registers are handed out, so none of the six forms adds one.
+// Stage both rounding operands before either call, width-first or height-first,
+// with direct alignment, separate height alignment, delayed width alignment, or
+// both delayed, 174 each. NOT kept: the EDX load and size/aspect homes agree with
+// the opening body.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

@@ -4298,6 +4298,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // In-place force, torque, or both through the shared scaler 1000 each. Staged force, torque, both, and both
 // mixed scaler/setter forms 1000 each. NOT kept: the frame stays 0x78 at 4698 bytes and the force, torque and
 // mass homes remain unchanged.
+// Reuse the angular query workspace for the rotated control components. Direct
+// stores or vector setter, with or without one control sample, 1109/1071/1153/1071.
+// With the in-place velocity scaler, 1126/1108/1161/1108. NOT kept: the frame
+// stays 0x78 or grows to 0x7c, and the extent and score increase.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4352,7 +4356,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 
 			if (TEST_FIELD_BIT((flags >> 4) & 1))
 			{
-				boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+				boost = function_d1210(vehicle_index) * (((s_unit_definition *)definition)->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 			}
 
 			real angle = (real)atan2(input.y, input.x);
