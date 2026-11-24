@@ -1661,6 +1661,24 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // `if (0 < graph->inheritance_count)` 823 (2805 B; it costs matched 0x1dc8c0 two, so it is out); diagnostic, `for
 // (;;)` with both breaks under a favour-size pragma 2035 (1794 B, nothing inlines). Retail's `jne 0x1db22a; jmp
 // 0x1db1d3` is `for (;;)`'s graph without the header copy our build makes at the latch. Body unchanged.
+// M3 lane 3 r303 (h2m fast with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812,
+// aligned 578): the three request helpers as member functions of the graph type, called on the caller's own object, 812
+// (same code); the body's locals renamed (the candidate as a, zz_candidate, candidate, one more spelling; the mode output as a_mode,
+// zz_mode, z_mode, resolved_mode, found_mode_value; result and named renamed) 812 each (same code: same-size homes do not
+// follow names here); the outputs, 0x1dd9d0 and both requests in the loop's found pass with its own return and the outputs
+// repeated on the not-found exit 1075 (2884 B, no zero register); on the single-return form (1040 re-measured, aligned 153)
+// a single-iterate found flag 1040 (same code) and `for (;;)` with both breaks 1049 (aligned 150). Diagnostics, removed:
+// only the first request kept 2221 (1557 B) and only the second 2285 (1543 B) both use `test` and two immediate counter
+// stores (no zero register although EBP is free at the fifth kind; the kept body's second request, with EBX and EBP busy,
+// makes a scratch zero in ECX for the count test and both stores); one extra zero store beside the inheritance counter's
+// initialiser (a local 783, a file global 784; 0x1dc8c0 lost) gives retail's `xor ebp, ebp` from the fifth kind's first test
+// with its five compares and the counter store, but the stride store behind the zero-trip branch stays an immediate; the
+// extra store in the loop's preheader instead 812 (a scratch zero for that block only). Read from matched 0x1dc790's retail:
+// with its flag loop the result's dword stays in a register and the test after the outputs is `cmp word [result + 2]`, as
+// in the twins' retail; this body's do-while tests a reloaded dword shifted right. Retail's frame is the three outputs,
+// the result and the iterator in that order with every other value in a dead parameter home; ours differs only by the mode
+// output taking found_mode's home, which follows the second request's registers (retail: `this` in EBX reloaded once at
+// the first loop's exit, the mode copied once into EBP, the +0x34 table pointer left in its home). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

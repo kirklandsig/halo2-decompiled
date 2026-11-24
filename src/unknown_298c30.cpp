@@ -1643,6 +1643,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // products 95 (same code); the sine held in a double local 154; the second difference in its own local 174 (3372 B,
 // aligned 26: homes still exchanged, two other sums flip); the rotation output declared at the loop top 95 (same code).
 // Patch: build/r180/lead-299460-95.patch (m3-lane16; needs the held `inline` on 0x2108a0 and the header pair).
+// M3 lane 5 r240 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 569): the radius named once at the top
+// (`real const radius = arg_6;`, every use through it) 569 (same code); bound by `real const &` and used everywhere 569
+// (same code); the pivot field and the 0x2108a0 lookup ahead of the first offset pair 822 (3336 B); one signed side scale
+// (`arg_1->field_0 ? arg_6 : -arg_6`) named and used by both offset pairs 939 (3226 B); the offset helper's scale taken
+// by const reference 732 (3349 B). Body unchanged; still BLOCKED-BY 0x2108a0.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
