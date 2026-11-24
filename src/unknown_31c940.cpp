@@ -1047,7 +1047,7 @@ static __forceinline void solve_linear_error_cursor_31c940(float target,float ma
 	// Advance cursors while retaining this row's projected linear axis.
 	op+=4; terms+=3; ++result;
 	// Observe the current step after projection publication, which can alias a scale.
-	solver_step_31c940 *const &parameters=step;
+	solver_step_31c940 *parameters=step;
 	double error_scale=parameters->error_scale;
  double velocity_scale=parameters->velocity_scale;
  float impulse=mass*(target*error_scale-projection_pool.linear_error*velocity_scale);
