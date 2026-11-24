@@ -1692,312 +1692,37 @@ PRIVATE __forceinline real component_scalar_magnitude(real value)
 
 #define COMPONENT_SCALAR_PIN(value, lower, upper) ((value) < (lower) ? (lower) : (value) > (upper) ? (upper) : (value))
 
-PRIVATE __forceinline real component_acceleration_scale(bool scale_by_mass, real mass, real target, real acceleration, real exponent)
+PRIVATE __forceinline real component_acceleration_scale(real target, real acceleration, real exponent)
 {
 	real result;
 	if (exponent > 0.001f)
 		result = (real)pow(component_scalar_magnitude(target), exponent) * acceleration;
 	else
 		result = acceleration;
-	if (scale_by_mass && mass > 0.001f)
-		result /= mass;
 	return result;
 }
 
-PRIVATE __forceinline real const &component_time_step()
+PRIVATE __forceinline real component_time_step()
 {
 	return g_510c54->rate;
 }
 
-// score 26 (was 26): r131, r232 and r234 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
-// r133 unchanged. The scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
-// M3 lane 11 r135 (fast; control 26): the magnitude helper taking its value by `real const &` 26; `target -= position`
-// through a forceinline helper writing through a pointer 26; the stop distance in a forceinline (velocity, step, `real
-// const *` time step) helper given `&delta_time` 26; the scale helper writing its result through an out parameter 26 (all
-// four the same code); `real distance = target - position;` used by the tests and the square root in place of the
-// adjusted target 29. Lead: retail's `add eax, 4` looks like a kill of the global load between the reads: a compile-only build
-// gives retail's `mulss xmm0, [eax + 4]` ... `add eax, 4` ... `[eax]` as soon as a store through an unknown float pointer
-// sits between them (a stand-alone test), but the link-time build does not (diagnostic: `*ratio = target;` after the
-// subtraction 142 at 476 B, still `[eax + 4]` twice): at link time the out pointer is known to address the caller's
-// locals. Retail's only stores between the reads are the step and target homes; matched 0x1b54d0, 0x1be6e0, 0x25ae40
-// and 0x267840 show the same fold-then-materialise shape for a point passed to vector3d_from_points3d from a call result.
-// MiniMax A (11-18): no new form, no lower score (43): the tail still keeps the scaled value in XMM1 where retail
-// holds it in XMM0 (retail divides XMM0 by XMM1 and multiplies the step in place with `mulss xmm0, [eax + 4]` and
-// `add eax, 4`, ours loads the step into XMM0 and multiplies it by the same memory operand), retail's second product
-// multiplies by the base field while ours keeps the field at +4, and the zero register is XMM3 in retail and XMM2
-// here; the step's own value still sits in a register instead of the memory multiply retail uses.
-// Earlier (score 26, was 43): the scaled acceleration still lands in XMM1 where retail has XMM0, and the time step is
-// loaded into a register where retail multiplies it from memory.
-// MiniMax B (11-18): score 43 -> 26: the stop test compares the target with the step before the stop distance
-// (the step-predicate-first form earlier rounds measured at 26); the acceleration register and the memory time
-// step still differ.
-// Earlier (score 43, was 26): retail's stop-first test order, see b13C below; earlier 43; Acceleration XMM0/memory
-// timestep prefix and stop-test schedule still differ;
-// negative-target guard 50; stopping branch first 106; step predicate first 26 (kept, plain 26);
-// negative guard with step predicate 32; independent/eager stop decisions 129/124;
-// explicit fraction branches 43; velocity input/output lifetime 219.
-// acceleration/timestep registers and stop scheduling remain; direct stopping decision 106;
-// conditional/stopping-first results, stopping ticks, squared speed, limit magnitude, normalized speed
-// and captured step decision 26 each. Original body retained.
-// acceleration/timestep allocation remains; assigned correction and positive clamp 26;
-// nonpositive/all assigned clamps 45; shared velocity clamp 148; shared bounds 148 (449/450 bytes).
-// acceleration register, memory timestep multiply and stop-test schedule differ.
-// Ordinary acceleration/magnitude/time inline contracts and paired forms 26;
-// completed clamp before ratio 82; accelerated candidate default 114.
-// the time step is still loaded before its product; retail multiplies from memory
-// and keeps the step's address. Step on the left of both products 26; direct field reads 26;
-// one-expression step 26; address-taken target 26; step pointer first 142; direct reads with the
-// stopping test first 43; product inside the scale helper 26; per-arm mass step 135.
-// acceleration/timestep allocation and stopping schedule remain.
-// Combined forced/stopping step-first, distance-first, eager distance, conditional result,
-// named decision and stopping guard 106 each; merged default/return scaling 140/110.
-// isolated mass return 113; threshold-first return 121; returned
-// selection/nested return/power selection 113 each; direct/default/assigned magnitude
-// results with mass return 113/127/113. XMM0 prefix improves; memory timestep still differs.
-// acceleration/timestep allocation and stopping order remain.
-// Mass eligibility early scale/mass-first 164/166, late 26/120; selected divisor early/late 143/114;
-// early eligibility with selected normalization scale/mass-first 164/166. Original helper retained.
-// Round 15: stop distance tested before the step 43 (retail's test order, zero register rotated);
-// the same with the step on the right of both products 43; time-step reference declared first 142,
-// with the stop-first test 142; time step copied into a value local 99 (acceleration in xmm0 as
-// retail, but the step stays in a register instead of the memory multiply).
-// Round 115 (lane 6, fast): the stop-first test with the stop ticks and tick distance named 43; the time
-// step bound inside the scale helper between the exponent result and the mass division, the helper
-// returning the step 31 (the time-step global is then loaded before the mass test, still loaded before
-// its product); the helper scaling its own acceleration parameter 132 (the acceleration load hoisted);
-// the step as a value local at function scope 147 (479 bytes); `(velocity * delta_time)` as the first
-// factor of the stop distance 26. One-file LTCG harness screens (exact here, ~45 forms): every product
-// operand order, either test order, value/reference/pointer/struct-pointer reads of the step and the
-// stop distance's groupings give the load-first products; an intervening float store (to a file global
-// or through `ratio`) never folds the step either, and `(void)&local` changes nothing.
-// Lead (harness diagnostics): the product's operand order follows where the step's value is first defined.
-// A step value read before the exponent test and used only in the step product gives retail's in-place
-// `mulss xmm0, [mem]` with the scaled value in xmm0, but it is spilled across the power call (`mulss xmm0,
-// [esp+8]`, 160, 490 bytes); read after the exponent result 50; a constant multiplier also puts the scaled
-// value in xmm0. Retail loads the global right at the product, so its step read must rank earlier in another way.
-// Round 140 (c1C): retail's three extra instructions are only the memory operands: `mulss xmm0,[eax+4]` then
-// `add eax,4` (the step's address kept) and `movaps xmm7,xmm4; mulss xmm7,[eax]`; no statement is missing. Same
-// code (26, 470 bytes) for: product operands swapped, the step as a `real const *` local, the step read as
-// `g_510c54->rate` at the first product with the reference bound after it, the stop distance in a helper taking
-// the step by reference. Both products through a helper taking `&g_510c54->rate` 138 (462 bytes).
-// Permuter (25 min on #1044 round 2, about 730 variants): nothing below its own baseline (23 in its render).
-// b13C (11-17) walk against retail, fast build on r846: no logic difference (exponent test jbe 0x1d22ca, abs by jb,
-// allow_reverse in BL, every jcc sense incl. the sqrt arm 0x1d237d-0x1d2397 and both clamp tails agree; its only caller
-// 0x1d24a0 stays 902). Remaining: accel XMM1/mass XMM0 against retail's XMM0/XMM1 at 0x1d22d0-0x1d22e7, then retail's
-// `mulss xmm0,[eax+4]; add eax,4` (0x1d22f0, 0x1d22f8) and `mulss xmm7,[eax]` with velocity first (0x1d235d) where ours
-// loads the step first and keeps [eax+4]: the 3 extra bytes. Retail tests the stop distance first (0x1d236d) then the
-// step (0x1d2372); `target > stop_distance && target > step` gives retail's opcode order for that part (43, only
-// xmm2/xmm3 swap, zero register against the stop temp) and is kept, with `velocity * delta_time` (0x1d235d). New forms,
-// all 43 or worse: the stop temp split into a named tick count 43, the stop test inline 43, magnitude after `target -=
-// position` 53 (with the stop-first test).
-// Per-tick travel first 43; early correction floor 113; shared accelerated
-// candidate 124; both reverse bounds before the branch 142; ratio stored in
-// each arm 143; named power, named power base, nested mass threshold 43 each.
-// The acceleration result and timestep memory operand still differ.
-// M3 lane 13 r111 (one-file LTCG harness, exact here; counts positional/aligned, this body 17/14 = the check's 26, the
-// stop-first order 36/36): about 90 forms. Same code as one of those two: a pointer local to the step (declared late, or
-// at the top and assigned late); the step multiplied in place; target or step stored through a reference or pointer
-// bound to the local; products through a helper taking the step by pointer or reference; the step as element 0 of a real
-// view; a globals pointer local; direct reads at both products in either operand order; the address by integer or byte
-// arithmetic; type-punned views of the field (byte array, long field, the short field + 1); an aggregate-returning
-// accessor holding the pointer; accessor methods on a base or member object at +4 (14 forms). A value local declared at
-// the top and assigned at the product 94/39 (461 B: scale in XMM0 and retail's divide, the step value kept in XMM1).
-// Diagnostics: a store through the out pointer between the reads 476 B (still `[eax+4]` twice); a store through the step
-// pointer 483 B; `*++p` on a real view folds too. A null-checked pointer (`g ? &g->rate : NULL`) for both products 479 B
-// keeps `add eax, 4` and `[eax]` reads but also the test; after a direct first read the test is dropped and all folds.
-// Closest, match-only and not kept: `__assume(g != NULL)`, then that null-checked pointer, the first product reading the
-// field directly, the second through the pointer: 466 B, aligned 8, the whole head retail's (scale in XMM0, `divss xmm0,
-// xmm1`, `mulss xmm0, [eax+4]`, zero in XMM3); missing `add eax, 4` and the second product from `[eax]`. The checked
-// pointer defined inside the stop-distance block gives the second product from memory (469 B, aligned 12) and loses the
-// head; both together fold back to 17/14; 16 variants of it 8 at best.
-// Reading: a product takes the step from memory when the base pointer is a block-local temporary; retail has that at
-// both products plus the materialised `base + 4`. 0x1d2280 is the only game function with that load-then-add shape on a
-// float read.
-// M3 lane 15 r102 (one-file LTCG harness, exact here: this body 17/14 = 26 at 470 B; stop-first 36/36): a forceinline
-// helper returning `value * rate` for both products 462 B, 133/19 (the 0.001 constant hoists into XMM7 and the stop
-// distance reassociates to `(v / s + 1) * rate * v`); that helper for the first product only 17/14 (same code); the stop
-// distance in a helper taking (velocity, step) and reading the global itself 17/14 (same); the mass eligibility as a
-// ternary inside the step product (`(scale && mass > 0.001f ? a / mass : a) * dt`) 473 B, 115/15: the head becomes
-// retail's (scale in XMM0, mass in XMM1, `divss xmm0, xmm1`) but the step is still loaded first, after a `movaps xmm1,
-// xmm0`, and the global load hoists above the mass test; the rate's address handed back through a helper's out parameter
-// 17/14 (same); the reference accessor, or a pointer accessor, called again at each product 17/14 (same). Each with the
-// stop-first test 36/36 (462 B forms 133/41, ternary 115/35). Every spelling folds `base + 4` at both reads.
-// M3 lane 2 r106 (the same harness, positional/aligned): the scale helper with the acceleration as its default and the
-// power arm assigning over it 131/16 (468 B); the helper as two ternaries 107/11 (473 B, head retail's but the step
-// loaded first after `movaps xmm1, xmm0`); its result through a one-member aggregate return 116/16 (492 B); `result =
-// result / mass`, and the step through a pointer to the accessor's reference 17/14 (same code); the mass ternary alone
-// 107/11, with the field read directly 107/11, with the time-step reference bound first 131/38. Diagnostic (not kept):
-// with 3, 11 or 19 extra dead locals (symbol count 3 mod 8; main's helper or the mass ternary) the head and the first
-// product are retail's (`mulss xmm0, [eax + 4]` in place) at 465 B, 104/6; only `add eax, 4` with the second product
-// from `[eax]` is missing, and the stop-first test then swaps the zero and stop registers (105/29; other counts 36/36).
-// On that dead-3 base: the step through a pointer local at both products 104/6, the pointer then the reference 104/6
-// (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
-// 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
-// a cause.
-// M3 lane 16 r147 (one-file harness, exact: main 17/14 positional/aligned = 26, stop-first 36/36): the time globals bound
-// as one const reference with `.rate` read at both products 17/14 (same code); the pin bounds named in each arm 462 B,
-// 74/40; the scaled value assigned back into `acceleration`, step-first 17/14 and stop-first 36/36 (same code each);
-// stop-first with the step started as the scale result and multiplied in place 36/36; stop-first with the stop tick
-// count and the per-tick travel named 36/36, plus the final change named 36/36 (same code each).
-// M3 lane 15 r112 (one-file harness, exact: 17/14 = 26; fast 26): the scale written in the body as an if/else on
-// `scaled_acceleration` 26 (fast, same code); that with the power's base and the power named 26 (same code); bare
-// declarations of next_velocity, fraction, stop_distance, magnitude and step at the top 26 (same code); the time step
-// through a getter defined in another source (inlined at link time) read at each use, bound as a reference or as a
-// pointer 26 each (same code), its value in a local 461 B, 90/48; `target - position` named at the top 467 B, 76/69.
-// Diagnostic (dead locals, not kept): the head is retail's for 3 mod 8 extra symbols numbered before the time-step
-// binding (465 B, 104/6; stop-first 105/29: then only the XMM2/XMM3 swap and `add eax, 4` differ). Dead locals after
-// the binding never give it; a named base or power in the body counts one each, locals inside the inline helpers and
-// bare declarations count nothing. A pointer with a second, live definition in the low-step arm still folds both reads.
-// M3 lane 14 r130 (fast with 0x1d87b0, 0x1d06c0, 0x1d0400, 0x181db0, 0x1d24a0; control 26): the acceleration scale in
-// the body with the power's base and the power named 26 (same code); that with the stop-first test 43; the stop ticks
-// and per-tick travel named 26; `(velocity / step + 1.0f) * velocity * delta_time * 0.5f` 138 (462 B); the base and
-// power names plus the time-step reference bound through a `game_time` globals pointer local 105 (467 B, the head
-// retail's but no `add eax, 4`, every later line one off). Diagnostics: base and power plus one dead local 105, three
-// dead locals ahead of the scale 105, the first with the stop-first test 106: any third symbol ahead of the binding
-// gives the head; the pointer step still has no cause.
-// M3 lane 16 r155 (fast; control 26): `target - position` named as an offset after the magnitude (target left
-// unchanged), step-first 29, stop-first 46; the target-below-zero and square-root arms as one ternary, step-first 26
-// (same code), stop-first 43. The stop-first listing: the whole head and branch layout retail's except the scale in
-// XMM1, the zero in XMM2 and the stop temp in XMM3 (retail XMM3/XMM2), and the step loaded from `[eax + 4]` both times.
-// M3 lane 2 r121 (fast, control 26; a/m = aligned / register-masked aligned unmatched lines, control 14/11). LEAD, not
-// kept (the positional score rises): the body from the step product on as one forceinline helper called in the `return`,
-// with the scale helper's result as an argument expression, the time step as a `real const &` parameter bound to the
-// globals' rate, the target as a `real &` parameter and the stop distance tested first: 106 at 465 B, a 30/3. The whole
-// head is then retail's with no dead locals (scale in XMM0, `divss xmm0, xmm1`, `mulss xmm0, [eax + 4]`) and the adjusted
-// target is stored to its own home; left are `add eax, 4` with the second product from `[eax]`, and the zero and the stop
-// temp in XMM2/XMM3 for retail's XMM3/XMM2. On that helper: the step tested first 105 (a 5/5, the registers retail's);
-// the target by value 105 / 106 (a 7/7, 32/5: the adjusted target lands in the exponent's home); a pointer parameter for
-// the time step 105 and the reference accessor as its argument 105 (same code each); the time step by value 99 / 103
-// (461 B: the value stays in XMM1 and the target moves to XMM3), unchanged by 1..7 dead locals; the magnitude from the
-// product written again 38 (468 B); the stop distance dividing by the product written again 106; a by-value inline getter
-// called at each use in place of the parameter 26 step-first and 43 stop-first (main's code and the old stop-first code:
-// the head reverts), with a third getter call in the stop distance 111 (479 B) or in the magnitude 118 (473 B); the
-// scale in a named local with `target -= position` in the body ahead of the helper 119 (473 B); 1..7 dead locals in the
-// outer body 43 each (any outer local loses the head); the stop distance written inside the test, through a nested
-// forceinline helper taking the time step by reference, or with the stop ticks and the per-tick travel named 106 each
-// (the lead's code). On main's body: the magnitude from the product written again 118
-// (473 B); the stop distance dividing by the product written again 45. Diagnostic: `*ratio = 0.0f;` between the two reads
-// on the helper 126 (471 B, still `[eax + 4]` twice). Compile-only synthetic screens: a reference or pointer bound to the
-// field gives `[eax + 4]`, `add eax, 4`, `[eax]` exactly when something between the two reads may change the globals
-// pointer itself (a store through any pointer when the pointer is an extern, an opaque call when it is a file static);
-// a store that can only change the pointed-to value, direct reads at both uses (they reload the pointer), a math call
-// ahead of both reads and a by-value copy (kept in a register, or spilled to the stack under pressure, never re-read
-// through its address) do not. In the link-time build no pointer store counts and retail has no call between the reads.
-// M3 lane 8 r214 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
-// to it, at both products 26 (same code); the step as a forceinline helper returning the scale helper's result times the
-// time step 142 (476 B, the global load hoists above the mass test); `target -= position` ahead of the step product 119
-// (473 B); the pin macro as a forceinline function 89 (462 B); the step as a `real &` bound to the scaled value and
-// multiplied in place 26 (same code). Reading: retail never takes the globals pointer's address (its 876 references are
-// 875 loads and one store), so no store can kill its load between the reads; matched 0x25ae40's fold-then-add shape has
-// a call result as the base (an inline pointer parameter `result + 4`), which the load of a global never gives here.
-// Diagnostic (reverted): the globals pointer's address taken in this body (a tail compare of `ratio` with it) still
-// reads `[eax + 4]` at both products (484 B), so an address-taken global alone does not give the `add eax, 4`.
-// M3 lane 3 r287 (fast; control 26): the rate's address in a pointer local read through a `real const *const &` bound
-// to it at both products 26; the step as `real &step = scaled_acceleration; step *= delta_time;` 26; the globals
-// pointer copied to a local and read through a `const &` to that local at both products 26; a second `real const &`
-// time-step binding inside the stop-distance block for the second product 26; the scale helper's result initialised
-// to the acceleration at its declaration (the else arm kept) 26 (all the same code: `[eax + 4]` at both reads, the
-// scale in XMM1).
-// M3 lane 12 r167 (h2m fast; control 26): `target -= position` ahead of the time-step binding 119 (473 B); the stop distance
-// computed ahead of the force test 26 (same code); the step's magnitude taken at the return 157 (485 B); no reference, the
-// getter called at each product 26 (same code); the stop distance reading `g_510c54->rate` directly 26 (same code). Retail's
-// only other `[reg + 4]` read then `add reg, 4` on this global is matched 0xc6810, where four direct reads (the first in each
-// of two arms, float stores through an object pointer between them) make the rate's address a common subexpression; here
-// only argument-home stores sit between the two reads, and the link-time build keeps the globals pointer. Body unchanged.
-// M3 lane 5 r228 (h2m fast; control 26): the force-acceleration arms swapped (`if (!force_acceleration)`) 101 (460 B);
-// the step test's arms swapped (`if (step <= 0.001f)` first) 140 (498 B); the ratio stored without the `fraction` local
-// 26 (same code); one to three redundant parenthesis pairs around the step product's operand, the whole step product, the
-// mass argument of the scale helper or the stop distance's `velocity / step` 26 each (same code). Diagnostic, reverted:
-// an opaque float store through a table pointer between the two reads 125 (483 B): the rate is still loaded first and
-// read again from `[eax + 4]`, so killing the loaded value alone gives neither the memory operand nor `add eax, 4`.
-// M3 lane 2 r130 (h2m fast; control 26): the force arm's step written as the product again 45 (the product is shared,
-// the zero register moves); the head's time-step reference in its own block with a second binding in the stop block 26
-// (same code); the time step's address in a pointer local taken ahead of the scale 142 (476 B); the ratio computed and
-// stored right after the subtraction 153 (488 B, the rate still read as `[eax + 4]` after it); the stop distance halved
-// by `/ 2.0f` 26 (same code). Diagnostic (wrong code): a third surviving rate read (the low-step lower bound times the
-// time step) 88 at 479 B, all three `[eax + 4]`, so the kept `add eax, 4` is not a use-count effect. Matched 0xc6810's
-// `add ebx, 4` follows a call (0xb58c0) between its reads, which kills the value but not the pointer; retail here has no
-// call and no store that can reach the globals between its two reads.
-// M3 lane 5 r228 (h2m fast; control 26): the force-acceleration arms swapped (`if (!force_acceleration)`) 101 (460 B);
-// the step test's arms swapped (`if (step <= 0.001f)` first) 140 (498 B); the ratio stored without the `fraction` local
-// 26 (same code); one to three redundant parenthesis pairs around the step product's operand, the whole step product, the
-// mass argument of the scale helper or the stop distance's `velocity / step` 26 each (same code). Diagnostic, reverted:
-// an opaque float store through a table pointer between the two reads 125 (483 B): the rate is still loaded first and
-// read again from `[eax + 4]`, so killing the loaded value alone gives neither the memory operand nor `add eax, 4`.
-// M3 lane 11 r150 (h2m fast with 0x1d24a0; control 26): plain `inline` (not forceinline) helpers, in case a late
-// expansion kept the rate's address as a pointer argument: the stop distance through a (velocity, step, `real const &`
-// time step) helper 26, with the stop-first test 43; both products through a (value, `real const &` time step) helper
-// 138 (462 B); the time-step getter itself plain `inline` 26; a plain-inline getter returning the rate's address, read
-// through a `real const *` at both products, stop-first 43 (each the forceinline form's code: /Ob1 expands them before
-// optimisation, so the address still folds into `[eax + 4]` twice). All restored.
-// M3 lane 15 r131 (h2m fast with 0x1d87b0/0x1d06c0/0x1d0400/0x181db0; control 26): compare operands constant-first or
-// target-right: the step test `0.001f < step` 26; `0.0f > target` 26; `step < target && stop_distance < target` 26; the
-// scale helper's `0.001f < exponent` and `0.001f < mass` 26; the ratio's `0.001f < magnitude(limit)` 26 (all the same code).
-// M3 lane 5 r232 (h2m fast with 0x1d24a0; control 26): the magnitude taken after `target -= position` with the
-// step-first test 55; the stop distance as `0.5f * (velocity / step + 1.0f) * (velocity * delta_time)` 26; its sum as
-// `1.0f + velocity / step` 26; the final change named ahead of the return's pin 26; the step started as the scale
-// result and multiplied in place (`step *= delta_time;`) with the step-first test 26 (the last four the same code).
-// All restored.
-// M3 lane 5 r234 (h2m fast with 0x1d24a0; control 26): the scale helper's result started as the acceleration and
-// multiplied by the power (`result *= (real)pow(...)`, no else arm) 132 (468 B), with the stop-first test 132; three
-// natural names (the power's base and the power in the scale helper, the limit's magnitude in the ratio) 26 (same code),
-// with the stop-first test 43; the ratio stored by if/else with no fraction local 143 (477 B). All restored.
-// M3 lane 15 r133 (h2m fast; control 26; a = aligned unmatched rows, control 14): what gives retail's kept address
-// (`mulss xmm0, [eax + 4]`, `add eax, 4`, later `[eax]`), measured here. (1) The rate's address defined on two paths:
-// the step product written in each arm of the mass test, the getter called in each arm, keeps `add eax, 4` and reads the
-// second product from `[eax]`, but once per arm and never merged: as `x / mass * dt` and `x * dt` 135 (487 B, a 19; the
-// compiler regroups to `dt / mass` and factors `* x` out of both arms, not `* dt`); in place (`step /= mass; step *= dt`
-// and `step *= dt`) 141 (489 B, a 23); the time step written first 141; through a new one-line per-tick helper called in
-// each arm, either operand order, as a ternary, or with the step started as the scale result 135 each; a reference bound
-// in each arm 141 (a 19); each of these unchanged by 0..8 dead locals ahead of the test. One reference bound ahead of
-// the two arms 128 (477 B, no kept address). (2) Diagnostics, reverted at once: with the globals pointer's address taken
-// in this file and the ratio stored between the two reads, the kept address appears (139, 472 B); the address taken
-// alone 26 (same code); the early ratio store alone 137 (no kept address). With the address taken, `target -= position`
-// through a pointer local, a reference local or a new inline helper writing through a pointer, and the step stored
-// through a pointer local 26 each (same code: a local's pointer is resolved first and kills nothing). Retail has no
-// store through a pointer and no call between its two reads, so (2) needs a cause not in the final code. Full-image
-// diagnostic (reverted): the globals pointer's address taken in the file that defines it loses 164 matched functions
-// and gains none, so retail does not treat that pointer as address-taken and (2) is ruled out; (1) is the open cause.
-// Also: the time-step reference bound ahead of the scale helper 142 (476 B: the globals pointer loaded before the
-// power call, kept in ESI, `[esi + 4]` at both reads); r121's helper lead re-measured: 105 step-first (a 8: only the
-// kept address, the second read and the test order differ), 106 stop-first (a 31: plus the XMM2/XMM3 swap); the same
-// helper with the time step third and the target fourth, the getter as the argument, 26 step-first and 43 stop-first
-// (main's code: the lead needs the reference parameter last); the mass test and the per-arm product moved into that
-// helper (reference parameter) 128-131 (477-480 B, no kept address), with the getter called in each arm 135/141.
-// M3 lane 14 r147 (h2m fast with 0x1d24a0; control 26): the time step bound straight to the field (no getter) 26 (same
-// code); the magnitude helper negative-first (`value < 0.0f ? 0.0f - value : value`) 52; the stop distance computed at the
-// top of the step block, ahead of the force test, with the stop-first test 43; the mass test nested (`if (scale_by_mass)
-// { if (mass > 0.001f) ... }`) 26 (same code); the power product acceleration-first 26 (same code). Diagnostic, reverted
-// at once: a pointer getter defined in another source (expanded only at link time) read at both products 26 (same code:
-// the link-time expansion folds `base + 4` as well). All restored.
-// M3 lane 15 r135 (h2m fast with 0x1d24a0; control 26, the stop-first test alone re-measured 43): stop-first with the
-// stop distance's product as `delta_time * velocity` 43; `real next_velocity;` declared first in the body 26 (same code),
-// with the stop-first test 43; the second test as `step < target` after the stop test 43; `real stop_distance;` declared at
-// function scope beside the result and assigned in the arm 26 (same code), with the stop-first test 43. All restored.
-// M3 lane 4 r255 (h2m fast with 0x1d24a0; control 26): the step product scaled-value first 26 (same code); the time-step
-// reference bound after `target -= position` 119 (473 B); the stop distance's product `delta_time * velocity` 26 (same
-// code); `step = scaled; step *= delta_time;` 26 (same code); the reference bound ahead of the scale helper with its
-// result used straight in the step product 142 (476 B).
-// M3 lane 16 r183 (h2m fast; control 26). Diagnostic phase scan, 1 to 8 initialised dead locals ahead of the scale
-// call: 26 except 3 (and 11, 19): 105 at retail's 467 B, where the scaled value is XMM0 with retail's in-place `mulss
-// xmm0, [eax + 4]` and the stop product's `movaps xmm7, xmm4; mulss xmm7, [eax + 4]` (aligned 8: only the kept address,
-// its second read and the test order left); locals added inside the arm do not count (3 + 8 there 106, 2 + 1 43). The
-// stop-first test on that phase 106 (aligned 31: retail's order, the zero and the stop distance in XMM2/XMM3 swapped),
-// other phases 43. Across phases 0-7: the time step as a `real const *` local 26 (105 at 3, no kept address); the step
-// reading the field directly with the reference bound after it 26 (25 at 2, 469 B: only the stop product's operands
-// flip); the getter called at each product 26; the field read directly with the reference bound after the subtraction
-// 26. Diagnostics: the time step as a `real const *` passed to two forceinline helpers (the step product, and the stop
-// distance taking velocity, step and the pointer) 26 at phases 0-2 and 4-7, 105 at 3; the same with the step product
-// written in the body 26 / 105 (no kept address in either: a pointer parameter read twice does not materialise it as
-// 0x25ae40's call-result pointer does). A natural +3 symbol shift alone would be a positional rise, so the kept
-// address is still the open cause.
+/* one tick of a component's speed toward a target position: the acceleration (scaled by a power of the distance
+   and, when asked, divided by the mass) is applied until the stopping distance is reached, after which the speed
+   follows sqrt(2 a d); returns the change in speed pinned to one tick's acceleration and stores |velocity / limit|
+   in *ratio */
+// The tick length is read at each use, once in each arm of the mass test and again for the stop distance: retail
+// forms the rate's address in both arms and keeps it (`mulss xmm0, [eax + 4]`, `add eax, 4`, later `[eax]`).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
 {
-	real scaled_acceleration = component_acceleration_scale(scale_by_mass, mass, target, acceleration, exponent);
-	real const &delta_time = component_time_step();
-	real step = delta_time * scaled_acceleration;
+	real scaled_acceleration = component_acceleration_scale(target, acceleration, exponent);
+	real step;
+	if (scale_by_mass && mass > 0.001f)
+		step = scaled_acceleration / mass * component_time_step();
+	else
+		step = scaled_acceleration * component_time_step();
 	real magnitude = component_scalar_magnitude(step);
 	target -= position;
 	real next_velocity;
@@ -2007,8 +1732,8 @@ real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real tar
 			next_velocity = velocity + step;
 		else
 		{
-			real stop_distance = (velocity / step + 1.0f) * (velocity * delta_time) * 0.5f;
-			if (target > step && target > stop_distance)
+			real stop_distance = (velocity / step + 1.0f) * (velocity * component_time_step()) * 0.5f;
+			if (target > stop_distance && target > step)
 				next_velocity = velocity + step;
 			else if (target < 0.0f)
 				next_velocity = velocity;

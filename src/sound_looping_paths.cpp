@@ -949,6 +949,17 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // with tag snapshot 911, duplicate pointer walk 928, direct query bound and completed choice snapshot 931,
 // dword query and duplicate ordinal 968, dword query and choice reference 927, dword construction and capacity
 // break 936.
+// M3 lane 11 r164 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650,
+// 0x18d730 and 0x18dc90; control 837). Reading of the frame: it is over 0x80 bytes, so its cells are sorted by
+// reference density (densest lowest), and a separate 4-byte count cell always sorts below every array. Retail has each
+// count right below its own array (the choices' count at frame+0x24 under the choices, the targets' at +0x78 under the
+// targets, the existing list's at +0xdc in front of its 64 entries), and its frame is 4 bytes larger than ours because
+// the existing list with its count is 0x104 bytes in the cell it shares with the gains array (ours 0x100). So retail's
+// lists were count-first records (lane 2 r142's lead), not a spelling of these locals. Tried on main's body: the out
+// count read at each use with no short query copy 911; the choice written through `s_loop_path_choice *choice =
+// &choices[choice_count++];` 952 (3273 B); the four choice stores in retail's store order (tag, source, decibels,
+// cluster) 837 and the three 1.0f defaults as three statements 837 (both the same code); the primary set inside the
+// build loop as `if (i == 0 && inside) primary = choice->source;` 949 (3305 B).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

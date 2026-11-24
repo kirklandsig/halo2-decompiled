@@ -1052,6 +1052,18 @@ extern "C" void _ReadWriteBarrier(void);
 // assigned after the barrier 6; declared bare and assigned after the lookup 6 (the 6s the same code: the dead first store
 // is removed before the copy is propagated). Matched functions that load a stack parameter in the entry block and read it
 // only on the fall-through path (0xa8dd0, 0xc40f0, 0x195820) use it in two sibling arms or through its address.
+// M3 lane 6 r238 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6). Reading from the allocator's side: the slot
+// is a register candidate over the NONE block and the flags arm only, and its load from the parameter home is placed in
+// front of its first use, which is after the branch; retail's load sits in the entry block after the pool and data loads
+// (it takes ECX once the pool pointer is dead and is scheduled ahead of the mask), so retail's slot is defined in the
+// entry block after the actor lookup, and with ECX and EDX both held there the 0x26c compare stays on memory without a
+// barrier. Diagnostic (a volatile read of the parameter after the lookup, with the barrier; never in the tree): 31, and
+// no single forced register or schedule choice on it gives retail's code, so that anchored read is not retail's shape
+// either. No barrier: the state set NULL in an else arm of the busy test 44 (208 B); the state started NULL and assigned
+// from the slot at the head of the NONE block 44; the busy field in a named long read after the state 44; the actor
+// looked up through a `long const &` to the index parameter 44; the slot read through a `s_slot *const &` to the
+// parameter 44; the state read through a `s_slot_4c *const &` to the state local 44. With the barrier: the actor looked up
+// through a `long const &` to the index parameter 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2340,6 +2352,16 @@ void function_1f86a0(long actor_index);
 // result takes EBX across the second root call and the entry is reloaded from its home after it, the actor stays in EDI
 // and the mask is the only value left without a register; ours gives the root EDI (reloading the actor every pass) and
 // the mask BL. Body unchanged.
+// M3 lane 3 r305 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123). Allocator reading:
+// in the first colouring pass the allocator ranks the mask byte above the loop entry, 88 against 45 (the mask's copy
+// and `and` count three references in the loop's first block, which references eight values, where the entry counts
+// one), so the mask takes EBX and the entry is split into pieces with no register; the flags byte load is a shared
+// value whose 0x40 use is re-read from memory. In the no-mask-local form the shared flags byte and the shared mask
+// rank 56 each against the entry's 45, the flags byte takes EBX and the mask is spilled as retail. Retail needs the
+// entry ranked above both (it would win a tie at 56, being created later). Forms: the entry declared in the `while`
+// condition 123; one element local shared by the loop and the tail 123; the flags read through a `byte const &` for
+// the mask and the 0x40 test 123; the entry as a pointer to const 123 (same code each); re-measured the no-mask form
+// with plain truth tests 244 (868 B). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
