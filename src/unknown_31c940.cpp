@@ -743,10 +743,10 @@ static __forceinline float load_stored_impulse(float const &value)
 	return stored;
 }
 
-static __forceinline void apply_second_pair_first_impulse(float const &source,
+static __forceinline __m128 apply_second_pair_first_impulse(float const &source,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,__m128 *const & linear_velocity_b_pointer,
 	__m128 *const &angular_b_pointer, solver_velocity_31c940 *const &inertia_body_b, __m128 const *&inverse_b_home, __m128 const &axis_linear,
-	float *result, float &simd_copy)
+	float *result, float &simd_copy, float const &second_source)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
@@ -771,10 +771,15 @@ static __forceinline void apply_second_pair_first_impulse(float const &source,
 
 	__m128 *angular_b_address = angular_b_pointer;
 	*angular_b_address = _mm_add_ps(*angular_b_address, angular_b);
-	*result += impulse;
+	// Retain the next SIMD bits before first-result publication. The next row
+ // still reads its numeric x87 input after this store.
+ float accumulated=*result+impulse;
+ __m128 second_scalar=_mm_load_ss(&second_source);
+ *result=accumulated;
+ return second_scalar;
 }
 
-static __forceinline void apply_second_pair_second_impulse(float const &source,
+static __forceinline void apply_second_pair_second_impulse(float const &source, __m128 second_scalar,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,__m128 *const & linear_velocity_b_pointer,
 	__m128 *const &angular_b_pointer, __m128 const &inverse_b, float *result, float &simd_copy)
 {
@@ -783,7 +788,7 @@ static __forceinline void apply_second_pair_second_impulse(float const &source,
 	__m128 inertia_a=a->inverse_inertia;
 	float impulse = load_stored_impulse(source);
 
-	memcpy(&simd_copy, &source, sizeof(simd_copy));
+	_mm_store_ss(&simd_copy,second_scalar);
 	__m128 scalar = _mm_load_ss(&simd_copy);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
@@ -871,10 +876,10 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		if (load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
 		{
 
-			apply_second_pair_first_impulse(scalar_work.pair_a,
+			__m128 second_scalar=apply_second_pair_first_impulse(scalar_work.pair_a,
 				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, linear_b_pointer, angular_b_pointer, b.body, scalar_work.inverse_b,
-				first_linear_axis, result, projection_pool.normal_second_a_copy);
-			apply_second_pair_second_impulse(scalar_work.fallback_scalar,
+				first_linear_axis, result, projection_pool.normal_second_a_copy,scalar_work.fallback_scalar);
+			apply_second_pair_second_impulse(scalar_work.fallback_scalar,second_scalar,
 				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, linear_b_pointer, angular_b_pointer,
 				*scalar_work.inverse_b, result + 1, projection_pool.normal_second_b_copy);
 
@@ -1389,7 +1394,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2083. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2061. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.

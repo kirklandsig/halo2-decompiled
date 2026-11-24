@@ -1254,3 +1254,43 @@ def test_first_normal_second_simd_capture_precedes_first_result(solver_images,pr
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,observed)
             else:assert snapshots[rounding]==(snapshot,observed)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_second_normal_simd_capture_precedes_first_result(solver_images, precision):
+    """The second SIMD input predates first FST; its numeric input follows FST."""
+    frame = STACK + 32768 - 0xd0
+    retail, compiled, symbols = solver_images
+    snapshots = {}
+    for label, machine, entry, gate in [
+        ('retail', retail, 0x31c940, 0x480c60),
+        ('compiled', compiled, address(symbols, 'solve_operations_31c940'), address(symbols, 'g_480c60')),
+    ]:
+        for rounding in range(4):
+            data = solver_case(3, 0)
+            put(data, STEP, '7fi', 0, 1, 0, 1, 1, 0, 0, 1)
+            put(data, OPS + 24, '5I', 3 | (8 << 8) | (5 << 16), 0,
+                3 | (8 << 8) | (5 << 16), 0, 0x400)
+            put(data, TERMS, '24f', *([0.0] * 24))
+            put(data, TERMS + 96, '24f',
+                0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+                1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1)
+            put(data, HEAP, 'B', 3)
+            for body in [HEAP, HEAP + 0x80]:
+                for offset in [0x10, 0x20]:
+                    put(data, body + offset, '4f', 0, 0, 0, 0)
+                put(data, body + 0x30, '4f', 1, 1, 1, 1)
+            machine.mem_write(frame + 0x10, b'\0' * 32)
+            # The separately tracked receiver-home publication remains unfixed.
+            # Equal initial bits isolate this case from that independent word1c bug.
+            machine.mem_write(frame + 0x1c, struct.pack('<I', HEAP + 0x90))
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [STEP, OPS, HEAP, frame + 0x10],
+                               precision=precision | (rounding << 10))
+            assert words(machine, frame + 0x60, 1) == (0x3f800000,)
+            assert words(machine, HEAP + 0x10, 4)[0] == 0x3f800000
+            assert snapshot[1] == 1
+            if label == 'retail':
+                snapshots[rounding] = snapshot
+            else:
+                assert snapshots[rounding] == snapshot
