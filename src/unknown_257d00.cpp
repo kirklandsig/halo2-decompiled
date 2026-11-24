@@ -2891,6 +2891,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // State flags, facing timer and direction through the native state and existing
 // facing declarations, in seven subsets and with both facing fields from their view,
 // 429 each. NOT kept: the dispatch span and late completion block are unchanged.
+// GB2 (fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429; body unchanged): on the retail-shaped body
+// (case 13 dropped, case 20 else as `b0 == NONE || d1`, case 2 aggregate copy, case 4 dot3f, case 18 held targets,
+// case 7/8 ternary, case 5 swapped, case 9/11 actor-first, iterator order, flag-first publish, `? 1 : 0` +0x465):
+// early exit on actor+7 640 (2372 B, masked 78), case 2 without `local_5` 640, both 640, early `local_3`+actor+7 640,
+// direct `return 1`/`0` without `local_5` 557 (masked 88), request early-break/early-ret 640/640/640, case 20 main-arm
+// inline return-1 + dot3f 632 (2380 B, masked 70), plus case 6 second OR via global 610 (2396 B, masked 66), plus
+// `s_cs_order const *command` 519 (2384 B, masked 79), diagnostic `#pragma inline_depth(2)` 632 — every one keeps
+// actor EDI / state EBX (+0x9). On main's actor-EBX base: early actor+7 + no `local_5` 431, plus case 13/20/4 579
+// (swapped), plus case 13/20/2-agg 620 (swapped), main + case 13 dropped + case 20 inline return-1 + else arm +
+// case 5/7/8 swaps 404 (2416 B, actor EBX, masked 92; match-only swaps), without the swaps 510 (2428 B). NOT kept.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

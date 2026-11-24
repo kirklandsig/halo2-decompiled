@@ -1049,6 +1049,9 @@ static inline long font_character_pixel(long alpha, long color)
 // Encoded bitfield view for packed fields, opcode and packed fields, opcode and run, or all fields
 // 59 each with byte parity and 203 each with dword parity. NOT kept: the widened mask matches
 // the first parity sequence but shortens the fills and moves the packed run. Literal assembly still differs.
+// M3 lane GB r2 (33 compiled trials, fast control 59 at 512 B with 0x140960 and 11 file mates MATCH throughout; standalone --fast 0x122610 also 59; body restored):
+// Literal forms: word raw = *(word const *)(source+1) as (raw>>8)|((raw&0xff)<<8) 115 (emits xor edx,edx; mov dh,al; shr eax,8; or eax,edx), (word)((raw>>8)|(raw<<8)) 125, (raw>>8)|((dword)(byte)raw<<8) 120; word+mul256 forms (word)source[2]+(word)((word)source[1]<<8) 63 and (word)source[2]|(word)(source[1]*256) 63 (both emit 16-bit movzx ax/dx), (word)source[2]|((dword)source[1]*256) 59 (or for add, same 512 B); union lo/hi 132 (frame 0x10); word-cast/short/two-step/inline-be16/ptr-pair <<8| forms all 103 at 504 B (aligned 27, masked 26: fuse into xor eax,eax; mov ah; mov al).
+// Alpha parity & fill separation: ((dword)(byte)alpha & 1) 59; dropping (byte) gives retail's 32-bit parity at sites 1-3 and add esi,reg at site 3, but moves packed run to EBP and tail-merges both fills to 444-456 B across base 203, (alpha&0xff)&1 203, explicit run=2 in cases 3/7 199, if(type==2) first 212, switch(type) 204, *output++ fill 236, case 1 order+bswap 204, (word) helper return 192, (word) shifted alpha 200 (also matches site 4's xor ecx,ecx..shl ecx,0xc), (word) 4-bit alpha 204, and all-3 long pixel locals 226; (alpha+alpha) 204; case 1 order alone 61; bswap+type==3 119.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
