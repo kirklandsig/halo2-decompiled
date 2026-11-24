@@ -656,6 +656,13 @@ struct s_visibility_bound_record
 // still sinks into the arm; header restored); the four index pointers set second, first, third, fourth 430 (same code);
 // each list set up whole in that order 457 (1760 B); the plane copy as a `for` with `++j, ++source` 2599 (3481 B: a
 // constant-count `for` is unrolled, the do-while is what keeps retail's loop), as a `for` over `source[j]` 2599.
+// M3 lane 8 r233 (h2m fast with 0x458d0, 0x45a80 and 0x142570, all MATCH; control 430). Allocator reading: the
+// transform and frustum values take ECX/EDX/ESI over the plane loop and the part index EBX, so the entry (retail EBX)
+// and the tag table (retail ESI from the tag test to the bottom arm) never get callee-saved homes here. Forms: the view
+// ranges computed inside the count test 451; the geometry looked up ahead of the entry pointer 430 (same code); the
+// visible-mask pointer read before the node loop 397 (1778 B, the listed match-only lead); the containment flag
+// declared ahead of the part bit 430 (same code); the planes and plane query declared ahead of the list set-up 430
+// (same code). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
