@@ -3153,6 +3153,25 @@ real function_2683f0(long actor_index, long node_index, short type)
 // pointer/reference, one guarded unit-index read, two nested guards and
 // one guarded read with typed alerts all 158. The contact-head address
 // and player table register still differ.
+// M3 lane 16 r186 (H2M_FAST with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and 0x25d810, all MATCH; control 158, aligned 96).
+// Reading of the direction registers (reassociation ranks, own words): each product's operands sort by rank, highest
+// first, and a local's field ranks by when the source first names that field. Here direction's fields are named first
+// (its three stores), then velocity's, relative's and last forward's (in the facing dot), so forward outranks direction
+// and becomes the register operand of the facing dot; direction is then a foldable memory operand at both later dots and
+// is never worth a register. Retail has direction as the register operand of the facing dot (`mulss xmm1, [esp + 0x48]`),
+// so its forward fields rank below direction's: they were named before direction's stores.
+// Diagnostic, reverted (an unused local only steers): `real probe = forward.k + forward.j + forward.i;` right after the
+// forward lookup emits no code and makes the whole dot block retail's (direction's j and k loaded before the relative
+// length test, i on both edges, the facing dot in place in XMM1-XMM3): 180 positional, aligned 53 (what is left: the
+// head's address order, the two player searches, the far-and-slow block order and the count stores' order).
+// Forms tried for a natural early naming of forward's fields: direction through vector3d_from_points3d with all three
+// dots through dot3f 196 (aligned 71: direction does sit in XMM1-XMM3, but each dot then sums i, k, j where retail sums
+// k, j, i; the helper's own term order, all six, gives the same code); that with the dot arguments swapped 196; direction
+// through the points helper alone 164 (aligned 103); with the facing dot through dot3f 164; the points helper, dot3f at
+// the velocity and relative dots and the facing dot direct with forward first 200 (aligned 74), direction first 164
+// (aligned 105); the facing dot computed right after the direction's normalize 350 (2863 B), just ahead of the distance
+// test 711 (2847 B). Symbol numbering is per function: 300 unused externs ahead of the function 158, a 300-local
+// function ahead of it 158 (same code, the head stays `[eax + ecx + 0x58]`). Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
