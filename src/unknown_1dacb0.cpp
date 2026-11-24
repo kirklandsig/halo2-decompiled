@@ -1713,6 +1713,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // pointer's second-request piece runs on through the second inheritance loop with EBP free, ranks below the
 // mode-table address (-313 against -74) and loses EBX to it. One cause is left on the 732 form: what takes ESI between
 // the search loop and the first request early enough to cut the zero's piece there.
+// The entry class/NONE registers and candidate and resolved-mode homes still differ.
+// Direct or copy construction of a read-only found candidate, with present first, miss
+// first, miss continuation or a condition-scoped lookup: 991 each. NOT kept: splitting
+// construction by lookup result adds a frame word and grows to 2837/2825 bytes.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2376,6 +2380,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // of the parameter 812 (same code); the iterator's zero stores first and its keys in class, type, mode order 961; the
 // entry test written `NONE != weapon_class` 812 (same code); the result declared with an explicit default value 812
 // (same code); the first request's mode read from the iterator's field 822.
+// Class/NONE allocation and the resolved-mode and candidate homes still differ.
+// Read-only record, fixed pointer, both, each of the four lookup bindings in its test,
+// and an untyped lookup result until the record read: 812 each. NOT kept: the pointer
+// forms collapse to the same allocation at retail length.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

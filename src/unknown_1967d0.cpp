@@ -1117,6 +1117,10 @@ static inline long team_score_195ed0(long team)
 // third read below the real function's level while the second read's nested team test stays above its own, a window
 // between the plain loop and one full extra test that none of these forms hits. Lane 12's results view re-measured 76
 // (aligned 37).
+// Separate score-table and mode admission 163, admitted score returned directly 170,
+// native short score field 100, native mask and bit locals 100. Nested connectivity
+// guards 165, initial machine-admission result 141, shared local-address marker 136,
+// connectivity assigned by guard arm 141. The teams flag still leads the player copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
