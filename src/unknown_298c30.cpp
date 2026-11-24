@@ -813,6 +813,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // entry otherwise unchanged: the negated radius declared ahead of the first normalisation 342, ahead of the direction
 // copy 342, ahead of the centre 343, first in the function 343 (first difference +0x4b); the direction copy and its
 // normalisation ahead of the centre 359 (first +0x7), with the negated radius first as well 366. Body unchanged.
+// Unity stays in XMM1 and the near cosine product stays on x87 in the tied forms. Distance narrowed only in
+// the distant arm 384, narrowed at each distant use 384, named wide differences with distant narrowing 380,
+// named wide squares with distant narrowing 384. Fixed-turn cosine, sine, both names, and both with y renamed
+// 305 each. NOT kept: raw-root comparisons grow the frame and require a byte match at the boundary.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

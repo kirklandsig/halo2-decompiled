@@ -1089,6 +1089,11 @@ static inline long team_score_195ed0(long team)
 // shared world receiver 100; connectivity from the channel predicate 165; selected channel 141;
 // shared connectivity store 131. NOT kept: the flag still precedes the copy, and the shared store
 // joins branches that have distinct stores in retail.
+// Copied team held as char, signed char, short or int 299/299/331/100;
+// widened after admission from char or short 299/331; field at both uses 301;
+// char with named presence 299. NOT kept: the copy still follows the flag read.
+// Combined sentinel and inactive-team decision with char, short or long
+// 274/295/329. NOT kept: all grow the player loop and retain the early flag read.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
