@@ -974,6 +974,10 @@ struct s_item_collision_bsp
 // Coefficient-first products across all left, up and forward rows, separately and in every combination,
 // 190 each. All three axes with coefficient-first translation products 190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Separate surface normal and distance with field or aggregate position, each with accumulated
+// distance or a translation subtotal, 199 each. Copy the full untransformed normal into the
+// separate vector, 288 for either distance form. Separate scalar coordinates, 199 for either.
+// NOT kept: the coefficient homes still differ, and the whole-normal copy grows the body.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1341,6 +1345,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
 // separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
 // NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
+// The 0xc0 frame and scaled axis i spill persist. Parallel weighted cross, second products,
+// final products, weighted cross with second/final products, and per-row scalar accumulation
+// all score 130. Output accumulation in three passes or with the first pair combined scores
+// 239/235. NOT kept: both output accumulations grow the body and retain the spill.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -2534,6 +2542,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // Paired event-point coordinate passes, ascending/descending, with separate buffers with returned
 // point 140/140 or filled point 171/171, common buffer with returned point 171/171 or filled
 // point 158/158. The return byte, release mask and point homes still differ.
+// Select or branch on one contact predicate, with success in the guarded update or with
+// the complete predicate published: 238/205 for each with captured spin, 261/228 for
+// each with direct damping success. NOT kept: publication with captured spin reaches
+// 892 bytes with different entry registers, and direct damping shrinks the frame.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
