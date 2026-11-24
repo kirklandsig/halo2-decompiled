@@ -79,23 +79,3 @@ void function_e5840(long object_index, vector3f const *offset, bool move)
 		}
 	}
 }
-
-/* returns the biped to its default physics mode */
-// @retail 0xe5930
-void function_e5930(long object_index)
-{
-	long mode = function_e5980(object_index);
-
-	switch (mode)
-	{
-	case 1:
-		function_1e54d0(E57E0_BIPED_GET(object_index) + 0x3dc, 1);
-		break;
-	case 2:
-		function_e5750(object_index);
-		break;
-	default:
-		function_e5790(object_index);
-		break;
-	}
-}
