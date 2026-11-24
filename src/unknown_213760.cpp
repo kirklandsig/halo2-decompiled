@@ -2132,6 +2132,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // of the resized block, again after the write's wait; `valid = false;` again at the resized block's top, after the wait;
 // the count declared ahead of the empty header; the count declared ahead of `written` outside the block. Redundant
 // stores fold before allocation and the declaration order does not move the close copy. Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x213800, 0x2149c0 and 0x2141f0, all MATCH; control 33; lane 9 r132's 5 form rebuilt at 5,
+// the plain write-handle local on it 114 at 917 B). Reading: retail's write is the 5 form's allocation with the flags zero
+// in ECX, after which the handle load is lifted to the top as in the resize call; why EAX is not free for the zero there
+// is the open point. On the 5 form: the close test through a const-reference accessor 5 (same code). On the write-local
+// form, 114 each (same code): that accessor, a scalar accessor taking the handle pointer, a by-value accessor, a named
+// raw handle for the test, the close through a file-local helper taking the handle pointer, the close's handle named,
+// the test or the invalidation through `file->handle`, the test through the global element, the close argument as a
+// cast of `file->handle`, the first test through `file->handle`. The write through a by-value bool helper 217 (868 B);
+// `!resized || !helper(...)` with the header inside the helper 355 (834 B). A 36-cell grid (write handle unnamed / named
+// ahead of or after the header set-up / `handle[0]` / a cast of `file->handle`; flags in the call or named; count and
+// header pointers named or not; declaration order): every unnamed-handle cell 5, every named-handle cell 114 (118 with
+// the flags named ahead of the set-up and the handle after it). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
