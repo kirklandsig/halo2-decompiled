@@ -6,6 +6,7 @@
 #include <xtl.h>
 #include <string.h>
 #include "unknown_13927e.h"
+#include "sampler_state.h"
 
 struct s_bitmap_view;
 struct s_type_7ba8e9;
@@ -30,20 +31,8 @@ void function_0224f0(dword arg_0, D3DTEXTURESTAGESTATETYPE arg_1, dword arg_2);
 real function_1392a9(long arg_0);
 extern long g_4ba04c;
 
-PRIVATE __forceinline byte *function_254201(void)
-{
-	byte *local_0 = (byte *)g_4e034c;
-	byte *local_1;
-	if (*(long *)(local_0 + 0x110))
-	{
-		local_1 = *(byte **)(local_0 + 0x114);
-	}
-	else
-	{
-		local_1 = NULL;
-	}
-	return local_1;
-}
+/* the tag index of one of the global interface tag references (src/interface.cpp) */
+long function_13e615(short index);
 
 PRIVATE __forceinline s_bitmap_view *function_254202(long arg_0)
 {
@@ -81,8 +70,8 @@ __declspec(noinline) void function_254200(void);
 // @retail 0x254200
 void function_254200(void)
 {
-    s_bitmap_view *first = function_254202(*(long *)(function_254201() + 0x64));
-    s_bitmap_view *second = function_254202(*(long *)(function_254201() + 0x6c));
+    s_bitmap_view *first = function_254202(function_13e615(12));
+    s_bitmap_view *second = function_254202(function_13e615(13));
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);
     g_51ec9a = false;
@@ -95,16 +84,16 @@ void function_254200(void)
         D3DDevice::Clear(0, 0, 0xf0, 0, 1.0f, 0);
         function_15720(0.0f, 0.0f);
         function_14390(0, (s_type_7ba8e9 *)first, 0.0f);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSU, 4);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSV, 4);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAGFILTER, 2);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MINFILTER, 2);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MIPFILTER, 1);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAXANISOTROPY, 0);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MIPMAPLODBIAS, 0);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAXMIPLEVEL, 0);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_COLORSIGN, 0);
-        D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ALPHAKILL, 0);
+        sampler_state_write(0, D3DTSS_ADDRESSU, 4);
+        sampler_state_write(0, D3DTSS_ADDRESSV, 4);
+        sampler_state_write(0, D3DTSS_MAGFILTER, 2);
+        sampler_state_write(0, D3DTSS_MINFILTER, 2);
+        sampler_state_write(0, D3DTSS_MIPFILTER, 1);
+        sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
+        sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
+        sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
+        sampler_state_write(0, D3DTSS_COLORSIGN, 0);
+        sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
         g_4b8448 = 0x901;
         D3DDevice::SetRenderState(D3DRS_CULLMODE, 0x901);
         g_4b8308 = 0x10101;
@@ -368,11 +357,29 @@ void function_254200(void)
 // M3 lane 7 r219 (single-address H2M_FAST, control 4): the doubled size as `arg_2 / 0.5f` 4 (same code); the colour helper's
 // green product ahead of blue 8; the two dimension stores height first 6; the first vertex's w spelled `1.6777215e7f` 4
 // (folds); the bitmap choice parenthesised 4 (same code). The x, y + size, constant group stays ours.
+// M3 lane 7 r222 (single-address H2M_FAST, control 4): cause work. A stand-alone compile-only model of the inline
+// reservation (kit in build/r222 of this lane) shows the reload group's order is set by the optimiser's own numbering
+// of the function's values, not by any source order: it changes with the count of unrelated statements, in windows
+// where the shared temporary's number crosses a multiple of 32. On this body, measured with k probe stores to a scratch
+// array ahead of the size (diagnostic): ours at k = 0-2, retail's order at k = 3-6, ours again from 7; three integer
+// copies, or two real stores with one integer immediate store, count the same, so the body is three assignments that
+// leave no code short of retail's window. Distance of same-code forms (first k with retail's order): the tag index
+// through the existing 0x13e615 3 (KEPT: it replaces the hand-written getter in the three functions here, bytes
+// unchanged); the stage states through the shared sampler_state_write 3 (KEPT, bytes unchanged); the colour products
+// written in the colour call 3; the lookup through the existing 0x137550 with `inline` on its definition 3; the texture
+// result, the scale or the shader-state pointer held in a named local 3 each (named values of this file are folded
+// before the numbering). The two cached state writes by hand, as before round 281, 6 (window 6-7): each setter inlined
+// at link time moves the window. LEAD, not keepable (0x14390's file is /Ob1, so it needs `inline` on that definition):
+// the texture and dimension block as `function_14390(0, bitmap, 0.f)` 4 at 1109 B with the window at 2-6; the step is
+// 0x14390's `long slot = stage` (with the slot written as literal zeros the window is back at 3, with the priority
+// unused it stays at 2): a local copied from a constant argument of a function inlined at link time is folded only
+// after the numbering. Two more such assignments would give retail's order; no existing function this body could call
+// supplies them.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
-	s_bitmap_view *local_0 = function_254202(*(long *)(function_254201() + 0x64));
-	s_bitmap_view *local_1 = function_254202(*(long *)(function_254201() + 0x6c));
+	s_bitmap_view *local_0 = function_254202(function_13e615(12));
+	s_bitmap_view *local_1 = function_254202(function_13e615(13));
 	if (function_12360(local_0, 0.f) && function_12360(local_1, 0.f))
 	{
 		s_bitmap_view *local_2 = arg_4 ? local_1 : local_0;
@@ -835,11 +842,19 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 0x1cf50 call 7; the first quad's second position as integer literals 2; the first quad's closing call in member form 2;
 // the first texture-stage helper call given an integer zero 2; the last quad's size test written `1 < g_4ba04c` 2 (all the
 // same code); the alpha byte through real_truncate 30 (first +0x83).
+// M3 lane 7 r222 (single-address H2M_FAST, control 2): the ruler of 0x254490's note, k probe stores ahead of the
+// colour fetch: ours at k = 0-1, retail's order for every k from 2 to 8. Here only real values count: two real copies,
+// or one real store and one real copy, give retail's order; two integer copies, or one real store with an integer copy
+// or an integer immediate store, do not. So the body is two real values short ahead of the pair. Same code and no step
+// (still ours with one probe store): the tag index through the existing 0x13e615 (KEPT), the stage states through the
+// shared sampler_state_write (KEPT), the first quad's colour through the file's colour helper with a unit scale, the
+// lower coordinate as `arg_1 * -0.5f + 0.5f`, both coordinates as the corner formula `(1.f - 0.5f) * arg_1 + 0.5f` /
+// `(0.f - 0.5f) * arg_1 + 0.5f`.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
-	s_bitmap_view *local_0 = function_254202(*(long *)(function_254201() + 0x3c));
-	s_bitmap_view *local_1 = function_254202(*(long *)(function_254201() + 0x44));
+	s_bitmap_view *local_0 = function_254202(function_13e615(7));
+	s_bitmap_view *local_1 = function_254202(function_13e615(8));
 	if (g_51ec9a)
 	{
 		if (function_12360(local_0, 0.f) && function_12360(local_1, 0.f))
@@ -852,17 +867,17 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			function_0222d0(D3DRS_ZFUNC, 0x207);
 			function_0222d0(D3DRS_ZBIAS, 0);
 			function_14390(0, (s_type_7ba8e9 *)local_0, 0.f);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSU, 4);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSV, 4);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_BORDERCOLOR, 0x46000000);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAGFILTER, 2);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MINFILTER, 2);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MIPFILTER, 1);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAXANISOTROPY, 0);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MIPMAPLODBIAS, 0);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAXMIPLEVEL, 0);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_COLORSIGN, 0);
-			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ALPHAKILL, 0);
+			sampler_state_write(0, D3DTSS_ADDRESSU, 4);
+			sampler_state_write(0, D3DTSS_ADDRESSV, 4);
+			sampler_state_write(0, D3DTSS_BORDERCOLOR, 0x46000000);
+			sampler_state_write(0, D3DTSS_MAGFILTER, 2);
+			sampler_state_write(0, D3DTSS_MINFILTER, 2);
+			sampler_state_write(0, D3DTSS_MIPFILTER, 1);
+			sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
+			sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
+			sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
+			sampler_state_write(0, D3DTSS_COLORSIGN, 0);
+			sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
 			function_0222d0(D3DRS_SRCBLEND, 1);
 			function_0222d0(D3DRS_DESTBLEND, 0x302);
 			function_1cc30(0xc);

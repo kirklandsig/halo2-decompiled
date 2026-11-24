@@ -514,6 +514,13 @@ void function_2232a0(void)
 // no view-count local, `local_2 + 1` at both uses 120; the view count as a short 79. Re-measured: the view count declared
 // just ahead of the terminal call 40 (the flag stores then share a CL zero; a moved declaration, under the bar). Still
 // BLOCKED-BY 0x2b5d0.
+// M3 lane 6 r237 (H2M_FAST with 0x223240 and 0x2232a0, MATCH each run; control 47): the terminal record as byte
+// arithmetic with the scaled index first (`view_count * sizeof + (byte *)array`) 47; the view count in two steps
+// (`= local_2; ++view_count;`) 47; the record array given internal linkage 47 (same code each); the terminal record
+// pointer formed with the view count ahead of the loop 163 (598 B). One permuter run (600 s, annealed, seed 0, fast
+// image, its 6th try reproduced with `--tries 6`): best 31 only by passing the players count where the stub takes the view
+// count (wrong values to an unmatched callee, not applied); the rest of that variant (the layout as one ternary, a named
+// terminal record pointer) 47. Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

@@ -450,6 +450,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // >= local_13)) goto done;` 360 (1369 B) [80, 46]. Reading: retail's done block (`mov al, [esp + 0x48]` and the first
 // epilogue) sits after the capacity arm with the zero-rate test falling into it, so the zero-rate exit is a goto there,
 // and retail's local_2 is never stored by the first threshold (setge/test straight into the jump). Body unchanged.
+// M3 lane 5 r240 (H2M_FAST with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356): the window
+// query's result read through a `bool const &` at both tests 409 (1378 B); the channel pointer declared `const` 356 (same
+// code); the send test written `!local_8 && (callback || window)` 419 (1356 B); the connection pointer bound by a const
+// reference 409 (1378 B). Diagnostic, reverted at once: the owner query's result cast to a byte at its test 355 (only
+// the `test al, al` row: retail truncates the 32-bit result there). Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

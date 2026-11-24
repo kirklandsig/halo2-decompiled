@@ -1072,6 +1072,24 @@ real function_30bf0(vector3f *vector);
 // count typed long 193 (1318 B); `vector3f side, up;` at the top of the seat-loop body 84 (same code); the first delta
 // through vector3d_from_points3d 142 (1308 B); the clipped point through vector3f_add_scaled 90; the facing maxima
 // initialised to 0.0f 201 (1315 B). Body unchanged.
+// M3 lane 12 r182 (link-time lab with named homes, exact for the base: 0 rows against our column; control aligned 57,
+// masked 12; body unchanged). Homes: every local declared at the function top in retail's slot order, the reverse
+// order, or subsets (facing pair; facing pair, scale, range; amount and the squared distance either way) leave every
+// home where it is (57 each, same code), so the tie order is not the declaration order. Probes (diagnostic): the
+// range read after the endpoint block moves its home behind motion as retail has it (58), an extra scale store
+// moves scale first (84), facing maxima initialised at the top 74: the order follows each symbol's references.
+// Range: a `volatile` range (diagnostic, reverted) gives retail's entry copy through XMM0 but reads memory twice at
+// the join (208, 1322 B); the range squared through an inline helper taking a const reference 57 (same code), all
+// four squares through it 57; the join's range through a pointer or a reference local 76. Cross products: dead-local
+// phase scan K = 0..16 has period 8 with masked 12, 12, 14, 14, 14, 10, 10, 10: the first cross's j subtrahend
+// (retail the up global's i first) and the second cross's two forward.k products (retail copies the side register
+// and multiplies by memory) are wrong at every K. Single forms (aligned/masked): delta through the difference
+// helper 73/14, plane distance through dot3f 67/14, clipped point through the add-scaled helper 69/18, both 63/12,
+// forward written at each use 85/30, the plane normal through a pointer 86/29, the two facing tests written out
+// 156/26, the b maximum first 56/12, secondary copied first, squared distance or motion length through dot3f, the
+// vehicle index inline, the 3/2 result as a conditional, either cross through the staged helper 57/12 each (same
+// code). A random search over 150 combinations of those forms (with and without K = 5) reached 54/10 at best
+// (delta helper + b maximum first + both dot3f forms). No form here lowers the count.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

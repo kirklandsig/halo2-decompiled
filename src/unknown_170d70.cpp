@@ -1940,6 +1940,12 @@ struct s_point_pool_173520
 // `remaining` ahead of the cursor 2; the inverse computed ahead of the destination point 2; the guard on `count` with
 // `remaining` kept 2; `index += step` ahead of `++cursor` 121 (863 B); permuter (seed 13821, anneal, 600 s) 69 tries,
 // best 2.
+// Round 114: The typed pool used for capacity and reservation 37, pool count increment before the point expression 42.
+// With the staged reservation, separate bound and cap reads, and the long count reference: signed winding arithmetic
+// 158, forward defaults 167, step after point selection 40, cursor in the loop increment 121, short step 166, and
+// unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
+// published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
+// for the bounds 194, and one viewport receiver after projection 128.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

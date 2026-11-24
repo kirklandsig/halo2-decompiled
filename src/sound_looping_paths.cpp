@@ -923,6 +923,32 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Left on the lead: the query loop's roles (retail: sound EBP, tag ECX, index i EDI; ours sound EAX, tag EDI, i EBP; a
 // use of the sound after the distance call does not give them), the pool in EDX where retail has EDI and keeps NONE in
 // EBX through the target loop, the `movsx` source test of the first scan, the fade-time address formed for its second read.
+// M3 lane 2 r144 (H2M_FAST with the same eleven functions in the image; control 837). Retail's read-only data holds 0.0
+// at 0x44a0b0, with no reference at all, and the -64.0 at 0x44a0b4 that 34 instructions in seven source files load: one
+// extern object of two reals, not a literal and not a lone scalar. Written that way (a two-real table at 0x44a0b0 in
+// place of g_44a0b4, its second element read at the five uses) this function reloads the floor after every call and
+// every store through a datum pointer with no address taken anywhere: 907 at 3396 B on main's body (the 14 reads; 0x2197b0,
+// 0x2195f0, 0x2197f0, 0x219650 still MATCH, 0x18d730 287 and 0x18dc90 295 unchanged), the same code as the pin helper
+// taking its bounds by const reference 907 (3396 B). The floor defined `const` in another source (scalar or table) 837
+// with 0x2197b0 lost (15) and 0x18d730/0x18dc90 at 400/398: the link folds the value across files, so retail's object
+// is not const-qualified in any form this compiler sees. Lane 2 r142's lead rebuilt on current main (the first scan and
+// the new start are already here): 830 with its const reference (aligned 292, masked 107), 832 with the table in its
+// place (aligned 294, masked 108), so the lead no longer needs an address-taking form; build/r144/lead-18ae80-table.patch
+// holds it. On that table lead: the duplicate scan as an early-exit loop over a named tag 930 (3291 B); the sounds
+// array named ahead of the sound pointer 830 (aligned 292); the choice's source stored ahead of its tag 831; the
+// duplicate scan stepping a named choice pointer 830 (aligned 291, masked 105). The query loop's roles (retail: i EDI,
+// sound EBP formed by `lea` ahead of the tag read, tag ECX, scan counter and flags EAX; ours i EBP, tag EDI, sound EAX
+// formed after the tag read, counter and flags ECX) are unchanged in all four. Diagnostic sweep of the local count (1
+// to 8 unused initialised longs at the top): main's body 837 each, the table lead 830 each (aligned 292), the same code
+// for every count, so none of these roles or homes is a symbol-count tie.
+// Round 114: Frame 0x4dc versus 0x4e0, with the entry zero and query homes still displaced. Reusing the query count
+// for conversion 837, incrementing the short choice count before its stores 915, and a duplicate break at the scan
+// head 837. Primary tag held for repair 838, promoted source 837 with or without a named type byte, named fade
+// records in both loops 888, and explicit range branch 837.
+// The query/count homes and entry zero still differ. Const dword query 911, capacity break 837, dword query
+// with tag snapshot 911, duplicate pointer walk 928, direct query bound and completed choice snapshot 931,
+// dword query and duplicate ordinal 968, dword query and choice reference 927, dword construction and capacity
+// break 936.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

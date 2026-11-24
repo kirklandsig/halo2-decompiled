@@ -1056,6 +1056,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // into the type chain (no named bool) 330. Round 110's saved two-flag lead re-applied to today's file 2 (the latch's
 // steps/j reload pair only); on it the truncation's two stores swapped 4. Retail's link test stores the edge bit to the
 // +0xf byte that the surface flag reuses (two block-scoped bools sharing a slot). Body unchanged.
+// M3 lane 6 r237 (H2M_FAST with 0x270930 and 0x270750, MATCH each run; control 286, aligned/masked 179/57): lane 16's
+// saved two-flag lead applied to today's file 2 again at 1388 B (the scan latch's steps/j reloads swapped). Tested on it
+// as a whole-function allocation phase (redundant parentheses and new used locals shift such phases elsewhere): the
+// margin initializer in one to three redundant pairs 2/2/2, the radius leaf in one to three pairs and both operands in
+// one 2/2/2/2, `count = (j) + 1` with one to three pairs 2/2/2, the projection clamp's `length - margin` named and used
+// twice 2, the length test's `margin * 2.0f` named 2, both 2, both plus `short last = count - 1` for the truncation test
+// 26 (first difference +0x2c2). The pair is not a parenthesis or symbol-count phase. Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
