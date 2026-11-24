@@ -1964,6 +1964,9 @@ long function_10f5f0(long object_index);
 // radius-first reads 561/561, shared height error 561, named spring terms 567,
 // immutable samples 561, shared altitude-limit receiver 561. The frame stays
 // 0x1990 and the predicate stores and rolled reduction still differ.
+// First velocity sample scoped alone or with fall sample 561/561. Three separately scoped samples
+// 561, also with scoped names, aggregate names, bounds-scope matrix, branch-owned physics state or
+// matching velocity names 561 each. NOT kept: frame 0x1990 and distinct bounds and velocity homes persist.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

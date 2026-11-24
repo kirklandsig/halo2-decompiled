@@ -1335,6 +1335,9 @@ void function_143250(
 // producers 939/939, both 939, each pair of consumers 939/939, each producer with
 // its consumers 939/939, and both complete families 939. No change to the 0x2fc frame,
 // early basis spills or higher-band product homes.
+// Third-band mixed terms named at 21/27 and 35/41 939/945. Square terms at those pairs 1183/939.
+// Grouped sums before or after scaling 939/939. All terms staged at 21/27 or 35/41 939/939.
+// NOT kept: the shared spill home and 0x2fc frame persist.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
