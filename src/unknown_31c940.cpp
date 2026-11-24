@@ -3,6 +3,7 @@
 #include "solver_dispatch_31c940.h"
 #include <math.h>
 #include <string.h>
+#include <stddef.h>
 // Borrow the body-pointer word; individual operations capture their fields at
 // the retail read/write boundaries rather than retaining a stale body pointer.
 struct solver_scoped_body_fields_31c940
@@ -466,40 +467,53 @@ static __forceinline __m128 apply_first_normal_positive_impulse(float const &sou
 	return w[1];
 }
 
-// The first pair reloads B for inertia, then captures each update receiver.
+// Both fallbacks retain the pre-write B linear source. The first reloads its
+// linear destination after A writes; the second retains that destination.
+// B angular is captured after both linear writes, before A angular writes.
 
 
 // The first fallback borrows its retained projection axis. The second borrows
 // row storage, which is read after the rounded SIMD input has been published.
-static __forceinline void apply_first_normal_fallback(float impulse, __m128 const &linear_axis,
+static __forceinline void apply_first_normal_fallback(float impulse, bool retain_linear_destination, __m128 const &linear_axis,
 	solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
 {
-	// Keep accumulation wider than the float copy consumed by SIMD.
-	__m128 inertia_a=a->inverse_inertia;
-	float &rounded_impulse = simd_scratch;
-	float &store = rounded_impulse;
-	store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
-	__m128 inverse_b = b.body->inverse_inertia;
-	solver_scoped_body_fields_31c940 const &linear_body_b = b;
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), linear_axis);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), linear_axis);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	linear_body_b.body->linear = _mm_sub_ps(linear_body_b.body->linear, linear_b);
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	solver_scoped_body_fields_31c940 const &angular_body_b = b;
-	__m128 angular_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_b = _mm_mul_ps(change_b, row->b);
-	a->angular = _mm_add_ps(a->angular, angular_a);
-	angular_body_b.body->angular = _mm_add_ps(angular_body_b.body->angular, angular_b);
-	*result += impulse;
+ __m128 w[5];
+ w[2]=a->inverse_inertia;
+ simd_scratch=impulse;
+ w[1]=_mm_load_ss(&simd_scratch);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ __m128 *inverse_source=&b.body->inverse_inertia;
+ w[2]=*inverse_source;
+ solver_velocity_31c940 *linear_source_body=(solver_velocity_31c940*)((char*)inverse_source - offsetof(solver_velocity_31c940, inverse_inertia));
+ w[1]=_mm_shuffle_ps(w[1],w[1],0);
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+ w[2]=_mm_mul_ps(w[2],linear_axis);
+ w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+ w[3]=_mm_mul_ps(w[3],linear_axis);
+
+ w[4]=a->linear;
+ w[4]=_mm_add_ps(w[4],w[2]);
+ a->linear=w[4];
+ w[2]=linear_source_body->linear;
+ w[2]=_mm_sub_ps(w[2],w[3]);
+ if(retain_linear_destination)linear_source_body->linear=w[2];
+ else b.body->linear=w[2];
+ solver_velocity_31c940 *angular_receiver=b.body;
+ w[2]=row->a;
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=row->b;
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=a->angular;
+ w[2]=_mm_add_ps(w[2],w[0]);
+ a->angular=w[2];
+ w[0]=angular_receiver->angular;
+ w[0]=_mm_add_ps(w[0],w[1]);
+ angular_receiver->angular=w[0];
+ *result+=impulse;
 }
-
-
 static __forceinline float &operation_float(unsigned char *op, long offset)
 {
 	return *(float *)(op + offset);
@@ -696,12 +710,12 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		float candidate_b = error_b * axis[-1].m128_f32[3];
 		// Unordered candidates enter the second-row update, as in retail.
 		if (candidate_b <= 0.0f) break;
-		apply_first_normal_fallback(candidate_b,
+		apply_first_normal_fallback(candidate_b, true,
 		((solver_linear_row_31e7b0 *)(axis - 2))->linear, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, scalar_work.fallback_scalar);
 		return;
 	} while (false);
 	float candidate_a = scalar_work.first_error * axis[-4].m128_f32[3];
-	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, retained_axis, ((solver_linear_row_31e7b0 *)first_axis), a, b, result, scalar_work.fallback_scalar);
+	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, false, retained_axis, ((solver_linear_row_31e7b0 *)first_axis), a, b, result, scalar_work.fallback_scalar);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.

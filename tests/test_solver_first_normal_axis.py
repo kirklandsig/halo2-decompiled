@@ -1,16 +1,21 @@
-"""Independent retail proof for the first normal fallback's retained axis."""
+"""Independent retail proofs for the first normal pair's fallback axis reads."""
 import struct
 import pytest
 from test_solver_dispatch import HEAP,STACK,STEP,OPS,TERMS,IMPULSES,RESULTS,CALLBACK,solver_images,solver_case,put,address,execute,words,return_from_hook
 
 @pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
 @pytest.mark.parametrize('aliased',[False,True])
-def test_first_normal_fallback_retains_projected_linear_axis(solver_images,precision,aliased):
+@pytest.mark.parametrize('row_index',[0,1])
+def test_first_pair_fallback_linear_axis_read_epoch(solver_images,precision,aliased,row_index):
     frame=STACK+32768-0xd0
-    rows=frame+0x10 if aliased else TERMS
+    rows=frame+(0x10 if row_index==0 else -0x20) if aliased else TERMS
     # First error, coupled impulse and rounded input overwrite the aliased
     # axis at homes14/10/18. Retail retains (1,0,0,1) from projection.
-    values=[1,0,0,1,0,0,0,1,0,0,0,1, 0,0,0,0,0,0,0,1,0,0,0,1]
+    if row_index==0:
+        values=[1,0,0,1,0,0,0,1,0,0,0,1, 0,0,0,0,0,0,0,1,0,0,0,1]
+    else:
+        # The second row reloads its axis after the rounded input changes Z.
+        values=[0,0,0,0,0,0,0,1,0,0,0,1, 1,0,0,1,0,0,0,1,0,0,0,1]
     retail,compiled,symbols=solver_images
     snapshots={}
     for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
@@ -38,8 +43,8 @@ def test_first_normal_fallback_retains_projected_linear_axis(solver_images,preci
             machine.mem_write(gate,b'\x01')
             snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
             observed=words(machine,HEAP+0x10,4)
-            assert observed==(0x3f800000,0,0,0x3f800000),(label,aliased,precision,rounding,observed)
-            assert words(machine,HEAP+0x90,4)==(0xbf800000,0,0,0xbf800000)
+            assert observed==(0x3f800000,0,0x3f800000 if aliased and row_index==1 else 0,0x3f800000),(label,aliased,precision,rounding,observed)
+            assert words(machine,HEAP+0x90,4)==(0xbf800000,0,0xbf800000 if aliased and row_index==1 else 0,0xbf800000)
             assert callbacks==[1]
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,observed,callbacks)
