@@ -2171,6 +2171,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `else if` condition in place of `valid = true` 83. Diagnostics: a handle test ahead of the write 137 (933 B: a memory
 // compare, the zero shared by three pushes); on the write-local form the count through a named pointer read back after
 // the wait 114, the count as a member of a local record 114 (same code each). Body unchanged.
+// Effective count at close test 178; conditional short-write predicate 188; conditional count assignment after wait 196;
+// effective count with nested live-handle guard 178; conditional completion bool 165; record-sized effective count 178;
+// conditional short write with record handle 188; with named size-match predicate 188. NOT kept: all reserve 0x1140
+// and fail to recover retail's separate output homes.
 // @retail 0x213970
 void function_213970(void)
 {
