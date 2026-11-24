@@ -1238,6 +1238,17 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (expanded and folded to the kept code). Reading of retail's exclusion test: the shape pointer stays in EAX and the data
 // is loaded three times from it (into ECX for the zero test, into EDX for the classifier, into EAX for the byte test), so
 // the classifier compares its ECX bound with EDX; ours keeps one load in EAX or EDX for all three. Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, aligned 180, masked
+// 104). Frame packer reading: this build packs valid, first (shared with material and restitution), second (shared with
+// friction), index, other_index, distance, then the origin (12 bytes, 9 references) below the hit (12 bytes, 6); retail
+// has the hit below the origin and two more 4-byte cells for origin.y and origin.z, so retail's 12-byte origin object
+// carries only x's references. In every form below the origin stays one 9-reference object (frame 0x40). Tried: the
+// origin through a file-local point-copy helper 251 (1260 B), the hit through it too 347, with both plane tests through
+// plane_distance_to_point 251; x stored directly with y and z through a pointer to the origin 315 (1256 B), that with
+// both tests through plane_distance_to_point 315, written z, y then x 314; all three stored through the pointer with
+// those tests 251; the origin's members assigned z, y, x from a position pointer with those tests 311 (aligned 170,
+// masked 81); both tests through plane_distance_to_point alone 238 (same code); the hit's members assigned y, x, z 323;
+// the origin through real_point3d_set from the position 251, from three casts 318. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
