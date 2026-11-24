@@ -954,6 +954,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // census moves to retail's (mulss 118 -> 126 against 127, fld 35 -> 32 against 29): retail's scale helper is straight-line
 // and its normalisation scalar-replaces the copy. Retail still has 25 more movss, three imul (the contact loop indexed from
 // its counter each pass) and a second ret. Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0x2056e0, MATCH each run; control 1346). Reading: retail's two exits are `mov eax, 1` and
+// `xor eax, eax` each with its own `add esp; ret`, the four pops ahead of the final tests (only EAX, ECX and EDX used
+// there), the shape matched bool functions such as 0x1ecef0 get from `return a && b ...;`. Here every spelling gives one
+// exit with `xor al, al` set ahead of the tests and `mov al, 1`: the result as `if (...) return true; return false;` 1345
+// (retail's 6238 B, frame 0x5cc: the result's cell goes), as `return !local_34 && ...;` 1345 (same code), as an early
+// `return false` on the negated chain 1345 (same code; the fast check flags these as building differently from the full
+// build); the magnitude helper reading its input directly 1624 (5990 B, frame 0x590) with or without the two returns.
 // The 0x5d0 frame and velocity homes remain. Typed point pointer/reference/direct access 1346/1346/1413.
 // Base-first shared point/both velocity sums 1346/1346; shared output sums 1346; read-only point definition 1346; ray-origin aggregate 1426.
 // NOT kept: direct typed reads reach 6238 bytes but regress at the same frame. The ray aggregate grows the body and the other forms tie.
