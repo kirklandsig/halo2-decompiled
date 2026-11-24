@@ -1034,6 +1034,10 @@ static inline long font_character_pixel(long alpha, long color)
 // Packed opacity still narrows before masking. Pixel helper with inferred opacity width, using the
 // original producers, byte high, byte low or both byte-sized: 265/265/269/269 with either parity mask.
 // NOT kept: inferred widths shorten the decoder to 404–408 bytes and raise the score.
+// Mask the upper opacity or whole payload before shifting 59/59; share the decoded payload
+// with the ordinary count by masks or by quotient and remainder 201/201. With dword parity
+// the same four forms score 203/203/168/168. NOT kept: the shared dword forms reach 504
+// bytes but change the output, color and run registers. The byte-parity forms tie or regress.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

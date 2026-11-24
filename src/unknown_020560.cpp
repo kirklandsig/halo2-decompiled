@@ -1461,6 +1461,39 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // field at each use (diagnostics, helper bodies written out): member stores with the dot written out and the helper
 // distance 859 (2366 B, frame 0x30), the same with a `real[3]` local 859, with dot3f on a cast of that array 859; with
 // the length written out from the members as well 572 (2109 B) for the vector and for the array. Body unchanged.
+// M3 lane 6 r240 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH each time; control 418; [n] = aligned rows by this
+// round's count, control [208], the entries-per-use scan 2 (549) [193]). Reading: retail's dot block (the y and z products
+// offset-first, the x product delta-first), the offset's x store ahead of the `jb`, frame 0x2c, both scan-2 pointers and the
+// pass counter all follow from one ordering of the forwarded member values: the offset's first member has to be created ahead
+// of the delta's first member, and the delta's j and k ahead of the offset's j and k. A helper store at offset 0 of a local is
+// resolved one pass ahead of the stores at +4 and +8, so with both vectors through vector3d_from_points3d the order is
+// delta.i, offset.i, delta.j, delta.k, offset.j, offset.k (all three products offset-first); members stored directly in this
+// function are numbered by first reference and rank below every forwarded value (all three products delta-first).
+// Diagnostic (a dead store, not keepable): `offset.i = 0.0f` ahead of the delta on the 549 form 564 (2130 B, frame 0x2c,
+// [101]: scan 2 is retail's row for row but for `nearest` in memory, the opposite and nearest homes exchanged and the distance
+// summing (k + i) + j); the same idea with both vectors by member stores on the samples local 417 (2112 B, frame 0x28).
+// Lead (a new one-caller helper, so match-only; patch build/r240/lead-22cf0-401.patch): the delta through a file-local
+// forceinline wrapper taking (sample, position, out) that calls vector3d_from_points3d, which delays the delta's first
+// member by that one pass, with `first` formed ahead of the delta and passed to it, no samples local and scan 2 on
+// `source->entries[i]`: 401 (2124 B, frame 0x2c, [102]). Around it: the wrapper without `first` ahead 564 (2130 B, [101], the
+// dead-store code); the wrapper for both vectors 554 and no wrapper with `first` ahead 554 (2112 B, frame 0x20, same code).
+// On the lead: `second` as NULL then `if (opposite != NONE)` 401 (same code); opposite declared with nearest 502; nearest
+// after the closest distance 402; one index for both scans 401 (same code); the distance as length_sq3f of a second
+// difference 550 (2112 B, frame 0x20, the home is gone). On the 564 form: length_sq3f(&offset) 628 (2057 B); a second
+// difference through the wrapper or the helper 545/545 (frame 0x20); opposite declared with nearest 511; `second` as NULL
+// then if 547 (2125 B). Still differing on the lead: the count test shares a zero register with the scan-1 start
+// (`xor eax, eax; cmp ebx, eax`), `nearest` has no register in either scan (retail EDI with its home at +0x14; ours home
+// +0x10 and EBX loaded per pass), the unroll limit takes EDI for EBP, and the distance sums (k + i) + j; 70 forced single
+// register picks leave it at 395 or more.
+// Also measured: both vectors by member stores with the offset declared first 418 (same code as the helpers); the offset by
+// member stores declared at function scope 433 (as in the loop); the delta alone by member stores 418 (same code); on the 549
+// form one vector for the fallback and the offset 593 (2146 B), scan 1 through that shared offset with length_sq3f in both
+// scans 635 (2057 B), the offset declared at function scope 549 (same code), a dead `offset = delta` 549 (same code), the
+// delta formed in the offset and copied 584 (2139 B); the projection as one expression of the point differences 788 (2311 B)
+// on the entries field and 530 (2032 B) on the samples local; the candidate test in a forceinline helper with its own offset
+// (members assigned, length_sq3f) 628, the projection alone in one 575 (2135 B); the delta formed inside scan 2 after the
+// offset 571 (2198 B, not hoisted) on either base; offset and delta as one two-element array, offset first, 593 (2146 B) on
+// the entries field and 433 on the samples local; the delta at +4 of a local aggregate 549 (diagnostic). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
