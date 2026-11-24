@@ -1478,6 +1478,21 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 126 and the origin store ahead of the sine 126 (same code each). Reading: the tail keeps the target in a register for
 // both the zero test and `current = target` in retail (0x16c740's helper shape), and every block's zero is XMM0 there.
 // Body unchanged.
+// M3 lane 3 r303 (H2M_FAST with 0x16c6f0/0x13cb40/0x142d10/0x16c740, all MATCH; control 126, aligned 103). Diagnostic
+// dead-local scan at the function top, K = 0..40: an 8-period, 126 at K = 0 and 7 (mod 8) and 394 or 395 at every other
+// count (the same at an anchor inside the yaw block), so the kept body sits in the good window and a form that adds or
+// removes a counted symbol reads 39x until the count is put back. Forms re-measured with the count compensated (best of
+// K = 0..7, the K in brackets): the squared length as length_sq3f(&plane.n) 177 [2, 3]; as
+// length_sq3f(&camera->point.left) 478 [0, 7]; the squared-length dot's arguments swapped 126 [3] (the kept code: the
+// swap only moves the window); the yaw distance dot's arguments swapped 126 [0, 7] (same code); the camera point's left
+// through a `vector3f const &` at the copy, the dot and the add-scaled call, or at the dot and the add-scaled call only,
+// 126 [6] each (the kept code again: the listed 393 with retail's left.j preload is the out-of-window state, whose plane
+// block is otherwise further off); the yaw block's offset through the existing vector3f_scale and vector3f_negate_ab
+// with the distance store between them or ahead of them 141 [0, 7] (aligned 124: the forward is then read through one
+// pointer where retail reads i through the copy's pointer and j, k from the command), with the store after them 140
+// (aligned 130). Reading of retail's yaw block: the forward's three components are loaded first, all three are scaled
+// by the distance (the negated distance stored after the first product), then the three are subtracted from zero in
+// i, j, k order; every block takes its zero in XMM0 before the block's own value. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

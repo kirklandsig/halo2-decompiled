@@ -45,6 +45,29 @@ struct s_decibels
 extern s_decibels const g_44f70c;
 extern s_decibels const g_44f710;
 
+/* a sound class's volume fade toward a target level, 16 bytes
+   (g_502118, src/unknown_221490.cpp); the flags word at 0xc holds the fade
+   flag in bit 0: set_fade_flag writes that bit by name, function_127010 reads
+   the flags byte (retail does byte operations on both) */
+struct s_sound_class_fade
+{
+	s_decibels target;
+	s_decibels current;
+	real time;
+	union
+	{
+		byte flags;
+		struct
+		{
+			word fade_flag : 1;
+			word unknown_bits : 15;
+		};
+	};
+	byte unknownd[2];
+};
+
+extern s_sound_class_fade *g_502118;
+
 real function_12aff0(real a, real b, real c, bool flag);
 
 /* decibels (-64 to 0) to a DirectSound volume (-6400 to 0) */

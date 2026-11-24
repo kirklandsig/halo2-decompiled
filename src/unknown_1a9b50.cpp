@@ -938,6 +938,22 @@ extern point2f *g_468778;
 // but aligned 225/84 (positional only: the rotation stays). Main's body with that prop clearing alone 370 (1563 B,
 // aligned 124/51 unchanged: the NULL store moves from the entry into the else arm, away from retail's `xor ebx, ebx`
 // ahead of the NONE test, and the next rows line up by position only; not kept). Body unchanged.
+// M3 lane 12 r182 (link-time lab, 9 s a variant, 14 rows from our fast listing with registers masked 1; counts are
+// lab aligned / register-masked rows against retail, base 138 / 50; body unchanged). The -0.4 dot through the facing
+// pointer 184 / 45 (the listed 410 form: view and facing share one register with the in-place add, but that register
+// is ESI and the slot takes EDI, retail the other way round); on it: the slot, the actor and the settings declared in
+// three other orders 184, 184, 247; the dot written i, j, k 184 (same code); k and j through the view with i through
+// the pointer 136 / 49 (compiles as the base: the i term is still read through the view and the pointer formed after
+// it); the pointer declared after the copy vector 184. Dead-local phase scan (diagnostic) on the pointer form, K =
+// 0..16: masked 45, 21, 35, 35, 36, 43, 25, 25, then repeating with period 8; on the base, K = 2..6: masked 33. At
+// K = 1 the pointer form has retail's dot order (k, j, the add, then i) and retail's prediction block (the three
+// components loaded and scaled in place); left there: the ESI/EDI exchange, the first product's operand side and the
+// prediction's XMM numbering. Use counts do not decide ESI/EDI (diagnostic probes: one or two facing reads fewer, two
+// slot reads more, one argument use fewer: ESI each time). No facing pointer at all (every read through the view)
+// 297 / 59, the same at K = 1, 2, 3, 5, 6 (K = 1: 299 / 79). One-symbol natural forms on the pointer form: the unit
+// index named for its four calls 187 / 27 (retail reads the field at each call); the rate named for both predictions
+// 219 / 57; pointers to the actor's position or the prop's origin 184 / 45 (same code); the second prediction's scale
+// in its own local 184 / 45 (same code); no direction pointer (the field at each use) 275 / 73.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
