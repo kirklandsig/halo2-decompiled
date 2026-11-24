@@ -2400,7 +2400,7 @@ struct s_unit_child_iterator
 	long next_index;
 };
 
-void function_d0590(s_unit_child_iterator *iterator, long object_index);
+void function_d0590(long object_index, s_unit_child_iterator *iterator);
 s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 void __stdcall function_b9b90(long object_index, bool disable);
 void function_b9c60(long object_index, bool flag);
@@ -2807,7 +2807,7 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 			s_unit_definition *definition = (s_unit_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 			s_unit_child_iterator iterator;
 
-			function_d0590(&iterator, object_index);
+			function_d0590(object_index, &iterator);
 			while (function_d05c0(&iterator))
 			{
 				if (iterator.seat_index != NONE)
@@ -3029,7 +3029,7 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 		{
 			s_unit_child_iterator iterator;
 
-			function_d0590(&iterator, object_index);
+			function_d0590(object_index, &iterator);
 			while (function_d05c0(&iterator))
 			{
 				if (iterator.seat_index == seat_index)
@@ -4074,7 +4074,7 @@ void __stdcall function_db210(s_type_1e6529 const *data, long vehicle_index)
 	s_type_1e6529 rider_data = *data;
 	s_unit_child_iterator iterator;
 
-	function_d0590(&iterator, vehicle_index);
+	function_d0590(vehicle_index, &iterator);
 	rider_data.flags |= 0x200;
 	while (function_d05c0(&iterator))
 	{

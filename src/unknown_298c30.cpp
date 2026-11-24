@@ -803,6 +803,16 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // `0.0f` 361 (1740 B); both clamps against float constants 398 (1685 B); the first clamp as `!(local_13 <= 1.0)` 317
 // (1727 B); the outer counter typed long 367; the endpoint pointer typed `point2f const *` 305 (same code); the radius
 // test `field_24 > local_9` re-measured 305. Body unchanged.
+// M3 lane 15 r141 (fast screen with 0x29a190, MATCH each time; control 305, aligned 271 rows, 57 of them order rows). The
+// first difference read from the allocator's ranking: in the entry block the unity constant is one candidate living to
+// the loop's end with six uses (the first normalisation, the near arm's two stores, the first clamp's copy, compare and
+// store) and scores 38; the first normalisation's scaled component scores 24 and the two would tie in its favour.
+// Retail colours the scaled component (and after it the turn radius) ahead of unity, XMM1 then XMM2; ours colours unity
+// first. With the same six uses retail's unity must lose 14, or the entry block must reference eight float candidates
+// where ours references four (the component's score is six per candidate there, unity's two). Forms, all with the
+// entry otherwise unchanged: the negated radius declared ahead of the first normalisation 342, ahead of the direction
+// copy 342, ahead of the centre 343, first in the function 343 (first difference +0x4b); the direction copy and its
+// normalisation ahead of the centre 359 (first +0x7), with the negated radius first as well 366. Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

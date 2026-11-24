@@ -2319,6 +2319,20 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // shared along-edge subtraction and i-k-j dot 559; shared separation and midpoint subtraction 558;
 // both staged crosses 552; shared ray-miss sums 576; inside-first normal test 555.
 // NOT kept: none recovers the count and clearance homes or the post-branch square.
+// M3 lane 8 r232 (h2m fast with 0x120790, 0x2469b0, 0xc2d00 and 0x17a380, all MATCH each run; control 551 at 2877 B, aligned
+// rows with registers and ESP offsets masked 233; body unchanged). Frame reading: a frame this large has its homes
+// sorted by references x 1000 / size, the densest lowest, and equal densities come out in an unstable order that
+// changes with the number of homes, so the four tallies (4 references each, equal with five 12-byte vectors of 12) cannot
+// be placed by declaration order alone. Main's frame has eleven 4-byte cells, as retail's 0xb964 does; lane 14's
+// structural form (zero-based edge loop with the named successor, the square in the prism loop, the reset ahead of the
+// projection, the tally order, the normal arm first) re-measured 584 at 2895 B, masked 108, has twelve: the successor's
+// home goes and two compiler temporaries come, one of them a float spill in the cross-product rows, which is the
+// 0xb968 frame; every positional row then sits 4 bytes off, so no count falls until that spill goes. The zero-based loop
+// alone re-measured 619 (2904 B, masked 207). On the structural form: the side cross through cross3f_staged 585 (masked
+// 109), the perpendicular cross through it 585 (109), both 584 (108); the plane distance as one expression 584 (masked
+// 99); as `dot3f(point, &plane normal) - d` 584 (masked 116); without the tally order 584 (110), without the early reset
+// 585 (114), with the square ahead of the loop 585 (116), with the ray arm first 617 (2904 B, masked 191). Frame 0xb968
+// in every one.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

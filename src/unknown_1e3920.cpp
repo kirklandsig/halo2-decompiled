@@ -1336,6 +1336,20 @@ void function_1e3b60(long actor_index);
 // link, case 1's tracking pointer in its own block, the prior state as a `word` at both uses: 404 each (same code).
 // Retail expands 0x2641c0 inside 0x262ba0 and calls it elsewhere; its noinline declaration sat in a file held by another
 // lane this round. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0).
+// M3 lane 4 r257 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680, 0x26be00 and 0x26be30; 25 here in every
+// form; 0x262ba0 control 404 at 1624 B, aligned rows 209). Measured ranking in 0x262ba0: the node 634, the prop index
+// 118, the update flag 30, the actor index 17 (eighteen references, but live and unreferenced across 62 blocks);
+// the update flag takes EBX, the last callee-saved register, and the actor index is left in its stack home. The
+// loop-top block touches eleven values, so the update flag's clear there counts 44 of its 76. Retail's loop head is the
+// existing walk (0x26be00 / 0x26be30) expanded inline: the next link and the index live in two stack cells and the
+// three flags in stack bytes. That walk form re-measured: 443 there at retail's 1616 B and frame, aligned rows
+// 209 -> 187; in it the prop index takes EBX (36), the update flag 26, the actor index 14. Diagnostic (forced
+// ranking, not source): with the actor index ranked first in either body it gets a callee-saved register but is
+// still loaded from its stack home (469 / 472 there), so its weight alone does not make it a register argument.
+// On the walk form: a `short` prior state 443 (same code); the actor looked up again at each use in the loop
+// 466 (1648 B); a plain `short` maximum 446 (1620 B); the release pair written at case 2's failing test 442; the
+// two flags declared after the 0x263670 call 443 (same code). Retail expands 0x2641c0 here; its noinline
+// declaration sits in a file another lane held this round. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
