@@ -1042,6 +1042,10 @@ static inline long font_character_pixel(long alpha, long color)
 // Dword parity with ordinary counted/endpoint standard fills 183/180; packed counted/endpoint
 // standard fills 180/184; both fills counted/count-endpoint/endpoint-count/both endpoint
 // 241/201/199/218. NOT kept: the fill changes displace the packed run and raise the score.
+// The 0xc frame agrees. Dword parity, literal bytes and the EBX packed run still differ.
+// Shifted or divided command enum, masked opcode enum, or opcode minus its payload:
+// 59/59/201/208 with byte parity and 203/203/203/173 with dword parity.
+// NOT kept: the shifted/divided types tie. The other forms change fill allocation and raise the score.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
