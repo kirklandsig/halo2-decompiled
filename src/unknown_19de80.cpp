@@ -991,6 +991,10 @@ static inline bool teams_enabled_19e1c0()
 // each name arm with its own differently named length local, assigned to the result 732 or returned 732 (same code).
 // So neither a separate variable, a separate helper instance nor a return keeps identical arms apart here; retail's
 // arms were never identical when its merge ran, and what kept them apart is not found.
+// Ordinary player-name count published after copying 460; team-name count 484; all names 620;
+// all names with ordinary return count 691; capacity-default per-name counts 620, with ordinary
+// return count 692; single fallback count publication 564; shared ordinary name count 620.
+// NOT kept: the ordinary result recovers frame 0x204 while merging name preparation paths.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

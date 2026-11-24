@@ -1299,6 +1299,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Separate cross scaled into output, with a final setter or scalar capture 183/202.
 // Separate alignment via the item/shared dot with output cross 167/167, with separate cross 168/168.
 // NOT kept: the best output-plus-dot forms recover 0xb4 but raise the score and remain seven bytes long.
+// The scaled axis spill and initial product order remain. scale projection in place 151, name lateral subtotal
+// 130, scale final expression from lateral subtotal 130, shared marker transform pointer 165, ordinary dot for
+// alignment 130, shared fallback side cross 130, shared fallback result cross 130, staged axis cross and in-
+// place projection scale 151.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
