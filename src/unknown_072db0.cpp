@@ -2347,6 +2347,12 @@ bool function_1900a5(long index);
 // orders 643 each, and 1 to 8 unused initialised longs at the top (diagnostic) 643 each; every one is the same code.
 // What is left is not a spelling: the users cursor (retail the record itself in a stack cell, with the copy chain of
 // expanded pointer getters), the slot test's conditional move and the elapsed-time copy, as the lines above record.
+// M3 lane 2 r145 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643; body unchanged): the delay
+// as `> 3 ? 300000 : 2000` (retail's `setle` and 0x7d0 base; an arm swap, match-only) 640; that with the last request
+// time in a two-use local 642; with the last write time in a two-use local 634 (the local alone 637, re-measured); with
+// both locals 636; the write poll's pending range as an early return ahead of the state-2 test 643 (same code), nested
+// under `state >= 0` 643 (same code); either with the last write local 660 (2846 B), with both locals 662. The 634 form
+// needs the arm swap, so nothing is kept.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
