@@ -998,6 +998,18 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 78 and with the compare's operands swapped 78 (both the listed uncast store's code: a dword reload of the mask, but
 // only in the change block); on the carrier present read once into a local for the compare only 102 (393 B), with the
 // uncast update 78. Body unchanged.
+// M3 lane 1 r163 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23; re-measured: the one-use team-bit carrier 20,
+// the uncast store 77, the in-place `old_team_mask |= present_teams` 77, either with the carrier 78, a plain present 63
+// at 384 B). Reading of the allocator's ranking: after the loop the saved word mask has two references, the compare's
+// zero extension and the OR's source, and its post-loop piece is not coloured (no gain over reading the slot twice), so
+// both fold the slot into `movzx reg, word [slot]`; retail reloads it once into ECX in the block ahead of the first
+// branch and uses that register for the compare's `movzx eax, cx`, as the OR's destination and for the 16-bit store. The
+// playing piece (30) then takes the first free register, EAX, where retail has EDX behind the mask's ECX. With a plain
+// present the accumulator ranks 15 and takes EDI across the loop ahead of the pool pointer (11) and the globals pointer
+// (2). Forms: on the carrier, the updated mask in its own word local copied from the saved mask ahead of the change
+// test, compared and updated in place 78, with the compare on the saved mask 78, with the store as `new | present` 78
+// (all the uncast store's code: the copy is forwarded); that local without the carrier 77; the team bit through a
+// file-local forceinline helper at its three uses 23 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6093,6 +6105,19 @@ void __stdcall function_d6bc0(long object_index);
 // code); the flag as `long` 172 (local test 7, same code); an inverted skip flag set by each failing case and `default:`
 // 173 (857 B), on the local test 21; the loop-top index local scoped to a block around the object block with the field
 // test 172. Body unchanged.
+// M3 lane 1 r163 (h2m fast with 0x15c150, MATCH each run; base 29; label form and flag form rebuilt 7 at 869 B, each with
+// the field test 172 at 858 B, main's body with the field test 167 at 863 B). Reading of the allocator's ranking on the
+// flag + field-test form: `entries` is one candidate over the whole loop body with eight references and ranks 8; the
+// timer address ranks -6 there (it crosses the 28 blocks of the schedule switch and the tail without a reference), so
+// `entries` is coloured first and takes EDI, the only register left, and the timer is cut down to the zero test..countdown
+// range and takes EBX. With the test on the loop-top local `entries` has seven references and ranks -10, the timer goes
+// first and keeps EDI as retail's, and each `entries` access is a fresh load. Retail has the eight references and still
+// the fresh loads (the zero test's load reused by the index test in EAX), so its `entries` ranked below the timer: a
+// 14-point gap (a tie goes to the timer). On the flag + field-test form, all 172 (same code): the flag started false
+// and set true by the missing index; the countdown stored as `value04 = --countdown`; the countdown's zero test on the
+// stored field; the object's NULL declared ahead of the loop-top index read; the tail's reset as `countdown = 1; value04
+// = countdown`; the tail's index read once into a block local for its test and 0x158ff0; the delay through a named
+// `short` before its store. Re-measured: the reset limit named once for both uses 182 (869 B). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
