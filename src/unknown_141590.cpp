@@ -1321,6 +1321,11 @@ void function_143250(
 // (10793 B, frame 0x2fc, masked 184); both written out with the named value left for entry 27 1322 (10810 B, masked
 // 278); the r4_r4 product declared just ahead of the r3_r3 product 1368 (re-measured); both products with the named
 // value as the second operand 939 (same code). Body unchanged.
+// The extra dedicated scalar cell is still missing. Root-35 component-2 product before the component-1 axial
+// cube 1410, cube between weighted product and first use 1411, adjacent square consumers 939, adjacent
+// weighted component pairs 990. Root-105 component-1 square alongside component-3 1475, its pair after the
+// component-0 pair 945, its component-7 product alone beside component-0 1470, and four weighted squares
+// before their component-7 consumers 1556.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
