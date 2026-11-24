@@ -1081,13 +1081,15 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 		float ratio = lower / impulse;
 		impulse = ratio * impulse;
 	}
+	// Capture A inertia before the SIMD input can overwrite its lanes.
+	__m128 inertia_a=a->inverse_inertia;
 	// Only SIMD consumes this rounded copy; accumulation retains the x87 impulse.
 	float &rounded_impulse = simd_scratch;
 	rounded_impulse = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	// Retain both body weights before either angular velocity write.
 	__m128 weights[2];
-	weights[0] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	weights[0] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	weights[1] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
 	// Reload A after projection for the bounded angular update.
 	a->angular = _mm_add_ps(_mm_load_ps((float const *)&a->angular), _mm_mul_ps(weights[0], axis_a));

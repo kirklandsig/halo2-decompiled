@@ -813,3 +813,37 @@ def test_header_captures_terms_before_publishing_a_home(solver_images,precision)
             assert snapshot==(bytes(data),1)
             snapshots.append((snapshot,callbacks))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_bounded_angular_a_inertia_precedes_scalar_copy(solver_images,precision):
+    # A inertia spans the inverse-pointer and rounded-input words. Its W lane
+    # must retain the value read before the rounded impulse is published.
+    frame=STACK+32768-0xd0
+    body_a=frame-0x20
+    body_b=HEAP+0x80
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(4,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',body_a,body_b)
+            put(data,OPS+24,'4I',4|(16<<8)|(4<<16),0x40000000,0xc0000000,0)
+            put(data,OPS+40,'I',0x400)
+            put(data,TERMS,'8f',0,0,0,1,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for offset in [0x10,0x20]:put(data,body_b+offset,'4f',0,0,0,0)
+            put(data,body_b+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'f',0)
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*16)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            b_home=words(machine,frame+0xc,1)
+            assert b_home==(body_b,),(label,precision,rounding,b_home)
+            assert words(machine,IMPULSES,1)==(0x3f800000,),(label,precision,rounding,words(machine,IMPULSES,1))
+            assert words(machine,body_b+0x20,4)==(0,0,0,0x3f800000)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,b_home)
+            else:assert snapshots[rounding]==(snapshot,b_home)
