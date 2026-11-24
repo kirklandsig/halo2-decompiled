@@ -494,6 +494,26 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // order does not break the `this`/`saved` contest); the game type read once into a local for the second half's three
 // calls 160 (586 B, aligned 80); the first flag read once into a local for its two tests 187 (594 B); both 176 (585 B,
 // retail's length, aligned 70; `this` still EDI); the game-type local on the one-load body 159 (572 B).
+// M3 lane 7 r224 (fast screen with 0x13fac0, 0x212bc0, 0x238c69, 0x2ba9f4, 0x1489b5, 0x2ca244, all MATCH each run; control
+// 61). Rebuilt: two load arms 174 (595 B), with 0x238c69 as (controller, mode, type, name, maximum_count) 167 (590 B),
+// with a count named in the default arm as well (lane 7 r189's form 3) 183 (575 B). The allocator's ranking on these
+// forms, read for the first time: every use of the variant's address (each copy's destination, the build-default
+// argument, the two file-type arguments) is one candidate; on form 3 it has five uses over the two arms and ranks
+// 104 against `this` at 63, so it takes EBX first and `this` is split round the copies; on this one-load body `this`
+// ranks 72 and the candidate gets no register, but a second pass then gives its copy-to-push stretch EAX (the cached
+// address of the default arm). Form 3 with the selected arm's file type read from the local copy (diagnostic, a wrong
+// value) 62 at 584 B: `this` 84 against the candidate's 72, every row retail's but that EAX cache. On that
+// diagnostic, one forced allocator decision (not source), the candidate cut ahead of its second use, the
+// build-default push, gives 15: retail's default arm. So retail's compile does not count a copy's destination as a
+// use of the address candidate: without those uses the candidate has three uses, ranks below `this`, and no stretch
+// between two calls holds two of them, which is retail's code in both arms. Source forms on the diagnostic, none
+// moving the cache: the default arm on a plain global of its own 62; its copy as memcpy 62; its copy into
+// `variant_bytes` 62 (same code each); the game type read into a local ahead of the index store 173 (576 B, the
+// address then in EBX); the index store after the copy 172 (587 B). On form 3: the default arm's copy as memcpy 183;
+// the selected arm's default flag cleared in the local ahead of the copy 183; one named name pointer for the copy
+// and both requests 183. Processor-target flags on the file (/G5, /G6, /G7; the one compiler-setting diagnostic) 61
+// each, the same code. Body unchanged. Next: a copy whose destination the compiler does not see as a use of
+// &g_54e4a0 (no spelling of the assignment, memcpy or the destination tried so far does that); then form 3 applies.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

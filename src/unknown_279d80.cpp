@@ -2226,6 +2226,18 @@ void function_27dd10(void)
 // (arg_5 < arg_7)` 2; the destination lookup and the mask test as two nested ifs 2 (the three the same code); the
 // zero-flags arm and the group arm swapped (`if (local_2 != 0)`) 377 (0x281b60 352); the cursor stepped at the end of the outer
 // iteration 414 (0x281b60 404) (every sibling lost). All restored.
+// M3 lane 1 r163 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2). Reading of the allocator: the two loads are block-entry reloads of the walk's count and of pass 0's bit flags at
+// the counter block; both have the same scheduler rank there, so they are emitted in the order of their allocator
+// candidate numbers, lower first. Those numbers are not source order: each time a pick takes a candidate's last free
+// register the candidate is split and every new piece takes a recycled number (shared with the float candidates and
+// with the constants 0, 1, 8, 31 and the two decode-target addresses, which are candidates too), so the final numbers
+// are the end of a 15-round split cascade: count 24, pass 0's flags 52, pass 1's flags 12 (why pass 1 is already
+// retail's); matched 0x285750 ends count 61, flags 27. A form that leaves the allocator's input unchanged cannot move
+// them. Forms: node_flags_test's mask bit as `1u << (index & 31)` 2 (0x289580 lost; the same candidate numbers);
+// node_destination_get's map-flag bit as `1u <<` 2; both 2 (0x289580 lost); the walk's bit test as `local_2 & 1u` 2;
+// all three unsigned 2 (0x289580 lost). Diagnostic: 0x27e6b0 defined ahead of this function in the file 2 (the
+// numbering does not carry over from the function compiled before it). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2521,6 +2533,10 @@ void function_2818e0(void)
 // (arg_5 < arg_7)` 2; the destination lookup and the mask test as two nested ifs 2 (the three the same code); the
 // zero-flags arm and the group arm swapped (`if (local_2 != 0)`) 352 (0x27dff0 377); the cursor stepped at the end of the outer
 // iteration 404 (0x27dff0 414) (every sibling lost). All restored.
+// M3 lane 1 r163 (h2m fast with 0x27dff0 and the matched walk users; control 2): the same reading as 0x27dff0's r163
+// note (the pair is ordered by recycled allocator candidate numbers at the end of the split cascade). The mask bits as
+// `1u <<` in node_flags_test, in node_destination_get or in both 2 each; the walk's bit test as `local_2 & 1u` 2; all
+// three 2; 0x27e6b0 defined ahead of 0x27dff0 in the file 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

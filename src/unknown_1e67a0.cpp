@@ -1388,6 +1388,17 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // side-dot product's operands swapped 108 (same code), the two cross calls swapped 94 at 1382 B but aligned 99/76
 // (positional only). Left on the 108 form: the rotation helper's four products (axis component loaded first where
 // retail copies the vector's register), the old cross's two products and the side dots' evaluation order. Body unchanged.
+// M3 lane 5 r242 (control 111 at 1393 B; A = instructions left unpaired after aligning the two listings, 76 at the
+// control; body unchanged). How the product sides are chosen: the operands of each float product are sorted by a rank,
+// equal ranks keeping their written order. In this build the axis' j and k reads (memory through the state pointer)
+// rank above every local, the rotated copy's three components, the projection and the two cross terms rank as locals
+// below them, and the axis' i read ranks below all of those; retail's sides need the copy's j and k at or above the
+// axis' j and k with the copy's i and the projection still under them, so retail's j and k do not rank as plain locals
+// of this function. Forms: one local for the movement vector and the rotated copy (retail's two share one home) 178
+// (A 205: the copy's components still rank as locals and every axis read is loaded first). Diagnostics on a file-local
+// copy of the rotation helper, each reverted at once: only the i component named 152 (A 187); no component named 112
+// (A 105); j and k named 118 (A 84); all three named 192 (A 185). None turns the four products of the copy's j and k
+// with the axis' j and k.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -494,6 +494,19 @@ extern real g_4c9798[36];
 // 0x400)`) 299 (1485 B); the offset test as `== 1` 336 (1491 B); the mode's else arm as one boolean assignment 174 (same
 // code); `maximum` converted ahead of the height limit 253 (1484 B); the size's first term named for the product 174 (same
 // code). Still BLOCKED-BY 0x48e70 (its file is on this round's avoid list). Body unchanged.
+// M3 lane 11 r163 (H2M_FAST with 0x48e70 and 0x1cf50, both MATCH; control 174; body unchanged; still BLOCKED-BY 0x48e70,
+// whose file is on this round's avoid list). Lane 16 r157's diagnostic base rebuilt (the two rounding calls to an
+// undefined stand-in, the long height limit, the raw size with one nested conditional clamp, the border product in
+// parentheses, the second plane's normal copied straight in with its dot on the plane) 100 at 1481 B, aligned 9: the
+// flags word in EDX for retail's EAX and the distance and extent homes exchanged. Reading of the flags register: the
+// flags word and the tag word are scratch temporaries, handed out by a cursor that rotates EAX, ECX, EDX; the tag word
+// takes EAX and leaves the cursor on ECX, which the state pointer holds, so the flags word gets EDX. Retail's EAX needs
+// one more integer scratch temporary between the two (or the tag word coloured as a variable). On that base: the offset
+// read through a pointer local 100 (same code); through a file-local inline accessor returning a reference 100 (same
+// code); the inverse through a file-local inline function taking the distance by reference 100 (same code): pointer
+// temporaries fold away before the scratch registers are handed out. The tag test as a one-case switch 315 (1479 B,
+// first +0x3), as `== 1` 315 (the state then arrives in EAX, as listed above). The extent renamed `breadth` or
+// `a_extent`, the distance renamed `range` or `z_distance` 100 each (same code: the two homes do not follow the names).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

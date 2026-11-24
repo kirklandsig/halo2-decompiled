@@ -950,6 +950,17 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // inactive activation, or positive-time activation and output 602 each. Active-output refresh
 // with conditional reference-velocity fallback 600. NOT kept: gains of at most three,
 // length grows to 2888 bytes, and the +0x9 register load persists.
+// M3 lane 3 r304 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all three MATCH in every trial; control 603, aligned 658;
+// body unchanged). Colouring readout: d's register candidate starts at entry and covers the update block; q's starts at
+// the output copy and takes a scratch register there although EBX is free again, so retail's entry load of q means its q
+// candidate reaches back to entry and outranks d (retail has no d candidate at all). Thirty forced single allocator
+// decisions (diagnostic, not source): none below the control. On lane 15 r139's 596 lead (void return, `s->counter++`,
+// the settle factor inside the step expression; re-measured 596 at 2880 B, aligned 639; its tail is retail's instruction
+// for instruction but for one extra jump, because retail lays the low-step arm out ahead of the main arm): qr as one
+// aggregate copy 664 (2875 B); the output position assigned through `out->position` ahead of the pointer local 596 (same
+// code); w as dot3f(&s->direction, q) 680 (2875 B); the 0.866 test as dot3f(&s->direction, d) 597; the final test written
+// failure-first 596 (same code); the counter kept in a local for the final test 597 (2878 B); the first step limit as one
+// conditional 600; len3 as one conditional 596 (same code). None reaches 595, so the lead stays one short of the bar.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

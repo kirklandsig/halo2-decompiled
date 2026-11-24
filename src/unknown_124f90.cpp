@@ -4066,6 +4066,15 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // embedded `data_datum_index(sounds = g_4e637c, ...)` is the same code); on that: the datum through the global 40, the
 // find through the global 25, the entry through the global 163/27/25, the pointer declared before the start test 162, a
 // named playback array for the loop top 160, the start test through the macro 157; 1..8 probe locals 25 each (no tie).
+// M3 lane 5 r241 (H2M_FAST), at 8: the latch scan through the existing for-loop twin data_next_absolute_index_inlined
+// 8 (same code); the reload written in both arms of the next-index ternary 162 (559 bytes: VC hoists the common load into
+// the compare block); the latch as a forced-inline step shaped like 0x16bbc0 (if/else start, scan, NONE result) with
+// the global or `sounds` passed 8/8 (same code); the next index named first with the macro loop top 8 (same code). On
+// the loop top through `sounds` with the next index named first (the 25 form, re-measured 25): the scan through the
+// for-loop twin 25, the start test only through `sounds` 173 (572 bytes), the pointer only through `sounds` 157 (561
+// bytes), the pointer declared through `sounds` ahead of the start test 162 (561 bytes). Reading: with the loop top reading the global, the latch's load is a CSE temporary placed at the latch head;
+// a user-variable definition keeps its place after the ternary, but its shorter range then takes ESI ahead of the scan
+// temporaries (retail: the scan result in ESI, the pool in EBP).
 // @retail 0x1282d0
 void function_1282d0(void)
 {

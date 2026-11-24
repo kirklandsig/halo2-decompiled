@@ -1735,6 +1735,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // the selection scan through an entry pointer stepped with the index 568 (2175 B); the primary blend with `if (parameters)
 // { ... return true; } return false;` 571 (2176 B); direction2 rotated from a negated copy straight into the record 580
 // (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21 unless named; control 529): the scan as a pointer
+// stepped with a down-counter (`for (long remaining = count; remaining > 0; --remaining, ++entry)`) 579 (2171 B); the length
+// through magnitude3d ahead of the normal copy 528 (one point); the first luminance as `(...) * 2.0f` 529 (same code); `bool
+// result = false;` with `result = true;` opening the found block 573 (2172 B); the square from `record->length` read back
+// at both operands 586 (2166 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2099,6 +2104,20 @@ real function_30bf0(vector3f *vector);
 // IP + cast + bounds 377. Match-only diagnostics on IP + cast: squares spelled (k, i, j) 370, mobile false then set 360,
 // both 354 (aligned 248); left there the 1.0f constant in xmm5 (retail xmm6), the colour2 blend schedule and the
 // rotation's stack copy of the axis.
+// M3 lane 5 r242 (H2M_FAST with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10 and 0x117c80; 0x3db00 matched and 0xd37f0 at 529
+// unless said; control 378; S = the count of instruction kinds one listing has and the other lacks, 93 at the control).
+// Which parts of lane 7 r176's chain can stand without a one-caller helper, measured apart and together: the shared
+// normalize3d(&normal) alone 483 (1894 B); the colour2 positive checks as stored selects alone 454 (1878 B); direction2
+// copied, negated and rotated in place as 0xd37f0 writes it 460 (1870 B, frame 0x40, S 56; re-measure); selects + in
+// place 450 (1870 B); normalize3d + selects + in place 468 (1887 B). The file's lighting_negate changed to (in, out) at
+// all five call sites, direction0 then being its negate of the normal: alone 495 (1906 B), with normalize3d and in
+// place 463, with the selects too 454 (1906 B), without in place 450, and 0xd37f0 goes 529 -> 574 (2169 B) each time,
+// so the two-pointer negate cannot be a shared change. All of those with `real square = length * length;` moved up
+// behind the direction1 negate 335 (1912 B): the chain's whole gain needs that moved declaration (retail squares the
+// length in the block that follows the 0x117c80 call, ahead of the first limited-colour compare), which is kept only
+// with a match. On in place: the shared rotate reading its axis through `vector3f const *axis = g_4687b0` 496 (S 51),
+// with the projection summed (k + i) + j 462 (S 53), with each row written projection term first 462 (same code); the
+// (k + i) + j sum over the copied axis 452 (S 56); the live axis without in place 515. Body unchanged.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
