@@ -2274,6 +2274,11 @@ struct s_actor_looking_structure_view
 // score's order); on it the score in two statements (`i*i + k*k`, then `+= j*j`) with 0-3 redundant pairs on the clamp
 // product 53/143 (928 B)/141 (927 B)/33; the score as `dot3f(&forward, &directions[i])` 145 (928 B), as
 // `dot3f(&directions[i], &forward)` 145 (928 B). Retail 0x296e60 runs each of its rotations as fsin, dot, fcos too.
+// M3 lane 13 r152 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the selected test as
+// `best_index >= 0` 34; the selected direction as `directions + best_index` 23 (same code); a `vector3f &direction` bound to
+// the candidate for the copy, rotation, trace and score 139 (928 B); no result local, `return true` at the success and
+// `return false` at the end 221 (939 B); 0x2105b0 writing straight into the specification's vector (the in-place call and
+// the copy dropped) 154 (909 B).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
