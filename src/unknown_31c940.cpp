@@ -1103,15 +1103,23 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 static __forceinline void solve_unilateral_linear(float target,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
 	__m128 &linear_b,__m128 *const & angular_b_pointer, solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
-{
-	__m128 axis_linear = row->linear;
-	__m128 relative = _mm_sub_ps(a->linear, linear_b);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps((*angular_b_pointer), row->b));
-	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis_linear));
-	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
-
-	_mm_store_ss(&projection_pool.unilateral_linear, xyz);
+{// Reuse the five real projection values; retain the linear axis for the update.
+	__m128 work[5];
+	work[0]=linear_b;
+	work[1]=a->linear;
+	work[2]=row->a;
+	work[3]=*angular_b_pointer;
+	work[4]=row->linear;
+	work[1]=_mm_sub_ps(work[1],work[0]);
+	work[0]=a->angular;
+	work[0]=_mm_mul_ps(work[0],work[2]);
+	work[2]=row->b;
+	work[3]=_mm_mul_ps(work[3],work[2]);
+	work[1]=_mm_mul_ps(work[1],work[4]);
+	work[0]=_mm_add_ps(work[0],work[3]);
+	work[0]=_mm_add_ps(work[0],work[1]);
+	sum_three_to_arena_31c940(work[0],projection_pool.unilateral_linear);
+	__m128 axis_linear=work[4];
 	solver_step_31c940 *parameters = step;
 	float error = target * parameters->error_scale - projection_pool.unilateral_linear * parameters->velocity_scale;
 	if (error > 0.0f)
@@ -1322,7 +1330,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2144. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2084. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
