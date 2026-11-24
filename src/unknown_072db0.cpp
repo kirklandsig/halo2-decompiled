@@ -2353,6 +2353,9 @@ bool function_1900a5(long index);
 // both locals 636; the write poll's pending range as an early return ahead of the state-2 test 643 (same code), nested
 // under `state >= 0` 643 (same code); either with the last write local 660 (2846 B), with both locals 662. The 634 form
 // needs the arm swap, so nothing is kept.
+// Single task-index read with direct guard, selected status, initialized readiness, guarded readiness,
+// conditional readiness, initialized offline result, default status or an offline early return:
+// 643/643/643/754/754/643/643/643. The opening status comparison and first user cursor still differ.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
