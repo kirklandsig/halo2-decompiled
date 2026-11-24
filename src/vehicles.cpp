@@ -883,9 +883,17 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // component, before the second input component, at the start of the forward copy, before input rotation,
 // after speed root, before speed root, or before the velocity copy: 111/122/118/118/118/278/133/141.
 // NOT kept: the earliest form moves the first difference earlier; the others keep +0x69 and raise the score.
+// Typed control-vector member at entry, gear, rotation and their combinations
+// 107 each; a reference shared across the observation sites 241.
+// NOT kept: direct membership leaves the unity register unchanged, and the
+// reference shortens the body to 1133 bytes.
 // Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
 // row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
 // and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
+// Explicit double CRT boundary at root/reversing arc/root plus reversing arc/steering arc/
+// root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
+// Explicit float CRT calls for the root, arcs and absolute values: 109.
+// NOT kept: the independent SSE square and x87 sum still diverge at +0x69.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1944,6 +1952,11 @@ long function_10f5f0(long object_index);
 // sample 570/570/570/603. Separate radial delta with those publications
 // 570/561/570/603. NOT kept: the setter with a separate delta ties at retail
 // length, and all leave the 0x1990 frame.
+// Guarded door and bounds component handles, alone or paired 567/567/561.
+// Component references with the guarded handles 567/567/561. Door handle with
+// initial flags 560 and bounds handle at activity entry 567.
+// NOT kept: the gain is one point at the same extent. Frame 0x1990 and separate
+// bounds and velocity homes persist.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3839,6 +3852,14 @@ real g_47ff30 = 2.5f;
 // Frame 0x100 versus 0xfc; acceleration and velocity homes still differ.
 // Tick-rate scope through climb approach or boosted speed, each alone, with query-local angular output,
 // with up-magnitude scope, or with both: 672 in all eight forms. The acceleration spill stays at +0x20.
+// Separate mass reads with the double-factor scale at the response, force and torque stages
+// in trial subsets: 703/712/723/703/708/716/736. One directional mass read, both final
+// reloads and all three double-factor scales: 708.
+// NOT kept: the double-scale forms raise the score and leave the native early homes unresolved.
+// Separate final mass reads and role names for query outputs, force/torque, axis-angle, or all three
+// groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
+// scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
+// return, but the acceleration spill stays at +0x20 and both velocity homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4105,7 +4126,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // between them are not one uniform shift (the parameter reloads sit 4 apart, the pair at esp+0x64 0x10 apart and the
 // first float home 8 the other way), so it is not a single missing local; the column alignment of this round
 // finds no earlier split to work from.
-// score 1000 (was 1000): Earlier at 1000 (was 1052). Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
+// Earlier at 1000 (was 1052). Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
 // (field offsets, the 29 constants, condition directions, callee arguments, loop shapes and local types agree).
 // Retail takes |pitch_slope|, |roll_slope|, the yaw |arg| and the |target| / |steering| pair in the yaw test by
 // comparison (comiss; 0 - x), not x87 fabs: vehicle_magnitude() gives that (1052 -> 1009, 1092 instructions each);
@@ -4263,6 +4284,13 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // 0x74, so every stack home sits four bytes higher.
 // MiniMax G (11-20): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack; the body is 32 bytes longer than retail's.
 // MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
+// Planar acceleration through scalars 1127, a point 1120, deferred zero 1067,
+// or aggregate initialization 1000. Consuming the transform return in those forms 1156/1166/1083/1024.
+// NOT kept: none recovers the 0x74 frame. The return pointer adds frame storage, and
+// even the shorter deferred-zero form raises the score.
+// In-place force, torque, or both through the shared scaler 1000 each. Staged force, torque, both, and both
+// mixed scaler/setter forms 1000 each. NOT kept: the frame stays 0x78 at 4698 bytes and the force, torque and
+// mass homes remain unchanged.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -5110,6 +5138,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 116/118/116/118/116/116/118. All with projection scope 118.
 // NOT kept: the 116 forms recover the projection prefix through +0x107 but
 // gain only two. The cross operand allocation and the sine/cosine homes remain.
+// Corrected-up setter/value 120/207, shared up receiver with setter/value 130/219,
+// up-field setter/value before the normalization receiver 140/208, indexed setter
+// 116, named dot with setter 120. NOT kept: the indexed setter recovers the
+// projection prefix through +0x107 but gains two. Cross and trig homes remain.
 // Indexed projection removal with vehicle or shared direct cross at the facing, roll-axis and final-left outputs
 // 129/129, 118/118 and 114/114. Direct shared cross at all three 125. First cross through the facing up field 118.
 // NOT kept: the best four-point gain leaves the first cross at +0x108 and keeps the different sine and cosine homes.
@@ -6203,6 +6235,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // NOT kept: the record forms coalesce retail's separate lookups and
 // shorten to 2795–2798 bytes. The ordinal form reaches 2870 but changes
 // the entry scheduling. The zero and result registers still differ.
+// Complete conditional results at the primary, braking, action, grounded-speed
+// and wheel-speed channels, then three activation channels, both speeds and all
+// five: eight at 759. The 0x18 frame agrees. The entry definition and zero/result
+// registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7065,6 +7101,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Shared facing/current/state orientation with spent flip output and five forward/up/cross orders
 // 1062/1041/1174/1157/1157. Cross of the copied rows 1121, scoped quaternion 1157, state memcpy 1174.
 // NOT kept: the frame reaches 0xdc, but the handle and displacement stay exchanged and the body shortens.
+// Lateral input with force 1054, lateral output with torque 959, linear velocity with rotation axis 970.
+// Input/output, input/axis, output/axis and all three shared 1068/1054/970/1055.
+// All three with a scoped relative matrix 1145. NOT kept: the frame drops to 0xdc and the body shortens to 5043 bytes. The other forms keep frame 0xfc.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

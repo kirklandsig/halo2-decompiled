@@ -311,6 +311,30 @@ __forceinline long portal_path_gain(real distance, real range)
 // and assigned there 250 (the read must span the compare for the cluster pointer to win its register).
 // On main: kept, the fill and output tests through bit_vector_test 287 (same code; the walk's test through it 309 stays
 // written out, as round 204 found). Still BLOCKED-BY 0x14b240's write summary while 0x18ae80 rises on it.
+// M3 lane 12 r185 (h2m fast with 0x18dc90, 0x14b240, 0x222150 and 0x18ae80; control 287; body unchanged; everything
+// here is on lane 5 r240's rebuilt lead: 0x14b240's offset through a reference-bound local, 0x222150 without its
+// volatile reads, both twins rewritten; this body 8 there, the twin 4). On that lead with the nearest test written
+// plainly (`nearest_distance >= distance && cluster->sound_index != NONE`, the index read again for the store, which is
+// retail's read after the compare) 250 (the twin 21): the listing then differs only by the cluster pointer in EBX and
+// the widened portal index in EBP. Measured cause: the allocator colours the higher-ranked of the two first and that
+// one takes EBP (EBX is avoided, being the only register left for the byte mask of the portal flag test); the portal
+// index ranks 136 (the twin 134) and the cluster pointer 126 (124). With the cluster pointer's rank one step above the
+// portal index's (a forced compile, not source) both twins match byte for byte, the four output stores included, so
+// that one rank is all that is left. The rank is a per-block sum: the cluster pointer gains 12 for every value
+// referenced in the entry block (the eight integer parameters, the cluster pointer, NONE, 1 and 0x1f: twelve), the
+// portal index 12 for every value in the walk's first block (twelve). Forms on that base (this body / the twin): the
+// cluster table named once at the top 250 / 21 (it folds, ranks unchanged); the seed and found bits through the
+// existing bit_vector_set 250 / 21; the set-bit helper without its pointer local 250 / 25; `long portal_index` 327 /
+// 325; the cluster lookup ahead of the bitmap clear 372 / 368; the side bit as `(encoded & 0x8000) != 0` 250 / 21; the
+// nearest distance declared ahead of the cluster pointer 250 / 21 (same ranks each). The bitmap cleared by two
+// assignments (or an initializer, or one chained assignment) in place of memset 377 / 376: the zero constant is then a
+// thirteenth value in the entry block, the cluster pointer ranks 138 (136) and takes EBP with the portal index in EBX
+// as retail, but the zero keeps EDI from the entry to the output loop's set-up (two bitmap stores and the output
+// counter's store against two set-ups: worth one), where retail has a scratch zero for the two bitmap stores only. On
+// that: one counter for all three loops 377 / 376; the output loop reusing the fill loop's counter 377 / 376; the limit
+// declared ahead of the output loop 382 / 379. Leads: build/r185/held-0x18d730-natural-nearest.patch and
+// build/r185/lead-0x18d730-two-assignment-clear.patch. Still BLOCKED-BY 0x14b240's write summary while 0x18ae80 rises
+// on it (837 on main; its two callees have to be listed for a fast screen and it still builds short there).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -760,6 +784,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the deep stores. Diagnostics (cuts, restored at once): without the 0x249d60 call the cluster ranks 128 and takes EBP;
 // without the 0x14b240 call 118 and EBP; without the sort call 106 and EBX. The 21 form's full diff is
 // build/r242/held-0x18dc90.patch. Still BLOCKED-BY 0x14b240's write summary for anything short of a match.
+// The 0x428 frame, starting-cluster register and in-loop BSP table loads are still open.
+// Select the distance bound, select the comparison, split first and repeat admissions,
+// or continue on rejection: 295/356/357/295. The same with call-scoped sort scratch
+// 280/352/353/280. NOT kept: the 280 forms recover the frame through the scratch scope
+// but still cache both BSP bases and keep the starting cluster in EBX.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

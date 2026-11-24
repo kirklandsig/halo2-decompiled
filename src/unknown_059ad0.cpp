@@ -4720,6 +4720,25 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // 360; the session state read at each test with no state local 299 (+0x16). Diagnostic (compiler setting, reverted):
 // global optimisation off around the body 809 (1643 B), so retail's reloads are not a whole-function setting. Body
 // unchanged.
+// M3 lane 1 r165 (fast screen with 0x5e3f0, MATCH each run; main 295; lane 1 r144's 44 lead rebuilt from its diff, 44; the
+// single-return form under it rebuilt from the lead, 96). Aligned against retail (jump targets masked) the 96 form
+// differs in two places only: the kept arms (retail `mov cl, [same]; test cl, cl; mov al, 1; mov [result], al; jne <bare
+// epilogue>`, then `better` in CL the same way: the result is a register value there, stored to its home through AL;
+// ours tests in AL and stores an immediate) and the two instructions after the disconnect (retail `test al, al; jne <bare
+// epilogue>` on the reloaded result, then an epilogue of its own with no reload and no `xor al, al`). That epilogue sits
+// inside the received block, ahead of the reason-9 arm. No forced allocator decision on the result (its cost, rank,
+// register or any of its 41 range cuts, 53 tried) changes the 44 lead, so both are shapes of the code, not picks. New
+// on the 96 form: the acknowledgement nested as `if (!result) if (acknowledge)` 96 (same code, as the `&&` form); after
+// the disconnect `if (!result) return result;` 48 (aligned 26: retail's test and `jne` appear and the failed edge gets
+// its own epilogue in retail's place, but with an `xor al, al`, the result byte moves to +9 and the kept arms are
+// unchanged), `if (!result) return false;` 48 and `if (result) goto received_done; return result;` 48 (same code each),
+// that test placed after the `received_done` label so the kept arms reach it 48 (same code: the kept edges are threaded
+// past it), `if (result) return result;` 119 (the two returns merge and the homes rotate), also behind the label 119;
+// `return result != false;` with the kept arms `return true;` 104; the received block with no goto (a refused flag, the
+// accepted and refused arms as if/else, the disconnect under `!same && !better`) 219 (1230 B: the refused arm moves to
+// the end), that with the disconnect under `!result || (!same && !better)` 219, either with the `!result &&` tail 219
+// (same code each). Re-measured: the kept arms `return true;` or `return result;` on the 96 form 100 (a `mov al, 1`
+// return block of their own: the constant is not held in AL across the tests). Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
