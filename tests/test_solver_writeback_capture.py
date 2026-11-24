@@ -1660,3 +1660,138 @@ def test_coupled_scales_reload_after_first_error(solver_images,precision,pair_in
             if label=='retail':snapshots[rounding]=(snapshot,callbacks,observed)
             else:assert snapshots[rounding]==(snapshot,callbacks,observed),(precision,rounding,pair_index,coefficient,observed)
         print(label,'coupled first-error scale4RM',pair_index,coefficient,hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_second_fallback_publishes_row_before_linear_update(solver_images,precision):
+    frame=STACK+32768-0xd0;a=frame+0x10;expected_row=TERMS+144
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0)
+            put(data,STEP,'7fi',0,1,1,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,HEAP+0x80)
+            put(data,OPS+24,'5I',3|(8<<8)|(5<<16),0,3|(8<<8)|(5<<16),0,0x400)
+            put(data,TERMS,'24f',*([0.0]*24))
+            put(data,TERMS+96,'24f',0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,3,0,0,0,1,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for body in [HEAP,HEAP+0x80]:
+                put(data,body+0x10,'4f',0,0,0,0);put(data,body+0x20,'4f',0,0,0,0);put(data,body+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'4f',0,0,0,0)
+            machine.mem_write(frame,b'\0'*208);machine.mem_write(a+0x30,struct.pack('<4f',1,1,1,1));machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            observed=words(machine,a+0x10,4)
+            assert observed[0]==expected_row,(label,precision,rounding,observed,hex(expected_row))
+            assert words(machine,HEAP+0x90,4)[2]==0xc0000000
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,observed)
+            else:assert snapshots[rounding]==(snapshot,observed)
+        print(label,'second fallback row20 publication4RM',hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('inertia_owner',['a','b'])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_second_fallback_inertia_straddles_row_publication(solver_images,precision,inertia_owner):
+    frame=STACK+32768-0xd0;aliased=frame-0x10
+    a=aliased if inertia_owner=='a'else HEAP;b=aliased if inertia_owner=='b'else HEAP+0x80
+    row=TERMS+144;expected_b=struct.unpack('<I',struct.pack('<f',3*struct.unpack('<f',struct.pack('<I',row))[0]))[0]
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0);put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,b);put(data,OPS+24,'4I',3|(8<<8)|(5<<16),0,3|(8<<8)|(5<<16),0)
+            put(data,OPS+40,'4I',14|(12<<8)|(2<<16),CALLBACK,0,0x400)
+            put(data,TERMS,'24f',*([0.0]*24))
+            axis_a=(1 if inertia_owner=='a'else 0,0,0,1);axis_b=(1 if inertia_owner=='b'else 0,0,0,1)
+            put(data,TERMS+96,'24f',0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,3,*axis_a,*axis_b)
+            put(data,HEAP,'B',3)
+            for body in [HEAP,HEAP+0x80]:
+                put(data,body+0x10,'4f',0,0,0,0);put(data,body+0x20,'4f',0,0,0,0);put(data,body+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'4f',0,0,0,0);callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3)
+                observed=words(uc,aliased+0x20,1)[0];published=words(uc,frame+0x20,1)[0]
+                callbacks.append((terms,payload,observed,published));return_from_hook(uc)
+            machine.mem_write(frame-0x10,b'\0'*224);machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            assert len(callbacks)==1,(label,precision,rounding,inertia_owner,callbacks)
+            terms,payload,observed,published=callbacks[0]
+            assert(terms,payload,published)==(TERMS+192,OPS+48,row),(label,precision,rounding,inertia_owner,callbacks)
+            if inertia_owner=='a':assert observed&0x7fffffff==0,(label,precision,rounding,inertia_owner,callbacks)
+            else:assert observed==expected_b,(label,precision,rounding,inertia_owner,callbacks,hex(expected_b))
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,callbacks)
+            else:assert snapshots[rounding]==(snapshot,callbacks)
+        print(label,'second fallback inertia/publication4RM',inertia_owner,hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('writer',['linear','angular'])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_first_fallback_retains_angular_receiver(solver_images,precision,writer):
+    def as_bits(value):return struct.unpack('<I',struct.pack('<f',value))[0]
+    def as_float(value):return struct.unpack('<f',struct.pack('<I',value))[0]
+    frame=STACK+32768-0xd0;a=frame if writer=='linear'else frame-0x10
+    original=HEAP+0x80
+    replacement=0x40000000 if writer=='linear'else as_bits(as_float(original+0x20)+as_float(as_bits(2*as_float(a))))
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        page=replacement&~4095
+        if not any(lo<=page and page+4095<=hi for lo,hi,_ in machine.mem_regions()):machine.mem_map(page,8192)
+        for rounding in range(4):
+            data=solver_case(3,0);put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,original);put(data,OPS+24,'5I',3|(8<<8)|(5<<16),0,3|(8<<8)|(5<<16),0,0x400)
+            put(data,TERMS,'24f',*([0.0]*24))
+            linear_axis=(0,1 if writer=='linear'else 0,0,2)
+            angular_axis=(1 if writer=='linear'else 0,1 if writer=='angular'else 0,0,1)
+            put(data,TERMS+96,'24f',*linear_axis,*angular_axis,1,0,0,1,0,0,0,-1,0,0,0,1,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for body in [HEAP,original]:
+                put(data,body+0x10,'4f',0,0,0,0);put(data,body+0x20,'4f',0,0,0,0);put(data,body+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'4f',0,0,0,0)
+            machine.mem_write(frame-0x10,b'\0'*224)
+            if writer=='linear':machine.mem_write(a+0x30,struct.pack('<4f',1,1,1,1))
+            machine.mem_write(replacement,b'\0'*16);machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            observed=words(machine,original+0x20,4);unexpected=words(machine,replacement,4)
+            assert observed[0]==0x40000000,(label,precision,rounding,writer,observed,unexpected,hex(replacement))
+            assert unexpected==(0,0,0,0),(label,precision,rounding,writer,observed,unexpected)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,observed,unexpected)
+            else:assert snapshots[rounding]==(snapshot,observed,unexpected)
+        print(label,'first fallback angular receiver4RM',writer,hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('writer',['linear','angular'])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_second_fallback_captures_receiver_between_writes(solver_images,precision,writer):
+    def as_bits(value):return struct.unpack('<I',struct.pack('<f',value))[0]
+    def as_float(value):return struct.unpack('<f',struct.pack('<I',value))[0]
+    frame=STACK+32768-0xd0;a=frame if writer=='linear'else frame-0x10
+    original=HEAP+0x80
+    replacement=0x40000000 if writer=='linear'else as_bits(as_float(original+0x20)+as_float(as_bits(2*as_float(a))))
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        page=replacement&~4095
+        if not any(lo<=page and page+4095<=hi for lo,hi,_ in machine.mem_regions()):machine.mem_map(page,8192)
+        for rounding in range(4):
+            data=solver_case(3,0);put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,original);put(data,OPS+24,'5I',3|(8<<8)|(5<<16),0,3|(8<<8)|(5<<16),0,0x400)
+            put(data,TERMS,'24f',*([0.0]*24))
+            linear_axis=(0,1 if writer=='linear'else 0,0,2)
+            angular_axis=(1 if writer=='linear'else 0,1 if writer=='angular'else 0,0,1)
+            put(data,TERMS+96,'24f',0,0,0,0,0,0,0,1,0,0,0,1,*linear_axis,*angular_axis,1,0,0,1)
+            put(data,HEAP,'B',3)
+            for body in [HEAP,original]:
+                put(data,body+0x10,'4f',0,0,0,0);put(data,body+0x20,'4f',0,0,0,0);put(data,body+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'4f',0,0,0,0)
+            machine.mem_write(frame-0x10,b'\0'*224)
+            if writer=='linear':machine.mem_write(a+0x30,struct.pack('<4f',1,1,1,1))
+            machine.mem_write(replacement,b'\0'*16);machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            observed=words(machine,original+0x20,4);unexpected=words(machine,replacement,4)
+            assert observed[0]==(0 if writer=='linear'else 0x40000000),(label,precision,rounding,writer,observed,unexpected,hex(replacement))
+            assert unexpected==((0x40000000,0,0,0x40000000)if writer=='linear'else(0,0,0,0)),(label,precision,rounding,writer,observed,unexpected)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,observed,unexpected)
+            else:assert snapshots[rounding]==(snapshot,observed,unexpected)
+        print(label,'second fallback middle receiver4RM',writer,hex(precision),flush=True)

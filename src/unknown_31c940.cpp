@@ -711,30 +711,28 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
 // Its two updates snapshot the angular-B address at different points.
+// The first-row fallback keeps that destination through both linear writes.
 static __forceinline void apply_second_pair_fallback(float impulse,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,
 	__m128 *const &angular_velocity_b_pointer, __m128 const &inverse_b, __m128 const &axis_linear, float *result, float &simd_scratch)
 {
-	// Keep accumulation wider than the float copy consumed by SIMD.
-	__m128 inertia_a=a->inverse_inertia;
-	float &rounded_impulse = simd_scratch;
-	float &store = rounded_impulse;
-	store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
-	float *linear_receiver=(float *)(angular_velocity_b_pointer-1);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	_mm_store_ps(linear_receiver,_mm_sub_ps(_mm_load_ps(linear_receiver),linear_b));
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	__m128 angular_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_b = _mm_mul_ps(change_b, row->b);
-	a->angular = _mm_add_ps(a->angular, angular_a);
-	(*angular_velocity_b_pointer) = _mm_add_ps((*angular_velocity_b_pointer), angular_b);
-	*result += impulse;
+ __m128 w[5];w[2]=a->inverse_inertia;
+ simd_scratch=impulse;w[1]=_mm_load_ss(&simd_scratch);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=inverse_b;w[1]=_mm_shuffle_ps(w[1],w[1],0);w[1]=_mm_mul_ps(w[1],w[2]);
+ // Either body write may replace the saved angular pointer.
+ __m128 *angular_receiver=angular_velocity_b_pointer;
+ __m128 *linear_receiver=angular_receiver-1;
+ w[4]=axis_linear;
+ w[2]=_mm_mul_ps(_mm_shuffle_ps(w[0],w[0],0xff),w[4]);
+ w[3]=_mm_mul_ps(_mm_shuffle_ps(w[1],w[1],0xff),w[4]);
+ w[4]=a->linear;w[4]=_mm_add_ps(w[4],w[2]);a->linear=w[4];
+ w[2]=*linear_receiver;w[2]=_mm_sub_ps(w[2],w[3]);*linear_receiver=w[2];
+ w[2]=row->a;w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=row->b;w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=a->angular;w[2]=_mm_add_ps(w[2],w[0]);a->angular=w[2];
+ w[0]=*angular_receiver;w[0]=_mm_add_ps(w[0],w[1]);*angular_receiver=w[0];
+ *result+=impulse;
 }
 
 // Read the stored float for x87 consumers; SIMD transfers can copy its bits.
@@ -831,6 +829,40 @@ static __forceinline void project_second_pair_second_row(solver_linear_row_31e7b
 }
 
 
+// The second-row fallback publishes its row after the A weight is captured.
+// B inertia observes that publication; the row survives both linear writes.
+static __forceinline void apply_second_normal_row_fallback_31c940(float impulse,
+ solver_linear_row_31e7b0 const *next_row,solver_linear_row_31e7b0 const *&row_home,__m128 *&row_cursor,
+ solver_velocity_31c940 *a,solver_scoped_body_fields_31c940 const &b,
+ __m128 *const &angular_b_home,float *result,float &rounded)
+{
+ __m128 w[5];
+ w[2]=a->inverse_inertia;
+ rounded=impulse;
+ w[1]=_mm_load_ss(&rounded);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ // Word20 changes role from coupled scalar to the retained second row.
+ row_home=next_row;
+ w[2]=b.body->inverse_inertia;
+ row_cursor=(__m128 *)row_home;
+ w[4]=*row_cursor++;
+ w[1]=_mm_shuffle_ps(w[1],w[1],0);
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=_mm_mul_ps(_mm_shuffle_ps(w[0],w[0],0xff),w[4]);
+ w[3]=_mm_mul_ps(_mm_shuffle_ps(w[1],w[1],0xff),w[4]);
+ __m128 *linear_receiver=angular_b_home-1;
+ w[4]=a->linear;w[4]=_mm_add_ps(w[4],w[2]);a->linear=w[4];
+ w[2]=*linear_receiver;w[2]=_mm_sub_ps(w[2],w[3]);*linear_receiver=w[2];
+ w[2]=*row_cursor++;w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=*row_cursor;w[1]=_mm_mul_ps(w[1],w[2]);
+ // This row observes the new pointer after the linear writes, before A angular.
+ __m128 *angular_receiver=angular_b_home;
+ w[2]=a->angular;w[2]=_mm_add_ps(w[2],w[0]);a->angular=w[2];
+ w[0]=*angular_receiver;w[0]=_mm_add_ps(w[0],w[1]);*angular_receiver=w[0];
+ *result+=impulse;
+}
+
 static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &step,
 	unsigned char *op, __m128 *terms, __m128 *&normal_axes, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
 	float *result, solver_scalar_work_31c940 &scalar_work, solver_scalar_arena_31c940 &projection_pool)
@@ -842,7 +874,7 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	__m128 first_linear_axis = terms[0];
 	float target_a = normal_axes[-5].m128_f32[3];
 	// Complete both SIMD projections before the coupled x87 errors.
-	__m128 first_projection=project_linear_axis(((solver_linear_row_31e7b0 *)(normal_axes - 5)),a,body_b,first_linear_axis);
+	__m128 first_projection=project_linear_axis(((solver_linear_row_31e7b0 *)terms),a,body_b,first_linear_axis);
  // Projection inputs precede publication of the shared angular home.
  angular_b_pointer=angular_b_address;
  _mm_store_ss(&projection_pool.normal_second_projection_a,first_projection);
@@ -866,12 +898,9 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	// Keep the first-row fallback in both source paths. The compiler merges
 	// that tail while retaining retail's unordered second-row branch direction.
 	// Nonpositive and unordered first impulses take the single-row path.
-	if (load_stored_impulse(scalar_work.pair_a) > 0.0f)
-	{
-		if (load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
-		{
-
-			__m128 *linear_receiver=angular_b_pointer-1;
+bool positive_a=load_stored_impulse(scalar_work.pair_a)>0.0f;
+ if(positive_a&&load_stored_impulse(scalar_work.fallback_scalar)>0.0f){
+__m128 *linear_receiver=angular_b_pointer-1;
    __m128 second_scalar=apply_second_pair_first_impulse(scalar_work.pair_a,
 				((solver_linear_row_31e7b0 *)terms), a, linear_receiver, angular_b_pointer, scalar_work.inverse_b,scalar_work.next_normal,
 				first_linear_axis, result, projection_pool.normal_second_a_copy,scalar_work.fallback_scalar);
@@ -879,39 +908,20 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 				scalar_work.next_normal,normal_axes,a,linear_receiver,angular_b_pointer,
 				scalar_work.inverse_b,result+1,projection_pool.normal_second_b_copy);
 
-		}
-		else
-		{
-			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
-			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
-				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, angular_b_pointer, b.body->inverse_inertia,
-				first_linear_axis, result, scalar_work.fallback_scalar);
-
-		}
-
-	}
-	else
-	{
-		float candidate_b = error_b * normal_axes[-1].m128_f32[3];
-		if (candidate_b <= 0.0f)
-		{
-			float candidate_a = scalar_work.pair_b * normal_axes[-4].m128_f32[3];
-			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
-				((solver_linear_row_31e7b0 *)(normal_axes - 5)), a, angular_b_pointer, b.body->inverse_inertia,
-				first_linear_axis, result, scalar_work.fallback_scalar);
-
-		}
-		else
-		{
-			apply_second_pair_fallback(candidate_b,
-				((solver_linear_row_31e7b0 *)(normal_axes - 2)), a, angular_b_pointer,
-				b.body->inverse_inertia, normal_axes[-2], result + 1, scalar_work.fallback_scalar);
-
-		}
-
-	}
+ return;
+ }
+ if(!positive_a){
+ float candidate_b=error_b*normal_axes[-1].m128_f32[3];
+ if(!(candidate_b<=0.0f)){
+apply_second_normal_row_fallback_31c940(candidate_b,((solver_linear_row_31e7b0 *)terms)+1,
+ scalar_work.next_normal,normal_axes,a,b,angular_b_pointer,result+1,scalar_work.fallback_scalar);
+return;
+ }
+ }
+float candidate_a=scalar_work.pair_b*normal_axes[-4].m128_f32[3];
+ if(candidate_a>0.0f)apply_second_pair_fallback(candidate_a,((solver_linear_row_31e7b0 *)terms),a,
+ angular_b_pointer,b.body->inverse_inertia,first_linear_axis,result,scalar_work.fallback_scalar);
 }
-
 
 // Retain the coefficient and B inertia addresses across consecutive rows.
 // Native scalar locals keep the projection between SSE and x87 without a copy.
