@@ -4096,6 +4096,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Holder, magazine, effect tags, selected entries, owner and barrel role-name trials 630 each (reduced control 630).
 // Shared effect-history word setter 627, pending weapon byte setters 630, both 627. NOT kept: a three-point
 // preview change. The full probe still differs by four bytes and the weapon index and barrel occupy different registers.
+// The 0x1c64 frame and weapon/barrel register assignments still differ. NOT kept: cached history drops
+// the publication reload, the local duration keeps a joined timer store and register test, and both
+// shorten the body. The positive timer exit restores the frame but regresses. history word for the free-
+// effect scan 593; promoted history for the free-effect scan 593; exhausted history as a shared value
+// 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
+// publication word 593; interval result initialized from lower bound 526; active effect index before
+// timer debit 593.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -5340,6 +5347,13 @@ struct s_weapon_projectile_creation
 // Shared spread weight, named blended endpoints or separate endpoint products 1121 each.
 // Captured default endpoints 1134; early spread position 1140; cone products 1154; shot-wide default weight 1158; selected shot scale 1154.
 // NOT kept: the local blend ties; the shot-wide form grows the frame. The 0x1ea4 probe remains.
+// The 0x1ea4 frame and holder-walk register assignments still differ. NOT kept: native player fields
+// tie, final actor and player reads expand the frame, and the other holder forms shorten the body and
+// raise the score. first parent retained across the walk 1154; aim permission from both final tests
+// 1153; aim permission seeded by the original parent 1152; native player fields in the holder walk 1121;
+// actor observation from the resolved holder 1147; player observation from the resolved holder 1123; aim
+// address from the resolved holder 1169; three values from the resolved holder 1152; shared typed holder
+// pool during traversal 1143.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

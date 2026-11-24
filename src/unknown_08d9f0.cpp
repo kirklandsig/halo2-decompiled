@@ -262,6 +262,12 @@ void function_8dd70(void);
 // (906 B; retail clears after the call, not kept); the observer result assigned straight to the readiness 240 (906 B,
 // a gain of 5, under the bar); the sessions as `&g_510574[1]` 245, the session chain ending `&& true` 245, the
 // 0x4d8f08 clear as `= 0` 245 (each the same code).
+// The entry frame, configuration and registration expansions, and connection-pointer reloads still
+// differ. NOT kept: the manager receiver forms increase score and length, the native list clears gain
+// six, and the sentinel chains tie. one gateway observation for search and manager 258; shared manager
+// session base 264; shared gateway and manager session base 263; named manager session roles 264; three
+// native session-list clears 239; chained session-list clear 239; chained search sentinels 245; chained
+// completion sentinels 245.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {

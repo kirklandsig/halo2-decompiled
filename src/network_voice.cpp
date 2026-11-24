@@ -4054,6 +4054,13 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Channel index field reference or pointer, bound per iteration or per delivery arm: 139 each indexed,
 // 164 each walking. The indexed forms keep data in EBP. The walking forms give EBP to the member and shorten
 // the body to 478 bytes. Original 488-byte body restored.
+// The channel still lacks EBP at entry and the member/cursor homes differ. NOT kept: moving both checks
+// before dispatch retains the 0x10 frame but shortens the body, and early cursor advancement increases
+// the frame. member gate then shared kind test 172; member gate then shared kind test with walking
+// packet 164; member selection then shared kind test 187; member selection then shared kind test with
+// walking packet 181; combined member and kind validation 172; combined member and kind validation with
+// walking packet 164; separate relay and direct validation phase 153; separate relay and direct
+// validation phase with walking packet 170.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
