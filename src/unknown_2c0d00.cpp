@@ -2514,6 +2514,10 @@ long function_1fa7f0(void);
 // start x/y with start z last 399. NOT kept: the complementary side restores frame 0x10c and the
 // source-radius home, but raises the score and moves the extent away from retail. The other
 // forms retain frame 0x114, count in BX and the spilled edge, with at most two points gained.
+// B517: advance the side before both tangents 410, carry the endpoint side 443 or name the origin
+// side 446, swap both sides on retry 457, early trace rejection with advance 410 or endpoint side 443,
+// named reached sector with the origin side 446, and center setter with endpoint side 420.
+// NOT kept: the endpoint-side forms without a separate origin side recover 0x10c but shorten the body and raise the score.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -514,6 +514,10 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // and both requests 183. Processor-target flags on the file (/G5, /G6, /G7; the one compiler-setting diagnostic) 61
 // each, the same code. Body unchanged. Next: a copy whose destination the compiler does not see as a use of
 // &g_54e4a0 (no spelling of the assignment, memcpy or the destination tried so far does that); then form 3 applies.
+// B517 split loads: private template 181, private selected edit 179, separate edit/creation workspaces
+// with shared copy destination 173, failure-first with copy destination 188 or private template 178,
+// eligibility disjunction with copy destination 179, separate dispatch returns with copy destination 179,
+// common screen dispatch with private template 196. NOT kept: receiver allocation and frame layout differ.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
