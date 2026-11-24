@@ -665,14 +665,7 @@ void __stdcall function_de4c0(long arg_159e6d)
 	current->unknown360 = NONE;
 	current->unknown364 = NONE;
 	current->unknown350 = NONE;
-	if ((definition->biped.flags >> 1) & 1)
-	{
-		*(byte *)&biped->flags_348 |= 8;
-	}
-	else
-	{
-		*(byte *)&biped->flags_348 &= ~8;
-	}
+	word_flags_set(&biped->flags_348, 3, TEST_FIELD_BIT((definition->biped.flags >> 1) & 1));
 	biped->unknown3d8 = NONE;
 	biped->unknown3e0 = arg_159e6d;
 	biped->physics_mode = 0;
@@ -5760,18 +5753,7 @@ void function_e4300(long arg_159e6d)
 // retail's evidence: `call 0xe5930` at 0xe4bf3 and at five other sites, and 0xcaf00's `jmp` to this function).
 // This function alone in an /Ob1 file, 0xe5930 left where it is, 98 (118 bytes: the reset dispatch still expands; the
 // callee's own file decides). Still BLOCKED-BY 0xe5930.
-// @retail 0xe4bd0
-void function_e4bd0(long arg_159e6d)
-{
-	s_biped *biped = BIPED_GET(arg_159e6d);
-
-	function_e18d0(arg_159e6d, true);
-	function_e5930(arg_159e6d);
-	if (!((biped->flags_c0 >> 6) & 1))
-	{
-		function_b8890(arg_159e6d);
-	}
-}
+void function_e4bd0(long arg_159e6d);
 
 /* gets a ragdolling biped up */
 // @retail 0xe4c10
