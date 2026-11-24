@@ -787,6 +787,32 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // second normalization is 4 bytes short (retail stores x before it forms `y * inv`) and the inner loop's alignment pad
 // goes; the double result cast at the call with no double local 229 (same code); on the 249 form one to three redundant
 // paren pairs around the near rows' `y * cos` 249 each. Body unchanged.
+// M3 lane 14 r147 (H2M_FAST with 0x29a190 and 0x298c30, both MATCH throughout; control 305): the normalizer as two
+// divisions by the length 305 (same code: one reciprocal); its products as `x * inv` and `inv * y` 305; its reciprocal
+// declared bare at the helper's top 305; the far arm's difference point set member by member 305 (all four the same
+// code); that point copied from the sum and decremented in place 368 (1745 B). All restored.
+// M3 lane 16 r180 (H2M_FAST with 0x29a190, MATCH throughout; main 305; all on lane 2 r134's p1 lead rebuilt, 249 at 1722 B,
+// aligned 59): the shared normalizer's products as `y = inv * y`, both `inv *` or both `* inv` 249 each (same code: the far
+// arm still forms both products before its stores); the near rows' `cos * y` or y term first in all four arms 249 (same
+// code); the far difference through the existing vector2d_from_points2d 160 (1734 B, aligned 61: the inner loop's pad comes
+// back with the code address, but the y difference is stored and reloaded and the normalization still differs); the far
+// arm through the existing normalize2d_fast (cast or a vector2f local) 249 (same code); the float distance copy declared
+// ahead of the double root 249 (same code). Body unchanged.
+// M3 lane 4 r254 (H2M_FAST with 0x29a190 and 0x298c30, MATCH throughout; control 305, aligned 212 with stack offsets
+// masked): the emitter facing dot written `arg_3->x * f.x + f.y * arg_3->y` 305 (same code); the side test against
+// `0.0f` 361 (1740 B); both clamps against float constants 398 (1685 B); the first clamp as `!(local_13 <= 1.0)` 317
+// (1727 B); the outer counter typed long 367; the endpoint pointer typed `point2f const *` 305 (same code); the radius
+// test `field_24 > local_9` re-measured 305. Body unchanged.
+// M3 lane 15 r141 (fast screen with 0x29a190, MATCH each time; control 305, aligned 271 rows, 57 of them order rows). The
+// first difference read from the allocator's ranking: in the entry block the unity constant is one candidate living to
+// the loop's end with six uses (the first normalisation, the near arm's two stores, the first clamp's copy, compare and
+// store) and scores 38; the first normalisation's scaled component scores 24 and the two would tie in its favour.
+// Retail colours the scaled component (and after it the turn radius) ahead of unity, XMM1 then XMM2; ours colours unity
+// first. With the same six uses retail's unity must lose 14, or the entry block must reference eight float candidates
+// where ours references four (the component's score is six per candidate there, unity's two). Forms, all with the
+// entry otherwise unchanged: the negated radius declared ahead of the first normalisation 342, ahead of the direction
+// copy 342, ahead of the centre 343, first in the function 343 (first difference +0x4b); the direction copy and its
+// normalisation ahead of the centre 359 (first +0x7), with the negated radius first as well 366. Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1614,6 +1640,29 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // the in-loop trace result declared in the loop 562; on this body both distances named 569 (same code); the body after the
 // sector read nested under `if (local_11 != NONE)` with `return true;` last 790 (3348 B). Still BLOCKED-BY 0x2108a0 (its
 // file is on this round's Avoid list).
+// M3 lane 16 r180 (H2M_FAST; main 569, unchanged; on lane 6 r207's w10 lead re-applied, 108 at 3374 B, aligned 30): the
+// first sweep distance site follows the tree of the distance helper's sum: one redundant pair around its z square
+// (`x*x + (y*y + (z*z))`) 104 (aligned 26, that site exact; the pair around x*x as well 104; around y*y, or y*y and x*x,
+// 112; around both inner squares or around x*x alone 108). One to three pairs on the sweep angle's products move only the
+// obstacle bounds' SSE sum (odd counts 124, even 104). The obstacle offset's squares follow the shared magnitude helper's
+// tree: a pair around its j square (diagnostic, shared header) 115 (3373 B, aligned 22: both magnitude sites take retail's
+// y-first order; the bounds sum flips), with one sweep pair 95 (3374 B, aligned 16). Left on 95: the two obstacle sine
+// products (retail copies the sine and multiplies it by the memory component) and the rotated/offset homes (+0x18/+0x44
+// exchanged). On 95: pairs around the sine products in one row, the other or both, with 0 to 3 sweep pairs, 95 or 108
+// (aligned 16 to 33, never the sine form); the helper reading the vector3f's i/j directly 95 (same code); trig-first
+// products 95 (same code); the sine held in a double local 154; the second difference in its own local 174 (3372 B,
+// aligned 26: homes still exchanged, two other sums flip); the rotation output declared at the loop top 95 (same code).
+// Patch: build/r180/lead-299460-95.patch (m3-lane16; needs the held `inline` on 0x2108a0 and the header pair).
+// M3 lane 5 r240 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 569): the radius named once at the top
+// (`real const radius = arg_6;`, every use through it) 569 (same code); bound by `real const &` and used everywhere 569
+// (same code); the pivot field and the 0x2108a0 lookup ahead of the first offset pair 822 (3336 B); one signed side scale
+// (`arg_1->field_0 ? arg_6 : -arg_6`) named and used by both offset pairs 939 (3226 B); the offset helper's scale taken
+// by const reference 732 (3349 B). Body unchanged; still BLOCKED-BY 0x2108a0.
+// M3 lane 4 r258 (H2M_FAST with 0x29a190 and 0x298c30 MATCH; control 569): the first pivot offset's arms exchanged under
+// `!arg_1->field_0` 876 (3299 B); both negated radii written `0.0f - arg_6` 569 (same code); the lookup result held as a
+// long 716; the definition distance read after the lookup call 578; the sweep counter as a long 786 (3357 B). Reading: the
+// radius is one register candidate from the entry block through the first arm (loaded once into XMM5), where retail loads
+// it inside each arm; the piece only ends at a call whose summary clobbers XMM, so this is still BLOCKED-BY 0x2108a0.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -72,7 +72,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // of the registers retail uses because 0x1ec690 is still a stub in the file this lane may not edit, and the arms and
 // the rate load are unchanged.
 // MiniMax G (11-20): no new form, no lower score (319): the aligned 0x94 frame still agrees and the first argument still arrives in eax as retail has it, but the output and the input take the other two of the registers retail uses because 0x1ec690 is still a stub; the rest of the body is unchanged.
-// score 319 (was 319): r130 (below) reads the objects through object_get (same code). The aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
+// score 319 (was 319; r239 unchanged): r130 (below) reads the objects through object_get (same code). The aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
 // still a stub, takes its input in EDI in retail) and never gives the state a register; it lays the non-compound and
 // capsule arms after the epilogue, calls 0x1c4a80 where ours expands it, loads the rate once and tests the 0x20 flag by
 // shift. Round 191's line at the end of this note has the latest forms.
@@ -435,6 +435,25 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // the contact call and the object-index read 319 (same code); diagnostics on the 0x1ec690 stub (its only live caller is
 // this function): parameters as (state, output, input) 318, that `__stdcall` 316 (the EBX/EDI trade stays). Still
 // BLOCKED-BY 0x1ec690 and 0xb7430.
+// M3 lane 16 r180 (H2M_FAST; control 319, aligned 320, register-masked 247; still BLOCKED-BY 0x1ec690): the 0x20-flag block
+// behind an early `return` when the flag is clear 319 (same code); the countdown test as `if (state[1])` 320; the object
+// index read ahead of the flag test 319 (masked 251); the capsule chain reading the shape from the input at each use 342
+// (1200 B); the case-6 countdown declared ahead of the tick value 319 (same code). Re-measured: the compound test as an
+// if/else setting the match flag, compound arm first, 388 (1212 B, aligned 268, masked 135). Body unchanged.
+// M3 lane 5 r239 (H2M_FAST with 0xb77d0, 0x1c4b00, 0x1c4a80, 0x1ed340 and 0x2901e0; control 319, all MATCH). Reading:
+// retail calls the capsule's base destructor 0xdc370 out of line in both capsule arms (`lea ecx, [esp + 0x30]; call`),
+// as 0xa9f70 does; ours expands it in the forced-inline capsule helper. Diagnostic, restored at once: 0xdc370 (a
+// contributor's) compiled without link-time code generation beside the capsule constructor 0x2de0a0 303 at retail's
+// 1164 B (0xa9f70 172 -> 188, then calling 0xdc370 through ECX as retail does), so retail's 0xdc370 sits outside it (a
+// placement and flags lead for its owner); with the 0x1ec690 stub `__stdcall` as well 301; with the 0x1ec690 draft
+// enabled 334 (its usual losses). The capsule arm written at its only call site with the one-caller helper dropped 307
+// at retail's 1164 B (each arm then calls the capsule destructor, retail's shape), but the plain check loses matched
+// 0xb77d0 (49), 0x1c4b00 (133), 0x1ed340 (45) and 0x2901e0 (29): 0x1c4b00's linear argument leaves EBX because the
+// flag block then gives the velocity ESI (the same four the 0x1ec690 draft loses). On that form: the flag set after a
+// block holding the capsule 319 (1148 B); the object index read from the parameter 307 (same code); the arm reading
+// the shape from the input 312 (1172 B), every shape test reading it 344 (1192 B); the capsule placement-constructed
+// and never destroyed (diagnostic) 325 with the same four losses; with the 0xdc370 diagnostic 307 (losses unchanged).
+// Body unchanged; BLOCKED-BY 0x1ec690 and 0xdc370's placement.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

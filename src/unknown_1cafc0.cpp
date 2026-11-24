@@ -998,6 +998,32 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // 506 (1766 B, first difference +0x2d); the found names read into three locals just before the request 390; the
 // request's urgent flag passed as `success != false` under the test 619 (first difference +0x5); the second lookup's
 // set stored after `success = true` 350. Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00 as above.
+// M3 lane 14 r148 (fast with 0x1cccd0, 0x1dc8c0, 0x1ddd00 MATCH throughout; control 348): `long success` 496 (1798 B,
+// first +0x2d); bool success with the request's names and a graph copy read into locals in retail's load order (class,
+// mode, graph, type) 479 (1809 B); the same locals with byte success 353; in the shared helper (0x1dc8c0, 0x1ddb90,
+// 0x1ddc70, 0x1ddd00 still MATCH, 0x1db170/0x1dbc80 812 unchanged): the type level's two resource loops with their own
+// loop-scoped indices 348 (same code); the request level without its outer `urgent || other` guard 348 (same code).
+// M3 lane 12 r181 (h2m fast with 0x1cccd0/0x1cd070; control 348): the three fallback name locals read once after
+// names_resolve and used by the chain only 618 (r171's lead re-measured); read after the found copy, chain only 557; read
+// after names_resolve and used by both lookups and the chain 620 (1750 B; 0x1cccd0 and 0x1cd070 then 10 each); read after
+// the found copy and used everywhere 568 (1734 B), with bool success 571 (1729 B). Reading: the matched 0x1dc8c0 expands
+// the same request helper with `lea ebp, [ebx + 0x34]` from a graph in EBX, exactly ours, so the helper's form agrees;
+// what differs is this caller's graph, which has its stack home in both builds but gets EBX for the request's outer
+// region only in ours (retail: graph+0x34 formed in place in EBX, the graph loaded into EBP per loop).
+// M3 lane 7 r224 (fast screen with 0x1cccd0, 0x1cd070, 0x1dc8c0, 0x1ddd00, all MATCH each run; control 348, aligned 53,
+// register-masked 45). The allocator's ranking of the request's first group, read for the first time: the graph's
+// stretch from the status test to the inheritance loop is one candidate ranked 16 (seven uses: the +0x34 address, one
+// read in each of the five resource loops, the inheritance count) and takes EBX; the graph+0x34 address is another,
+// ranked -44 (its five pushes against 24 blocks where it is live and unused), and is left EBP. Forced allocator
+// decisions (diagnostics, not source): the address ranked anywhere between the graph and the loops' own indices, or
+// the graph ranked below the address, both give the address EBX and the body retail's 1761 bytes, but the graph is
+// then held in EBP for the whole group where retail loads it at the first loop, the next one and one failure join;
+// the address ranked first takes ESI and rotates the loops; the graph's stretch given no register 439 by position.
+// No single decision gives retail's group, so retail's graph is not one stretch there at all (lane 11 r141's reading:
+// a value kept in memory). Source forms: the request's graph through a file-local by-value identity getter 348 (same
+// code), with bool success 478 (bool's code); the graph local declared `*const` 348 (same code); the request's
+// urgent flag written `success != 0` 619 (first difference +0x5); the found names read into three locals at the
+// request 390 (re-measured). Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00's inline copy.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

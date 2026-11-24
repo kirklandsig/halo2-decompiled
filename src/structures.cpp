@@ -918,6 +918,28 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // [36/33/22], pbxnrdsig, pbxnrdsgi and rdspbxnig 220 [37/35/24] (739 B: no zero register, the instance index takes EBP);
 // pbxnisrdg 220 (744 B) [76/69/27]; range set to NULL at its declaration 240 (745 B) [94/96/40]. The zero register stays
 // exactly when the instance index is declared ahead of result; the range takes EBP in none of them.
+// M3 lane 1 r159 (H2M_FAST with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH; control 172): `bool result` for the
+// byte result 182 (726 B: the section still in EBX, the BSP in EBP); the definition cleared at its declaration with no
+// else arm re-measured 208 (726 B); on that, the count test as `!definition->surface_range_count` 208 and the section test
+// as `section != NULL` 208 (the same code); `bool result` with the vertex getter's result set only on a hit 212 (741 B).
+// Reading of the 208 form: a zero constant takes EBP (`xor ebp, ebp`) for the section's NULL store, the count test, the
+// section test and the unknown18 clear, where retail stores the section's NULL from the definition's EDI, tests with
+// `test eax, eax`, clears with an immediate and gives EBP to the range in the type-1 arm and the join. Body unchanged.
+// M3 lane 11 r163 (H2M_FAST with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH each run; control 172; body
+// unchanged). Lane 7 r123's form rebuilt 208 at 726 B, aligned 19. Reading of its one cause: the zero is the last
+// candidate the allocator colours (a constant web from the section's NULL, five references, weighted cost 1, EBP the
+// only register left). The range's candidate from the type-1 arm to the loop's set-up is weighed before it and is not
+// coloured: its four references are worth 8 and its adjustments take 8, so its cost is 0 and its two one-block pieces
+// take EDX and EAX. Retail colours that candidate (EBP across the 0x12de70 call, re-read at the top of the join), which
+// leaves no register for the zero. So one more reference of the range between the arm and the loop, or one adjustment
+// fewer, is what the form needs. On it: the section tested through a const reference 208 (same code); the section
+// assigned through a reference in both arms 208 (same code); the type-3 arm's range assigned after the 0x142700 call
+// 97 at 726 B (the zero register goes, unknown18's clear and the section test are retail's, but the definition takes
+// EBP and the range index EDI, and retail assigns the range ahead of that call: a statement order against retail's
+// own, not kept; build/r163/lead-0x14ac60-97.patch); the type-1 arm's range assigned after the section lookup 254
+// (755 B); the loop's bound named once 220 (731 B); the range's first and count read into two locals ahead of the
+// loop 220 (731 B); the type-1 cluster index read from the BSP's table instead of through the range 208 (same code);
+// `section && range->count > 0` as the loop's guard 226 (740 B, the zero still in EBP).
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

@@ -1263,6 +1263,52 @@ void function_143250(
 // retail keeps in two cells, so the short frame is a cell our packer reuses, not a missing value. Band two's three unnamed
 // squares named like its other six (entries 12 and 14) 1095; r8's square alone 1231 (10744 B); r2's and r5's alone 1231
 // (10744 B); its three unnamed mixed products named (entries 10, 11, 13) 1710 (10816 B); all six 1648 (10792 B).
+// M3 lane 11 r156 (H2M fast with 0x143250 MATCH, 0x22850 209 and 0x23690 354 unchanged; control 939, aligned 777): `s5`
+// declared ahead of `s15` 939; band one's negations as unary minus 939 (same code each); the order tests as `order < 3` /
+// `order < 4` 894 (10776 B, aligned 781: positional only, the first test becomes `cmp ebp, ebx; jb` on the call's 3 where
+// retail has `cmp ebp, 2; jbe`, so not kept); 0x143250 as (n, matrix, coefficients, out) re-measured 935, with `s5`
+// declared first 935. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x143250, MATCH; control 939): our cell +0x8c holds band two's r5 square, band three's
+// r2-square-times-root-105 product and a later value; retail keeps the second in its own cell under the matrix (+0x234).
+// Band three's r2_r2_s105 declared ahead of r5_r5_s105 939, r5_r5 ahead of r2_r2 939 (both the same code); r2_r2 and
+// r5_r5 at the top of band three 1569 (10780 B); r8_r8 after r5_r5 944 (10781 B); band two's s5 and s5_s15 declared
+// just ahead of entry 0 1134 (10763 B, frame 0x2f8). Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x143250 MATCH; control 939): retail's extra cell (+0x234 under the matrix) holds band three's
+// root-105 times r1-square product alone (stored once, read once for its r6 product); ours shares that product's cell
+// with two other values. That product's r6 product declared right after its r7 product 1567 (10728 B); the product
+// written into its two uses 1226 (10744 B); its operands as `r1_r1 * s105` 939; entry 0 of band two as
+// `r3 * r1 + r4 * r0` 939; the three band calls with `&result[n]` / `&coefficients[n]` 939 (same code each); band three
+// nested in band two's block reusing band two's ten shared products (no redeclarations) 1994 (10500 B: retail keeps the
+// second home of each shared product, so band three's redeclarations are retail's). Body unchanged.
+// M3 lane 3 r303 (h2m fast with 0x143250 MATCH; control 939; "masked" = aligned count with stack offsets and constants
+// masked, control 214, from a one-file link-step screen that reproduces the fast build's 1768 instructions): the s35 * r2
+// product written out at its three uses with no named local 1282 (10793 B: the products regroup as (s35 * r4_r4) * r2);
+// only band three's entry 27 using the written-out product 1155 (10784 B, frame 0x2f8); band two's entry 1 as
+// `0.0f - r6 * r4 - r7 * r3` 1061 (10775 B, masked 218), as `0.0f - (r7 * r3 + r6 * r4)` masked 218, with the factors of
+// either product swapped or the leading zero as a unary minus masked 214 (same code); 0x143250's parameters in all 24
+// orders, definition, declaration and the three calls: masked 204 to 222 with the frame 0x2fc in every one ((n, matrix,
+// coefficients, out), the listed 935 form, is the 204: only the three call setups move). Diagnostic dead-local scans at
+// the function top, band two's top and band three's top, K = 0..40: the same 32-period at each anchor (masked 214, 253,
+// 253, 205, 228, 228, 275, then 228 for K = 7..31), frame 0x2fc at every count. Reading from a value-by-value map of the
+// stack cells (each store with its loads, paired through the masked alignment): both builds hold 298 stored values with
+// the same peak of 142 live at once; retail has one cell more because two of its values sit alone. One is the
+// root-105 times r1-square product (stored once, read once), which ours packs with a band-two product and a later
+// value; the other is band three's s35 * r2: retail copies it to XMM7 right after storing it (`movaps xmm7, xmm3`,
+// with the pending r1_r1_r8 stored first), forms the r3_r3 product in that register and reads the home once, for entry
+// 27, where ours reloads it for the r3_r3 product (two loads) and packs it with the first band-three spill. Seven
+// band-two homes are then re-used by different later values in the two builds. The first code difference with identical
+// bytes ahead of it is band two's entry 1, where retail forms the shared r6 * r4 product ahead of the zero and ours
+// behind it; retail also holds band two's entry 18 in XMM5 until the call where ours stores it at once. Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x143250 MATCH; control 939, aligned 777, masked 154). Reading of the frame packer on
+// this build: 142 four-byte cells; the cells that end up highest, just under the matrix, are the ones holding a single
+// value with two references. Retail has four of those where this build has three, and the extra one is band three's
+// s35 * r2 (stored once at +0x23c, read once for entry 27): retail stores the pending r1_r1_r8, copies the product to
+// XMM7 and multiplies that copy by r3_r3 five statements later, where this build reloads the home for the r3_r3 product,
+// so here the value has three references and shares band two's r3-square cell. Every integer register web but the two
+// 0x143250 argument set-ups is already retail's; 173 of 192 stack cells sit elsewhere. Tried on the s35 * r2 value: its
+// r4_r4 product with the operands exchanged 939, its r3_r3 product exchanged 939, the value declared const 939, written
+// `r2 * s35` 939, entry 27's first product as `s7_s2 * s35_r2` 939 (the same code each); its r4_r4 product declared
+// beside the r3_r3 product 1368 (10783 B). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

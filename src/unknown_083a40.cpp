@@ -1007,6 +1007,57 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // ahead of the session-mask `continue` 251; the tail after the conflict scan nested under `if (!conflict)` 28 (same
 // code); the occupied record's count step as `*count += 1;` 28 (same code); the swap's and the occupied record's
 // updates as `&updates[(*count)++]` 63 (1051 B). All restored.
+// M3 lane 1 r156 (h2m fast; control 28): the occupied key copied with `sizeof(t_player_key)` 28 (same code); the last
+// record's apply given `&watcher->players` re-measured 28. Diagnostics (reverted): the occupied key read at `players[slot]`
+// 289 (1051 B, frame 0x8c: the inverse-start slot disappears, so that induction value exists only for the occupied
+// key); the occupied key copy removed 329 (1013 B); the swap call removed 262 (1021 B); each also drops a frame slot,
+// so neither spot can be isolated by deleting the other.
+// M3 lane 1 r158 (h2m fast with 0x84e90, MATCH each time; control 28): the occupied key through a file-local forceinline
+// accessor returning `&collection->players[index].key` 28 (same code), with the swap order (collection, player, update,
+// other) 32; the second loop without the `player` local (flag and configuration read through
+// `watcher->players.players[i]`) 32; the second loop's first mask test through `collection` 193 (1063 B: the mask is no
+// longer cached and the loop head reorders); on the swap order, `collection` declared at the else arm's top (the first
+// arm's apply given `&watcher->players`) 32. Compile-only key screen (exact for the grouping here): each of those keeps
+// (inverse + cursor) + collection + 4; the player local formed from `collection` folds the key into its own pointer.
+// Reading: retail's sum is SR's rebasing of `collection + i * 0xb4` onto the configuration cursor, (collection - start) +
+// cursor, computed in place; ours rebases only `i * 0xb4` and adds the in-loop `collection` after it, and an invariant
+// base gets its own induction variable instead, so retail's base was invariant to the address analysis without being
+// strength-reduced on its own.
+// M3 lane 8 r226 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; control 28; reference-bound
+// locals, which kept a sum apart in 0x211cc0): `collection` through a reference bound to a pointer local defined
+// ahead of the second loop 277 (1072 B: the key still gets its own induction variable, so the binding is seen
+// through); the occupied key through a reference-bound element pointer built in two steps (`entry =
+// collection->players; entry += i;`) 47 (the pointer is formed ahead of the type and index stores and the sum is
+// still (inverse + cursor) first). Compile-only (the occupied block alone, which reproduces ours): `collection`
+// assigned through a reference at the loop top, the key indexed by a reference-bound copy of `i`, the loop-top
+// player assigned through a reference: all the same code as the base, so in this file the bindings are folded
+// before the key sum is ordered. All restored.
+// M3 lane 1 r161 (h2m fast with 0x84e90/0x84c90/0x83c90, all MATCH each time; control 28): one function-scope `long i`
+// for the three loops 28; the session-player source declared ahead of `collection` 28; the loop-top player declared
+// first, then source, then `collection` 28; the occupied key copied from `&collection->players[i].key` with
+// `sizeof(t_player_key)` 28; `machines` declared at the function's top 28; `slot` and `occupied` declared at the
+// function's top 28 (all the same code: the key sum stays (inverse + cursor) + collection). Body unchanged.
+// M3 lane 15 r140 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH; control 28): the conflict scan as a
+// `continue` chain (mask and flag, then the machine compare, then the controller/unknown test) 28; the swap test nested
+// with `slot != i` outside 322 (1091 B); the swap test held in a named bool 28; the last record's machine copied with
+// memcpy 28; the machine pointer as `machines + source->machine_index` 28 (the 28s the same code). Body unchanged.
+// M3 lane 6 r238 (H2M_FAST with 0x84e90, 0x84c90, 0x83370, 0x83c90 and 0x83570, MATCH each time; control 28). Two
+// causes. (1) The swap call: ours forms the update's address before it pushes the slot, retail pushes the slot and then
+// loads `updates` into the freed ECX; that is the argument order of a callee whose third parameter is the update and
+// whose last is the other index. (2) The occupant's key address `collection + X + Y + 4` (Y the walking player pointer,
+// X the loop-entry value that turns it into i * 0xb4): the optimiser orders the terms of a sum by an internal rank,
+// highest first, ours X, Y, collection (two late temporaries outrank the named pointer), retail collection, X, Y; the
+// collection term keeps its low rank whether the pointer is const, assigned after its declaration or written as a byte
+// offset from the watcher. Forms: the swap count bumped into a local in a statement of its own with
+// `&updates[local - 1]` in the call 28; `++*count;` as its own statement and `&updates[*count - 1]` 28 (same code each); a
+// post-increment into an index local 120 (1056 B). LEAD, not kept (the count rises): 0x84e90's parameters as (collection,
+// player, update, other) in its definition, its declaration and its one call (0x84e90 still MATCH) 32; the swap call's
+// argument setup is then retail's exactly and the occupied block's three reloads take retail's registers, so only cause
+// (2) is left, whose wrong pairing then swaps ECX/EDX through the key copy. On that lead: the occupant key through
+// `watcher->players.players[i]` 292 (1064 B), through `player` 291, `(collection->players + i)->key` 32,
+// `&collection->players[i]` as the copy's source 32, collection declared at function scope 221 (1088 B), the conflict
+// loop reading the collection pointer 264, collection declared inside the else arm (the first arm passing
+// `&watcher->players`) 32, declared just ahead of the slot search 32, both with the conflict loop on it 264.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

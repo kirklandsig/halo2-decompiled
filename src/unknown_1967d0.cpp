@@ -1045,6 +1045,50 @@ static inline long team_score_195ed0(long team)
 // test's bit folded into its condition with `result = true;` 151 (1210 B). Diagnostic (behaviour change, reverted): an
 // extra guarded 0x199460 call with a team test ahead of the team loop 381 (1253 B), and the third score read still
 // expands with its team test called, so the third read's expansion does not follow the inline work spent before it.
+// M3 lane 2 r138 (h2m fast with 0x1587f0, 0x159460, 0x161e60, 0x162030, 0xd9640, 0x15b3a0, 0x15c550, 0x15ca10, 0x15ce70,
+// 0x162060, 0x196780, 0x64d70): this file and the file of the real team test and statistics getter are both /Ob1, so
+// neither can expand here; with PIN over the real 0x1587f0 (re-measured 192 at 1241 B): `inline` on 0x161e60's definition
+// 489 (1338 B; 0x159460 lost), on 0x162030's 180 (1225 B; 0x1587f0, 0x159460, 0x15b3a0, 0x15c550, 0x162060 lost), on
+// both 442 (1301 B); `inline` on 0x1587f0's own definition 192 and a forced-inline declaration of it here 192 (both the
+// same code as the plain call). Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0x196470, 0x1587f0, 0x161e60, 0x162030, all MATCH; control 100): the team loop's counter
+// `short` in its own `for` with the player loop's `long` 205 (1242 B); the reverse 175 (1223 B); both `short` 222 (1255
+// B); the clamp as an if / else-if chain over one sampled score, the value read again, 220 (1257 B); the first team loop's
+// entry named once for the test and the store 100 (same code). Diagnostic (width cast, not keepable): `(short)rank <
+// ranking.team_count` 149 (1210 B: the entry test is retail's `cmp word ptr [esp + 0x82], bp`, but the latch compares
+// words too where retail sign-extends). Retail's own 0x1587f0 calls 0x161e60 and 0x162030, so its two full expansions
+// here and the called third read fit one score call expanded by site frequency. Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the rank loop's test
+// written count first 100 (same code); the score store ahead of the rank store 109; a `short` counter for the team-rank
+// loop alone 205 (1242 B, a pointer walk); the counter initialised at its declaration 104 (its zero then serves the
+// ranking call's `push 0`, the guard still sign-extends where retail compares the word with the zeroed counter); the
+// ranking aggregate in the outer block 100 (same code).
+// M3 lane 11 r159 (h2m fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the team-rank
+// loop's bound as a named `short` or `long` local for its test 100/100 (same code: the copy folds, the entry test still
+// sign-extends where retail compares the word with BP); that loop as a `while` with the increment last 163 (the counter
+// moves to EDI, the entry test unchanged); as `if (0 < count) do ... while (++rank < count)` 156 (1210 B: the entry test
+// becomes a word test of AX but the count is spilled for the body); the team test reading the team mask into a named
+// local 100 (same code); re-measured the team read at each use (no `team` local) 216. Body unchanged.
+// M3 lane 2 r144 (h2m fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH unless noted; control 100, aligned
+// 58). Mixed views, the first loop left on g_510ddb and g_511a74: in the player loop the flag and the record through a
+// view of the results record at g_510cb0 (flag +0x12b, players +0x384) 333 (aligned 55: all four unrolled passes read
+// the flag after the copy and the 0xff store as retail, but the first loop then holds the flag in BL, loaded ahead of
+// the loop and stored after it); the flag alone through the view 333 (aligned 63, the same first loop); the record
+// alone through the view 100 (same code: the copy does not reach g_510ddb); flag, record and that loop's team entry
+// through the view 333 (aligned 55). So the first loop reloads the flag only while the player loop reads the same
+// symbol. Diagnostic, reverted (an undefined stand-in object of 0x510cb0's record with the flag, the players and the
+// team entries as fields, used by this function and by 0x196470 in place of g_510ddb, input_device() and g_511a74):
+// 76 here, 0x196470 158 (751 B), as lane 10 r120 measured; under it 0x196470 differs from retail only in the player
+// loop's NONE test (`cmp eax, players - 0xa4` for retail's index * 0xa4 counter in a stack cell), and its device
+// pointer formed by byte arithmetic from the record's address, through a file-local inline taking the record pointer,
+// through a `dword` cast of the record's address, or per pass from the players member 158 each (same code), through a
+// file-local const pointer 133 (760 B, the pointer is loaded). No form of 0x196470 found keeps its counter once the
+// players lie more than 0xa4 bytes into their symbol, so the one-object record stays a lead. Diagnostic sweep of the
+// local count (1 to 8 unused initialised longs at the top) 100 each, the same code.
+// Early results return 100; address cursor 155; unused-address continue 100; local-address continue 100;
+// shared world receiver 100; connectivity from the channel predicate 165; selected channel 141;
+// shared connectivity store 131. NOT kept: the flag still precedes the copy, and the shared store
+// joins branches that have distinct stores in retail.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

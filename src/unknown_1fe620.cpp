@@ -428,6 +428,28 @@ static __forceinline long real_to_long(real value);
 // [134/121/18], against a static const up vector 340 [136/123/20], the k zero product named 340 [138/123/20], the three
 // rows held in scalars and then stored 340 [130/121/18]: the side vector's homes stay XMM4/XMM3/XMM1 (retail XMM1/2/3,
 // with one extra copy of the k zero product).
+// M3 lane 3 r298 (H2M_FAST with 0x1697c0, 0x1fe410, 0x16a040, 0x16a7c0 and six other 0x1697c0 callers; control 373): r297's
+// lead measured on main's body: 0x1697c0 with both parameter-address locals removed (point and vector read directly)
+// 373 here, 0x1697c0 itself 155 (2188 B; its match is lost); with only the point's address local removed 373 here,
+// 0x1697c0 122 (2175 B). 0x1fe410 and the other callers stay matched in both. 0x1697c0 needs both locals for its own
+// match, so the capture cannot be removed there; restored.
+// M3 lane 1 r159 (H2M_FAST with 0x210850 MATCH each run; control 373): the existing 0x210850 called out of line for the
+// point (no `inline` on its definition) 445 (1807 B, it stays a call); the random-state local declared at the top for the
+// head draw and both function_259d0 draws 413 (1866 B); +0x38 named early with the other limits for its two uses 375; that
+// with the second draw through function_259d0 (retail's second draw is the x87 one) 412; the first output named as a
+// vector pointer for its store and the three sums, on this body, 376 (1854 B). Retail reads +0x10, +0x14/+0x18, +0x1c,
+// +0xc and +0x38 after the sign step and stores the seed once after the three draws. BLOCKED-BY 0x210850 as above. Body
+// unchanged.
+// M3 lane 11 r163 (H2M_FAST with 0x1fe410, 0x210850 and 0x2104b0 listed; control 373, difflib-aligned 324; body
+// unchanged). Reading of the entry: the allocator gives ESI to the random-state pointer (63), which this build keeps
+// from the head draw to the three later draws across the calls between them, and ranks the third input far below it
+// (3, or not worth a register), so the third input is reloaded from its stack slot; retail loads the third input into
+// ESI at the entry and reads the random-state global again into ECX ahead of the 0x1fe410 test and after that call.
+// Diagnostic, removed at once: an undefined function called after the 0x1fe410 statement 393 (1852 B): the third input
+// then sits in ESI from the entry as retail (the state pointer cannot live across the call); the same call inside the
+// 0x1fe410 arm 431 (1865 B, no change at the entry). Forms: the +0x1c limit named for its test and the 0x1fe410
+// argument 437 (1866 B); the sign step's state through the global, no pointer local 423 (re-measured); the +0x7a word
+// read into a local ahead of the actor lookup 426.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

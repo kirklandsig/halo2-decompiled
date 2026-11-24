@@ -574,6 +574,23 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // crosses 163 (diagnostic: the second cross still loads forward first). Dead-local phase scans 0-7: no effect.
 // Permuter (900 s, 94 tries): best 103 by its own count only through a swapped cross3f argument order (a sign change,
 // not usable) plus constant and volatile temporaries.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 214 (1175 B). Restored.
+// M3 lane 16 r181 (h2m fast with 0xc7840, 0x30bf0 and 0x1eb8a0 listed, which reproduces 132; without 0x1eb8a0 the
+// rotation is a call, 962 bytes): aligned, 36 instructions differ. Retail's commutative operands put forward->i first
+// against every leaf (both dots' i products, the scale's i) and forward->j/k last (the second cross, the scale's j/k);
+// ours puts all of forward first in the idle arm and up->i first in both dots. The matched 0x109660 (scale plus a
+// subtract helper) gets retail's forward->i-first dot, so the keys are context. Redundant paren pairs anywhere
+// give two states only (count 0 mod 4 = this code; 1, 2, 3 or 5 pairs = one other listing, 130): the first cross's
+// i row becomes retail's but its j/k second products flip. Parameter renames 132; casts on either cross or the
+// projection inputs 132; a pointer local for forward in the idle arm at any one use 130 (the paren state); the
+// sine declared first 143; the rate first in the angle product 132; the angle call result in parens 170 (1164
+// bytes, the rotation reschedules); double sin/cos in the active arm 204, in the idle arm 130, both 202.
+// M3 lane 8 r230 (h2m fast with 0xc7840, 0x30bf0 and 0x1eb8a0 listed, base 132): both projections' subtractions through
+// a file-local a - b helper (0x109660's scale-then-subtract shape) 188; the global up pointer named for the first idle
+// cross 132; both idle cross outputs declared ahead of the first cross 132 (same code each); the idle axis normalized
+// ahead of the base scaling 127 (1149 bytes: the call moves ahead of the scaling, retail calls it after; not kept);
+// the active offset declared ahead of the angle 132 (same code). Left as before: the active sine store and the dot's
+// i term (retail forward->i first), the idle first cross's i row (retail loads g first) and its j/k rows.
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {

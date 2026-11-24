@@ -2806,7 +2806,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
-// score 87 (was 87; rounds 196 and lane 11 r145's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
+// score 87 (was 87; r239 unchanged; rounds 196 and lane 11 r145's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
 // Earlier note at 87: r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
 // Earlier at 87 (was 87): r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
 // MiniMax E (11-20): no new form, no lower score (87): re-read against retail, the frame agrees at 0x788 and the three
@@ -3241,6 +3241,31 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // expanded into 0x53de0, 0x53e30, 0x54a20 and 0x54a70, which lose their matches). The players[i] reload is still
 // BLOCKED-BY the 0x53b40 chain's link-time summary (retail's 0x59670 stores through its pointer only conditionally, as
 // ours does). Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x24fd74, 0x2507c3, 0x22f042 and 0x250155, all MATCH; control 87; src/network_voice.cpp
+// was open this round). Diagnostic, reverted at once: a store of the port to a new global at the top of 0x53b40 gives
+// retail's reload of players[i] after the call (`mov esi, [esi]`, 87 -> 81 with 0x53b40 itself 33), so the reload is the
+// call's link-time write summary alone, and retail's 0x53b40 chain was not known free of stores; the voice membership
+// helper's session pointer as a one-element array 87 (0x53de0 and 0x53b40 still match; no reload). Retail gives the two
+// loops' players pointers separate homes (first loop [ebp - 8], later shared with a short index; second loop [ebp -
+// 0x18]) where ours shares one: the first loop's counter declared in its `for` 85, the second loop's 85, the last loop's
+// 87 (two points each, under the bar). Still BLOCKED-BY the 0x53b40 chain's write summary for the reload.
+// M3 lane 5 r239 (H2M_FAST with 0x24fd74, 0x2507c3 and 0x22f042, all MATCH; control 87): the voice state as one
+// conditional expression 87 (same code); the slot helper's default arm chained 92 (925 B); the screen mode read once
+// ahead of the last loop 113 (933 B). Diagnostics, restored at once (a no-code compiler barrier is a steering form): a
+// barrier at the top of 0x53be0 81 (0x53be0 2), at the top of 0x53de0 81 (0x53de0 2), at the top of 0x53c30 81 with
+// every voice chain function matched, at the end of 0x53be0 81; the 0x53c30 barrier with a counter per loop 79. So the
+// players[i] reload needs only the chain to look memory-clobbering to the link, which would also explain 0x53b40's
+// re-read of the two availability flags after its 0x53be0 call (main gets that from volatile reads). The 0x53c30 barrier
+// with those volatile reads made plain (fast check of all 125 functions of src/network_voice.cpp): 81 here, but matched
+// 0x56590, 0x565c0 and 0x54590 are lost and 0x55e10 139 -> 167. Body unchanged.
+// M3 lane 12 r184 (h2m fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47/0x2514fd, all MATCH; control 87). Retail's
+// frame cells: -8 the first loop's `&players[i]` (5 references), -0xc the shown count (5), -0x10 (3), -0x14 the first
+// loop's player and the flag (5), -0x18 the second loop's `&players[i]` (2); ours shares one `&players[i]` temp across the
+// loops (one counter), so a counter per loop (re-measured 85) gives retail's -8 and -0x18, and the shown count, the
+// player/flag slot and a bitmap index then tie at the same density and sort in another order. On that form: the second
+// loop's widget indices declared in reverse 85, the colour array ahead of the team locals 85 or last 85, the local search
+// ahead of the player lookup 120 (920 B), `in_matchmaking` declared first and assigned after the shown count 85. Still
+// BLOCKED-BY 0x53b40's chain for the players[i] reload. Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

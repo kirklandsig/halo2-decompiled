@@ -876,6 +876,60 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // (same code each); the first output as `local_4 / local_6 * 0.7f + 0.3f` 649 (2874 B). Lane 2 r113's lead patch
 // re-applied 331 (2896 B, aligned 183): beyond its crosses and the loop pad, both rotations differ by an xmm1/xmm2/xmm3 colour
 // rotation and the tail by schedule only. Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned 364, masked 160): the body after
+// the early return without its `else { }` wrapper, so the point array sits at function scope with no declaration moved (lane
+// 2 r113's alias rule: retail's per-point `0 - [ebp + 0x14]` reloads come back) 648 (2865 B, aligned 291, masked 126); that
+// with cross3f_staged at the four crosses 649 (2872 B, aligned 268, masked 96); with the range named where the test reads it
+// 640 (aligned 268); the positive range test around the body with `return local_0;` last 633 (2868 B, aligned 368); the
+// no-else form with the crosses, the range and the clamp input as `local_4 / local_6` 636 at retail's 2886 B (aligned 196,
+// masked 78: the inactive exit sits inline after the test where retail puts it after the main epilogue, which shifts every
+// later row). Body unchanged.
+// M3 lane 7 r218 (H2M_FAST; control 521; all on lane 2 r113's 331 lead, re-applied, 331 at 2896 B, not kept): the second
+// cross through cross3f 331, through the private helper 331 (same code as cross3f_staged there); with 1/2/3 redundant pairs
+// around the ray's first product 331/584/572 for each of the three spellings (the spelling never moves the cycle; no state
+// gives retail's six global-first products). The first rotation's pure XMM permutation (retail i/j/k in XMM1/2/3, ours
+// XMM3/1/2) does not follow the pair count, nor the helper's projection dot in i, j, k order 331, its cross_k computed
+// ahead of cross_j 364, or cos taken ahead of sin 408. Body unchanged.
+// M3 lane 6 r235 (H2M_FAST with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): on lane 6 r231's 636 form (crosses,
+// range read first, clamp input `local_4 / local_6`, no else) the positive range test around the body with `return true`
+// last 615 (2886 B; the success byte at +0x17 and the hit flags at +0x1c become retail's, the exit moves after the main
+// epilogue); with the range read first inside the block 610 (its spill store moves after the pushes as retail). Lane 2
+// r113's 331 lead rebuilt (331 at 2896 B, aligned 183): its first difference is the second cross, where retail's six
+// products all take the axis component as the loaded destination (axis i loaded twice); ours folds axis i as a memory
+// operand in both of its products. Screened on the lead (40 variants: the axis through a pointer local, the direction
+// through a pointer local, the output through a pointer local, each combination, with 0-3 redundant pairs on the first
+// ray product): three orientation states only (axis i folded alone; both b.j/b.k ahead of the whole axis; every product
+// direction-first), never axis i first; the axis pointer alone 582 (2886 B, the loop pad goes); the clamp helper's
+// product as `local_0 * arg_2` 331 (same code). Body unchanged.
+// M3 lane 3 r303 (h2m fast, control 521, aligned 364): on the kept body the shared cross helpers one call site at a time:
+// cross3f_staged at the second cross 521 (same code), cross3f there 518 (aligned 361, under the bar), cross3f_staged at the
+// first 653 (2873 B), at the tail 523, at the third 521 (same code). On lane 2 r113's lead (rebuilt, 331 at 2896 B, aligned
+// 183): a dead-local count scan at the function top (diagnostic), K = 0..40: 331/331/604/611/403/338/334/331/330/334, then
+// 589/615/460/455/439/403/403/406/638/481/461/456/408/406/406/406/638/645/461/456/396/394/394/397/639/646/463/423/398 and
+// K 39 331, K 40 330 (a 32-period, lowest aligned 168 at K 9 with 2907 B): no count matches, and the second cross's folded
+// axis i is the same in every state of the lead's window. The second cross through a pointer-parameter helper with direct
+// stores 331 (same code as the staged helper: stores to the local output do not stop the axis loads being shared); that
+// helper reading the direction's three components into scalars first 570 (2886 B, aligned 182: the first row
+// direction-first with copied registers, the later rows axis-first); the same written in the body with no helper 565
+// (2864 B: axis i then loads first, axis j and k fold). Reading: retail loads all three axis components up front and again
+// for their second products (six loads, every product axis-first); in every form here only the bare indirection (axis i,
+// offset 0) sits on the other side of the direction, as the parameter-index rule for offset-0 operands predicts. Body
+// unchanged.
+// M3 lane 12 r183 (h2m fast; control 521, aligned distance 531; body unchanged). Frame reading: this frame is laid out
+// by reference density (references x 1000 / size, densest lowest) and a new object joins the newest slot it does not
+// interfere with. Retail's four-byte slots hold 29, 16, 11, 10, 8 and 5 references from the bottom with the result byte
+// (density 3000) above the first two; ours hold 31, 11, 10, 10, 10 and 8, so the byte sits one slot lower and every later
+// home is off. Retail's 16 are the loop's point cursor, the first angle total and the first rotation's cosine, and its
+// range local has a slot to itself; ours packs that cosine into the range local's slot. LEAD (a moved declaration, so
+// match-only; retail's own zero stores precede the angle limit): the two angle totals declared after the minimum block
+// 506 at 2886 B (aligned 373, first difference +0x40, the result byte and a 15-reference slot as retail); with a named sum
+// for the four ray lengths 506 (aligned 349). Forms: the range read into its local before the test with the early return
+// 667; that with a positive test, the body ending `return local_0;` and `return true;` last 637; the field test with the
+// range read first inside and the exit last 632; range first with one `return local_0;` 664; the four ray lengths from
+// one named sum 521 (aligned 507); the minimum's fraction named once 517; both 524; the angle limit computed after the
+// minimum block 553; the minimum block's two stores exchanged 651 (aligned 388); the reciprocal named in that block 522;
+// the sample local declared ahead of it 521; the minimum test written minimum-first 521 (same code); the lead on the
+// three exit forms 632/627/658.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

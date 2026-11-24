@@ -1068,6 +1068,52 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // pointer and both lookups through it 78. Diagnostic, not keepable (it takes the object table global's address): both
 // lookups through a reference bound to the global itself 42 (retail's EBP window and data reload, the scaled index still
 // shared), with the object read indexed by the entity's field 42, the header test alone through it 77. Body unchanged.
+// M3 lane 5 r236 (H2M_FAST with 0xbb780, matched throughout; control 8), no second store unless noted: the NONE test on the
+// entity's field, the rest on the local 77 (160 B); 0xbb780 given the local with the tests on the field 77; every read after
+// the store through `entity->object_index` (NONE test, header test, 0xbb780's index, the v31 call) 67 at 176 B: the object
+// read's index is then recomputed `mov ecx, eax; and ecx, 0xffff` as retail (the only form so far that does not share
+// it), but the data pointer stays shared in EDX and `f` is cached in EBP (no EBP window); the same with the call result
+// stored straight into the field (no local) 67; the other seven field/local mixes of the NONE and header tests with
+// 0xbb780 or the plain store and attach 77/82; that form with the second store `entity->object_index = object_index` before
+// the call 42 (the data reload and window come back, but the scaled index is shared again), with the field stored to
+// itself 45 (179 B); the current body with `(word)entity->object_index` at the object read 18. Diagnostics (allowed only
+// with a match, reverted): on the 67 form `e` and `f` read at the v31 call through const volatile casts of their addresses
+// 45 (retail's whole head to +0x3a; left: data shared in EDX where retail keeps g_4e0300 in EDX and reloads data after the
+// EBP window), `f` alone 68, `f` through a pointer to it 67. Also on the field-read form: the flagged clear first
+// (`if (index != NONE && flagged) index = NONE;`, flat or nested) and the valid block under a retest of the field 67 / 67
+// (the retest is threaded away). Lead: the 67 form plus a barrier that emits no code between the header test and the
+// object read.
+// M3 lane 7 r217 (H2M_FAST), at 8: no second store with the object read masked and `result = true` ahead of the field
+// store 72; the object read as `OBJECT_HEADER((word)object_index)->object` 8 (same code); the attach passed
+// `entity->object_index` 21; no second store with the object lookup and the attach both through `entity->object_index` 82
+// (157 B); the second store moved after the field store 69.
+// M3 lane 7 r219 (H2M_FAST; control 8): the flag test inverted (clear first, valid block in the else) 33; `result = true`
+// ahead of the attach call 76 (182 B). The field-read form (call result stored into the field, every later read through
+// `entity->object_index`, store and attach through 0xbb780) re-measured 67: on it `result = true` ahead of the 0xbb780 call
+// 61 (178 B), the flag test inverted 67, `result` declared ahead of `value` 67 (same code); its listing has retail's
+// recomputed index but `f` cached in EBP and the data pointer shared in EDX, so no EBP window.
+// M3 lane 7 r222 (H2M_FAST with 0xa5a00, 0xa5b10, 0xa5b40, 0x108e10 and 0xbb780, matched throughout; control 8):
+// retail's shape with 0xbb780 given the local re-measured 77 (160 B); diagnostic, that with the header flag test moved
+// into a function of another file, so that both lookups come from bodies inlined at link time, 77 (the same code: the
+// merge does not depend on where the lookups are written); the flagged arm clearing the field and the valid block under
+// `if (entity->object_index != NONE)` with 0xbb780 on the field 67 at 176 B (the data pointer is reloaded from the kept
+// table pointer and the index recomputed from the re-read, as retail does, but the re-read and its `cmp ecx, -1` stay);
+// a flag cleared in the flagged arm and tested after it, 0xbb780 on the field or on the local, 75 / 75 at 160 B (the
+// flag test is threaded before the lookups are merged). Reading: retail's reload needs a path with a pointer store to
+// reach the object read while the lookups are merged and to be gone afterwards; no form here does both.
+// M3 lane 6 r238 (H2M_FAST with 0xa5b10, 0xbb780, 0x108e10 and 0xa5a00, matched throughout; control 8). Reading: the
+// EBP window is the pass after allocation loading the header test's memory operand into the first dead register; retail
+// keeps the table pointer in EDX across both lookups and loads the data pointer twice, so the first data load's reach
+// ended between the header test and the object read (as a store through a pointer ends it) while the entity's stored
+// index was still forwarded from EAX. Field-read form (call result stored into the field, every later read through it,
+// store and attach through 0xbb780) re-measured 67; on it the write-only barrier ahead of the 0xbb780 call 67 (same code),
+// the read-only barrier 57 (179 B); a self-copy of the entity's first field there 67 (removed before the loads are
+// merged); that field read into a named local, stored back and passed to 0xbb780 39 at 176 B (first +0x3a: retail's
+// head; the store is removed and both indexes are recomputed from EAX, but the data pointer stays in EBP across both
+// lookups); a self-assignment of the address-taken value local 67; the identifier in a named local 67. On this body: the
+// write-only barrier in place of the second store 71 with the word read, 77 (160 B) with the plain index; the second
+// store written as a read of the field stored back 8 with the word read (same code), 42 with the plain index; the first
+// field stored back in place of the second store 77 (160 B, plain or field index), 50 with the word read. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1594,6 +1640,41 @@ bool c_projectile_type::v8(long a, long b)
 // file-local by-address bit setter (dword result) 12; the 0x800 test as `(flags >> 8) & 8` 12, on a `(word)flags` view 12;
 // the group mask taken on an unsigned 64-bit value 12; the object looked up through a `long const &` to `a` 12 (every
 // spelling folds to the same 0x800 and 0xffff constants before allocation). Word-read body kept (5).
+// M3 lane 5 r236 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the entry chosen as
+// `index != NONE ? <masked entry> : NULL` and tested `if (entry && ...)` 37 (190 B: the NULL test is not threaded into
+// the NONE test), that with the value compare nested under `if (entry)` 37, the entry started NULL and set under the NONE
+// test 37; the flags local as `(dword)b` 12; a value `long index` with a `byte const *` entry 12. Word-read body kept (5).
+// M3 lane 7 r217 (H2M_FAST; word read 5, mask 12), all with the full-width mask: both device-bit tests from `b` with the
+// flags local only for the call's mask 12; the flags local ahead of the object with the call's mask from `b` 12; the entry
+// pointer declared with the index reference and assigned in the NONE block 12; `NONE != index` with a const entry pointer
+// 12; the 0x800 arm's result bit set ahead of its store 14. Diagnostics (semantics changed, reverted): `| 0x3ff` or
+// `| 0xffff` on the call's result 48 (192 B), `& NONE` 12.
+// M3 lane 7 r219 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the object pointer and the
+// flags both const 12; the result declared bare and assigned from the call 12; the call's mask as `flags % 0x400` 12; both
+// device-bit tests written constant-first 12 (all the mask's code; the flags keep ESI). Word-read body kept (5).
+// M3 lane 7 r222 (H2M_FAST with 0xa5e70, 0xa3a00, 0xa02e0 and 0xa0be0, MATCH each time; word read 5, mask control 12):
+// with the full-width mask, k integer immediate stores to a scratch array at the top for k = 0..33, k integer copies for
+// k = 1..32 and k real-constant stores for k = 1, 2, 4, 8 (diagnostic; counts like these move 0x254490's reload pair)
+// leave the object in EDI every time, so the pair is no numbering window; the function in a file of its own (same
+// flags) with the base v27 called and inlined at link time, mask form, 51 at 186 B (the inlined base's copy of `this`
+// takes the unused third argument's home, no `push ecx`; flags ESI, object EDI: the same code as the same-file base
+// call above). Word-read body kept (5).
+// M3 lane 6 r238 (H2M_FAST with 0xa5e70 and 0xa02e0, MATCH each time; word read 5, mask 12). The allocator's ranking
+// with the full-width mask: flags 37 against object 36, and on a tie the object would be coloured first (it is created
+// later), so one point is missing. Flags: two references in the entry block, which references 10 candidates (4 x 10),
+// one in the 0x800 test's block (2 x 2), less 3 and 4 for the two blocks of the 0x400 arm they are live through. Object:
+// 2 x 10 + 2 x 3 + 2 x 4 + 2 x 2, less 2 for the 0x800 test's block. Constants used twice count as candidates of their
+// blocks: 0xffff (both lookups) and 0x400 (its test and its result bit) in the entry block, 0x800 in its test's block,
+// 0x44 (the two real compares); the word read leaves 0xffff with one use (entry count 9: flags 33, object 42 with its
+// separate word load), which is where retail's registers come from at 5. In the word-read form the NONE test compares
+// memory and the index is loaded again as a word, the first load being shared only after allocation; a full-width second
+// load is merged with the first before allocation whatever its type. All with the mask: the masked read through a
+// pointer-typed view of the field 12; through a 64-bit view narrowed to 32 bits 12; through a one-long aggregate view 12;
+// through a by-value copy of that aggregate 12; the 0x400 arm's copy through a named long temporary 12, through a named
+// real 12; the 0x800 arm's copy through a named long temporary 12; both arms 12 (a one-use temporary is forwarded, so
+// neither store block gains a candidate); the flags read through a `dword const *` to the parameter at all three uses
+// 12, at the two tests only 12, at the 0x800 test only 12, once into the flags local through a `long const *` 12 (a plain
+// read through the parameter's address folds back to the parameter). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

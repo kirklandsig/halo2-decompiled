@@ -180,7 +180,7 @@ long function_196ef0(byte code);
 bool function_1994d0(long player_index, point3f *position);
 
 // @retail 0x197160
-void function_197160(long player_index, long other_player_index, long code)
+void function_197160(long player_index, long other_player_index, byte code)
 {
 	if (g_510ca0 && !g_510ca1)
 	{

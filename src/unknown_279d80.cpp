@@ -2205,6 +2205,39 @@ void function_27dd10(void)
 // varied): best 2 / 2, best family 44 (mapping lookup with the macro mask test); no combination matches either function.
 // Diagnostics: 0..47 dead initialised locals at the wrapper's top, the pass helper's top or in the sampler's own body
 // never move the pair (they move method 3's float registers for 8..28).
+// M3 lane 14 r147 (H2M_FAST with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): node_destination_get storing the map entry into its out-parameter and testing that 2 (0x281b60 2, 0x28aaa0 20); the
+// interpolation's frame-state saves interleaved with the sets (save, set, save, set, save, set) 94 (1731 B; 0x281b60 47,
+// 0x285750 45, 0x288570 219); the group end's `arg_5 + 8` named and used twice in the ternary 2 (0x281b60 62, 0x288570 3,
+// 0x289580 78); the counter chain's last arm as `else if (arg_4 == 2)` 2 (same code). All restored.
+// M3 lane 15 r135 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): the
+// walk's mask and interpolation flags as long parameters of function_288571 and function_288572 2 (0x281b60 2, 0x288570
+// 120); the three counter resets in reverse order 2; the wrapper's count declared `register` 2; the in-place flag as long
+// 2; the group end declared `long const` 2; the method-2 scale product with its operands swapped 2 (all the same code
+// here and in 0x281b60). All restored.
+// M3 lane 11 r160 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): in function_288572 the saved frame index as long 2 (same code); the 0x504410 target set ahead of the three
+// frame-state sets 14 (0x285750 12, 0x288570 12); the 0x504430 target restored ahead of the three restores 13 (0x285750
+// 11, 0x288570 98); the bit-flags word as dword 5 (four siblings 3); the group end capped by an if 208; the pass counters
+// pre-incremented 2 (same code). Matched 0x285750 reloads flags first after the same quaternion_multiply asm, its arm
+// doing integer work in EAX/ECX first. All restored.
+// M3 lane 13 r151 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
+// function_288572 the bit-flags read and the cursor step as two statements 2; the outer for as `arg_5 = 0; while
+// (arg_5 < arg_7)` 2; the destination lookup and the mask test as two nested ifs 2 (the three the same code); the
+// zero-flags arm and the group arm swapped (`if (local_2 != 0)`) 377 (0x281b60 352); the cursor stepped at the end of the outer
+// iteration 414 (0x281b60 404) (every sibling lost). All restored.
+// M3 lane 1 r163 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2). Reading of the allocator: the two loads are block-entry reloads of the walk's count and of pass 0's bit flags at
+// the counter block; both have the same scheduler rank there, so they are emitted in the order of their allocator
+// candidate numbers, lower first. Those numbers are not source order: each time a pick takes a candidate's last free
+// register the candidate is split and every new piece takes a recycled number (shared with the float candidates and
+// with the constants 0, 1, 8, 31 and the two decode-target addresses, which are candidates too), so the final numbers
+// are the end of a 15-round split cascade: count 24, pass 0's flags 52, pass 1's flags 12 (why pass 1 is already
+// retail's); matched 0x285750 ends count 61, flags 27. A form that leaves the allocator's input unchanged cannot move
+// them. Forms: node_flags_test's mask bit as `1u << (index & 31)` 2 (0x289580 lost; the same candidate numbers);
+// node_destination_get's map-flag bit as `1u <<` 2; both 2 (0x289580 lost); the walk's bit test as `local_2 & 1u` 2;
+// all three unsigned 2 (0x289580 lost). Diagnostic: 0x27e6b0 defined ahead of this function in the file 2 (the
+// numbering does not carry over from the function compiled before it). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2483,6 +2516,27 @@ void function_2818e0(void)
 // pointers as array members 2 / 2; bit-test spellings in either helper 2; each existing wrapper 4, 2, 31, 7, 32 and 46
 // (compute_orientations, function_288571, split, component count, split index last, inheritance mapping); the 3,888
 // generated walk combinations best 2. Nothing below 2.
+// M3 lane 14 r147 (measured with 0x27dff0, the walk forms listed above it; control 2): the out-parameter-first node lookup
+// 2; the interleaved frame-state saves 47; the named group-end sum 62; the explicit last counter arm 2; the kind-2 clamp in
+// function_288571 as `if (arg_1 == 2) local_2 = MIN(local_2, 1);` 2 (same code). All restored.
+// M3 lane 15 r135 (the shared-walk trials listed above 0x27dff0, control 2): mask and interpolation flags as long
+// parameters 2; counter resets reversed 2; `register` count 2; in-place flag as long 2; group end const 2; the method-2
+// scale product's operands swapped 2. All restored.
+// M3 lane 11 r160 (h2m fast with 0x27dff0 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): in function_288572 the saved frame index as long 2 (same code); the 0x504410 target set ahead of the three
+// frame-state sets 14 (0x285750 12, 0x288570 12); the 0x504430 target restored ahead of the three restores 13 (0x285750
+// 11, 0x288570 98); the bit-flags word as dword 5 (four siblings 3); the group end capped by an if 241; the pass counters
+// pre-incremented 2 (same code). Matched 0x285750 reloads flags first after the same quaternion_multiply asm, its arm
+// doing integer work in EAX/ECX first. All restored.
+// M3 lane 13 r151 (h2m fast with 0x27dff0 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
+// function_288572 the bit-flags read and the cursor step as two statements 2; the outer for as `arg_5 = 0; while
+// (arg_5 < arg_7)` 2; the destination lookup and the mask test as two nested ifs 2 (the three the same code); the
+// zero-flags arm and the group arm swapped (`if (local_2 != 0)`) 352 (0x27dff0 377); the cursor stepped at the end of the outer
+// iteration 404 (0x27dff0 414) (every sibling lost). All restored.
+// M3 lane 1 r163 (h2m fast with 0x27dff0 and the matched walk users; control 2): the same reading as 0x27dff0's r163
+// note (the pair is ordered by recycled allocator candidate numbers at the end of the split cascade). The mask bits as
+// `1u <<` in node_flags_test, in node_destination_get or in both 2 each; the walk's bit test as `local_2 & 1u` 2; all
+// three 2; 0x27e6b0 defined ahead of 0x27dff0 in the file 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

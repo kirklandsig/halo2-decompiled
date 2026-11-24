@@ -1013,6 +1013,44 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // eax` and the bit takes EAX): on the plain `for` copy, one index declared ahead of both loops 100; the mask test written
 // `(mask & bit) != 0` 100; the player record named at the top of the player loop's body 100; the copy loop under main's
 // `if (member_count > 0)` guard 100; the player loop as a do-while on a `player_index` 100 (all 477 B, the fold kept).
+// M3 lane 8 r227 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost): on the pair, 1 to 7 initialised dead locals at the top 46 each; the pair
+// declared at the function top 46, players declared first 46, the variant declared ahead of the pair 46; a 15-form grid
+// of summary before variant, one shared loop index, the addresses pointer before the clears and the member count before
+// the clears 46 (or 127 with the count before the clears); without the variant local 49, without the addresses pointer
+// 46, without both 49; a bool getter in 0x5b0d0's shape (both out pointers written under the live and flag tests) with
+// its result tested ahead of the two pointers 46 (inline or forceinline). On this body the two address tests through an
+// inline `a && b` helper 22, arguments swapped 23 (the addresses sink: the second lea stays after the `je`).
+// Diagnostics (removed): `value49c8` read into a local before the player loop puts the session back in EBX with both
+// callers matched (124 on the pair, 130 here, 493 B each), the player mask so 133 (493 B): the session's register
+// follows its loop uses.
+// M3 lane 4 r250 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost): on the pair, the pair re-pointed at the two new buffers and passed to
+// the setter 46; the pair declared at the function top ahead of `result` 46, after it 46, that with the variant at the
+// top too 46; the variant declared inside the player loop's call block 49.
+// M3 lane 13 r146 (h2m fast with 0x6e500, 0x72700; control 22): an identity forceinline pointer view (no code of its own)
+// around one read at a time, aimed at the one-step scratch rotation: the member count's session read 133 (495 B), the mask
+// store's machine buffer 130 (495 B), the summary getter's session 165 (511 B, both callers lost), the variant's session
+// read 157 (506 B), the opening's flag read 150 (495 B), the copy loop's member read 132 (495 B); every placement grows the
+// body by 12 B or more, so it changes more than the rotation.
+// M3 lane 11 r159 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, all MATCH unless noted; control 22): `result`
+// initialised from the state test (`bool result = session->state == 5; if (result)`, no `result = true`) 169; the player
+// loop skipping by `if (!mask || index == NONE) continue;` 22; the opening as a positive test with an empty arm and the
+// work in its else 22; the opening's address tests as `== NULL` 22; its flag test as `== false` 22; the machine mask as
+// `(1u << member_count) - 1` 22 (all 22s the same code); re-measured the `short` player index 127 (0x6e500 69, 0x72700
+// 94). Body unchanged.
+// M3 lane 1 r162 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost, its copy loop still one scratch step off): on the pair, the player record
+// as `session->players + i` at both uses 46, the mask and slot tests as two nested ifs 46, the player buffer typed as the
+// setter's 0x3648-byte block (cast at the 0x6e910 call) 46 (the three the same code), the summary passed through the
+// getter at the call 146 (493 B), the copy loop walking a member pointer and an address pointer beside the countdown 50;
+// on this body the two loop tests nested 22 and the 0x3648-byte player buffer 22 (same code each). Re-measured: the
+// pair's NULL preset in an else arm 46.
+// M3 lane 7 r223 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22): on the NULL-preset pair
+// (re-measured 46) the allocator ranks the session at 95 against the player-loop index at 86 (the pair's block references
+// four candidates), so the session is coloured first and takes ESI; with the index ranked first the pair form leaves 14
+// (the copy loop's scratch step). On the pair: a named session player record pointer in the player loop 49; the pair set
+// under the flag test alone 46; the pair assigned players first 46; the output buffer entry named 46.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1562,6 +1600,40 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // colouring (count EBX, the index spilled, `current` reloaded) when its step sits inside the copy's arguments, and flips
 // to the 195 colouring when the step follows the copy; a step inside the arguments evaluates the destination before the
 // source, so the copy's two pointers swap (ECX/ESI) as in the `[count++]` 40.
+// M3 lane 8 r227 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): the else
+// arm through a named `const byte *` to the state's entry list (count, then entries) 9 on this body, 195 on the indexed
+// copy, 195 with the destination declared in the true arm, 40 on `[count++]` (the pointer folds each time); the true arm
+// reading the session into a fresh local from `state->owner->session_a` instead of `current` 159 (713 B), on the indexed
+// copy 155 (713 B); lane 7 r214's row pointer declared in the true arm with `memcpy(dest++, ...)` re-measured 48, the
+// same with `count++` ahead of the copy 44 (first difference +0x4a, the copy's pointers still swapped).
+// M3 lane 4 r250 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; re-measured
+// `[count++]` 40 and the indexed copy 195): a `dword (*)[3]` row pointer declared before the branch and stepped by one
+// 9 (same code); that row pointer in the true arm with `count++;` ahead of `memcpy(dest++, ...)` 44 (the copy's two
+// pointers still swap); a walked destination in the true arm stepped ahead of the copy (`dest += 3; memcpy(dest - 3,
+// ...)`) 194; the step as `dest = &dest[3];` 9; the player-loop index declared at function scope ahead of the
+// destination 9 (same code).
+// M3 lane 13 r146 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9): a new forced-inline
+// 12-byte copy helper (dest, source) called with a `dword (*)[3]` row pointer declared in the true arm and stepped in the
+// call's arguments (`copy(dest++, ...); count++;`) 216 (728 B), with `count++` ahead of the call 203 (704 B), with
+// `copy(*dest++, ...)` 216; a plain `static inline` copy helper with `identities[count++]` re-measured 195; the true arm
+// through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
+// 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
+// colouring (that needs memcpy's own argument order).
+// M3 lane 6 r236 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; the indexed copy
+// re-measured 195): the identities zeroed by a `= {0}` initialiser in place of the memset 14 (first difference +0x2d); the
+// copy source as `current->players + i` 9; the player loop as a `while` stepping its index at the body's end 9; the
+// destination as `&identities[0][0]` 9 (the three the same code); the count declared bare and zeroed after the clear 15.
+// M3 lane 1 r162 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9): identities, destination and count all
+// declared ahead of the close call 192 (704 B); identities alone declared ahead of it 9; the two NONE arrays declared beside
+// identities 9, at the function top 9; identities without the align declaration 9 (the marker still aligns the frame; the
+// four the same code); `count++` ahead of the copy on this body 21. Re-measured: the count zeroed after the clear 15, the
+// destination formed before the close call 191 (704 B), the source as `current->players + i` 9.
+// M3 lane 7 r223 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9): the allocator ranks the loop index
+// above `count` once the destination is declared in the true arm (65 against 62: the entry block loses a referenced
+// candidate, the loop's first block gains one), so `count` is left uncoloured; forcing the index below `count` on that
+// form leaves 4 (the mask temporary in ECX for retail's EAX). With the destination in the true arm: the copy size as
+// `3 * sizeof(dword)` 195; `dest += 3;` ahead of `count++;` 216 (728 B); a named player record pointer for the source
+// 195 (on this body 9); the else arm's copy size named 195, its entry list address named 195, both 195 (all folded).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

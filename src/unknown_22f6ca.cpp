@@ -335,6 +335,35 @@ void function_22fba9(c_class_1473c9 *screen)
 // code); the text loop's test so 25, both 25; `long i = 0;` above the pane lookup with the model test swapped 25 (first
 // +0xb). The matched sibling 0x22facd keeps a `mov ecx, esi` copy in its model loop, so the direct `[esi + 0x34]` read is
 // particular to this loop.
+// M3 lane 1 r157 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf/0x22f6ca, all MATCH each time; control 23). The screen's
+// animation type read through a file-local inline accessor returning it as a one-long aggregate by value (the form that
+// matched 0x151b80; such a copy is not merged with a plain read): in the model loop only 23, in the text loop only 23, in
+// all five loops 23, in the text and model loops 23 (all four the same code as main); in the first four loops with the
+// model loop plain 26 (417 B: the model takes ESI and the screen is reloaded from its home, as in the bitmap loop); in
+// the bitmap loop only 160 (429 B, the shared zero moves to ESI); in the block-24 loop only 37 (415 B); in the block-18
+// loop only 26 (417 B, the 26 code); in the first three loops 26. On `long i = 0;` above the pane lookup (25): plain 25
+// re-measured, the accessor in the model loop 25, in the text loop 25 (same code each). The model loop's EAX copy and
+// its `and` reset stay in every form whose model loop keeps the model in EDI.
+// M3 lane 13 r145 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): one, two or three redundant
+// parenthesis pairs around the model call's definition argument 23/23/23, around the text call's 23/23/23 (no phase
+// effect on this integer code); 0x22fa5b returning the concrete model type, the model local typed so, 23; the text
+// helper's index typed `short` with `(short)i` at the call 23 (same code); the pane declared in the `if` condition with
+// `long i = 0;` above it 25 (the 25 form's code), with `long i = 0;` at the block's top 66. Diagnostic: the text loop
+// without its flag test 46 (411 B; its reset stays `mov`, so the flag test does not set it).
+// M3 lane 12 r179 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the text loop's counter read through a
+// `long &index = i;` bound in its body 23; the text and model loops both so 23 (both the same code); `long i = 0;` above
+// the pane lookup with the text loop through that reference 25 (the 25 form's code); the block-18 inner counter declared
+// `long j = 0;` 23 (same code); the pane test as an early `if (!pane) return;` with `long i = 0;` declared after it 66 (every
+// reset then a `mov` from the one zero register).
+// M3 lane 13 r150 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the model count read once into a
+// `long` local for the model loop's test 156 (424 B), the text count so 62 (421 B), both 163 (429 B); the model array bound
+// to a `s_model_block *const &` ahead of its loop 23, the text array so 23 (both the same code). All callees are matched.
+// M3 lane 15 r140 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the text loop's NULL test as
+// `if (!text) continue;` then the animation test 23; its animation test outside the NULL test 26; the model loop's start
+// and store in one `model && animating` arm with an `else if (model)` store 23; `s_screen_pane *const pane` 23; explicit
+// `!= NULL` / `!= false` tests in the text and model loops 23 (the 23s the same code). Reading: matched /O1 0x2b3e4d's
+// `and [slot], eax` is a plain `field = 0;` store to a memory local after a `repe cmpsd` left EAX zero, so retail's text
+// reset is a constant-zero store given the zero register late, its model reset a store of the counter's zero register.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

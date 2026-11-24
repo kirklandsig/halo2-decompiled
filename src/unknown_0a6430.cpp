@@ -21,148 +21,11 @@ PRIVATE byte *update_object_0a6430(long index)
 	return *(byte **)(g_4e0300->data + (index & 0xffff) * 12 + 8);
 }
 
-// MiniMax E (11-20): no new form, no lower score (14): the 0x200 head still loads the object pool into ECX before the
-// masked index and keeps the object in EAX where retail computes the index into EDX first, loads the pool into EAX and
-// the object into EDX, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX; the count
-// initialised after the model read measures 18 (the tag pool load then joins the head), a separate tag local, the
-// 0x100 call's pointer formed from the address parameter and the getter written inline all measure 14, and the
-// reference form that reaches 12 binds the 0x100 object inside 0xba690, whose body is in src/unknown_0bad50.cpp and
-// may not be edited here.
-// MiniMax H (11-20): no new form, no lower score (14): the 0x200 head loads the pool into ECX before the
-// masked index and keeps the object in EAX where retail computes the index into EDX first, loads the pool into EAX and
-// the object into EDX, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX.
-// MiniMax H (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100 call's pushed state pointer still takes EDX where retail takes ECX; the getter written inline, in the header form, in one expression, with the index masked by the caller or with the pool in a local all compile the same code.
-// MiniMax A (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the masked
-// index and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100
-// call's pushed state pointer still takes EDX where retail takes ECX; the state pointer as `&state[0x51]`, as a named
-// local bound before the count compare and the getter's masked slot in a named local all compile the same code, so the
-// body is as it was.
-// MiniMax I (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the masked index and keeps the object in EAX where retail computes the index first and keeps it in EDX, and the 0x100 call's pushed state pointer still takes EDX where retail takes ECX; the body stays 549 bytes against retail's 548.
-// MiniMax B (11-18): no new form, no lower score (14): the 0x200 head still loads the object pool before the index
-// and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100
-// call's pushed state pointer still takes EDX where retail takes ECX; hoisting the index into a named local changes
-// nothing (the compiler folds it), so the body is as it was.
-// MiniMax H (11-18): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and
-// colours the object EAX where retail computes the masked index first and colours the object EDX, and the 0x100 call's
-// pushed state pointer still takes EDX where retail takes ECX; masking the index at the call site as well as inside
-// the getter, the header form and the plain getter all give the same bytes, and a permuter run over the body
-// (300 s) found nothing under the 13 differing instructions.
-// MiniMax R (11-17): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it
-// ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100 call's pushed state pointer still
-// takes EDX where retail takes ECX; the lookup through the object header's typed element form needs another header in this file
-// and the plain forms give the same code, so the body is as it was.
-// MiniMax I (11-17): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it ECX (retail loads the pool into EAX after the index, and the object into EDX), the 0x100 call's pushed state pointer takes EDX where retail takes ECX, and the two call and jump targets differ only because the reduced image lays the callees out elsewhere; a named slot in the getter, a named masked index, the header form, a named data pointer, a named tag and a slot-taking getter all give the same 14 bytes, and the permuter (14 tries in 319 s) found no variant under the 13 differing instructions of the full image.
-// MiniMax A (11-20): no new form, no lower score 14: the 0x200 head still loads the object pool before the masked index and keeps the object in EAX, where retail computes the index first and keeps it in EDX; the getter, the header form and the inline masked index all compile the same bytes, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX.
-// score 14 (was 16): round 173 reads the 0x100 block's count through the existing 0xba690, which
-// LTCG inlines: its object now takes EAX as retail. Left: the 0x100 call's pushed state pointer
-// takes EDX (retail ECX), and the 0x200 block loads the object pool before the index (retail after
-// it, +1 byte), its object in EAX where retail has EDX. Before round 173, at 16: the 0x100 block's
-// object pointer took ECX (retail EAX, reusing the pool base) and the pushed state pointer EDX
-// (retail ECX), one scratch register on in rotation. Tried: the
-// 0x100 compare reversed 17; the object read without a local 16; the tag lookups as tag-array
-// elements 16; the definition read straight from the object getter 16; the count cleared after
-// the object read 16.
-// Round 53: force-inline object getter 16; getter object return local 16; getter byte-offset
-// local 16; final declarations before assignments 16; count declared at function scope 16;
-// count initialized at function scope 184; final count comparison reversed 17; second word
-// read directly at the call 16. Opening body restored.
-// Round 28: getter as an s_object_header array element 16; a named short level in the 0x100
-// block 16; getter plain inline 16; 0x200 compare count-first 17; the shadowing definition
-// locals renamed 16.
-// Round 48: the 0x200 block's object read before the count 16; the count set in else arms 53 (552
-// bytes); the 0x100 compare against a long state byte 16, the states passed as &state[0x51] 16, the
-// level cast back to short 20 (550 bytes).
-// Round 33 (lane 17): the getter written index-first 16; the 0x200 block's tag index read into a local 16;
-// the 0x100 block through a header pointer (the 0x2 block's form) 16; the 0x200 object ahead of the count
-// with the 0x100 compare state-first 17; the 0x40 flag written in place at the store 36 (548 bytes).
-// Round 134: typed final/0x100/both object views 16/16/16; typed 0x2 header/object 16; count after
-// definition 16; final/0x100 masked index 16/16; const state pointer 16. Opening body restored.
-// Round 163: a named level, a named state byte, a named `state + 0x51`, the object read in place, a named
-// offset in the getter, an inline level getter, an inline definition lookup, the tag index read into a local (two
-// forms) 16 each; the 0x80 flag as a named bool 32 (550 bytes); the count zeroed after the definition read 20
-// (550 bytes, the tag pool load joins the head). Opening body restored.
-// Round 75 (lane 1, fast): the 0x40 block as a setter helper inline or forced 16, with a bool flag 43 (550 bytes); a level
-// test helper 16; a count helper forced 16, plain inline 126 (471 bytes, not inlined); both forced 16; an unused states
-// read beside the level 16; the level named and divided in place 16; a forced region helper with count out or states out
-// 16/16; the compared byte read first 16; the object advanced to the field 16; the model info pointer with a NULL default
-// in place 45 (553 bytes), through a forced helper with the count first or after 45/48, as a ternary 59, plain inline
-// 113. Diagnostic: a dead load at the 0x100 head gives that block retail's 0x200 shape (index first, EDX object); no
-// count of dead loads gives retail's own 0x100 shape, where only the object differs (ours ECX, retail EAX).
-// Round 71 (lane 14, fast; compile-only reproduces both blocks' shapes but not the call conventions): the 0x200 object
-// folded into the model read 16; a named states pointer for the 0x100 call 16; the 0x100 level as a long quotient local 16;
-// the count declared after the model read 20 (550 bytes); the 0x100 object folded into its compare 16. Compile-only, all
-// identical to ours: the 0x200 lookup through the header form, index-first, or folded into the definition; the 0x100 lookup
-// through the header form or folded; a named short level; the count declared after the object.
-// Round 79 (fast): one function-scope object pointer for the 0x40/0x100/0x200 blocks 16, for 0x100/0x200 only 16;
-// the existing header getter object_get for the 0x100 lookup, the 0x200 lookup or all three 16/16/16 (all same code).
-// Round 81 (m3 lane 1, fast with 0xa03d0/0xa3ae0): the tag table read once into a local for both 0x200 lookups 50
-// (550 bytes); a dword count 16 (same code); the 0x200 block's state byte read into a local ahead of the lookups 35 (550
-// bytes; the pool still loads first); the 0x100 call's states pointer formed from the address parameter 16; a dword model
-// index 16.
-// Round 67 (m3 lane 2, fast): the extra byte is the 0x200 head's `mov ecx, [abs]` pool load (6 bytes; retail loads the
-// pool into EAX, 5 bytes, then the data into ECX and the object into EDX). Re-measured: the 0x200 count as one ternary
-// over a model pointer with a NULL default 59 (556 bytes, round 75's ternary); the 0x100 test folded into one `if` with
-// the mask test 16 (near round 71's folded object). New: the entries pointer named before the 0xe0 read 16; the word
-// test joined to the count compare with `first` read ahead 34
-// (548 bytes: the tail's `xor eax, eax` goes, the head stays); a block-scoped object pool local for the 0x200 lookup
-// 16, for the 0x100 lookup 16.
-// Round 110 (m3 lane 16, fast with the six matched callers and six matched callees): the 0x200 definition read through
-// the typed object definition's model tag index 16 (same code, kept); the 0x80 call's short in a named local like the 0x40
-// block's 16 (same code); the state parameter typed as a const byte pointer (no entry copy; header and the six calls cast)
-// 16 (same code); the count compare and the word test as one `if` with the call reading both words 16 (same code); the
-// 0x2/0x34 entry as one `mask & 0x36` test 163 (551 bytes); the model tag index read at each use (src/devices.cpp's
-// form) 16 (same code). Diagnosis: in the 0x200 head retail's pool load reuses EAX after the index temp dies, which forces
-// the index-first order; ours colours the pool ECX, so the order follows from the colouring, not from the source order.
-// Round 86 (m3 lane 13, fast): read as trees, retail loads the 0x100 object in place of the pool data (EAX) and the level
-// into a fresh register, and in the 0x200 block the tag index into a fresh register from the object in EDX: the object
-// is a value of its own there, while ours folds it into the next load (object ECX, level in place; 0x200 all in EAX).
-// Tried: the 0x100 block as an inline helper taking the level byte and the states pointer 122 (495 bytes, stays a
-// call), force-inlined 16 (same code); the getter built on a pool-and-index header helper 16 (same code); the getter
-// taking the pool from its three callers 16 (same code); the getter taking an index its callers mask 16 (same code).
-// Diagnostic:
-// a second read through the 0x100 object 74 (the object then ECX as a variable, the level EDX; the 0x200 head becomes
-// index-first with idx ECX, not retail's EDX).
-// m3 lane 14 r90 (fast; plain where noted): the existing OBJECT_DATUM_GET (object_dispatch.h) for the 0x200 lookup
-// with a typed object local, folded into the definition read, for the 0x100 lookup, for both 16/16/16/16 (same code).
-// NOT kept (a one-use reference, kept only on a match): the 0x100 object bound as `byte *const &object` 12 at 548
-// bytes (plain 12): the object then takes EAX as retail and the 0x200 head turns index-first with the pool in EAX, so
-// the extra byte goes; left are the 0x100 compare (our quotient in ECX and the state byte loaded into EDX after it,
-// retail loads the byte into ECX right after the imul and forms the quotient in EAX) and the 0x200 head's ECX/EDX
-// pair. On that form: the 0x200 object bound the same way 12, the compare's operands swapped 12, a named short level
-// 12, a long quotient local 12, the state byte read into a local just before the compare 12 and ahead of the object
-// 12, the typed 0x200 lookup 12; the 0x200 object alone bound as a reference 16 (same code). Lead: the natural form
-// that keeps the 0x100 object as a value of its own, with the byte load ahead of the quotient.
-// Round 105 (m3 lane 10, fast): the 0x200 lookup through a header pointer (earlier screened compile-only) 16 (same
-// code); the getter given internal linkage (`static`; the empty PRIVATE leaves it external) 16; all three objects
-// (0x40, 0x100, 0x200) bound as `byte *const &object` 12 at 548 bytes (round 90's code, not kept: one-use references);
-// on that, the 0x40 flag written in place at its store 38 (549 bytes). Diagnostic: the getter defined in
-// src/unknown_0a58d0.cpp so that LTCG, not the compiler, inlines it 16 (no change). Reading: the 0x100 object, the
-// compare's quotient and byte, the pushed states pointer and the 0x200 head each sit one scratch register off in
-// rotation; the reference form fixes only the first.
-// Round 125 (m3 lane 9, fast): the three block objects `byte *const` 16; the 0x2 block's five NULL pointers declared
-// linear first (the call's order) 19; the mode as the bool result without `? 1 : 0` 126 (544 bytes); (diagnostic,
-// one-use) a `state + 0x50` pointer for the 0x100 compare and call 16; the 0x100 mask test and compare in one `if`
-// with the object read in place 16. The permuter (617 s, 22 tries) found nothing below 15 instruction lines.
-// M3 lane 9 r127 (fast): the value every caller drops (the third argument of each `v31(a, b, c, d)` caller) added as an
-// unused parameter before the state, at the definition, the header and all six calls 16 (byte-identical: LTCG drops it and
-// the callers stay matched); the same in the callers' own order (object index, mask, c, state) 16 (byte-identical); the
-// 0x40 block's object through the header form 16 (same code); the 0x100 quotient named as a region count 16 (same code);
-// that compare state-byte first with `!=` and the call in the else 17.
-// M3 lane 8 r173 (fast; callers matched each time): before the 0xba690 form, the function as a const member of the
-// object type definition (every caller passes `this`; header, definition and six call lines) 16 (byte-identical); the object
-// getter returning `byte *const &` 16 (same code). Kept: the 0x100 count through 0xba690 into a `region_count`
-// out-parameter 14 (plain 14). On it: the 0x200
-// object read before `count = 0` 14 (same code); the 0x200 lookup through OBJECT_DATUM_GET with the typed definition
-// index 14; the 0x100 compare state byte first 15; the model lookup as a tag-array element 14 (same code); the 0x200
-// lookup through a header pointer 14.
-// P575: Independent positive/complementary region-count, model-presence, entry-count and tail-count
-// decisions on the shared-count-provider body 14/14/14/14/14/14/14/14. NOT kept: no exact repair
-// of the state-pointer register or final pool/index schedule; original complete body restored.
-// P577: Shared-provider output at entry 14; scalar memcpy at region/tail/both
-// count bytes 14/14/14; first/second/both packed word observations 14/181/181;
-// existing model-count result through memcpy 14. NOT kept: no equality; native
-// state-pointer register and final pool/index schedule remain. Full body restored.
-// MiniMax B (11-20): no new form, no lower score (14): every spelling of the pool lookup compiles to the same bytes - retail loads the pool into EAX after the index and keeps the object in EDX, ours loads the pool into ECX first - and retail's 0x100 call pushes lea ecx,[edi+0x51] where ours pushes EDX.
+// Applies a state built by 0xa5e70. Matched. The 0x100 block gets the region count from 0xba690 (LTCG inlines it) and
+// compares it with the state byte bound as a `long const &` (compared directly, the 0x100 registers come out one off).
+// The 0x200 block has 0xa5e70's 0x200 shape: `count = 0` comes after the definition read, and the model tag index is
+// read through definition->model_tag_index at both uses. With the count set to 0 before the object lookup, the pool
+// loads before the index into ECX (+1 byte).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
@@ -213,18 +76,18 @@ void function_a6430(c_object_type_definition const *definition, long mask, long 
 	{
 		long region_count;
 		function_ba690(object_index, &region_count, NULL, NULL, NULL);
-		if (region_count == state[0x50])
+		long const &expected = state[0x50];
+		if (region_count == expected)
 			function_bf890(object_index, state + 0x51);
 	}
 	if (mask & 0x200)
 	{
-		long count = 0;
 		byte *object = update_object_0a6430(object_index);
 		s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
-		long model = definition->model_tag_index;
-		if (model != NONE)
+		long count = 0;
+		if (definition->model_tag_index != NONE)
 		{
-			byte *local_0f244f = *(byte **)((byte *)g_4e3b44 + (model & 0xffff) * 16 + 8);
+			byte *local_0f244f = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
 			if (*(long *)(local_0f244f + 0x60) > 0)
 				count = *(long *)(*(byte **)(local_0f244f + 0x64) + 0xe0);
 		}

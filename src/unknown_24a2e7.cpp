@@ -506,6 +506,26 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // and the test 69 (same code); a found pointer cleared before the loop and tested after it 88; lane 10 r119's
 // two-member lead re-measured 39 (204 B: index ECX, cursor EDX, loaded id ESI, product EBX against retail's index EBX,
 // cursor ECX, id EDX, product ECX). Body unchanged.
+// M3 lane 2 r138 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67, aligned 26). On the
+// two-member lead only one choice is left: ours keeps the product `i * 0x248` in EBX across the string calls (EBX pushed
+// after the loop), retail keeps i in EBX and multiplies again (ESI pushed after the loop). Tried to keep the three index
+// expressions apart: a file-local inline getter taking the entries and the position at the arm, the terminator and the
+// plain arm 84 on main's locals (197 B) and 39 on the lead (the getter's copies fold); on the lead `buffer` named before
+// the ascii conversion 44, `result = buffer;` ahead of the indexed terminator 39, the terminator through the arm's
+// entry pointer 54 (199 B). Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67, aligned 26): entries typed
+// as the header's profile list entry (index, name, tag bytes and display buffer as its own fields) 67 (same code); the search
+// as a forced-inline index finder returning the index or NONE, the found body under `if (i != NONE)` 84 (191 B); `entries`
+// and `count` declared first with the items call as its own statement 69; the loop test as `count > i` 67 (aligned 36,
+// other code); the items result kept as `void *items`, the arm's entry formed as `items + i` with the terminator indexed
+// 83 (198 B). Body unchanged.
+// M3 lane 11 r159 (H2M fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67). The file is /O1. Re-measured
+// the indexed terminator 84 (the arm's entry address kept in EBX across the calls) and lane 10 r119's two-member lead 39
+// (retail's code but for one choice: our product `i * 0x248` is kept in EBX from the arm to the terminator with `i` in
+// ECX for the loop, where retail keeps `i` in EBX from the start and multiplies again). On main: the indexed terminator
+// through `s_entry_24a64d *const &kept = entries` 84, with the plain arm through it too 84 (the reference folds). On the
+// lead: the terminator's index through `long const &found = i` 39; the arm's entry as a reference 39 (same code each);
+// the entry pointer formed ahead of the append test and used by the plain arm 72. Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

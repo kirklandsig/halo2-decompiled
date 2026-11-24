@@ -849,6 +849,51 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // rotation's sine and cosine as named locals ahead of the facing copy 164. Reading: retail gives both rotations' sines one
 // home (+0x10) and spills the first rotation's turned j into the facing's j home (+0x24), keeping the second axis in
 // registers; ours gives the second sine +0x14 and spills the second axis's k into +0x34.
+// M3 lane 3 r299 (H2M_FAST with 0x29b990 and 0x170d70, both MATCH; control 130, difflib-aligned 162). Reading of the
+// +0x101 pair: stores wait until their register is needed again and are then written in source order, so retail's planar
+// j store ahead of the copied depth says the planar pair is declared ahead of the second full copy: `vector2f local_6`
+// ahead of `vector3f local_5` 128 (first difference then +0x179, aligned 160; a moved declaration two below the control,
+// not kept). The depth clear ahead of the planar pair 130 (same code); the pair by member stores 130 (same code); the
+// pair as a planar view of the argument 346; the pair read from the copy 303; the second normalisation through the
+// file's own planar normaliser 271 (1724 B). Compare operands named ahead of their tests: the second length 383 (1709
+// B), the yaw product 295, the pitch product 222 (1695 B), both products 234, the yaw scale field 229 (1695 B); the gate
+// as nested tests with the fallback in both arms 321 (1714 B). Each moves the frame off 0x2c. Diagnostics (reverted):
+// the sign tests through a bool-returning forced-inline (yaw, pitch, both, the two depth signs, all four) 309/225/212/
+// 212/212; the second axis's product sides change with each, never to retail's six. Retail copies the zero for the yaw
+// lower bound ahead of the scale's branch (0x29b64a) and ours behind it.
+// M3 lane 8 r225 (h2m fast with 0x29b990 and 0x170d70, both MATCH; control 130): compare sides with the zero on the
+// other side for the field_38, arg_3->k, arg_2->k, field_30 and both turn tests 130 each (same code), for either
+// field_34 test 214 (1708 B, first +0x2); `0.0f == normalize3d(&local_5)` 131; the second axis computed ahead of the
+// first rotation or between the facing copy and it 202 (1737 B); the object's up as `&local_1->forward + 1` 130 (same
+// code); a forward pointer for the six cross products 151 (1696 B); the clamp bounds as `0.0f - limit` for the two
+// turn limits or all four 130 (same code).
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): both rotate_vector_170d70 calls through include/axis_rotation.h's helper 151 (1696 B). Restored.
+// M3 lane 5 r237 (H2M_FAST with 0x29b990 and 0x170d70, both MATCH; control 130): both angles started at zero in their
+// declarations with the else arm's two zero stores dropped 329 (1716 B), the pitch alone 308 (1710 B); descriptive names
+// for the angles, the copies, the planar pair and the side axis in four sets 130 each (same code: these homes do not
+// follow names). Body unchanged.
+// M3 lane 15 r141 (fast screen with 0x29b990 and 0x170d70, both MATCH each time; control 130; aligned = rows off retail
+// after alignment, control 140, of which 33 are operand-order rows). Reading of the operand orders: each product's and
+// sum's operands are sorted by a rank, higher first. A local or temporary ranks by its creation number; a float read
+// through a pointer global at offset 0 ranks by that global's position among the globals the body names (the ones the
+// body names itself first, then those its inline lookups bring in; three low bits); a read at an offset ranks by a
+// two-bit phase that parenthesised groups and the clamp macro ahead of it advance. Retail's first rotation has axis i
+// and k above the vector's components and axis j below them; this body has axis i below (the up-axis global is the
+// first global it names, the two data arrays arrive through the inline lookups) and j, k above. The actor and object
+// lookups written as direct array references (the up axis then third) put axis i on retail's side in all four of its
+// products: both 131 (1711 B, aligned 124, 25 order rows), actor only 131 (1708 B), object only 131 (1708 B); each
+// with the planar pair declared ahead of the second copy 129. On both direct + planar pair first: sine and cosine
+// named ahead of the facing copy 128 (aligned 122), cosine named first 126, named after the copy 128; the up axis in a
+// pointer local 126; one sine/cosine pair assigned for each rotation 165 (1718 B, aligned 137, 14 order rows); the
+// pitch clamp and its add in one statement 303, both clamps so 293; the pitch lower bound as `0.0f - limit` 129 (same
+// code); the second rotation's sine and cosine named 224. Left on that form: axis j and k sit one phase too high (j
+// must be the lowest), and no caller-side form moved them without moving the clamp fields: a parenthesis pair around
+// the first call's cosine argument raises both one phase (172), around its sine argument 210 (phases unchanged, the
+// frame shrinks). Diagnostics
+// (reverted): parenthesis pairs around the pitch difference x around the second axis's first product, 0-3 each, with
+// and without the planar pair first, 128-311 (0/0 with the pair first 128, 0/3 155, 1/3 208, 2/2 210, the rest 225 to
+// 311); 0-7 unused locals at the top x 0-3 pairs on the pitch difference with the pair first: 128/308/309/237,
+// 222/299/232/256, 219/296/232/256 (2 and 3 locals), 124/204/299/237 (4 to 7 locals); no match. Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

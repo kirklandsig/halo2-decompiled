@@ -40,6 +40,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
 // score 286 (was 286): r130, r275 and r164 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// M3 lane 13 r148 (plain checks; the fast screen builds 0x29b2e0 at 1309 bytes here): local_20 built from local_4 ahead of
+// the 0x29b2e0 call with no local_27 copy 378 (1816 bytes); each local_5 component computed and clamped in one PIN 338;
+// local_6 copied from local_5 (the 0x4687a4 vector read once) 286 (same code); the 0x30bf0 fallback copying +0x290 directly
+// 286 (same code); *arg_5 written from the +0x66c copy 320. Frame reading (one-object LTCG kit with the callees' objects
+// and the ballast reproduces this build's homes exactly): homes follow compiled reference counts, local_4 18 against
+// local_5 15, and the shared local_12/local_27 slot 10 against local_6 7; retail has local_5 below local_4 and local_6
+// below that shared slot, and keeps local_27.i in ESI across the 0x29b2e0 call where this build stores all three.
 // MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
 // 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
 // view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
@@ -622,6 +629,18 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // pair around the first blend row's first product 286 (aligned 233, masked 186); the speed floor as `local_18 =
 // local_18 > local_17 ? local_18 : local_17;` 286 (same code); the dot and blend pairs together 286 (aligned 234, masked
 // 188). Site 1 still BLOCKED-BY 0x2b400 (its noinline declaration sits in machine 1's file). Body unchanged.
+// M3 lane 8 r232 (plain checks, control 286 at 1865 B, aligned 234, register/offset-masked 73; the reduced image still builds
+// 0x29b2e0 at 1309 B and this function at 343, so frame layouts were read from a full link and scores from plain checks;
+// body unchanged). Slot order, lowest first, with the reference counts that order them (4-byte cells first, then 8, then
+// 12; most references lowest): ours has the magnitude (5), local_2 (4), local_17 with local_20 (2, then 8 bytes), local_1
+// (2), local_15, local_13 with the by-value magnitude argument, local_4 (19), local_5 (15), local_27 with local_12 (9),
+// local_6 (7), local_7 with local_22; retail has local_2, the magnitude, local_1, the two planar pairs, the argument copy,
+// local_5, local_4, local_6, the local_12 cell, local_7. So retail counts local_2 at or above the magnitude, local_1 above
+// local_17 (whose cell is not a 4-byte slot of its own there), local_5 at or above local_4 and local_6 above local_27.
+// Forms: the magnitude helper returning `fabs(m) < 0.0001f ? 0.0f : m` puts local_2 lowest and the magnitude (4) above
+// it, as retail, but the root then goes through arg_8's home and is reloaded, 393 (1877 B, masked 78); the helper with
+// two returns 393 (the same code). Layout only (no count taken, the homes did not move): local_6 copied from local_5,
+// `*arg_5` stored ahead of `*arg_3`, local_5 declared ahead of local_4. Site 1 still BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

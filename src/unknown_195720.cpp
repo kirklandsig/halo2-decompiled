@@ -272,6 +272,18 @@ bool function_1946f0(s_bitstream *stream)
 // only (clear on the field) 48, the same just ahead of the index 39 (the mask folds into `[edx + edi]`, index first; the
 // clear reloads, data first); that local for the clear only 40 (the clear's LEA is retail's `[edx + edi + 1]`, but the
 // mask's field read numbers to the local and folds `[edi + edx]`), at the function's top 52; an unused early data read 2.
+// M3 lane 8 r227 (h2m fast; base 2): a phase scan on the LTCG build (the earlier scans were compile-only), 1 to 7
+// initialised dead locals at the function's top, 2 each (both LEAs stay data first: no symbol-count phase here).
+// M3 lane 4 r250 (h2m fast with 0x1957d0/0x195820, both MATCH; base 2), the buffer passed as a parameter value to new
+// file-local forceinline helpers (match-only): the count tests and memset in a (buffer, first, count) helper 2 (same
+// code); the mask in a helper taking the element by `byte &` and the bit count 9 (the address becomes `mov edi, [esi];
+// add edi, edx`), with the clear helper too 9; the mask in a (buffer, index, bits) helper 35 (memory operands), with the
+// clear helper too 35.
+// M3 lane 13 r146 (h2m fast with 0x1957d0/0x195820, both MATCH; base 2): one data local read just ahead of the index and
+// used by both blocks, with the masked byte through a `byte &` element 40, through a `byte *` element pointer 40, as an
+// explicit read-modify-write 40 (each: the mask folds into `[edx + edi]` memory operands, the clear's LEA is retail's
+// `[edx + edi + 1]`); the body flattened with two early returns (`if (!discard) return;`, then the mode/position miss storing
+// the position and returning) 2 (same code), that with the masked byte through a `byte &` element on the field 9.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

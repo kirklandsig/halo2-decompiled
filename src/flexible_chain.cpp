@@ -1003,6 +1003,10 @@ void __stdcall function_1160c0(real dt)
 // base still takes EDI and the segment ECX); the segments base read into a local ahead of the selection 145; the selection as
 // `i < count ? i : count - 1` 145; the tick increment ahead of the selection 285 (1376 B). Retail also ends each pass with a
 // store of the rotated offset's middle term to +0x70 from XMM5 where this build stores it inside the rotation. Body unchanged.
+// M3 lane 16 r177 (h2m fast with 0x116750 and 0x1160c0, MATCH each; control 144): the name-order lever for the shared
+// cell at +0x20 (retail +0x14, below the axis): `axis` renamed `turn_axis` 144 and `unit_axis` 144, `scale` renamed
+// `along` 144 (same code each: names do not order these homes); the normalise test as `!normalize3d(&axis)` 144 (same
+// code); sine and cosine named ahead of the rotation call 169 (1373 B, first difference +0x2). Body unchanged.
 // M3 lane 15 r133 (h2m fast; control 144 at 1371 B, aligned 159 unmatched rows of 322; every rotation form below was a
 // trial copy of the shared helper, measured and removed: a second spelling of an existing helper is not keepable). The
 // rotation has three states here whatever the dot's spelling (written out i, j, k; through the existing dot3f either way
@@ -1018,6 +1022,55 @@ void __stdcall function_1160c0(real dt)
 // address 144 (same code); the base with `+=` written in both arms of the test 289 (1381 B, aligned 193). Diagnostic,
 // the first of those with the 113 rotation: 274 at retail's 1368 B, aligned 108 (the base load still sits ahead of the
 // branch and the XMM registers stay permuted). Body unchanged.
+// m3 lane 4 r251 (H2M_FAST with 0x116750 and 0x1160c0, MATCH throughout; control 144): the prediction rows after the
+// velocity, position and previous stores 175 (1380 B); the axis declared ahead of the vertical 144 and `predicted`
+// declared ahead of `previous` 144 (same code each); the sine and cosine named ahead of the rotation call 169 (1373 B);
+// the blend weight `1.f - stiffness` named once for the three rows 262 (1355 B).
+// M3 lane 13 r147 (h2m fast with 0x116750 and 0x1160c0, MATCH each run; control 144, difflib-aligned 35 groups): the
+// velocity rows through the existing vector3d_from_points3d and vector3f_scale 195 (1399 B); the predicted point through
+// the existing vector3f_add 204 (1368 B, retail's length, aligned 46); the chain delta through vector3d_from_points3d in
+// place of its initializer 259 (1368 B); `previous = node->position = position;` 144 (same code); vector3f_add with the
+// helper delta 282 (1355 B). Body unchanged.
+// M3 lane 15 r139 (h2m fast with 0x116750 and 0x1160c0, MATCH each; control 144). Reading: retail's integer registers are
+// this build's moved one step along EAX, ECX, EDX (physics index ECX for EAX, node copy pointer ECX for EDX, segment EDX for
+// ECX, base EDX for EDI). Forms: the node through a file-local inline getter 144 and the tick through a file-local inline
+// setter 144 (same code each: neither shifts the rotation); the node as a reference 144 (same code); the node position
+// copied member by member 198 (1384 B); the segment pointer declared const 144 and register 144 (same code). Body unchanged.
+// Segment still uses EDI/ECX and ESP+0x20. Node position/velocity/both/tick/all field
+// pointers 144/241/241/144/240. Direct indexed node fields 167, with position and
+// velocity pointers 294, with all three field pointers 294. The velocity-pointer forms
+// change the entry saves. The position-only and tick-only pointers tie.
+// M3 lane 3 r304 (fast = plain 144, 1371 B; body unchanged). HELD (needs the owner's OK: 0x211060 and its other caller
+// 0x17c540 are a contributor's): 0x211060's velocity parameter declared after the position parameter instead of first
+// (definition, declaration and both calls; build/r304/held-1161f0.patch in the m3-lane3 worktree) gives this function 95
+// (1371 B) and makes 0x17c540 match (34 -> 0), plain-confirmed; 0x211060 itself stays 269 either way. Retail evidence at
+// both calls: the tag index is kept out of EAX from its test on (ECX), the position's address goes through EDX, and the
+// EAX argument is loaded between the pushes of the settings pointer and the flags; with velocity declared first the
+// callers keep the tag index in EAX. The caller reserves EAX from the point where the register argument is evaluated
+// (last to first in declared order), so the tag index takes ECX and the segment EDX, and the first node's copies, the
+// call set-up and the segment cell at +0x14 follow. Positions measured (this function / 0x17c540 / 0x211060): second
+// 142 / 32 / 269; third 97 / 2 / 269; after the position, the force, the normal or the material 95 / 0 / 269 each (the
+// two callers cannot tell these four apart); after the radius 95 / 7 / 269; last 250 / 102 / 352.
+// Frame reading: this frame (over 0x80 bytes) is ordered by memory references per byte, so the segment/scale/sine cell
+// sits below the axis only when the axis has at most 20 references (ours 23, from the rotation's schedule).
+// On the held order: r115/r126's file-local rotation helper (projection, cross_k, cross_j, the i cross written in its
+// row) 59 (1369 B; only the rotation block and the three exit jumps then differ: retail finishes cross_j ahead of
+// cross_k and keeps offset j in a register where ours keeps offset k; lead patch build/r304/lead-1161f0-59.patch), that
+// helper alone on main's order 113 (re-measured). Statement orders of that helper on the held order, the i cross inline,
+// named first or named last (same code each): projection/cross_k/cross_j 59, cross_k/projection/cross_j 68,
+// projection/cross_j/cross_k 95, the three others 98. The vector's k, j or both read into locals first 59 (same code),
+// its i 124, i with j 180; the dot's terms in the five other orders 59 (same code). Rows stored i, k, j with the six
+// statement orders 70/94/76/94/96/96 (the first at retail's 1368 B, sine and cosine cells exchanged). Other shapes on
+// 59's order: new components in three locals 172 (1368 B); each row as `a + (b - c)` 144 (1368 B), as `(a + b) - c` 59;
+// the projection term first in each row 59; a named dot 59; a named `1 - cosine` 59; axis-first cross products 59; the
+// negated cross added 90 (1368 B); all three crosses named 59.
+// With the dot named and its product with `1 - cosine` as a later statement: dot, cross_k, cross_j, product 98; dot,
+// cross_k, product, cross_j 68; dot, cross_j, cross_k, product 98; dot, cross_j, product, cross_k 98; dot, product,
+// cross_j, cross_k 95. Diagnostic: cross_k's first product named ahead of the projection with cross_j between 95 (with
+// the dot named too 95). The k row's cross taken from saved i and j components (cross_j alone named) 178 (1395 B). The
+// sine factor written first in each row 59 (same code).
+// Forced single allocator decisions on main's body (diagnostic, not source): the tag index in ECX 115, the segment in
+// EDX 120; nothing else of 84 tried lowers 144.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -1050,6 +1050,27 @@ real g_55e618;
 // sweep setup folds away, so it says nothing about them). BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands;
 // 0x1697c0 also reads its point and vector parameters through their addresses, which captures a caller's local in the
 // same way (measured on 0x1fe620 this round), and its file is on this round's avoid list.
+// M3 lane 1 r159 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): the perpendicular through the existing
+// vector3f_scale 102; the contact position through the existing vector3f_add_scaled 102; the tangent through the existing
+// vector3d_from_points3d with the velocity copy kept 102; the scale and the point difference together 102; the impact
+// record declared at function scope 102 (the same code each: the homes do not follow these). BLOCKED-BY 0x169510 and
+// 0x244980 (the record's capture) stands. Body unchanged.
+// M3 lane 11 r163 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH each run; control 102, difflib-aligned 84; body
+// unchanged). Reading of the frame: retail keeps tangent.k in a register across the placement call and spills perp.k
+// into the perpendicular's home; this build does the reverse on every pointer form, so the perpendicular has no home
+// (frame 0x118). The cause is the perpendicular rows' operand order: retail multiplies a copy of the dot by each normal
+// component and the k row in place (dot first), ours multiplies a copy of the normal component by the dot, because the
+// normal's components are first referenced inside the dot's own statement and so rank above the dot as product
+// operands. Forms: the contact point staged in a local point and assigned whole 286 (1594 B, frame 0x130), with the
+// velocity pointer 232 (1560 B), assigned after the impact index 286 / 232; the contact coordinates in three named
+// reals stored after the impact index 245 (1570 B); that with the velocity through a pointer (dot, tangent and the
+// placement argument) 189 (1536 B, frame 0x118, aligned 81: the normal stays in XMM1/XMM4/XMM2 for the dot, the
+// perpendicular and the contact rows, the three stores sink behind the call set-up as retail, tangent.i/j sit at
+// +0x38/+0x3c and the first two rows after the call are retail's bytes; left are the dot's i and j operand orders,
+// the dot-first perpendicular rows, the value's late load and the frame; build/r163/lead-0x2b9060-pointer-scalar-
+// contact.patch); on it the contact coordinates computed ahead of the dot 233 (1547 B, frame 0x11c), the
+// perpendicular through the existing vector3f_scale 189 (same code), that with the tangent through the existing
+// vector3d_from_points3d 189 (same code). Re-measured: the velocity at each use 199, through a pointer 194.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

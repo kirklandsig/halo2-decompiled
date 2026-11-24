@@ -556,7 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// score 115 (was 115): earlier 114 (was 114), 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
@@ -950,6 +950,21 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // computed ahead of the tutorial flag 460 (1883 B). In both builds the byte flags keep one order from EBP down
 // (split screen, scripted, tutorial, timer); retail's bounds/origin home sorts above the scripted flag where ours
 // sorts below it, which is why ours back-fills the byte beside the split-screen flag. Body unchanged.
+// M3 lane 8 r228 (H2M_FAST with 0x24ce9d/0x24c80b/0x24cedf/0x1fa30/0x15f120, all MATCH; control 114, 115 in the full
+// baseline): the messages sorted ahead of `top += height` 122; the total height as a short 114 (same code); the row
+// count as `4 - split_screen` 479 (1886 B); `keep = 1.0f - flash` named for all six colour rows 396 (1885 B); the fade
+// tick count as a short 437 (1896 B). Body unchanged.
+// M3 lane 11 r161 (H2M_FAST with 0x24ce9d/0x24c80b/0x24cedf, all MATCH; control 114): `origin` and the top/left
+// computation in their own block 114 (same code), that with the bool timer 191 (1888 B); no `hud` local 115; the
+// player lookup ahead of `split_screen` 504 (1895 B); the timer flag set by an `if` after a zero default 115. Body
+// unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0x24ce9d/0x15f120/0x24cedf, all MATCH; control 114). Frame reading (this frame is over
+// 0x80 bytes, so slots sort by references x 1000 / size): our colour slot (color + both field_24, 25 refs, 1562) sorts
+// above the text-bounds slot (12 refs with three temporaries and the status game time, 1500), retail's the other way;
+// retail's three flag bytes sit below the bounds/origin slot although its scripted flag also has four references.
+// Forms: the first bottom from `bounds.top` 114; the status top stored first and the bottom from it 114; the status
+// step as `bounds.top += 0x12; bounds.bottom += 0x12;` 114; the text height tested and assigned as an expression 114
+// (all the same code); the total height as `height = text_height >= 0 ? text_height : 0;` 349 (1896 B).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

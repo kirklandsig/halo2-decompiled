@@ -1141,6 +1141,7 @@ void game_engine_player_row_build(short const *position, real alpha, long player
 
 long function_11ca80(long value);
 long function_19fd00(long team_index);
+void function_19eae0(long team, word *buffer);
 void utf8_string_to_utf16_string(char const *source, word *destination, long count);
 bool function_15f120(long player_index, word *buffer, long size, long suppress_score);
 
@@ -1718,6 +1719,56 @@ PRIVATE inline long score_string_list_1608e0()
 // conditional initialiser 719 (2888 B); the alternate-score flag set by an if/else on the call 682; the clamp test as
 // `screen_height > height` 679; the title edges read from the row position 679; the three 1.0f foreground channels
 // chained 679 (the last three the same code). Body unchanged.
+// M3 lane 13 r147 (h2m fast with 0x161420, MATCH; control 679, difflib-aligned 124 groups): the height's `volatile`
+// replaced by a `long const &` bound to a plain local 723 (2856 B, the same code as the plain height: the reference
+// folds); the fade count's `volatile` replaced the same way 707 (2856 B, the plain fade count's code); both 755 (2824 B);
+// a redundant `if (0 < display.team_count)` ahead of the team loop 691 (2888 B); one ahead of the player loop 679
+// (aligned 121: only the row counter's zero store and one scratch register move). Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x161420, MATCH; control 679, aligned 597, masked 222): the team loop reading the team
+// row's entry at each use (no team local) 706 (2904 B); the player loop reading the row's player at each use 701 (2901 B);
+// the language fetch through the existing get_current_language() 679 (same code). Retail's team-name block is the
+// existing 0x19eae0 inlined (name[0] cleared twice): called as written 880 (2680 B, out of line); with `inline` on its
+// definition 691 (2888 B, aligned 592, masked 220: team EBP and team row EBX as retail, 0x19eae0, 0x19e1c0 and 0x232d77
+// unchanged; the row counter increment lands after the name block, retail's sits inside the helper's first block);
+// that with the increment ahead of the call 691, with 0x19eae0's `team == NONE ? 8 : team` as a conditional argument
+// 691, both 691. KEPT (maintainer decision 2026-11-23 on `inline` for 0x19eae0): the inlined 0x19eae0 call with the fade count no longer volatile 679 (2879 B, aligned 598,
+// masked 225; the increment ahead of the call 679 too); with the height also plain 737 (2840 B), the height alone 723.
+// M3 lane 2 r142 (H2M_FAST with 0x161420, 0x1600f0, 0x15f120 and 0x163350, MATCH each run; control 679; body unchanged).
+// Lane 4 r213's lead rebuilt on this tree 610 (difflib-aligned 376, 72 with registers and offsets masked) and lane 6
+// r230's scalar-plus-point form on it 636 (aligned 311, first +0x45). Reading of retail's title block: the near edges
+// come from the x and y registers (DI, BX), the far edges and the header advance from two dword loads of the origin
+// point made after the title-text call (`mov ecx, [esp + 0x10]`, `mov edi, [esp + 0x12]`), and the header reads the row
+// position the same way (a word load for a plain copy, a dword load for a sum, and `bounds.left` read back as a dword
+// right after its word store); retail's header rectangle sits at the origin's address and its right and bottom are
+// summed from the row position, not from left and top. Tried on the 636 form for the origin's reload: the far edges
+// and the advance through a const reference to the origin 636 (same code); through a pointer local 636 (same code);
+// the advance written ahead of the title bounds 635; the title bounds through a file-local inline helper that takes the
+// origin's address (top, left copied, bottom, right summed) 693, the same without the scalars 693 (the copied dword is
+// then kept in a register across the title-text call, lane 4's whole-copy code); the origin as a point view of the
+// header rectangle variable (diagnostic, a cast) 640 at frame 0x7a0, still no reload. So neither an address-taking
+// inline helper nor sharing the header rectangle's storage makes this build read the origin again after that call;
+// lane 6's diagnostic (the origin's address stored in a global) is still the only form that does.
+// M3 lane 8 r231 (h2m fast with 0x161420, 0x1600f0 and 0x1603f0; control 679): the scroll clamp through a file-local inline
+// function `pin_real(real x, real lower, real upper)` (the shape other files use) 734 (2840 B: the limit is then converted
+// ahead of the zero test and the value loaded once, where retail tests the global first and converts in the else arm);
+// that with the height not volatile 739 (2840 B); with the title and header fades through it too 734 (2840 B); only the two
+// fades through it 679 (same code); the function with `real const &` parameters 738 (2840 B); an in-place form taking
+// the scroll element by reference 734 (2840 B). Retail's clamp has the macro's lazy shape, so it stays a macro here.
+// Typed title buffer 679; title and caption buffer 679; caption and team-name buffer 679;
+// one text buffer for all three 679; shared title and caption rectangle 679; separate optional
+// caption rectangles 679; shared row color 679; first palette color passed directly 721.
+// NOT kept: the frame and viewer register stay displaced, and direct palette access shortens the body.
+// M3 lane 11 r163 (H2M_FAST with 0x161420, 0x1600f0 and 0x1603f0; control 679, difflib-aligned 597; body unchanged).
+// Reading of the entry: the allocator colours x (140) ahead of the viewer record (63), and x's range runs from its
+// definition to the last header column because every later read of the row position is forwarded from the register, so
+// only EBX is free for it and the viewer falls to EDI; retail's x ends at the title (it re-reads the stored point after
+// the calls), takes EDI, and the viewer gets EBX with its index scaled ahead of the pushes. Diagnostic, removed at once:
+// the row position handed to an undefined function at the end of the body (so that it counts as captured) 667 (2879 B):
+// the viewer is then in EBX from +0xc and x in EDI as retail, the frame stays 0x798. So retail treats the row position
+// as captured and this build does not. Forms: the title bounds' left and top stored ahead of the title-text call with
+// right and bottom summed from them after it 679 (aligned 596); the title bounds' near edges read from the row position
+// with the far edges summed from its own left and top 679 (same code); `inline` on 0x1600f0's definition 679, on
+// 0x1603f0's 679, on both 679 (the same code each: the two row builders are not what captures the position).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
@@ -1760,8 +1811,7 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 	short row_position[2];
 	row_position[0] = x;
 	row_position[1] = y;
-	/* volatile: retail keeps the fade count in its own stack slot (see the note above) */
-	real volatile fade_count = (real)total_rows;
+	real fade_count = (real)total_rows;
 	color4f foreground;
 	color4f background = { 0.0f, 0.0f, 0.0f, 0.0f };
 	real fade = (alpha - 0.0f / fade_count * 0.5f) * 2.0f;
@@ -1834,27 +1884,8 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 		long team = display.teams[team_row];
 		word name[0x100];
 		name[0] = 0;
-		byte *definition = g_4e3b44[g_4e034c->index & 0xffff].bytes;
-		long team_names = *(long *)(*(byte **)(definition + 4) + 0xc);
+		function_19eae0(team, name);
 		++row_number;
-		if (team_names != NONE)
-		{
-			long handle = function_19fd00(team == NONE ? 8 : team);
-			if (g_47ff38 == NONE)
-				g_47ff38 = function_11ca80(XGetLanguage());
-			long language = g_47ff38;
-			byte *names = g_4e3b44[team_names & 0xffff].bytes;
-			s_string_table *table = (s_string_table *)((byte *)g_4e034c + 0x188 + language * 0x1c);
-			if (table->loaded)
-			{
-				word converted[0x100];
-				char const *source = string_table_find(table, *(short *)(names + 0x10 + language * 4),
-					*(short *)(names + 0x12 + language * 4), handle);
-				utf8_string_to_utf16_string(source, converted, 0x100);
-				wcsncpy((wchar_t *)name, (wchar_t *)converted, 0xff);
-				name[0xff] = 0;
-			}
-		}
 		row_position[1] += 0x14;
 		color3f color;
 		color = function_7f720((short)team);
