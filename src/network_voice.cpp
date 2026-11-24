@@ -4051,6 +4051,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 139/139, separate forwarding header from fields or whole copy 159/146. Header declared before the loop
 // with the same four producers 139/154/159/146. NOT kept: separate headers add stores and enlarge the frame
 // or body, and outer value initialization shortens the body without restoring EBP.
+// Channel index field reference or pointer, bound per iteration or per delivery arm: 139 each indexed,
+// 164 each walking. The indexed forms keep data in EBP. The walking forms give EBP to the member and shorten
+// the body to 478 bytes. Original 488-byte body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
