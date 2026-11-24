@@ -4280,6 +4280,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // or aggregate initialization 1000. Consuming the transform return in those forms 1156/1166/1083/1024.
 // NOT kept: none recovers the 0x74 frame. The return pointer adds frame storage, and
 // even the shorter deferred-zero form raises the score.
+// In-place force, torque, or both through the shared scaler 1000 each. Staged force, torque, both, and both
+// mixed scaler/setter forms 1000 each. NOT kept: the frame stays 0x78 at 4698 bytes and the force, torque and
+// mass homes remain unchanged.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
