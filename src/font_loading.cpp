@@ -1038,6 +1038,10 @@ static inline long font_character_pixel(long alpha, long color)
 // with the ordinary count by masks or by quotient and remainder 201/201. With dword parity
 // the same four forms score 203/203/168/168. NOT kept: the shared dword forms reach 504
 // bytes but change the output, color and run registers. The byte-parity forms tie or regress.
+// The packed parity width, literal assembly and packed-run register still differ.
+// Dword parity with ordinary counted/endpoint standard fills 183/180; packed counted/endpoint
+// standard fills 180/184; both fills counted/count-endpoint/endpoint-count/both endpoint
+// 241/201/199/218. NOT kept: the fill changes displace the packed run and raise the score.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

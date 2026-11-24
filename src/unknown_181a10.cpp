@@ -1249,6 +1249,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // those tests 251; the origin's members assigned z, y, x from a position pointer with those tests 311 (aligned 170,
 // masked 81); both tests through plane_distance_to_point alone 238 (same code); the hit's members assigned y, x, z 323;
 // the origin through real_point3d_set from the position 251, from three casts 318. Body unchanged.
+// The frame is still 0x40 and the second-node home is still displaced. Separate origin Y 308, Z 309, and both
+// 310; extract Y and Z from a full snapshot 305, extract X 302. With the material receiver beside the output
+// indices, split Y 311, Z 312, and both 313. Single-coordinate splits restore frame size but change the
+// second-node spill and raise the score.
 // M3 lane 6 r240 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, aligned 138). Reading
 // of retail's copies (0x1824d8 on): the origin's z is loaded first, straight from the transform (+0x58), and stored to its
 // own cell, then y to the cell below it, then x to the first slot of the 12-byte home; the hit's z, y and x go to one
@@ -1264,6 +1268,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 310; extract Y and Z from a full snapshot 305, extract X 302. With the material receiver beside the output
 // indices, split Y 311, Z 312, and both 313. Single-coordinate splits restore frame size but change the
 // second-node spill and raise the score.
+// Round 467: component-index defaults in each arm, before/after mesh material lookup
+// 251/306. Alternate-index defaults 253/308. Both defaults after mesh material with
+// entity else defaults, pre-test defaults or conditional outputs 313/315/313. Both
+// conditional outputs with defaults before mesh material 260. Late defaults shrink
+// the frame to 0x3c or 0x38, farther from retail's 0x44.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
