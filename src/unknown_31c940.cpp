@@ -1038,8 +1038,11 @@ static __forceinline void solve_linear_error_cursor_31c940(float target,float ma
 	_mm_store_ss(&projection_pool.linear_error,work[3]);
 	// Advance cursors while retaining this row's projected linear axis.
 	op+=4; terms+=3; ++result;
-	solver_step_31c940 *parameters=step;
-	float impulse=mass*(target*parameters->error_scale-projection_pool.linear_error*parameters->velocity_scale);
+	// Observe the current step after projection publication, which can alias a scale.
+	solver_step_31c940 *const &parameters=step;
+	double error_scale=parameters->error_scale;
+ double velocity_scale=parameters->velocity_scale;
+ float impulse=mass*(target*error_scale-projection_pool.linear_error*velocity_scale);
 
 	// A inertia precedes the rounded input; B inertia is read afterward.
 	work[3]=a->inverse_inertia;
@@ -1396,7 +1399,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2076. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2074. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
