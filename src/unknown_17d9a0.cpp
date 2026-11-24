@@ -1150,6 +1150,41 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // rows through one reused accumulator 579 (3663 B, first +0x7); its rows summed forward, left, up 535 (same code); the
 // first plane declared ahead of the first face 535 (same code); the cosine taken ahead of the sine 535 (same code); the
 // first face declared ahead of its loop 535 (same code).
+// M3 lane 8 r234 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850, 0x22bbca and 0x17ef10; control 535, aligned 672,
+// register- and offset-masked 355; body unchanged). HELD (needs the owner's OK: the builder it shares is the file-local helper of
+// the contributor's 0x1546f0): build/r234/held-0x17fd20.patch gives 20 here at 3647 B in the plain check (first difference +0x45a,
+// aligned 17) and 244 -> 240 on 0x1546f0, every other function of both files as on main. Retail's frame shows the source: one
+// 52-byte transform at +0x100 (forward.j/.k and left.i/.k stored inside it), a sine vector at +0x134, a vector of squares at
+// +0x140, the sign's cross at +0x14c, and a spilled row sum in the first face's cell. The held form: a forceinline builder
+// (transform, axis pointer, angle) with the squares and sine products in two vector locals and each `1 - c` product written as an
+// expression (a named t / tij / tk local ranks below the axis j/k pieces, which this compiler numbers late, so `t * j` comes out
+// component first; an expression outranks every leaf); the four rotations through the file's 0x17ef10 transform helper with the
+// offset computed into matrix.position, rotated in place and the start added with `+=`; `if (normalize3d(&axis) > 0.0f)` with no
+// length local and the sign's dot through dot3f(&cross, &axis) (matched 0xaa4d0 and 0xc0840 show retail's scale code, j and k loaded
+// ahead of the divide, and pass their vector only by address; one member read of the axis in the body renumbers its pieces);
+// face_count declared first; `while (remaining > 0)` under the flags test; the first loop's face in a local; the extrema's first
+// arm maximum first; the selected extrema stored ahead of the end point; the builder's up.k row last.
+// Steps (each on the one before): transform-shaped rotation in 0x1544e0's statement order with named t / tij / tk, offset in place
+// 652 (3663 B, aligned 375, masked 74); face_count first and the while form 650; the axis scaled by three member statements 388
+// (3647 B); the file's transform helper forward declared 388 (same code); the face local and the extrema stores 375; normalize3d
+// and dot3f 409 (masked 49); the expression-form builder 160 (first +0x118, masked 34); up.k last 22; the extrema's first arm 20.
+// Left at 20: up.k's code is scheduled after left.k (retail right after forward.k, as 0x1544e0's row order gives: 159, because
+// left.k is then numbered after up.k and row k sums left first; a product's rank is first operand + 2 x second and the matrix
+// pieces are numbered in the order they are first referenced); with forward.k and left.k (or every member) assigned 0 ahead of
+// the rows, a diagnostic, 8 (lead-0x17fd20-8-diagnostic.patch); what is then left is four rows of zero-offset loads through helper
+// pointers, whose rank group follows the pointer's symbol number modulo 8 (the first edge distance's i product, the angle's i product,
+// the axis reload order after the arccosine call, `i * sine` on x87); unused locals at four points, a diagnostic, 6.
+// Not the form (same steps, other spellings): the axis through normalize_inline 502 (3632 B; sums k, i, j), through vector3f_scale
+// 435 (3631 B), its length local kept with normalize3d 545 (3663 B); cross3f_staged 388 (same code); the four rotations as calls to
+// 0x142640 1260 (2975 B, not expanded here); the rotation statements in the body with no helper 784 (3519 B); the builder with
+// scalar squares 439, sine and cosine passed in 409 (same code), as caller locals 573, squares ahead of the trig values 831,
+// `(t * i) * j` 376, cosine first 36, rows in natural order 712 (named 614), `t` named with flat products 527, squares or sine
+// products filled k, j, i 20 (same code), last rows left.k / up.j with up.k before or after 428 / 426, up.j / up.k / left.k 281;
+// the rotation matrix read through a pointer local or the builder's returned pointer 159 (same code); the identity transform or
+// the three axis vectors copied in first 159 (same code), `= {0}` 593; memset of the matrix ahead of the builder: compiler hang.
+// A builder shared with matched 0x1544e0 loses that match (149-150 at 551 B); with 0x171d90, a 3x3 builder in that function's
+// own statement order keeps its 334 but gives 617 here, the transform-shaped one 374 there. Without the builder nothing gains
+// on main: the 0x17ef10 helper alone 667 (3535 B), with the offset kept 649, the while form alone 534, scale statements 559.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

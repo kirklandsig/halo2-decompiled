@@ -1034,6 +1034,10 @@ struct s_physical_block_iterator
 // and one for the next link 255 (1196 B); the candidate prefetch on `(i + 1) % 256` with the index stepped by the same
 // expression (no `next` local) 201 (same code); the insertion's predecessor index in a `long previous` used by its test
 // and its lookup 201 (same code).
+// The time-and-page rule still threads into the take branch. Earlier-timestamp branches 212, later-timestamp
+// branches 246, tie first with earlier and later time 219/219, combined earlier and later time expressions
+// 247/242, packed time and signed-page ranks 356, packed ranks with symmetric age clamps 390. The packed form
+// changes the frame probe.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

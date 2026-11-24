@@ -1264,6 +1264,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // by pointer and calling real_point3d_set, one level deeper, 251 / 347 (the same code as the direct calls); the origin
 // returned by value from a member-wise copier defined in another file, so only the link step expands it (diagnostic,
 // removed) 355 (1284 B: float stores to a second home, then a dword copy). Body unchanged.
+// The frame is still 0x40 and the second-node home is still displaced. Separate origin Y 308, Z 309, and both
+// 310; extract Y and Z from a full snapshot 305, extract X 302. With the material receiver beside the output
+// indices, split Y 311, Z 312, and both 313. Single-coordinate splits restore frame size but change the
+// second-node spill and raise the score.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

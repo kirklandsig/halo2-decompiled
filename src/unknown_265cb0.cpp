@@ -3152,6 +3152,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declared after the distance test 163; the relative maximum as a ternary 158; the reference test as `!(... >= 1)` 158
 // (same code each); the players iterator's NONE fields stored before its table 160, datum index first 160, chained 160.
 // Body unchanged.
+// Typed alert recipient, typed iterated unit, both, named player record
+// pointer/reference, one guarded unit-index read, two nested guards and
+// one guarded read with typed alerts all 158. The contact-head address
+// and player table register still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
