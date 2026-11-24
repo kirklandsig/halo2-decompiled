@@ -235,7 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 144 (was 144; r251 unchanged): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
@@ -1036,6 +1036,10 @@ void __stdcall function_1160c0(real dt)
 // ECX, base EDX for EDI). Forms: the node through a file-local inline getter 144 and the tick through a file-local inline
 // setter 144 (same code each: neither shifts the rotation); the node as a reference 144 (same code); the node position
 // copied member by member 198 (1384 B); the segment pointer declared const 144 and register 144 (same code). Body unchanged.
+// Segment still uses EDI/ECX and ESP+0x20. Node position/velocity/both/tick/all field
+// pointers 144/241/241/144/240. Direct indexed node fields 167, with position and
+// velocity pointers 294, with all three field pointers 294. The velocity-pointer forms
+// change the entry saves. The position-only and tick-only pointers tie.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

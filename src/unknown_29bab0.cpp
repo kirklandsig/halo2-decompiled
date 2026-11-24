@@ -59,7 +59,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489; m3 lane 2 r139, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
 // Earlier header line, a stack merged here in m3 lane 2 r139: 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
@@ -889,6 +889,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the steering arm 489 and initialised false at its declaration 489 (same code each); the planar distance read through
 // a `real const &` at the field_44 test 665 (3499 B); the blend field read at each of its six uses (no local) 572
 // (3502 B). Body unchanged.
+// Location still uses ESP+0x8c instead of +0x80. Native planar points for input/actor heading/
+// both/pre-turn/input and pre-turn/actor and pre-turn/all seven forms score 654 in the reduced image.
+// All three points initialized from their two source fields 693. Reduced control 654, full 489.
+// NOT kept: the view forms tie and the coordinate initializers grow the frame.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
