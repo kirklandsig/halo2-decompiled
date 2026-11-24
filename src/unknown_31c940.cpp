@@ -123,21 +123,24 @@ static __forceinline void sum_three_to_arena_31c940(__m128 const &v, float &outp
 static __forceinline __m128 project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, __m128 const &linear_axis, float &projection_output)
 {
-	__m128 work_0=b.body->linear;
+	// Retain the linear axis alongside the consumed B linear input. Reuse
+	// that input value for A's angular contribution after the subtraction.
+	struct { __m128 work; __m128 linear_axis; } projection;
+	projection.work=b.body->linear;
 	__m128 work_1=b.body->angular;
 	__m128 work_2=a->linear;
 	__m128 work_3=row->a;
-	__m128 work_4=linear_axis;
-	work_2=_mm_sub_ps(work_2,work_0);
-	work_0=a->angular;
-	work_0=_mm_mul_ps(work_0,work_3);
+	projection.linear_axis=linear_axis;
+	work_2=_mm_sub_ps(work_2,projection.work);
+	projection.work=a->angular;
+	projection.work=_mm_mul_ps(projection.work,work_3);
 	work_3=row->b;
 	work_3=_mm_mul_ps(work_1,work_3);
-	work_2=_mm_mul_ps(work_2,work_4);
-	work_1=_mm_add_ps(work_0,work_3);
+	work_2=_mm_mul_ps(work_2,projection.linear_axis);
+	work_1=_mm_add_ps(projection.work,work_3);
 	work_3=_mm_add_ps(work_1,work_2);
 	sum_three_to_arena_31c940(work_3,projection_output);
-	return work_4;
+	return projection.linear_axis;
 }
 
 
