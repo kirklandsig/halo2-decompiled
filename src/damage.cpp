@@ -3902,6 +3902,11 @@ enum
 // pass index declared ahead of its `for` 297; the victim index named in a nested test 297; the event test split in two
 // nested ifs 297 (all the same code); the kill block writing through the owner-store pointer 400 (1887 B). The r140 lead
 // parts re-measured on this body: all of them 283 (1880 B), the node stores in record order alone 286 (match-only).
+// The first flag stores still use different slots. Parent append through end pointer with count 522;
+// counted append with an exclusive/current reverse cursor 473/532; pointer append with those cursors
+// 448/503; derive the last index from count 304; accumulate the last valid index 267; derive it from
+// the end pointer 510. NOT kept: 304 gains five at retail length. The 267 form also reaches retail
+// length, but starts at NONE and increments before the store. Retail counts from zero after the store.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
