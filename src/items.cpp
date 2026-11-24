@@ -971,6 +971,9 @@ struct s_item_collision_bsp
 // fallback or both factor assignments 233/233/232, with a separate raw third component
 // 233/233/232. Separate raw third component alone 190; finishing its product at angular output
 // 186. NOT kept: the latter reaches 1362 bytes but gains four, below the keeper threshold.
+// Coefficient-first products across all left, up and forward rows, separately and in every combination,
+// 190 each. All three axes with coefficient-first translation products 190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1335,6 +1338,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // staged, returned or staged-and-scaled cross into a separate vector 206/206/228/231; into the
 // result workspace 190/190/228/228. NOT kept: both workspace families grow the rotation, and
 // neither recovers the 0xb4 frame or the initial alignment-product order.
+// Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
+// separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
+// NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -2525,6 +2531,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // saved long countdown 194/194, short terminal count 190/190, or long terminal count 190/190.
 // NOT kept: the +0xf byte home returns, but the body shortens to 870–874 bytes against retail's 892
 // and the release-flag operations still differ.
+// Paired event-point coordinate passes, ascending/descending, with separate buffers with returned
+// point 140/140 or filled point 171/171, common buffer with returned point 171/171 or filled
+// point 158/158. The return byte, release mask and point homes still differ.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

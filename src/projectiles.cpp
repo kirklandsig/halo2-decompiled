@@ -1215,6 +1215,10 @@ real function_30bf0(vector3f *v);
 // horizontal test at the root 268; independently evaluated admission 284; late 3D reconstruction
 // from scalars, via the vector setter or from a planar point 265/265/266.
 // Planar point restores frame 0x30 at 994 bytes but leaves the first root after gravity. Body restored.
+// Round 469: launch speed carried in the input speed parameter 273, forced branch first 273,
+// conditional cap 273, direct optional pointer reads 274, forced first with direct reads 274,
+// shared solve result 276, with conditional cap 276 or direct optional reads 276. Restored.
+// The early rounded root and separate divisions still differ at frame 0x28 versus 0x30.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2380,6 +2384,9 @@ real function_17c900(short function_type, real input);
 // unmasked until conversion 365/365, separate salt offsets 365/365, or masks applied in place
 // 365/365 (direct tick reads / one shared tick). The 0x30 frame stays, index remains in EAX,
 // and the output is still stacked.
+// Round 469: pitch/yaw offsets at entry 377, yaw/pitch at entry 373, pitch/yaw in the drift arm 347,
+// and yaw/pitch there 359. Turn/drift/both point setters used as publication results 396/390/390,
+// both with entry offsets 421. The one-point drift form is below the keep threshold. Restored.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2556,6 +2563,9 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // Long/word header slot 507/522; shared pre-call pool and counting table 498; updated flag word 498;
 // shared child/detachment point 497 (one point, below the gain threshold); saved-parent name 498;
 // direct-victim branches 498.
+// Header pool still takes EDI before the first flag test, and the header offset and flag write use other homes.
+// Common datum entry 422; header accessor entry 422; entry table 422; common datum all lookups 422;
+// header accessor all lookups 422; typed parent view 422; typed parent and scale fields 422; resolved header local 422.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2858,7 +2868,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the projectile index in EBX where retail keeps it in EDI; the range check's 0xfaa30 call is emitted at all five of our uses
 // where retail inlines it at two of them and calls it twice, and the merged inline on magnitude3d expands that helper at our
 // second use.
-// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
+// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x114 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
 // common rotated output 1096; both common 1069; existing state helper 1050/1131; complete guidance/roll inputs 994,
@@ -2891,6 +2901,9 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // computed motion predicate 1028 (two points). Shared point difference 1013 at 4682 bytes.
 // NOT kept: The point difference still flows through the inlined magnitude, and the score change comes
 // from a different later rotation schedule rather than the retail movement producer and call.
+// Index EBX and definition ESI still differ from retail's EDI and EBX.
+// Step-to-average or average-to-step velocity 1030/1030; library velocity copies 1030;
+// speed from step or average copy 1037/1038; named speed square 1030; vector setters 1048; speed before copies 1030.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
