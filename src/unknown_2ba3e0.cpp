@@ -1071,6 +1071,14 @@ real g_55e618;
 // contact.patch); on it the contact coordinates computed ahead of the dot 233 (1547 B, frame 0x11c), the
 // perpendicular through the existing vector3f_scale 189 (same code), that with the tangent through the existing
 // vector3d_from_points3d 189 (same code). Re-measured: the velocity at each use 199, through a pointer 194.
+// M3 lane 12 r185 (h2m fast with 0x2ba3e0 and 0x2b8da0, both MATCH each run; control 102; body unchanged): the velocity
+// bound by a const reference in place of the copy 194 (1541 B, first +0x2: the pointer forms' code); the normal through
+// a const reference 102 (same code); the perpendicular as three named scalars 147 (frame 0x11c); the tangent as three
+// named scalars 113 (1541 B, frame 0x118, aligned 146 against 122); the final rows written from the velocity and the
+// perpendicular with no tangent vector 113 (the same code as the scalar tangent); the flags word through a reference
+// 102 (same code). Lane 16 r162's lead rebuilt on this tree 39 (1537 B, frame 0x124, first +0x367): what is left on it
+// is the dot's first product (ours n.j * v.j, retail v.i * n.i), the value argument's load at the block top and the
+// three position stores after the impact index, the last two BLOCKED-BY 0x169510 and 0x244980 (the record's capture).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
