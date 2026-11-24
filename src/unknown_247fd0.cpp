@@ -1094,6 +1094,16 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // member's use and the frame shrinks); the blend written inside the three sums after the rotation call 392 (1617 B,
 // aligned 197); the sibling's cache spelling with the scalar blend 383 (1617 B, aligned 170, masked 65), with the blend
 // inside the sums 383 (aligned 194); the named cleared flags with the scalar blend 383 (same code).
+// Byte and word gate projections gave quotient parity 441/441, remainder threshold 441/441, masked quotient 334/334,
+// and shift to high bit 403/403. The effect address still folds into the flag load.
+// Direct C word conversions on draw one/two/three/four 403/392/381/357;
+// last three 416; long-to-word on the first 403. Staging the product before a word
+// conversion on the first or last three 404/416. The gate address and gate/settings
+// homes still differ. The fourth-only form preserves length and raises the count.
+// Combined effect rejection and allocation failure in the handle, with conditional/branch/default
+// assignment or a terminal failure guard. Low-byte projection 417/417/417/417; bitfield
+// 344/344/344/344. NOT kept: the low-byte forms gain the two homes through a readback,
+// and the bitfield forms retain the folded address and raise the score.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

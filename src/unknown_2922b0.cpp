@@ -935,6 +935,16 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // three projections through dot3f 583 (2837 B). Retail's first cross forms each product in the operand whose offset in
 // the object is the larger multiple of four mod 32 (forward.k before up.j, forward.i before up.k, up.i before forward.j),
 // which is what one base pointer with the object's own offsets gives; the direct forms above do not reach it.
+// The clearance, hit and range slots still differ. Rejected-ray counts in long/short/byte 662/675/664;
+// remaining clear count 675; rejected-ray masks in dword/word/byte 682/694/674; remaining clear mask 719.
+// NOT kept: the counts and masks change the retail byte lifetime and shorten the body.
+// The clearance byte, hit slots and range still differ. A cursor on the actual ray-length array,
+// with long or dword index and equal-end or upper-bound tests: for 561 in all four forms, do-while 556 in all four.
+// NOT kept: each drops the frame from 0x108 to 0x104 and shortens the body.
+// Assign angle zero on first-axis miss 637, second-axis miss 571, or both 648. Separate
+// scaled side or up contribution 519/525, both 554. Shared i-k-j rotation projection 524,
+// immutable origin copy 518. NOT kept: first-axis definite assignment recovers the success
+// byte home, but shortens the body and leaves the early zero in XMM1.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -1596,6 +1596,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 293 / 321 / 305; 1-7 unused locals ahead of the input pointer on the 297 form (diagnostic) 483 / 499 / 431 / 434 / 430 / 430 /
 // 573. The direct arm: speed declared after the rotated pair 558 (3050 B); the rotated pair as two reals declared ahead of speed
 // or after it 449 / 449 (3055 B).
+// Shared planar scale 234; named direct clip length and spatial scale 401; both scales 234.
+// Planar, spatial or both scales with direct mode ahead of damping 230/230/230.
+// Both scales with input after the flags 246, planar vectors for the two clip values 234.
+// NOT kept: the EDX damping forms gain at most four points. The raw/bounded homes and vertical join still differ.
+// Shared bit test for damping, direct, gravity, entry/history tests, or all saved flags:
+// 234/234/234/597/234. All contact reads 599, with direct declared first 596,
+// and with the input address after the flag reads 599. The saved-flag forms leave the
+// first extraction unchanged. Using the helper at the gates shortens the body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

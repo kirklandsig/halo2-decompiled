@@ -1075,6 +1075,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // pathfinding casts inside the scan loop 397 (1416 B), ahead of it 336 (1410 B); the current step through an element
 // pointer 2; the edge index through a pointer to its slot 2; the truncation test with the index compare first 16; the
 // clamp's `length - margin` as a named const used twice 27. Body unchanged.
+// M3 lane 13 r154 (H2M_FAST with 0x270930 and 0x270750, MATCH each run; control 286). Lane 16 r154's saved two-flag lead
+// applied to today's file 2 again (the scan latch's steps/j reload pair). On it, an empty `do {} while (false);` (the
+// compiled-out-statement join marker that matched 0xbe240) at five joins: ahead of the traversal latch statements, at
+// the end of the scan body, after the truncation test inside the edge block, ahead of the depth test and ahead of the
+// distance block: 2 each (same code: the empty block folds away). Forced decisions on the lead: only a height change
+// of the j reload in the latch's reload region (2 -> 3) gives the full match; ready-cycle changes of the count load and
+// cuts of node_index's range leave 2. That region holds only the reloads (no use of j), so retail's j reload sits in
+// the region of the latch's increment and compare. Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -595,6 +595,12 @@ void __stdcall function_508d0(void *payload_data)
 // 0x1420f0 call where this build re-reads them at each use; retail's only caller has no source, so the calling
 // convention cannot be coordinated from here.
 // MiniMax H (11-20): no new form, no lower score (626); this build still stacks the mode argument where retail takes it in CL and returns ret 0x1c against retail's ret 0x18, and the frame is 0x1468 against retail's 0x1474 (BLOCKED-BY 0x508d0).
+// M3 lane 2 r147 (H2M_FAST with 0x508d0 listed, the full-build proxy; control 626): 0x508d0 is no longer a stub but a
+// contributor's unmatched body (frame 0x19b0 against retail's 0x19a4), so the block now sits in its code. The flag as a
+// byte parameter with the caller passing the raw type byte (retail 0x5123d; needs the contributor's call line) 626; the
+// function without `__stdcall` 626 (same code); the byte flag as the last parameter 625; diagnostics: the noise array
+// without its alignment 713 (2488 B), the level counter not volatile 652. The flag stays a stack load in every form.
+// Body unchanged.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

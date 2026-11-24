@@ -1038,6 +1038,20 @@ struct s_physical_block_iterator
 // branches 246, tie first with earlier and later time 219/219, combined earlier and later time expressions
 // 247/242, packed time and signed-page ranks 356, packed ranks with symmetric age clamps 390. The packed form
 // changes the frame probe.
+// Round 467: compound Boolean policy results for timestamp, physical and weighted
+// cases in seven subsets 286/201/286/201/286/201/286. Strict timestamp result then
+// compound equal-time page result 212 (1194 B). That places both cases in the loop
+// at the common AL test. It leaves SETB/OR and the weighted-age mask differences.
+// With both age clamps 216, with both from one tick read 216.
+// Replacement pointer with null rejection: per policy 182, after the join 201,
+// separate timestamp tie 213, separate earlier/later arms 218. Incumbent rejection:
+// 239/233/239/239. NOT kept: the 182 form shortens to 1193 bytes and tests
+// a pointer at the join where retail tests AL. The weighted-age masks still differ.
+// The timestamp case still threads into the copy. Independent winner-valid stores after or before
+// the copy 201/242; true-default or explicit no-winner decision with separate validity 201/201;
+// old validity carried across early update 207; logical or compound Boolean validity 280/281;
+// conditional field publication 355. NOT kept: the tied forms retain the policy layout, and the
+// logical validity and field publication forms reach retail length with a different frame probe.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
