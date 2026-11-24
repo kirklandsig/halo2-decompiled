@@ -953,6 +953,9 @@ struct s_item_collision_bsp
 // by index 247.
 // NOT kept: Reusing the normal makes the contact block longer, and the marker-point form reaches 200 at
 // 1378 bytes. The earlier instance-plane coefficient homes still differ.
+// The transformed-plane XMM homes and contact slot still differ. Angular impulse, contact point and travel speed slot names 190/190/190.
+// Conditional const axis 259; shared double-factor vector scale in the axial arm, fallback arm, both arms or at the joined spin 239/239/238/319.
+// NOT kept: the names tie and none of the scale forms recovers the pending x87 factor at a lower score.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

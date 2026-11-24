@@ -1043,7 +1043,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871; r251 unchanged): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call. Earlier score 964.
 // Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
 // Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
@@ -1826,6 +1826,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // type tests by 0x1934b0/0x193470, 902 (2892 B, aligned 786; 0x73530 8; the top 0x192e60, 0x1931a0 and 0x193250 still
 // expand and 0x193300 stays a call). On the early-return body: the player value through 0x63220 1012 (2608 B); with the
 // accessors 1103 (2516 B); the accessors alone 917 (2724 B, aligned 785). Body unchanged.
+// Guarded opening lookup with lower/upper/full/nested index bounds and word buckets
+// 888/888/885/885. The same guards with long buckets 937/937/942/942.
+// NOT kept: the guarded call adds a rejection path where retail calls unconditionally.
+// Long buckets reduce the frame to 0xb0, short of 0xb4, and all eight scores rise.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
