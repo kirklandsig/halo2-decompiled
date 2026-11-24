@@ -1089,6 +1089,10 @@ static inline long team_score_195ed0(long team)
 // shared world receiver 100; connectivity from the channel predicate 165; selected channel 141;
 // shared connectivity store 131. NOT kept: the flag still precedes the copy, and the shared store
 // joins branches that have distinct stores in retail.
+// Separate rank ordinals 100; team count difference or both count differences 207/225;
+// typed rank receivers 100; short team with direct rank stores 229; nonnegative team count 188;
+// inactive-team continue 100; copied member and typed team receiver 301. The teams byte still
+// precedes the copy in the tied forms, and the selected score query still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

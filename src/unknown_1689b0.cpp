@@ -2343,6 +2343,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 99); as `dot3f(point, &plane normal) - d` 584 (masked 116); without the tally order 584 (110), without the early reset
 // 585 (114), with the square ahead of the loop 585 (116), with the ray arm first 617 (2904 B, masked 191). Frame 0xb968
 // in every one.
+// Empty query return 656; immediate face or edge result 575/589; empty query with separate
+// result returns 677; signed last-index bound 573; complete normal selection 551;
+// plane reference across all consumers 558; midpoint and average point setters 551.
+// Tied forms keep the split counter and clearance homes and the pre-branch square.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

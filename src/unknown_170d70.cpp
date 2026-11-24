@@ -450,6 +450,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
 // stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
 // orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
+// Failed-test disjunction and staged up publication 70. On the named deadline walk, staged up and
+// alternate normalizations 99; staged side and up 101; existing side cross and alternate normalizations
+// 92; reversed shared dot inputs 70; failed-test disjunction and staged up 101; both axis references
+// with staged up 101; signed copy and coefficient widths with staged up 148. NOT kept: The recovered
+// traversal still diverges in the correction, and the shared dot shortens the body.
 // @retail 0x170630
 void function_170630(long player_index)
 {

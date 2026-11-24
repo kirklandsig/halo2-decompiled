@@ -2158,6 +2158,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (same code). The channel pointer lives only across the 0xb6760 call and our link knows that callee leaves ECX alone,
 // so it stays in ECX; the weapon pointer's reload into EDI is placed at its first use, retail's at the block's start.
 // Body unchanged (the lead is match-only).
+// On the positive overlay form, admitted handle 334; animation receiver for the whole arm 304 or just
+// update and events 320; handle with update receiver 320; post-play channel pointer or reference 340/340;
+// direct validity and clear with that frame receiver 340; default callback with admitted handle 411.
+// The unit/mode homes and restart-channel register still differ.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
