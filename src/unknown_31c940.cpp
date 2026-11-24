@@ -873,53 +873,75 @@ static __forceinline void update_angular_values(float impulse,
 	*result += impulse;
 }
 
-// Target and mass are captured before projection. Axes remain references so
-// the angular contributions observe the preceding linear writes, including
-// overlapping row/body storage. Capture B inertia before the body writes, and
-// form both angular contributions before updating A.
-static __forceinline void solve_linear_error_kernel(float target, float mass,
-	__m128 const &axis_a, __m128 const &axis_b, __m128 const &axis_linear,
-	__m128 &angular_a, __m128 *const &angular_b_pointer, __m128 &linear_a,float *const & linear_b,
-	__m128 const &inverse_a, __m128 inverse_b,
-	solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
+// Capture target and mass before projection and retain its linear axis.
+// Reload B inertia after the projection and rounded impulse stores. Angular
+// axes reload after the linear writes; their receiver reloads after A angular.
+static __forceinline void solve_linear_error_cursor_31c940(float target,float mass,
+ __m128 *&terms,solver_velocity_31c940 *a,__m128 *linear_a,float *const &linear_b,
+ __m128 *const &angular_b,__m128 const *const &inverse_b,
+ solver_step_31c940 *const &step,float *&result,unsigned char *&op,
+ solver_scalar_arena_31c940 &projection_pool,float &simd_scratch)
 {
-	// Retain the projection contributions before reducing their sum.
-	__m128 work_a = linear_a;
-	__m128 work_b = axis_b;
-	__m128 work_c = _mm_load_ps((float const *)&(*angular_b_pointer));
-	work_b = _mm_mul_ps(work_c, work_b);
-	work_c = _mm_mul_ps(angular_a, _mm_load_ps((float const *)&axis_a));
-	__m128 work_d = _mm_mul_ps(_mm_sub_ps(work_a,(*(__m128 const *)linear_b)), axis_linear);
-	__m128 work_e = _mm_add_ps(_mm_add_ps(work_c, work_b), work_d);
-	__m128 work_f = _mm_shuffle_ps(work_e, work_e, 0x55);
-	work_a = _mm_shuffle_ps(work_e, work_e, 0xaa);
-	work_e = _mm_add_ss(work_f, work_e);
-	work_d = _mm_add_ss(work_a, work_e);
+	__m128 work[5];
+	work[1]=*linear_a;
+	work[2]=terms[1];
+	work[3]=terms[2];
+	work[0]=_mm_load_ps(linear_b);
+	work[4]=*angular_b;
+	work[1]=_mm_sub_ps(work[1],work[0]);
+	work[0]=a->angular;
+	work[0]=_mm_mul_ps(work[0],work[2]);
+	work[2]=terms[0];
+	work[1]=_mm_mul_ps(work[1],work[2]);
+	work[4]=_mm_mul_ps(work[4],work[3]);
+	work[0]=_mm_add_ps(work[0],work[4]);
+	work[0]=_mm_add_ps(work[0],work[1]);
+	work[1]=_mm_shuffle_ps(work[0],work[0],0x55);
+	work[1]=_mm_add_ss(work[1],work[0]);
+	work[3]=_mm_shuffle_ps(work[0],work[0],0xaa);
+	work[3]=_mm_add_ss(work[3],work[1]);
+	_mm_store_ss(&projection_pool.linear_error,work[3]);
+	// Advance cursors while retaining this row's projected linear axis.
+	op+=4; terms+=3; ++result;
+	solver_step_31c940 *parameters=step;
+	float impulse=mass*(target*parameters->error_scale-projection_pool.linear_error*parameters->velocity_scale);
 
-	_mm_store_ss(&projection_pool.linear_error, work_d);
-
-	float impulse = mass * (target * load_error_scale(step) - projection_pool.linear_error * load_velocity_scale(step));
-	// Give the rounded SIMD input a scalar object; keep the extended impulse
-	// live for result accumulation. Retail reads this copy directly with MOVSS.
-
-	float &store_rounded = simd_scratch;
-	store_rounded = impulse;
-	__m128 scalar = _mm_load_ss(&simd_scratch);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
-	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
-	linear_a = _mm_add_ps(_mm_load_ps((float const *)&linear_a), delta_a);
-	_mm_store_ps(linear_b, _mm_sub_ps(_mm_load_ps(linear_b), delta_b));
-	__m128 angular_change_a = _mm_mul_ps(change_a, axis_a);
-	__m128 angular_change_b = _mm_mul_ps(change_b, axis_b);
-	angular_a = _mm_add_ps(angular_a, angular_change_a);
-	// Retain the field pointer through projection, then capture the update
-	// receiver after A's angular write.
-	__m128 *angular_b_address = angular_b_pointer;
-	*angular_b_address = _mm_add_ps(*angular_b_address, angular_change_b);
-	*result += impulse;
+	simd_scratch=impulse;
+	work[1]=_mm_load_ss(&simd_scratch);
+	work[3]=a->inverse_inertia;
+	work[0]=_mm_shuffle_ps(work[1],work[1],0);
+	work[0]=_mm_mul_ps(work[0],work[3]);
+	work[3]=*inverse_b;
+	work[1]=_mm_shuffle_ps(work[1],work[1],0);
+	work[1]=_mm_mul_ps(work[1],work[3]);
+	// Capture B linear before either linear write.
+	float *linear_body_b=linear_b;
+	work[3]=_mm_shuffle_ps(work[0],work[0],0xff);
+	work[3]=_mm_mul_ps(work[3],work[2]);
+	work[4]=_mm_shuffle_ps(work[1],work[1],0xff);
+	work[4]=_mm_mul_ps(work[4],work[2]);
+	work[2]=*linear_a;
+	work[2]=_mm_add_ps(work[2],work[3]);
+	*linear_a=work[2];
+	work[2]=_mm_load_ps(linear_body_b);
+	work[2]=_mm_sub_ps(work[2],work[4]);
+	_mm_store_ps(linear_body_b,work[2]);
+	work[2]=terms[-2];
+	work[0]=_mm_mul_ps(work[0],work[2]);
+	work[2]=terms[-1];
+	work[1]=_mm_mul_ps(work[1],work[2]);
+	__m128 *angular_a=&a->angular;
+	work[2]=*angular_a;
+	work[2]=_mm_add_ps(work[2],work[0]);
+	*angular_a=work[2];
+	// This row reloads the angular receiver after A's angular write.
+	__m128 *angular_body_b=angular_b;
+	work[0]=*angular_body_b;
+	work[0]=_mm_add_ps(work[0],work[1]);
+	*angular_body_b=work[0];
+	result[-1]+=impulse;
 }
+
 
 // Capture target and limit before projection, retaining the coefficient address
 // across consecutive rows. Keep B's inertia pointer through the clamp and read
@@ -1224,7 +1246,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2126. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1966. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1496,10 +1518,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					__m128 *linear_a_pointer = &a->linear;
 					do
 					{
-						solve_linear_error_kernel(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a, ((solver_linear_row_31e7b0 *)terms)->b, ((solver_linear_row_31e7b0 *)terms)->linear,
-							a->angular, angular_b_pointer, *linear_a_pointer, linear_b_pointer,
-							a->inverse_inertia, *inverse_b_pointer, step, result, projection_pool, scalar_work.simd_scalar);
-						terms += 3; ++result; op += 4;
+						solve_linear_error_cursor_31c940(((solver_linear_row_31e7b0*)terms)->linear.m128_f32[3],
+						((solver_linear_row_31e7b0*)terms)->a.m128_f32[3],terms,a,linear_a_pointer,linear_b_pointer,
+						angular_b_pointer,inverse_b_pointer,step,result,op,projection_pool,scalar_work.simd_scalar);
 					} while (*op == 13);
 
 					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));

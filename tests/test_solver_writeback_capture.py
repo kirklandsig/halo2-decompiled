@@ -428,3 +428,43 @@ def test_second_normal_keeps_angular_receiver_before_a_write(solver_images,preci
             assert snapshot[1]==1
             snapshots.append((snapshot,outputs,actual_pointer,callbacks))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('alias_kind',['inverse_b','linear_axis'])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_linear_error_captures_axis_and_reloads_inertia(solver_images,precision,alias_kind):
+    frame=STACK+32768-0xd0
+    body_b=frame+0x20 if alias_kind=='inverse_b' else HEAP+0x80
+    for rounding in range(4):
+        data=solver_case(13,0)
+        put(data,STEP,'7fi',0,1,1,0,1,0,0,1)
+        put(data,OPS+12,'2I',HEAP,body_b)
+        if alias_kind=='linear_axis':put(data,OPS+4,'I',frame+0x50)
+        put(data,OPS+24,'2I',13|(4<<8)|(3<<16),0x400)
+        put(data,TERMS,'12f',-1,0,0,2, 0,0,0,1, 0,0,0,0)
+        put(data,HEAP,'B',3)
+        put(data,HEAP+0x10,'4f',0,0,0,0)
+        put(data,HEAP+0x20,'4f',0,0,0,0)
+        put(data,HEAP+0x30,'4f',1,1,1,1)
+        if alias_kind=='linear_axis':
+            put(data,body_b+0x10,'4f',1,0,0,0)
+            put(data,body_b+0x20,'4f',0,0,0,0)
+            put(data,body_b+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'f',0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in ((retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))):
+            machine.mem_write(frame+0x30,b'\0'*0x90)
+            if alias_kind=='linear_axis':
+                machine.mem_write(frame+0x50,struct.pack('<12f',-1,0,0,2,0,0,0,1,0,0,0,0))
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            projection=words(machine,frame+0x5c,1)[0]
+            result=words(machine,body_b+0x10,4)
+            if alias_kind=='inverse_b':assert projection==0x3f800000
+            assert result==(0x40000000,0,0,0xc0000000),('retail'if machine is retail else'compiled',precision,rounding,result)
+            assert words(machine,IMPULSES,1)==(0x3f800000,)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,projection,result))
+        assert snapshots[0]==snapshots[1]
