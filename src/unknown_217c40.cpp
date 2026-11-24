@@ -263,6 +263,11 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // (2028 bytes); the scale as `(real)(1.0 / 32767.0)` 2; the maximum as an if/else local 2; the trig magnitudes written in
 // place in the maximum 2 (all three the same code). 1.0 still loads first; retail reloads only the scale (xmm7) near the
 // loop's end, 1.0 stays in xmm6, so the two entry loads are the only difference left.
+// Round 241 (m3 lane 5, H2M_FAST): only the FIRST stick's absolute offset written at each use (the second keeps its named
+// absolute) 2 (only the two entry loads differ, so the second stick's form is not part of the lead); only the second
+// stick at each use 25; on the first-only form: the maximum named with the products `raw * scale / maximum` 20 (one
+// compiler reciprocal, 1.0 still first), the input-state choice as an if/else statement 2 (same code), the products as
+// `raw * (scale * reciprocal)` 578 (1972 bytes).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
