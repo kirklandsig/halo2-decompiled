@@ -1345,6 +1345,13 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (same code each); both dispatch arms reading the unit index again through the getter, lookup plain 41 (142 B); a
 // second named player local from the getter for the lookup 5 (the getter-reload code); the unit through the shared
 // object getter in place of the file's 17/5 (same code each; 0x151aa0 43, 0x152bf0 MATCH).
+// M3 lane 1 r164 (h2m fast with 0x151aa0 and 0x152bf0; control 5): on the plain-read form the allocator ranks the unit
+// index 59 (five references once the lookup's read is merged with the test's) and gives it ESI first; the object data
+// pointer (90) takes EDX because the player is dead by then, where retail's player stays live into the lookup block
+// (its second read merged only after allocation) so the data takes ESI and the index EDI. Forms: the player typed as a
+// pointer to const 5 (same code); the hand as a bool 42 (141 B); a second member name overlaying unit_index read for the
+// lookup 17 (merged early like the plain read); the lookup and both calls through the getter with the test through the
+// player 46; the result declared ahead of the player 27 (137 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
