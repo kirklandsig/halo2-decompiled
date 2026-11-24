@@ -897,6 +897,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
 // Explicit float CRT calls for the root, arcs and absolute values: 109.
 // NOT kept: the independent SSE square and x87 sum still diverge at +0x69.
+// Shared planar dot directly at the speed root or through a named squared speed,
+// with either heading alignment form, 112 each. Squared speed before the input
+// magnitude 114 each. Input magnitude after the speed root 142 each.
+// All move the first difference back to the velocity loads at +0x2e.
 // The first SSE square still follows the x87 sum and unity still takes XMM2. Separate scalar/point outputs:
 // scaled arm first 219/219, raw arm first 225/225, raw initializer 301/301, component selection 171/171.
 // NOT kept: each form increases the score and length.
@@ -1970,6 +1974,10 @@ long function_10f5f0(long object_index);
 // First velocity sample scoped alone or with fall sample 561/561. Three separately scoped samples
 // 561, also with scoped names, aggregate names, bounds-scope matrix, branch-owned physics state or
 // matching velocity names 561 each. NOT kept: frame 0x1990 and distinct bounds and velocity homes persist.
+// Round 668: indexed equality with signed guard, unsigned guard, nonnegative bound,
+// or nonpositive start at the end 633/633/613/594. With division before publication
+// 648/648/633/611. The rolled loops retain the 0xa8 stride but add the loaded
+// value into another register and shorten the body. The 0x1990 frame persists.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3878,6 +3886,11 @@ real g_47ff30 = 2.5f;
 // three weights before up k 667. Existing final scale helpers give the same scores.
 // NOT kept: 669 and 667 recover frame 0xfc and retail length, but gain only three and five points and
 // leave the acceleration and velocity slots displaced.
+// Round 668: lateral-before-vertical/lateral-and-vertical-first/vertical-first
+// projections 677/674/716. Force interleaved at lateral/vertical/both with forward
+// last/all with forward first/lateral first 696/725/700/733/729. NOT kept: the
+// lateral-interleaved forms recover frame 0xfc but shorten the body and regress.
+// The acceleration spill and both velocity homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4309,6 +4322,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // In-place force, torque, or both through the shared scaler 1000 each. Staged force, torque, both, and both
 // mixed scaler/setter forms 1000 each. NOT kept: the frame stays 0x78 at 4698 bytes and the force, torque and
 // mass homes remain unchanged.
+// Reuse the angular query workspace for the rotated control components. Direct
+// stores or vector setter, with or without one control sample, 1109/1071/1153/1071.
+// With the in-place velocity scaler, 1126/1108/1161/1108. NOT kept: the frame
+// stays 0x78 or grows to 0x7c, and the extent and score increase.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4363,7 +4380,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 
 			if (TEST_FIELD_BIT((flags >> 4) & 1))
 			{
-				boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+				boost = function_d1210(vehicle_index) * (((s_unit_definition *)definition)->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 			}
 
 			real angle = (real)atan2(input.y, input.x);
@@ -6280,6 +6297,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Signed gear range 757; zero wheel counter 759; complemented forward/reverse floor tests 752.
 // Word kind range 753; unsigned gear range 753. NOT kept: best gain seven at retail length.
 // Retail tests each gear and kind value separately. Entry definition and zero/result registers still differ.
+// Round 668: activity before both stores as a logical result, positive branch,
+// forced default or forced branch 777/782/777/778. Activity completed with three
+// clamp arms, forced default and three limits, lower arm, or upper arm
+// 772/948/772/777. The 0x18 frame agrees and the entry zero/result registers
+// and EBP definition still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

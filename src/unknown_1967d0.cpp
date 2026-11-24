@@ -1098,6 +1098,25 @@ static inline long team_score_195ed0(long team)
 // char with named presence 299. NOT kept: the copy still follows the flag read.
 // Combined sentinel and inactive-team decision with char, short or long
 // 274/295/329. NOT kept: all grow the player loop and retain the early flag read.
+// M3 lane 4 r260 (h2m fast with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310, all MATCH unless noted; control 100,
+// aligned 45; body unchanged). Retail's rank loop, read row by row: the first score read expands 0x1587f0 with the team
+// test and the statistics getter inside it; the second expands it again and repeats the team's range and mask tests
+// (only the engine pointer, the running flag and the mask word are reused); the third is `call 0x1587f0`; the entry test
+// is `cmp word ptr [count], bp` with the zeroed counter. Diagnostic (a build setting, reverted): the callee file of
+// 0x161e60 and 0x162030 without /Ob1 and the clamp over the real 0x1587f0 442 (1301 B), and 0x1587f0 37, 0x159460 198,
+// 0x15b3a0 143, 0x15c550 155, 0x64d70 220: the link then expands the two everywhere, so retail's are not plain
+// expandable functions. The third read follows the site's estimated frequency: with one more enclosing test around
+// the rank loop it becomes retail's `call 0x1587f0` (the clamp's tests through the file's copies and its value through
+// the real function, in `if (0 < ranking.team_count)`: 173 at 1197 B on main, 149 on lane 12's results view; the
+// counter zeroed ahead of the guard 150; the guard as `rank < count` 144, aligned 39; the clamp over the real function
+// in the guard 177 / 154; the file's copies in the guard 161 / 148), but the second read's team test then becomes a
+// call as well, where retail expands it. Without the guard both expand (the mixed clamp 191 at 1237 B, 167 on the
+// view). A guard with a do-while inside (`if (0 < count) do ... while (++rank < count)`) keeps the plain loop's level:
+// the third read expands again (160, and 132 at 1210 B with the file's copies). Diagnostic guards that halve less
+// (`a || b`, `!(a && b && c)` of folding tests) leave the third read expanded (184, 194). So retail's sites need the
+// third read below the real function's level while the second read's nested team test stays above its own, a window
+// between the plain loop and one full extra test that none of these forms hits. Lane 12's results view re-measured 76
+// (aligned 37).
 // Separate score-table and mode admission 163, admitted score returned directly 170,
 // native short score field 100, native mask and bit locals 100. Nested connectivity
 // guards 165, initial machine-admission result 141, shared local-address marker 136,
