@@ -897,6 +897,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
 // Explicit float CRT calls for the root, arcs and absolute values: 109.
 // NOT kept: the independent SSE square and x87 sum still diverge at +0x69.
+// Shared planar dot directly at the speed root or through a named squared speed,
+// with either heading alignment form, 112 each. Squared speed before the input
+// magnitude 114 each. Input magnitude after the speed root 142 each.
+// All move the first difference back to the velocity loads at +0x2e.
 // The first SSE square still follows the x87 sum and unity still takes XMM2. Separate scalar/point outputs:
 // scaled arm first 219/219, raw arm first 225/225, raw initializer 301/301, component selection 171/171.
 // NOT kept: each form increases the score and length.
