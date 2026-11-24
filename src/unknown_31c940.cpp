@@ -921,23 +921,20 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 
 // Retain the coefficient and B inertia addresses across consecutive rows.
 // Native scalar locals keep the projection between SSE and x87 without a copy.
-static __forceinline void solve_linear_friction(float target, float const &limit,
+static __forceinline void solve_linear_friction(float target, float &limit,float next_limit,
 	float const *const &friction_scale_pointer,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,__m128 *const & angular_b_pointer, __m128 &linear_b, __m128 const *const &inverse_b_pointer,
 	solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
 {
-	// Keep the angular products and reuse their work vectors for projection.
-	__m128 work_a = _mm_load_ps((float const *)&(a->angular));
-	__m128 work_b = _mm_mul_ps((*angular_b_pointer), _mm_load_ps((float const *)&(row->b)));
-	work_a = _mm_mul_ps(work_a, row->a);
-	work_a = _mm_add_ps(work_a, work_b);
-	work_b = _mm_mul_ps(_mm_sub_ps(a->linear,
-		_mm_load_ps((float const *)&(linear_b))), row->linear);
-	work_a = _mm_add_ps(work_a, work_b);
-	__m128 sum = _mm_add_ss(_mm_shuffle_ps(work_a, work_a, 0xaa),
-		_mm_add_ss(_mm_shuffle_ps(work_a, work_a, 0x55), work_a));
-
-	_mm_store_ss(&projection_pool.linear_friction, sum);
+	// Preserve the A-side projection inputs before the limit can replace a row lane.
+ __m128 relative=_mm_sub_ps(a->linear,linear_b);
+ __m128 angular_a=_mm_mul_ps(a->angular,row->a);
+ __m128 projected_linear=_mm_mul_ps(relative,row->linear);
+ limit=next_limit;
+ // B angular operands belong to the phase after limit publication.
+ __m128 angular_b=_mm_mul_ps(*angular_b_pointer,row->b);
+ __m128 projected=_mm_add_ps(_mm_add_ps(angular_a,angular_b),projected_linear);
+ sum_three_to_arena_31c940(projected,projection_pool.linear_friction);
 	float impulse = (target * (*friction_scale_pointer)
 		- projection_pool.linear_friction * load_velocity_scale(step)) * row->a.m128_f32[3];
 	float magnitude = (float)fabs(impulse);
@@ -1580,8 +1577,10 @@ result+=2;
 					inverse_b_pointer = &body_b.body->inverse_inertia;
 					do
 					{
+						// The target precedes the limit store, including when they share storage.
+						float target=((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
 						state.solving.angular_limit = operation_float(op, 4);
-						solve_angular_friction_kernel(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], state.solving.angular_limit, friction_scale_pointer,
+						solve_angular_friction_kernel(target, state.solving.angular_limit, friction_scale_pointer,
 							((solver_angular_row_31e7b0 *)terms), step, a, *velocity_b_pointer, inverse_b_pointer, result, projection_pool, scalar_work.simd_scalar);
 						terms += 2; ++result; op += 8;
 					} while (*op == 9);
@@ -1730,8 +1729,8 @@ result+=2;
 					angular_b_pointer = &body_b.body->angular;
 					do
 					{
-						state.solving.linear_limit = operation_float(op, 4);
-						solve_linear_friction(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], state.solving.linear_limit, friction_scale_pointer,
+						float target=((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
+						solve_linear_friction(target, state.solving.linear_limit,operation_float(op,4), friction_scale_pointer,
 							((solver_linear_row_31e7b0 *)terms), a, angular_b_pointer, *linear_b_pointer, inverse_b_pointer, step, result, projection_pool, scalar_work.simd_scalar);
 						terms += 3; ++result; op += 8;
 					} while (*op == 6);
