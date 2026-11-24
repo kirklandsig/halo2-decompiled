@@ -883,6 +883,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // component, before the second input component, at the start of the forward copy, before input rotation,
 // after speed root, before speed root, or before the velocity copy: 111/122/118/118/118/278/133/141.
 // NOT kept: the earliest form moves the first difference earlier; the others keep +0x69 and raise the score.
+// Typed control-vector member at entry, gear, rotation and their combinations
+// 107 each; a reference shared across the observation sites 241.
+// NOT kept: direct membership leaves the unity register unchanged, and the
+// reference shortens the body to 1133 bytes.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

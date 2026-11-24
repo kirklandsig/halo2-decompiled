@@ -960,6 +960,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // &choices[choice_count++];` 952 (3273 B); the four choice stores in retail's store order (tag, source, decibels,
 // cluster) 837 and the three 1.0f defaults as three statements 837 (both the same code); the primary set inside the
 // build loop as `if (i == 0 && inside) primary = choice->source;` 949 (3305 B).
+// First choice reference 900; repair scan table 916; table through first
+// choice lookup and tag scan 844; that table with a first-choice reference
+// 903; guarded neighbor level read 925, also with a separate scan table 925;
+// table and full-width repair bound 849; first tag compared first 844.
+// NOT kept: the 0x4dc frame and EBP entry zero persist.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
