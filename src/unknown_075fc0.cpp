@@ -483,6 +483,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // first threshold is `setge; test; je` with no store of the result and its second a plain `jl`; the reliable-bytes
 // payload is formed early (`lea ebp, [ecx - 0x2d]`) with `false` stored in each failing arm; the channel's first
 // flag is read from memory again at both later uses, as here. Body unchanged.
+// In round 641, the frame and search register assignments stayed off retail. Const lookup channel 356; skip inactive
+// channels 356; pointer walk and index on hit 460; short search ordinal 436; nested lookup tests 356; shared clock
+// helper 356; observer and lookup names 356; budget and send-result names 356. The body and lookup were restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

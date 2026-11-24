@@ -2448,6 +2448,24 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // or both before the spawn record 187/184, between tag read and type lookup 189/191,
 // and between type lookup and virtual queries 187/189. Single captures recover 0x44
 // but the system remains in EDI and the body grows to 572 bytes.
+// M3 lane 3 r306 (H2M_FAST with 0x178eb0/0x179020, both matched throughout; control 128; "rank" = the register
+// allocator's colouring priority from a back-end trace): on the early-colour form (both colours read into locals right
+// after set_location, ahead of the spawn stores; 184 at 572 B) the system parameter itself ranks -64 (live through the
+// loop) and is split; its piece over the entry block ranks 58 (three uses there: the location index, the 0x1751d0
+// call and the colour call, each counted with the block's nine candidates) and takes EDI, while colour A, colour B and
+// the tint rank 36 each (one read and one use in that block), so colour A then takes EBX and colour B and the tint
+// spill. Retail's allocation (colour B EDI, tint BL, colour A in a frame slot, the system reloaded from its home for
+// the colour call) needs that piece below the colours. Forced, as a diagnostic (not source): the piece at 18 gives
+// frame 0x44 and the 552-byte length (178, first difference +0x7); left there are colour A's spill slot, the tint in a
+// byte home instead of BL, the loop's definition not held in EDI and the zone block. New this round: on the
+// early-colour form, `dword const` colours read B first 185 (572 B); the tint and multiplied results declared bare at
+// the top and assigned after a type lookup with no block 184; the spawn's location index stored ahead of the colour
+// reads 184; multiplied queried ahead of tinted 182 (572 B). Forced ranks of colour A/B and the system's first piece
+// (22 single decisions) stay at 178 or above.
+// BSP base passed at the zone calls or captured at successful advancement,
+// with the location pointer or the cluster word, 128 each. The four forms
+// with an early color A capture give 187 each. The frame reaches 0x44 there,
+// with 572 bytes and the system still in EDI.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4192,6 +4210,20 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Post-gate classification from a signed/unsigned node word 93/94; sentinel/high-bit split 93/102.
 // The same four forms with per-call mode reads 108/109/108/116.
 // NOT kept: The cached forms tie or regress. Per-call mode recovers the 0x54 frame and passes the effect index in a register, raising matched caller 0x176f60 to 25 in each preview.
+// M3 lane 3 r306 (H2M_FAST with 0x176f60; control 93, caller matched): the trace ranks the type object 110 above the
+// system 96 (it takes ESI, the system EDI); retail's system ESI, type object EBX, colour B EDI. The convention is the
+// blocker for every per-call mode form: with the cached mode this function takes the particle system index in EAX and
+// the effect index on the stack (retail's); with the mode read at each call both indices go in registers (effect index
+// EAX, system index ECX), and with the effect index read once through its address it stays on the stack but the system
+// index moves to ECX (the caller then sets ECX, 18). Measured: the mode at each call 108 (0x176f60 25); that with the
+// effect index read through its address 127 (352 B; 0x176f60 18); the address read alone 93 (same code); both type
+// queries as the colour call's arguments 120 (325 B; 0x176f60 25); queries as arguments, mode at each call and the
+// address read 92 at 337 bytes (system ESI, next index EDI, type object EBX, colour B EDI, definition spilled and read
+// for each call as retail; left the system index in ECX, the effect pool base not held in EBX, frame 0x4c; 0x176f60 18,
+// so not kept); that with the type lookup's definition named 92 (same), without the address read 103 (331 B).
+// Actual pooled effect, system and definition object references, each alone,
+// each pair and all three 93 each. All three with the particle-location
+// object reference 93. The system/successor registers and 0x4c frame persist.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

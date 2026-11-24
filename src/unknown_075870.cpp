@@ -1469,6 +1469,19 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // passed straight into the test 18 (same code); the burst stored before the result 19; the test's first condition as
 // the result's initialiser in the shared helper 44 (0x78190 28); the clamp after the test 59. Diagnostic (held form):
 // 0x78190 marked `inline` and called on L 24 (0x79600 then 133), with the same EAX picks in the tail.
+// M3 lane 14 r154 (reduced image with 0x78190, 0x79600 and 0x79850; control 18, L re-measured 18). Reading on L: the
+// refresh word and the test's result are each offered EAX and EDX with no preference either way, so the first one
+// (EAX) is taken; nothing live beside them wants EAX (the allocator only penalises EAX for a value when a not yet
+// placed neighbour that can use EAX prefers it: a quotient, a dividend). Forced compiles: the result alone in EDX 8,
+// the refresh word alone in EDX 10, either one's priority raised or lowered 18 (both are the last values placed).
+// Forms on L: the tail as two nested forced-inline copies of 0x79600 and of 0x78190's wrapper (the flags as their
+// arguments, evaluated ahead of the frame rate) 18 (same code); the shared frame-rate helper reading the refresh global
+// at each use, as `g > 0 ? g : 60`, as an early `return 30.0f`, as one `g > 0 && g == 50` test, or through a nested
+// refresh getter 50/31/24/50 (1016/1014/1014/1016 B: the global is then loaded twice, and matched 0x78090, 0x78190
+// and 0x78210 read 65/9/9/65, 36/9/9/36 and 27/39/39/27). The helper's refresh read through `long const &` bound to
+// the global, then copied to the local 18 (same code here); the reference used directly in one `> 0 && == 50` test,
+// or in `g > 0 ? g : 60`, 18/18 (0x78090 7 and 0x78210 31 each). Not tried: a natural value in the tail that
+// prefers EAX.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {

@@ -1981,6 +1981,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // selected rejection bit 83, admitted bit for test and clear 86, admitted
 // bit XOR/subtraction 92/92 (muted first). Current order with admitted bit
 // clear/XOR 65/67. The second port query remains out of line.
+// M3 lane 2 r147 (H2M_FAST with 0x54890, 0x53a20, 0x53bb0, 0x53b90, 0x53b40, all MATCH; control 64): the inner removal
+// tests in the two orders not yet listed, second flag, muted, first flag 65 and muted, second flag, first flag 85 (427 B);
+// the active word as a select 127; the muted word as a select 105; `~muted & remote` 64 (same code). The second port
+// query stays out of line in every form. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

@@ -760,6 +760,15 @@ struct s_24e9c7_points
 // and across inputs 141, side published at the size conversions 142, or signed
 // raster width retained to scaling 154. NOT kept: all grow the body and leave
 // the result above its retail home or enlarge the frame.
+// M3 lane 3 r306 (H2M_FAST with 0x24e59f/0x22a664, both matched each time; control 125): partial aggregate initialisers,
+// to keep one member of the side or across point in its frame home as retail keeps side y at [ebp-8] (result stays at
+// [ebp-8] in all): the side point as `{ (real)half_width * across_i }` with y assigned after it 148 (750 B); the across
+// values as a point initialised `{ size * -forward_j }` with y assigned after, the side from it, 190 (764 B); the side
+// point initialised that way and scaled in place by the half width 190 (764 B). Also across i as
+// `-placement->forward_j * size` 125 and across j declared ahead of across i 125 (same code each).
+// In-place perpendicular scaling after one upper corner with reverse scalars, direct negation,
+// reverse scalars at first use, or subtraction 172/152/163/152. After both upper corners
+// 154/151/142/151. NOT kept: the return slot stays high or the frame grows.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -963,6 +963,17 @@ struct s_item_collision_bsp
 // products 240/240/198, both initial pairs 194, axial plus k 242, fallback plus k 241, all products 241.
 // Wide scale with explicit real fallback rounding 237. NOT kept: wider products need a match. The joined
 // k alone restores the +0x28 speed slot but shortens the body to 1342 bytes.
+// Embedded rotation with direct translation, fully direct instance, or separately bound origin 190 each.
+// Shared basis rotation into the plane, separate normal, separate normal through distance, early scaled
+// distance or in-place queried plane 336/312/333/336/303. NOT kept: the shared rotation forms change
+// sum grouping and shorten the body. The normal and contact-point XMM homes still differ.
+// The transformed plane coefficient homes and the pending x87 factor still differ. Late axial,
+// fallback or both factor assignments 233/233/232, with a separate raw third component
+// 233/233/232. Separate raw third component alone 190; finishing its product at angular output
+// 186. NOT kept: the latter reaches 1362 bytes but gains four, below the keeper threshold.
+// Coefficient-first products across all left, up and forward rows, separately and in every combination,
+// 190 each. All three axes with coefficient-first translation products 190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1319,6 +1330,17 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // The scaled axis i still spills and the frame stays at 0xc0. Marker-up-first alignment, axis-first projection,
 // axis-first and forward-first rotation cross products, scalar-first diagonal, reversed axial and weighted cross
 // products, and axis-first rows through the shared setter all score 130.
+// Transform-left axis workspace 212. Common projection home with half-root update, final setter or
+// forward scalars 151 each; separate weighted cross 267, staged cross with common weight 267,
+// scaled-axis initializer 206 and scaled coefficients 206. NOT kept: the 151 forms recover 0xb4
+// and 848 bytes but raise the score. The initial alignment and scaled-axis register order still differ.
+// The 0xc0 frame and scaled-axis spill remain. Cross contribution before projection, with direct,
+// staged, returned or staged-and-scaled cross into a separate vector 206/206/228/231; into the
+// result workspace 190/190/228/228. NOT kept: both workspace families grow the rotation, and
+// neither recovers the 0xb4 frame or the initial alignment-product order.
+// Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
+// separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
+// NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1861,6 +1883,13 @@ struct s_item_flags_view_10b850
 // correction 824, shared inward speed 830, retained pre-impact projection 884, cap-result
 // arms 873, named scaled lift 824. NOT kept: ties or regressions. Retail recomputes the
 // normal projection after impact.
+// Ray as lateral cross output with direct or staged cross and coordinate or shared point difference
+// 901/902/909/914. With single-precision absolute value 879/880/885/892. NOT kept: all reduce the frame
+// to 0x13c but shorten the body and raise the score. The entry Boolean stores still differ.
+// Impact/bounce offsets as component stores, point setter, or shared scaled add:
+// components/setter 821, components/scaled add 824; setter with components/setter/scaled add
+// 904/911/904; scaled add with components/setter/scaled add 824/821/824.
+// NOT kept: the bounce setter alone gains three and the impact setter shortens the body.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -2506,6 +2535,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // saved long countdown 194/194, short terminal count 190/190, or long terminal count 190/190.
 // NOT kept: the +0xf byte home returns, but the body shortens to 870–874 bytes against retail's 892
 // and the release-flag operations still differ.
+// Paired event-point coordinate passes, ascending/descending, with separate buffers with returned
+// point 140/140 or filled point 171/171, common buffer with returned point 171/171 or filled
+// point 158/158. The return byte, release mask and point homes still differ.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

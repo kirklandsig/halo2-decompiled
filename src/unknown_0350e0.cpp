@@ -2991,6 +2991,28 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // declared at the top and assigned at its place 495 (same code); forward accumulated in three statements 511 (2296 B);
 // the near distance read ahead of the rows 516 (2296 B). Diagnostic, restored at once: `forward` given an early zero
 // ranks it lowest (rows in place) and moves the late temporary to the last delta assigned.
+// M3 lane 11 r166 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0/0x2df00 and 0x20d80; control 281, aligned 142). Reading of the
+// operand ranks: a local's rank follows its first reference; the first 31 locals rank below every global member read and
+// later ones above them all, so with delta and forward written here no single dot gives retail's sides (axis j above
+// delta j, delta i and k above the axis, every axis member above forward) together with retail's sum order j, i, k: late
+// deltas make their products outrank the j product (diagnostic, forward zero-initialised early, deltas j, i, k and four
+// dead longs: all three sides as retail but the sum k, i, j, 511 at 2296 B; without the dead longs 511; with the sum
+// parenthesised 511). The context alpha block is the body of the existing 0x20d80 with its second argument true, and
+// retail's `context alpha * attenuation` loads the context alpha first, as it does when that value is an expanded
+// callee's result: `real context_alpha = function_020d80((s_slot *)context, true);` is expanded in place here, 493
+// (aligned 146: the expansion stores the product ahead of the clamp, as 0x20d80's two statements say); with 0x20d80's
+// clamp as one statement (`result = PIN(slot->f * g_5234c8, 0.0f, 1.0f);`, its own fast result unchanged; its file was
+// another lane's this round, so a two-file diagnostic, restored) 486 at 2286 B (aligned 142: the context block and the
+// unoccluded product are then retail's and every later row sits one place off; LEAD, the two patches are
+// build/r166/lead-0x2e9e0-context-alpha-call.patch and lead-0x20d80-one-statement-clamp.patch). A file-local inline copy
+// of only the used part (diagnostic) 487 (aligned 140). Lane 14 r121's helper-form lead rebuilt 444 at 2288 B (aligned 64;
+// build/r166/lead-0x2e9e0-helper-forms-444.patch), with that inline copy 447 (aligned 61), with the real call 539 (2303 B,
+// aligned 201: the reflected loop is then no longer unrolled), with the one-statement callee as well 533 (aligned 194);
+// the lead with vector3f_assign rows, the real call and the one-statement callee 510 (aligned 130), with the late
+// attenuation 489 (aligned 132), without the draw-point helper, PIN and arm swap 510 / 486, without the camera and
+// projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
+// initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
+// `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3793,6 +3815,18 @@ real magnitude3d(vector3f const *v);
 // of the angle (for the cosine) 197 at 1009 B (frame 0x34, A 202: both reloads appear but the wide home goes and
 // nothing takes its place). Diagnostic, reverted at once: the dot and the angle written through a by-address inline
 // setter, the same code as without. Body unchanged: every structural step raises the positional score.
+// M3 lane 11 r166 (h2m fast with 0x24590 and 0x30bf0, both matched; control 170, aligned 187, with registers, XMM numbers
+// and stack offsets masked 116). Frame reading: cells are packed by reference count, each object joining the newest slot it
+// does not overlap. Retail's cosine has four references (stored, then read from memory three times) and its spill temp four,
+// so their slots (+8, +0xc) exist before the three-reference raw length, the dot and the angle are placed, and all three
+// join the cosine's cell; here the cosine keeps a register (two references), so the raw length joins `a`. Retail's dot,
+// angle, sine and cosine all live in memory and are loaded at each use. The rotation through the existing in-place helper
+// of include/axis_rotation.h with `(real)sin(angle), (real)cos(angle)` as its arguments, then `size * first` (retail
+// stores the first rotated row into first.i's home): 181 (1030 B, aligned 182, masked 85; lane 8 r191's form re-measured
+// by the masked count; build/r166/lead-0x3e5a0-rotation-helper-181.patch); with named sine and cosine 181 (same code);
+// with the result through vector3f_scale 181 (same code); the cosine computed first 183; the angle as `(real)acos(dot) *
+// step` on it 181 (masked 84); the two length tests ahead of the parallel test on it 193. Forcing single allocator
+// decisions (14 of 627 tried) leaves 170. Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -6169,6 +6203,16 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // add order 375): only this nested form gives retail's add order in all 12 rows, leaving the XMM choice per corner and
 // retail's two kept offset-y stores (+0x64, +0x70) of corners 2 and 3. All copy 0x142570's body or need `inline` on it
 // (match-only / held). Body unchanged.
+// M3 lane 11 r166 (h2m fast with 0x1697c0/0x141710/0x142570, all MATCH unless noted; control 231). Retail's four corner
+// blocks read as four expansions of the existing 0x142570 (its scale test and rows, then the origin add and the bias), which
+// this build's link never expands here: the four corners as a counted loop over the real call with a sign table 1112
+// (1099 B: neither unrolled nor expanded); the offsets written into the corners first and a loop of in-place calls 1072
+// (1136 B); the four written calls under the nested test, under two early returns, or under one negated return 1016 each
+// (1196 B, lane 2 r101's form re-measured: the guard shape does not move the expansion); diagnostic (two files, restored):
+// 0x142570 without its parameter-address read 1042 (1169 B, still a call; 0x142570 itself 54). Reading of retail's kept
+// stores at +0x64 / +0x70: they are the homes of the expansion's y in corners 2 and 3 (stored where y is defined, read
+// back as a memory operand in corner 3's scaled arm, where the product is formed in y's own register), and those homes
+// coincide with the two corners' own y cells. Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
