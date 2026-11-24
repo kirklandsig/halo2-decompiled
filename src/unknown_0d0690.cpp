@@ -1784,6 +1784,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // exits. Without any reordered statement or moved declaration: existing helpers, live axis, scale helper, single-exit
 // result and aggregate copies in both functions 397 but 0xd4080 432 (all 48 combinations of 0xd4080's own forms without
 // its early square 426 to 497); with 0xd4080 and the shared rotate left alone 560 to 622 with 0x3db00 lost (nine forms).
+// Round 469: selected entry reference (read-only or mutable) 530/530, scan-entry reference 530,
+// scan and selected entry references 529/529, one flag word from the scan reference 529,
+// also with the two selected entry references 530/530. Frame and selection spill persist. Restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

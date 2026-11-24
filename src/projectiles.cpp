@@ -1215,6 +1215,10 @@ real function_30bf0(vector3f *v);
 // horizontal test at the root 268; independently evaluated admission 284; late 3D reconstruction
 // from scalars, via the vector setter or from a planar point 265/265/266.
 // Planar point restores frame 0x30 at 994 bytes but leaves the first root after gravity. Body restored.
+// Round 469: launch speed carried in the input speed parameter 273, forced branch first 273,
+// conditional cap 273, direct optional pointer reads 274, forced first with direct reads 274,
+// shared solve result 276, with conditional cap 276 or direct optional reads 276. Restored.
+// The early rounded root and separate divisions still differ at frame 0x28 versus 0x30.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2372,6 +2376,9 @@ real function_17c900(short function_type, real input);
 // unmasked until conversion 365/365, separate salt offsets 365/365, or masks applied in place
 // 365/365 (direct tick reads / one shared tick). The 0x30 frame stays, index remains in EAX,
 // and the output is still stacked.
+// Round 469: pitch/yaw offsets at entry 377, yaw/pitch at entry 373, pitch/yaw in the drift arm 347,
+// and yaw/pitch there 359. Turn/drift/both point setters used as publication results 396/390/390,
+// both with entry offsets 421. The one-point drift form is below the keep threshold. Restored.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
