@@ -1293,6 +1293,27 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // indexed plane-enable array 482; guarded output cursor 254; success from projected count 459;
 // count each projected vertex 116; retained cull byte 384. NOT kept: none restores the near x preload
 // or the subsequent XMM roles.
+// M3 lane 11 r163 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH each run; control 115, difflib-aligned 73; body
+// unchanged). Reading of the head: it is one colouring decision made in the clip block. The allocator ranks the zero of
+// the negations above each of the three clip deltas (214 against 196), so the zero is coloured first and takes XMM3;
+// retail colours the y and z deltas first (XMM2, XMM3), then the zero (XMM4), then the x delta (XMM5), and with the zero
+// in XMM4 the copied normal's i falls to XMM3 and the view coefficient's load, now in a fresh register, is scheduled
+// above the copy. The y and z deltas outrank the zero only when their rows are scaled in place, which needs the ratio
+// ranked between the deltas as a product operand: the compiler orders a product's operands by the order in which their
+// symbols are first referenced, and retail's rows need x delta, ratio, then the z and y deltas. Forms: the denominator
+// accumulated in the ratio variable (`real t = delta.i * n.i; t += ...; if (t != 0.0f) ... / t`) 200 (first +0x60,
+// aligned 65: all three rows in place, the coefficient preload as retail, zero and near distance swapped XMM4/XMM5);
+// diagnostic, the first product named and the ratio accumulating the other two (`real denominator = delta.i * n.i; real
+// t = denominator + delta.k * n.k; t += n.j * delta.j;`) 191 (first +0x22f, aligned 36: the whole head, the delta
+// registers and the three rows are retail's; left are the plane-normal operand orders and the projection tail), with
+// the walking `out`, a `source` element pointer and `total` declared first 193 (aligned 32;
+// build/r163/lead-0x1652e0-ratio-partial-sum.patch), with three unused locals 88 (first +0x22f); the denominator through
+// the existing dot3f, either argument order, 224 (first +0x60, aligned 68: the ratio ranks below the deltas). The
+// plane-normal loads sort by a class, not by the source order: the normal's j and k are fixed by their offsets, its i
+// follows the plane pointer's symbol number mod 8 (why unused locals moved earlier counts with period 8). The plane as
+// `&planes[pass]` after two separate flag tests gives the classes retail's orders need but computes the pointer 378
+// (1835 B); the two flag tests with a conditional plane 249 (1867 B); the conditional plane ahead of the two-arm tests
+// 387 (1835 B); one combined flag test with the conditional plane 382 (1867 B).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

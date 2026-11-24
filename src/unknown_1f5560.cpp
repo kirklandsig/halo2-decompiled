@@ -1934,6 +1934,17 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // center.x), and after the type-one normalize retail loads both difference components and multiplies them by the
 // negated radius held in the zero register. The per-arm adjustment writes out an existing helper's body and the
 // arm orders are orders by score, so nothing is kept.
+// M3 lane 4 r257 (h2m fast with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B). Measured: operand order
+// here follows the reassociation rank (a named local or parameter ranks by its symbol number, an expression above
+// every leaf), so `difference.x * (0.0f - radius)` multiplies the negated radius by the loaded component where
+// retail loads the component and multiplies it by the negated radius: retail's negated radius ranks as a leaf below
+// `difference` in the type-one arm and above `perpendicular` in the type-zero arms. In the float colouring the
+// direction's x (weight 181, live to the cosine) takes XMM5 ahead of the radius (114), which is then left XMM4;
+// retail reloads the direction after the calls and gives the radius XMM5. No single forced allocator decision
+// comes near (16 tried: 194..273). Forms: the type-one centre through the existing planar_scale and two sums 244
+// (1181 B); the negated radius named once after the radius for all its uses 241 (1183 B); named in the type-one
+// arm ahead of `difference` 272 (1199 B), after the normalize 249 (1184 B); the type-one products written negated
+// radius first 198 (same code); its sums written product first 198 (same code). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -375,6 +375,23 @@ void function_254200(void)
 // unused it stays at 2): a local copied from a constant argument of a function inlined at link time is folded only
 // after the numbering. Two more such assignments would give retail's order; no existing function this body could call
 // supplies them.
+// M3 lane 6 r238 (H2M_FAST and plain; control 4): cause work on the reload group. The three values come back after the
+// slow-path call in the order the allocator numbered them when it split their ranges there, lowest number first (ours
+// x, y + size, the depth constant; retail has the constant's number between the other two), and that numbering follows
+// the optimiser's own numbering of the body's expressions, which moves in steps of 32. Diagnostic stores ahead of the
+// size (not source) flip the group once their weight reaches 5: a store to an array element weighs 2, a store to a
+// scalar global 1 (also when nothing reads the global); three array stores give retail's order for 3 to 24 stores, ours
+// again at 27 to 33, retail's at 36. Declarations ahead of the function (1 or 40), an unused helper and same-file
+// inline helpers weigh nothing; each state setter inlined from another file weighs about 3 (the two state writes by hand
+// turn the three-store probe back to ours). Source forms: 0x14390 moved into this file (same flags without /Ob1, so the
+// link may expand it; retail has its body inline here) and called for the texture and dimension block 4 at 1109 B, fast
+// and plain, but its other callers expand it too (0x144f0 79, 0x14560 119, 0x43a40 295, 0x254200 150, 0x2548f0 512),
+// reverted; the lookup helper taking the bitmap index as 0x137550 does (index 0, range test, scaled element address) 4;
+// the two readiness tests through a file-local inline with a real priority parameter 4; the texture and dimension block
+// through a file-local inline taking (stage, bitmap, priority) with the stage copied to a slot local 4 (all the same
+// code). Measured against the count with two probe stores (one unit short of the flip): the four vertex position calls
+// in member form, the index-taking lookup helper, the real-parameter readiness wrapper and the primitive start in C form
+// add nothing.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -850,6 +867,15 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // shared sampler_state_write (KEPT), the first quad's colour through the file's colour helper with a unit scale, the
 // lower coordinate as `arg_1 * -0.5f + 0.5f`, both coordinates as the corner formula `(1.f - 0.5f) * arg_1 + 0.5f` /
 // `(0.f - 0.5f) * arg_1 + 0.5f`.
+// M3 lane 6 r238 (H2M_FAST, control 2): the pair is the same effect as 0x254490's group (see its r238 lines): after the
+// slow-path call the values come back in the allocator's numbering, ours with the depth constant numbered below the lower
+// coordinate, retail above it. Forms: 0x14390 moved into this file (so the link may expand it) 512 (2289 B: both calls
+// expand), reverted; the lookup helper taking the bitmap index as 0x137550 does 2; the readiness tests through a
+// file-local inline with a real priority parameter 2; 0x254490's texture block through a file-local inline 2 (same code
+// each); the three pixel-shader record clears through one file-local inline 126 (2252 B, first +0x83: the inline depth
+// limits then fall differently); the first texture and dimension block written out as 0x254490 has it, in place of the
+// 0x14390 call, 512 (2289 B); the scale's half named ahead of the 0x1cf50 call for the first two texture calls 436
+// (2316 B).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

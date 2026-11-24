@@ -1348,6 +1348,11 @@ __forceinline long vehicle_round(real value)
 // cross choice), no up pointer 12-14, the dot as (velocity, forward) 4, the up pointer at the top 4, `strength` declared
 // after the vectors 4, `-k` 4, byte_flags_set for the clear 4, the bit-field clear 7; 1/2/3 redundant paren pairs at the
 // rate's division 4/6/10 (S with the plain side 6/6/8), at the tick product 4/12/12 (6/12/10).
+// M3 lane 5 r241 (H2M_FAST), at 4 (S = cross3f_staged at the first cross, re-measured 4): S with a `vector3f const
+// *forward` in the side block for the side cross and its down term 93 (735 B: the pointer is materialised), the same on
+// the plain first cross 93, with the `up` pointer at the side cross too 96 (734 B); S with the clamp through PIN in the
+// strength update or as `rate = PIN(...)` 4/4 (same code); the strength as `-0.3` then `if (mode == 2 || mode == 4)
+// strength = 0.3;` 143 on S and on the kept body.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2515,6 +2520,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // value halved as `/ 2.0f` 9 (same code); the state looked up from a second VEHICLE_GET 465; the final loop's value declared
 // at the loop body's top and assigned in the test 9 (same code); re-measured: the forward speed velocity-first k, j, i 9 and
 // grouped (k + j) + i 11.
+// M3 lane 5 r241 (H2M_FAST), at 9: the kind loop ahead of the six overlay finds 443 (2010 B); the graph-index store after
+// the kind loop 465 (state is then reloaded first, as retail, but the index still before the graph); arm 3's forward
+// speed through a fresh VEHICLE_GET pointer 397 (2039 B); `long i` and the overlay channel declared ahead of `state` 28
+// (the state lookup moves ahead of the channel constructor); the graph test as `graph != NULL` 9 (same code).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

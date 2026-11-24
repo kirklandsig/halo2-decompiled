@@ -872,6 +872,28 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // declarations with the else arm's two zero stores dropped 329 (1716 B), the pitch alone 308 (1710 B); descriptive names
 // for the angles, the copies, the planar pair and the side axis in four sets 130 each (same code: these homes do not
 // follow names). Body unchanged.
+// M3 lane 15 r141 (fast screen with 0x29b990 and 0x170d70, both MATCH each time; control 130; aligned = rows off retail
+// after alignment, control 140, of which 33 are operand-order rows). Reading of the operand orders: each product's and
+// sum's operands are sorted by a rank, higher first. A local or temporary ranks by its creation number; a float read
+// through a pointer global at offset 0 ranks by that global's position among the globals the body names (the ones the
+// body names itself first, then those its inline lookups bring in; three low bits); a read at an offset ranks by a
+// two-bit phase that parenthesised groups and the clamp macro ahead of it advance. Retail's first rotation has axis i
+// and k above the vector's components and axis j below them; this body has axis i below (the up-axis global is the
+// first global it names, the two data arrays arrive through the inline lookups) and j, k above. The actor and object
+// lookups written as direct array references (the up axis then third) put axis i on retail's side in all four of its
+// products: both 131 (1711 B, aligned 124, 25 order rows), actor only 131 (1708 B), object only 131 (1708 B); each
+// with the planar pair declared ahead of the second copy 129. On both direct + planar pair first: sine and cosine
+// named ahead of the facing copy 128 (aligned 122), cosine named first 126, named after the copy 128; the up axis in a
+// pointer local 126; one sine/cosine pair assigned for each rotation 165 (1718 B, aligned 137, 14 order rows); the
+// pitch clamp and its add in one statement 303, both clamps so 293; the pitch lower bound as `0.0f - limit` 129 (same
+// code); the second rotation's sine and cosine named 224. Left on that form: axis j and k sit one phase too high (j
+// must be the lowest), and no caller-side form moved them without moving the clamp fields: a parenthesis pair around
+// the first call's cosine argument raises both one phase (172), around its sine argument 210 (phases unchanged, the
+// frame shrinks). Diagnostics
+// (reverted): parenthesis pairs around the pitch difference x around the second axis's first product, 0-3 each, with
+// and without the planar pair first, 128-311 (0/0 with the pair first 128, 0/3 155, 1/3 208, 2/2 210, the rest 225 to
+// 311); 0-7 unused locals at the top x 0-3 pairs on the pitch difference with the pair first: 128/308/309/237,
+// 222/299/232/256, 219/296/232/256 (2 and 3 locals), 124/204/299/237 (4 to 7 locals); no match. Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

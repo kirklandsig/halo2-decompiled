@@ -692,6 +692,19 @@
 // factor schedule, the reciprocal in XMM4. Not kept: the second `if (special)` repeats a test (match-only). The same split
 // with the else arm on the second block 644 (2665 B, lane 3 r249's shape); either cross through cross3f_staged on the
 // lead 476 each (same code); the waves scaled in place (`s0 *= 0.03f; s1 *= 0.025f;`) ahead of the adds 652 (2592 B).
+// M3 lane 3 r304 (fast with 0x4a1e0; control 536 = baseline, 2622 B; nothing kept). Frame reading: the compiler packs this
+// frame by size, then by reference count, then by which object reached its count first. Retail's 4-byte cells run inv,
+// shape0, the mixed wave, the plain sine, the first cross's j and k, then the three shared cross products; its 12-byte
+// homes run v1, v2, w, v3, v4, and the two input copies reuse v4's home (first input) and v1's (second input, scaled in
+// place). Ours has one shared x87 transfer cell and three product cells (0x54), and puts v4 below v3: the special arm
+// reloads v4.i once, a seventh reference retail does not have. On r257's wave helper lead (628 with the plain cross,
+// re-measured) the helper's vector takes a 12-byte home (its own, or w's) and the first cross a 12-byte home of its own,
+// so that frame is 0x60 for another reason than retail's. Forms: that lead with the first cross staged into w 626
+// (listed); the helper with three real outputs, the third through a pointer copy, 659 (2586 B); two real outputs and a
+// spare vector written through a pointer copy 659; the caller naming the helper's two values 626 (same code); the
+// helper's vector with the mixed wave first 626; the camera shifts read in the two calls (retail reads the second one
+// after the first add's stores) 537; the second input copy scaled in place 536 (retail's form, other code, same count);
+// both 537; those three on the 626 form 625/626/625. Twelve forced single allocator decisions: none below 536.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
