@@ -1079,6 +1079,13 @@ real g_55e618;
 // 102 (same code). Lane 16 r162's lead rebuilt on this tree 39 (1537 B, frame 0x124, first +0x367): what is left on it
 // is the dot's first product (ours n.j * v.j, retail v.i * n.i), the value argument's load at the block top and the
 // three position stores after the impact index, the last two BLOCKED-BY 0x169510 and 0x244980 (the record's capture).
+// M3 lane 11 r166 (h2m fast with 0x2ba3e0 and 0x2b8da0, both MATCH each run; control 102, with registers, XMM numbers and
+// stack offsets masked 40; body unchanged). The velocity through a `vector3f *` to the particle's field handed to the
+// placement call, the perpendicular through the existing vector3f_scale with basis_dot_xzy as its scale argument: with the
+// tangent through the existing vector3d_from_points3d 194 (1541 B, masked 52); that with the contact position through
+// the existing vector3f_add_scaled 193 (1540 B); the tangent as member statements through the pointer 108 (1538 B, masked
+// 48; lane 12 r155's form re-measured); the dot named once ahead of vector3f_scale with the helper tangent 194; the member
+// tangent with the vector3f_add_scaled position 193. BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
