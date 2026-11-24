@@ -179,28 +179,28 @@ static __forceinline __m128 project_first_spin_velocity(solver_linear_row_31e7b0
 	w[0]=_mm_add_ps(w[0],w[1]);
 return w[0];
 }
-static __forceinline __m128 circular_first_projection_value(solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
+static __forceinline void circular_first_projection_fields(solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b,__m128 *&angular_b,float &output)
 {
-	__m128 w[5];
-	w[0]=b->linear;
-	w[1]=a->linear;
-	w[3]=b->angular;
-	w[2]=row->a;
-	w[1]=_mm_sub_ps(w[1],w[0]);
-	w[0]=a->angular;
-	w[0]=_mm_mul_ps(w[0],w[2]);
-	w[2]=row->linear;
-	w[1]=_mm_mul_ps(w[1],w[2]);
-	w[2]=row->b;
-	w[3]=_mm_mul_ps(w[3],w[2]);
-	w[0]=_mm_add_ps(w[0],w[3]);
-	w[0]=_mm_add_ps(w[0],w[1]);
-	w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
-	w[1]=_mm_add_ss(w[1],w[0]);
-	w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
-	w[2]=_mm_add_ss(w[2],w[1]);
-	return w[2];
+	__m128 work_0,work_1,work_2,work_3;
+	work_0=b->linear;
+	work_1=a->linear;
+	work_3=b->angular;
+	work_2=row->a;
+	work_1=_mm_sub_ps(work_1,work_0);
+	work_0=a->angular;
+	work_0=_mm_mul_ps(work_0,work_2);
+	work_2=row->linear;
+	work_1=_mm_mul_ps(work_1,work_2);
+	work_2=row->b;
+	work_3=_mm_mul_ps(work_3,work_2);
+	work_0=_mm_add_ps(work_0,work_3);
+	work_0=_mm_add_ps(work_0,work_1);
+	work_1=_mm_shuffle_ps(work_0,work_0,0x55);
+	work_1=_mm_add_ss(work_1,work_0);
+	work_2=_mm_shuffle_ps(work_0,work_0,0xaa);
+	work_2=_mm_add_ss(work_2,work_1);
+	angular_b=&b->angular;
+ _mm_store_ss(&output,work_2);
 }
 static __forceinline void circular_second_projection_fields(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, __m128 const &linear_b,__m128 *const &angular_b, float &projection_output)
@@ -1532,10 +1532,7 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 				{
 					float target_a = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 					__m128 *linear_b=&b->linear;
-					__m128 first_projection=circular_first_projection_value(((solver_linear_row_31e7b0*)terms),a,b);
-					// Publish this receiver after reduction, before the scalar output.
-					scalar_work.angular_b=&b->angular;
-					_mm_store_ss(&projection_pool.circular_first,first_projection);
+					circular_first_projection_fields(((solver_linear_row_31e7b0*)terms),a,b,scalar_work.angular_b,projection_pool.circular_first);
 					circular_second_projection_fields(((solver_linear_row_31e7b0*)terms)+1,a,*linear_b,scalar_work.angular_b,projection_pool.circular_second);
 					// Both projections finish before these shared parameter reads.
 					solver_step_31c940 *parameters = step;
