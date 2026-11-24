@@ -612,6 +612,10 @@ void function_e5930(long unit_index);
 // Existing three-field reset helper 162. NOT kept: word setter gains five and the
 // reset dispatch still expands in every form.
 // MiniMax R (11-20): re-checked, no new form and no lower score (118): the reset dispatch expands at this call site, so the body is 413 bytes against retail's 343, and retail reads the definition's flags with a dword shift where this build folds the test to a byte: BLOCKED-BY 0xe5930.
+// Bound low byte 118, with shifted Boolean read 121, explicit byte assignments
+// 121, complemented tag bit and clear arm first 126, direct bit transfer 128,
+// XOR transfer 126, typed tag subrecord with word setter 153, shared second
+// object lookup 118. The final reset still expands.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -1846,6 +1850,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // animation flags reference 137, typed state 137, distinct case-four/five state 137, named recovery duration
 // 137, and named contact point 137. NOT kept: the preload stages a one-use settings pointer across a call
 // and the material and point homes still differ.
+// The definition, material and point slots remain displaced.
+// Unit, biped or both references at their consumers 176 each. Movement, unit and movement,
+// or all three references 617 each. All three pointers at the consumers or beside the position
+// query 617/652. NOT kept: each increases the score and the movement views grow the frame to 0x100.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3182,6 +3190,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // and reloads the count at the call). On the lead: 0x1d5120 reordered (rate, count, result) at every declaration and
 // the call 53 (same code); the count tested in place and read again 93 (261 B), as `char` 93; all three clears as
 // pairs 120 (285 B), with or without bit_vector_set.
+// Bound component 63, with short body getter 73. Bound rigid-body array 63,
+// with size first 64. Signed settling field widened once 63, direct test and
+// query 82, retained byte 82, direct with short body getter 99. The byte
+// forms put the biped index on the stack. The widened count still needs EBP.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3917,6 +3929,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // zero-extended where retail sign-extends it, and the 0xe16b0 call's argument in a register where retail passes it
 // on the stack.
 // MiniMax R (11-20): re-checked, no new form and no lower score (324): the frame is 0x48 against retail's 0x4c, so every home is four bytes out, the biped index is read from [esp + 0x54] where retail reads it from [esp + 0x58], and the state byte at +0x34b is zero extended where retail sign extends it.
+// The frame remains 0x48 and the pre-call flag slot is absent. Delayed mass conversion with an aggregate
+// point 332, point setter 313, scalar point 494, and scalar point split around the integer conversion 494.
+// With total updated first 332, direct weighted scalars 494, weighted point initializer 509, and staged
+// weighted products 398. NOT kept: the setter recovers the 0x4c frame but grows to 1924 bytes and loads the
+// point before the mass call. Four other forms break the caller.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4594,6 +4611,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Shared turn-state byte, implicit or explicit zero test 629/629; named moving or stationary decision 601/601.
 // Special byte assigned in both arms, named for byte ordering, positive permission in both arms, or direct named
 // comparison 628/628/628/628. NOT kept: the best gains one against reduced control 602 and keeps that image's larger frame.
+// The changed byte and flight threshold still occupy different stack homes.
+// Movement pointer or reference, at entry or in the movement gate, with conditional or
+// branch-assigned threshold: 646 in all eight forms. NOT kept: all enlarge the existing
+// 0x7c reduced image and leave the frame there against retail's 0x78. Reduced control 598.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5665,6 +5686,10 @@ void function_e4300(long arg_159e6d)
 // NOT kept: the one-point forms change the reset argument from EAX to ECX.
 // Scoped inline depth with the Boolean field test matched as a diagnostic.
 // MiniMax R (11-20): re-checked, no new form and no lower score (91): retail keeps the 0xe18d0 and 0xe5930 calls out of line (61 bytes) while this build expands the reset dispatch at the call site (113 bytes), so the prologue and the table lookup land in different registers: BLOCKED-BY 0xe5930.
+// Shared object getter with the direct reset 91, unsigned-word slot 94,
+// unsigned remainder slot 91, named headers and word slot 94, saved record-pool
+// pointer 91, bound header 91, shared header table 91, bound biped datum 91.
+// The direct reset still expands in all eight forms.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {

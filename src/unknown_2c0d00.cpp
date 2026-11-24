@@ -939,6 +939,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // One three-state direction result, strict-first, wide-first, conditional or default-preserving:
 // enum 909/903/909/923, byte 913/905/913/912. NOT kept: the best enum retains 0x2cb0.
 // The byte forms recover 0x2cac but combine two independent retail byte stores and leave the entry register exchange.
+// The 0x2cb0 frame and exchanged actor-index and zero registers remain.
+// Separate marker arrays at the first, second, first/second, third, first/third, second/third
+// or all three query scopes, and all three at object scope: 925 each. NOT kept: the frame
+// and score are identical to the control.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

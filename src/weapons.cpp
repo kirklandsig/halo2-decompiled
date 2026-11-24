@@ -3649,6 +3649,9 @@ struct s_ammo_conversion_entry
 // the loop head reading the field through the definition, 208 (713 B); the same-definition sum read through `source`
 // for both operands (re-measured: it does flip the loop pair) 204 (718 B: the weapon and the other weapon swap
 // EBX/EBP and the loop entry changes).
+// Generic source view mutable/const, generic destination view, and paired mutable/const views 190 each.
+// Existing header accessors for the destination, source with generic refresh, and both with generic refresh
+// 190 each. NOT kept: all preserve the exchanged saved-register roles and 731-byte extent.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4077,6 +4080,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // without the long count 596. Reading (frame and colouring traces): ours has 17 dword cells against retail's 16, and
 // the weapon index (a parameter) is never coloured (live across 93 unreferenced blocks to the tail's marker calls), where
 // retail holds it in EBX from the entry to the fire call; no single forced allocator decision reaches retail.
+// Named accumulated heat 593; shared tag cap 612; merged cap publication 604; native barrel accumulator 593.
+// Native item flag 629; chained failure flags 593; nested destruction test 593; named no-magazine heat rejection 593.
+// NOT kept: ties or regressions. The 0x1c64 frame and early weapon/tag register assignments remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4621,6 +4627,9 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // the heat byte's sum written `old + increment` 1412; the old value and the increment declared the other way round
 // 1412; the tick clamp as an if before the store 1412; the 0x194 validity test as nested ifs 1412 (the 1412s the same
 // code).
+// Conditional decay result 1413; named cooling adjustment 1412; one cooling coefficient read 1416; retained cooled heat 1412.
+// Single clamped write 1412; named recovery time or excess heat 1412 each; nested recovery guard 1412.
+// NOT kept: ties and regressions. The 0x34 frame, entry roles and dual spill remain.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5296,6 +5305,9 @@ struct s_weapon_projectile_creation
 // call. The callee writes only xmm0 and retail's 0x293130 keeps xmm2 across it, and 307 of the 311 retail call sites
 // that keep an xmm register across a call fit exact kill sets of the callee, so retail does know the callee's set
 // and still does not carry the zero into the loop.
+// Shared spread weight, named blended endpoints or separate endpoint products 1121 each.
+// Captured default endpoints 1134; early spread position 1140; cone products 1154; shot-wide default weight 1158; selected shot scale 1154.
+// NOT kept: the local blend ties; the shot-wide form grows the frame. The 0x1ea4 probe remains.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

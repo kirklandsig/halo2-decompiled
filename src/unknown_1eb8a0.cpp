@@ -961,6 +961,36 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // code); w as dot3f(&s->direction, q) 680 (2875 B); the 0.866 test as dot3f(&s->direction, d) 597; the final test written
 // failure-first 596 (same code); the counter kept in a local for the final test 597 (2878 B); the first step limit as one
 // conditional 600; len3 as one conditional 596 (same code). None reaches 595, so the lead stays one short of the bar.
+// M3 lane 15 r143 (fast screens with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless stated; control 603, aligned 473).
+// Kept at the same count (fast and plain 603, the same code, the file's 17 other functions MATCH): the three tick
+// scalings of the output position are calls to the existing vector3f_scale in place of its body written out, which
+// also drops the `ticks * position->i` operand order at the constant arm.
+// Retail evidence read this round: at all three scalings retail stores each scaled component and reads the next one
+// back from memory through the same register (`movss [edi], xmm; movss xmm, [edi + 4]; mulss; movss [edi + 4], xmm`),
+// and only a component still held in a register from the rows above is taken from it (the settle arm's i); the
+// zero-offset product is `ticks * i` at the constant arm and `i * ticks` at the two others. So the scaling's reads and
+// writes went through two pointers the compiler could not tell apart. The activation block shows the same thing for
+// the target (`lea eax, [esi + 0x30]`, stored and read back through EAX) and both direction refreshes (`lea edi, [esi +
+// 0x3c]` ahead of the three stores, then passed to 0x30bf0).
+// Leads (not kept): the helper given the member's address for both arguments, `vector3f_scale(&out->position, ticks,
+// &out->position)`, with the pointer local kept for the direct stores 586 (2892 B, aligned 465; the settle arm's
+// scaling is then retail's but for the operand order of its i product); that on lane 15 r139's 596 form 579 (2887 B,
+// aligned 452). With the pointer local passed for both arguments the compiler joins the two and the count stays 603, so
+// the gain needs the member's address written beside a local that already holds it (a second path to the same data,
+// match-only); patches build/r143/lead-0x1eb8a0-586.patch and -579.patch. The tick count passed without a local on
+// the 579 form 576; 1 to 8 unused locals on it (diagnostic) 579/577/575/575/576/576/576/578.
+// Other forms: on the 596 form, 1 to 8 unused locals at the top (diagnostic) 596/597/614/613/595/594/593/593 and the
+// same values again from 9 on (a period of eight; the only rows that move are one scratch XMM choice in the settle
+// arm's last row), so no symbol count changes the structure. No pointer local at all (the output position written as
+// `out->position` everywhere) with the helper scalings 682 on this body and 673 on the 596 form (the direct stores then
+// go through a reloaded `out`). Every output row through the existing vector3f_add_scaled as well: with the pointer
+// local 683 (2870 B, first +0x5), without it 676 (2876 B), on this body 673 at retail's 2881 B (aligned 452). On the 579
+// form: both direction refreshes through vector3d_from_points3d(pos, &s->target, &s->direction) 645 (2887 B, aligned
+// 395 and retail's 734 rows), the first only 647; the activation target through vector3f_add_scaled as well 647 (2888
+// B, aligned 389, the lowest so far; patch build/r143/lead-0x1eb8a0-aligned389.patch), the target alone 646. On that
+// 389 form the clamp factor selected ahead of t at all three clamps 690 (first +0x2, aligned 404), at the first 678,
+// at the first two 691; each loses the caller 0x1eb6f0. The aligned counts fall with every helper retail's code
+// shows, while the positional count rises until the entry and the clamps are right as well.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1150,18 +1180,14 @@ long function_1eb8a0(
 					position->j = s->direction.j * f + qr.j;
 					position->k = s->direction.k * f + qr.k;
 					real ticks = (real)globals->field_2_3;
-					position->i = position->i * ticks;
-					position->j = position->j * ticks;
-					position->k = position->k * ticks;
+					vector3f_scale(position, ticks, position);
 					s->ticks_left = (long)((dist - (((3.f - cnt) - 0.5f) * e3 * 0.5f + hi)) / e3 + (3.f - cnt) + 3.f + 0.5f);
 				}
 				else
 				{
 					*position = qr;
 					real ticks = (real)globals->field_2_3;
-					position->i = ticks * position->i;
-					position->j = position->j * ticks;
-					position->k = position->k * ticks;
+					vector3f_scale(position, ticks, position);
 					s->ticks_left = (long)((dist - hi) / e3 + 3.f - 0.5f);
 				}
 			}
@@ -1191,9 +1217,7 @@ long function_1eb8a0(
 						position->i = nq.i * back + qr.i;
 						position->k = nq.k * back + qr.k;
 						real ticks = (real)globals->field_2_3;
-						position->i = position->i * ticks;
-						position->j = position->j * ticks;
-						position->k = position->k * ticks;
+						vector3f_scale(position, ticks, position);
 						s->ticks_left = (long)ratio;
 					}
 					else
