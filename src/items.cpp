@@ -2475,6 +2475,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
 // build shares one: BLOCKED-BY the transform helper's own file.
 // MiniMax R (11-20): re-checked, no new form and no lower score (140): the three flag arguments to the 0xe2d80 call are written to different stack slots than retail uses, and the flag byte is cleared with a load, an and and a store where retail clears it in place with an and against [ebp + 0x12c].
+// Direct spin publication after/before the damping call with saved short countdown 190/190,
+// saved long countdown 194/194, short terminal count 190/190, or long terminal count 190/190.
+// NOT kept: the +0xf byte home returns, but the body shortens to 870–874 bytes against retail's 892
+// and the release-flag operations still differ.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

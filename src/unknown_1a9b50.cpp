@@ -968,6 +968,10 @@ extern point2f *g_468778;
 // or the slot gains 20: two of the facing dot's reads counted on the view instead of the pointer would do it. Forms: the facing dot through the facing pointer 410 (re-measure; the pointer 176 again, the same
 // rotation); the dot named ahead of the pointer through the view's fields 401 (1571 B, re-measure; it compiles as main,
 // view EBX and a separate lea), with the copy vector declared first 401, as a named bool 415 (1581 B).
+// The 0x40 frame and settings home agree. The optional prop still spills into the input slot.
+// Native prop datum/node lookup 389/389, one prop-index read 395/395, null in the absent arm 370/370,
+// conditional distance limit 395/395. NOT kept: retail zeros EBX before the presence test. The absent-arm
+// forms move the zero and leave the spill. The typed receivers alone tie.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

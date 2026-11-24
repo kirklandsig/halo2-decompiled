@@ -4102,7 +4102,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // between them are not one uniform shift (the parameter reloads sit 4 apart, the pair at esp+0x64 0x10 apart and the
 // first float home 8 the other way), so it is not a single missing local; the column alignment of this round
 // finds no earlier split to work from.
-// score 1000 (was 1000): Earlier at 1000 (was 1052). Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
+// Earlier at 1000 (was 1052). Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
 // (field offsets, the 29 constants, condition directions, callee arguments, loop shapes and local types agree).
 // Retail takes |pitch_slope|, |roll_slope|, the yaw |arg| and the |target| / |steering| pair in the yaw test by
 // comparison (comiss; 0 - x), not x87 fabs: vehicle_magnitude() gives that (1052 -> 1009, 1092 instructions each);
@@ -4260,6 +4260,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // 0x74, so every stack home sits four bytes higher.
 // MiniMax G (11-20): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack; the body is 32 bytes longer than retail's.
 // MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
+// Planar acceleration through scalars 1127, a point 1120, deferred zero 1067,
+// or aggregate initialization 1000. Consuming the transform return in those forms 1156/1166/1083/1024.
+// NOT kept: none recovers the 0x74 frame. The return pointer adds frame storage, and
+// even the shorter deferred-zero form raises the score.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
