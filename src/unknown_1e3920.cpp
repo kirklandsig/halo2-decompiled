@@ -2087,6 +2087,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // 280 (1216 B, unrolled into the two-call form); filled through a cursor 280; both queries through 0xcbd50 with fresh
 // slot lookups, the grenade type through a fresh lookup and the unit fetched after the queries 280 (the same code
 // each); the pair as an initializer of two 0xcbd50 calls with a `long` loop index 333 (1186 B). Body unchanged.
+// M3 lane 6 r239 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60/0x1e1f20/0x1e1fd0; control 251,
+// aligned 135): both halving tests with the flag first 251 (aligned 143, other code); the second block's queries through
+// 0xcbd50 on a named `unit_index` 280; the rounds pair cleared by `rounds[1] = 0;` 253; the rounds pair declared at the loop
+// top 251 and the weapon pair ahead of the grenade lookup 251 (same code each). Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
