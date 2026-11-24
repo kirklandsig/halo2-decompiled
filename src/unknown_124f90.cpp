@@ -1912,6 +1912,16 @@ long function_2197f0(real gain);
 // assigned before the window test, declared at the top of the function and assigned there, or assigned inside the window
 // test's first comparison: masked 76 each (H2M_FAST 128 at 678 B for each of the four places). The kept inverse form with
 // the local at the first three places: masked 80 each (H2M_FAST 92). The declaration point does not move the register.
+// M3 lane 14 r151 (fast screen with 0x1251e0/0x221810, both matched; control 87). Reading (allocator trace): no single
+// forced allocator decision changes the count (80 tried: every rank and pick of the float values); in this build the
+// window test's fade-out load never becomes a value that lives into arm 1 (the product reads the field again), while
+// retail's product reuses that load in XMM1, which is what pushes the reciprocal, elapsed and 1.0 one register up; so
+// the cause is the reuse, not the ranking. Forms: the product written in retail's order `(elapsed - hold) * inverse *
+// fade_out` reading the field 87 (the product reassociates to fade-out second, from memory); the product in two steps
+// with a named ramp `(elapsed - hold) * inverse`, then `ramp * fade_out` 87; the whole fade-out term named and then
+// added to the ambience difference 87 (same code); the time sum written product first 87;
+// the fade-in copy and the reciprocal computed ahead of the window test 181 (633 B); re-measured: the eager clamp
+// `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {
