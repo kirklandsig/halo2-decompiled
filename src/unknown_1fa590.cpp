@@ -585,6 +585,12 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 // projection inputs 132; a pointer local for forward in the idle arm at any one use 130 (the paren state); the
 // sine declared first 143; the rate first in the angle product 132; the angle call result in parens 170 (1164
 // bytes, the rotation reschedules); double sin/cos in the active arm 204, in the idle arm 130, both 202.
+// M3 lane 8 r230 (h2m fast with 0xc7840, 0x30bf0 and 0x1eb8a0 listed, base 132): both projections' subtractions through
+// a file-local a - b helper (0x109660's scale-then-subtract shape) 188; the global up pointer named for the first idle
+// cross 132; both idle cross outputs declared ahead of the first cross 132 (same code each); the idle axis normalized
+// ahead of the base scaling 127 (1149 bytes: the call moves ahead of the scaling, retail calls it after; not kept);
+// the active offset declared ahead of the angle 132 (same code). Left as before: the active sine store and the dot's
+// i term (retail forward->i first), the idle first cross's i row (retail loads g first) and its j/k rows.
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {

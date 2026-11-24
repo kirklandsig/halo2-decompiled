@@ -1076,6 +1076,10 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
 // shape_dot(limited, axis)` 239 (1243 B); the zero-axis dot through shape_dot(*old_up, up) 244 (1249 B) and shape_dot(up,
 // *old_up) 244 (1249 B). The fallback cross still loads the old up first where retail copies up's register and multiplies
 // from memory (one byte longer per product).
+// M3 lane 2 r143 (h2m fast with 0x1e5af0/0x30bf0, both MATCH; control 235): zero compares written zero-first:
+// `0.0f == function_30bf0(&axis)` 236; the acceptance test as `0.0f < shape_dot(cross, axis)` 235 (same code); both
+// forward tests as `0.0f == function_30bf0(&forward)` 238 (1240 B); all four 239 (1240 B); the inactive arm's `0.0f ==
+// function_30bf0(forward_result)` 235 (1241 B). Body unchanged.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -2385,6 +2389,10 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // removed 721, desired read through a volatile view in both arms 435, direction as three scalar locals 453; in all of them
 // the inner loop still reads direction from the stack, so direction loses XMM6/7 to desired.i/j (and XMM5 to -1.0) across
 // the inner loop, not to its address, its copies or the function's size. Body unchanged.
+// M3 lane 2 r143 (h2m fast with 0x1f19c0/0x1f2e60 MATCH, 0x1f2a80 31; control 413): the zero compares retail makes
+// against XMM6 written zero-first: `0.0f != contact_normalize(&desired)` 424 (2073 B; the zero test moves after the
+// scale, aligned 213 -> 167), `0.0f > desired.k` 413 (same code), `0.0f == length_sq3f(...)` 448 (2073 B), all three 446
+// (2073 B); the final loop's `*speed < projection` 413 (same code). Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
