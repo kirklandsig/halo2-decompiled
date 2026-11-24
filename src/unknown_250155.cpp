@@ -3258,6 +3258,14 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // re-read of the two availability flags after its 0x53be0 call (main gets that from volatile reads). The 0x53c30 barrier
 // with those volatile reads made plain (fast check of all 125 functions of src/network_voice.cpp): 81 here, but matched
 // 0x56590, 0x565c0 and 0x54590 are lost and 0x55e10 139 -> 167. Body unchanged.
+// M3 lane 12 r184 (h2m fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47/0x2514fd, all MATCH; control 87). Retail's
+// frame cells: -8 the first loop's `&players[i]` (5 references), -0xc the shown count (5), -0x10 (3), -0x14 the first
+// loop's player and the flag (5), -0x18 the second loop's `&players[i]` (2); ours shares one `&players[i]` temp across the
+// loops (one counter), so a counter per loop (re-measured 85) gives retail's -8 and -0x18, and the shown count, the
+// player/flag slot and a bitmap index then tie at the same density and sort in another order. On that form: the second
+// loop's widget indices declared in reverse 85, the colour array ahead of the team locals 85 or last 85, the local search
+// ahead of the player lookup 120 (920 B), `in_matchmaking` declared first and assigned after the shown count 85. Still
+// BLOCKED-BY 0x53b40's chain for the players[i] reload. Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

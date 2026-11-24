@@ -1580,6 +1580,13 @@ static __forceinline long real_to_long(real value);
 // place, retail reads the object velocity off the AI object pointer kept at [esp+0x20] (+0x88/+0x8c/+0x90) where ours
 // keeps a velocity pointer in EBX, and forms the two position pointers for 0xfa1a0 ahead of the direction rows. Still
 // BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0x25d740, MATCH each run; control 382, aligned exact/stack/register-masked 157/109/58;
+// the score is positional, so nothing below the threaded false exit can move it): the computed entry result tested as
+// `if (local_2 == true)` 508 (1921 B, 0x25d740 expanded); the computed result then `if (!local_2) return false;` with
+// the body unnested 526 (1911 B, frame 0x54, 0x25d740 expanded), `return local_2;` there 526; diagnostics, not keepable
+// (an always-true test in front of the getter site): `else if (!field_18 && local_1)` on the computed result 489
+// (1904 B, 0x25d740 a call, object-speed root a call), with `&& local_0` too 490. Re-measured: result preset false 495,
+// rejection written first 382, computed result 508, that with magnitude3d 508 (both expanded), magnitude3d alone 468.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

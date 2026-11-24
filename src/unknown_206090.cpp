@@ -964,6 +964,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // The 0x5d0 frame and velocity homes remain. Typed point pointer/reference/direct access 1346/1346/1413.
 // Base-first shared point/both velocity sums 1346/1346; shared output sums 1346; read-only point definition 1346; ray-origin aggregate 1426.
 // NOT kept: direct typed reads reach 6238 bytes but regress at the same frame. The ray aggregate grows the body and the other forms tie.
+// M3 lane 12 r184 (h2m fast with 0x2056e0, MATCH each run; control 1346, aligned distance 1727; opcode census against
+// retail). The scale helper straight-line re-measured 1412 (6238 B, aligned 1514, frame 0x44 -> 0x3c over retail's); with
+// the magnitude read in place re-measured 1649 (5974 B, aligned 1514, frame exactly retail's 0x58c, 264 bytes short: 28
+// fewer movss, 7 fewer mulss, six more each of fld/fmul/fstp = the slip arm's factor and scale in x87 where retail
+// stores the early sqrt as a float and scales in SSE); the slip arm's sqrt ahead of the copy and normalisation
+// re-measured 1428 (6256 B, aligned 1477); all three 1665 (5986 B, aligned 1447, then 25 movss short). New on that
+// combination: the ending as `if (...) return true; return false;` 1619 (6031 B, aligned 1421, 9 movss short, but two
+// epilogues with 8 pops against retail's 4 pops ahead of the final tests); as one `return a && b && c && d;` 1621 (6002
+// B, aligned 1437). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

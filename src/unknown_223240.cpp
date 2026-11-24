@@ -521,6 +521,10 @@ void function_2232a0(void)
 // image, its 6th try reproduced with `--tries 6`): best 31 only by passing the players count where the stub takes the view
 // count (wrong values to an unmatched callee, not applied); the rest of that variant (the layout as one ternary, a named
 // terminal record pointer) 47. Still BLOCKED-BY 0x2b5d0.
+// M3 lane 6 r239 (fast with 0x223240/0x2232a0/0x223080; control 47, aligned 20): a `records` base pointer for the loop
+// record, the terminal record and the stub's views 50 (aligned 31), declared at the terminal call 50; the layout as one
+// nested conditional 47 (same code); the view count and a named terminal pointer declared at the terminal call 40 (the moved
+// declaration's 40; the pointer adds nothing); the counter stepped before the loop call 57. Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

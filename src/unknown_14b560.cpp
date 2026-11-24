@@ -1053,6 +1053,15 @@ bool function_e4050(long object_index);
 // through a `long &` 171, the unit as `long const &` to the player's field 171, no player local (the datum read
 // through the iterator at the unit read and the exits) 171 (all the same code); the bit-18 exit storing the unit
 // local 189 (387 B). Still BLOCKED-BY 0xbaf80.
+// M3 lane 15 r142 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80, all MATCH; control 43). Allocator reading of
+// the kept body: the unit (priority 64) colours ahead of the unit object (50) and the player datum (32), so it takes EDI
+// and the datum is left EBX; all three are one value each after CSE, so field-read spellings cannot move them. On the
+// `dword current` NONE-root walk (re-measured 171, 405 B) the unit (90) takes EAX because the walk's step object sits in
+// ECX; with the unit alone put in EBX (a forced diagnostic, not source) only 6 rows are left: retail copies the unit into
+// the walk variable before the unit-object lookup and tests that copy, ours tests the unit and copies after. So retail's
+// unit is coloured after the datum and the unit object with EAX held by the step object. New forms: on that walk the
+// walk variable, the lookup, then the NONE root 171; the walk variable and the root ahead of the lookup 82 (433 B); the
+// step object named from the root 171; the unit declared bare and assigned before its test 171.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2660,6 +2669,12 @@ static __forceinline long player_round_ticks(real value)
 // from the settings at each use 717 (2749 B); the tick scale read at each use 702 (2741 B, under the bar); no `actions`
 // reference 703; the three target-latch references dropped for the player fields 703 (both the same code). Still
 // BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 15 r142 (H2M_FAST with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970; control 703; 722 rows against
+// retail's 714, every row after the 0x80 site shifted, aligned exact/register-masked 452/170): the 0x80 test as
+// `(signed char)input[0x1c] < 0` 703; the 0x60 block's weapon looked up after its two flags 703 (both the same code);
+// the last two weapon lookups in the other order 709 (2747 B); `idle = 0; rest = 0;` as two statements 703; the attack
+// target preset NONE and set from the input on the 0xbae20 test 699 (2740 B; lane 16's form, a gain of four). Still
+// BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3402,6 +3417,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // EBP; ours: datum ESI, unit EDI shared with the hoisted g_4e8c20 reloads), not only the stubbed callee summaries.
 // Both iterator set-ups taking g_4e8c24 directly (no `players` local) 141 (610 B) but aligned 77 against 79 (registers
 // masked 36 against 38): the iterator's data store ahead of loop 1 goes, as in retail (a lead, not kept).
+// M3 lane 15 r142 (H2M_FAST with round 34's widened image, control 103, aligned exact/register-masked 79/18): loop 2's
+// flag word named once for its two tests 103; the busy arm as `busy = function_badc0(unit, 1) ? function_e4050(unit) :
+// false;` 103; the datum index read ahead of loop 2's tests 103 (all the same code); the root-differs arm first with the
+// unit arm as `else if` 117; the last unit named, its position copied, then stored 101 (round 34's 101 family, a gain of
+// two, not kept). Still the one globals web (BLOCKED-BY 0xb8540/0xb7b40 stubs and 0xe4050's asm rounding, as above).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
