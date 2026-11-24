@@ -890,6 +890,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
 // row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
 // and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
+// Interleaved running control and speed sums with four two-product schedules: third control square
+// before the root 231 each, after the root 280 each. NOT kept: the 0x28 frame remains, the first
+// SSE difference moves earlier to +0x50 and the schedule still diverges.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3852,6 +3855,11 @@ real g_47ff30 = 2.5f;
 // groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
 // scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
 // return, but the acceleration spill stays at +0x20 and both velocity homes still differ.
+// Interleave up-vector producers and directional weights with three mass observations. Up i/j then up/left
+// weights before up k 704, early forward weight 707, up/left/forward weights interleaved 669, or all
+// three weights before up k 667. Existing final scale helpers give the same scores.
+// NOT kept: 669 and 667 recover frame 0xfc and retail length, but gain only three and five points and
+// leave the acceleration and velocity slots displaced.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -960,6 +960,9 @@ struct s_item_collision_bsp
 // products 240/240/198, both initial pairs 194, axial plus k 242, fallback plus k 241, all products 241.
 // Wide scale with explicit real fallback rounding 237. NOT kept: wider products need a match. The joined
 // k alone restores the +0x28 speed slot but shortens the body to 1342 bytes.
+// Coefficient-first products across all left, up and forward rows, separately and in every combination,
+// 190 each. All three axes with coefficient-first translation products 190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1313,6 +1316,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // The scaled axis i still spills and the frame stays at 0xc0. Marker-up-first alignment, axis-first projection,
 // axis-first and forward-first rotation cross products, scalar-first diagonal, reversed axial and weighted cross
 // products, and axis-first rows through the shared setter all score 130.
+// Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
+// separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
+// NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
