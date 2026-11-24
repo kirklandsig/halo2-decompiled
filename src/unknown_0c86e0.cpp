@@ -4,6 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "unknown_1e1f20.h"
 
 struct s_object;
 s_object *function_badc0(long object_index, dword type_mask);
@@ -74,8 +75,8 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Matched source: the unit is fetched at the entry through the file's macro; the weapon lookup fetches it again after
 // the two player-index lookups through a copy of the object pool bound to a reference (the idiom src/unknown_0a76b0.cpp's
 // 0xe8c10 uses), so the pool, its data and the unit are read again as retail does, with the data pointer as the address
-// base; the current weapon is read from that second fetch in place (slot as a short, NONE when the slot is empty) rather
-// than through 0xcbd50. was_zoomed is declared after the weapon query, the weapon flag is
+// base; the current weapon comes from the shared unit_weapon_in_slot (unknown_1e1f20.h), given that second fetch
+// and its current slot as a short. was_zoomed is declared after the weapon query, the weapon flag is
 // `weapon_index == NONE ? false : function_100f70(weapon_index)`, and the zoom-out sound helper returns early.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
@@ -88,11 +89,9 @@ void function_c86e0(long unit_index, bool keep_weapon_zoom)
 		user_index = ((s_zoom_player *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c))->user_index;
 	s_record_pool *objects = g_4e0300;
 	s_record_pool *&pool = objects;
-	s_zoom_unit *weapon_unit = ((s_zoom_object_header *)pool->data)[unit_index & 0xffff].unit;
-	short slot_index = weapon_unit->current_weapon_slot;
-	long weapon_index = NONE;
-	if (slot_index != NONE)
-		weapon_index = weapon_unit->weapon_indices[slot_index];
+	s_unit_weapon_view *weapon_unit = (s_unit_weapon_view *)((s_object_header_weapon_view *)pool->data)[unit_index & 0xffff].object;
+	short slot_index = weapon_unit->current_weapon_index;
+	long weapon_index = unit_weapon_in_slot(weapon_unit, slot_index);
 	bool weapon_zoomed = weapon_index == NONE ? false : function_100f70(weapon_index);
 	bool was_zoomed = false;
 
