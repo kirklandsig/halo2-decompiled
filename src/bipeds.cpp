@@ -6405,6 +6405,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Existing early-cross rotation on forward, up, or both 143/143/144; paired with the other shared rotation
 // 143/188; forward field throughout with one or both early-cross rotations 154/154; both with staged side
 // cross 79. NOT kept: the best ties at 894 bytes and leaves the first difference at +0x107.
+// Matrix basis with field forward and direct/staged-side output 90/90,
+// staged up publication 253, early forward publication 313. Complete matrix
+// with ordinary/staged side, early input copies, or ordinary final cross
+// 333/333/342/333. The 0x3c frames and earlier differences lose retail's
+// 0x24 prefix. The complement spill and final forward load still differ.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
