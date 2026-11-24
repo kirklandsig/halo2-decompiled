@@ -782,3 +782,34 @@ def test_circular_next_row_publishes_after_accumulation_input(solver_images,prec
             assert snapshot[1]==1
             snapshots.append((snapshot,row_pointer,linear_a,linear_b))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_header_captures_terms_before_publishing_a_home(solver_images,precision):
+    from unicorn.x86_const import UC_X86_REG_ESP
+    from test_solver_dispatch import RESULTS
+    def as_float(v):return struct.unpack('<f',struct.pack('<I',v))[0]
+    frame=STACK+32768-0xd0
+    header=frame+0x20
+    for rounding in range(4):
+        data=solver_case(12,0)
+        put(data,HEAP,'B',3)
+        put(data,STEP,'7fi',0,as_float(HEAP+0x80),as_float(RESULTS),0,1,0,0,1)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in [(retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3)
+                callbacks.append((terms,payload))
+                return_from_hook(uc)
+            machine.mem_write(header,struct.pack('<6I',0x11801,TERMS,RESULTS,0,HEAP+0x80,8))
+            machine.mem_write(header+24,struct.pack('<4I',0x20c0e,CALLBACK,0x12345678,0x400))
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,header,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            label='retail'if machine is retail else'compiled'
+            assert callbacks==[(TERMS,header+32)],(label,precision,rounding,callbacks)
+            assert snapshot==(bytes(data),1)
+            snapshots.append((snapshot,callbacks))
+        assert snapshots[0]==snapshots[1]

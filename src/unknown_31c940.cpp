@@ -1320,10 +1320,11 @@ static __forceinline void decode_solver_header_31c940(unsigned char *&op,
  solver_velocity_31c940 *&a_home)
 {
 	solver_header_31c940 *header = (solver_header_31c940 *)op;
+	// Capture the row input before publishing pointer homes; the header can overlap them.
 	a = header->a;
+	terms = header->terms;
 	b = header->b;
 	a_home = a;
-	terms = header->terms;
 	op += sizeof(*header);
 }
 
