@@ -612,6 +612,10 @@ void function_e5930(long unit_index);
 // Existing three-field reset helper 162. NOT kept: word setter gains five and the
 // reset dispatch still expands in every form.
 // MiniMax R (11-20): re-checked, no new form and no lower score (118): the reset dispatch expands at this call site, so the body is 413 bytes against retail's 343, and retail reads the definition's flags with a dword shift where this build folds the test to a byte: BLOCKED-BY 0xe5930.
+// Bound low byte 118, with shifted Boolean read 121, explicit byte assignments
+// 121, complemented tag bit and clear arm first 126, direct bit transfer 128,
+// XOR transfer 126, typed tag subrecord with word setter 153, shared second
+// object lookup 118. The final reset still expands.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -3178,6 +3182,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // and reloads the count at the call). On the lead: 0x1d5120 reordered (rate, count, result) at every declaration and
 // the call 53 (same code); the count tested in place and read again 93 (261 B), as `char` 93; all three clears as
 // pairs 120 (285 B), with or without bit_vector_set.
+// Bound component 63, with short body getter 73. Bound rigid-body array 63,
+// with size first 64. Signed settling field widened once 63, direct test and
+// query 82, retained byte 82, direct with short body getter 99. The byte
+// forms put the biped index on the stack. The widened count still needs EBP.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -5657,6 +5665,10 @@ void function_e4300(long arg_159e6d)
 // NOT kept: the one-point forms change the reset argument from EAX to ECX.
 // Scoped inline depth with the Boolean field test matched as a diagnostic.
 // MiniMax R (11-20): re-checked, no new form and no lower score (91): retail keeps the 0xe18d0 and 0xe5930 calls out of line (61 bytes) while this build expands the reset dispatch at the call site (113 bytes), so the prologue and the table lookup land in different registers: BLOCKED-BY 0xe5930.
+// Shared object getter with the direct reset 91, unsigned-word slot 94,
+// unsigned remainder slot 91, named headers and word slot 94, saved record-pool
+// pointer 91, bound header 91, shared header table 91, bound biped datum 91.
+// The direct reset still expands in all eight forms.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
