@@ -2137,6 +2137,11 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // `real const start_time` 2; the animation and the time `const` 2 (the four the same code); the first sample reading
 // the id through a `c_animation_channel const &` to channel 0, 328. Reading: retail's fstp is where a scheduling region
 // opening at the fld would put it, so its render-model reload acts as if it lay outside the block (an edge reload).
+// M3 lane 4 r259 (coordinator review 11-24): `real time = (real)(double)(device->channels[0].frame_position *
+// (1.0f / 30.0f));` byte-MATCHES (retail stores the time one slot later, after the animation push, as behind a widening
+// conversion), but a (real)(double) round trip changes no value and only steers the compiler (ruled out 11-13, see
+// MiniMax H's note in unknown_01cf50.cpp): NOT kept. Lead: a natural double context that widens the product, such as
+// a double constant or a double time value the source would have had.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
