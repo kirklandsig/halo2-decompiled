@@ -935,6 +935,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // three projections through dot3f 583 (2837 B). Retail's first cross forms each product in the operand whose offset in
 // the object is the larger multiple of four mod 32 (forward.k before up.j, forward.i before up.k, up.i before forward.j),
 // which is what one base pointer with the object's own offsets gives; the direct forms above do not reach it.
+// The clearance, hit and range slots still differ. Rejected-ray counts in long/short/byte 662/675/664;
+// remaining clear count 675; rejected-ray masks in dword/word/byte 682/694/674; remaining clear mask 719.
+// NOT kept: the counts and masks change the retail byte lifetime and shorten the body.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

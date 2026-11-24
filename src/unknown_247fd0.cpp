@@ -1094,6 +1094,8 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // member's use and the frame shrinks); the blend written inside the three sums after the rotation call 392 (1617 B,
 // aligned 197); the sibling's cache spelling with the scalar blend 383 (1617 B, aligned 170, masked 65), with the blend
 // inside the sums 383 (aligned 194); the named cleared flags with the scalar blend 383 (same code).
+// Byte and word gate projections gave quotient parity 441/441, remainder threshold 441/441, masked quotient 334/334,
+// and shift to high bit 403/403. The effect address still folds into the flag load.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
