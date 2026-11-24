@@ -2238,6 +2238,16 @@ void function_27dd10(void)
 // node_destination_get's map-flag bit as `1u <<` 2; both 2 (0x289580 lost); the walk's bit test as `local_2 & 1u` 2;
 // all three unsigned 2 (0x289580 lost). Diagnostic: 0x27e6b0 defined ahead of this function in the file 2 (the
 // numbering does not carry over from the function compiled before it). All restored.
+// M3 lane 8 r235 (H2M_FAST with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2). Scheduler reading: the pair is the end of the counter block (load, inc, store of the pass counter), where
+// the allocator reloads the walk's count (ECX, [esp + 0x18]) and the shifted bit flags (EBX, [esp + 0x1c]) for the
+// latch; neither has a consumer in that block, so both rank 35 and fall back to emission order (ECX first). A forced
+// search finds three single decisions that give a byte match: the flags reload one height step higher, the count
+// reload one lower, or the count reload not ready before cycle 2. So a source form needs the flags reload to gain a
+// use inside the counter block (or the count reload to wait on one there). Forms in function_288572: the bit flags as
+// `byte` 286 (0x281b60 280, every sibling lost), as `short` 341 (375), the empty-group arm ending in `continue` with
+// the group arm unnested 2 (same code), the flags read by index `arg_6[arg_5 >> 3]` 444 (410), the empty-group arm's
+// index step after the output step 2 (0x288570 10, 0x289580 9 lost). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2537,6 +2547,8 @@ void function_2818e0(void)
 // note (the pair is ordered by recycled allocator candidate numbers at the end of the split cascade). The mask bits as
 // `1u <<` in node_flags_test, in node_destination_get or in both 2 each; the walk's bit test as `local_2 & 1u` 2; all
 // three 2; 0x27e6b0 defined ahead of 0x27dff0 in the file 2. All restored.
+// M3 lane 8 r235: the forms and the scheduler reading above 0x27dff0's marker (same pass helper): flags as `byte` 280,
+// as `short` 375, the early `continue` 2, the indexed flags read 410, the empty-group index step moved 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

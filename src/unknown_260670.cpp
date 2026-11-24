@@ -379,6 +379,22 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // at +6/+7; retail's cell needs more references than either flag (retail's owner-lookup expansion puts its result local
 // in that cell). Left on the 418 form: the unknown4c store's place, two x87 square orders in the unknown40 loop, the
 // scale operand sides, the perpendicular block's subtract order, and the named test's `sete`. Body unchanged.
+// M3 lane 11 r165 (fast screen with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, 0x13e2d0, 0x260060, 0x2600e0, 0x2623a0,
+// 0x260160 and 0x25f7b0; control 440 at 3097 B, aligned 246). Retail's first evaluator pass is 0x2600a0's own loop
+// (proc in EDX, `call edx`, the result tested at the bottom) with `push 0`, so it is the 0x2600a0 call expanded by the
+// link, and its tail is 0x271300 with two NULL arguments expanded; main's body writes both out by hand. Re-measured: the
+// first pass as that call 604 (3077 B, aligned 214); with the tail as the 0x271300 call too 527 (3077 B, aligned 209).
+// On that two-call form: the random-pick test held in a named bool 527 (same code); the index fill counted by a `long`
+// 537 (3057 B); the selection as `if (!evaluate) continue; if (score > best)` 527 (same code); the two break tests as
+// separate ifs 527 (same code). On main's body the index fill counted by a `long` 575. Diagnostics with folded
+// `count > 0` guards on the first-pass call form (removed at once): around the sorted-loop call's own block (1 to 3)
+// nothing changes; around the sorted loop 2 or 3 keep the expansion and 4 make it a call (602 at 3026 B); without the
+// index-fill loop 2 are enough, so a counted loop ahead of a site raises it by about one and a third levels; around
+// both evaluator sites 3 keep both expanded, 4 call both, and 3 plus one three-way `||` guard expand the first and call
+// the second as retail does: retail's sorted path sits between 3 and 3.4 levels colder than ours. Guards around the
+// whole body turn the vector helpers into calls (2682 B), so the difference is in the sorted path only. Retail's two
+// flag bytes have 4 and 3 references, as ours; what packs them is the sorted loop counter's cell gaining the owner
+// lookup's result. Still BLOCKED-BY 0x262a30. Body unchanged.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

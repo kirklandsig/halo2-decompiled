@@ -890,6 +890,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
 // row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
 // and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
+// Explicit double CRT boundary at root/reversing arc/root plus reversing arc/steering arc/
+// root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
+// Explicit float CRT calls for the root, arcs and absolute values: 109.
+// NOT kept: the independent SSE square and x87 sum still diverge at +0x69.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3852,6 +3856,10 @@ real g_47ff30 = 2.5f;
 // Frame 0x100 versus 0xfc; acceleration and velocity homes still differ.
 // Tick-rate scope through climb approach or boosted speed, each alone, with query-local angular output,
 // with up-magnitude scope, or with both: 672 in all eight forms. The acceleration spill stays at +0x20.
+// Separate mass reads with the double-factor scale at the response, force and torque stages
+// in trial subsets: 703/712/723/703/708/716/736. One directional mass read, both final
+// reloads and all three double-factor scales: 708.
+// NOT kept: the double-scale forms raise the score and leave the native early homes unresolved.
 // Separate final mass reads and role names for query outputs, force/torque, axis-angle, or all three
 // groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
 // scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
@@ -4284,6 +4292,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // or aggregate initialization 1000. Consuming the transform return in those forms 1156/1166/1083/1024.
 // NOT kept: none recovers the 0x74 frame. The return pointer adds frame storage, and
 // even the shorter deferred-zero form raises the score.
+// In-place force, torque, or both through the shared scaler 1000 each. Staged force, torque, both, and both
+// mixed scaler/setter forms 1000 each. NOT kept: the frame stays 0x78 at 4698 bytes and the force, torque and
+// mass homes remain unchanged.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -7108,6 +7119,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Lateral input with force 1054, lateral output with torque 959, linear velocity with rotation axis 970.
 // Input/output, input/axis, output/axis and all three shared 1068/1054/970/1055.
 // All three with a scoped relative matrix 1145. NOT kept: the frame drops to 0xdc and the body shortens to 5043 bytes. The other forms keep frame 0xfc.
+// Independent transpose values 959, stage three 1032, stage six 1032, stage the two forward coefficients 969,
+// up pairs first 971, reciprocal-side reads first 971, forced inline 959, and forced inline with six staged 1032.
+// NOT kept: every form leaves frame 0xfc versus 0xd8 and ties or raises the score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
