@@ -1196,7 +1196,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2021. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2017. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1566,7 +1566,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 						float ratio = operation_float(op, 8) / impulse;
 						impulse = ratio * impulse;
 					}
-					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), a, scoped_b, result, scalar_work.simd_scalar);
+					// Reload the saved A receiver at the bounded update boundary.
+					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), state.solving.a_home, scoped_b, result, scalar_work.simd_scalar);
 					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 					a = state.solving.a_home; ++result; op += 16;
 				} while (*op == 5);
