@@ -1045,6 +1045,21 @@ void function_3dd10(long object_index, bool force);
 // The bank ordinal still sinks below the entry guard; count and mask homes remain different. Empty-bank single exit 197, guarded while 77, tint block reference 86, admitted tint base 311.
 // Returned HSV inputs 200, returned RGB bank color 309, shared absolute/signed hue difference 184, two signed half-turn bounds 203.
 // NOT kept: the guarded while ties. The single exit puts the ordinal store in place and swaps the saved object and tint registers.
+// M3 lane 12 r184 (h2m fast with 0x1318d0/0x131a00/0x3dd10/0x131c20, all MATCH; control 77). On lane 16's R form the choice
+// count loses EBP to the eligible mask by two priority points (2 against 4) and stays uncoloured; the first scan block
+// references three constants (NONE for `last`, 0, and 0xff for the variant byte test). R re-measured 186 (1034 B); on R
+// the eligible arm's statements reversed 186, `weight > 0.0f && eligible` 188, the selection latch `choice_count > j` 186,
+// the selection loop as a `for` 93, one `j` for both loops 74. LEAD: the variant byte read as `char` and tested against
+// NONE (the 0xff folds into NONE's constant) flips the ranking to retail's: count in EBP, the mask in the colours
+// argument's dead slot, the count test, variant lookup and first scan identical to retail (151 at 1019 B on R, 140 on
+// this body alone); + the selection add as `choice->weight + cumulative` 151 (same code); + the outer index zeroed ahead
+// of the guard 143 (head identical); fmod overloads: selection double 130, blend double 133, both 146; the outer bound
+// as `count > i` 128 (1034 B, the selection add retail's). Without the outer guard (`for (long i = 0; count > i; ++i)`)
+// 143, and with the found block's blend through the existing function_131c20 (flags 1, t = blend; expanded) 128 at
+// 1034 B: only retail's own 1.0 load on the selection loop's not-found edge is left (ours jumps to the clamp entry's
+// load), with the outer guard kept it stays a call (373). On that form the selection loop as a `for` 148, the clamp
+// through a file-local inline pin 263. No single forced allocator decision gives the edge load (a block-shape
+// difference: retail's found and not-found exits join before the `weight <= 0` path does). Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

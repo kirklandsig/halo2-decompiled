@@ -1299,6 +1299,16 @@ void function_143250(
 // band-two homes are then re-used by different later values in the two builds. The first code difference with identical
 // bytes ahead of it is band two's entry 1, where retail forms the shared r6 * r4 product ahead of the zero and ours
 // behind it; retail also holds band two's entry 18 in XMM5 until the call where ours stores it at once. Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x143250 MATCH; control 939, aligned 777, masked 154). Reading of the frame packer on
+// this build: 142 four-byte cells; the cells that end up highest, just under the matrix, are the ones holding a single
+// value with two references. Retail has four of those where this build has three, and the extra one is band three's
+// s35 * r2 (stored once at +0x23c, read once for entry 27): retail stores the pending r1_r1_r8, copies the product to
+// XMM7 and multiplies that copy by r3_r3 five statements later, where this build reloads the home for the r3_r3 product,
+// so here the value has three references and shares band two's r3-square cell. Every integer register web but the two
+// 0x143250 argument set-ups is already retail's; 173 of 192 stack cells sit elsewhere. Tried on the s35 * r2 value: its
+// r4_r4 product with the operands exchanged 939, its r3_r3 product exchanged 939, the value declared const 939, written
+// `r2 * s35` 939, entry 27's first product as `s7_s2 * s35_r2` 939 (the same code each); its r4_r4 product declared
+// beside the r3_r3 product 1368 (10783 B). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1010,6 +1010,20 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // the same request helper with `lea ebp, [ebx + 0x34]` from a graph in EBX, exactly ours, so the helper's form agrees;
 // what differs is this caller's graph, which has its stack home in both builds but gets EBX for the request's outer
 // region only in ours (retail: graph+0x34 formed in place in EBX, the graph loaded into EBP per loop).
+// M3 lane 7 r224 (fast screen with 0x1cccd0, 0x1cd070, 0x1dc8c0, 0x1ddd00, all MATCH each run; control 348, aligned 53,
+// register-masked 45). The allocator's ranking of the request's first group, read for the first time: the graph's
+// stretch from the status test to the inheritance loop is one candidate ranked 16 (seven uses: the +0x34 address, one
+// read in each of the five resource loops, the inheritance count) and takes EBX; the graph+0x34 address is another,
+// ranked -44 (its five pushes against 24 blocks where it is live and unused), and is left EBP. Forced allocator
+// decisions (diagnostics, not source): the address ranked anywhere between the graph and the loops' own indices, or
+// the graph ranked below the address, both give the address EBX and the body retail's 1761 bytes, but the graph is
+// then held in EBP for the whole group where retail loads it at the first loop, the next one and one failure join;
+// the address ranked first takes ESI and rotates the loops; the graph's stretch given no register 439 by position.
+// No single decision gives retail's group, so retail's graph is not one stretch there at all (lane 11 r141's reading:
+// a value kept in memory). Source forms: the request's graph through a file-local by-value identity getter 348 (same
+// code), with bool success 478 (bool's code); the graph local declared `*const` 348 (same code); the request's
+// urgent flag written `success != 0` 619 (first difference +0x5); the found names read into three locals at the
+// request 390 (re-measured). Body unchanged; the request's roles stay BLOCKED-BY 0x1ddd00's inline copy.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
