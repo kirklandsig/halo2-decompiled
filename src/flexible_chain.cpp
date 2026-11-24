@@ -1071,6 +1071,14 @@ void __stdcall function_1160c0(real dt)
 // sine factor written first in each row 59 (same code).
 // Forced single allocator decisions on main's body (diagnostic, not source): the tag index in ECX 115, the segment in
 // EDX 120; nothing else of 84 tried lowers 144.
+// M3 lane 15 r143 (fast = 144, 1371 B; body unchanged; BLOCKED-BY 0x211060, a contributor's function, as lane 3 r304 found).
+// Re-measured on this base with 0x116750, 0x1160c0, 0x17c540 and 0x211060 listed: the held parameter order 95 (0x17c540
+// MATCH, 0x211060 269), with the file-local rotation helper on it 59 (1369 B, aligned 62; everything outside the
+// rotation block then agrees with retail). On that 59 form: 1 to 8 unused locals at the top (diagnostic)
+// 59/59/64/64/64/59/59/59, so the rotation block is no symbol-count state; forty forced single allocator decisions
+// (float priorities one step up or down, the dot's and the crosses' register picks; diagnostic, not source), none
+// below 59 (the nearest 62). Left on it: retail loads the offset's i late into the register of a dead dot temporary and
+// keeps axis j in a register through the dot, where ours loads all six components ahead of the first product.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

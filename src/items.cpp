@@ -956,6 +956,13 @@ struct s_item_collision_bsp
 // The transformed-plane XMM homes and contact slot still differ. Angular impulse, contact point and travel speed slot names 190/190/190.
 // Conditional const axis 259; shared double-factor vector scale in the axial arm, fallback arm, both arms or at the joined spin 239/239/238/319.
 // NOT kept: the names tie and none of the scale forms recovers the pending x87 factor at a lower score.
+// Completed transformed-normal rows i/k/j, j/i/k, j/k/i, k/i/j, k/j/i: 193/196/196/197/194.
+// Overlapped row completion i/j, j/k, or all three in reverse: 201/198/195.
+// NOT kept: the native coefficient registers and rejection span still differ.
+// Plane-join homes differ and the real spin scale spills at the join. Wide axial, fallback or joined k
+// products 240/240/198, both initial pairs 194, axial plus k 242, fallback plus k 241, all products 241.
+// Wide scale with explicit real fallback rounding 237. NOT kept: wider products need a match. The joined
+// k alone restores the +0x28 speed slot but shortens the body to 1342 bytes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1306,6 +1313,12 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 130, scale final expression from lateral subtotal 130, shared marker transform pointer 165, ordinary dot for
 // alignment 130, shared fallback side cross 130, shared fallback result cross 130, staged axis cross and in-
 // place projection scale 151.
+// Shared double-factor scale with direct or staged cross, in-place or independent output,
+// and rounded or double reciprocal: 197 each at 869 bytes.
+// NOT kept: the 0xc0 frame remains and the scale expands as x87.
+// The scaled axis i still spills and the frame stays at 0xc0. Marker-up-first alignment, axis-first projection,
+// axis-first and forward-first rotation cross products, scalar-first diagonal, reversed axial and weighted cross
+// products, and axis-first rows through the shared setter all score 130.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1834,10 +1847,20 @@ struct s_item_flags_view_10b850
 // 0x154. Entry flag bytes and low motion homes still differ.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the four item_spin_vector calls through include/axis_rotation.h's helper (the item's axis, sine and
 // cosine) 865 (4143 B); the first two only 829. Restored.
+// Sign-selected lateral bound 878, shared direction test 858, nonnegative selection 901,
+// direction-owned bound and step 861, direct/staged cross with bound 944/955,
+// common query vector with bound 880, and with direct cross 918.
+// NOT kept: the 918 form recovers frame 0x12c and first +0x3e, but shortens to
+// 4034 bytes and raises the score. The entry Boolean byte stores still differ.
 // One relocation decision shared with settling 885. A separate gravity test with one settled result
 // before sampling, beside carrier output, beside gravity or at the query 884/884/885/885.
 // A separate gravity test with one relocation result before sampling, beside carrier output or at the query 898/898/885.
 // NOT kept: each reserves 0x150 and shortens to 4066 bytes. Retail uses separate relocation and settling bytes.
+// The 0x154 frame still exceeds retail's 0x12c, and the entry Boolean homes differ.
+// Cap within contact kind 824, capped initialization 873, conditional lift 824, lift floor in
+// correction 824, shared inward speed 830, retained pre-impact projection 884, cap-result
+// arms 873, named scaled lift 824. NOT kept: ties or regressions. Retail recomputes the
+// normal projection after impact.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -2479,6 +2502,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
 // build shares one: BLOCKED-BY the transform helper's own file.
 // MiniMax R (11-20): re-checked, no new form and no lower score (140): the three flag arguments to the 0xe2d80 call are written to different stack slots than retail uses, and the flag byte is cleared with a load, an and and a store where retail clears it in place with an and against [ebp + 0x12c].
+// Direct spin publication after/before the damping call with saved short countdown 190/190,
+// saved long countdown 194/194, short terminal count 190/190, or long terminal count 190/190.
+// NOT kept: the +0xf byte home returns, but the body shortens to 870–874 bytes against retail's 892
+// and the release-flag operations still differ.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

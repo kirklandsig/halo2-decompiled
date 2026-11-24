@@ -2105,6 +2105,33 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // aligned 135): both halving tests with the flag first 251 (aligned 143, other code); the second block's queries through
 // 0xcbd50 on a named `unit_index` 280; the rounds pair cleared by `rounds[1] = 0;` 253; the rounds pair declared at the loop
 // top 251 and the weapon pair ahead of the grenade lookup 251 (same code each). Body unchanged.
+// M3 lane 14 r152 (h2m fast with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240, 0x1e5280, 0x1e3b60 and 0x259a0, all MATCH
+// unless said; control 251, sequence-aligned 183 rows). Allocator reading: the three long-lived values are coloured in
+// the order options (rank 82, 20 references) > actor (68, 20 references) > the random-state pointer (38), each taking
+// the first free callee-saved register (ESI, EDI, EBP); the pool global never becomes a register candidate because its
+// lookups are merged into three. Retail's order is actor (ESI), pool (EDI), options (EBP): its actor and pool carry the
+// references of six unmerged lookups. A forced choice of EBP for the options alone (diagnostic, not source) leaves the
+// count at 257 but brings the aligned distance from 252 to 198, so the options' register is the larger half and the
+// pool's residency the rest. Diagnostics on the two callees whose link-time summaries differ from retail's, restored at
+// once: `inline` on 0x1e53e0's definition 277 (1216 B, aligned 198; 0x2758b0 21 -> 114, it expands there); 0x259a0's
+// file built with link-time code generation and /Ob1 (the draw stays a call) 306 (aligned 183), both 308 (1218 B,
+// aligned 189): neither order gives the pool a register here on this body, so the unmerged lookups have to come
+// first. Still BLOCKED-BY 0x259a0 (its file's no-LTCG flag) and by 0x1e53e0's summary. Body unchanged.
+// Source forms, same round: block 2's two queries in the matched siblings' idiom (0x1e1f20 / 0x1e1fd0: `long unit_index =
+// actor->unknown018;` then 0xcbd50 with the slot read through a fresh lookup) re-measured 298 (1232 B), but with stack
+// offsets masked the aligned count falls from 213 to 109 (actor ESI, options EBP, the pool loaded once above the `je`);
+// that with 0x259a0's file link-visible as above 235 at 1236 B (aligned 113: left are the actor index in EDI for EBX,
+// the pool's data held where retail holds the pool and re-reads its data at each lookup, the random-state pointer in
+// EDI/EDX for EBX, ticks in a register for retail's home, the unit and the actor's unit index not re-read after the
+// first weapon store, the weapon cursor and countdown for retail's 32-bit index, the tail's counter address). A lead
+// only: that flag change costs eight matched functions in a full check (0x1a9ec0, 0x1aa9f0, 0x1aea20, 0x1b4560,
+// 0x1b54d0, 0x1b7210, 0x1c0300, 0x25b910 need the draw opaque), so the flag stays. Every lookup through an
+// out-of-file function taking the pool as a parameter (diagnostic) 251, on the sibling-idiom form 298 (same code each:
+// the parameter is substituted, no pool copy survives); the two slot queries as out-of-file functions writing through
+// an out pointer (diagnostic) 281 (1247 B, aligned 136), with the link-visible draw 351. On the sibling-idiom form: the
+// `unit_index` local serving the first query only (the second reading the actor's field) 294 (1217 B, aligned 128); the
+// secondary query stored first 298 (1232 B, aligned 109); the current weapon through the existing 0x1e1f20(actor_index)
+// with the secondary through 0xcbd50 285 (1182 B, aligned 136: 0x1e1f20 stays a call).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

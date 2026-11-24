@@ -968,6 +968,10 @@ extern point2f *g_468778;
 // or the slot gains 20: two of the facing dot's reads counted on the view instead of the pointer would do it. Forms: the facing dot through the facing pointer 410 (re-measure; the pointer 176 again, the same
 // rotation); the dot named ahead of the pointer through the view's fields 401 (1571 B, re-measure; it compiles as main,
 // view EBX and a separate lea), with the copy vector declared first 401, as a named bool 415 (1581 B).
+// The 0x40 frame and settings home agree. The optional prop still spills into the input slot.
+// Native prop datum/node lookup 389/389, one prop-index read 395/395, null in the absent arm 370/370,
+// conditional distance limit 395/395. NOT kept: retail zeros EBX before the presence test. The absent-arm
+// forms move the zero and leave the spill. The typed receivers alone tie.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1587,6 +1591,10 @@ static __forceinline long real_to_long(real value);
 // (an always-true test in front of the getter site): `else if (!field_18 && local_1)` on the computed result 489
 // (1904 B, 0x25d740 a call, object-speed root a call), with `&& local_0` too 490. Re-measured: result preset false 495,
 // rejection written first 382, computed result 508, that with magnitude3d 508 (both expanded), magnitude3d alone 468.
+// Checked prop index or missing arm first 382/496; assign the prop in every
+// branch or handle no metadata first 415/415; checked index with read-only metadata
+// 382. Usable prop index selected first, missing index arm first, or exhaustive pointer
+// assignment from the selected index 382/496/473. NOT kept: the tying forms still send rejection to the late exit.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

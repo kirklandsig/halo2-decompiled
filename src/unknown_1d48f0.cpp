@@ -47,7 +47,7 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
-// score 268 (was 298; r286 and r239 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
+// score 268 (was 298): r286 and r239 unchanged. Earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
 // MiniMax G (11-20): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is expanded here but called out of line in retail, so the optional-state homes stay four bytes off.
 // MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
 // expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
@@ -530,6 +530,14 @@ const dword g_455978[81] = {
 // release expanded; the do-while alone 328, same code); with the loop under `if (0 < local_6)` and its counter zeroed
 // ahead of it 331 (2057 B: retail's call skeleton, 0x11bed0 called, first release expanded, second called; entry
 // registers EBX/EDI swapped); that guard alone 373 (2011 B). BLOCKED-BY 0x279740 (/Ob1 file; needs the held `inline`).
+// Use world registration results for bounds, transform or both 269/274/275. Bounds ray, rigid body pose,
+// query dispatch, paired ray and pose, or two reference-counted receivers 268 each. NOT kept: registration
+// results alter live registers without restoring the optional homes, and all typed views tie.
+// Exclusion defined on the bounds path by branches or a conditional 430/464,
+// with absent-path defaults 494/494; null volume on the absent path 430,
+// with both defaults in their arms 485 or conditional exclusion 460;
+// publish the volume after selecting the exclusion 465.
+// NOT kept: the retail homes and selective call expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

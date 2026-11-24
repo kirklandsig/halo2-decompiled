@@ -813,6 +813,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // entry otherwise unchanged: the negated radius declared ahead of the first normalisation 342, ahead of the direction
 // copy 342, ahead of the centre 343, first in the function 343 (first difference +0x4b); the direction copy and its
 // normalisation ahead of the centre 359 (first +0x7), with the negated radius first as well 366. Body unchanged.
+// Unity stays in XMM1 and the near cosine product stays on x87 in the tied forms. Distance narrowed only in
+// the distant arm 384, narrowed at each distant use 384, named wide differences with distant narrowing 380,
+// named wide squares with distant narrowing 384. Fixed-turn cosine, sine, both names, and both with y renamed
+// 305 each. NOT kept: raw-root comparisons grow the frame and require a byte match at the boundary.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1663,6 +1667,16 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // long 716; the definition distance read after the lookup call 578; the sweep counter as a long 786 (3357 B). Reading: the
 // radius is one register candidate from the entry block through the first arm (loaded once into XMM5), where retail loads
 // it inside each arm; the piece only ends at a call whose summary clobbers XMM, so this is still BLOCKED-BY 0x2108a0.
+// M3 lane 14 r153 (fast screen with 0x29a190 and 0x298c30, MATCH each run; control 569; all restored): 0x2108a0 moved to
+// a file of its own built without whole-program optimisation, with `__stdcall` on it and on this file's declaration
+// (retail pushes its argument and it returns with `ret 4`): 749 at retail's 3372 B (the entry is then retail's, no XMM5),
+// but 0x2108a0 itself 36 (its index in EDI and loop count in EBP, retail EBP and EBX), so retail built that callee with
+// whole-program optimisation and its missing summary is not a build-flag effect; `__stdcall` on 0x2108a0 in place 569
+// (same code); the point local declared first 569 (same code); the origin cast named once for both first-offset calls
+// 569 (same code); the result flag declared with the two trace flags 698 (3320 B). Lane 16 r180's held lead re-measured
+// on this main 95 (3374 B). Frame packing: the pivot and the first and second sweep points tie at 9 references each, so
+// their order is the sort's (retail puts the pivot first); the reverse trace result has 7 references to the forward
+// one's 6 and sits below it (retail the other way round); both counts follow the XMM5 radius.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
