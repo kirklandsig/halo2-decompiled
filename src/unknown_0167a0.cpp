@@ -1364,6 +1364,15 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // preceding 0x176a0, 2 each (not a symbol-count tie); the 12/13 zeros as `out[3] = 0.0f; out[2] = out[3];` 2 (same
 // code), as integer 0 2 (same code); the switch on `output_component` with cases 0..15 6; only case 12's chain ascending
 // 6, only case 13's 6.
+// M3 lane 5 r241 (h2m fast): a random search over the store order of every multi-store case group (9, 10, 11, the 12/13
+// zeros, 13's width/height, the 14/18 and 15/19 zeros, 16, 17, 20), 150 tries, best 2 (44 tries); with the 12/13 zeros
+// ascending and the 14/18 order plus 1-4 other groups random, 100 tries, best 2 (14/18 ascending always 6-10 there,
+// [4][c][8] and [c][8][4] 2 with the difference left in 14/18); cases 14/18 and 15/19 as combined labels placed at 18/19's
+// positions 2 (retail's block layout, same code), with the 12/13 zeros ascending 6, with ascending 12/13 and 14/18 as
+// `out[1] = out[2] = out[3]` / `out[2] = out[3] = out[1]` / `out[3] = out[1] = out[2]` 2/2/2 (the difference moves into
+// 14/18); every pair written descending (case 10 height first, 14/18 [4][c][8], 15/19 [c][8][0]) 8 (each block then in
+// source order). The pairs keep source order (case 20 always [c][8]) unless the 12/13 and 14/18 zeros are both
+// ascending, when cases 10, 12/13 and 14/18 all come out descending (15/19 keeps its order).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
