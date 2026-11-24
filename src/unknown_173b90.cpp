@@ -2257,6 +2257,14 @@ bool function_17afd0(long effect_index, long value);
 // same_view 12 (same code); the view test `owner != g_4b9ed8` 12 (same code); the availability test `!function_155760(...)`
 // 12 (same code); `view_pass == same_view` 13; the attached flag false then set by an `if` on the conjunction 133 (510 B).
 // Restored.
+// M3 lane 16 r182 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12, P re-measured 138 at 510 B): P with a
+// redundant `available &&` on the else arm's attached test 149 (518 B). Diagnostics (match-only steering, reverted): P with
+// one fewer same_view read (the camera test as `draw == view_pass`) 121 (502 B), the 0x174420 argument replaced 126: either
+// flips the BL contest (availability BL, same_view in its stack byte with retail's exact `test bl; mov [x], 1; jne` and
+// `mov [x], 0` blocks), so same_view's read count is what gives it BL in P; left there are NONE in EBX with the pool data
+// in EBP and the owner in EDI (`mov edi, ebx`), where retail has the data in EBX and NONE coalesced with the owner in EBP.
+// On that diagnostic: the owner NONE-defaulted 122, as a ternary 121, NONE-defaulted above the effect index 125, the
+// draw compare `view_pass == same_view` 121.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
