@@ -3221,6 +3221,21 @@ struct s_1cf531
 // corrected value an `__m128` declared outside it 61, without the reference 61. Reading: the final (2 references) is
 // packed after the rsqrt temporary (3) and joins that temporary's 0x40 slot; the copy store keeps retail's place only
 // when the copy's address reaches a call, and the fold only when it does not.
+// M3 lane 4 r260 (h2m fast, 2; body unchanged): the frame packer's counts on lane 14's 7 form (impulse by reference,
+// direction normalized in place, block-local final): the impulse has four references and makes the 0x30 slot, the rsqrt
+// temporary three and makes 0x40, the final two, so it joins the newest slot it does not interfere with, 0x40. The final
+// lands in 0x30 only with exactly four references (diagnostics: a second in-place product and call on it give five and it
+// joins local_7's 0x20, 53 at 932 B; the final passed as both arguments, or to two calls, three and still 0x40; bare
+// address expressions add none). On the 7 form, all 7 with the same code: the final as the by-value result of a
+// file-local inline; the final set to the splat and then multiplied in place; the final copied from the impulse by
+// member or by operator= and scaled in place; the final by an aggregate initialiser; the final passed through a const
+// reference declared ahead of its store; one component zeroed ahead of the product. Diagnostic: the scale getter as a
+// function the link can see keeps the corrected vector in XMM2 across the call and takes the result in XMM0 (34), so
+// retail's getter is outside the link's view as it is here and retail's reload is a real one. Compile-only: a read of a
+// vector whose address reaches a call is never a memory operand of `mulps` (with or without the x87 store between), a
+// read of one only bound by reference is. So retail's folded 0x30 read is of an object whose address reaches no call,
+// and the final vector shares its slot; what gives the final four packing references with one store and one `lea`
+// emitted is not found.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

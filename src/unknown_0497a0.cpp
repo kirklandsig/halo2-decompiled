@@ -716,6 +716,8 @@
 // Wave position setters for mixed/short/both 649/645/647 through either point or vector setter;
 // scaled displacement locals with point setter 648 (0x60 frame, 2650 bytes, primary shape still at +0x1c);
 // both point setters with opposite cross between updates 646.
+// Shared scale then vector sum on mixed wave, short wave, both, or both with overlapping crosses 698/561/664/649.
+// The same four starting from the staged first cross 698/561/664/649. NOT kept: those with the 0x60 frame grow the body without separating the wave slots.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

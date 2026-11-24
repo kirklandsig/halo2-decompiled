@@ -1922,6 +1922,8 @@ long function_2197f0(real gain);
 // added to the ambience difference 87 (same code); the time sum written product first 87;
 // the fade-in copy and the reciprocal computed ahead of the window test 181 (633 B); re-measured: the eager clamp
 // `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
+// Staged release end with default result, exhaustive result, selectable endpoint, or elapsed fallback accumulator 92/92/155/157.
+// The same four with the quotient before the cap 148/148/153/97. NOT kept: duration reuse keeps the wrong XMM allocation.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -5034,6 +5036,8 @@ struct s_128ca0
 // gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
 // is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
 // field_c store 48 (same code: the store still follows the index load).
+// Processed accumulator constructed, assigned, copy-constructed or copy-assigned before compound pin additions 177/177/177/177.
+// The same four with the permutation conversion preceding accumulator preparation 177/177/177/177. NOT kept: they remove the retail by-value pin homes.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
