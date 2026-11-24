@@ -4712,6 +4712,14 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // 328 (1286 B). Reading: retail's final return is a join that holds the result in AL (the state-8 edge stores 1 and
 // reloads it, the kept arms and the post-disconnect true edge arrive with AL set, the reason exits reload the byte).
 // Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x5e3f0, MATCH each run; main 295). Both builds keep the result byte in its home from
+// entry; ours rematerialises the false at the reason exits where retail reads the home back, the behaviour of a local
+// whose constant is not propagated. On main: the result cleared by `memset(&result, 0, sizeof(result))` 321 (+0x1b,
+// scalar-replaced); the acknowledgement block moved after the final `done:` return 295 (same code); the sibling
+// 0x5e3f0's `long owner = session->value10;` ahead of the timeout call 360, with its `__assume(host_state != NULL)`
+// 360; the session state read at each test with no state local 299 (+0x16). Diagnostic (compiler setting, reverted):
+// global optimisation off around the body 809 (1643 B), so retail's reloads are not a whole-function setting. Body
+// unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

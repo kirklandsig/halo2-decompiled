@@ -2104,6 +2104,20 @@ real function_30bf0(vector3f *vector);
 // IP + cast + bounds 377. Match-only diagnostics on IP + cast: squares spelled (k, i, j) 370, mobile false then set 360,
 // both 354 (aligned 248); left there the 1.0f constant in xmm5 (retail xmm6), the colour2 blend schedule and the
 // rotation's stack copy of the axis.
+// M3 lane 5 r242 (H2M_FAST with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10 and 0x117c80; 0x3db00 matched and 0xd37f0 at 529
+// unless said; control 378; S = the count of instruction kinds one listing has and the other lacks, 93 at the control).
+// Which parts of lane 7 r176's chain can stand without a one-caller helper, measured apart and together: the shared
+// normalize3d(&normal) alone 483 (1894 B); the colour2 positive checks as stored selects alone 454 (1878 B); direction2
+// copied, negated and rotated in place as 0xd37f0 writes it 460 (1870 B, frame 0x40, S 56; re-measure); selects + in
+// place 450 (1870 B); normalize3d + selects + in place 468 (1887 B). The file's lighting_negate changed to (in, out) at
+// all five call sites, direction0 then being its negate of the normal: alone 495 (1906 B), with normalize3d and in
+// place 463, with the selects too 454 (1906 B), without in place 450, and 0xd37f0 goes 529 -> 574 (2169 B) each time,
+// so the two-pointer negate cannot be a shared change. All of those with `real square = length * length;` moved up
+// behind the direction1 negate 335 (1912 B): the chain's whole gain needs that moved declaration (retail squares the
+// length in the block that follows the 0x117c80 call, ahead of the first limited-colour compare), which is kept only
+// with a match. On in place: the shared rotate reading its axis through `vector3f const *axis = g_4687b0` 496 (S 51),
+// with the projection summed (k + i) + j 462 (S 53), with each row written projection term first 462 (same code); the
+// (k + i) + j sum over the copied axis 452 (S 56); the live axis without in place 515. Body unchanged.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

@@ -497,6 +497,12 @@ void function_11bed0(s_location *location, point3f const *point);
 // Absolute slot with signed or sentinel guard 88/90; sentinel guard with pool stride 92; element traversal with pool stride 78.
 // Signed audible interval or separate low and high nibble tests on the typed cursor 83/81, salted cursor 164/167.
 // NOT kept: the pool-stride form gains two points, and the spatial query still expands.
+// M3 lane 6 r239 (fast with 0x11bed0, its other callers, 0x16bc00/0x16bbc0 and the walk siblings; control 80): the type
+// test and the 0x11bed0 call in a new plain helper taking the source, on 0x219d90's walk, 89 (197 B: the walk becomes
+// retail's handle loop, but this /Ob1 file keeps the helper out of line); that helper `static` 89; defined in the location
+// query's /O2 file 160 (281 B: the link expands the helper and then 0x11bed0 at the loop site); `__forceinline` here 160;
+// the /O2-file helper on the current body 80 (same code). Our link expands callees from /O2 files and never from /Ob1 ones,
+// the reverse of retail for 0x11bed0 and 0x16bbc0. Still BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -3802,6 +3808,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // result = false; goto done; }`, the join's test and its else dropped) 750 (2504 B), with the guard 711 (2518 B); the
 // four impulse-bit sets through the existing setter 0xbfe20 (link-time inlined) 597 on main and 586 on the replay (same
 // code each: the second test of each pair is still threaded). Body unchanged.
+// M3 lane 6 r239 (fast with the callers 0x18a7b0/0x21d630 and 15 callees, control 597, aligned 267): `seed` declared ahead
+// of the two track pointers 596; impulse_states' bit 0 as `(flags & 1) != 0` 648 (2524 B); on the old-end fade's looping
+// bit through function_0bfe40 (592, as listed): the seed first 600, a pointer to the sound's source for the final listener
+// test 591, that with 0x21b940's bounds pointer 591, that with track ahead of track_definition 591. Reading: retail's
+// constant 1 sits in EBX across the start arm because EBX holds `state` there and state is dead in that arm (state == 0
+// threads past the `state != 2` test); this build holds NONE in EBX for the whole pass. Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

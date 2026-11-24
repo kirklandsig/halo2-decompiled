@@ -537,6 +537,17 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // The first-axis load order and square spills remain. First/second/both full transform workspaces 349/367/373.
 // Axis reference/native array 334/334; row-result initializer/setter 334/334; independent immutable turn results 334.
 // NOT kept: transform workspaces increase the 0x90 frame and the extent. All remaining forms tie.
+// M3 lane 5 r242 (control 334; on lane 1 r134's 323 lead, that is transform locals, rows rotated in place, the four trig
+// values named and squared/scaled vector3f locals in the builder; 0x137ed0 matched throughout): the axis read once into
+// i, j and k locals for the squares and sine products, the cross terms still reading the axis, 350 (1802 B, first
+// difference +0x1e: the opening then loads i, j and k and squares copies of them as retail does, and no sine product goes
+// through the x87); with the cross terms from the locals too 388; with the complement named after forward.i 356; every
+// spelling of the squares and sine products over those locals is the same code (350). On the lead without the capture:
+// the sine products copied and then scaled in place 376 (1823 B); the sine products ahead of the squares 356; squares and
+// sine products interleaved per axis 340; the squares as products 354, with the complement named 353; `sine * axis->i`
+// and the sine products in i, k, j order 323 (same code as the lead). The lead's one x87 sine product (the i product,
+// both operands in memory) is what the capture removes. Changing the register or the colouring rank of any one XMM value
+// on the lead comes no nearer than 323, so what is left is several allocation choices together, not one near miss.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3737,6 +3748,27 @@ real magnitude3d(vector3f const *v);
 // 221's form again); that with a float copy of the dot for the arccosine 166 (1039 B, frame 0x34); the parallel test on a
 // named `(real)fabs(dot)` 170 (same code). Reading unchanged: retail loads the float dot and the float angle from their
 // homes at each of the two uses, ours converts once and keeps the wide value.
+// M3 lane 5 r242 (H2M_FAST with 0x24590 and 0x30bf0, both matched; control 170 at 1045 B; A = instructions left unpaired
+// after aligning the two listings, control 196). The equal lengths are a coincidence: ours is about 20 bytes long in the
+// fallback and as short in the rotation. Fallback: the clamp inside the add, `current->n[component] += PIN(delta, -step,
+// step)` (lane 2 r132's 188, re-read) 188 at 1025 B, A 156: the block then has retail's registers and branch shapes
+// (two jbe/jmp clamps, then the ja/ja select with -step's register reused for the last component) and only the three
+// adds differ (retail adds the component into delta for i and loads the component for j and k; ours the reverse); the
+// same code as `= current->n[component] + (...)`, `= (...) + current->n[component]`, the ternary written out, or PIN
+// over the difference itself with no delta local; `delta = PIN(...)` then `+= delta` is the control's code (170). On
+// the PIN form: `acos((double)dot)`, `sin((double)angle)` and `cos((double)angle)`, `step * (real)acos(dot)`,
+// `acosf`/`sinf`/`cosf`/`fabsf`, `angle = (real)acos(dot); angle *= step;` 188 each (A 156 to 158). Rotation: retail
+// forms the two cross components that read first.i ahead of the first component's sum and the third at its use, and
+// stores the first rotated component into first.i's home, which fits `first` rotated in place with the cross taken
+// first: cross3f(&first, &axis, &tangent) then `first.i = projection * axis.i + cosine * first.i - tangent.i * sine`
+// (j, k alike) and `size * first.i` 186 (A 247), with the PIN fallback 202 at 1011 B (A 207), with the cross ahead of
+// the projection 202 (A 177; the operand loads then go to registers as retail's, and one float home is still missing);
+// the cross written out into the temp is the same code. One variable for the dot and the angle 170 (same code), for
+// the dot and the cosine 170 (A 208), for all three 187 and for the angle and the cosine 168 (lane 15 r92's, re-read:
+// A 226 and 204, no reload appears). On PIN + in-place + early cross, float copies of the dot (for the arccosine) and
+// of the angle (for the cosine) 197 at 1009 B (frame 0x34, A 202: both reloads appear but the wide home goes and
+// nothing takes its place). Diagnostic, reverted at once: the dot and the angle written through a by-address inline
+// setter, the same code as without. Body unchanged: every structural step raises the positional score.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

@@ -1013,6 +1013,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // testing `ignored != NONE` before the blocking count 695; the node walk as a `for` with the parent step inside 675 (same
 // code); `flags` as a byte local (no cast at the call) 774 (2960 B); the previous direction's pointer set in the actor
 // test and passed as a named pointer 725 (2976 B). Body unchanged.
+// M3 lane 4 r258 (H2M_FAST with 0x270930/0x2c4030 MATCH and 0x2c0d60/0x29a190/0x29cbb0 listed, without which 0x2c0d60
+// builds differently in the reduced image; control 675, aligned 418): `result` as a byte 768 (2958 B), as a char 768; the
+// pathfinding pointer declared after `final_complete` 674 (one count, not kept); after `result` 675, `flags` as a dword
+// 675 (same code each). Reading: retail's result byte is stored once (1) and read at two exits, so it is not folded
+// because the failure exit's `result = false` is split off into its own literal-false exit; at entry retail colours the
+// pathfinding pointer (EBX, then stored) and the flag pointer (EDI), where this build leaves the pointer uncoloured
+// (its weighted cost is not above zero) and gives EBX the constant 1 and EDI NONE.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
