@@ -1038,6 +1038,17 @@ static inline long font_character_pixel(long alpha, long color)
 // with the ordinary count by masks or by quotient and remainder 201/201. With dword parity
 // the same four forms score 203/203/168/168. NOT kept: the shared dword forms reach 504
 // bytes but change the output, color and run registers. The byte-parity forms tie or regress.
+// The packed parity width, literal assembly and packed-run register still differ.
+// Dword parity with ordinary counted/endpoint standard fills 183/180; packed counted/endpoint
+// standard fills 180/184; both fills counted/count-endpoint/endpoint-count/both endpoint
+// 241/201/199/218. NOT kept: the fill changes displace the packed run and raise the score.
+// The 0xc frame agrees. Dword parity, literal bytes and the EBX packed run still differ.
+// Shifted or divided command enum, masked opcode enum, or opcode minus its payload:
+// 59/59/201/208 with byte parity and 203/203/203/173 with dword parity.
+// NOT kept: the shifted/divided types tie. The other forms change fill allocation and raise the score.
+// Encoded bitfield view for packed fields, opcode and packed fields, opcode and run, or all fields
+// 59 each with byte parity and 203 each with dword parity. NOT kept: the widened mask matches
+// the first parity sequence but shortens the fills and moves the packed run. Literal assembly still differs.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

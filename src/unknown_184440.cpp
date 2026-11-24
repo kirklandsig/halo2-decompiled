@@ -603,6 +603,9 @@ __forceinline bool function_184448(long arg_0)
 // given EDX) coloured ahead of it, and the flag word (ranked 96 here, given ECX) in EDX. Forcing any one of those
 // decisions (a diagnostic, not source) moves the count by 13 at most (957), so no single count gives retail's head.
 // Body unchanged; still BLOCKED-BY 0x48e70 for the reloads after its calls.
+// Per-face surface-array capture 965, neighbor record 984, both 984; signed plane word alone
+// 984, with the array 983, with the neighbor 983, with both 978, and current-face reference 978.
+// The 0x11d4 frame and the initial scene and surface homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

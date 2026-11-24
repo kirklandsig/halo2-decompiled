@@ -1688,6 +1688,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // found-flag loop with the inner return kept 994 (2837 B), without it 755 (match-only, as listed); the iterator declared
 // at the top of the function 812 (both twins); on the 755 form the first request keyed by the iterator's own key fields
 // 1020 (2875 B). Body unchanged.
+// Class/NONE allocation, iterator output homes and second-request mode and graph registers still differ.
+// Early disabled-request return in the per-type, per-kind, inheritance helper or any combination;
+// early missing-type return in the per-type helper: 812 each.
+// NOT kept: the inlined code keeps the original mode-table and mode lifetimes.
 // M3 lane 12 r185 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812;
 // body unchanged; each form measured on both twins with the same counts). The three optional outputs stored through one
 // inline setter 812 (same code); that on the siblings' flag loop with the outputs and the result as one record 732 (same
@@ -1709,6 +1713,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // pointer's second-request piece runs on through the second inheritance loop with EBP free, ranks below the
 // mode-table address (-313 against -74) and loses EBX to it. One cause is left on the 732 form: what takes ESI between
 // the search loop and the first request early enough to cut the zero's piece there.
+// The entry class/NONE registers and candidate and resolved-mode homes still differ.
+// Direct or copy construction of a read-only found candidate, with present first, miss
+// first, miss continuation or a condition-scoped lookup: 991 each. NOT kept: splitting
+// construction by lookup result adds a frame word and grows to 2837/2825 bytes.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2351,12 +2359,20 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // would take a register. Forms: the request helper taking its mode by `long const &` 812; all three keys by `long const
 // &` 812; the kinds helper's mode by `long const &` 812; the graph by `s_graph_tag *const &` 812; the second request in
 // its own `if (result.index != NONE)` block after the first 812 (same code each).
+// Class/NONE allocation and the result, candidate and iterator output homes still differ.
+// Iterator defaults from the invalid result index for mode, class, mode/class, type,
+// mode/type, class/type, all three and a chained assignment: 812 each.
+// NOT kept: each form folds to the existing entry constant and leaves the same homes.
 // M3 lane 12 r185 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH; control 812; body
 // unchanged; the forms and the allocator reading are in 0x1db170's note). The three optional outputs stored through
 // one inline setter 812 (same code); 0x1dd9d0 and both requests through one shared inline helper 3541 (294 B: it stays
 // a call), forced inline 812 (same code); the siblings' flag loop with the outputs and the result as one record
 // re-measured here 732 (first difference +0x2d1), on it the per-pass candidate through a pointer local 732 and the
 // lookup through an inline helper with an out-pointer 732 (same code each).
+// Class/NONE allocation and the resolved-mode and candidate homes still differ.
+// Read-only record, fixed pointer, both, each of the four lookup bindings in its test,
+// and an untyped lookup result until the record read: 812 each. NOT kept: the pointer
+// forms collapse to the same allocation at retail length.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -1863,6 +1863,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 36 MATCH) the same three values; both together the same; 0x193250 returning 0x193300 from each of its two cases
 // instead 868 (2848 B) with 0x193250 lost (56 B for 100). So the choices do not follow the callees' spelling, and the
 // opening lookup still needs one more two-way test in front of it that emits no code.
+// Round 469: cached machine-scan count with conditional false store/Boolean AND/logical
+// update 871/878/858. Pointer range with the same updates 883/879/863. Cursor advanced
+// at the comparison with conditional false store or Boolean AND 883/880. NOT kept: 858
+// loses 0x73530. The 863 range and repeated result stores differ from retail's countdown
+// and conditional false store. Frame 0xd0 versus 0xb4 and lookup expansion remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
