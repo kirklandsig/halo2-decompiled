@@ -70,7 +70,7 @@ typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
 struct solver_scalar_work_31c940 {
  union { stored_word_31c940 pair_b; __m128 const *inverse_b; float const *writeback_time; };
  union { stored_word_31c940 first_error; __m128 *angular_b; };
- union { stored_word_31c940 fallback_scalar; float const *friction_scale; };
+ union { stored_word_31c940 fallback_scalar; float const *friction_scale; solver_linear_row_31e7b0 const *next_circular; };
  // Normal pairs retain B's linear-field address; other updates use this word
  // for their rounded SIMD input.
  union { float simd_scalar; __m128 *linear_cursor; };
@@ -285,47 +285,94 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 
 }
 
-static __forceinline void apply_circular_linear(float impulse, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float *result, float &simd_scratch)
+static __forceinline __m128 const *apply_circular_first_fields(float impulse,
+ solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,
+ solver_scoped_body_fields_31c940 const &b,__m128 &linear_b,__m128 *const &angular_b,
+ __m128 const *&inverse_home,solver_linear_row_31e7b0 const *&next_row_home,
+ float *result,float &simd_scratch)
 {
-	// Reuse each working vector after its previous contribution is consumed.
-	__m128 work[5];
-	work[2] = a->inverse_inertia;
-	// SIMD consumes a rounded float; accumulation retains the x87 impulse.
-	float &rounded_impulse = simd_scratch;
-	float &store = rounded_impulse;
-	store = impulse;
-	work[4] = row->linear;
-	work[1] = _mm_load_ss(&rounded_impulse);
-	work[0] = _mm_shuffle_ps(work[1], work[1], 0);
-	work[0] = _mm_mul_ps(work[0], work[2]);
-	work[2] = b->inverse_inertia;
-	work[1] = _mm_shuffle_ps(work[1], work[1], 0);
-	work[1] = _mm_mul_ps(work[1], work[2]);
-	work[2] = _mm_shuffle_ps(work[0], work[0], 0xff);
-	work[2] = _mm_mul_ps(work[2], work[4]);
-	work[3] = _mm_shuffle_ps(work[1], work[1], 0xff);
-	work[3] = _mm_mul_ps(work[3], work[4]);
-	work[4] = a->linear;
-	work[4] = _mm_add_ps(work[4], work[2]);
-	a->linear = work[4];
-	work[2] = b->linear;
-	work[2] = _mm_sub_ps(work[2], work[3]);
-	b->linear = work[2];
-	// Row storage may overlap either body. Reload both angular axes after
-	// the linear writes, and form both contributions before the angular writes.
-	work[2] = row->a;
-	work[0] = _mm_mul_ps(work[0], work[2]);
-	work[2] = row->b;
-	work[1] = _mm_mul_ps(work[1], work[2]);
-	work[2] = a->angular;
-	work[2] = _mm_add_ps(work[2], work[0]);
-	a->angular = work[2];
-	work[0] = b->angular;
-	work[0] = _mm_add_ps(work[0], work[1]);
-	b->angular = work[0];
-	*result += impulse;
+	__m128 w[5];
+	w[2]=a->inverse_inertia;
+	w[4]=row->linear;
+	simd_scratch=impulse;
+	w[1]=_mm_load_ss(&simd_scratch);
+	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	__m128 const *inverse_b=&b.body->inverse_inertia;
+	w[2]=*inverse_b;
+	w[1]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+	w[2]=_mm_mul_ps(w[2],w[4]);
+	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+	w[3]=_mm_mul_ps(w[3],w[4]);
+	w[4]=a->linear;
+	w[4]=_mm_add_ps(w[4],w[2]);
+	a->linear=w[4];
+	w[2]=linear_b;
+	w[2]=_mm_sub_ps(w[2],w[3]);
+	linear_b=w[2];
+	w[2]=row->a;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=row->b;
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=a->angular;
+	w[2]=_mm_add_ps(w[2],w[0]);
+	a->angular=w[2];
+	inverse_home=inverse_b;
+	w[0]=*angular_b;
+	w[0]=_mm_add_ps(w[0],w[1]);
+	*angular_b=w[0];
+	// Read the old accumulation before publishing the next row; its store may redirect that row.
+	float accumulated=*result+impulse;
+	next_row_home=row+1;
+	inverse_b=inverse_home;
+	*result=accumulated;
+	return inverse_b;
 }
+static __forceinline void apply_circular_second_fields(float impulse,
+ solver_linear_row_31e7b0 const *const &row_home,__m128 *&row_cursor,__m128 *&terms,
+ solver_velocity_31c940 *a,__m128 &linear_b,__m128 *const &angular_b,
+ __m128 const *inverse_b,float *result,float &simd_scratch)
+{
+	__m128 w[5];
+	w[2]=a->inverse_inertia;
+	simd_scratch=impulse;
+	w[3]=*inverse_b;
+	terms+=6;
+	w[1]=_mm_load_ss(&simd_scratch);
+	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_mul_ps(w[1],w[3]);
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	// Reuse the stream cursor only after the rounded input; retain this row through linear writes.
+	row_cursor=(__m128 *)row_home;
+	w[4]=*row_cursor++;
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+	w[2]=_mm_mul_ps(w[2],w[4]);
+	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+	w[3]=_mm_mul_ps(w[3],w[4]);
+	w[4]=a->linear;
+	w[4]=_mm_add_ps(w[4],w[2]);
+	a->linear=w[4];
+	w[2]=linear_b;
+	w[2]=_mm_sub_ps(w[2],w[3]);
+	linear_b=w[2];
+	w[2]=*row_cursor++;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=*row_cursor;
+	// This row captures B before writing A angular; the first row reloads it afterward.
+	__m128 *angular_receiver=angular_b;
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=a->angular;
+	w[2]=_mm_add_ps(w[2],w[0]);
+	a->angular=w[2];
+	w[0]=*angular_receiver;
+	w[0]=_mm_add_ps(w[0],w[1]);
+	*angular_receiver=w[0];
+	*result+=impulse;
+}
+
 
 
 static __forceinline void apply_linear_spilled(float const &source, solver_linear_row_31e7b0 const *row,
@@ -1261,7 +1308,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1956. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2145. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1412,9 +1459,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 						((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
 						((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
 					}
-					apply_circular_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result, scalar_work.simd_scalar);
-					apply_circular_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1, scalar_work.simd_scalar);
-					terms += 6; result += 2;
+					__m128 const *inverse_b=apply_circular_first_fields(impulse_a,((solver_linear_row_31e7b0*)terms),a,scoped_b,*linear_b,scalar_work.angular_b,scalar_work.inverse_b,scalar_work.next_circular,result,scalar_work.simd_scalar);
+apply_circular_second_fields(impulse_b,scalar_work.next_circular,normal_axes,terms,a,*linear_b,scalar_work.angular_b,inverse_b,result+1,scalar_work.simd_scalar);
+result+=2;
 					op += 20;
 					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
 					continue;

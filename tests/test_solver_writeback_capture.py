@@ -694,3 +694,91 @@ def test_angular_error_reloads_published_receiver_for_next_row(solver_images,pre
             assert snapshot[1]==1
             snapshots.append((snapshot,actual_home,original,redirected))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_circular_pair_retains_linear_and_angular_receivers(solver_images,precision):
+    from unicorn.x86_const import UC_X86_REG_ESP
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    def as_bits(value):return struct.unpack('<I',struct.pack('<f',value))[0]
+    frame=STACK+32768-0xd0
+    body_a=frame-0x10
+    original_b=HEAP+0x80
+    replacement_b=original_b+0x100
+    final_b=original_b+0x200
+    delta=as_float(replacement_b)-as_float(original_b)
+    for rounding in range(4):
+        data=solver_case(7,0)
+        put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,original_b)
+        put(data,OPS+24,'3I',14|(12<<8)|(2<<16),CALLBACK,0)
+        put(data,OPS+36,'IIffII',7|(20<<8)|(5<<16),FRICTION_RESULTS,0,10,8,0x400)
+        put(data,TERMS,'24f',0,0,0,delta,0,0,0,0,0,0,0,1/delta,
+                           0,0,0,delta,0,0,0,0,0,0,0,1/delta)
+        put(data,HEAP,'B',3)
+        for body in (original_b,replacement_b,final_b):
+            put(data,body+0x10,'4f',0,0,0,0)
+            put(data,body+0x20,'4f',0,0,0,0)
+            put(data,body+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'2f',0,0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in ((retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))):
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3)
+                callbacks.append((terms,payload))
+                uc.mem_write(frame+0x2c,struct.pack('<f',1))
+                return_from_hook(uc)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            actual_pointer=words(machine,frame+0xc,1)[0]
+            assert callbacks==[(TERMS,OPS+32)]
+            assert actual_pointer==final_b,('retail'if machine is retail else'compiled',precision,rounding,hex(actual_pointer),hex(final_b),words(machine,IMPULSES,2),words(machine,frame+0x10,8),words(machine,original_b+0x10,8))
+            original_linear=words(machine,original_b+0x10,4)
+            replacement_linear=words(machine,replacement_b+0x10,4)
+            assert original_linear==(0,0,0,as_bits(-2*delta)),('retail'if machine is retail else'compiled',precision,rounding,original_linear,replacement_linear)
+            assert replacement_linear==(0,0,0,0)
+            assert words(machine,IMPULSES,2)==(0x3f800000,0x3f800000)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,original_linear,replacement_linear,actual_pointer,callbacks))
+        assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_circular_next_row_publishes_after_accumulation_input(solver_images,precision):
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    frame=STACK+32768-0xd0
+    output=frame+0x18
+    redirected_row=TERMS+0x400
+    for rounding in range(4):
+        data=solver_case(7,0)
+        put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+        put(data,OPS+24,'IIffII',7|(20<<8)|(5<<16),FRICTION_RESULTS,0,10,8,0x400)
+        put(data,TERMS,'24f',0,0,0,as_float(redirected_row),0,0,0,0,0,0,0,0,
+                           1,0,0,1,0,0,0,0,0,0,0,1)
+        put(data,redirected_row,'12f',2,0,0,0,0,0,0,0,0,0,0,0)
+        put(data,HEAP,'B',3)
+        for body in [HEAP,HEAP+0x80]:
+            put(data,body+0x10,'4f',0,0,0,0)
+            put(data,body+0x20,'4f',0,0,0,0)
+            put(data,body+0x30,'4f',1,1,1,1)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in [(retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            label='retail'if machine is retail else'compiled'
+            row_pointer=words(machine,output,1)
+            linear_a=words(machine,HEAP+0x10,4)
+            linear_b=words(machine,HEAP+0x90,4)
+            assert row_pointer==(redirected_row,),(label,precision,rounding,row_pointer)
+            assert linear_a==(0x40000000,0,0,0),(label,precision,rounding,linear_a,linear_b)
+            assert linear_b==(0xc0000000,0,0,0),(label,precision,rounding,linear_a,linear_b)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,row_pointer,linear_a,linear_b))
+        assert snapshots[0]==snapshots[1]
