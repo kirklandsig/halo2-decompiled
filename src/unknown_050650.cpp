@@ -1055,6 +1055,24 @@ struct s_collision_result_buffer_1697c0
 // with no per-pass reset (the same behaviour) 328. Forcing single allocator decisions (69 of them) never matches (best
 // 266) and leaves the 22 operand-order differences (both rotations' products and the normalizer's j product, which
 // retail forms as j * scale) untouched, so the remaining work is operand rank, not register choice. Body unchanged.
+// M3 lane 11 r166 (h2m fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23 unless noted), 0x24590, 0x2980d0, 0x297a50; control
+// 270, aligned 198, with registers, XMM numbers and stack offsets masked 71). Rank reading: with the brace initialiser the
+// pitch axis's members are early symbols (below the reciprocal), so the normalizer forms scale * j; retail's j * scale and
+// its first dot order (k + j) + i need the pitch axis as a memory object handed to helpers by address (first member early,
+// j and k numbered late). The pitch axis through the existing vector3f_assign: 296 (1440 B, frame 0xb0, aligned 246, masked
+// 67): the normalizer's three products and every product and sum of the pitch rotation then have retail's operand order,
+// with two extra spills in that rotation and the trig transfer cells exchanged; LEAD, build/r166/lead-0x296e60-axis-
+// setter.patch. On it: through real_point3d_set, the ray declared ahead of the draws, or best_fraction declared after
+// best_direction, the same ranks (not screened further); best_fraction after the pitch axis 293 (masked 65); the candidate
+// copied member by member 295 (1431 B, masked 105), through vector3f_assign 290 at 1423 B (masked 91); the fallback through
+// vector3f_assign as well 346 (1457 B, masked 49: the yaw rotation then lines up, its axis loads at levels 3/2/0 for
+// i/j/k; build/r166/lead-0x296e60-axis-and-fallback-setter.patch); the brace initialiser with the candidate through
+// vector3f_assign 320 (1423 B, masked 100); 1-8 dead longs on the lead 296 each. The yaw dot (retail: axis i * v.i +
+// axis j * v.j + v.k * axis k) needs the axis levels i >= 3, j = 2, k = 0 with the candidate numbered as on the lead; the
+// lead has 3/0/6. Redundant pairs in the shared rotation step on the lead (diagnostic; 0x297d30 128-173): around the i
+// row's first product 304 (levels 3/4/2; around the k row's sine product the same levels), around the dot's first product
+// 300 (3/6/4), both 301 (masked 59), around all three dot products 296 (the lead's code; 0x297d30 143). Live scratch
+// stores ahead of the loop (diagnostic) 371/392. Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
