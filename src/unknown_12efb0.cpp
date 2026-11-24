@@ -143,7 +143,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
 // zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
 // in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
-// score 607 (was 607; m3 lane 13 r149 unchanged, its lines just above the marker): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// m3 lane 13 r149 unchanged, its lines just above the marker.
 // Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
 // EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
@@ -1006,6 +1007,45 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // undefined stand-in for 0x130f60 on the 600 form keeps the cluster index in a callee-saved register across the call
 // (EBX, retail EDI; 747 at 3855 B because the stand-in takes the standard convention), so retail's index in EDI is what a
 // call without a memory summary gives, as the earlier "the build knows 0x130f60 writes nothing" line says.
+// M3 lane 15 r143 (fast screens with 0x130f60, 0x131030, 0x1317a0, 0x12e5e0 and 0x12eb00, all MATCH each run; control 607 at
+// 3832 B, difflib-aligned 362; body unchanged). Cause found for the cluster index in EDI: retail loads it once ahead of the
+// 0x130f60 call, copies it for the cluster pointer (`mov esi, edi`, with the cluster array loaded into ECX and not folded
+// into the add) and compares EDI with the argument at the first test only; the two later tests re-read `[ebp - 8]`. Every
+// earlier form folds both loads and re-reads the index at the first test, because the build can prove that the three
+// source-record stores after the call leave the index alone, so a named index local is the same as the field. When the
+// index is read through the array element (`local_0[local_11].cluster_index`, ahead of the record pointer) and the source
+// record is written through the record pointer, or the other way round, the stores count as possible writes to it: the
+// load pair then comes out as retail's (index in a callee-saved register, the array in ECX, `mov r2, r; imul; add r2,
+// ecx`) and the record goes to EBX as retail. The allocator then ranks the cursor 170 (ESI), the cluster pointer 166
+// (EDI), the record 138 (EBX) and the index 30 (EBP); retail has the cluster pointer in ESI, the index in EDI, the record
+// in EBX and the cursor in EBP, so its cursor ranks below the record and its index above it.
+// Forms (the lead is the palette byte read at each use with a file-local inline lookup taking a long index, re-measured
+// 599 at 3818 B, aligned 449): on the lead, a named index local for the pointer and all three tests 600 (3817 B; the
+// allocator ranks the whole range -132 and splits it into one piece per test); the local for the pointer and the first
+// test only 600 (same code: the local folds into two field reads); the cluster pointer through a file-local inline
+// accessor taking the index, or the structure and the index, 599/599; named index and array locals 600; those with the
+// palette index initialiser between them and the pointer 600, the first test reading the field 600; the three initial
+// source stores through a `long *` to the source kind (diagnostic) 694 at 3817 B and through a second record pointer
+// 694 (aligned 448, the retail load pair with the registers rotated); no record pointer at all, every access through the
+// array element 599 (aligned 458, no retail load pair); the index read through the array element ahead of the record
+// pointer, used for the pointer and the first test 694; only the three initial stores through the array element 694.
+// On this body: the index local for the pointer and the first test 607 (same code); index and array locals with the
+// palette index initialiser between 606 (3830 B), the first test reading the field 606; the index read through the
+// array element ahead of the record pointer and used at the first test 605 (3831 B, aligned 449), at all three tests 749
+// (3847 B, first +0x1: the index takes a frame home), at none 715 (3834 B, first +0x1). On the lead, the index through
+// the array element at all three tests 744 (3837 B). Diagnostic, restored at once: 0x130f60 defined `inline` on the lead
+// 749 (3855 B, first +0x6d): the 1.0 constant leaves XMM3 across the call, which retail keeps, so retail's caller knows
+// the callee's registers and the index in EDI does not come from an unknown callee. Forcing single allocator picks on
+// the 694 form: the previous index into EDX leaves 604 (aligned distance 844 -> 527), the 0x130f60 result into EDX
+// 706 (546), the cursor into EBP 689; no single pick reaches retail. Nothing kept: the retail load pair needs the
+// index local at one use and the field at the two later ones (a mix, match-only), and every form with it is above 607.
+// Encoded palette byte then signed-char/short/long ordinal or sign-bit bounds 604/796/794/680.
+// Byte read before metadata defaults gives the same four scores. NOT kept: 604 gains three
+// at 3829 bytes. Provider and lookup register assignments still differ.
+// Shared palette address formation from ordinal, explicit source, byte offset or availability
+// 716/617/718/713 with a short slot and 720/698/602/597 with a signed byte.
+// Nullable table base or default missing offset with a signed byte 709/602.
+// NOT kept: 597 sets and re-tests an availability flag; the offset forms gain only five.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

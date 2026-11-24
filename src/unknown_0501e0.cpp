@@ -840,6 +840,52 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // to the scale and XMM7 to the coefficient it carries; the lead keeps the second offset's x in XMM0 across the first
 // view, so the copy takes XMM3/4/5, the results XMM2/6/1 and the scale XMM7 (it ranks 186 against 190 for the two
 // second-view temporaries coloured just ahead of it).
+// M3 lane 15 r143 (fast screens with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221; body unchanged; the lead below
+// plain-confirmed at 196 with 0x4f7e0 unchanged at 325). What decides the product and sum orders: a local ranks below the
+// camera's globals only while its symbol is among the function's first 32 symbol cells (an argument or an aggregate member
+// takes two cells, a scalar local one, and the locals of an expanded inline helper come after every local of this
+// function, tail locals included); later symbols rank above the globals. Retail's views are the state where the first
+// view's three scaled values and the second view's x are below and the second view's y and z above (first view: every
+// coefficient loaded first, sums z, y, x; second view: y and z copied or loaded first, x multiplied by a loaded
+// coefficient, sums y, z, x). So the macro lead needs no macro, and the count of this function's own locals selects the
+// state. Forms and scores:
+// a camera-pointer helper (given &g_4b9e14) with scalar x, y, z copies scaled as `x = scale * x`, separate view vectors,
+// six offset statements second point first, limits in the condition 259 (1114 B); the macro lead (226) with one unused
+// local 251 (1140 B), with the camera scale in a named local 250 (1136 B; both have retail's second-view orders, the named
+// scale also loads after the last origin use), with an origin pointer local 253 (1142 B), with a second-point pointer
+// local 253; the macro with scalar copies scaled in place and 0 to 8 unused locals 295 x5 (1173 B, all six values below
+// the globals, the three forward coefficients carried across both views), 226, 251, 270, 270.
+// The same helper called in place with the segment kept in the second offset vector, limits in the condition, the
+// squared sum written at both uses and the clamp through the existing PIN macro, 0 to 3 unused locals: camera-pointer
+// helper 295/295/226/251; by-value scale helper (0 to 5) 295/226/251/270/270/272; direct-global helper (1 to 4)
+// 295/295/226/251; rows right-first the same code. Offsets through vector3d_from_points3d on that form, 0 to 8 unused
+// locals, first point first 297/224/255/273/270/198/256/256/256, second first 297/224/252/272/270/201/257/257/257.
+// So the states run, one symbol cell at a time: 295 (all below), 226 (second z above: the macro lead's code), 251 or
+// 255 (second y and z above: retail's orders, difflib-aligned 133 to 139 against the control's 249), 270 (two counts),
+// 196 or 201, then 256 from there on.
+// Natural forms without unused locals (camera-pointer helper in place; statements or loops; first or second point
+// first; limits in the condition or named; segment in the second offset vector or in its own; all tail locals, the clamp
+// through the PIN macro, or that and the squared sum written twice): with the shared segment and limits in the
+// condition, statements with all tail locals 251 second first (1140 B), 255 first first (1143 B), with fewer tail locals
+// 295/297; loops 269/270 (all), 255 (clamp macro), 221/224 (both, 1137 B); shared segment with named limits 249 to 261
+// (statements), 219/220/258/259/272 (loops); own segment with named limits 217 to 220 at every count (camera-pointer,
+// (input, output) and one-pointer in-place helpers alike); own segment with limits in the condition 256 (259 second
+// first) except at one count, 196 at retail's 1136 B first point first and 201 (1118 B) second first.
+// Lead (match-only, not kept): that 196 count in three spellings with the same code: camera-pointer helper with the
+// clamp macro and the squared sum written twice; a direct-global helper taking (input, output) with the clamp macro; a
+// one-pointer in-place helper with the clamp ternary written inside the root's argument (build/r143/lead-0x501e0-196.patch).
+// Its first 23 instructions are retail's up to four register numbers (second offsets stored at once, the scale loaded
+// into XMM6 after the last origin use), but it writes each depth limit out at both uses, where main names it: with named
+// limits the same counts give 217 to 220, and the limits declared inside nested tests would move declarations into
+// branches. Retail does compute each limit once, after both sign tests. The own segment at the retail-order count
+// (diagnostic: the dot product written twice as well) is 255/251, the shared-segment code.
+// Left in the retail-order state: the second offset's x takes the last XMM register through the first view (the allocator
+// ranks it 123; the second view's z 230 and x 190), where retail stores it at once, gives XMM6 to the scale and XMM7 to
+// right.i, carried into the second view; in ours a coefficient is carried only when a register is left over (right.j at
+// rank 73 in the 196 form, the three forward ones in the all-below state), never right.i ahead of the second offset.
+// Component-range subtraction for the first or second view 264/292, both 274, segment alone 286;
+// first and segment 289; second and segment 269; all three 298; both views with a saved origin 294.
+// Second-view range subtraction reduces the frame to 0x1c, still above 0x14, and raises the score.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

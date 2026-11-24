@@ -548,6 +548,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // and the sine products in i, k, j order 323 (same code as the lead). The lead's one x87 sine product (the i product,
 // both operands in memory) is what the capture removes. Changing the register or the colouring rank of any one XMM value
 // on the lead comes no nearer than 323, so what is left is several allocation choices together, not one near miss.
+// M3 lane 6 r241 (h2m fast with 0x137ed0, matched throughout; control 334): the builder taking the axis by value (the
+// callers passing the global vectors) 387 (1817 B, frame 0x8c); `first` and `second` each declared at its builder 334
+// (same code); the cross terms grouped `(inverse * axis->j) * axis->i` 344 (1791 B); `matrix3x3 second, first;` 334
+// (same code); forward.i's diagonal stored right after `inverse` 346 (1793 B). Diagnostic (reverted): 1 to 7 dead
+// initialised longs at the top 334/334/334/342/342/342/342; the axis loads stay j, k, i (absolute addresses, so no
+// pointer-numbering effect), only their registers move. Retail re-reads the axis for the cross terms because its in-place
+// sine products overwrite i and k. Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2967,6 +2974,45 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // global aggregate (0x2df00 updated to it, still matched) 278; `delta` assigned i, j, k 280; both 277 (difflib-aligned 149
 // against main's 142); both with the opacity arms under a negated test 274; that with the vertex-data value through PIN
 // 267 (two match-only parts: the swapped arms and PIN at one of five clamp sites). Body unchanged.
+// M3 lane 13 r153 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0/0x2df00; control 281, aligned 142). Operand-rank reading of the
+// opening block: the compiler forms each product in a copy of its higher-ranked operand and sums products in falling rank.
+// Retail's sides (axis j above delta j, delta i above axis i, delta k above axis k, every axis component above `forward`,
+// sum j, i, k) need the order delta i > axis j > delta j > delta k > axis i > axis k > forward. Here the three deltas rank
+// below the three axis reads in every statement form, and `forward` ranks above them all through a late temporary, so its
+// rows copy `forward` where retail multiplies each loaded axis in place. With delta through vector3d_from_points3d and
+// forward through dot3f (0x2dba0's own spelling) `forward` ranks lowest and the three rows multiply in place as retail,
+// and the last delta takes the late temporary: with `attenuation` beside `animated` and the rows as statements j, i, k
+// 511 (2296 B, aligned 160); dot3f(axis, delta) 511 (same code); the rows through vector3f_assign 513 (2302 B, aligned
+// 150); both helpers on main's order (attenuation after the rows) 280 with vector3f_assign (2286 B, aligned 152) and 420
+// with the statement rows (2285 B). The helper delta with the dot written out in main's order 511 (2296 B), i, j, k 507,
+// with vector3f_assign and the late attenuation 284. Statement deltas i, j, k with the early attenuation: every forward
+// spelling (main's, i, j, k, dot3f) the same code per row form, 504 with vector3f_assign (2290 B), 496 with statement
+// rows in either order (2285 B, aligned 179), and with the late attenuation 280 / 416. On the 495 lead: `forward`
+// declared at the top and assigned at its place 495 (same code); forward accumulated in three statements 511 (2296 B);
+// the near distance read ahead of the rows 516 (2296 B). Diagnostic, restored at once: `forward` given an early zero
+// ranks it lowest (rows in place) and moves the late temporary to the last delta assigned.
+// M3 lane 11 r166 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0/0x2df00 and 0x20d80; control 281, aligned 142). Reading of the
+// operand ranks: a local's rank follows its first reference; the first 31 locals rank below every global member read and
+// later ones above them all, so with delta and forward written here no single dot gives retail's sides (axis j above
+// delta j, delta i and k above the axis, every axis member above forward) together with retail's sum order j, i, k: late
+// deltas make their products outrank the j product (diagnostic, forward zero-initialised early, deltas j, i, k and four
+// dead longs: all three sides as retail but the sum k, i, j, 511 at 2296 B; without the dead longs 511; with the sum
+// parenthesised 511). The context alpha block is the body of the existing 0x20d80 with its second argument true, and
+// retail's `context alpha * attenuation` loads the context alpha first, as it does when that value is an expanded
+// callee's result: `real context_alpha = function_020d80((s_slot *)context, true);` is expanded in place here, 493
+// (aligned 146: the expansion stores the product ahead of the clamp, as 0x20d80's two statements say); with 0x20d80's
+// clamp as one statement (`result = PIN(slot->f * g_5234c8, 0.0f, 1.0f);`, its own fast result unchanged; its file was
+// another lane's this round, so a two-file diagnostic, restored) 486 at 2286 B (aligned 142: the context block and the
+// unoccluded product are then retail's and every later row sits one place off; LEAD, the two patches are
+// build/r166/lead-0x2e9e0-context-alpha-call.patch and lead-0x20d80-one-statement-clamp.patch). A file-local inline copy
+// of only the used part (diagnostic) 487 (aligned 140). Lane 14 r121's helper-form lead rebuilt 444 at 2288 B (aligned 64;
+// build/r166/lead-0x2e9e0-helper-forms-444.patch), with that inline copy 447 (aligned 61), with the real call 539 (2303 B,
+// aligned 201: the reflected loop is then no longer unrolled), with the one-statement callee as well 533 (aligned 194);
+// the lead with vector3f_assign rows, the real call and the one-statement callee 510 (aligned 130), with the late
+// attenuation 489 (aligned 132), without the draw-point helper, PIN and arm swap 510 / 486, without the camera and
+// projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
+// initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
+// `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3769,6 +3815,18 @@ real magnitude3d(vector3f const *v);
 // of the angle (for the cosine) 197 at 1009 B (frame 0x34, A 202: both reloads appear but the wide home goes and
 // nothing takes its place). Diagnostic, reverted at once: the dot and the angle written through a by-address inline
 // setter, the same code as without. Body unchanged: every structural step raises the positional score.
+// M3 lane 11 r166 (h2m fast with 0x24590 and 0x30bf0, both matched; control 170, aligned 187, with registers, XMM numbers
+// and stack offsets masked 116). Frame reading: cells are packed by reference count, each object joining the newest slot it
+// does not overlap. Retail's cosine has four references (stored, then read from memory three times) and its spill temp four,
+// so their slots (+8, +0xc) exist before the three-reference raw length, the dot and the angle are placed, and all three
+// join the cosine's cell; here the cosine keeps a register (two references), so the raw length joins `a`. Retail's dot,
+// angle, sine and cosine all live in memory and are loaded at each use. The rotation through the existing in-place helper
+// of include/axis_rotation.h with `(real)sin(angle), (real)cos(angle)` as its arguments, then `size * first` (retail
+// stores the first rotated row into first.i's home): 181 (1030 B, aligned 182, masked 85; lane 8 r191's form re-measured
+// by the masked count; build/r166/lead-0x3e5a0-rotation-helper-181.patch); with named sine and cosine 181 (same code);
+// with the result through vector3f_scale 181 (same code); the cosine computed first 183; the angle as `(real)acos(dot) *
+// step` on it 181 (masked 84); the two length tests ahead of the parallel test on it 193. Forcing single allocator
+// decisions (14 of 627 tried) leaves 170. Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4544,6 +4602,20 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // with its `++first` dropped 317, pass 1's swap target as `state->entries` 317, both 317 (same code each: `first` keeps
 // EBP, the base EDX); pass 2's test through a `byte *flags` as pass 1's 317; passes 1-2 in their own block with `found`
 // declared there 317; `found` declared beside `first` 355 (first +0xc). Body unchanged.
+// M3 lane 13 r153 (h2m fast with 0x4b160, MATCH each run; control 317, aligned 133). Allocator ranking of the open cause:
+// after pass 4's cursor (55) takes EBP for its own blocks, `first` is re-ranked at 55 over passes 1 to 3 and takes EBP,
+// and pass 3's index (48: one reference at its start, one in the swap block, two in the step block, less 14 for the
+// four blocks it only lives through) is left without a register that survives the swap's copies. The index goes ahead
+// of `first` on equal rank (it is the later-created value), so the gap is 7. R149's repeated loop test closes it with a
+// block at the loop top that reads the index and `last`: the index 56, `first` 50 (re-measured 227 at 1305 B, aligned 68;
+// passes 1 to 4 are then retail's but for the order of the two reloads after pass 4's swap). Tried in pass 3: every
+// access through state->entries[i] with no entry pointer 318 (the ranks do not move: the indexed accesses are reduced to
+// the cursor before the ranking); the entry pointer kept with the swap from `&state->entries[i]` 368 (1335 B); a `byte
+// *flags` for the test with indexed accesses 318; the swap written out in the body with a local record 375 (1342 B);
+// `swap(entry, &state->entries[last]); --last; --i;` 317; the swap helper's record declared and then assigned 317 (same
+// code; the last three leave the ranks at 48 / 55). An empty `do {} while (false);` (what a compiled-out statement
+// leaves) at the top of pass 3's body, after the entry pointer, at the end of the body or after the loop 317 each (same
+// code: an empty block reads nothing, so it moves neither rank).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -5021,6 +5093,14 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // emits `fld st(2); fmulp st(1)`): in the random step, the sum written value-first 486 and `random * 2.0f - 1.0f` 486
 // (same code each), the clamp as two early returns 513 (2004 B), the offset named before the product 513 (2004 B), the
 // fraction kept as a double 486 (same code). Body unchanged.
+// M3 lane 6 r241 (h2m fast with 0x36b50; control 486, aligned 353): retail's else arm copies the strength as a dword
+// (read at its use) and both arms store the phase before the fade; on this body the strength read at its use in both
+// arms with the phase stored first 494 (2024 B), that with the distance computed in each arm 491 (2041 B), that with the
+// projection helper writing through an output pointer 541 (1979 B, frame 0x44); only the phase store moved first 488
+// (2038 B); only the strength local dropped 504 (2017 B). Frame reading: retail's 0x38 holds the two flag bytes, ten
+// dwords and one 12-byte home shared by the previous camera position and each element's old position; ours adds four
+// 8-byte projection results (the by-value returns stay in memory) and gives `old` its own slot (it interferes with the
+// first projection result, which shares the previous position's slot). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6110,6 +6190,29 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // NOT kept: All four color forms recover 0xe0. The early depth and origin-initialized color forms gain six
 // points and grow to 1826 bytes. Their first differing spill still keeps the radius at +0xc. The scalar
 // versions of those two forms tie the baseline. Both collision and basis controls stay matched.
+// M3 lane 6 r241 (h2m fast with 0x1697c0/0x141710, both matched; control 231, aligned 165; "col" = the colour as a
+// color4f with alpha stored and 1.0f passed for the rest, 225 at 1826 B re-measured). Reading: retail adds each corner
+// row as up, left, forward in all four corners (the matched 0x142570's order expanded in place, then the origin add and
+// the bias); our helper's x row sorts forward first because x's leaves are numbered after z's. Diagnostic (reverted):
+// `inline` on 0x142570's definition and that call with vector3f_add and the bias at each corner, with col, 355 (1822 B,
+// aligned 147: frame 0xe0 and radius at +8 as retail); its body as a file-local helper 355 (same code); each offset
+// written into its corner and transformed in place 355 (member stores x y z / x z y / z x y 355, y x z / y z x / z y x
+// 357; positives as `radius * 1.0f` 355; through real_point3d_set 355; one offset reused through the setter 362); all
+// four offsets first 383 (frame 0xdc); the origin added per component 438 (1764 B, aligned 138), as `origin + corner`
+// 438; the corner helper calling the transform helper, then vector3f_add and the bias 375 (1797 B, aligned 143; either
+// add order 375): only this nested form gives retail's add order in all 12 rows, leaving the XMM choice per corner and
+// retail's two kept offset-y stores (+0x64, +0x70) of corners 2 and 3. All copy 0x142570's body or need `inline` on it
+// (match-only / held). Body unchanged.
+// M3 lane 11 r166 (h2m fast with 0x1697c0/0x141710/0x142570, all MATCH unless noted; control 231). Retail's four corner
+// blocks read as four expansions of the existing 0x142570 (its scale test and rows, then the origin add and the bias), which
+// this build's link never expands here: the four corners as a counted loop over the real call with a sign table 1112
+// (1099 B: neither unrolled nor expanded); the offsets written into the corners first and a loop of in-place calls 1072
+// (1136 B); the four written calls under the nested test, under two early returns, or under one negated return 1016 each
+// (1196 B, lane 2 r101's form re-measured: the guard shape does not move the expansion); diagnostic (two files, restored):
+// 0x142570 without its parameter-address read 1042 (1169 B, still a call; 0x142570 itself 54). Reading of retail's kept
+// stores at +0x64 / +0x70: they are the homes of the expansion's y in corners 2 and 3 (stored where y is defined, read
+// back as a memory operand in corner 3's scaled arm, where the product is formed in y's own register), and those homes
+// coincide with the two corners' own y cells. Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

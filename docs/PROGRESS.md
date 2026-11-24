@@ -2,6 +2,76 @@
 
 The newest entry comes first.
 
+## 2026-11-24: 10924 functions match
+
+```
+matched 10924 of 11326 game functions (2246470 of 2786206 bytes, 80.63%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+5 new matches, none lost:
+- Machine 3's batch 340 (#1531): `0x16c840`, `0x172840`, `0x173520`, `0x21b0e0` and `0x21be20` match.
+
+## 2026-11-24: 10920 functions match
+
+```
+matched 10920 of 11326 game functions (2241194 of 2786206 bytes, 80.44%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+2 new matches, none lost:
+- Machine 3's batch 339 (#1530): `0xc8290` and `0x107ed0` match.
+
+## 2026-11-24: 10918 functions match
+
+```
+matched 10918 of 11326 game functions (2238756 of 2786206 bytes, 80.35%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+4 new matches, none lost:
+- Machine 3's batch 338 (#1528): `0xc2d00`, `0xcaf00`, `0xde4c0` and `0xe4bd0` match.
+
+## 2026-11-24: 10914 functions match
+
+```
+matched 10914 of 11326 game functions (2237233 of 2786206 bytes, 80.30%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, none lost:
+- @Roasted-Codes's #1526: `0x6fe90` match.
+
+## 2026-11-24: 10913 functions match
+
+```
+matched 10913 of 11326 game functions (2236522 of 2786206 bytes, 80.27%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 337 (#1522): `0x14cdd0` match.
+
+## 2026-11-24: 10912 functions match
+
+```
+matched 10912 of 11326 game functions (2235911 of 2786206 bytes, 80.25%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+2 new matches, none lost:
+- Machine 3's batch 336 (#1521): `0xbe240` and `0x14ac60` match.
+
+## 2026-11-24: 10910 functions match
+
+```
+matched 10910 of 11326 game functions (2234151 of 2786206 bytes, 80.19%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 335 (#1520): `0x1cc3f0` match.
+
 ## 2026-11-24: 10909 functions match
 
 ```

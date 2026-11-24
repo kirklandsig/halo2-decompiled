@@ -507,6 +507,24 @@ extern real g_4c9798[36];
 // temporaries fold away before the scratch registers are handed out. The tag test as a one-case switch 315 (1479 B,
 // first +0x3), as `== 1` 315 (the state then arrives in EAX, as listed above). The extent renamed `breadth` or
 // `a_extent`, the distance renamed `range` or `z_distance` 100 each (same code: the two homes do not follow the names).
+// M3 lane 12 r185 (h2m fast with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174; body unchanged; still BLOCKED-BY
+// 0x48e70, whose file is on this round's avoid list). Aimed at the flags word's register (EDX for retail's EAX), each
+// the same code, 174: the flags global read into a named dword ahead of the mode chain; the shifted flags named; the
+// negated bit named as a bool ahead of the chain; the bit test written `!= 0` without the bool cast; the tag word read
+// into a named long ahead of its test; the same as a short. Reading of the scratch registers (handed out in code order
+// from a cursor that steps EAX, ECX, EDX and skips a busy one): the tag word takes EAX and leaves the cursor on ECX,
+// the state pointer holds ECX, so the flags word gets EDX and the cursor returns to EAX for the size-limit bits, which
+// already sit where retail has them. Retail has the tag word, the flags word and the first size-limit bit all in EAX,
+// which needs the cursor back on EAX twice: one more integer temporary ahead of the flags word and one more ahead of
+// the size-limit bits, or neither the tag word nor the flags word taken from the cursor. Named locals fold away before
+// the scratch registers are handed out, so none of the six forms adds one.
+// Stage both rounding operands before either call, width-first or height-first,
+// with direct alignment, separate height alignment, delayed width alignment, or
+// both delayed, 174 each. NOT kept: the EDX load and size/aspect homes agree with
+// the opening body.
+// Initial direction captured once 378 or per row 399; whole scaled/negated/both row values 185/183/190;
+// scale/negate/both helper results before publication 323/321/323. The row values retain the 0x28 frame. The EDX
+// flag load and held rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

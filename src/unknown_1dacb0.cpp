@@ -1688,6 +1688,35 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // found-flag loop with the inner return kept 994 (2837 B), without it 755 (match-only, as listed); the iterator declared
 // at the top of the function 812 (both twins); on the 755 form the first request keyed by the iterator's own key fields
 // 1020 (2875 B). Body unchanged.
+// Class/NONE allocation, iterator output homes and second-request mode and graph registers still differ.
+// Early disabled-request return in the per-type, per-kind, inheritance helper or any combination;
+// early missing-type return in the per-type helper: 812 each.
+// NOT kept: the inlined code keeps the original mode-table and mode lifetimes.
+// M3 lane 12 r185 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812;
+// body unchanged; each form measured on both twins with the same counts). The three optional outputs stored through one
+// inline setter 812 (same code); that on the siblings' flag loop with the outputs and the result as one record 732 (same
+// code); 0x1dd9d0 and both requests through one shared inline helper 3541 (294 B: it stays a call), the helper forced
+// inline 812 (same code); on the 732 form the per-pass candidate assigned and read through a pointer local 732, the
+// lookup through an inline helper with an out-pointer 732 (same code each). Diagnostics on the 732 form, removed at
+// once: one extra zero store beside the inheritance counter 735 (a scratch zero for that block only; 0x1dc8c0 lost,
+// 231); the candidate in a one-element array 732 (same code); the candidate and the named pointer as one per-pass
+// record 778; the candidate's address handed to an undefined function 1011 (2857 B). Allocator reading on the 732 form
+// (337 of 352 register webs then sit where retail has them): the zero constant is one value for the whole function, cut
+// into pieces wherever no register is left for it; a piece is worth a register only when its memory stores of zero
+// outnumber its one set-up, and compares against it count nothing. Retail's EBP zero is the piece from the fifth
+// kind's first test to the two counter stores (two stores, one set-up). With only the second request compiled that
+// piece exists here too: the zero's piece is cut after the output stores, restarts at the first kind with EBP free,
+// loses kinds one to four to the mode and keeps the rest. With both requests the zero's piece runs unbroken from the
+// search loop, where the found-mode pointer holds EBP, so it only ever has ESI (free until the NONE constant is
+// coloured, which happens last), and the first kind's list pointer then takes that: the piece is cut down to the
+// counter store's block alone (one store, one set-up, not worth a register). Without the zero in EBP the graph
+// pointer's second-request piece runs on through the second inheritance loop with EBP free, ranks below the
+// mode-table address (-313 against -74) and loses EBX to it. One cause is left on the 732 form: what takes ESI between
+// the search loop and the first request early enough to cut the zero's piece there.
+// The entry class/NONE registers and candidate and resolved-mode homes still differ.
+// Direct or copy construction of a read-only found candidate, with present first, miss
+// first, miss continuation or a condition-scoped lookup: 991 each. NOT kept: splitting
+// construction by lookup result adds a frame word and grows to 2837/2825 bytes.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1747,25 +1776,6 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	}
 	return result;
 }
-
-// MiniMax S (11-15): no new form kept, no lower score (828): the request's urgent flag held in a named local that only
-// carries a constant drops the score to 801 (2791 bytes) and makes the first resource request match retail instruction
-// for instruction, but a local holding nothing but a constant is not a shape retail's source can have, so it is not
-// kept; the same flag taken from the found entry pointer (983), from the weapon class (1011) or from the result index
-// (3574, reading a value never set) are worse.  The second request's mode copied into a named local and the mode read
-// through its own address both give 828 (same code), the per-pass candidate declared at function scope gives 926 (2825
-// bytes), and the permuter's best (774) swaps the lookup's key and size arguments, so it is not kept either.  The frame
-// still gives iterator_mode the dead found_mode slot (F+0x44) where retail puts the per-pass candidate and keeps
-// iterator_mode at F+0x00, so retail's result shorts sit at F+0xc and F+0xe while ours sit at F+0x08 and F+0x0a, and
-// retail's EBP zero carrier in the second request is still missing.
-// MiniMax D (11-15): no new form, no lower score (828): the first difference is still the NONE compare, where retail loads
-// the compared argument into edx and keeps the computed -1 in ecx while this build loads the argument into ecx and keeps
-// -1 in edx; that rides on the frame homes, where retail's result sits four bytes higher than ours and retail's third
-// resolved output sits in the frame while ours is homed in the incoming argument slot, so every later row pairs with the
-// wrong row; the iterator call, the sorted lookup and the two resource requests are unchanged.
-// MiniMax G (11-14): no new form, no lower score (828): the NONE compare still loads the compared argument into ecx
-// where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
-// frame homes still differ from retail's.
 
 // score 812 (was 812): The class and NONE registers are exchanged. The iterator mode output takes the candidate
 // slot, and the second request reloads its mode. (828 before the count fell to 812.)
@@ -2330,6 +2340,50 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // would take a register. Forms: the request helper taking its mode by `long const &` 812; all three keys by `long const
 // &` 812; the kinds helper's mode by `long const &` 812; the graph by `s_graph_tag *const &` 812; the second request in
 // its own `if (result.index != NONE)` block after the first 812 (same code each).
+// Class/NONE allocation and the result, candidate and iterator output homes still differ.
+// Iterator defaults from the invalid result index for mode, class, mode/class, type,
+// mode/type, class/type, all three and a chained assignment: 812 each.
+// NOT kept: each form folds to the existing entry constant and leaves the same homes.
+// M3 lane 12 r185 (h2m fast with the twin, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH; control 812; body
+// unchanged; the forms and the allocator reading are in 0x1db170's note). The three optional outputs stored through
+// one inline setter 812 (same code); 0x1dd9d0 and both requests through one shared inline helper 3541 (294 B: it stays
+// a call), forced inline 812 (same code); the siblings' flag loop with the outputs and the result as one record
+// re-measured here 732 (first difference +0x2d1), on it the per-pass candidate through a pointer local 732 and the
+// lookup through an inline helper with an out-pointer 732 (same code each).
+// MiniMax S (11-15): no new form kept, no lower score (828): the request's urgent flag held in a named local that only
+// carries a constant drops the score to 801 (2791 bytes) and makes the first resource request match retail instruction
+// for instruction, but a local holding nothing but a constant is not a shape retail's source can have, so it is not
+// kept; the same flag taken from the found entry pointer (983), from the weapon class (1011) or from the result index
+// (3574, reading a value never set) are worse.  The second request's mode copied into a named local and the mode read
+// through its own address both give 828 (same code), the per-pass candidate declared at function scope gives 926 (2825
+// bytes), and the permuter's best (774) swaps the lookup's key and size arguments, so it is not kept either.  The frame
+// still gives iterator_mode the dead found_mode slot (F+0x44) where retail puts the per-pass candidate and keeps
+// iterator_mode at F+0x00, so retail's result shorts sit at F+0xc and F+0xe while ours sit at F+0x08 and F+0x0a, and
+// retail's EBP zero carrier in the second request is still missing.
+// MiniMax D (11-15): no new form, no lower score (828): the first difference is still the NONE compare, where retail loads
+// the compared argument into edx and keeps the computed -1 in ecx while this build loads the argument into ecx and keeps
+// -1 in edx; that rides on the frame homes, where retail's result sits four bytes higher than ours and retail's third
+// resolved output sits in the frame while ours is homed in the incoming argument slot, so every later row pairs with the
+// wrong row; the iterator call, the sorted lookup and the two resource requests are unchanged.
+// MiniMax G (11-14): no new form, no lower score (828): the NONE compare still loads the compared argument into ecx
+// where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
+// frame homes still differ from retail's.
+// M3 lane 4 r260 (h2m fast with the twin, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x1dd9d0 and 0x1db120, all
+// but the twins MATCH; control 812, aligned 318; body unchanged; the three MiniMax paragraphs that sat above the score
+// line are the ones just above this entry, moved, nothing removed). Entry reading from the allocator's ledger: the
+// weapon_class argument is one candidate over the entry and the setup block (30: its compare 2 x 9 candidates, its store 2 x 6) and
+// the NONE constant another over the same two blocks (27: one counted store in the entry, the compare and the second
+// word store count nothing, the three output defaults 3 x 6), so the argument colours first and takes ECX; retail has
+// the constant in ECX in the entry only, the argument in EDX, the mode key loaded into ECX at the top of the setup block
+// and a second `or eax, -1` for the output defaults. A forced EDX for the argument moves the first difference to +0x18
+// but raises the count (958), so the pair is not the root by itself. Forms: the iterator's mode from a block-local copy
+// of the parameter 812 (same code); the iterator's zero stores first and its keys in class, type, mode order 961; the
+// entry test written `NONE != weapon_class` 812 (same code); the result declared with an explicit default value 812
+// (same code); the first request's mode read from the iterator's field 822.
+// Class/NONE allocation and the resolved-mode and candidate homes still differ.
+// Read-only record, fixed pointer, both, each of the four lookup bindings in its test,
+// and an untyped lookup result until the record read: 812 each. NOT kept: the pointer
+// forms collapse to the same allocation at retail length.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

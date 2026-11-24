@@ -366,13 +366,13 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// score 130 (was 130): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
 // MiniMax A (11-19): no new form, no lower score (130): 889 bytes against retail's 880 and the frame is 0x1c against
 // retail's 0x20 - retail keeps the random fraction in a cell of its own (+0x18) and the sine in another (+0x14) where
 // this build shares one cell (+0x14) for both - and retail loads the random-state pointer into esi before the time
 // product where this build loads it after; retail's rotation is the scalar one, which the shared in-place helper
 // cannot give.
 // MiniMax C (11-19): no new form, no lower score (130): frame 0x1c against retail's 0x20, the seed pointer loaded after the surface lookup instead of in the prologue, and the random sample at [esp+0x14] against retail's [esp+0x18].
-// score 130 (was 130): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
 // M3 lane 2 r107 (fast with 0x118140, which stays MATCH; fast = plain 130): the convention is already retail's (index in EAX,
 // wind in EBX, plain ret). Retail loads the random-state pointer into ESI right after `push esi` and finishes the seed
 // update before the fimul; its sine and the fraction's integer take separate cells (ours share one). sine and cosine
@@ -963,6 +963,30 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the random sample still lands at [esp+0x14] against retail's [esp+0x18]; the SSE rotation block still differs in
 // every row's register assignment (retail keeps the seed pointer in ESI from the prologue, this build loads it after
 // the surface lookup), and the function is still 889 bytes against retail's 880.
+// M3 lane 12 r186 (fast with 0x118140, 0x117c80 and 0x30bf0, all MATCH; control 130). Read from the scheduler: in the
+// opening block the random-state pointer load ranks 58 (height 24 plus its load bonus) against 93 to 146 for the
+// definition and clock loads and the time product's integer store, because the seed update only reaches the fraction's
+// conversion at the block end; retail's order (pointer load between the pushes, seed update ahead of the time product's
+// integer store and its fimul) needs the seed update to feed the time chain. Read from the operand ranks of the rotation:
+// retail's sides need the axis j and k above the direction's components and those above the axis i; ours ranks the
+// direction's i and j above the axis j and k, the axis i above the captured k. Forms: the axis passed by value through a
+// file-local inline (diagnostic, a one-caller helper) 453 plain inline (out of line, 590 B), 154 forced inline (880 B),
+// with the sine and cosine as its arguments 152, with the axis drawn inside it 154; the oscillation as `cos(0.005f *
+// time)` 130 and the angle as `0.15f * fraction * oscillation * oscillation` 130 (same code each). Body unchanged.
+// Rounded angle held as double with clock record/interval across draw/tick
+// count across draw/both clock fields 161/154/162/213. Early seed alone or
+// with the early interval 131/122, bounded generator without or with early
+// seed 155/160. Early interval with real angle 147; whole time after draw
+// 195; elapsed time started before draw 137. Real angle promoted at the
+// rotation with early interval/time before draw/time after draw/elapsed
+// time scaled after draw 120/127/193/135.
+// NOT kept: 122 and 120 both move the single-use interval read ahead of
+// the seed update. The 120 form also leaves the 0x1c frame.
+// The random sample and sine still share a word in the 0x1c frame. Limit the rotated global
+// into the spent axis or separate result, with vector/field publication 197/193 and 197/198.
+// Rotate a snapshot, then limit into the global, in place, or into the spent axis with vector/field
+// publication 168/199/202/215. NOT kept: the direct-global output ties the opening extent and
+// raises the score. Other destinations add copies, and none recovers the 0x20 frame.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1249,6 +1273,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // the object index in a local, as matched 0x1171a0 and 0x117a80 write theirs, 303 (aligned 42, masked 14; a one-use local, so
 // match-only); the material index as a default overridden under `== NONE` 376, as an if/else with the tag arm first 318.
 // Body unchanged.
+// With the material call's two stack arguments, full baseline 280. Lighting byte pointer
+// from the cache offset or typed cache member, respectively: ternary 280/280, NULL before
+// lookup 273/273, success arm first 280/280, absent arm first 280/280. NOT kept: seven-point
+// gain is below the threshold. Record spill and draw-state expansion still differ. Body restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

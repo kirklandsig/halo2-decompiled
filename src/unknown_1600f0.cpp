@@ -1769,6 +1769,26 @@ PRIVATE inline long score_string_list_1608e0()
 // right and bottom summed from them after it 679 (aligned 596); the title bounds' near edges read from the row position
 // with the far edges summed from its own left and top 679 (same code); `inline` on 0x1600f0's definition 679, on
 // 0x1603f0's 679, on both 679 (the same code each: the two row builders are not what captures the position).
+// M3 lane 2 r146 (H2M_FAST with 0x161420, 0x1600f0, 0x1603f0, 0x15f120 and 0x163350; control 679, aligned 436, 149 with
+// registers masked; 0x1603f0 reads 253 in the reduced image in every run, control included; body unchanged). Retail keeps
+// the origin as a two-short point at +0x10 (x stored ahead of the scroll clamp, y after it), copies it whole into the row
+// position at +0x18, and after the title-text call reads the far edges and the header advance from the point with
+// double-word loads while the near edges still come from the x and y registers. On this body, with a file-local
+// two-short point for the origin: x stored into it ahead of the clamp, y after it, the row position set by one aggregate
+// copy (through a cast of the two-short array), the title's far edges and the header advance read from the point 675
+// (aligned 442, masked 135: four points, and a cast only to copy); every title edge read from the point 704 (2888 B);
+// the far edges from the point with the screen height ahead of x 695 (2888 B, masked 125); the far edges from the point
+// and the advance from the y scalar 675 (same code as the first form); the row position as an aggregate initialiser
+// `{ x, (short)y }` 679 (same code); the screen height ahead of the width's use with x stored into the row position
+// before the clamp 685. Retail's two evaluations of the score-column test (once inside the name width, once for
+// the score width in its own stack cell) are a computed value written at each use, so lane 4 r213's lead stays
+// match-only.
+// Caption rectangle holds horizontal origin. Named score member, read-only bytes, typed buffer and typed players each 688.
+// Explicit availability branches 723. Typed teams, both tables and shared engine-state selection each 690. All 2856 B.
+// Earlier caption rectangle 679; title rectangle beside row position 679;
+// earlier foreground / foreground and caption rectangle 679/679. Height, scores and
+// row-total names in two orders 679/679. Entry row and caption declarations, with or
+// without separate title declaration, 679/679. Frame, viewer and origin homes still differ.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

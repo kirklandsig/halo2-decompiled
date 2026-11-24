@@ -705,6 +705,19 @@
 // helper's vector with the mixed wave first 626; the camera shifts read in the two calls (retail reads the second one
 // after the first add's stores) 537; the second input copy scaled in place 536 (retail's form, other code, same count);
 // both 537; those three on the 626 form 625/626/625. Twelve forced single allocator decisions: none below 536.
+// M3 lane 8 r234 (H2M_FAST with 0x4a1e0, unchanged at 322; control 536 at 2622 B, aligned 593, register- and offset-masked 183;
+// body unchanged). Frame view: ours has six 4-byte cells (inv; one x87 transfer cell shared by both waves; shape0 with sx; the
+// three first products) and the first cross as a 12-byte object in w's home; retail has nine (inv, shape0, the mixed wave, the
+// plain sine, the cross's j and k, the three first products) with only the cross's i in w's home, which is cross3f_staged's
+// shape with its k and j temporaries kept in memory across the x87 code. Forms: `inv * 0.5f` written at its six uses in the
+// perspective rows (no `k` local) 536 (same code); the two reciprocals written at their uses (no sx / sy) 678 (2671 B); both wave
+// values written in the add calls (no s1 / s0 locals) 536 (same code); the first input scaled through vector3f_scale into a vector
+// 538; the first cross through cross3f_staged into a function-scope vector 536 (masked 183, same code).
+// Wave position setters for mixed/short/both 649/645/647 through either point or vector setter;
+// scaled displacement locals with point setter 648 (0x60 frame, 2650 bytes, primary shape still at +0x1c);
+// both point setters with opposite cross between updates 646.
+// Shared scale then vector sum on mixed wave, short wave, both, or both with overlapping crosses 698/561/664/649.
+// The same four starting from the staged first cross 698/561/664/649. NOT kept: those with the 0x60 frame grow the body without separating the wave slots.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1627,6 +1640,14 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // x pair, first z; case 4 rows first-y, first-x, then the second edge), 411 / 147 / 60 at 2592 B. The frame stays
 // 0xa0 against 0xac in every form (retail keeps first.z's spill slot and two more cells), and every role-correct form
 // is shorter, so none lowers the positional score.
+// M3 lane 8 r234 (H2M_FAST with 0x42c50, 0x42b20, 0x43720 and 0x43740, all MATCH each run; control 285 at 2596 B, aligned 160,
+// masked 48; body unchanged). Cell map: every home from +0x10 to +0x6c carries the same reference count on both sides; above that
+// retail has three 8-byte homes on top (the u step, the V end and case 0's first.z spill, each with its upper dword unreferenced),
+// which shifts the 2-reference cells below them. Forms: the half width written `width * 0.5f` at each use (no local) 573 (2588 B);
+// the clamp of the alpha as an if / else-if 285 (same code); the outer vertex pointer declared after the first vertex's u and v
+// stores 285 (same code); the two edge points as six reals 285 (same code); the four u / v stores moved down to the position
+// stores 373; the next index read ahead of the previous-point update 498 (2600 B). Re-measured: the object index read from the
+// source at its three uses 374 (2588 B); the tint as three statements 447 (2584 B).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

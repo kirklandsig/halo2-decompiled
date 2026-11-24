@@ -41,12 +41,6 @@ PRIVATE __forceinline void function_2922b1(vector3f const *arg_0, vector3f const
 	arg_2->j = local_1;
 	arg_2->k = local_2;
 }
-PRIVATE __forceinline void function_2922b2(point3f const *arg_0, vector3f const *arg_1, real arg_2, point3f *arg_3)
-{
-	arg_3->x = arg_0->x + arg_1->i * arg_2;
-	arg_3->y = arg_0->y + arg_1->j * arg_2;
-	arg_3->z = arg_0->z + arg_1->k * arg_2;
-}
 PRIVATE __forceinline real function_2922b3(real arg_0, real arg_1, real arg_2)
 {
 	if (arg_1 > arg_0)
@@ -75,7 +69,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
 }
 
-// score 521 (was 521): The 0x108 frame agrees. First +0x31 stores success at ESP+0x13 instead of +0x17. The hit slots and inactive exit still differ.
+// score 518 (was 521): The 0x108 frame agrees. First +0x31 stores success at ESP+0x13 instead of +0x17. The hit slots and inactive exit still differ.
 // Earlier scores: 576, 592 and 618. Before round 111: 558.
 // Earlier scores 558, 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // Earlier at 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
@@ -930,6 +924,27 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // minimum block 553; the minimum block's two stores exchanged 651 (aligned 388); the reciprocal named in that block 522;
 // the sample local declared ahead of it 521; the minimum test written minimum-first 521 (same code); the lead on the
 // three exit forms 632/627/658.
+// M3 lane 2 r146 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH each run; control 521, aligned 274, 97 with
+// registers and stack offsets masked). KEPT 518 (fast, check.py --fast and plain; callers 0x29ab90 286 and 0x29bab0 489
+// unchanged): the four ray origins through the shared vector3f_add_scaled (the file's private copy of it removed; the
+// origins alone 521, same code) and the ray direction through the shared vector3f_scale in place of three hand-written
+// rows and their `ray_length` local (518, aligned 271, masked 96; with the local kept as the scale argument 519 at
+// 2864 B). Not kept: the object arm's cross taken from the object's own two vectors ahead of the pointer assignments 664
+// (2851 B), after them 655 (2863 B); the pointers assigned up first 650 (2870 B); the tail's cross and third projection
+// from the object's own vectors with no pointer local 564 (2848 B), with the object arm's direct cross 665; the tail's
+// three projections through dot3f 583 (2837 B). Retail's first cross forms each product in the operand whose offset in
+// the object is the larger multiple of four mod 32 (forward.k before up.j, forward.i before up.k, up.i before forward.j),
+// which is what one base pointer with the object's own offsets gives; the direct forms above do not reach it.
+// The clearance, hit and range slots still differ. Rejected-ray counts in long/short/byte 662/675/664;
+// remaining clear count 675; rejected-ray masks in dword/word/byte 682/694/674; remaining clear mask 719.
+// NOT kept: the counts and masks change the retail byte lifetime and shorten the body.
+// The clearance byte, hit slots and range still differ. A cursor on the actual ray-length array,
+// with long or dword index and equal-end or upper-bound tests: for 561 in all four forms, do-while 556 in all four.
+// NOT kept: each drops the frame from 0x108 to 0x104 and shortens the body.
+// Assign angle zero on first-axis miss 637, second-axis miss 571, or both 648. Separate
+// scaled side or up contribution 519/525, both 554. Shared i-k-j rotation projection 524,
+// immutable origin copy 518. NOT kept: first-axis definite assignment recovers the success
+// byte home, but shortens the body and leaves the early zero in XMM1.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -974,10 +989,10 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 		point3f local_12 = local_1->unknown030;
 		*arg_4 = 1.0f;
 		point3f local_13[4];
-		function_2922b2(&local_12, local_11, local_2->field_14, &local_13[0]);
-		function_2922b2(&local_12, &local_9, local_2->field_14, &local_13[1]);
-		function_2922b2(&local_12, local_11, -local_2->field_14, &local_13[2]);
-		function_2922b2(&local_12, &local_9, -local_2->field_14, &local_13[3]);
+		vector3f_add_scaled((vector3f const *)&local_12, local_11, local_2->field_14, (vector3f *)&local_13[0]);
+		vector3f_add_scaled((vector3f const *)&local_12, &local_9, local_2->field_14, (vector3f *)&local_13[1]);
+		vector3f_add_scaled((vector3f const *)&local_12, local_11, -local_2->field_14, (vector3f *)&local_13[2]);
+		vector3f_add_scaled((vector3f const *)&local_12, &local_9, -local_2->field_14, (vector3f *)&local_13[3]);
 		real local_14[4] = { local_2->field_14 + local_6, local_2->field_14 + local_6,
 			local_2->field_14 + local_6, local_2->field_14 + local_6 };
 		real local_15[4];
@@ -988,10 +1003,7 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 		do
 		{
 			vector3f local_18;
-			real ray_length = local_14[local_17];
-			local_18.i = local_10->i * ray_length;
-			local_18.j = local_10->j * ray_length;
-			local_18.k = local_10->k * ray_length;
+			vector3f_scale(local_10, local_14[local_17], &local_18);
 			if (function_1697c0(0x1808c2d, &local_13[local_17], &local_18, arg_1, NONE, &local_16))
 			{
 				real local_19 = local_14[local_17] * local_16.field_4 - local_2->field_14;

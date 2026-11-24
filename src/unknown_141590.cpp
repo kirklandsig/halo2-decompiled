@@ -1309,6 +1309,35 @@ void function_143250(
 // r4_r4 product with the operands exchanged 939, its r3_r3 product exchanged 939, the value declared const 939, written
 // `r2 * s35` 939, entry 27's first product as `s7_s2 * s35_r2` 939 (the same code each); its r4_r4 product declared
 // beside the r3_r3 product 1368 (10783 B). Body unchanged.
+// The extra dedicated scalar cell is still missing. Root-35 component-2 product before the component-1 axial
+// cube 1410, cube between weighted product and first use 1411, adjacent square consumers 939, adjacent
+// weighted component pairs 990. Root-105 component-1 square alongside component-3 1475, its pair after the
+// component-0 pair 945, its component-7 product alone beside component-0 1470, and four weighted squares
+// before their component-7 consumers 1556.
+// M3 lane 6 r240 (H2M_FAST with 0x143250 MATCH, 0x22850 209 and 0x23690 354 each run; control 939, offset-masked aligned
+// rows 214 in 109 runs). Reading of the first masked rows: band two's entry 0 store and the zero for entry 1 trail the
+// r6 * r4 product in retail and lead it here, and in entry 10 retail multiplies the bracket by s5_s15 ahead of the r4_r1
+// chain; both are equal-priority picks of the instruction scheduler (the earlier-generated instruction goes first), so
+// they follow the order the values are generated in, not the expression shapes. Band two's r6 * r4 named after its
+// squares (band three shares it) 1231 (10744 B, masked 253); entry 0's two products named 1231 (same code); all three
+// named 1095 (10777 B, masked 205): the one-, two- and three-symbol steps of lane 3 r303's dead-local scan, so these
+// names act only through the symbol count. On the s35 * r2 value: its r3_r3 product alone written `s35 * r2 * r3_r3`
+// 1417 (10795 B, frame 0x300 as retail and first difference +0x3b, masked 226); its r4_r4 product alone written out 1476
+// (10793 B, frame 0x2fc, masked 184); both written out with the named value left for entry 27 1322 (10810 B, masked
+// 278); the r4_r4 product declared just ahead of the r3_r3 product 1368 (re-measured); both products with the named
+// value as the second operand 939 (same code). Body unchanged.
+// The extra dedicated scalar cell is still missing. Root-35 component-2 product before the component-1 axial
+// cube 1410, cube between weighted product and first use 1411, adjacent square consumers 939, adjacent
+// weighted component pairs 990. Root-105 component-1 square alongside component-3 1475, its pair after the
+// component-0 pair 945, its component-7 product alone beside component-0 1470, and four weighted squares
+// before their component-7 consumers 1556.
+// Round 467: in-place multiplies at the original weighted root-35 and root-105 product
+// producers 939/939, both 939, each pair of consumers 939/939, each producer with
+// its consumers 939/939, and both complete families 939. No change to the 0x2fc frame,
+// early basis spills or higher-band product homes.
+// Third-band mixed terms named at 21/27 and 35/41 939/945. Square terms at those pairs 1183/939.
+// Grouped sums before or after scaling 939/939. All terms staged at 21/27 or 35/41 939/939.
+// NOT kept: the shared spill home and 0x2fc frame persist.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -2353,9 +2353,22 @@ bool function_1900a5(long index);
 // both locals 636; the write poll's pending range as an early return ahead of the state-2 test 643 (same code), nested
 // under `state >= 0` 643 (same code); either with the last write local 660 (2846 B), with both locals 662. The 634 form
 // needs the arm swap, so nothing is kept.
+// The logon comparison and properties-based user cursor still differ.
+// Typed owner publication or comparison 643/643; slot copied between, before, or after user outputs
+// 643/643/643; common user record 726; shared logon predicate with typed owner and with common user
+// 743/727. NOT kept: the typed owner alone ties and the forms that move the cursor or logon comparison raise the score.
 // Single task-index read with direct guard, selected status, initialized readiness, guarded readiness,
 // conditional readiness, initialized offline result, default status or an offline early return:
 // 643/643/643/754/754/643/643/643. The opening status comparison and first user cursor still differ.
+// The logon comparison and properties-based user cursor still differ.
+// Successful refresh continue 643, with scoped team result 643, direct admission result 643,
+// unavailable reset before promotion 658 or vacancy 658, team-first eligibility 646,
+// nested vacancy 643, available vacancy first 649. NOT kept: the equal scores leave the
+// cursor at properties and the other forms raise the score.
+// Valid record pointer as a conditional or guarded assignment 759/759, cleared after
+// binding 726, and chosen from a bound record 765. Valid identity pointer 758/758,
+// valid properties pointer 749, and bound record with identity gate 758.
+// NOT kept: the record result at retail length still changes the cursor and scores 726.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

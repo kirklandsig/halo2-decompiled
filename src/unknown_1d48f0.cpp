@@ -47,7 +47,7 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
-// score 268 (was 298; r286 and r239 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
+// score 268 (was 298): r286 and r239 unchanged. Earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
 // MiniMax G (11-20): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is expanded here but called out of line in retail, so the optional-state homes stay four bytes off.
 // MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
 // expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
@@ -530,6 +530,24 @@ const dword g_455978[81] = {
 // release expanded; the do-while alone 328, same code); with the loop under `if (0 < local_6)` and its counter zeroed
 // ahead of it 331 (2057 B: retail's call skeleton, 0x11bed0 called, first release expanded, second called; entry
 // registers EBX/EDI swapped); that guard alone 373 (2011 B). BLOCKED-BY 0x279740 (/Ob1 file; needs the held `inline`).
+// Use world registration results for bounds, transform or both 269/274/275. Bounds ray, rigid body pose,
+// query dispatch, paired ray and pose, or two reference-counted receivers 268 each. NOT kept: registration
+// results alter live registers without restoring the optional homes, and all typed views tie.
+// Exclusion defined on the bounds path by branches or a conditional 430/464,
+// with absent-path defaults 494/494; null volume on the absent path 430,
+// with both defaults in their arms 485 or conditional exclusion 460;
+// publish the volume after selecting the exclusion 465.
+// NOT kept: the retail homes and selective call expansion remain.
+// M3 lane 16 r186 (H2M_FAST with 0x11bed0, 0x21a100, 0x1d43d0, 0x279740 and 0x1d01c0; control 268, aligned 206; body
+// unchanged). Diagnostics on the two callee files' flags, restored at once: `/Ob1` on 0x11bed0's file 373 (2011 B, 0x11bed0
+// called here, but 0x11bed0 itself then 19: its 0x14a280 call pushes the collision bsp where retail passes it in ECX, and
+// 0x21a100 80 -> 156); 0x279740's file without its /Ob1 427 (2177 B: both release tests and 0x11bed0 expanded; 0x1d01c0
+// 682 B against 572); both together 331 (2103 B, aligned 212: 0x11bed0 called, both release tests expanded where retail
+// expands only the first). 0x11bed0's else arm written through the existing 0x11be90 (retail's 0x11bed0 is that call
+// expanded) is still a byte match of 0x11bed0 and changes nothing here (268; 0x21a100 80 -> 81, so not kept). The frame
+// here is packed by reference density (references over size, densest lowest), so the optional volume's home sits below
+// the 12-byte direction where retail has it above: the counts follow from which callee is expanded, not from a
+// declaration. Still BLOCKED-BY 0x11bed0's expansion here and 0x279740's /Ob1 file (lane 12 r184's held route).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

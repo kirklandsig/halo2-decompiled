@@ -514,6 +514,22 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // and both requests 183. Processor-target flags on the file (/G5, /G6, /G7; the one compiler-setting diagnostic) 61
 // each, the same code. Body unchanged. Next: a copy whose destination the compiler does not see as a use of
 // &g_54e4a0 (no spelling of the assignment, memcpy or the destination tried so far does that); then form 3 applies.
+// M3 lane 6 r240 (H2M_FAST with 0x13fac0, 0x212bc0, 0x238c69, 0x2ba9f4, 0x1489b5 and 0x2ca244, all MATCH each run; control
+// 61, aligned 31). Re-measured: two load arms 174 (595 B, aligned 73); with the count named in the default arm 179 (580 B,
+// aligned 72: the second half is then retail's row for row but for the variant address held in EBX at all five uses,
+// `this` in ESI with a spill, and the controller read ahead of the file-type call); 0x238c69 as (controller, mode, type,
+// name, maximum_count) on this body 76, on two arms 167 (590 B), on two arms with the named count 183 (575 B). The
+// index and the variant are already members of one global aggregate here, so writing both arms through that aggregate is
+// the same code (174). Allocator ranking on the named-count form, as lane 7 r224 read it: the variant address 104 (five
+// references in the two arms), `this` 63, the entry 61, `saved` 35; a zero constant takes EBX through the first half.
+// Body unchanged.
+// B517 split loads: private template 181, private selected edit 179, separate edit/creation workspaces
+// with shared copy destination 173, failure-first with copy destination 188 or private template 178,
+// eligibility disjunction with copy destination 179, separate dispatch returns with copy destination 179,
+// common screen dispatch with private template 196. NOT kept: receiver allocation and frame layout differ.
+// Keyboard mode produced by the two successful decodes. Guarded assignments or
+// conditional results give long 167/173, short 172/179, word 172/179, enum 167/173.
+// NOT kept: the frame loses its 0x70 bias and the score rises.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

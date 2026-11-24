@@ -1012,6 +1012,20 @@ static inline bool teams_enabled_19e1c0()
 // code); one redundant clamp of the result against `remaining` at the exit 661 (1201 B, still thirteen candidates).
 // Diagnostic lever (a test retail lacks): `remaining > 0 &&` in front of the first compare only 479 (1487 B): `remaining`
 // loads into EBP at retail's entry instruction, but the event takes EDI and the token length EBX (retail EBX / EDI).
+// M3 lane 16 r185 (h2m fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH each run; control 390, plain result re-measured 691 at
+// 1170 B). Reading: on the plain result the allocator ranks the result 223, the token length 75, the event 63 and the
+// token 52 (the token is one candidate from the entry block, where the first compare reads it), while `remaining` has no
+// candidate of its own: each arm that clamps makes its own two-use load of it (thirteen of them, 8 to 12 points each).
+// Retail's one load of `remaining` at entry therefore needs a reference to it in the entry block. Retail's first and
+// fourth name arms end in the same twelve instructions and are not joined, so its joins only take the tail of the block
+// ahead of the shared copy call; on our plain result whole identical arm blocks are joined (the second player arm jumps
+// back into the first). On the plain result, all 691 (same code): `__assume(remaining >= 0)`, `> 0` or `!= 0` at the
+// top (diagnostic); `do {} while (false);` at the top; that statement after or ahead of the copy call in each of the
+// four name arms; `remaining` read through a `long const &` bound to it; through a one-member aggregate local
+// initialised from it; through a `long` copy read by const reference. Body unchanged.
+// Direct format exits, unconditional name/fallback copy with per-arm/common bounds 552/488;
+// name-only copy with per-arm/common bounds 513/513; ordinary result with the same four forms 605/561/547/548.
+// NOT kept: all shorten the body and still miss the entry token load.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

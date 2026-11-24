@@ -2151,6 +2151,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // M3 lane 8 r233 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; round 232's 17 lead rebuilt from its patch,
 // 17, the same four rows). On the lead: the channel pointer used for the play, frame and duration calls in the found
 // arm 60 (2192 B); no channel local, the +0xb8 field's address at the test and the clear 17 (same code). Body unchanged.
+// Cumulative activity across unit, weapon or user readiness 172/172/172; pairs
+// of those boundaries and all three stages 172/172/172/172; nested continuation
+// from partial readiness 368. NOT kept: the unit and mode homes still exchange.
 // M3 lane 1 r164 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; lane 8 r232's lead patch still applies and
 // reads 17 at 2199 B, main 172). On the lead: the callback chosen ahead of the orientations 22; the weapon object
 // looked up after the orientations 72 (2200 B); the animation-name test negated with the clear in the then-arm 79
@@ -2158,6 +2161,20 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (same code). The channel pointer lives only across the 0xb6760 call and our link knows that callee leaves ECX alone,
 // so it stays in ECX; the weapon pointer's reload into EDI is placed at its first use, retail's at the block's start.
 // Body unchanged (the lead is match-only).
+// On the positive overlay form, admitted handle 334; animation receiver for the whole arm 304 or just
+// update and events 320; handle with update receiver 320; post-play channel pointer or reference 340/340;
+// direct validity and clear with that frame receiver 340; default callback with admitted handle 411.
+// The unit/mode homes and restart-channel register still differ.
+// The unit and mode slots still need retail order. Three-state overlay in enum/byte: nested promotion 420/421,
+// eligible selection 413/423, exclusive selection 424/407, nested conditional 424/407.
+// NOT kept: every result shortens the body and raises the score.
+// The unit and mode slots remain exchanged. Unit receiver scoped through the aiming springs or all four springs,
+// with its vector address acquired before the mode call, before the first spring, between springs or after aiming:
+// 562/190/190/172 in each scope. NOT kept: early address acquisition shortens and raises the score.
+// Activity preset on physical admission with readiness rejection 345, fully admitted
+// result 373, nested readiness result 371, admission conditional 172. Scope after the
+// suppression query 357, shared suppression result 378, nonsuppressed overlay result 179,
+// complete optical guard 185. The unit and mode homes still exchange.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

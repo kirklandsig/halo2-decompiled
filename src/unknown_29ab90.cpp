@@ -641,6 +641,20 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // it, as retail, but the root then goes through arg_8's home and is reloaded, 393 (1877 B, masked 78); the helper with
 // two returns 393 (the same code). Layout only (no count taken, the homes did not move): local_6 copied from local_5,
 // `*arg_5` stored ahead of `*arg_3`, local_5 declared ahead of local_4. Site 1 still BLOCKED-BY 0x2b400.
+// M3 lane 16 r185 (plain checks, about 100 s each; control 286 at 1865 B, aligned 234, register/offset-masked 73).
+// Reading: retail holds the history weight (field_64) in a register for the three history products and reads it from
+// memory again for `1.0f - weight`, with 1.0 in a register of its own; ours reads the field at each product. The head
+// differs only in stack homes (the object and settings pointers and the three vector copies sit in other cells), and
+// site 1's planar step has the zero path ahead of the scaling path where retail's falls into the scaling. Forms on the
+// history blend: the weight in a named local read at all four uses 320 (1866 B, aligned 262, masked 75); the local
+// read by the three products only, the complement reading the field (a mix, for the reading only) 321 (1867 B, aligned
+// 236, masked 71); each product written weight first 286 (same code); each row's history product ahead of the sum
+// product 286 (same code); the complement written out in each row with no local 286 (aligned 233, masked 71: same
+// length, two rows move). Site 1 still BLOCKED-BY 0x2b400. Body unchanged.
+// In round 641, the object/settings spills and working-vector order stayed at the opening 0x64 frame. Shared squared
+// length in the magnitude 286; aggregate correction 286, aggregate direction sum 286, both 286; shared in-place sum
+// in the correction 286; scale-first planar helper at the second site 286, second and third 286, first and second 286.
+// The body was restored. Site 1 still has the other planar normalization path.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

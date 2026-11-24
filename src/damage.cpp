@@ -9,6 +9,7 @@
 #include "unknown_0259d0.h"
 #include "effects.h"
 #include "object_tag_definitions.h"
+#include "units.h"
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
@@ -2775,10 +2776,30 @@ struct s_unit_event
 // child-name test written name first as the section and seat tests are 421. Reading: retail loads the datum offset
 // into ESI at the second attachment lookup and keeps it (the shift's 1 then goes through the dead region home into
 // EDI); ours gives ESI to object_index from the 0xa8360 call on.
+// Object table before region selection 550; early named object slot 626;
+// both table bases before their rows 577; explicit dword slot after both
+// bases 625; complete datum type 577; dword or word slot through the
+// notifications 578/551; dword slot with one read per attachment 578.
+// NOT kept: the entry lookup variants still displace the native reads and
+// some change permutation ingress. Typed seat label, indexed scan 420.
 // Separate permutation-array read and record address at entry, with region or direct table 439/556.
 // Record address after notifications 627 in all three forms. Record address after the region-state
 // write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
 // loads the region index into EBP and keeps frame 0x38, but adds 12 bytes and raises the score.
+// M3 lane 8 r235 (H2M_FAST with 0xdaaa0, 0xdae60, 0xdb760, all MATCH; control 420). Allocator reading: the permutation
+// pointer (priority 66) is coloured before the region index (58) and takes EBP, leaving EBX to the index; a forced
+// priority of 70 for the index gives retail's entry (first difference +0xc -> +0x59, semantic rows 110 -> 46), so the
+// index needs one more weighted reference in its range (entry to the region-state update) or the permutation fewer.
+// Forms: the index bound to a `long const &` for the lookup 420, for all three uses 420; the two notifications through
+// one attached index read again for the second 420 (all the same code); the region states named at the update 523
+// (1852 B); the vehicle block through the entry object pointer 528 (1884 B).
+// Round 479: Region ordinal and permutation record still exchange EBX/EBP.
+// Named section count with sentinel 420; bounded section index 450; bound-and-name section loop 450;
+// selecting the result after the loop 448; bound-and-label seat loop 420; both loop conditions 450;
+// word section kind 425; direct nonzero kind ranges 462. Body restored.
+// Byte displacement for the typed datum lookups 511; with the slot helper 419, retained pool 459,
+// or shared vehicle datum 511. Helper/pool 419, helper/vehicle 419, pool/vehicle 459, all 419.
+// NOT kept: the one-point gain leaves the exchanged region and permutation registers.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3021,11 +3042,11 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 		s_unit_definition *definition = (s_unit_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 		long seat_count = definition->unit.seats.count;
 		long seat_index;
-		byte *seat = (byte *)definition->unit.seats.address;
+		s_unit_seat_definition const *seats = (s_unit_seat_definition const *)definition->unit.seats.address;
 
-		for (seat_index = 0; seat_index < seat_count; seat_index++, seat += 0xb0)
+		for (seat_index = 0; seat_index < seat_count; ++seat_index)
 		{
-			if (*(string_handle *)(seat + 4) == seat_name)
+			if (seats[seat_index].label == seat_name)
 				break;
 		}
 		if (seat_index != seat_count)
@@ -3881,6 +3902,11 @@ enum
 // pass index declared ahead of its `for` 297; the victim index named in a nested test 297; the event test split in two
 // nested ifs 297 (all the same code); the kill block writing through the owner-store pointer 400 (1887 B). The r140 lead
 // parts re-measured on this body: all of them 283 (1880 B), the node stores in record order alone 286 (match-only).
+// The first flag stores still use different slots. Parent append through end pointer with count 522;
+// counted append with an exclusive/current reverse cursor 473/532; pointer append with those cursors
+// 448/503; derive the last index from count 304; accumulate the last valid index 267; derive it from
+// the end pointer 510. NOT kept: 304 gains five at retail length. The 267 form also reaches retail
+// length, but starts at NONE and increments before the store. Retail counts from zero after the store.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5632,9 +5658,21 @@ struct s_damage_object_creation
 // used for both tests and stores 222 (779 B); one loop per mask, both bounded by the field 237 (843 B); the count
 // started at zero outside the info test and set inside it, the loop after the test 172; a guarded do-while
 // (diagnostic) 167; the latch written `section_count > i` 167 (same code).
+// Shared section/node count at lookup or entry, each with or without one scan
+// ordinal, scoped count names, and shared count with read-only or conditional
+// information record: seven at 167. Shared count from the nullable record 182.
+// The section bound still takes EDI in the tie forms and the node-loop pad differs.
 // Accumulate primary, secondary or both section masks before publication, from zero 199/198/243
 // or from the current flags 219/219/257. Unconditional mask intersections with primary or secondary
 // publication first 201/203. Each retains frame 0x13e0 and moves the first difference ahead of the original loop.
+// Remaining-distance comparison 181, inclusive last-section bound 224.
+// Model early guard, component early guard, split guards and combined early
+// guard 167 each. Reused component index and typed component lookups 167/167.
+// The section count still takes EDI and the node-loop pad remains absent.
+// Masked unsigned ordinal bit for section tests/stores/both 205/204/193; shared test bit 205,
+// shared test and store bit 205, with word setters 205. With masked node bits 232, or with
+// word setters and masked node bits 224. NOT kept: the extra mask moves the count and ordinal
+// away from the retail allocation. The exact-length form changes the frame and raises the score.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

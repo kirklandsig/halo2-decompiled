@@ -970,6 +970,18 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // with a `& 0xffff` fallback 152 (re-measure of round 40's form); the fallback indexed by `(unsigned short)` 117 (same
 // code); the instance read from the tag field as a short 117 (same code); the tag local passed to 0x1bbf0 130 (listed);
 // the four cache zeros between the definition's table read and the head element 121. Body unchanged.
+// Typed render index or directory group with signed-slot delta 148/148, unsigned remainder 152/152,
+// scaled byte displacement 113/113, signed-slot correction 172/172, or mask before displacement 152/152.
+// NOT kept: the four-point displacement gain is below threshold and shifts before masking; retail masks first.
+// Group selection carried separately before tag lookup, word index and full mask respectively: positive
+// 122/163, negative 122/163, staged 154/157, both comparisons evaluated 131/131. The masked forms
+// still lose the retail table load after the saves. The original frame, fallback, and body are restored.
+// The dispatch span still needs the in-place EDX fallback with the directory in EDI. Signed group slot from the unsigned
+// ordinal, word/masked fallback: sign-bit bias 157/135, sign contribution 160/136, signed-half selection 131/136,
+// full-width sign extension 117/152. The original group and fallback expressions are restored.
+// The fallback mask and unfused stage/pass loads still differ. Low-half projection into dword/word:
+// subtract masked high half 132/117, xor high half 152/117, shift pair 152/117, complemented mask 141/117.
+// NOT kept: the narrow forms tie, and the wide forms add operations or displace the directory.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

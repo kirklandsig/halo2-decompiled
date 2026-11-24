@@ -44,9 +44,9 @@ __inline vector3f *cross3f(
 
 // @retail 0x142d10
 matrix3x3 *function_142d10(
-	vector3f const *up,
+	matrix3x3 *out,
 	vector3f const *forward,
-	matrix3x3 *out)
+	vector3f const *up)
 {
 	out->forward = *forward;
 	vector3f left;

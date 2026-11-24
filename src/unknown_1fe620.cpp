@@ -450,6 +450,18 @@ static __forceinline long real_to_long(real value);
 // 0x1fe410 arm 431 (1865 B, no change at the entry). Forms: the +0x1c limit named for its test and the 0x1fe410
 // argument 437 (1866 B); the sign step's state through the global, no pointer local 423 (re-measured); the +0x7a word
 // read into a local ahead of the actor lookup 426.
+// M3 lane 12 r185 (h2m fast with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373; body
+// unchanged). Retail's sign step stores the seed, then loads +0x10, +0x14, +0x18, +0x1c, +0xc and +0x38 interleaved with
+// the first draw's multiply, runs the three draws on the seed in EAX and stores it once: every limit is a value before
+// the first draw, and with them read first the two seed stores between the draws are dead. The six limits as named
+// scalars read in that order (the third draw's two bounds one use each, +0x38 for its two uses): with main's draws 420;
+// draws one and three through the state local 441 (1855 B); all three draws through the state local with
+// function_259d0 372 (1843 B); that with the two lower bounds written in the calls 367 (1843 B, first difference
+// +0x1ab: retail's head, the third input in ESI and one seed store); the same on the global at each draw, no state
+// local, 437 (1853 B). Not kept: the 367 form is six points on two one-use locals. BLOCKED-BY 0x210850 as above.
+// Local range seed with one final write. Sign-result inputs 440/440, stored inputs 440/440,
+// after-first-draw inputs 434/436, shared sign-step inputs 440/440. All keep the 0x4c frame
+// and leave the third input off ESI. Original draws and result stores restored.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
