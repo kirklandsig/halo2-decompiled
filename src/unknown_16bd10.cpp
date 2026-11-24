@@ -1524,6 +1524,15 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // the rotation rows 160 to 164 (276 with unary minus), through vector3f_assign 152 and 167 (in each of these the
 // offsets outrank the zero again). The symbol count has a period of 8 with a window two wide: with the mode local
 // the yaw dot's i product has its factors exchanged, any other count costs the plane block (38x). Body unchanged.
+// On the delayed-sine form, named rotation products by row or trig factor 390/390;
+// both rotated coordinates staged 390; shared yaw vector setter 14; planar point or scalar
+// offsets 378/378; sine products before cosine 390, with setter 389; aggregate rotated vector 410.
+// Setter alone 122; with the clamped interpolation initializer 120. NOT kept: the isolated
+// forms gain fewer than eight points. The 14 form needs an exact match for the moved
+// trig and field-of-view initializers, and its sine/cosine slots and pan setup still differ.
+// Mixed length-product operands, direction first on i, j, i/j, k, i/k or j/k,
+// and indexed j or i/k, all 397. NOT kept: j preloads but the length and zero
+// remain in exchanged registers, the normal rotates and the body grows.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

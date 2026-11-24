@@ -1399,6 +1399,20 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // copy of the rotation helper, each reverted at once: only the i component named 152 (A 187); no component named 112
 // (A 105); j and k named 118 (A 84); all three named 192 (A 185). None turns the four products of the copy's j and k
 // with the axis' j and k.
+// M3 lane 16 r185 (H2M_FAST with 0x1e5af0 and 0x1eb640, MATCH each run; control 111 at 1393 B, aligned 73, register-
+// masked 57). Rank reading of the rotation's products: the axis' j and k reads rank as loads through one symbol
+// (0x14008), the rotated copy's k, j and i as temporaries just under it (0x11fe0, 0x11fa0, 0x11ee0) and the axis' i
+// read lowest (0x10008); retail forms the four j/k products in copies of the vector's registers, so there the copy's j
+// and k rank above the axis reads and its i below them: with the axis symbol one step lower (0x12008) the three
+// temporaries would have to sit four to nine entries later. Re-measured: the moved-away flag preset false and set by
+// its `if` 108 (1391 B, aligned 70/54); the single store (goal copied into the rotated vector, no early return) 111
+// (aligned 52/45); both 108 (aligned 49/42: both exits are retail's, the four rotation products, three cross
+// products and the order of the two side dots are left). New, on the two together: the six flag updates through a
+// file-local inline setter taking the flags' address and a mask 354 (1398 B), taking the state and a bit number 267
+// (retail's 1382 B, aligned 145), the first five only 346 (1374 B); the setter on main's body 361 (1400 B); the axis as
+// a named pointer local for the rotation and both side dots 145 (1395 B), for the rotation only and declared ahead of
+// the copy 163 (retail's 1382 B, aligned 143); the `up` parameter as the rotation's axis 356 (1385 B), for the side
+// dots too 373 (1361 B). Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

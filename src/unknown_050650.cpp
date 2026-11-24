@@ -1049,6 +1049,12 @@ struct s_collision_result_buffer_1697c0
 // renamed (slot-name order) 270 (same code); the pitch axis passed through a const pointer local 328 (frame 0xb0); the
 // candidate through a pointer local for both turns 334; both draws held as double 341 (1425 B, frame 0xb0, aligned 329
 // against 198); the candidate declared ahead of the draws and assigned after them 270 (same code). Body unchanged.
+// M3 lane 6 r241 (h2m fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23), 0x24590, 0x2980d0, 0x297a50; control 270):
+// the pitch axis set member by member with k first 282 (1437 B); the candidate copied member by member i, j, k 265 at
+// 1423 B (aligned 275 against 128), j, k, i 265 (same code), k, j, i 294; `clear` initialised true once before the loop
+// with no per-pass reset (the same behaviour) 328. Forcing single allocator decisions (69 of them) never matches (best
+// 266) and leaves the 22 operand-order differences (both rotations' products and the normalizer's j product, which
+// retail forms as j * scale) untouched, so the remaining work is operand rank, not register choice. Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2279,6 +2285,18 @@ struct s_actor_looking_structure_view
 // the candidate for the copy, rotation, trace and score 139 (928 B); no result local, `return true` at the success and
 // `return false` at the end 221 (939 B); 0x2105b0 writing straight into the specification's vector (the in-place call and
 // the copy dropped) 154 (909 B).
+// M3 lane 13 r153 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23). Operand-rank reading
+// (the compiler sorts the operands of each product and each sum by a rank, descending): every read of the candidate goes
+// through the loop's one walking pointer and carries one rank level (6 here, +2 per redundant paren pair, mod 8); the axis
+// reads carry 1 (i), 2 (j) and 0 (k), j and k +2 per pair; forward's members rank by first mention (k at its clear, then j
+// and i in the score). Retail's rotation needs the candidate's k above the axis j, and the axis j at or above the
+// candidate's i and j, so no single level for the candidate gives it; the leads at 6, 9 and 11 are tie cases of it. A
+// two-statement score splits only the candidate's i from its j and k (`(j + k)` then `+= i` levels 2/4/4, `(i + k)` then
+// `+= j` 6/4/4, `(i + j)` then `+= k` 4/4/4); a named candidate pointer gives the candidate the axis's per-member levels
+// (6/4/2 against 1/4/2). Tried: the score through a `vector3f const *` to the candidate declared at the score 43; that
+// pointer handed to dot3f 32; the rotation run on a local copy that is stored to the array afterwards 195; the score
+// computed ahead of the fraction test 34; lane 3 r277's merged helper with the dot between the sine and the cosine
+// (retail's instruction order) 6 (0x296e60 273; the lead's code here, match-only).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -2648,6 +2666,11 @@ struct s_actor_looking_turn_request
 // the end 536 (2012 B; aligned 365 / 156), with `bool valid` 614 (1932 B; 341 / 165); `bool valid` and `bool
 // looking_valid` re-measured 547 (1996 B; 366 / 175). Reading: the actor's pool offset retail spills at entry is read
 // once, by the output getter at the end, which this body already re-reads there. BLOCKED-BY 0x1fdd90 stands.
+// M3 lane 6 r241 (h2m fast with its fifteen listed callees and neighbours; control 442): the target point stored before
+// the 0x8000 flag 457 (2008 B); output_mode stored before the target-point block 451; the attention flag as one ternary
+// store 442 (same code); the turn test with the angle test first 449; the three flags declared ahead of the animation
+// state 442 (same code). Retail calls 0x1fdd90 first and tests the +0x48a byte after it, so a test-first order is not
+// retail's. Body unchanged.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

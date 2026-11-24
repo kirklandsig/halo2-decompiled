@@ -1265,6 +1265,11 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // from object_get() 293 (825 B, aligned 74); the header through slot_handler.h's object_header_get 170; final_matrices
 // read once through the parameter's own address 170, with the object_get() local 293 (same code each: the entry roles stay
 // object_index EDX / parameter ESI). Body unchanged.
+// M3 lane 6 r241 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): `sample`
+// as a long 253 (830 B); the three early exits returning input_matrices with `result` declared after the early tests 240
+// (830 B, other code); the node loop's counter declared ahead of the loop 240, the final test with explicit `!= NULL` and
+// `!= 0` 240 (same code each). Forcing single allocator decisions (24) never matches (best 239); leaving `object` out of the
+// registers gives retail's 0x4c frame but 259. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1920,6 +1925,20 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // re-measured); the arms swapped under `render_index == NONE` 309 (1372 B); the render arm ending in `return;` with the
 // no-model code after it 47; parent and flag as conditional initialisers on the index 48 (1387 B); the index test
 // inverted (`== NONE` arm first with the defaults) 48 (1387 B); the index field read at each use, no local, 47.
+// M3 lane 13 r153 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Allocator reading: the pool pointer
+// loaded for the current-object lookup is itself a register candidate that reaches the no-model arm (two references,
+// priority 9 after the blocks it only lives through), coloured in a late round; by then the no-model index (78) holds ECX
+// and the defaults EAX and EDX, so the pool gets nothing and is loaded again. In lane 3's else-arm form (re-measured 18)
+// the index (66) takes EAX and the pool gets ECX. Retail's index avoids ECX and is copied before its mask, which is what a
+// use of the index after the lookup gives (the listed later-compare diagnostic); forcing the index to ESI alone gives
+// retail's length with the mask still done in place. Tried: one parent index read ahead of the render-index test for
+// both arms 378 (aligned 93: the pool is then held in EBP from the entry on and the tag table moves to EDX); the no-model
+// lookup written once with the index masked as `(dword)parent_index & 0xffff` 44 (1390 B, the one-object form's code:
+// data from EDI). Diagnostics, restored at once: `inline` on 0xb8bd0's definition with the no-model arm calling it 394
+// (1373 B, re-measured; 0xbcc20 228); the same with the render arm nested inside the model test and ended by `return;`,
+// the no-model code after it, 394 (1373 B: both sites still expand, so that nesting does not separate the two sites).
+// An empty `do {} while (false);` between the no-model arm's two lookups 20, after the parent test ahead of the 0xbdc40
+// call 20 (same code each: the two lookups are still merged and the index still dies at its mask).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
