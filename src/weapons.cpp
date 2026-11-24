@@ -2041,6 +2041,41 @@ static inline bool unit_dual_wielding(long unit_index)
 // on this body) 15 with lookup 1 in the subset, 17 without; that with `result` declared first 15; that with the put-away
 // re-fetch assigned to `weapon` 152 (526 B). Diagnostics (reverted): on the 2 form a dead holder-unit lookup ahead of
 // the 0xc9d00 call 42; 0xc9d00's second read through UNIT_GET (its own file) 41, with 0xc9d00 at 131.
+// M3 lane 14 r152 (h2m fast with 0xc9d00 and 0x1058b0, MATCH unless said; control 17; rebuilt: the 2 form 2, the plain
+// 0xc9d00-call form 27, that with `result` first 4). What sets the five address orders, read from the operand ranking:
+// each lookup is one sum (offset, pool data, 8) laid out in descending rank. The shared offset is an optimizer
+// temporary ranked by where its entry falls in the function's intermediate-code storage. A data load whose address
+// `pool + 0x44` is shared by two loads with a kill between them (lookups 1 and 2 round the trigger loop, 3 and 4 round
+// the 0xb7360 call) takes a fixed low rank; a data value used twice (lookup 4 and the dual-wield unit) is a temporary
+// of its own; a single-use load through the pool global (the put-away lookup of every 0xc9d00-call form) ranks above
+// every temporary, so that lookup is data-first whatever the others do. On the `result`-first form the offset
+// temporary is made ahead of lookup 4's data (lookup 4 data-first as retail) but ranks just below the fixed rank
+// (lookups 1-3 data-first); any one-use local in the first lookup's statement (the 2 form's getter, a pool copy, an
+// offset local: 2 each, the same ranks) lowers the fixed rank but makes the offset temporary after lookup 4's data.
+// Diagnostic, not source: 128 or more dead initialised locals (here or in an inlined helper) move the temporaries
+// 0x100 entries up and leave 1 (only the put-away lookup's order; 256 on the plain form 27); 1-112 change nothing
+// (entries come in blocks of 0x40), nor do uninitialised locals, the sizes of other functions, of the function
+// compiled before this one or of a called callee, or 300 file-level globals. So retail's body carries about 230 or
+// more further entries of intermediate code than ours when its temporaries are made, and its put-away data load shares
+// its address with another load. Forms on the 2 form unless said: the tail through the holder helper's result 2 (the
+// put-away offset is still the shared temporary: inline parameters are substituted); the getter at all five lookups 2,
+// with the 128 locals 2; an unused holder-unit lookup ahead of the 0xc9d00 call 42 (re-measured: no shared data value,
+// the code shifts); the real 0x101f20 and 0xcd660 in place of the two file-local twins with their /Ob1 files made
+// expandable (diagnostic on two contributor files, restored at once) 27, the same code as the twins' plain form, and
+// the whole state block as `if (function_1058b0(weapon_index, 10, immediate))` 27, with `result` first 4 (the same
+// code again, at retail's 532 B: retail's block is that call expanded, and what keeps it from being written so is
+// only that the two helpers' /Ob1 files are never expanded; with them expandable 0x101690 58 and 0x1058b0 78 expand
+// them where retail calls). 0xc9d00's own reads (its file, ours): the first hand through the existing 0xcbd50 with
+// plain unit lookups 41 (0xc9d00 131, 348 B), both hands through its pool copy 2 (0xc9d00 120), the first plain and
+// the second through the pool copy 41 (131), the second-hand test computed ahead of the first 33 (84): only the
+// present spelling keeps 0xc9d00. The pool global compared before and after the animation call survives (fast and
+// plain): that call counts as writing the pool global, so the put-away lookup's address is not shared with lookup 4's.
+// Also on the 2 form: the put-away lookup through a const reference bound to the pool's data field itself 2 (same
+// code: the reference is folded back and the load stays single-use); 0xc9d00's unreachable tail shortened or lengthened
+// (scratch copies of its file) 2, and with the 128-local probe 4 instead of 1: an inlined callee's dead code counts
+// toward the entries, so the probe sits right at a block boundary. Diagnostic: with 0xc9d00 called for type 3 (its
+// second-hand reads then live) the put-away data becomes a shared temporary and that lookup turns offset-first; for
+// type 10 those reads are removed before the sharing pass, so they cannot be what gives retail its order.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

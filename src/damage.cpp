@@ -9,6 +9,7 @@
 #include "unknown_0259d0.h"
 #include "effects.h"
 #include "object_tag_definitions.h"
+#include "units.h"
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
@@ -2775,6 +2776,12 @@ struct s_unit_event
 // child-name test written name first as the section and seat tests are 421. Reading: retail loads the datum offset
 // into ESI at the second attachment lookup and keeps it (the shift's 1 then goes through the dead region home into
 // EDI); ours gives ESI to object_index from the 0xa8360 call on.
+// Object table before region selection 550; early named object slot 626;
+// both table bases before their rows 577; explicit dword slot after both
+// bases 625; complete datum type 577; dword or word slot through the
+// notifications 578/551; dword slot with one read per attachment 578.
+// NOT kept: the entry lookup variants still displace the native reads and
+// some change permutation ingress. Typed seat label, indexed scan 420.
 // Separate permutation-array read and record address at entry, with region or direct table 439/556.
 // Record address after notifications 627 in all three forms. Record address after the region-state
 // write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
@@ -3021,11 +3028,11 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 		s_unit_definition *definition = (s_unit_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 		long seat_count = definition->unit.seats.count;
 		long seat_index;
-		byte *seat = (byte *)definition->unit.seats.address;
+		s_unit_seat_definition const *seats = (s_unit_seat_definition const *)definition->unit.seats.address;
 
-		for (seat_index = 0; seat_index < seat_count; seat_index++, seat += 0xb0)
+		for (seat_index = 0; seat_index < seat_count; ++seat_index)
 		{
-			if (*(string_handle *)(seat + 4) == seat_name)
+			if (seats[seat_index].label == seat_name)
 				break;
 		}
 		if (seat_index != seat_count)

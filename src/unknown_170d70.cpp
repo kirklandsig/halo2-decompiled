@@ -1207,6 +1207,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // named 105; the key named for both arguments 105. The volume address as `volumes[volume_count++]` 115, with the camera
 // address named 87. Diagnostic (restored): a second use of the camera address (stored into the volume) 149 at 454 B, the
 // caller 2.
+// On the separated camera-offset form: successor in for update 151, linked guard 151, projection
+// guard 151, both guards 151, result-controlled while 11, post-tested successor assignment 11.
+// Native camera byte array 105, with successor and linked guard 147. NOT kept: the 11 forms
+// require an exact match for the one-use offset and still exchange the camera base and key registers.
+// The for forms shorten the function and break the matched caller.
 // M3 lane 5 r243 (reduced image with 0x1730a0; control 105, the one-use offset local before the call re-measured 11).
 // Reading of the allocator on the 11 form: the key read twice from the entry is a CSE register candidate coloured
 // early into ECX, so the camera table becomes a late scratch temporary in EDX that cannot rise above the count store;
@@ -1985,6 +1990,11 @@ struct s_point_pool_173520
 // unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
 // published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
 // for the bounds 194, and one viewport receiver after projection 128.
+// With the staged reservation, cap and corner bindings and widened recount: stride-selected start 166,
+// indexed clipped source 119, source end pointer 220, count-derived destination 176, negated forward
+// step 27, source cursor in loop header 121, source advance at the depth read 125, shared reverse
+// predicate with count plus step 188. NOT kept: the 27 form is 868 bytes, farther from retail's 865,
+// and the reservation and reference bindings require exact equality.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2778,6 +2788,10 @@ struct s_camera_reference_171830
 // pointer's), and a three-term dot always sums k, j, i; two stand-alone side vectors that differ only in the order of the
 // two pointer parameters come out with five of the six products the other way round, so the order here is set by the
 // function around the products, not by their spelling.
+// On the split plane path with the named distance: aggregate midpoint target 117, in-place center copy
+// 348, staged scale 118, point setter 119, paired refinement branches 117, miss-first endpoint 165,
+// initialized miss fraction 165, copied scale input 170. NOT kept: the 117 forms are three bytes longer
+// than retail and still differ in the center transport. The center-copy form also changes the caller.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

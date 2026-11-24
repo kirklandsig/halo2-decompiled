@@ -460,6 +460,24 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // with both 405; lane 4 r253's three pieces re-measured 356 (1372 B), with the nested floor 350 at 1369 B (aligned 177:
 // `this` EDI, zero EBX and the index EBP as retail, frame 0x30 for 0x34; a lead, it needs the match-only flag form), with
 // local_16 moved too 368; that 350 form with every channel field read through `channels[local_0]` 417 (1381 B). Body unchanged.
+// M3 lane 14 r152 (h2m fast with 0x75910, 0x76520, 0x765c0, 0x77940 and, where said, 0x89030, all MATCH each run; control 356;
+// aligned = rows of a sequence alignment with stack offsets masked, control 203; a per-register comparison of retail's
+// value ranges with ours: 34 of 118 placed differently). Lane 6 r239's lead rebuilt on today's body (the has-host flag
+// started false and set in the call's arm, snapshot and reset through the 64-bit view, the zero-rate exit as `return
+// local_2;`, the payload floor nested under one sign test) 349 at 1369 B, aligned 142, 24 of 125 ranges placed
+// differently (`this` EDI, zero EBX and the index EBP as retail; left: EAX/ECX swapped from +0x1e, NONE not held in
+// ESI, two EBP ranges, every stack cell 4 lower with the frame at 0x30). On that lead: the two NONE locals ahead of the
+// search 335 (1370 B, aligned 141); those and local_7 ahead 355 (1369 B, aligned 147); every channel field through
+// `channels[local_0]` with no pointer local 417 (1381 B), with the NONE locals ahead 433, with local_7 too 423. New
+// evidence for the two budget picks (retail tests BL twice in a row, `test bl, bl` ahead of each pick, where ours
+// folds the two picks into one test): with the second pick's condition read from the channel's field instead of
+// local_15 (`local_5 = local_4->field_48c ? ... : ...`, 0x89030 in the image: the getter is known not to write, so the
+// re-read shares BL) the pick rows are retail's row for row; on the lead 354 (1378 B, aligned 140), on the 335 form
+// 414 (1380 B, aligned 140), on this body 438 (1388 B, aligned 191, either pick; the listed flag-at-each-pick count).
+// A lead only: a second read of a field a local already holds is match-only. Read from the same alignment: retail's
+// first threshold is `setge; test; je` with no store of the result and its second a plain `jl`; the reliable-bytes
+// payload is formed early (`lea ebp, [ecx - 0x2d]`) with `false` stored in each failing arm; the channel's first
+// flag is read from memory again at both later uses, as here. Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

@@ -883,6 +883,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // component, before the second input component, at the start of the forward copy, before input rotation,
 // after speed root, before speed root, or before the velocity copy: 111/122/118/118/118/278/133/141.
 // NOT kept: the earliest form moves the first difference earlier; the others keep +0x69 and raise the score.
+// Typed control-vector member at entry, gear, rotation and their combinations
+// 107 each; a reference shared across the observation sites 241.
+// NOT kept: direct membership leaves the unity register unchanged, and the
+// reference shortens the body to 1133 bytes.
 // Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
 // row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
 // and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
@@ -3844,6 +3848,10 @@ real g_47ff30 = 2.5f;
 // Frame 0x100 versus 0xfc; acceleration and velocity homes still differ.
 // Tick-rate scope through climb approach or boosted speed, each alone, with query-local angular output,
 // with up-magnitude scope, or with both: 672 in all eight forms. The acceleration spill stays at +0x20.
+// Separate final mass reads and role names for query outputs, force/torque, axis-angle, or all three
+// groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
+// scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
+// return, but the acceleration spill stays at +0x20 and both velocity homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4110,7 +4118,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // between them are not one uniform shift (the parameter reloads sit 4 apart, the pair at esp+0x64 0x10 apart and the
 // first float home 8 the other way), so it is not a single missing local; the column alignment of this round
 // finds no earlier split to work from.
-// score 1000 (was 1000): Earlier at 1000 (was 1052). Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
+// Earlier at 1000 (was 1052). Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
 // (field offsets, the 29 constants, condition directions, callee arguments, loop shapes and local types agree).
 // Retail takes |pitch_slope|, |roll_slope|, the yaw |arg| and the |target| / |steering| pair in the yaw test by
 // comparison (comiss; 0 - x), not x87 fabs: vehicle_magnitude() gives that (1052 -> 1009, 1092 instructions each);
@@ -4268,6 +4276,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // 0x74, so every stack home sits four bytes higher.
 // MiniMax G (11-20): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack; the body is 32 bytes longer than retail's.
 // MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
+// Planar acceleration through scalars 1127, a point 1120, deferred zero 1067,
+// or aggregate initialization 1000. Consuming the transform return in those forms 1156/1166/1083/1024.
+// NOT kept: none recovers the 0x74 frame. The return pointer adds frame storage, and
+// even the shorter deferred-zero form raises the score.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
