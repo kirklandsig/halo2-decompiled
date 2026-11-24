@@ -2548,6 +2548,9 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // Long/word header slot 507/522; shared pre-call pool and counting table 498; updated flag word 498;
 // shared child/detachment point 497 (one point, below the gain threshold); saved-parent name 498;
 // direct-victim branches 498.
+// Header pool still takes EDI before the first flag test, and the header offset and flag write use other homes.
+// Common datum entry 422; header accessor entry 422; entry table 422; common datum all lookups 422;
+// header accessor all lookups 422; typed parent view 422; typed parent and scale fields 422; resolved header local 422.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2850,7 +2853,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the projectile index in EBX where retail keeps it in EDI; the range check's 0xfaa30 call is emitted at all five of our uses
 // where retail inlines it at two of them and calls it twice, and the merged inline on magnitude3d expands that helper at our
 // second use.
-// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
+// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x114 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
 // common rotated output 1096; both common 1069; existing state helper 1050/1131; complete guidance/roll inputs 994,
@@ -2883,6 +2886,9 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // computed motion predicate 1028 (two points). Shared point difference 1013 at 4682 bytes.
 // NOT kept: The point difference still flows through the inlined magnitude, and the score change comes
 // from a different later rotation schedule rather than the retail movement producer and call.
+// Index EBX and definition ESI still differ from retail's EDI and EBX.
+// Step-to-average or average-to-step velocity 1030/1030; library velocity copies 1030;
+// speed from step or average copy 1037/1038; named speed square 1030; vector setters 1048; speed before copies 1030.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
