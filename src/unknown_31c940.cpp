@@ -477,41 +477,41 @@ static __forceinline void apply_first_normal_fallback(float impulse, bool retain
 	__m128 const *angular_axes,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
 {
- __m128 w[5];
- w[2]=a->inverse_inertia;
- simd_scratch=impulse;
- w[1]=_mm_load_ss(&simd_scratch);
- w[0]=_mm_shuffle_ps(w[1],w[1],0);
- w[0]=_mm_mul_ps(w[0],w[2]);
- __m128 *inverse_source=&b.body->inverse_inertia;
- w[2]=*inverse_source;
- solver_velocity_31c940 *linear_source_body=(solver_velocity_31c940*)((char*)inverse_source - offsetof(solver_velocity_31c940, inverse_inertia));
- w[1]=_mm_shuffle_ps(w[1],w[1],0);
- w[1]=_mm_mul_ps(w[1],w[2]);
- w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
- w[2]=_mm_mul_ps(w[2],linear_axis);
- w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
- w[3]=_mm_mul_ps(w[3],linear_axis);
-
- w[4]=a->linear;
- w[4]=_mm_add_ps(w[4],w[2]);
- a->linear=w[4];
- w[2]=linear_source_body->linear;
- w[2]=_mm_sub_ps(w[2],w[3]);
- if(retain_linear_destination)linear_source_body->linear=w[2];
- else b.body->linear=w[2];
- solver_velocity_31c940 *angular_receiver=b.body;
- w[2]=angular_axes[0];
- w[0]=_mm_mul_ps(w[0],w[2]);
- w[2]=angular_axes[1];
- w[1]=_mm_mul_ps(w[1],w[2]);
- w[2]=a->angular;
- w[2]=_mm_add_ps(w[2],w[0]);
- a->angular=w[2];
- w[0]=angular_receiver->angular;
- w[0]=_mm_add_ps(w[0],w[1]);
- angular_receiver->angular=w[0];
- *result+=impulse;
+	// Reuse each consumed SIMD value only after its final use.
+	__m128 w[15];
+	w[0]=a->inverse_inertia;
+	simd_scratch=impulse;
+	w[1]=_mm_load_ss(&simd_scratch);
+	w[2]=_mm_shuffle_ps(w[1],w[1],0);
+	w[3]=_mm_mul_ps(w[2],w[0]);
+	__m128 *inverse_source=&b.body->inverse_inertia;
+	w[4]=*inverse_source;
+	solver_velocity_31c940 *linear_source_body=(solver_velocity_31c940*)((char*)inverse_source - offsetof(solver_velocity_31c940,inverse_inertia));
+	w[5]=a->linear;
+	w[0]=linear_axis;
+	w[6]=_mm_shuffle_ps(w[3],w[3],0xff);
+	w[7]=_mm_mul_ps(w[6],w[0]);
+	w[7]=_mm_add_ps(w[5],w[7]);
+	w[8]=_mm_shuffle_ps(w[1],w[1],0);
+	w[9]=_mm_mul_ps(w[8],w[4]);
+	w[10]=_mm_shuffle_ps(w[9],w[9],0xff);
+	w[10]=_mm_mul_ps(w[10],w[0]);
+	a->linear=w[7];
+	w[8]=linear_source_body->linear;
+	w[6]=_mm_sub_ps(w[8],w[10]);
+	if(retain_linear_destination)linear_source_body->linear=w[6];else b.body->linear=w[6];
+	solver_velocity_31c940 *angular_receiver=b.body;
+	w[7]=a->angular;
+	w[11]=angular_axes[0];
+	w[12]=_mm_mul_ps(w[3],w[11]);
+	w[2]=_mm_add_ps(w[7],w[12]);
+	w[0]=angular_axes[1];
+	w[5]=_mm_mul_ps(w[9],w[0]);
+	a->angular=w[2];
+	w[13]=angular_receiver->angular;
+	w[14]=_mm_add_ps(w[13],w[5]);
+	angular_receiver->angular=w[14];
+	*result+=impulse;
 }
 static __forceinline float &operation_float(unsigned char *op, long offset)
 {
