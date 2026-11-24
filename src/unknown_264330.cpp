@@ -1013,6 +1013,16 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // test first 421 (same code); `sample = true; update = true;` as two statements 404 (same code); the node fetched from
 // `next` ahead of `long index = next;` 438 (1616 B, retail's length). Still BLOCKED-BY 0x2641c0's expansion (its
 // noinline declaration is in a file another lane holds this round) and the release site's 0x25c820 expansion.
+// M3 lane 6 r240 (H2M_FAST with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, 0x2641c0, 0x264210, 0x264b50,
+// 0x263670 and 0x25c820, all MATCH unless said; control 404 at 1624 B, aligned 210, 35 calls against retail's 34, frame
+// 0xa4). Diagnostics on the blocker, each reverted at once (N = 0x2641c0's noinline declaration dropped, 0x264210 114 each
+// time): N re-measured 509 (1696 B, aligned 202, retail's 34 calls, frame 0xa8); N without the three inline_depth pragmas
+// 696 (1844 B, 31 calls); that with 300 unused initialised longs at the top 696 (same code: the symbol count does not
+// move the expansions); N with 10 or 40 unused prop_ref_get(index) expansions at the loop top 509 / 509 (same code: extra
+// expanded accessors ahead of the release site do not use up what lets 0x25c820 expand there). Forms on main's body: the
+// motion and context records declared at function scope 404; `view` declared ahead of `tracking` 404; the 0x264b50 test
+// nested under its own `if (sample)` 404 (the same code each). Still BLOCKED-BY 0x2641c0's expansion here (and not in
+// 0x264210) and the release site's 0x25c820 expansion.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
