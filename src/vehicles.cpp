@@ -1941,6 +1941,11 @@ long function_10f5f0(long object_index);
 // sample 570/570/570/603. Separate radial delta with those publications
 // 570/561/570/603. NOT kept: the setter with a separate delta ties at retail
 // length, and all leave the 0x1990 frame.
+// Guarded door and bounds component handles, alone or paired 567/567/561.
+// Component references with the guarded handles 567/567/561. Door handle with
+// initial flags 560 and bounds handle at activity entry 567.
+// NOT kept: the gain is one point at the same extent. Frame 0x1990 and separate
+// bounds and velocity homes persist.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5107,6 +5112,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 116/118/116/118/116/116/118. All with projection scope 118.
 // NOT kept: the 116 forms recover the projection prefix through +0x107 but
 // gain only two. The cross operand allocation and the sine/cosine homes remain.
+// Corrected-up setter/value 120/207, shared up receiver with setter/value 130/219,
+// up-field setter/value before the normalization receiver 140/208, indexed setter
+// 116, named dot with setter 120. NOT kept: the indexed setter recovers the
+// projection prefix through +0x107 but gains two. Cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6197,6 +6206,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // NOT kept: the record forms coalesce retail's separate lookups and
 // shorten to 2795–2798 bytes. The ordinal form reaches 2870 but changes
 // the entry scheduling. The zero and result registers still differ.
+// Complete conditional results at the primary, braking, action, grounded-speed
+// and wheel-speed channels, then three activation channels, both speeds and all
+// five: eight at 759. The 0x18 frame agrees. The entry definition and zero/result
+// registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

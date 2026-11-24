@@ -1834,6 +1834,11 @@ struct s_item_flags_view_10b850
 // 0x154. Entry flag bytes and low motion homes still differ.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the four item_spin_vector calls through include/axis_rotation.h's helper (the item's axis, sine and
 // cosine) 865 (4143 B); the first two only 829. Restored.
+// Sign-selected lateral bound 878, shared direction test 858, nonnegative selection 901,
+// direction-owned bound and step 861, direct/staged cross with bound 944/955,
+// common query vector with bound 880, and with direct cross 918.
+// NOT kept: the 918 form recovers frame 0x12c and first +0x3e, but shortens to
+// 4034 bytes and raises the score. The entry Boolean byte stores still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
