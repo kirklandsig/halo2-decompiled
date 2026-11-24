@@ -1439,6 +1439,14 @@ bool __stdcall function_2399da(long controller_index)
 // identity's range before the removal use, gives a byte match (diagnostics only). Forms: the member identity copy after the
 // name copy 119 (431 B); explicit `!= NULL` / `!= 0` in the identity test 90 (same code); the permission compare as
 // `2 <= own_rank && member_rank < own_rank` 91; `NONE == rank` 90 (same code). Body unchanged.
+// M3 lane 7 r226 (h2m fast with 0xac050/0xac360/0x2399da, all MATCH; control 90). Ledger (diagnostic): the rank is
+// coloured in the second colouring pass (15: the NONE, over-rank and rank-3 tests at 2 each, the store 9) and takes
+// EAX with no score against it; the identity's whole range (12) has a cost below 1 there and is not coloured, and
+// its reload piece from the test to the removal call exists only in the third pass (6), so it takes ECX. Retail needs
+// EAX blocked or scored for the rank in pass 2, or the identity as a candidate of its own by then. Forms: the
+// permission test as `may_change || own_rank > member_rank && own_rank >= 2` 92, with `may_change` tested last 95,
+// with the `&&` pair in parentheses 90 (same code); the id test `!= 0ULL` 90 (same code); the copy block as an early
+// refusal `if (!have_member && !may_change)` then `if (!have_member)` copy 114 (433 B). Re-measured `NONE == rank` 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
