@@ -2860,6 +2860,23 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // The dispatch span and shared success target remain. Prior target snapshot 429, selected target snapshot 429,
 // both snapshots 431, skip invalid candidate 429, skip non-winning distance 429, both scan skips 429, direct
 // completed search 490, inactive search first 505.
+// M3 lane 2 r145 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; body unchanged). Allocator
+// ranking read for the actor/state exchange: the datum is coloured first and takes EBP, which leaves the actor and the
+// state without a whole-function register, so both are cut into pieces and ranked again; on main the actor's piece then
+// ranks 184 against the state's 180 (actor EBX, the state cut once more for EDI with its own small piece after the
+// 0x1c1080 call, retail's shape). Case 2's aggregate copy from the actor costs the actor 22 (the copy counts as one
+// reference where the helper's three reads and three stores count six), case 4 through dot3f on the state's facing
+// gives the state 12 and case 18's held targets 8 (two more values in that block), so the retail-shaped body ranks the
+// state 196 over the actor 158 and the state takes EBX; lane 5 r233's own-parameter read removes the state's reference
+// after the 0x1c1080 call, worth 40, which is why it alone turns it (156 against 158). The state's references in the
+// four request blocks (cases 6, 18, 21 and 14) carry 138 of its 196: a block that jumps straight into the countdown
+// tail is weighted four higher than its own count. Forms on that reading, each still exchanged (first difference
+// +0x9): the keepable set (case 2 in the siblings' order with the copy straight from the actor, dot3f on the state's
+// facing, case 18's targets in two-use locals, case 13 dropped, the iterator set up data, index, datum_index) 643
+// (2368 B); that with case 6's flags in a named byte and two stores 635 (2372 B); with case 20's two arms as
+// conditional clears 555 (2396 B); without case 18's locals 639 (2368 B); without dot3f 612 (2400 B). To turn it
+// without the own-parameter read the actor's piece has to gain 39 on the state's; no declaration order, name or
+// case spelling tried so far moves either count by more than 2.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

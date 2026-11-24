@@ -2144,6 +2144,14 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // ahead of or after the header set-up / `handle[0]` / a cast of `file->handle`; flags in the call or named; count and
 // header pointers named or not; declaration order): every unnamed-handle cell 5, every named-handle cell 114 (118 with
 // the flags named ahead of the set-up and the handle after it). Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x213800, 0x2149c0 and 0x2141f0, all MATCH; control 33; lane 9 r132's 5 form rebuilt
+// from its patch at 5, first +0x1e1). Reading of the 5 form: in code-generation order the write's flags zero is made
+// before the handle load and both take EAX; retail's handle load takes EAX and is lifted to the top because its zero
+// took ECX. The zero is a code-generator temp bound before colouring (no single forced colouring, cut or priority
+// decision moves it). On the 5 form, 5 each (same code): the handle pointer declared second in the loop body, after the
+// cache-file pointer; the query size declared beside `valid` at the loop body's top; `resized` declared at the top of
+// the size-mismatch block; the handle pointer const; the expected size const with the write's size as
+// `sizeof(empty_header)`. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
