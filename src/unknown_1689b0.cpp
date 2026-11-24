@@ -1564,7 +1564,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 551 (was 551; m3 lane 2 r139 unchanged, its lines just above the marker): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
+// score 551 (was 551): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
 // The projected and first point now have retail's stack homes.
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
@@ -2315,6 +2315,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // rows reorder), with the side test's dot swapped 554 (2883 B), with the perpendicular dot swapped 565, with both 554;
 // 1 to 7 unused longs on the named-local form with the side dot swapped (diagnostic) 565, 565, 564, 555, 555, 555, 543
 // (2878 B, aligned 348).
+// Out-of-reach prism continue 551; candidate-default clamp 584; shared scaled-vector candidate 582;
+// shared along-edge subtraction and i-k-j dot 559; shared separation and midpoint subtraction 558;
+// both staged crosses 552; shared ray-miss sums 576; inside-first normal test 555.
+// NOT kept: none recovers the count and clearance homes or the post-branch square.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

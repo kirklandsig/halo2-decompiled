@@ -2852,6 +2852,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Reading: on the 249 form the tail's scratch registers are off from the 0x110ab0 argument on, and the cases still
 // differing ahead of it (6: one flags temporary for retail's two, 18, 20) each use a different number of scratch values,
 // so the tail's rotation may follow from them and not be a difference of its own.
+// Round 114: Case 0 falling through to the success return 502, case 1 returning success at the distance test 574,
+// and the case 4 dot helper with its facing copy 467. One facing-flag load for the timer tests 429, signed timer
+// values 431, and selector read before the request destination 600 (actor/state exchange). Case 20 completion arms
+// 429, inactive clear 533, retained publication target 429, and case 11 named short state 429. The shared success
+// return and excess length remain.
+// The dispatch span and shared success target remain. Prior target snapshot 429, selected target snapshot 429,
+// both snapshots 431, skip invalid candidate 429, skip non-winning distance 429, both scan skips 429, direct
+// completed search 490, inactive search first 505.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

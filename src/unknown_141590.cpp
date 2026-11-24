@@ -1280,6 +1280,25 @@ void function_143250(
 // `r3 * r1 + r4 * r0` 939; the three band calls with `&result[n]` / `&coefficients[n]` 939 (same code each); band three
 // nested in band two's block reusing band two's ten shared products (no redeclarations) 1994 (10500 B: retail keeps the
 // second home of each shared product, so band three's redeclarations are retail's). Body unchanged.
+// M3 lane 3 r303 (h2m fast with 0x143250 MATCH; control 939; "masked" = aligned count with stack offsets and constants
+// masked, control 214, from a one-file link-step screen that reproduces the fast build's 1768 instructions): the s35 * r2
+// product written out at its three uses with no named local 1282 (10793 B: the products regroup as (s35 * r4_r4) * r2);
+// only band three's entry 27 using the written-out product 1155 (10784 B, frame 0x2f8); band two's entry 1 as
+// `0.0f - r6 * r4 - r7 * r3` 1061 (10775 B, masked 218), as `0.0f - (r7 * r3 + r6 * r4)` masked 218, with the factors of
+// either product swapped or the leading zero as a unary minus masked 214 (same code); 0x143250's parameters in all 24
+// orders, definition, declaration and the three calls: masked 204 to 222 with the frame 0x2fc in every one ((n, matrix,
+// coefficients, out), the listed 935 form, is the 204: only the three call setups move). Diagnostic dead-local scans at
+// the function top, band two's top and band three's top, K = 0..40: the same 32-period at each anchor (masked 214, 253,
+// 253, 205, 228, 228, 275, then 228 for K = 7..31), frame 0x2fc at every count. Reading from a value-by-value map of the
+// stack cells (each store with its loads, paired through the masked alignment): both builds hold 298 stored values with
+// the same peak of 142 live at once; retail has one cell more because two of its values sit alone. One is the
+// root-105 times r1-square product (stored once, read once), which ours packs with a band-two product and a later
+// value; the other is band three's s35 * r2: retail copies it to XMM7 right after storing it (`movaps xmm7, xmm3`,
+// with the pending r1_r1_r8 stored first), forms the r3_r3 product in that register and reads the home once, for entry
+// 27, where ours reloads it for the r3_r3 product (two loads) and packs it with the first band-three spill. Seven
+// band-two homes are then re-used by different later values in the two builds. The first code difference with identical
+// bytes ahead of it is band two's entry 1, where retail forms the shared r6 * r4 product ahead of the zero and ours
+// behind it; retail also holds band two's entry 18 in XMM5 until the call where ours stores it at once. Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

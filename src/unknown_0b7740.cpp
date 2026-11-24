@@ -1897,6 +1897,20 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // sort ahead of the other locals 20 and after them 20; the index declared `register` 20; the index and its test in their
 // own inner block, parent and flag outside 20; the no-model parent and flag renamed to sort first 20 (all the same code:
 // names and scopes do not move the index off ECX).
+// M3 lane 14 r150 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Reading: up to the arm our code is
+// retail's, so ECX still holds the pool there in both builds; ours ends the pool value at the current-object lookup and
+// reuses ECX only when nothing overwrites it (the else-arm form), retail's index avoids ECX, so there the pool was a live
+// value across the model tests when registers were chosen. Tried: a pool local declared ahead of the current-object
+// lookup for that lookup and the render arm's flag lookup, the arm through the accessors 20 (same code: the arm reloads
+// the global); that local for the current lookup and one parent-object local in the arm, the render arm through the
+// accessor 286 (1399 B: the arm shares EDI's data and the render arm reloads the pool); a pool local at the function's
+// top used by the arm only 397 (1405 B); a file-local node-matrix helper that reads its index parameter in two lookups
+// 20, one that reassigns its index parameter (`object_index &= 0xffff;`) 20 (both the base's code: the parameter copy
+// does not survive and the node is still read ahead of the lookup, where retail reads it after). Diagnostic, restored: an
+// arm pool local with a second, different use (a lookup of the current object) 376 (1397 B: the pool is then a held
+// value from the current-object lookup on and the arm re-reads only data through it, but in EBP). Re-measured: the
+// matrix lookup indexed by the field re-read 54 (1406 B: the two lookups are no longer merged); a pool local at every
+// lookup 20; an arm-local pool with one parent-object local 44.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

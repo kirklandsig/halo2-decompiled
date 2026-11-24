@@ -954,6 +954,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // baseline): the messages sorted ahead of `top += height` 122; the total height as a short 114 (same code); the row
 // count as `4 - split_screen` 479 (1886 B); `keep = 1.0f - flash` named for all six colour rows 396 (1885 B); the fade
 // tick count as a short 437 (1896 B). Body unchanged.
+// M3 lane 11 r161 (H2M_FAST with 0x24ce9d/0x24c80b/0x24cedf, all MATCH; control 114): `origin` and the top/left
+// computation in their own block 114 (same code), that with the bool timer 191 (1888 B); no `hud` local 115; the
+// player lookup ahead of `split_screen` 504 (1895 B); the timer flag set by an `if` after a zero default 115. Body
+// unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
