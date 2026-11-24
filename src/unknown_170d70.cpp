@@ -1224,6 +1224,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // offset local or without it: the key then stops being a CSE temporary and the plane lookup shifts as on this body).
 // Volume selected from the stored count, a signed end index, a named end pointer or the stored end pointer: 106 each.
 // The same four with a separate camera displacement score 84. NOT kept: the displacement has one use, the EDI save moves after the map-miss test and the camera table is still loaded late.
+// Direct pool index 106, array base 105, const entry reads with indexed store 106, and bind after admission 106.
+// With a separate camera displacement those forms score 17/11/17/17. NOT kept: the one-use displacement
+// requires an exact match. The camera base still loads late, and the key is pushed before the address add.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1999,6 +2002,10 @@ struct s_point_pool_173520
 // and the reservation and reference bindings require exact equality.
 // Reservation from a named end: prior start index, inline start index, pointer subtraction, or early end pointer, 48 each.
 // The same four with corner and clamp references score 25 at 865 bytes. NOT kept: they require the reference forms, and the address and state test still follow the count commit.
+// On the staged reservation and widened recount, int stride 2, int index and stride 2, enum stride 2,
+// reverse-default stride 161, winding setup under the positive count 17, signed or unsigned destination
+// endpoint 201 each, and endpoint from the signed stride 197. NOT kept: the 2 forms still load the clipped
+// cursor before spilling the stride and require the staged reservation and reference bindings for an exact match.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2798,6 +2805,9 @@ struct s_camera_reference_171830
 // than retail and still differ in the center transport. The center-copy form also changes the caller.
 // Selected record before validity 275, selector resolved before record lookup 293, valid record carried into projection 112, carried plane pointer 276.
 // The combined or separate sign and plane tests give the same result for each form. NOT kept: the 112 forms grow to 1222 bytes, exchange lookup scratch registers and still clear zero ahead of the plane expression.
+// Full-ray result, as bool or byte: clear on the combined or split narrow paths 286/286, assign
+// from the plane test 291, and clear on valid reference then restore after exclusion 281.
+// NOT kept: every form grows to 1238 bytes and moves the first difference ahead of the lookup span.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
