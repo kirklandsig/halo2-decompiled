@@ -1978,6 +1978,19 @@ PRIVATE __forceinline real const &component_time_step()
 // reference bound after `target -= position` 119 (473 B); the stop distance's product `delta_time * velocity` 26 (same
 // code); `step = scaled; step *= delta_time;` 26 (same code); the reference bound ahead of the scale helper with its
 // result used straight in the step product 142 (476 B).
+// M3 lane 16 r183 (h2m fast; control 26). Diagnostic phase scan, 1 to 8 initialised dead locals ahead of the scale
+// call: 26 except 3 (and 11, 19): 105 at retail's 467 B, where the scaled value is XMM0 with retail's in-place `mulss
+// xmm0, [eax + 4]` and the stop product's `movaps xmm7, xmm4; mulss xmm7, [eax + 4]` (aligned 8: only the kept address,
+// its second read and the test order left); locals added inside the arm do not count (3 + 8 there 106, 2 + 1 43). The
+// stop-first test on that phase 106 (aligned 31: retail's order, the zero and the stop distance in XMM2/XMM3 swapped),
+// other phases 43. Across phases 0-7: the time step as a `real const *` local 26 (105 at 3, no kept address); the step
+// reading the field directly with the reference bound after it 26 (25 at 2, 469 B: only the stop product's operands
+// flip); the getter called at each product 26; the field read directly with the reference bound after the subtraction
+// 26. Diagnostics: the time step as a `real const *` passed to two forceinline helpers (the step product, and the stop
+// distance taking velocity, step and the pointer) 26 at phases 0-2 and 4-7, 105 at 3; the same with the step product
+// written in the body 26 / 105 (no kept address in either: a pointer parameter read twice does not materialise it as
+// 0x25ae40's call-result pointer does). A natural +3 symbol shift alone would be a positional rise, so the kept
+// address is still the open cause.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
