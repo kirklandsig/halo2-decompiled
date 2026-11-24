@@ -1887,6 +1887,10 @@ long function_1e4a10(long index);
 // (0.0f - vitality)` 8 (same code); the body damage stored ahead of the end lookup and the 0xb58c0 call 43 (883 bytes);
 // the stun bounds into a NULL-initialised local tested after the type test 8 (same code); the vitality clamp as an
 // if/else store 206 (885 bytes).
+// M3 lane 5 r241 (H2M_FAST), at 8: the shield damage store as `shield_damage * inverse_maximum_shield` 8, the stun test
+// as `threshold < shield_damage` 8, the multiplier test as nested ifs 8, the stun seconds as `stun_time * rate` 8 (all
+// four the same code); the tail through `DAMAGE_OBJECT(object_index)` at both uses with no `object` refresh 10 (the
+// reload orders stay); re-measured: the multiplier declared right after the category bool 206 (901 bytes).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
