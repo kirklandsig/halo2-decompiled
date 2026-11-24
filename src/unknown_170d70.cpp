@@ -450,6 +450,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
 // stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
 // orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
+// Failed-test disjunction and staged up publication 70. On the named deadline walk, staged up and
+// alternate normalizations 99; staged side and up 101; existing side cross and alternate normalizations
+// 92; reversed shared dot inputs 70; failed-test disjunction and staged up 101; both axis references
+// with staged up 101; signed copy and coefficient widths with staged up 148. NOT kept: The recovered
+// traversal still diverges in the correction, and the shared dot shortens the body.
 // Unsigned-word or byte group 66/234; next deadline derived from the ordinal 372;
 // whole deadline-array pointer 103. With a named deadline: bulk target copy 367,
 // all polynomial products named 89, named forward squared length 87, or adjacent
@@ -1224,6 +1229,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // offset local or without it: the key then stops being a CSE temporary and the plane lookup shifts as on this body).
 // Volume selected from the stored count, a signed end index, a named end pointer or the stored end pointer: 106 each.
 // The same four with a separate camera displacement score 84. NOT kept: the displacement has one use, the EDI save moves after the map-miss test and the camera table is still loaded late.
+// Direct pool index 106, array base 105, const entry reads with indexed store 106, and bind after admission 106.
+// With a separate camera displacement those forms score 17/11/17/17. NOT kept: the one-use displacement
+// requires an exact match. The camera base still loads late, and the key is pushed before the address add.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1630,6 +1638,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
 // 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
 // `c * (1 - square) + square` 337 (the same code: the product order is canonical).
+// Transform row accumulators 390; partial sums 346; terms formed one row at a time 356; all terms before output 453; partial and final terms before output 395.
+// Bounded alignment 337; separate reciprocal arms 352; named squared deviation 337. Reduced control 337.
+// NOT kept: the tied forms leave the opening unity register and two squares spilled. The staged row terms increase the frame.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1996,6 +2007,10 @@ struct s_point_pool_173520
 // and the reservation and reference bindings require exact equality.
 // Reservation from a named end: prior start index, inline start index, pointer subtraction, or early end pointer, 48 each.
 // The same four with corner and clamp references score 25 at 865 bytes. NOT kept: they require the reference forms, and the address and state test still follow the count commit.
+// On the staged reservation and widened recount, int stride 2, int index and stride 2, enum stride 2,
+// reverse-default stride 161, winding setup under the positive count 17, signed or unsigned destination
+// endpoint 201 each, and endpoint from the signed stride 197. NOT kept: the 2 forms still load the clipped
+// cursor before spilling the stride and require the staged reservation and reference bindings for an exact match.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2379,6 +2394,9 @@ struct s_pool_view_172840
 // bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
 // stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
 // `== unknown00` with the arms swapped 22.
+// Reserved pointer for recount 149, bounds 155, or both 148. Saved point start for commit 142 or both outcomes 255.
+// Shared post-clip offset 235; recount through clip record 256; explicit inherited-bit assignment 55.
+// NOT kept: retaining the reservation enlarges the frame, and the tied assignment still leaves the long sentinel.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2792,6 +2810,9 @@ struct s_camera_reference_171830
 // than retail and still differ in the center transport. The center-copy form also changes the caller.
 // Selected record before validity 275, selector resolved before record lookup 293, valid record carried into projection 112, carried plane pointer 276.
 // The combined or separate sign and plane tests give the same result for each form. NOT kept: the 112 forms grow to 1222 bytes, exchange lookup scratch registers and still clear zero ahead of the plane expression.
+// Full-ray result, as bool or byte: clear on the combined or split narrow paths 286/286, assign
+// from the plane test 291, and clear on valid reference then restore after exclusion 281.
+// NOT kept: every form grows to 1238 bytes and moves the first difference ahead of the lookup span.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

@@ -1439,14 +1439,13 @@ bool function_1ed430(void *ragdoll, vector3f *direction, long *value)
 {
 	bool result = false;
 	s_movement_query_state *state = (s_movement_query_state *)ragdoll;
-	long *const *value_reference = &value;
 	if (state->time != NONE)
 	{
 		long current_time = g_510c54->game_time;
 		long limit = movement_round_ticks(g_510c54->field_2_3 * 0.1f);
 		if (current_time - state->time <= limit)
 		{
-			**value_reference = state->value;
+			*value = state->value;
 			*direction = state->direction;
 			result = true;
 		}

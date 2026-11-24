@@ -556,7 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 115 (was 115): earlier 114 (was 114), 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// score 80 (was 115): earlier 114 (was 114), 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
@@ -965,6 +965,26 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Forms: the first bottom from `bounds.top` 114; the status top stored first and the bottom from it 114; the status
 // step as `bounds.top += 0x12; bounds.bottom += 0x12;` 114; the text height tested and assigned as an expression 114
 // (all the same code); the total height as `height = text_height >= 0 ? text_height : 0;` 349 (1896 B).
+// M3 lane 11 r165 (H2M_FAST with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, all MATCH; control 114, aligned 102;
+// plain check agrees). Frame reading (the allocator's packing view against retail's cell order): every home retail has
+// follows from one more packing reference on `top`, `left`, the row height and the text bounds and four more on
+// `bounds`, and all of those sit in the row's plain-text arm, so that arm existed twice when the frame was packed (the
+// /O1 build merges the identical tails afterwards). Kept: the row written as `if (counted) { if (count) formatted; else if
+// (has text) plain; } else if (has text) plain;` 80 (1889 B, aligned 68; same row logic). On round 205's 92 lead
+// (bool timer, `short position[2]`, the nested tutorial selection, 0x1fa30 as (bounds, text) and 0x24ce9d as (left, top,
+// bounds, result, text)) the same row form gives 2 at 1889 B: every home is retail's and only the two reloads before
+// the split-screen test come in the other order (player, then the player offset in retail); saved as
+// build/r165/lead-0x24cf66-2.patch, not kept (the array, the nested selection and the two reorders are match-only, the
+// reorders were reverted at review before). Pieces on that lead: main's tutorial selection 8, main's parameter orders 15,
+// the `long` timer 140 (1890 B), `short left` in place of the array 85 (1888 B). Kept form with the bool timer 104 (1888 B),
+// the bool timer alone 191 (re-measured). For the last pair on the 2 lead: the count step ahead of the text height 64
+// (1888 B), the sort ahead of `top += height` 12, `--count` 2, `count` declared ahead of the player 21, the HUD state
+// local ahead of the player 2, `&player->messages[0]` 2, the row index declared outside the `for` 2, the status lookup
+// through a copied index 2, the player taken from the HUD state local (`&hud->players[index]`) 139 (1891 B); 1 to 3
+// unused locals ahead of the player 2 (diagnostic). The allocator's forced decisions (priorities, picks, costs, flags)
+// leave the pair; only a forced scheduler height gives the match: the two reloads tie and keep code-generation order,
+// which follows the candidates' numbers (the cut walks run in ascending number and the later walk's reload is emitted
+// first; ours numbers the player before the offset). Permuter 600 s on the lead: nothing below 2 (51 tries).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
@@ -1115,16 +1135,25 @@ void function_24cf66(long local_player_index)
 			long message_height = 0;
 			function_13edb0(font, NONE, 0, 0, &color, &field_24);
 
-			if (message->counted && message->count)
+			if (message->counted)
 			{
-				unicode_string_copy(text, message->text, 0x100);
-				((s_510c4c_view *)g_510c4c)->text_count = message->count;
-				function_22d2ee(text, 0x100);
-				if (function_13ee20(text, g_4e73a0.font))
+				if (message->count)
 				{
-					function_24ce9d(text, left, top, &bounds, &text_bounds);
+					unicode_string_copy(text, message->text, 0x100);
+					((s_510c4c_view *)g_510c4c)->text_count = message->count;
+					function_22d2ee(text, 0x100);
+					if (function_13ee20(text, g_4e73a0.font))
+					{
+						function_24ce9d(text, left, top, &bounds, &text_bounds);
+						message_height = (short)(bounds.bottom - bounds.top);
+						function_1fa30(text, &bounds);
+					}
+				}
+				else if (function_13ef30(message->text))
+				{
+					function_24ce9d(message->text, left, top, &bounds, &text_bounds);
 					message_height = (short)(bounds.bottom - bounds.top);
-					function_1fa30(text, &bounds);
+					function_1fa30(message->text, &bounds);
 				}
 			}
 			else if (function_13ef30(message->text))
