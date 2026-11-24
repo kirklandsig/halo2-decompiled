@@ -967,6 +967,10 @@ struct s_item_collision_bsp
 // Shared basis rotation into the plane, separate normal, separate normal through distance, early scaled
 // distance or in-place queried plane 336/312/333/336/303. NOT kept: the shared rotation forms change
 // sum grouping and shorten the body. The normal and contact-point XMM homes still differ.
+// The transformed plane coefficient homes and the pending x87 factor still differ. Late axial,
+// fallback or both factor assignments 233/233/232, with a separate raw third component
+// 233/233/232. Separate raw third component alone 190; finishing its product at angular output
+// 186. NOT kept: the latter reaches 1362 bytes but gains four, below the keeper threshold.
 // Coefficient-first products across all left, up and forward rows, separately and in every combination,
 // 190 each. All three axes with coefficient-first translation products 190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
@@ -1330,6 +1334,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // forward scalars 151 each; separate weighted cross 267, staged cross with common weight 267,
 // scaled-axis initializer 206 and scaled coefficients 206. NOT kept: the 151 forms recover 0xb4
 // and 848 bytes but raise the score. The initial alignment and scaled-axis register order still differ.
+// The 0xc0 frame and scaled-axis spill remain. Cross contribution before projection, with direct,
+// staged, returned or staged-and-scaled cross into a separate vector 206/206/228/231; into the
+// result workspace 190/190/228/228. NOT kept: both workspace families grow the rotation, and
+// neither recovers the 0xb4 frame or the initial alignment-product order.
 // Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
 // separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
 // NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
@@ -1878,6 +1886,10 @@ struct s_item_flags_view_10b850
 // Ray as lateral cross output with direct or staged cross and coordinate or shared point difference
 // 901/902/909/914. With single-precision absolute value 879/880/885/892. NOT kept: all reduce the frame
 // to 0x13c but shorten the body and raise the score. The entry Boolean stores still differ.
+// Impact/bounce offsets as component stores, point setter, or shared scaled add:
+// components/setter 821, components/scaled add 824; setter with components/setter/scaled add
+// 904/911/904; scaled add with components/setter/scaled add 824/821/824.
+// NOT kept: the bounce setter alone gains three and the impact setter shortens the body.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
