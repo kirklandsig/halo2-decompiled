@@ -747,11 +747,12 @@ static __forceinline void apply_second_pair_first_impulse(float const &source,
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
+	__m128 inertia_a=a->inverse_inertia;
 	float impulse = load_stored_impulse(source);
 
 	memcpy(&simd_copy, &source, sizeof(simd_copy));
 	__m128 scalar = _mm_load_ss(&simd_copy);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 const *inverse_b_pointer = &inertia_body_b->inverse_inertia;
  inverse_b_home=inverse_b_pointer;
  __m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), (*inverse_b_home));
@@ -776,11 +777,12 @@ static __forceinline void apply_second_pair_second_impulse(float const &source,
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
+	__m128 inertia_a=a->inverse_inertia;
 	float impulse = load_stored_impulse(source);
 
 	memcpy(&simd_copy, &source, sizeof(simd_copy));
 	__m128 scalar = _mm_load_ss(&simd_copy);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
