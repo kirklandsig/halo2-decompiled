@@ -667,6 +667,27 @@ struct s_visibility_bound_record
 // instance-first section 452, single result and section join 452, structure flag snapshot 456, and flag
 // snapshot with section join 452. NOT kept: the shared section and flag forms lose both matched helper users,
 // and the remaining forms tie or raise the score.
+// M3 lane 14 r152 (h2m fast with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH each run; control 430, sequence-aligned
+// 267 rows; a per-register comparison of retail's value ranges with ours: 49 of 128 placed differently). Allocator
+// reading of the bottom arm: the geometry pointer's whole range (head, part loop, live through the node loop) ranks 53
+// and the node loop's output-base difference 54, so that difference takes EDI, the countdown EBX, and the geometry is
+// cut into two scratch pieces; retail has the order the other way (geometry EDI through the node loop, the base
+// difference EBX, the node countdown in memory), and once the geometry holds EDI the entry can only take EBX. Two
+// more points on the geometry (one more reference in the head or the part loop, or one candidate fewer in the node
+// loop's blocks) is the whole gap. Re-measured against that: the query data as `if (!parts) ... else ...` with the
+// +0x2c field read in each arm 456 (1763 B, listed): the two extra geometry reads do give retail's roles (geometry
+// EDI with its home at +0x20, 18 of the callee-saved ranges then agree), but the entry is formed in a scratch register,
+// the table is loaded inside the tag arm and the parts test is threaded into the arms. Lane 11 r133's lead rebuilt on
+// today's body 396 at 1742 B (aligned 154; 24 of 135 ranges placed differently: ECX/EDX swapped from +0xe3, the part
+// loop's counter and bit, one EDI range, 19 stack cells); with 0x458d0's and 0x45a80's index parameter as `long`
+// (`(short)index` in their bodies, 0x45560 passing its long index; all three stay matched) the lead is 412 at 1756 B,
+// aligned 139, and the two call arms are then retail's row for row; the same parameter change on this body 458 (1776
+// B, aligned 254, re-measured), on the two-arm query form 484. Left on that best form, by group: the early zero
+// (retail tests the count and the active flag with `test` and makes its zero in EDI after the plane array's address);
+// the query data stored once after the arms (retail stores it in each arm); the list set-up's store order; the
+// frustum address in one `lea` (retail two); the plane copy's j/k registers; the capacity loads ahead of the releases
+// (retail second, first, third); the part loop's counter and bit (retail ESI/EBX); the scale products (0x142570's
+// body, BLOCKED-BY 0x142570's /Ob1 file); the homes. Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

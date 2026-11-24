@@ -533,6 +533,11 @@ const dword g_455978[81] = {
 // Use world registration results for bounds, transform or both 269/274/275. Bounds ray, rigid body pose,
 // query dispatch, paired ray and pose, or two reference-counted receivers 268 each. NOT kept: registration
 // results alter live registers without restoring the optional homes, and all typed views tie.
+// Exclusion defined on the bounds path by branches or a conditional 430/464,
+// with absent-path defaults 494/494; null volume on the absent path 430,
+// with both defaults in their arms 485 or conditional exclusion 460;
+// publish the volume after selecting the exclusion 465.
+// NOT kept: the retail homes and selective call expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
