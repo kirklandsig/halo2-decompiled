@@ -913,7 +913,7 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 100; r251 unchanged): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
 // Earlier score 191.
 // store, and the third team-score read expands where retail calls 0x1587f0. Earlier score 191.
@@ -1085,6 +1085,10 @@ static inline long team_score_195ed0(long team)
 // file-local const pointer 133 (760 B, the pointer is loaded). No form of 0x196470 found keeps its counter once the
 // players lie more than 0xa4 bytes into their symbol, so the one-object record stays a lead. Diagnostic sweep of the
 // local count (1 to 8 unused initialised longs at the top) 100 each, the same code.
+// Early results return 100; address cursor 155; unused-address continue 100; local-address continue 100;
+// shared world receiver 100; connectivity from the channel predicate 165; selected channel 141;
+// shared connectivity store 131. NOT kept: the flag still precedes the copy, and the shared store
+// joins branches that have distinct stores in retail.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

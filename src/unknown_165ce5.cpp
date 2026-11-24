@@ -2113,6 +2113,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // reference bound at the top of the unit block for all four springs and both divisions 224 (2193 B, frame 0x30), bound
 // just ahead of the yaw clamp 219 (2193 B: the divisions share the reciprocal again); the reference to const 188 (same
 // code). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// Round 114: Explicit clamps into the look members 188. Initializing the look pair from clamped scalars 196 (frame
+// 0x28). Named values for all four spring overrides 548, primary handle selected before its guard 526, primary slot
+// reused through the final test 188, overrides before mode lookup 574, one overlay set read for both clear tests 362,
+// and scope flag assigned from the overlay index 220. The unit and mode homes and the early saves still differ.
+// Unit/mode and activity/zoom homes still differ. Immutable mode 188, aiming vector reference 569, first
+// receiver before unit admission 188, nested handle admission 188, clear activity after failed queries 183,
+// nested animation success tests 188, retained clock for late updates 460, direct short overlay index 197.
+// NOT kept: the activity form improves by five at the opening length.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

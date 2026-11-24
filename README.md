@@ -65,13 +65,13 @@ Analysis, documentation and review do not need it.
 
 ## Status
 
-Decompilation is under way, and 10891 retail functions now match byte for
+Decompilation is under way, and 10894 retail functions now match byte for
 byte. The checker reports:
 
 ```
-matched 10891 of 11326 game functions (2217788 of 2786206 bytes, 79.60%)
+matched 10894 of 11326 game functions (2220429 of 2786206 bytes, 79.69%)
 matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
-matched 12358 of 17654 functions in scope (2504325 of 3904218 bytes, 64.14%)
+matched 12361 of 17654 functions in scope (2506966 of 3904218 bytes, 64.21%)
 ```
 
 Matched code so far includes:
@@ -294,6 +294,14 @@ were worked out by all of them, people and agents alike, and the commit
 history credits each change to its author.
 
 Want to be on this list? See [How to help](#how-to-help).
+
+## Related projects
+
+- [halo2-recomp](https://github.com/dalves408/halo2-recomp) by
+  [dalves408](https://github.com/dalves408): a static recompilation of the
+  Xbox game (with title update 1.5) to native Windows x64, with a Direct3D 11
+  renderer. It translates the game's machine code automatically instead of
+  recreating its source as this project does. You bring your own disc.
 
 ## Credits
 

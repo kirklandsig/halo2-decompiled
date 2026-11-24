@@ -1030,6 +1030,9 @@ void function_3dd10(long object_index, bool force);
 // each toggle the selection loop's choice-first add: a phase, not kept); on the latter the variant left uninitialised and
 // zeroed in an else arm of the model test 234 (1042 B), the weight declared just ahead of the first scan 293 (974 B).
 // Body unchanged.
+// The bank ordinal still sinks below the entry guard; count and mask homes remain different. Empty-bank single exit 197, guarded while 77, tint block reference 86, admitted tint base 311.
+// Returned HSV inputs 200, returned RGB bank color 309, shared absolute/signed hue difference 184, two signed half-turn bounds 203.
+// NOT kept: the guarded while ties. The single exit puts the ordinal store in place and swaps the saved object and tint registers.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

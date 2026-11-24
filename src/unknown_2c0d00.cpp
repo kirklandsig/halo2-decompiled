@@ -2479,6 +2479,12 @@ long function_1fa7f0(void);
 // zero store moves between start's x and y as retail's; -2, not kept). Retail's tail is 0x210850's own code (the
 // zero-extended index and `cmp ax, 0xffff` of its retail body) inlined twice through 0x210a30, both in an /Ob1 file:
 // BLOCKED-BY 0x210a30 and 0x210850. Body unchanged.
+// M3 lane 6 r237 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked 275/56
+// by a difflib count): the corner trace's start point stored member by member 400; the radius sum's leaf in one, two and
+// three redundant parenthesis pairs (an allocation-phase test) 400/400/400 (same code each); re-measured the copied last
+// step as `points[end - 1]` 545 (1811 B). The outer loop as `for (; index < count; index = next)` does not compile here
+// (`next` is the body's local). Retail's tail is two inlined copies of 0x210850 (`xor eax, eax; mov ax, [esi + 0xc];
+// cmp ax, 0xffff`, the first sharing the equality test's AX load) and one `(z*z + y*y) + x*x` sum. Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
