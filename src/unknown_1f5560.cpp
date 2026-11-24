@@ -1945,6 +1945,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // (1181 B); the negated radius named once after the radius for all its uses 241 (1183 B); named in the type-one
 // arm ahead of `difference` 272 (1199 B), after the normalize 249 (1184 B); the type-one products written negated
 // radius first 198 (same code); its sums written product first 198 (same code). Body unchanged.
+// Left test through the existing cross product, either sign and point or vector direction:
+// side axis formed before the test 198 in all four forms, after it 203 in all four. The 0x3c
+// frame and 1173 bytes hold, with radius still in XMM4 where retail uses XMM5. Body restored.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

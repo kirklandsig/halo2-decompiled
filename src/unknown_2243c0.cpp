@@ -970,6 +970,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // with a `& 0xffff` fallback 152 (re-measure of round 40's form); the fallback indexed by `(unsigned short)` 117 (same
 // code); the instance read from the tag field as a short 117 (same code); the tag local passed to 0x1bbf0 130 (listed);
 // the four cache zeros between the definition's table read and the head element 121. Body unchanged.
+// Group selection carried separately before tag lookup, word index and full mask respectively: positive
+// 122/163, negative 122/163, staged 154/157, both comparisons evaluated 131/131. The masked forms
+// still lose the retail table load after the saves. The original frame, fallback, and body are restored.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
