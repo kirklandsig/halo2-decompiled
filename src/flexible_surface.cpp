@@ -963,6 +963,15 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the random sample still lands at [esp+0x14] against retail's [esp+0x18]; the SSE rotation block still differs in
 // every row's register assignment (retail keeps the seed pointer in ESI from the prologue, this build loads it after
 // the surface lookup), and the function is still 889 bytes against retail's 880.
+// Rounded angle held as double with clock record/interval across draw/tick
+// count across draw/both clock fields 161/154/162/213. Early seed alone or
+// with the early interval 131/122, bounded generator without or with early
+// seed 155/160. Early interval with real angle 147; whole time after draw
+// 195; elapsed time started before draw 137. Real angle promoted at the
+// rotation with early interval/time before draw/time after draw/elapsed
+// time scaled after draw 120/127/193/135.
+// NOT kept: 122 and 120 both move the single-use interval read ahead of
+// the seed update. The 120 form also leaves the 0x1c frame.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
