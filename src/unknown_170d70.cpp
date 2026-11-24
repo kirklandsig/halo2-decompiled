@@ -456,6 +456,8 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // basis addresses at the group update 94. NOT kept: the 89 form reaches retail
 // length and changes the polynomial. Naming the squared length shortens the
 // basis tail, and the adjacent addresses keep its first difference at +0x34b.
+// Named deadline with exchanged multiplication reads in k, i, j, ki, kj, ij or kij scores 94 each.
+// Staging the kij dot after both length tests scores 92. All reach +0x34b at 1396 bytes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
