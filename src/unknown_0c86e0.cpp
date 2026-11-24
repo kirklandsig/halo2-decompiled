@@ -491,10 +491,6 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // weapon_zoomed)` 110 (same code); the zoom flag cleared in an `else` of the reset test 124 (352 B); the user index
 // defaulted to NONE and set under `!= NONE` 127 (357 B); the sound block's two tests nested 110 (same code). Still
 // BLOCKED-BY 0xbadc0.
-// M3 lane 11 r161 (H2M_FAST with 0x103b10/0x14de90/0xbadc0/0xcbd50/0x100f70, all MATCH; control 110): the weapon flag
-// through a `bool const &` 110; a redundant `was_zoomed = false;` atop the reset arm 110; the user index set through a
-// `long &` 110; the two NONE stores chained 110 (all the same code); the sound index defaulted to the globals' sound and
-// overridden in the weapon case 107 (364 B, under the bar). Still BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
