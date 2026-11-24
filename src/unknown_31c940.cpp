@@ -671,11 +671,12 @@ static __forceinline void apply_second_pair_fallback(float impulse,
 	__m128 *const &angular_velocity_b_pointer, __m128 const &inverse_b, __m128 const &axis_linear, float *result, float &simd_scratch)
 {
 	// Keep accumulation wider than the float copy consumed by SIMD.
+	__m128 inertia_a=a->inverse_inertia;
 	float &rounded_impulse = simd_scratch;
 	float &store = rounded_impulse;
 	store = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);

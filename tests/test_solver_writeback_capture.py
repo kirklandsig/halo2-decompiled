@@ -980,3 +980,35 @@ def test_first_normal_fallback_a_inertia_precedes_copy(solver_images,precision,s
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,observed)
             else:assert snapshots[rounding]==(snapshot,observed)
+
+
+@pytest.mark.parametrize('selected',['first','second'])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_fallback_a_inertia_precedes_copy(solver_images,precision,selected):
+    frame=STACK+32768-0xd0
+    body_a=frame-0x20
+    body_b=HEAP+0x80
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',body_a,body_b)
+            put(data,OPS+24,'5I',3|(8<<8)|(5<<16),0,3|(8<<8)|(5<<16),0,0x400)
+            put(data,TERMS,'24f',*([0.0]*24))
+            put(data,TERMS+96,'24f',0,0,0,1 if selected=='first'else 0,0,0,1 if selected=='first'else 0,1,0,0,0,1,0,0,0,1 if selected=='second'else 0,0,0,1 if selected=='second'else 0,1,0,0,0,0)
+            put(data,HEAP,'B',3)
+            for offset in [0x10,0x20]:put(data,body_b+offset,'4f',0,0,0,0)
+            put(data,body_b+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'4f',0,0,0,0)
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*16)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            observed=words(machine,frame+8,1)
+            assert observed==(0x12345678,),(label,precision,rounding,observed)
+            assert words(machine,IMPULSES,4)==((0,0,0x3f800000,0)if selected=='first'else(0,0,0,0x3f800000))
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,observed)
+            else:assert snapshots[rounding]==(snapshot,observed)
