@@ -57,33 +57,24 @@ struct solver_scalar_arena_31c940
 	float circular_second;
 	float residual_angular;
 };
-// One float word, with assignment and borrowing through its stored value.
-struct stored_word_31c940 {
- float value;
- __forceinline stored_word_31c940 &operator=(float input) { value = input; return *this; }
- __forceinline operator float &() { return value; }
- __forceinline operator float const &() const { return value; }
-};
-typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
-
 // These five words serve different scalar and pointer roles in separate operations.
 // The rounded-input word has its own consumed scalar storage.
 // This view borrows the currently active roles.
 struct solver_work_prefix_31c940 {
- union { stored_word_31c940 pair_b; __m128 const *inverse_b; float const *writeback_time; };
- union { stored_word_31c940 first_error; __m128 *angular_b; };
+ union { float pair_b; __m128 const *inverse_b; float const *writeback_time; };
+ union { float first_error; __m128 *angular_b; };
  union { float fallback_scalar; float const *friction_scale; solver_linear_row_31e7b0 const *next_circular; };
 };
 struct solver_simd_word_31c940 {float value;};
 struct solver_work_tail_31c940 {
- union {stored_word_31c940 pair_a;__m128 *linear_b;float *linear_floats_b;solver_linear_row_31e7b0 const *next_normal;};
+ union {float pair_a;__m128 *linear_b;float *linear_floats_b;solver_linear_row_31e7b0 const *next_normal;};
 };
 struct solver_scalar_work_31c940 {
- stored_word_31c940 &pair_b;__m128 const *&inverse_b;float const *&writeback_time;
- stored_word_31c940 &first_error;__m128 *&angular_b;
+ float &pair_b;__m128 const *&inverse_b;float const *&writeback_time;
+ float &first_error;__m128 *&angular_b;
  float &fallback_scalar;float const *&friction_scale;solver_linear_row_31e7b0 const *&next_circular;
  float &simd_scalar;
- stored_word_31c940 &pair_a;__m128 *&linear_b;float *&linear_floats_b;solver_linear_row_31e7b0 const *&next_normal;
+ float &pair_a;__m128 *&linear_b;float *&linear_floats_b;solver_linear_row_31e7b0 const *&next_normal;
  __forceinline solver_scalar_work_31c940(solver_work_prefix_31c940 &prefix,solver_simd_word_31c940 &simd_word,solver_work_tail_31c940 &tail):
  pair_b(prefix.pair_b),inverse_b(prefix.inverse_b),writeback_time(prefix.writeback_time),first_error(prefix.first_error),angular_b(prefix.angular_b),
  fallback_scalar(prefix.fallback_scalar),friction_scale(prefix.friction_scale),next_circular(prefix.next_circular),
