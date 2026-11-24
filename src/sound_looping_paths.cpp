@@ -972,6 +972,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // With full-width query and choice counts: 937/934. Overlaid on the query gain buffer:
 // 877/900 with short counts and 937/934 with full-width counts.
 // NOT kept: the records recover the 0x4e0 frame, but the entry zero and target home still differ.
+// Override attenuation as field or linear factor before the indexed walk 881/838,
+// under the positive extent 875/887, with a live-count cursor 892/893, or with a
+// fixed populated range 890/850. NOT kept: all raise the score and retain the
+// 0x4dc frame; the existing-count, target-count and query-buffer homes still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -7122,6 +7122,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Independent transpose values 959, stage three 1032, stage six 1032, stage the two forward coefficients 969,
 // up pairs first 971, reciprocal-side reads first 971, forced inline 959, and forced inline with six staged 1032.
 // NOT kept: every form leaves frame 0xfc versus 0xd8 and ties or raises the score.
+// Pitch vertical read through the vehicle 1031, all three pitch inputs through the vehicle
+// 978, including the forward receiver established afterwards 978. Named horizontal root
+// through the receiver or vehicle 959/978, root and pitch before the receiver 978,
+// named squared input through the receiver or vehicle 959/978. NOT kept: the pitch
+// forms tie or raise the score without recovering the 0xd8 frame or entry registers.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
