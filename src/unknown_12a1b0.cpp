@@ -3814,6 +3814,21 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // test 591, that with 0x21b940's bounds pointer 591, that with track ahead of track_definition 591. Reading: retail's
 // constant 1 sits in EBX across the start arm because EBX holds `state` there and state is dead in that arm (state == 0
 // threads past the `state != 2` test); this build holds NONE in EBX for the whole pass. Body unchanged.
+// M3 lane 11 r165 (fast screen with the two callers and the matched callees, control 597 at 2518 B). The allocator ranks
+// the track definition's whole-loop range at 132 (576 for its 24 referencing blocks less 444 for the 64 blocks it is
+// only live through) and gives it EBP, the last free callee-saved register; the old-end sound ranks 120. With the track
+// definition ranked below the old-end sound (a forced order, not source) the count is 501, and with it ranked last the
+// aligned rows fall by a third, leaving the entry's flags byte, the alternate compares and the constant 1: so 13
+// points between those two ranges are what a source form has to move. Retail reuses `state`'s parameter home for the
+// last listener test's float argument, which is why `state` sits in EBX from the latch to the final store. Forms: the
+// three state pairs through a member setter of the track record 597 (same code); the old-end fade as an unguarded call
+// to 0x126df0 779 (2400 B, stays a call), guarded 739 (re-measured); the start test as two nested ifs 597 (same code);
+// the start sound named once for its test and both start calls 597; the track's short index named once for the six
+// calls 597. Diagnostics, removed at once: a forced re-read of field_c_4 in the start arm gives retail's store, reload,
+// store but each arm keeps its own copy and nothing else moves (597); a private forced-inline copy of 0x126df0's text
+// at the old-end fade 595, so the hand-written block is already that expansion's code; in this loop the link expands a
+// 0x126df0 call at the loop top or under one `if` and calls it under two, while retail's old-end fade sits under
+// three. Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
