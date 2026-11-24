@@ -1336,6 +1336,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Whole-vector coefficient forms: both captured before the copies 455; near/far/both shared dots with coefficient
 // first 437/440/517; near/far/both with normal first 437/449/496; both vectors early with shared dots 517. Early
 // x-coefficient and following zero register roles still differ.
+// In-place factor-first x and delta-first y/z scaler 115; with separate scaled delta 467; with shared sum 115;
+// with point setter 115; with shared denominator dot 224; with denominator in the fraction local 221;
+// with shared near normal negation 115; with shared forward negation for the far plane 130.
+// The early x coefficient preload and exchanged zero XMM home remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
