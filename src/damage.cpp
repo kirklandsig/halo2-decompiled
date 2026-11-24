@@ -2782,6 +2782,10 @@ struct s_unit_event
 // notifications 578/551; dword slot with one read per attachment 578.
 // NOT kept: the entry lookup variants still displace the native reads and
 // some change permutation ingress. Typed seat label, indexed scan 420.
+// Separate permutation-array read and record address at entry, with region or direct table 439/556.
+// Record address after notifications 627 in all three forms. Record address after the region-state
+// write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
+// loads the region index into EBP and keeps frame 0x38, but adds 12 bytes and raises the score.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5635,6 +5639,9 @@ struct s_damage_object_creation
 // used for both tests and stores 222 (779 B); one loop per mask, both bounded by the field 237 (843 B); the count
 // started at zero outside the info test and set inside it, the loop after the test 172; a guarded do-while
 // (diagnostic) 167; the latch written `section_count > i` 167 (same code).
+// Accumulate primary, secondary or both section masks before publication, from zero 199/198/243
+// or from the current flags 219/219/257. Unconditional mask intersections with primary or secondary
+// publication first 201/203. Each retains frame 0x13e0 and moves the first difference ahead of the original loop.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

@@ -2362,6 +2362,11 @@ void function_1f86a0(long actor_index);
 // condition 123; one element local shared by the loop and the tail 123; the flags read through a `byte const &` for
 // the mask and the 0x40 test 123; the entry as a pointer to const 123 (same code each); re-measured the no-mask form
 // with plain truth tests 244 (868 B). Body unchanged.
+// P657: Typed slot-data member 148; one selection guard around root rejection/admission 237/260;
+// three-way agreement with a default or exhaustive tests 263/252; agreement-first rejection/admission
+// 256/252; named selection requirement 248; rejection set by the three tests 240; entry name 123.
+// NOT kept: all keep frame 0x10; the three-way result frees the mask but the full flags byte takes BL.
+// The opening loop still spills the entry in place of the mask, and the actor index arrives in ECX.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
