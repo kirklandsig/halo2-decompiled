@@ -131,7 +131,7 @@ static __forceinline void sum_three_to_arena_31c940(__m128 const &v, float &outp
 }
 
 
-static __forceinline void project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
+static __forceinline __m128 project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, __m128 const &linear_axis, float &projection_output)
 {
 	// Keep each captured input until its final contribution, then reuse its vector.
@@ -139,6 +139,8 @@ static __forceinline void project_first_linear_velocity(solver_linear_row_31e7b0
 	__m128 work_1=b.body->angular;
 	__m128 work_2=a->linear;
 	__m128 work_3=linear_axis;
+	// Keep the captured linear axis for the first positive-row update.
+	__m128 retained_axis=work_3;
 	__m128 work_4=row->a;
 	work_2=_mm_sub_ps(work_2,work_0);
 	work_0=a->angular;
@@ -150,6 +152,7 @@ static __forceinline void project_first_linear_velocity(solver_linear_row_31e7b0
 	work_3=_mm_add_ps(work_3,work_2);
 	sum_three_to_arena_31c940(work_3,projection_output);
 
+	return retained_axis;
 }
 
 
@@ -326,35 +329,47 @@ static __forceinline void apply_linear_spilled(float const &source, solver_linea
 // Capture B's angular receiver after the linear writes, before either angular write.
 
 
-static __forceinline void apply_first_normal_positive_impulse(float const &source, solver_linear_row_31e7b0 const *row,__m128 const *angular_axes,
+static __forceinline void apply_first_normal_positive_impulse(float const &source, __m128 const &linear_axis,__m128 const *angular_axes,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_copy)
 {
 
-	// These normal-pair impulses have already been spilled to float. Load that
-	// value for accumulation and copy its bits into the SIMD scalar.
-	float impulse = source;
-
-	memcpy(&simd_copy, &source, sizeof(simd_copy));
-	__m128 scalar = _mm_load_ss(&simd_copy);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 inverse_b = b.body->inverse_inertia;
-	solver_scoped_body_fields_31c940 const &linear_body_b = b;
-	// Each body broadcasts its own read of the rounded SIMD copy.
-	__m128 scalar_b = _mm_load_ss(&simd_copy);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar_b, scalar_b, 0), inverse_b);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	linear_body_b.body->linear = _mm_sub_ps(linear_body_b.body->linear, linear_b);
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	solver_velocity_31c940 *angular_body_b = b.body;
-	__m128 angular_a = _mm_mul_ps(change_a, angular_axes[0]);
-	__m128 angular_b = _mm_mul_ps(change_b, angular_axes[1]);
-	a->angular = _mm_add_ps(a->angular, angular_a);
-	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
-	*result += impulse;
-
+	// Use the stored float for accumulation and copy its bits for SIMD.
+	float impulse=source;
+	memcpy(&simd_copy,&source,sizeof(simd_copy));
+	// Reuse the consumed projection values through both body updates.
+	__m128 w[5];
+	w[2]=a->inverse_inertia;
+	w[1]=_mm_load_ss(&simd_copy);
+	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=b.body->inverse_inertia;
+	w[1]=_mm_load_ss(&simd_copy);
+	w[1]=_mm_shuffle_ps(w[1],w[1],0);
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[4]=linear_axis;
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
+	w[2]=_mm_mul_ps(w[2],w[4]);
+	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
+	w[3]=_mm_mul_ps(w[3],w[4]);
+	w[4]=a->linear;
+	w[4]=_mm_add_ps(w[4],w[2]);
+	a->linear=w[4];
+	w[2]=b.body->linear;
+	w[2]=_mm_sub_ps(w[2],w[3]);
+	b.body->linear=w[2];
+	// Capture B after both linear writes, before either angular write.
+	solver_velocity_31c940 *angular_body_b=b.body;
+	w[2]=angular_axes[0];
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=angular_axes[1];
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=a->angular;
+	w[2]=_mm_add_ps(w[2],w[0]);
+	a->angular=w[2];
+	w[0]=angular_body_b->angular;
+	w[0]=_mm_add_ps(w[0],w[1]);
+	angular_body_b->angular=w[0];
+	*result+=impulse;
 }
 
 // The first pair reloads B for inertia, then captures each update receiver.
@@ -490,7 +505,7 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 {
 	solver_step_31c940 *parameters = step;
 	float target_a = axis[-5].m128_f32[3];
-	project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis, projection_pool.normal_first_projection_a);
+	__m128 retained_axis=project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis, projection_pool.normal_first_projection_a);
 	// Retail stores this error to float; subsequent coupled expressions borrow
 	// that stored value while the second error retains its x87 intermediate.
 
@@ -514,7 +529,7 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		{
 			if (scalar_work.pair_b > 0.0f)
 			{
-				apply_first_normal_positive_impulse(scalar_work.pair_a, ((solver_linear_row_31e7b0 *)first_axis),axis-4, a, b, result, projection_pool.normal_first_a_copy);
+				apply_first_normal_positive_impulse(scalar_work.pair_a, retained_axis,axis-4, a, b, result, projection_pool.normal_first_a_copy);
 				apply_linear_spilled(scalar_work.pair_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, projection_pool.normal_first_b_copy);
 				return;
 			}
@@ -1176,7 +1191,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2033. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2024. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
