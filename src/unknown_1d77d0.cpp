@@ -368,6 +368,10 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // case (`case 6`) beside the unreachable default 102 (1832 bytes, our tail stays: not the switch's block count); an
 // unreachable `__assume(0)` arm in the tail loop 22; the reachable `default: constraint = NULL; break;` 370 again (its
 // default block sits just ahead of the 0x1d0150 call, and the second loop's head is then entered by a `jmp`).
+// Round 223 (m3 lane 7, h2m fast with 0x1d6ad0): the builder `static` without `__forceinline` 1829 (left out of line);
+// `if ((unsigned long)type > 5) __assume(0);` ahead of the switch with the default kept 22; the builder `__forceinline`
+// with external linkage 22; the builder returning through an out-parameter 22; the builder calling 0x1d0150 itself 22
+// (the four 22s the same code).
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {
