@@ -921,6 +921,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // Round 469: whole-value conditional at the pitch calculation 379. Immediate branch
 // choosing the pitch comparison input 365, and the branch at the angle use 368. Five
 // input and projection name orders tie 130. The projected J/depth stores remain exchanged.
+// Planar pair before the full copy, with branch/conditional base rate, in-place bounds or
+// named lower bound on yaw only: 220/220/237/295. The same rates and bounds on both angles:
+// 208/208/299/292. NOT kept: the better forms fix the store pair but grow the body, and
+// the separate lower bounds reach retail length with a smaller frame.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
