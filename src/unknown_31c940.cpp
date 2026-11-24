@@ -1105,18 +1105,27 @@ static __forceinline void solve_angular_friction_kernel(float target, float cons
 		float factor = limit / magnitude;
 		impulse *= factor; row->b.m128_f32[3] *= factor;
 	}
-	// Round the SIMD input once, then construct each body's broadcast separately.
-	__m128 inertia_a=a->inverse_inertia;
-	float &rounded_impulse = simd_scratch;
-	rounded_impulse = impulse;
-	__m128 input_a = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), inertia_a);
-	__m128 input_b = _mm_load_ss(&rounded_impulse);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), (*inverse_b_pointer));
-	__m128 axis_a = row->a, axis_b = row->b;
-	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
-	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
-	*result += impulse;
+	// Retain A inertia before the scalar store, then consume three SIMD values.
+ __m128 w[3];
+ w[2]=a->inverse_inertia;
+ simd_scratch=impulse;
+ w[1]=_mm_load_ss(&simd_scratch);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=*inverse_b_pointer;
+ w[1]=_mm_shuffle_ps(w[1],w[1],0);
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=row->a;
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=row->b;
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=a->angular;
+ w[2]=_mm_add_ps(w[2],w[0]);
+ a->angular=w[2];
+ w[0]=velocity_b;
+ w[0]=_mm_add_ps(w[0],w[1]);
+ velocity_b=w[0];
+ *result+=impulse;
 }
 
 // Keep B's field addresses across consecutive bounded angular rows. Capture
@@ -1399,7 +1408,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2074. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1990. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
