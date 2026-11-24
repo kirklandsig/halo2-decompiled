@@ -1020,6 +1020,12 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // because the failure exit's `result = false` is split off into its own literal-false exit; at entry retail colours the
 // pathfinding pointer (EBX, then stored) and the flag pointer (EDI), where this build leaves the pointer uncoloured
 // (its weighted cost is not above zero) and gives EBX the constant 1 and EDI NONE.
+// M3 lane 13 r154 (H2M_FAST with 0x270930, 0x2c4030, 0x2c0d60, 0x29a190 and 0x29cbb0; control 675). Aimed at the entry's
+// constant candidates (ours gives EBX the result's 1 and EDI NONE, retail the pathfinding pointer and the flag pointer):
+// the failure exit as `return false;` in place of `result = false; goto done;` 776 (2986 B, first difference +0x1,
+// aligned 1071), that with `bool result` 776, that with no result variable (`done: return true;`) 776; the actor's
+// 0x26c and 0x86 reads through `((s_actor_view *)actor)->` 675 (same code); the actor as an `s_actor_view *` from
+// actor_get with those fields 676. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

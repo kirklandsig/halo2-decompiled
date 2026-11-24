@@ -2152,6 +2152,25 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // cache-file pointer; the query size declared beside `valid` at the loop body's top; `resized` declared at the top of
 // the size-mismatch block; the handle pointer const; the expected size const with the write's size as
 // `sizeof(empty_header)`. Body unchanged.
+// M3 lane 1 r165 (fast screen with 0x213800, MATCH each run; control 33; lane 9 r132's 5 form rebuilt at 5). Reading of
+// the 5 form's last difference: the write's flags temporary is a register candidate local to the write block (built,
+// two pushes later pushed), and it takes the first free scratch register, EAX; the header address and the unnamed handle
+// then take the rotating picks EDX and EAX, so the handle load cannot rise above the flags push. A forced compile that
+// gives only the flags temporary ECX reproduces retail byte for byte on the 5 form (forced, not source); EDX, ESI or EDI
+// for it leave 2. Its rank among the block's candidates does not matter (raised to the top or dropped below the zero
+// constant: same code). What moves such a pick, measured with diagnostics that are not keepable source: a value that is
+// still waiting for a register, could use EAX and wants it (a call result held across the flags' construction and pushed
+// as the category) makes the flags take ECX; a value that wants EAX but lives across calls does not (the loop index
+// passed in EAX five times in the size-mismatch block: no change); a register argument computed early (the count pointer
+// taken from the file record) keeps EAX from the flags (ECX) but also from the handle (ECX, 134). So retail's write block
+// held one more short-lived value that preferred EAX, or its handle was a named value with one more rotating pick ahead
+// of the close (the write-local reading above); no natural spelling of either was found. On the 5 form: the flags as a
+// named local between the resize's wait and `if (resized)` 135 (930 B: the zero is built above the test and `resized`
+// is loaded into CL), between the resize call and its wait 124 (917 B), as a non-const object above the loop 5 (same
+// code), with the header size named beside it at the block's top 5 (same code); the header read assigned inside the
+// `else if` condition in place of `valid = true` 83. Diagnostics: a handle test ahead of the write 137 (933 B: a memory
+// compare, the zero shared by three pushes); on the write-local form the count through a named pointer read back after
+// the wait 114, the count as a member of a local record 114 (same code each). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

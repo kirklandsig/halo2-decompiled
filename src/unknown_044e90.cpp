@@ -663,6 +663,10 @@ struct s_visibility_bound_record
 // visible-mask pointer read before the node loop 397 (1778 B, the listed match-only lead); the containment flag
 // declared ahead of the part bit 430 (same code); the planes and plane query declared ahead of the list set-up 430
 // (same code). Body unchanged.
+// Tag snapshot 430, shared structure-section load 452, single geometry result 443, with the tag snapshot 443,
+// instance-first section 452, single result and section join 452, structure flag snapshot 456, and flag
+// snapshot with section join 452. NOT kept: the shared section and flag forms lose both matched helper users,
+// and the remaining forms tie or raise the score.
 // M3 lane 14 r152 (h2m fast with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH each run; control 430, sequence-aligned
 // 267 rows; a per-register comparison of retail's value ranges with ours: 49 of 128 placed differently). Allocator
 // reading of the bottom arm: the geometry pointer's whole range (head, part loop, live through the node loop) ranks 53

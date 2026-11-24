@@ -976,6 +976,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Group selection carried separately before tag lookup, word index and full mask respectively: positive
 // 122/163, negative 122/163, staged 154/157, both comparisons evaluated 131/131. The masked forms
 // still lose the retail table load after the saves. The original frame, fallback, and body are restored.
+// The dispatch span still needs the in-place EDX fallback with the directory in EDI. Signed group slot from the unsigned
+// ordinal, word/masked fallback: sign-bit bias 157/135, sign contribution 160/136, signed-half selection 131/136,
+// full-width sign extension 117/152. The original group and fallback expressions are restored.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

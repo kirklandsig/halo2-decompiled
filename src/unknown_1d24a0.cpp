@@ -735,6 +735,19 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // multiplies field_28 by the rate in source order at both uses in the second limit arm where ours loads the rate
 // first, the same side swap at the scale products of both limit arms, the flag pairs' store order, and the tail's
 // ECX/EDX roles. Body unchanged.
+// M3 lane 11 r165 (fast screen, single address; control 838 at 4255 B, aligned exact / register-masked 340 / 88).
+// Retail holds the list in EBX only from the loop head through the validity tests to the swap-remove (the body's
+// paths never reach the removal and reuse EBX as a call argument register) and materialises the element pointer in
+// ESI; this build ranks the list's data pointer 204 over the whole loop (EBX) and the index 144 (EDI). The operand
+// sort is what orders the limit products: the field_20 load ranks above the step parameter (the first symbol the
+// function references, so the lowest rank) and field_28 ties with the rate, where retail's orders need the step
+// ranked between the field_20 and field_28 loads; one to four dead locals leave those load ranks alone. Forms: the
+// first arm's product written `field_20 * arg_1` 838 (same code); the step named once in the loop body for the three
+// limit products 838 (same code, the copy is folded before the sort); the tick rate named once in the second limit
+// arm for its two products 839 (4254 B: both products then load in retail's order, aligned 358 / 84); the second arm's
+// step limit named once 858 (4236 B); the tick rate named in both limit arms 828 (4268 B, aligned 365 / 88: positional
+// only, the length moves from 4 short to 9 long, and retail multiplies by the rate from memory at each use, so not
+// kept). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
