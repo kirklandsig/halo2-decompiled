@@ -1068,6 +1068,9 @@ void function_245400(s_source_245400 const *source, long index,
 // each). Body unchanged.
 // Shared matrix-axes rotation in place, selected scaled input, assigned input, or initialized input and scaler return 266/276/245/179.
 // The same four rotations with edge formation after plane decoding 246/266/236/217. NOT kept: even the 0x2c forms grow past retail's extent.
+// One copied normal with direct/staged cross, first or second 248/241 each.
+// In-place staged cross initialized on admission 236/233 or at decoding 221/218.
+// NOT kept: all increase the score and grow past 783 bytes. The frame and separate side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

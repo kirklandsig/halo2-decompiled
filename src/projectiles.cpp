@@ -2049,6 +2049,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // and datum views at 280 plain (1211 B). The seat tests now shift and test both
 // bits separately, with the original calls and stores. The slot and tag homes
 // still differ where retail expands the speed update.
+// Early owner/type/weapon-and-seat rejection in all seven subsets, plus separate weapon and seat guards, all 342.
+// NOT kept: the 1227-byte forms raise the score and keep the pool in EBP. The speed update stays out of line.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -3412,6 +3414,9 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // with short material 1166. Existing material class throughout 1213. NOT kept:
 // the extra primary-default change gains one beyond the short material, and the
 // other forms regress. Frame and definition homes still differ.
+// Component setter for input/fallback/both/marker/input and marker/fallback and marker/all 1153/1145/1131/1132/1152/1144/1160.
+// All three fixed-size copies 1146. One reinitialized damage record scoped to the damage and selector phase 1146.
+// NOT kept: the two best forms change retail's integer copy shape and keep the 0x21c frame. The scoped record leaves the comparison unchanged.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)
