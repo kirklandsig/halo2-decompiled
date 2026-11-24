@@ -9709,7 +9709,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0028d9d0,126,game,speed,a16 pad,,,000baeb0,src/swarm.cpp,matched
 0028da50,93,game,speed,a16 pad,,,,src/swarm.cpp,matched
 0028dab0,287,game,speed,a16 pad,,,0016b840 001e4990 0028dbd0 0028e200,src/unknown_28dab0.cpp,matched
-0028dbd0,1209,game,speed,a16 pad,,,000b7930 000b7b40 000b8540 00141ce0 001e06b0 002104b0 0028da50 0028e320 0028f890,src/unknown_28dbd0.cpp,todo
+0028dbd0,1209,game,speed,a16 pad,,,000b7930 000b7b40 000b8540 00141ce0 001e06b0 002104b0 0028da50 0028e320 0028f890,src/unknown_28dbd0.cpp,matched
 0028e090,200,game,speed,a16 pad,,,0028e160,src/swarm.cpp,matched
 0028e160,157,game,speed,a16 pad,,,,src/swarm.cpp,matched
 0028e200,166,game,speed,a16 pad,,,0016ba40 0028e390,src/swarm.cpp,matched
