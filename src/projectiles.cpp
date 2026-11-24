@@ -2928,6 +2928,11 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // reference, formed at entry, before the motion loop or inside it: 1048 each.
 // Loop pointer with iteration-local collision record 1049, with endpoint at its
 // producer 1048. NOT kept: the frame remains 0x114 and each body is shorter.
+// Player-hit result accumulated by call-first logical OR 976 or bitwise OR 1029.
+// Separate sweep outcome with conditional store or logical OR 967/1036, hit mask
+// 1021, hit count 1033, complemented miss state with conditional store or call-first
+// AND 1030/976. NOT kept: the 976 forms add a reload and extra stores, the 967
+// form adds sweep initialization and a tail copy, and all retain the 0x114 frame.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {

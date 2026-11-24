@@ -7184,6 +7184,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // selection, driver tilt or bank with in-place product 1052/1086/1051/1041.
 // With separate scoped relative product 1139/1173/1155/1073. NOT kept:
 // the separate product reaches 0xdc but shortens the body and raises the score.
+// With independent relative output and Boolean boost, round delay before lookup 1206,
+// scale delay before lookup 1144, stage scale and rounding before lookup 1206,
+// rounded value at the test 1126, signed tick rate before lookup 1126, signed tick rate
+// and rounded delay before lookup 1206, elapsed byte 1196, elapsed byte and early delay
+// 1206. NOT kept: the 0xdc frame falls four bytes short of the required reduction,
+// the vehicle index and displacement still differ and every form shortens the body.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
