@@ -273,6 +273,45 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // byte cast of its address 216 and its false store so 216 (the address is seen through: update stays a candidate); on
 // update-first, `bool sample;` declared right under update 218. Retail keeps the object in EBX from its lookup, stores
 // its home after the false store and reloads it only in the force arm; the two homes are force 0x10, object 0x14.
+// M3 lane 6 r228 (h2m fast with 0xd1850, MATCH; control 21): force started true and cleared under `initialized && valid`
+// with no hidden return inside 49 (830 B); the object read by raw header arithmetic 21 (same code); the update-time test
+// right after the hidden return 240; update declared ahead of force with the not-force arm first in braces (hidden
+// return) and `else update = true;` 218; force ahead of the object lookup with update elapsed after the clamp 236.
+// M3 lane 11 r154 (h2m fast with 0xd1850, MATCH; control 21, update-first 218, update right after the zero return 216):
+// redundant paren pairs (1-3 around the blend products, or 1-3 around the two elapsed subtractions and the object index
+// mask) on all three forms 21 / 218 / 216 each (the integer ties ignore the paren phase); a folded-looking `elapsed > 0`
+// guard (not folded) on the threshold chain, the force block, the update-time test, or both of the first two: kept order
+// 223 / 234 / 200 / 242, update-first 205 / 207 / 205 / 212; the cache lookup through a file-local inline or forceinline
+// getter 21 / 21, a game-tick getter at the three reads 21, both 21, the same on update-first 218 each (same code); the
+// stationary test as a file-local inline or forceinline helper (flag form or early-return form) 195 (831 B), on
+// update-first 202; update-first with the force arm storing `update = force` 163.
+// M3 lane 3 r298 (h2m fast with 0xd1850, MATCH; control 21): the elapsed clamp moved inside the sample-time NONE test
+// (its only reader) 31; that with `bool update = false;` ahead of force 226; the update-time test moved into the
+// not-force arm after the hidden return 242 (first +0x0); the blend clamp through the existing PIN_126660 macro 196 (882 B:
+// the product is evaluated per use); a redundant `else update = false;` after the hidden return 222.
+// M3 lane 12 r178 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21, update right after the zero-elapsed return
+// re-measured 216: its entry block is retail's instruction for instruction, left are the two timestamps and the late
+// object index in EDI/ESI for ESI/EDI and the missing force-arm reload). Reading of retail's force arm: the object has
+// a stack home and sits in EBX from its lookup to the hidden test; the force arm, which never reads it, loads EBX from
+// that home again for the uses after the join, so its register range is cut in that arm. Tried for that reload, all on
+// the after-return order unless noted: the stationary test's position through a fresh lookup 216, on the kept order 21
+// (both merge with the first lookup: same code); a second pointer declared after the force block from a fresh lookup
+// for the three later uses 216, on the kept order 21 (same code each); the object assigned from a fresh lookup in the
+// force arm ahead of `update = true` 155 (the arm then stores EBX to the object's home where retail loads from it,
+// the homes swap back to object 0x10 / force 0x14), after `update = true` 156; a second pointer set in both arms, from
+// a fresh lookup in the force arm and from the object after the hidden return 211, from a fresh lookup in both 211,
+// from the object in the force arm and a fresh lookup after the hidden return 211 (the object then takes ESI), that on
+// the kept order 235; `if (!force && hidden) return;` then `if (force) update = true;` 216, the two statements the
+// other way round 216, the hidden return nested under `if (!force)` then `if (force) update = true;` 216 (no reload).
+// M3 lane 6 r233 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21): `bool const force` 21; the object as a
+// `byte *const` 21 (same code each); the update-time subtraction written inside its test (no update-elapsed local) 259
+// (802 B: the subtraction moves to the test), the same with `bool update = false;` right after the zero-elapsed return
+// 263; that update-first order with the object `byte *const` 216 (the update-first code).
+// M3 lane 16 r182 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21): the update-time test as two ifs (NONE, then
+// `else if (update elapsed > 1)`) 21; the hidden test through a fresh element read of the header array 21; the header array
+// as a named `s_3dd10_object_header *` local 21; the sample time named (`dword`) for the elapsed time and the NONE test 21
+// (same code each); `else update = false;` as a third arm after the hidden return 222. Re-measured: update ahead of force
+// 218, the not-force arm first in braces 25, the object looked up ahead of update elapsed 215.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

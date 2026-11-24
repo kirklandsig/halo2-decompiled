@@ -47,7 +47,7 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
-// score 268 (was 298; r286 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
+// score 268 (was 298; r286 and r239 unchanged): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
 // MiniMax G (11-20): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is expanded here but called out of line in retail, so the optional-state homes stay four bytes off.
 // MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
 // expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
@@ -509,6 +509,27 @@ const dword g_455978[81] = {
 // end's operand orders. On it: the upper bounds written `local_4 + arg_3->x` (all three) 277; the reciprocal and the
 // radial term after the zero test, written `local_17 * 0.0f`, 277 (same code each). The keepable route for the helper
 // is moving 0x1d01c0's helper into a header both files include. Body unchanged.
+// M3 lane 4 r253 (h2m fast with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the cluster result and the break
+// as `if (arg_5->cluster_index != NONE) { local_0 = true; break; }` 485 (2076 B); the planar test as `0.0f < arg_6` 268; the
+// transform's three rotation rows through the existing vector3f_assign 268; the reciprocal and radial term after the zero
+// test 268; the direction counter declared ahead of its loop 268 (all the same code). Reading: retail's jcc/call skeleton
+// from the loop head to the 0x11bed0 call is ours test for test, so the expansion is not the site's written tests; the
+// lane 15 r126 diagnostic (0x279740 inlinable makes 0x11bed0 a call while both releases expand) points at a per-function
+// link-time inline budget that retail's first-release expansion used up. Body unchanged; still BLOCKED-BY 0x11bed0's
+// expansion here.
+// M3 lane 5 r239 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the direction loop as
+// `long local_13 = 0; do { ... } while (++local_13 < local_6);` 328 (2071 B: the first form without a redundant guard
+// that leaves 0x11bed0 a real call here, as retail has it; the layout is not retail's); the loop test as `local_13 !=
+// local_6` 268 (same code); the do-while with the first release through a file-local copy of 0x1d01c0's release helper
+// (diagnostic) 360 (2117 B); that copy alone 367 (2131 B); the count written into the loop condition, no local, 373
+// (2085 B). Body unchanged; still BLOCKED-BY 0x11bed0's expansion here.
+// M3 lane 12 r184 (h2m fast with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268). Retail: 0x11bed0 called in the
+// loop, the first release with 0x279740's pinned-range test expanded, the second release calling 0x279740 (17 calls; ours
+// 18). Diagnostics of the held route (`inline` on 0x279740's definition, restored at once): alone 427 (2177 B, both
+// releases expanded, 0x11bed0 still expanded); with the loop as a do-while on `++local_13 < local_6` 328 (2071 B, neither
+// release expanded; the do-while alone 328, same code); with the loop under `if (0 < local_6)` and its counter zeroed
+// ahead of it 331 (2057 B: retail's call skeleton, 0x11bed0 called, first release expanded, second called; entry
+// registers EBX/EDI swapped); that guard alone 373 (2011 B). BLOCKED-BY 0x279740 (/Ob1 file; needs the held `inline`).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

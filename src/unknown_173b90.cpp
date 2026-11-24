@@ -2073,7 +2073,7 @@ bool function_17afd0(long effect_index, long value);
 // P589: Original pool/salted-index/current-system identities, seven subsets then
 // cluster identity too: 47/47/47/47/47/47/47/47. NOT kept: no availability-clear/result
 // or later-view recovery; complete original body and observations restored.
-// MiniMax D (11-17): score 12 (was 47): the same_view flag is set true and cleared by one test, the availability is
+// MiniMax D (11-17): reached 12 (from 47): the same_view flag is set true and cleared by one test, the availability is
 // MiniMax D (11-17): cleared and then set by the query's result, and the view global is read at each use instead of
 // MiniMax D (11-17): through a local; one byte store of the true value sits ahead of the query call, where retail
 // MiniMax D (11-17): stores it in the flag's set path.
@@ -2229,6 +2229,70 @@ bool function_17afd0(long effect_index, long value);
 // 138 (both promoted like a scalar: retail's memory-resident flag is not an aggregate's); `same_view = owner != NONE &&
 // g == owner ? available : false` 56; the true default at the loop body's top 51; the availability as a ternary initialiser
 // 96. All restored.
+// M3 lane 8 r224 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction after main's
+// availability, re-measured 138 at 510 B): P with same_view declared at function scope above the walk 138, with the
+// availability too 138, with camera_relative too 138 (all P's code: scope does not move same_view off BL); draw as
+// `same_view ? view_pass : !view_pass` 98 (510 B), on P 138 (514 B); the camera block's arms swapped under `if (!same_view)`
+// 43, on P 138. All restored.
+// M3 lane 13 r143 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the effect-index test named once as a
+// bool for the owner lookup and the attached test 128 (510 B), with the plain conjunction 157 (522 B); lane 8 r135's
+// attached-in-both-arms form re-measured 17 (498 B: retail's registers, but our cross-jump keeps the tail in the true
+// arm and the false arm jumps back into it, where retail's true arm jumps forward into the false arm's copy); that form
+// with the availability repeated in the true arm (the two arms' attached identical) 17 (same code); with the false value
+// as the declaration's initialiser and only the true arm storing 113 (502 B); with attached false by default and the
+// else arm's set under `if (available)` 121 (506 B). All restored.
+// M3 lane 6 r232 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): with the availability computed first, same_view
+// as `owner != NONE && g == owner` cleared when unavailable 135 (508 B); a false same_view set true and cleared under the owner
+// tests 149 (519 B); main's same_view statements after the availability 141 (513 B), with the clear as an `else if` 149; same_view
+// declared first without an initialiser and set true after the availability 141, set by if/else there 138 (510 B); main's
+// initialiser plus a second true store after the availability 141, a false initialiser with it 141. Each puts same_view in BL and
+// the availability in memory (retail the other way round). Restored.
+// M3 lane 11 r155 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction, 138 at 510 B;
+// L = no default, the owner/view arm storing true then clearing it when unavailable, its else false, 148 at 518 B): the
+// pool global read at each use (no `systems` local) on this body 12 (same code), on P 138, on L 148; on L the owner lookup
+// moved after the availability 125 (500 B), the availability as a ternary initialiser 130 (506 B); P with a dead `false`
+// or `true` initialiser on same_view at its declaration ahead of the availability 138 / 138 (P's code: the dead store goes
+// before allocation, so it does not lengthen same_view's range). All restored.
+// M3 lane 3 r300 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12): the availability declared ahead of
+// same_view 12 (same code); the view test `owner != g_4b9ed8` 12 (same code); the availability test `!function_155760(...)`
+// 12 (same code); `view_pass == same_view` 13; the attached flag false then set by an `if` on the conjunction 133 (510 B).
+// Restored.
+// M3 lane 16 r182 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12, P re-measured 138 at 510 B): P with a
+// redundant `available &&` on the else arm's attached test 149 (518 B). Diagnostics (match-only steering, reverted): P with
+// one fewer same_view read (the camera test as `draw == view_pass`) 121 (502 B), the 0x174420 argument replaced 126: either
+// flips the BL contest (availability BL, same_view in its stack byte with retail's exact `test bl; mov [x], 1; jne` and
+// `mov [x], 0` blocks), so same_view's read count is what gives it BL in P; left there are NONE in EBX with the pool data
+// in EBP and the owner in EDI (`mov edi, ebx`), where retail has the data in EBX and NONE coalesced with the owner in EBP.
+// On that diagnostic: the owner NONE-defaulted 122, as a ternary 121, NONE-defaulted above the effect index 125, the
+// draw compare `view_pass == same_view` 121.
+// M3 lane 16 r183 (h2m fast with 0x174420, MATCH each run; control 12, P re-measured 138): draw set in each arm
+// (`view_pass` in the same_view arm, `!view_pass` in the other, one fewer same_view read) on P 128 (508 B), on this body 90
+// (504 B); the else arm as `draw = !view_pass && !(attached && mode == 2)` on P 124 (505 B), on this body 88 (501 B);
+// `bool same_view = owner != NONE && g == owner;` ahead of the availability, cleared by `if (!available)` 147 (473 B), or
+// in the availability's else arm 147 (473 B). All restored.
+// M3 lane 4 r257 (h2m fast with 0x174420/0x1751d0, MATCH each run; control 12; P = the plain conjunction, 138 at 510 B).
+// Measured ranking on P (the allocator colours by weight, heaviest first, ties to the value created later): the view
+// 28, same_view 24, availability 22, owner 22, effect index 18. same_view takes EBX ahead of the availability, and the
+// owner takes EDI ahead of the effect index, which is then left EBP. Diagnostic (forced ranking, not source): P with
+// same_view ranked below the availability and the owner below the effect index is retail byte for byte, so P is
+// retail's source shape and exactly two rank pairs differ: same_view needs 4 less (or the availability 4 more) and
+// the effect index 6 more than the owner (one more reference to it, or one more value referenced in the block that
+// loads and tests it). Forms that give the first pair naturally, 121 at 502 B each (same_view's two store blocks
+// retail's, availability BL, only NONE EBX / pool data EBP / owner EDI / effect index EBP left; forcing the owner
+// below the effect index on them matches): attached as `available ? effect_index != NONE && call : false`; as an
+// if/else on `available` with a false else arm, either arm first; as `bool attached = available; if (attached)
+// attached = effect_index != NONE && call;`. On the conditional-expression form: the owner NONE-defaulted then set
+// 122 (500 B), the owner as one conditional expression 121, the owner's arms swapped under `== NONE` 125, the
+// effect index read after the second definition call 123. On P: attached false by default and set by one `if` 146
+// (518 B); attached as an if/else of constants 138; the availability as nested ifs 138; the camera flag declared
+// ahead of same_view 138; same_view as an if/else of constants 138; the camera flag declared ahead of the draw
+// compare 138; attached with its last two terms in parentheses 138; attached as nested conditional expressions 129
+// (505 B), as `available && effect_index != NONE ? call : false` 129, as nested ifs under a false default 125
+// (503 B), as `(available ? effect_index != NONE : false) && call` 149 (507 B). Lane 8 r135's both-arms form
+// re-measured 17 at 498 B with either arm first: its second copy of the effect test and call is what lifts the
+// effect index above the owner there; its tail stays in the true arm where retail's sits after the false arm. On P,
+// attached as `(same_view || available) && effect_index != NONE && call` 125 (504 B), on this body 12 (same code);
+// attached as `same_view ? effect test and call : available && effect test and call` on P 91 (500 B). Restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

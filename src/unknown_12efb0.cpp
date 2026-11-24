@@ -143,7 +143,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
 // zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
 // in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
-// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// score 607 (was 607; m3 lane 13 r149 unchanged, its lines just above the marker): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
 // Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
 // EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
@@ -945,12 +945,67 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Captured palette byte with short in the arm 750; short/long fresh lookup 728/619; early byte admission 748.
 // Cached previous index with short or explicit null and long 726/618; original capture with short/long lookup 729/620.
 // NOT kept: The long lookup forms recover the CL byte load, but spill that byte, keep NONE in EDX and raise the score. The four callee controls remain matched.
+// M3 lane 4 r247 (fast): the publication helper's weight named as the merge helper names it 607, weight and intensity named
+// 607, intensity named 607 (all the same code: weight and intensity keep XMM2/XMM1 where retail has XMM1/XMM2); the
+// three-scalar accumulation helper in statement orders r g b i d h w m 718 (3838 B), r h g w b i d m (retail's store
+// order) 718, w r g b i d h m 718, r g b w m i d h 607. Body unchanged.
 // M3 lane 3 r294 (h2m fast with 0x12e5e0/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): on the palette
 // byte read at each use (re-measured 666, 3827 B: retail's CL byte, one widening and EBX record, but NONE in EDX and the
 // 0x130f60 result kept in EAX, so the field_f0 store's EDX ends the NONE register and the +0xd4 tag test compares an
 // immediate): NONE written first in the +0xd4 test 666, in the tag-arm test 666, in the previous-index test 666, in all
 // four tests with the byte test too 666 (same code each: operand order canonicalises); the source index reset stored
 // first 665. Retail keeps NONE in EAX through the palette arm to that tag test (loaded into EDI), the result in EDX.
+// M3 lane 7 r216 (H2M_FAST with 0x130f60, 0x131030 and 0x1317a0, MATCH each run; control 607 at 3832 B): the palette
+// byte read at each use re-measured 666 (3827 B: retail's CL byte and EBX record, but NONE in EDX and the 0x130f60
+// result kept in EAX where retail moves it to EDX and keeps NONE in EAX); the 0x130f60 result declared ahead of the out
+// index and assigned at the call 607 (same code), on the per-use byte 666; the cluster pointer typed `byte const *` 607,
+// on the per-use byte 666; on the per-use byte, every read through a file-local forceinline byte accessor 664 (3825 B),
+// the first test only 666. Body unchanged.
+// M3 lane 11 r153 (H2M_FAST with 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607, aligned 487, masked 232): the
+// found flag declared ahead of the 0x130f60 call 608 (aligned 493); the out index declared ahead of the cluster record
+// pointer 607; the palette bound test as `0 <= slot` 607; the loop bound as `count > index` 607; `NONE != slot` 607 (the
+// last four the same code). Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607, aligned 487,
+// registers masked 275): lane 15 r102's lead re-measured 599 (3818 B); with the tag arm's radius clamp read from the
+// field at each test (retail re-reads `[esi + 0x44]` there) 602 (3821 B); the scalar accumulate helper's weight and
+// remaining updates after its six channels 718 (3838 B, aligned 466); the merge helper's after its weighted block 705
+// (3841 B, aligned 367); both 732 (3847 B, aligned 346, masked 192); the `char` slot re-measured 700. Body unchanged.
+// M3 lane 13 r149 (H2M_FAST with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607). Retail's three
+// publications through function_12efb4 are strict load-multiply-store in field order (as the directly written field_4c
+// block is in both builds); ours hoists the intensity product whose operand the test already loaded. In the helper: the
+// intensity product written `local_0 * arg_0->intensity` 607, the weight and intensity read once into named locals 607,
+// the destination taken as `real (&)[6]` 607, both parameters as references 607 (all identical code). Diagnostic (the
+// helper's body written out at its three sites, reverted): 701 (3843 B), the three publications in retail's order
+// (aligned groups 123 -> 106) but an earlier mulss operand swapped. Body unchanged.
+// M3 lane 4 r256 (H2M_FAST with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH each run; control 607 at 3832 B,
+// aligned 354, masked 147; body unchanged). Asked whether the top cause (the 0x130f60 result moved to EDX with NONE in
+// EAX) is a tie that follows the number of locals, as operand ties elsewhere do. It is not: 1 to 8 unused initialised
+// longs at the top (diagnostic) on this body 607, 606, 606, 606, 608, 608, 607, 607, and on the palette byte read at each
+// use (re-measured 666 at 3827 B) 666, 666, 664, 664, 665, 667, 667 for 1 to 7; the instructions after the call are the
+// same in every one (result in EAX, NONE in ECX here and in EDX on the per-use byte). On the per-use byte: the result
+// declared first with a NONE initialiser and assigned at the call (two definitions) 666 (same code); the result in a
+// second named local for the tests with the first kept for the lookup and the 0x131030 argument 666 (same code, on this
+// body 607: the copy folds, no `mov edx, eax`); the result declared without an initialiser and assigned after the
+// handled flag 668; the handled flag declared ahead of the out index 669.
+// M3 lane 8 r232 (h2m fast with 0x130f60, 0x1317a0 and 0x12eb00, all MATCH each run; control 607 at 3832 B, aligned 487,
+// register/stack-masked 220; body unchanged). Frame reading: this frame's homes are sorted by references x 1000 / size
+// with an unstable order among equal densities, so any form that adds or drops one home moves the clears and the
+// accumulator homes together (the +0x2e first differences below) and the positional count cannot fall before the home
+// count is retail's. Retail's own listing re-reads the palette byte for the source-index store (`movsx edx, byte ptr [esi +
+// 0x6f]` after the accumulator calls), compares it as a byte at the top and sign-extends it once ahead of the previous-index
+// branch for a lookup shaped like the listed getter. Forms: a char slot local 700 (re-measure); the char local with a named
+// long index for the bounds and the entry 751 (3842 B, first +0x2e, masked 228), that index also for the source-index store
+// 751, with the NULL inside the lookup arm 751 / 751 (same code each); the short local with the long index 797 (3862 B); the
+// char local with a file-local inline lookup taking a long index (NULL first, the global and the bounds inside) 689 at
+// retail's 3817 B (masked 219: slot BL, NONE EDX, result EAX, record ESI), the same as one conditional expression 689; the
+// short local with that lookup 604 (3822 B, re-measure of the listed 604); the byte read at each use with that lookup 600 at
+// 3817 B (masked 228; slot CL as retail, NONE EDX for retail's EAX, record EDI for retail's EBX, the sign extension inside
+// the lookup arm), with a named cluster index for the lookup and the three `== arg_0` tests 600 (masked 220, the listed
+// form); the byte at each use with a long index local and no lookup function 666 (3827 B, masked 217; re-measure). None
+// kept: the lookup is a new one-caller helper (match-only) and 600 is 7 under the control. Diagnostic, reverted at once: an
+// undefined stand-in for 0x130f60 on the 600 form keeps the cluster index in a callee-saved register across the call
+// (EBX, retail EDI; 747 at 3855 B because the stand-in takes the standard convention), so retail's index in EDI is what a
+// call without a memory summary gives, as the earlier "the build knows 0x130f60 writes nothing" line says.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

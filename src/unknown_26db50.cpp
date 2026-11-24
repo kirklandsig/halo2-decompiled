@@ -8,6 +8,7 @@
 #include "data_array.h"
 #include "unknown_2626b0.h"
 #include "object_markers.h"
+#include "axis_rotation.h"
 
 /* Location records share one owner and type, with a bitmap of active entries. */
 struct s_location_record_view
@@ -450,7 +451,6 @@ struct s_record_collision_view
 	byte field_14[0x5c - 0x14];
 };
 
-void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
 // score 26 (was 26; 45 before, 71 earlier): the 0xd8 frame and 1089-byte length agree. Left: inside the rotation the
 // dot sums (k + i) + j where retail sums (j + i) + k (so the direction's j and k are stored and reloaded in the other
@@ -459,7 +459,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Earlier head (at 45, was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier score history (71 before).
 // Earlier 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
-// Earlier score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier head at 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
@@ -1230,6 +1230,47 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // unread-parameter form) and a plain local for it 164 (1058 B: the unread store is dropped, so retail's store is not an
 // inlined parameter's); a `vector3f const *up` local for the 0.5 lift loop only 26 (same code); the angle, sine and cosine
 // in their own block 26 (same code); M with that lift-only pointer 20 (M's code). All restored.
+// M3 lane 8 r224 (h2m fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each run; control 26): lane 12 r164's axis-helper lead
+// (include/axis_rotation.h, M, offset x,z,y) re-measured 8. With the collision record and its marker store moved ahead of the entry
+// pointer (between the endpoint and the lift) the offset x,y,z 20 / x,z,y 6, the same with rotate_direction (no helper swap)
+// 20 / 6; world, collision, entry 20 / 6; collision ahead of the endpoint 20; after the lift 26. At 6 the only rows left are the
+// offset's own y/z stores: retail's dot follows the offset's store order (z stored before y), not where the z value is computed
+// (a one-use z local ahead of the y store, or collision z read first, 20; main 26). Main with only the offset stored x,z,y 12.
+// On the collision-first x,y,z form, redundant pairs on the lift, angle, offset or distance product cycle 71/179/39,
+// 41/181/73, 39/179/71, 39/179/71; the lift as three `+=` statements, six orders, 179/71/179/179/187/187 (1082-1088 B); the
+// lift loop counting down 42 (main 44; with x,z,y 28); the offset through real_point3d_set 20 (main 26); a separate point
+// local for the 0x14a280 probe 55 (main 58, frame grows); on the collision-first form the endpoint as three statements in
+// the six orders 39/168/149/152/167/152 (xyz first; the others 1092-1095 B). All restored.
+// M3 lane 13 r143 (h2m fast with 0x1ecf50/0x26d100, both MATCH each run; control 26): `direction` declared at function
+// scope and assigned in the spoke body 26; the trace result declared at function scope 26; the direction copied through
+// a `vector3f const *` source local 26; `sine` and `cosine` declared at function scope 26 (all the same code); the sector
+// index read ahead of the radius 50 (the head reorders). All restored.
+// M3 lane 11 r155 (h2m fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each run; control 26; M = the collision record,
+// its marker store and the entry pointer between the endpoint and the lift, re-measured 20, with the offset x, z, y 6): the
+// entry's direction pair stored j then i 30, on M 24 (a later store pair does not rank the dot); the 0.1 offset as a
+// component loop counting down (z, y, x) 51, on M 45; on M the offset through real_point3d_set with the lift loop counting
+// down 42; no origin pointer (the record's point read at the trace call and in the endpoint) 28, on M 22, on M with the
+// offset x, z, y 8; that with the offset through real_point3d_set 28, on M 22. All restored.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the rotation through include/axis_rotation.h's helper in place of rotate_direction 26 (same code; plain
+// check agrees). KEPT as the shared spelling.
+// M3 lane 15 r136 (h2m fast; control 26; 0x2551f0/0x1ff360 MATCH, 0x1e5bb0 111 at control): in the shared axis helper
+// the projection's dot as dot_product2d of the planar parts plus the k term 26 (0x1e5bb0 114); the dot written j, i, k
+// 26 (same code everywhere); the helper naming the vector's j in place of its k 26 (0x2551f0 116, 0x1ff360 96, 0x1e5bb0
+// 118: this body's dot order does not follow which component the helper names); the unread pathfinding pointer and the
+// collision buffer as one local aggregate (0x26bfa0's request form, no volatile) 131 (1093 B, frame moves); the trace
+// origin pointer declared at the top of the spoke body 26 (same code). All restored.
+// M3 lane 11 r159 (h2m fast with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each run; control 26; M re-measured 20, M with the
+// offset x, z, y 6, where only the offset's y/z stores are left): on M, the endpoint with no trace-distance local 148
+// (1085 B); the 0.1 offset as a copy of the collision point then three `+=` 146 (1113 B), then a component loop 161 (1113
+// B); the 0.5 lift loop counting down 42; the lift as `+=` statements z, y, x 187 (1088 B). Diagnostics on M: one to three
+// redundant parenthesis pairs around the integer sector test 20 each, one to three dead `long` locals ahead of the sector
+// probe 20 each (the dot order does not follow integer-expression or symbol counts, only the float trees' order). All
+// restored.
+// M3 lane 16 r182 (h2m fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26): operand orders, each over all three
+// rows: the 0.1 offset as `collision.point.x + g_4687b0->i * 0.1f` 26, as `0.1f * g_4687b0->i + ...` 26; the lift product as
+// `0.5f * g_4687b0->n[component]` 26; the endpoint as `origin->x + direction.i * trace_distance` 26 (all the same code: the
+// dot order follows statement order, not operand order); the rotation's axis through a named `vector3f const *` local 42; the
+// direction copied member by member through a `vector3f const *` source local 232 (1081 B). All restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -1249,7 +1290,7 @@ long function_26d570(long object_index)
 				real angle = (real)spoke * 0.7853981852531433f + (real)ring * 0.39269909262657166f;
 				real sine = (real)sin(angle);
 				real cosine = (real)cos(angle);
-				rotate_direction(&direction, g_4687b0, sine, cosine);
+				function_x84d9e8(&direction, g_4687b0, sine, cosine);
 				s_record_pathfinding_view *structure = (s_record_pathfinding_view *)g_4e0348;
 				s_pathfinding_data *pathfinding = NULL;
 				if (structure->count > 0)

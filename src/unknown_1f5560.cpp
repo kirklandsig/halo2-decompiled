@@ -1910,6 +1910,41 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the forward test as `forward_minimum < forward` 198, the fraction test as `radius * 1.3f < forward` 198 (same code each);
 // the cosine clamp as `1.0f < cosine ? 1.0 : cosine` 226 (1176 B); the pathfinding getter passed straight to the trace call
 // 198 (same code). Radius still XMM4 for retail's XMM5. Body unchanged.
+// M3 lane 15 r137 (H2M_FAST with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B; retail's type-zero
+// not-left arm computes y then x and threads straight to the not-left offset, its left arm's y add is tail-merged with
+// the type-one arm's): the not-left type-zero arm y first 237; the left arm y first 242 (1163 B); both 237; the type-one
+// arm y first 233; not-left and type-one arms y first 244 (1164 B); the origin parameter read directly instead of
+// through its address 242 (1176 B, and matched 0x29a190 drops to 17). Radius still XMM4. Body unchanged.
+// M3 lane 7 r221 (h2m fast with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B, radius XMM4 for retail's
+// XMM5): values bound to const references so they stay apart: the radius read 307 (1156 B, first +0x4), the side test's
+// bool 249 (1184 B), the lateral offset 198, the forward minimum 198, the desired distance 198 (same code each). The XMM
+// numbering still follows the 0x210690/0x210770 call summaries (the held `inline` lead above). Body unchanged.
+// M3 lane 12 r182 (link-time lab, exact for the base: 0 rows against our listing, 4 s a variant; counts are lab
+// aligned / register-masked rows against retail, base 211 / 78; body unchanged). Dead-local phase scan K = 0..32
+// (diagnostic): 211 / 78 at every K but 2 and 3 (208 / 72), so the float order here is not a symbol-count state.
+// Single forms: the left arm y first 204 / 70; the not-left arm y first 193 / 79; the type-one arm y first 190 / 71;
+// the two adjustment adds y first 211 / 78 (same code); all four 207 / 74; the forward distance computed after the
+// forward minimum 205 / 64; the lateral sum x first, or the forward's origin sum y first 211 / 78 (same code each);
+// the negated radius named once for its four uses 184 / 63; the side adjustment written per arm without the planar
+// scale helper 213 / 43; the scale chosen by a conditional inside one helper call 211 / 113. A grid over all 128
+// combinations of seven of those (negated radius named, three arm orders, helper or per-arm adjustment, its add
+// order, late forward): best aligned 165 / 46 (not-left arm y first + per-arm adjustment, y first), best masked
+// 171 / 35 (left arm y first + per-arm adjustment). Left on the best forms: retail stores the lateral distance to
+// its home at once and keeps both center coordinates in registers (ours keeps the lateral in a register and spills
+// center.x), and after the type-one normalize retail loads both difference components and multiplies them by the
+// negated radius held in the zero register. The per-arm adjustment writes out an existing helper's body and the
+// arm orders are orders by score, so nothing is kept.
+// M3 lane 4 r257 (h2m fast with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B). Measured: operand order
+// here follows the reassociation rank (a named local or parameter ranks by its symbol number, an expression above
+// every leaf), so `difference.x * (0.0f - radius)` multiplies the negated radius by the loaded component where
+// retail loads the component and multiplies it by the negated radius: retail's negated radius ranks as a leaf below
+// `difference` in the type-one arm and above `perpendicular` in the type-zero arms. In the float colouring the
+// direction's x (weight 181, live to the cosine) takes XMM5 ahead of the radius (114), which is then left XMM4;
+// retail reloads the direction after the calls and gives the radius XMM5. No single forced allocator decision
+// comes near (16 tried: 194..273). Forms: the type-one centre through the existing planar_scale and two sums 244
+// (1181 B); the negated radius named once after the radius for all its uses 241 (1183 B); named in the type-one
+// arm ahead of `difference` 272 (1199 B), after the normalize 249 (1184 B); the type-one products written negated
+// radius first 198 (same code); its sums written product first 198 (same code). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

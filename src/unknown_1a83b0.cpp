@@ -799,6 +799,49 @@ s_1a8a10 g_4453c0[] =
 // declared at function scope 17, the facing copy declared ahead of the score array 17, the score array declared ahead of
 // the rotated point 17 (the three the same code); the negated j named ahead of the first switch 48 (its load stays ahead
 // of the dispatch). All restored.
+// M3 lane 3 r296 (H2M_FAST with 0x1a8c30, MATCH; control 17): on the copy's j assigned between the sums (17, re-measured:
+// the folded j reload is retail's, forward's j load stays late): the identifier, index, score initialisation order 15;
+// stores [3], [1], [2], [0] 19, with the initialisation order 17; forward terms j*y first, left terms i*y first, both 17
+// each (same code). The left sum reading the actor's i (the copy's i assigned first, its j between the sums) 27, with
+// left terms i*y first 27, with the copy's j assigned before the sums 29, with stores [3], [1], [2], [0] 29, with the
+// initialisation order 25. All restored.
+// M3 lane 13 r144 (h2m fast with 0x1a8c30, MATCH; control 17): the rotated point and the value array as one local
+// aggregate (retail's homes 0x10..0x24 are contiguous; a test of whether an escaped point store splits the j reads) 27
+// (float block unchanged, j still shared, homes move); that with y carried in a scalar through the switch and stored to
+// the point after the facing copy 88 (the y store sinks); the forward sum's i read from the actor in place 38 (left is
+// then computed first, but i loads twice and j once); the value array by an initializer list after the sums 18 (same
+// float block); left from the copy with the negated copy j, forward read in place, 118 (548 B). All restored.
+// M3 lane 1 r156 (h2m fast with 0x1a8c30, MATCH; control 17): statements placed between the facing copy and the left
+// sum to split the two j reads: the table pointer 17, the identifier and index initialisations 17, the identifier and
+// the table pointer with the index and score after the sums 15 (the listed identifier, index, score order: tail only,
+// float block unchanged, j still shared); the copy read through a planar `vector2f const *` view with the negation from
+// the actor 17; the negated j named right after the copy 17 (all the 17s the same code).
+// M3 lane 1 r158 (h2m fast with 0x1a8c30, MATCH; control 17): the facing copy as a two-element real array 17; both
+// sums `real const` 17; every product written point first (`x * (0 - j) + y * i`, `x * i + y * j`) 17 (same code);
+// on the copy's j assigned between the sums, products point first 17 and only the forward's point first 17 (both the
+// j reload as retail, but the left product still multiplies a copy of i while retail multiplies i in place and copies
+// it for the forward product, and forward's j load stays after the left sum).
+// M3 lane 8 r226 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH each time; control 17; reference-bound
+// locals, which kept a two-step sum apart in 0x211cc0): the facing copy stored through a `vector2f &` bound to it 17
+// (same code); the negated j built through a reference (`minus_j = 0.0f; minus_j -= actor j;`) with the left sum
+// written either way round 17/17 (same code: the binding is folded and j is still read once); the left sum
+// accumulated through a reference (`left = i * y; left += (0 - actor j) * x;`) 84 (first difference +0x75, the xmm
+// numbering moves); the left sum built in three steps through it (`left = 0 - actor j; left *= x; left += i * y;`) 37
+// (the zero then stays out of XMM1 and the [1] store moves up). j is read once in all five. All restored.
+// M3 lane 1 r161 (h2m fast with 0x1a8c30, MATCH each time; control 17): the facing copy declared at the function's top
+// 17; the value array declared at the function's top 17; the result flag declared after the path-trace locals 17; the
+// table pointer initialised ahead of the sums 17; the facing copy typed as the facing's own 3D vector (only i and j set)
+// 17 (all the same code: j read once). Body unchanged.
+// M3 lane 15 r140 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17): the left sum read in
+// place from the actor (`i * y + (0 - j) * x`) with the forward sum from the copy 29; the left sum in two statements
+// (`i * y`, then `+= (0 - j) * x`) 17, with the negated term first 17, both sums so 17 (the split is folded: same code);
+// the forward sum in two statements (`i * x`, then `+= j * y`) 38. Body unchanged.
+// M3 lane 13 r152 (h2m fast with 0x1a8c30, MATCH unless noted; control 17): forced allocator decisions (picks, priorities,
+// cuts, reload flags, costs and the call alias sets, 77 of them) never give the second j load, so retail's reload is decided
+// before registers are chosen. Forms: the first switch without its `default: __assume(0);` 163 (560 B: a range check comes
+// back); its case 3 also the default 141 (540 B); the input point copied into a local and the first switch reading it 129
+// (548 B); the first switch's cases written 3, 2, 1, 0 79; `return` of the 0x1f57f0 result in place and `return false` at
+// the end with no result local 216 (584 B; 0x1a8c30 49).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

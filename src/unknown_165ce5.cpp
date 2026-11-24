@@ -1379,8 +1379,10 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
-// score 188 (was 188): frame 0x30 versus 0x2c (the look values have retail's homes and divisions since 11-18); the unit and
-// mode homes, the weapon-active and zoom homes, the active preset, the movzx flag test and the ESI/EDI save placement remain.
+// score 172 (was 188): the 0x2c frame and the ESI/EDI saves after the unit test are retail's since m3 lane 8 r232 (its
+// lines are just above the marker); the unit and mode homes, the weapon-active and zoom homes, the active preset and the
+// movzx flag test remain. Before that: frame 0x30 versus 0x2c (the look values have retail's homes and divisions since
+// 11-18), the same homes, and the ESI/EDI save placement.
 // Earlier first line (220, was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // frame 0x30 versus 0x2c, exchanged unit and
 // mode homes and earlier ESI/EDI saves. Both look divisions and output homes agree.
@@ -2073,6 +2075,82 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // tests spelled `== 0` / `!= false` 188 (same code each). Re-measured by mistake: zoom computed at its declaration ahead
 // of the update call 388 (listed). From the look values to the weapon loop the rows now differ only in the unit and mode
 // slot numbers. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 8 r223 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `mode` declared ahead of `unit`
+// and assigned in place 188; `zoom` declared at the function's top 188; `active` declared at the function's top 188;
+// the channel frame declared at its assignment 188; the orientation index written `user_index * 2 + weapon` 188 (same
+// code each). Retail's -0x1c slot is shared by the unit, the zoom and two later spills, ours by the unit and the active
+// byte. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 12 r176 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): our 0x30 frame never
+// touches its lowest cell (both builds use -0x2c..-0x4), so the extra four bytes are an unused home; the active byte declared at
+// function scope 188, zoom at function scope 188, the two zoom flags at function scope 188, the weapon-slot index declared in
+// the for statement 188, the active byte declared at its assignment 188 (same code each: scopes move no home). Still BLOCKED
+// by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// M3 lane 6 r231 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 85): the zoom block in
+// retail's positive sense as read from its listing (zoomed = zoom > 0.1, scoped = zoomed && the 0xc8a10 query, both cleared on
+// 0xd03b0, scoped cleared when the overlay is missing, rate `zoomed && !scoped` pinned else `scoped` 1.0, clear on `!zoomed &&
+// !scoped || scoped && current != set || !scoped && current == set`, play and save per arm with constant arguments) with a
+// plain `else` 364 (2191 B, aligned 36); with retail's `else if (zoomed)` (implied test, match-only) 371 (2197 B, aligned 31,
+// masked 28); positive sense with the shared flags/set play 381 (2193 B); the else-if form with the channel's current set read
+// once into a named local for both compares 376 (2193 B, aligned 30: retail's hoisted `mov eax, [edi + 0xa0]`), the plain-else
+// form with it 379 (2187 B). The last six bytes are the active preset and the movzx channel-byte test (both match-only), the
+// rest the stand-in's ESI/EDI rows. Body unchanged.
+// M3 lane 7 r218 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): a named indices pointer for the
+// three indices uses 188 (same code); a named pointer to the +0x98 overlay channel at all ten uses 194 (2187 B), only in the
+// first overlay block (where retail holds it in ESI) 194 (2187 B); the zoomed arm's rate as one conditional expression 188
+// (same code); the overlay play's flags/set arms in the no-scope-first order 189. Still BLOCKED by the stand-in (round 98)
+// for the ESI/EDI saves. Body unchanged.
+// M3 lane 1 r161 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the scope overlay's index
+// tested on the call's returned value with no named local, in the `!no_scope` test 197 or nested under it 197 (frame
+// still 0x30: the named animation local is not the unused cell); the channel frame expression passed straight to
+// set_frame_position 335 (2189 B); the user flags read and set in place with no `flags` local 188 (same code); the idle
+// globals pointer read in place at its three uses 225 (2205 B). Frame 0x30 in all five. Still BLOCKED by the stand-in
+// (round 98) for the ESI/EDI saves. Body unchanged.
+// M3 lane 2 r144 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188, aligned 62): retail keeps the two
+// look values as separate scalars in their own cells at the frame's bottom (yaw alone at -0x2c, pitch at -0x28 shared
+// with a late temporary) where our scalars pack into the dead aiming springs' cells; tried to start their ranges
+// earlier: each look value assigned its quotient, then clamped in a second statement, as two scalars with every rate
+// read through g_510c54 224 (2193 B, frame 0x28, aligned 85), the same with the pitch and the look springs through the
+// frame reference 204 (frame 0x28, aligned 72), the same two statements on the kept pair 202 (frame 0x30, aligned 66);
+// two scalars with main's one-statement clamps and no reference re-measured 221 (2193 B, frame 0x28); the frame
+// reference bound at the top of the unit block for all four springs and both divisions 224 (2193 B, frame 0x30), bound
+// just ahead of the yaw clamp 219 (2193 B: the divisions share the reciprocal again); the reference to const 188 (same
+// code). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves. Body unchanged.
+// Round 114: Explicit clamps into the look members 188. Initializing the look pair from clamped scalars 196 (frame
+// 0x28). Named values for all four spring overrides 548, primary handle selected before its guard 526, primary slot
+// reused through the final test 188, overrides before mode lookup 574, one overlay set read for both clear tests 362,
+// and scope flag assigned from the overlay index 220. The unit and mode homes and the early saves still differ.
+// Unit/mode and activity/zoom homes still differ. Immutable mode 188, aiming vector reference 569, first
+// receiver before unit admission 188, nested handle admission 188, clear activity after failed queries 183,
+// nested animation success tests 188, retained clock for late updates 460, direct short overlay index 197.
+// NOT kept: the activity form improves by five at the opening length.
+// M3 lane 8 r232 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH each run; control 188). The padded frame and the
+// ESI/EDI saves at entry were never the build's extra caller: they are 8-byte stack parity, which this function kept
+// because its callee 0x11eed0 had a named double local (the same effect as noted at 0x11f0d0). Kept, in
+// src/unknown_11eed0.cpp: 0x11eed0's braking-speed product written at both uses with no double local (0x11eed0 still
+// MATCH) 172 at 2196 B: frame 0x2c, ESI and EDI pushed after the unit test and popped at the loop's exit, as retail; the
+// first difference is now +0x1e, the unit/mode homes. Forms of 0x11eed0 that still pad this frame (188): the product
+// through a forced-inline helper taking it as a double parameter, doubled inside or at the call, with the parameter const
+// and a const double sum; a diagnostic `real` product gives 172 here but breaks 0x11eed0. Diagnostic, reverted at once:
+// the look pair as two scalars plus one volatile cell, eleven cells, still reserved 0x30 on the old base, so the padding
+// never came from the look record. On the 172 base (fast): the zoom logic in retail's positive sense with the set read at
+// each use and a shared play 374 (2193 B), with a per-arm play under a plain else 357, under `else if (zoomed)` 364; with the
+// set read once ahead of the test and a shared play 379, a plain-else play 372; the active preset alone 338 (2200 B); the
+// callback as `== 0 ? right : left` alone 172 (same code); the channel byte in a long local tested bit by bit alone 368.
+// LEAD, match-only (build/r232/lead-0x166d75-17.patch): the active preset, that callback order, the channel byte local, the
+// positive zoom logic, the per-arm play under `else if (zoomed)` and the overlay set read once: 22 at retail's 2199 B, every
+// frame home retail's; with the set assigned inside the clear test after its first term, `!zoomed && !scoped || (set = ...,
+// scoped && set != ...) || !scoped && set == ...`, 17 (retail loads the set after the first term); without the callback
+// order 22 (the select's arms exchange); without the preset 363, without the byte local 331, with a plain-else play 244. On
+// the lead the set read at each use 268 (two memory compares), through a one-line inline accessor at each use 268, as a
+// ternary on `scoped` 278, as `scoped != (set == ...)` 270; the +0xb8 pointer initialised at the block's top 17 (same
+// code). Left at 17: the weapon's reload into EDI sits after the callback select where retail has it ahead of the object
+// lookup (retail's EDI range starts one block earlier, with no use of the weapon in that block), and the +0xb8 channel
+// pointer is in ECX across the 0xb6760 call where retail holds it in ESI (three rows). Diagnostic for the last: an
+// undefined stand-in for 0xb6760 at that one call gives ESI, so retail's call there had no register summary; `inline` on
+// 0xb6760's definition is the listed lane 7 form (it changes four other callers) and a second copy of it is barred.
+// M3 lane 8 r233 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; round 232's 17 lead rebuilt from its patch,
+// 17, the same four rows). On the lead: the channel pointer used for the play, frame and duration calls in the found
+// arm 60 (2192 B); no channel local, the +0xb8 field's address at the test and the clear 17 (same code). Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

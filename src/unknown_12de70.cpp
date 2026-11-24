@@ -798,6 +798,32 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // Forms: the time fix through the field 45 (tail retail's, pre-loop and scratch rotation shift); that with a group local
 // in the tail 45; the time fix as `physical_block->time--` 55; the loop's offset read through the physical block local
 // 87 (248 B); the tail's offset through the geometry block's own +0x1c field 27 (same code, the copy stays).
+// M3 lane 2 r137 (h2m fast with 0x12e210, which stays matched; control 27): the time fix as `*local_0 = *local_0 - 1;`
+// 57 and as `*local_0 -= 1;` 57 (first difference +0x23: the field is reloaded); the release address summed base first
+// 27, as one integer sum cast once (0x12e3a0's spelling) 27, base first with the loop reading the field at each use 27
+// (the three the same code).
+// M3 lane 14 r144 (h2m fast with 0x12e210, which stays matched; control 27, round 85's field-pointer form re-measured 14): the
+// release address as one integer sum cast at the call 27, as `(byte *)g_4e6494 + (offset << shift)` 27, that on the 14 form
+// 14; on the 14 form a new forced-inline release step taking (physical index, group) 14 (the arm's own load still comes
+// after the pool data and offset loads); the group or the linked test through a `const &` bound to the block local 27/27
+// (all the same code as their bases).
+// M3 lane 8 r227 (h2m fast with 0x12e210, which stays matched; control 27): a null test ahead of the arm's linked test
+// (`local_1 && local_1->runtime_linked`) 45 (269 B: the calls in the loop keep the test); a group pointer named from the
+// field ahead of the test, the test on the field and the release base named in the arm 27; the release base named ahead
+// of the linked test 27 (both the same code: the base's loads sink into the arm); the busy function's spelling (test on
+// the local, the group through a fresh `geometry_cache_block_get(block_index)->block`) 115 (293 B); 0x12de70's apply
+// spelling for the base (`physical_block_get(local_1->cache_block_index)`) 71.
+// M3 lane 4 r250 (h2m fast with 0x12e210, which stays matched; control 27, round 85's field-pointer form re-measured 14
+// at 266 B): the arm's block through a `s_geometry_block_info *const &` bound to the field before the loop 14 (the same
+// code as the field pointer, match-only); the field pointer declared inside the loop for the arm only 27; the loop's
+// block local declared `*const` 27; the linked test as `!= false` 27; the loop's block read through the cache-block
+// getter 114 (291 B).
+// M3 lane 13 r146 (h2m fast with 0x12e210, which stays matched; control 27): the release callee's two parameters declared
+// (base, group) at its definition, declaration and this call (retail sets the group register up first; diagnostic only, the
+// callee is a contributor's) 27 (the same code; the callee 0x223e00 and 0x12de70/0x223c70/0x223d80 stay matched); the time
+// fix through a `now` local read once, with the field pointer 27 (same code), with the field written at both uses and no
+// pointer 45; an identity forceinline pointer view (no code) around the arm's group argument 48 (272 B), around the arm's
+// linked test 48 (272 B).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

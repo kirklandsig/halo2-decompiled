@@ -960,6 +960,56 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // `continue` loop and `old | (word)present` 109 (378 B). Diagnostic (reverted at once): a compiler barrier after the
 // entry reads on the word mask with a plain present keeps the word spill, but present still takes EDI and the globals
 // pointer is re-read after the loop.
+// M3 lane 7 r215 (h2m fast with 0xb58c0/0x196780; control 23; about 95 forms screened first on the multi-object LTCG
+// harness, which reproduces this function): what decides the tail is how many reads each saved value has after the
+// loop. With a plain present and the word mask, present takes EDI for the whole function whenever the change block
+// reads it at full width; eleven spellings of the mask store (`old | (word)present`, present first, in place with or
+// without the cast, a word or dword named result, `present & 0xffff`) are one and the same code (384 B). Diagnostics,
+// restored at once: with the change block not reading present at all (`(word)(old_team_mask + 1)` stored) the frame,
+// the word entry, the globals in EBP and the loop are retail's (98, 380 B); with a third read of the word mask (in
+// the added-teams expression) the mask is reloaded once ahead of the first jne and the compare gets retail's
+// `movzx reg, cx` (112, 384 B, present still in EDI); the same third read with the volatile present folds the mask
+// into field re-reads. Forms: the mask compare through a two-argument inline predicate (dword teams, word mask) 85,
+// with the one-expression store 77, with the predicate's parameters the other way round 77 (the compare block then
+// loads the mask, then present, then compares registers, in retail's order, but the mask is still zero-extended from
+// memory); the predicate with a plain present and the one-expression store 63 (384 B); both saved masks word with a
+// plain present and the one-expression store 139 (368 B). Body unchanged.
+// M3 lane 15 r134 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23; on the one-use team-bit carrier, 20): the saved
+// mask read through a `word const &` bound to it at both post-loop uses 20 (same code); the update as one uncast store
+// `*team_mask = old_team_mask | present_teams;` 78; the dword local of the uncast OR 21; the mask compare first in the
+// change test 129 (374 B); the added teams computed after the playing store 20 (same code). Body unchanged.
+// M3 lane 5 r235 (h2m fast; control 23, aligned 17): the mask update as `old_team_mask |= present_teams;` then stored 77;
+// one store `*team_mask = old_team_mask | (word)present_teams;` 77; a word local of the uncast OR 77 (each 390 B: like
+// the uncast store, the OR then reloads the slot whole, but the compare still zero-extends it from memory and the loop
+// below loses its padding); only the first compare's operands swapped 24; only the second's 23 (same code). Body unchanged.
+// M3 lane 15 r136 (h2m fast with 0xb58c0/0x196780; control 23; all on the one-use team-bit carrier, 20, where only the
+// post-loop block differs): the engine looked up into a local ahead of the two field stores 20; the playing store
+// through the globals getter 20; index24's test and argument through the getter 20 (same code each); the old mask read
+// from `globals->team_mask` with the pointer kept for the store 131 (374 B); only the mask compare's operands swapped
+// (`old_team_mask != present_teams`) 20 (same code). Body unchanged.
+// M3 lane 6 r236 (h2m fast with 0xb58c0/0x196780; control 23): the present accumulator `volatile long` 23; a `word *` to
+// the playing field for its entry read and store (like the mask pointer) 23; the present update as `present_teams =
+// present_teams | (1 << team)` 23 (the three the same code); the field read in the present update and the team local in
+// the playing one 37 (383 B, the bits CSE); no volatile, the player loop in a forceinline collector taking both
+// accumulators by address 63 (384 B: scalar-replaced, the plain-present code). Body unchanged.
+// M3 lane 13 r151 (h2m fast with 0xb58c0/0x196780; control 23, the one-use team-bit carrier re-measured 20): the saved
+// mask read and stored through `globals->team_mask` with no field pointer 131 (374 B, field re-reads); the mask read
+// through the pointer and stored through the field 23 (same code); on the carrier the uncast update with present first
+// 78 and with the compare's operands swapped 78 (both the listed uncast store's code: a dword reload of the mask, but
+// only in the change block); on the carrier present read once into a local for the compare only 102 (393 B), with the
+// uncast update 78. Body unchanged.
+// M3 lane 1 r163 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23; re-measured: the one-use team-bit carrier 20,
+// the uncast store 77, the in-place `old_team_mask |= present_teams` 77, either with the carrier 78, a plain present 63
+// at 384 B). Reading of the allocator's ranking: after the loop the saved word mask has two references, the compare's
+// zero extension and the OR's source, and its post-loop piece is not coloured (no gain over reading the slot twice), so
+// both fold the slot into `movzx reg, word [slot]`; retail reloads it once into ECX in the block ahead of the first
+// branch and uses that register for the compare's `movzx eax, cx`, as the OR's destination and for the 16-bit store. The
+// playing piece (30) then takes the first free register, EAX, where retail has EDX behind the mask's ECX. With a plain
+// present the accumulator ranks 15 and takes EDI across the loop ahead of the pool pointer (11) and the globals pointer
+// (2). Forms: on the carrier, the updated mask in its own word local copied from the saved mask ahead of the change
+// test, compared and updated in place 78, with the compare on the saved mask 78, with the store as `new | present` 78
+// (all the uncast store's code: the copy is forwarded); that local without the carrier 77; the team bit through a
+// file-local forceinline helper at its three uses 23 (same code). Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6018,6 +6068,56 @@ void __stdcall function_d6bc0(long object_index);
 // on the label + field-test form 119 (904 B); the countdown stored as `countdown - 1` and tested by re-reading the field
 // 29 (same code), on the label form 7, on the label + field-test form 172 (same code each). Timer-address use counts do
 // not move `entries` out of EDI.
+// M3 lane 14 r144 (h2m fast; control 29, the 7 form rebuilt at 7, its field-test form 172 at 858 B): with the field test
+// case 1 already reads into AL, so both spots left on the 7 form come from `entries` taking EDI from the reset counter's
+// join through the index test. The schedule decision as a forced-inline (object, placement) helper with direct returns
+// called as `index == NONE || helper(...)` 129 (877 B), as `entries[i].index == NONE || helper(...)` 139 (869 B); on the
+// field-test 7 form the reset limit named once for both uses 182 (869 B), the reset counter's arms swapped 172 (same
+// code); on the 7 form the switch value named 7 (same code).
+// M3 lane 15 r134 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B): on the field-test
+// form the countdown block (decrement, release, 0x15aad0) in a file-local forceinline helper taking entries, i, placement,
+// object and preset 182 (858 B; the helper's parameter folds back into `entries`, still EDI), on the 7 form 17; the whole
+// schedule block (zero test to the delay store) in such a helper 182 (858 B); the index test as `if (entries[i].index !=
+// NONE) { schedule = false; switch ... } else schedule = true;` 172 (same code); the object declared ahead of the loop-top
+// index local 172 (same code). Body unchanged.
+// M3 lane 5 r235 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B, where the
+// `entries` load is shared across blocks in EDI from the loop top and the timer takes EBX). On the flag + field-test
+// form: the parameter renamed (three names) 172 each; the parameter spelled as an unsized array 172; the test spelled
+// `(entries + i)->index` 172; case 0 written ahead of case 1 172 (same code each). Body unchanged.
+// M3 lane 15 r136 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B, where `entries` is
+// reloaded into EDI at the loop top, the reset join and the zero test and the timer address takes EBX): on the 7 form case 1
+// as `if (!bit) break; schedule = true;` 7 (same code, CL stays); case 1 testing the bitfield without the bool cast, plain
+// or `!= 0`, 125 / 125 (864 B: a direct `test byte` on the field); the delay computation and store in a forceinline
+// helper called in each passing arm (index NONE, case 1, both case-0 exits) with no flag 415 (1029 B: the copies are not
+// tail-merged); diagnostic, on the field-test form the countdown block given the loop-top index 244 (882 B).
+// Re-measured listed forms: case 1 as `schedule = bit;` 129, the flag initialised from the field test 154, from the
+// local test 130. Body unchanged.
+// M3 lane 11 r159 (h2m fast with 0x15c150, MATCH each run; base 29; flag recipe rebuilt 7 at 869 B, its field-test form
+// 172 at 858 B: there `entries` is loaded into EDI at the loop top and in both reset arms and that copy serves the
+// `= 1` store, the zero test and the index test, where retail reloads it into a scratch register in each block): on
+// the field-test form the countdown block re-reading the loop-top `index` local (`index = entries[i].index;`) for its
+// test and 0x158ff0, 0xd6bc0 on the field 172, with 0xd6bc0 given `index` too 175 (855 B); the reset counter through a
+// block-local `s_netgame_entry_state &` 183 (851 B); 0xd6bc0 given the loop-top `index` (live through the schedule
+// block) 192 (870 B); on main the countdown re-reading `index` 29 (same code). Body unchanged.
+// M3 lane 13 r151 (h2m fast with 0x15c150, MATCH each run; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172
+// at 858 B): the function as a `__stdcall` member of c_engine_equipment on the flag + field-test form 172 (same code);
+// the countdown block's index in a new block local for its test and 0x158ff0 only 172 (local test 7, both the same
+// code); the flag as `long` 172 (local test 7, same code); an inverted skip flag set by each failing case and `default:`
+// 173 (857 B), on the local test 21; the loop-top index local scoped to a block around the object block with the field
+// test 172. Body unchanged.
+// M3 lane 1 r163 (h2m fast with 0x15c150, MATCH each run; base 29; label form and flag form rebuilt 7 at 869 B, each with
+// the field test 172 at 858 B, main's body with the field test 167 at 863 B). Reading of the allocator's ranking on the
+// flag + field-test form: `entries` is one candidate over the whole loop body with eight references and ranks 8; the
+// timer address ranks -6 there (it crosses the 28 blocks of the schedule switch and the tail without a reference), so
+// `entries` is coloured first and takes EDI, the only register left, and the timer is cut down to the zero test..countdown
+// range and takes EBX. With the test on the loop-top local `entries` has seven references and ranks -10, the timer goes
+// first and keeps EDI as retail's, and each `entries` access is a fresh load. Retail has the eight references and still
+// the fresh loads (the zero test's load reused by the index test in EAX), so its `entries` ranked below the timer: a
+// 14-point gap (a tie goes to the timer). On the flag + field-test form, all 172 (same code): the flag started false
+// and set true by the missing index; the countdown stored as `value04 = --countdown`; the countdown's zero test on the
+// stored field; the object's NULL declared ahead of the loop-top index read; the tail's reset as `countdown = 1; value04
+// = countdown`; the tail's index read once into a block local for its test and 0x158ff0; the delay through a named
+// `short` before its store. Re-measured: the reset limit named once for both uses 182 (869 B). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

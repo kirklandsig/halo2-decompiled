@@ -1084,11 +1084,75 @@ void swarm_leader_detach(long actor_index);
 // local 4; `if (!stop) continue;` then the call 4; the call as `(*stop)(...)` with a typed null arm 4; the handler table
 // bound to a `s_slot_handler *const *` local before the loop 4 (all the same code); the argument's slot through a second
 // actor_get(actor_index) 273. Body unchanged (59).
+// M3 lane 16 r174 (h2m fast with 0xf0fd0 and 0x1fb360; control 59, aligned 13): the false-then-set flag rebuilt as
+// `bool counted = false; if (definition) counted = (*(dword *)definition >> 3) & 1; if (counted)` with `actor != other`
+// 4 at 980 B (plain check 4 too); the same flag set by `if (definition && bit) counted = true;` 57 (974 B, the byte store
+// dropped) and nested under `if (definition)` 57. On the 4 form: the stop assigned inside the `if` condition 4; the
+// stop declared ahead of the loop 4; the selected slot in a local inside the call's block 4; the table read twice (test
+// and call) 4; `slot_index >= 4 ? NULL : ...` 4 (all the same code). Diagnostic, reverted: the handler read as a
+// four-byte memcpy now gives 297 in the reduced image too (996 B, frame 0x24, actor index on the stack in the loop), so
+// the reduced image agrees with the plain check on that form. Reading of the last 4: retail's handler reuses the type's
+// ECX while the slot offset is still live (the `lea` comes after the stop test); ours forms the `lea` first, the offset's
+// EDX is then free and the handler takes it, which pins the `lea` ahead of the handler load. Body unchanged (59).
 // M3 lane 8 r221 (h2m fast with 0xf0fd0 and 0x1fb360; control 59): the listed 4 form rebuilt (false-then-set definition
 // flag plus `actor != other`; 4 at 980 B, only the slot loop's `lea` ahead of the handler loads). On it: the slot loop's
 // condition as `actor->current >= slot_index` 6; `if (stop != NULL) (*stop)(..., slot_index > 3 ? NULL : &slot)` 6; the
 // flag computed as `(... & 8) != 0` 4 (same code). On main's body with `actor != other`: the bit held by a conditional
 // initialiser (`bool counted = definition ? bit : false;`) 52 (976 B, no byte store). Body unchanged.
+// M3 lane 7 r215 (h2m fast with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B). Retail's own
+// 0x1e22d0 loop keeps the slot offset in EAX and forms the address in place after the stop test, 0x1e23c0's forms it
+// right after the type load: the placement follows from whether the type load and the argument share one address
+// temporary. On the 4 form: the slot loop, the `current` store and the 0x258600 call as a force-inlined routine that
+// looks the actor up itself 275 (980 B), the loop alone in such a routine 275: the loop then forms the address after
+// the test as retail does (offset in EAX, address in place, the handler still through EDX), but two actor pointers
+// are live, the outer one is spilled to a stack home and the memory countdown takes EBP (aligned 19). The same
+// routines declared plain `static inline` stay out of line: 366 (894 B), 347 (910 B), and 328 (932 B) for the one
+// that receives the actor pointer; force-inlined, the one that receives the actor pointer 4 (same code); a per-slot
+// routine taking the actor pointer and the index 4 (same code); a per-slot routine taking the slot pointer 297
+// (996 B, the listed whole-allocation flip). A second actor pointer local for the loop, declared after or ahead of
+// the main one 275/275, also with the `current` store through it 275; a slots pointer taken from a second lookup
+// 275; only a loop-local actor pointer, the main one looked up after the 0x258600 call 282 (pool reloaded there).
+// Diagnostic, restored at once: 0x1e22d0's text (short type local, handler through a pointer-to-volatile) in this
+// image 297 (996 B, frame 0x24), as the plain check gave in r289. The loop's pointer as a plain copy of the main
+// one 4, the main one copied from the loop's after the 0x258600 call 4 (same code: copies coalesce, so the late
+// address needs two looked-up pointers live at once). Body unchanged (59).
+// M3 lane 15 r137 (H2M_FAST with 0xf0fd0 and 0x1fb360; control 59; the listed 4 form rebuilt, 4 at 980 B, only the
+// slot loop's `lea` ahead of the handler loads). Retail's own 0x1e2150 and 0x1e23c0 (slot pointer named, type read
+// through it) form the address right after the type load as ours does; 0x1e22d0 and this function form it after the
+// stop test, where the handler reuses the type's ECX. On the 4 form: the type in a `short` local and the handler in a
+// plain `s_slot_handler const *` local 4; the type read by a raw offset associated the other way
+// (`actor + slot_index * 0x40 + 0x90`) 4; the argument as `(s_slot *)((byte *)actor + 0x90) + slot_index` 4 and as
+// `actor->slots + slot_index` 4 (all the same code: the address is shared whatever its spelling). On main's body with
+// `actor != other`: the bit held as `bool counted = definition && bit;` 57 (974 B, no byte store). Body unchanged (59).
+// M3 lane 3 r302 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at
+// 980 B). Reading of the definition block: retail computes the bit into AL (`shr eax, 3; and al, 1`), stores it to the
+// dead actor-index home [esp+0x34] and branches on the flags, which is exactly the false-then-set flag form; so that form
+// is retail's there and only the slot loop's `lea` stays (ours forms it after the type load, the handler then takes EDX;
+// retail's handler reuses the type's ECX and the `lea` sits between the stop test and its jump). On the 4 form, each a
+// no-code file-local inline accessor: for the loop bound (`actor->current`) 4, for the `slot_index < 4` test 4, for the
+// type read 4, all three together 4 (same code each). Diagnostic, restored at once: the handler read as a four-byte
+// memcpy of its table entry 297 (996 B, frame 0x24, EDI pushed after the loop: the listed whole-allocation flip, now in the reduced image too).
+// Body unchanged (59).
+// M3 lane 5 r240 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH throughout; on the listed 4 form, rebuilt: 4 at 980 B): the
+// stop call split into two calls by `slot_index < 4` arms 282 (964 B, a branch for the select); a `slots` base local for
+// both the type read and the argument 4 (same code); the handler bound by `s_slot_handler const &`, its stop tested and
+// called through it 297 (996 B); the loop's actor pointer bound by `s_actor_view *const &` 4 (same code); the stop bound
+// by `t_slot_proc const &` to the handler's field 299 (996 B). Body unchanged (59).
+// M3 lane 4 r257 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at
+// 980 B). Measured cause of the last 4: on that form the code is generated slot address first, then the type load;
+// the three loop temporaries then take scratch registers in turn (type ECX, offset EDX, handler EDX again because the
+// address has already consumed the offset), and the handler overwriting EDX is what pins the `lea` ahead of it in the
+// schedule. Retail generates the address last (after the stop test): the offset is still live when the handler is
+// loaded, EAX is already bound to the address, so the handler reuses the type's ECX. So retail's slot address is
+// materialised after its first use inside the type load, not ahead of it. Forced schedule changes in that block (30
+// tried) leave the 4, as expected from that reading. On the 4 form: a plain slot pointer taken after the stop read
+// and ahead of the test, the call passing `slot_index < 4 ? slot : NULL` 297 (996 B, frame 0x24: the listed
+// whole-allocation flip, in which the actor's pool offset keeps EBX through the memory loop and the actor index
+// stays on the stack in the slot loop); that with a `short` type local 297; that with the pointer declared ahead of
+// the stop read and assigned after it 297; the pointer assigned inside the type read's index expression 297; the
+// pointer declared in the call's block 297; a NULL pointer assigned under `slot_index < 4` in the call's block 281
+// (964 B, a branch for the select); a named byte offset used for the type read and for the argument 299 (996 B).
+// Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

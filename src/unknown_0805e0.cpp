@@ -923,6 +923,41 @@ void function_1537f0(s_profile_record *record);
 // first 18; the entry pointer renamed to sort last 18 (both the same code); the loop ended on `index != 350` 19; on
 // round 136's lead (view from the array element, `entry->` link pairs in retail's order; re-measured 46) the four heads
 // as one chain in retail's store order 46, the tail stored field_64 first 46 (NONE hoisted into EBP each time).
+// M3 lane 2 r136 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18). LEAD 14, not kept (a mix of the
+// array element and `entry` for one address, match-only): the builder's view from the array element with main's single
+// link pointer and the tail through `entry` 14 (store order now retail's; left are displacements only); with the links as
+// `links[0] = links[2] = NONE; links[1] = links[3] = NONE;` 14 (link store order retail's too, base +0x5e); the same
+// with `entry` declared first 14, with a named view pointer 14, with the tail stored field_64 first 14; main's entry view
+// with that link chain and the tail through the element 14. The base follows the link pointer: for one chain of four
+// it sits at links[2], otherwise at the third link stored in source order (separate statements 0,1,2,3 / 2,0,3,1 and the
+// pairs 2=0, 3=1 / 0=2, 1=3 give links[2] / links[3] / links[1] / links[3]); retail's +0x4c appears only without a link
+// pointer family, and then NONE is hoisted. Hoisting forms: no `entry` local (view, links and tail from the element) 44;
+// the link pointer from the element ahead of the record 44; the tail through the element with the view from it too 44;
+// the tail through the link pointer 46; the link pointer from the element with main's entry view 45; the round-136 lead
+// with `(short)NONE` links 46, with one four-link chain 46, with the heads and the links each one chain 46; main's entry
+// view with `entry->` link pairs or four link statements 49. Diagnostic: the head stores moved below the loop still
+// hoist NONE (73, `or ebp, -1` ahead of the loop), so the hoist is the loop constant's own weight, not the heads alone.
+// M3 lane 8 r224 (h2m fast with 0x1537f0, 0x7f8b0 and 0x80490, plus 0x80330 and 0x18fd94 for 0x1537f0 forms; control 18):
+// 0x1537f0's value40 clear (the source of the two forwarded zero words) as four element stores 70 (250 B; 0x1537f0 26),
+// value40 and value70 as element stores 117 (210 B; 0x1537f0 27), value40 by a counted loop 18 (0x1537f0 26); the identity
+// zeroed by one chained element assignment 64 (256 B), that with the `entry->` links as chained pairs in retail's order 62.
+// 0x1537f0 keeps its own bytes only with its memsets. All restored.
+// M3 lane 6 r232 (h2m fast with 0x7f8b0, 0x1537f0 and 0x80490, all MATCH each run; control 18): the loop over an entry pointer
+// (`entry < &g_4cf98c[350]`, `entry++`) 80 (275 B), with `entry->` link pairs in retail's order 84 (270 B), ended on `!=` 80; the
+// builder given the entry pointer itself (no member address) 18 (same code), that with the `entry->` link pairs 49 (base +0x4c and
+// retail's link order, NONE hoisted into EBP). Restored.
+// M3 lane 11 r155 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18; E = the builder's view from the array
+// element with the `entry->` links as two chained pairs in retail's store order, re-measured 46 with NONE hoisted into EBP):
+// E as a do/while on `++index < 350` 46 (same code); E as a pointer walk over the entries 84 (270 B); E with `entry` declared
+// after the builder call 46; E with the record declared at function scope 46; the tail as `entry->field_64 = entry->flags =
+// 0;` on E 46, on main 18 (same code each). Main with `entry` declared after the builder call (view from the element) 14,
+// round 110's mix. All restored.
+// M3 lane 3 r300 (h2m fast with 0x7f8b0, 0x1537f0 and 0x80490, MATCH each run; control 18): the link chain in retail's
+// store order through the pointer (`links[1] = links[3] = links[0] = links[2] = NONE;`) 18 (stores as retail, base +0x5e:
+// the third link stored); the chains 3,1,2,0 and 2,0,3,1 18/18; that retail-order chain with the builder's view from the
+// array element 14 (round 136's mix, base +0x5e); the link pointer declared at the loop top 18 (same code). Diagnostics: the
+// links half through a pointer and half through `entry`, four shapes, 47/47/47/46 with NONE in EBP each. Reading: without
+// the all-pointer chain the record's first forwarded word is stored once ahead of the loop and its EBP goes to NONE.
 // @retail 0x7f930
 void function_7f930(void)
 {

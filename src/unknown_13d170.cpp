@@ -770,8 +770,8 @@ struct s_physical_block_iterator
 // branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
 // NOT kept: no closer case-zero result or native size. Case-zero/case-one
 // placement and the weighted-age register allocation still differ.
-// Case-zero non-later admission, combined admission, later rejection and non-earlier rejection
-// scored 222/222/222/201, also when reading each timestamp once.
+// Case-zero non-later admission, combined admission, later rejection and non-earlier rejection scored
+// 222/222/222/201, also when reading each timestamp once.
 // P598: Advance the ring ordinal after prefetch/after accumulation/before prefetch 250/355/273.
 // While scan with early advance 250, with undersized entries skipped 355. Conditional
 // best record/pointer/reference 248/248/248. The case-zero Boolean still needs its retail join.
@@ -980,6 +980,44 @@ struct s_physical_block_iterator
 // (`if (!at_head)` with the predecessor arm first) 92; the overlap test written range-first (`best.offset + pages >
 // offset && best.offset < offset + block pages`) 40 (same code); the head flag's comparison inside one, two or three
 // parenthesis pairs 40 each (no phase effect on this integer code). Body unchanged.
+// M3 lane 1 r155 (H2M_FAST with 0x13d320, MATCH; control 201): the limit index through a PIN macro 201 (same code); the
+// limit test as `limit_index <= 0 || pages < limit` 333; case 0 as `if (time != best time) better = older; else better =
+// fewer pages;` 284 (1182 B); both ages `dword` with `MAX(x, 0)` (retail's two clamps) 209 (1228 B); the failure limit
+// update through a MIN macro 202.
+// M3 lane 16 r175 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 as `time == best.time ? pages < best.pages :
+// time < best.time` 284 (1182 B); with every compare best-first 201 (same code); as `!(time > best.time) && (time !=
+// best.time || pages < best.pages)` 222 (1220 B); as an if/else on `time != best.time` setting `better` in each arm 284
+// (1182 B); the default arm with both ages `MAX(x, 0)` and `pages * best_age < best.pages * age` 209 (1228 B). Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x13d320, MATCH; lane 1 r124's 40 lead re-applied, 40 at 1213 B, aligned 18, masked 16):
+// on the lead, the deletion walk as a forced-inline range helper (physical, offset, count) 40 (same code), that helper
+// plain `inline` 291 (1089 B, kept out of line), a (physical, offset, end) helper with the end summed at the call 381
+// (1218 B), the helper's parameters as (physical, count, offset) 40, its end named inside its loop 40 (same code each:
+// best.offset is still read again for the second test). Reading: retail's insertion is one `cmp esi, ebx; jne` with the
+// head arm's link stores duplicated into both of its sub-arms and the other arm's second stage reading the pool data
+// again, i.e. main's single-stage shape plus a fresh pool read. Body unchanged.
+// M3 lane 12 r177 (H2M_FAST with 0x13d320, MATCH each run; control 201): case 0 through a plain result-flag comparator
+// defined beside 0x13d320 in its own file and inlined by LTCG 237 (1178 B); that with the second age as `MAX(x, 0)` 115
+// (1194 B, the forced-inline lead's code; match-only), with 0x13d320's (physical, a, b) parameter list 115 (same code);
+// `bool better;` with no initialiser 201 (same code); the deletion walk on plain iterator/block locals as in 0x13d950
+// 212. Body unchanged.
+// M3 lane 11 r159 (h2m fast with 0x13d320, 0x13d830, 0x13d8b0, 0x13d950; control 201; lane 1 r124's 40 lead re-applied, 40
+// at 1213 B). Reading: retail's insertion (one `cmp esi, ebx`, the head arm's next-link stores duplicated into both of its
+// sub-arms, the else arm's second stage reading the pool afresh) is a two-stage insertion merged by jump threading. On
+// main: the else arm's next-link stage through a `before` formed again from the pool after the previous-link stage
+// 211; the insertion as two stages each testing `best.previous == NONE` directly 209; the fresh-pool form with both
+// ages `MAX(x, 0)` 221; the default arm's clamps written inline in the product test (both `MAX(x, 0)`) 209; both named
+// ages `MAX(x, 0)` with the products written age first 209. Body unchanged.
+// M3 lane 2 r143 (h2m fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): case 0 as `time <=
+// best.time && (time != best.time || pages < best.pages)` 222 (1220 B); the default arm's clamped ages written inside the
+// product test 201 (same code); `better` typed `dword` 210 (1223 B); the default arm written first, then cases 0 and 1,
+// 204; case 0 as `time < best.time || (!(time > best.time) && pages < best.pages)` 201 (same code). Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; lane 1 r124's 40 lead re-applied, 40 at
+// 1213 B, aligned 18, masked 16). On the lead, the insertion's `at_head` flag (ours `sete dl; test dl, dl`, retail one
+// `cmp esi, ebx; jne` with stage 2 threaded into both sub-arms) replaced by `long previous = best.previous;` tested in both
+// stages 93 (masked 20: the threaded shape is retail's, but the result then takes EBX and the NONE constant EDI from the
+// allocation test on, retail the reverse); by `best.previous == NONE` tested directly in both stages 93 (same code); on
+// that, the overlap end as `pages + best.offset` 93 (same code) and the second overlap test as `best.offset < offset +
+// pages` 93 (masked 21). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

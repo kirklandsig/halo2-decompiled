@@ -169,7 +169,7 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
-// score 67 (was 67; m3 lane 8 r221 unchanged, its line just above the marker): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
+// score 67 (was 67; m3 lane 5 r233 unchanged, its lines just above the marker; m3 lane 8 r221 unchanged): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
 // Earlier (67, was 67): Retail spills the entry-array base and recomputes the indexed
 // terminator after the string calls.
 // independent read cursor and indexed terminator 84; cursor search condition with
@@ -483,10 +483,49 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // `return L"";` after the loop, terminator indexed) 83 (193 B), the same with every arm access indexed 83; the suffix
 // declared at function scope and cleared by memset in the arm 95 (182 B). Compile-only (no LTCG) gives a different
 // frame and convention here, so it cannot screen this function. Body unchanged.
+// M3 lane 12 r174 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67): `result` declared ahead of
+// `count` 69; `long i = 0;` declared ahead of the items call with `for (; i < count; ++i)` 65 (191 B: i takes EDI, zeroed
+// before the call); the found test as `if (... != index) continue;` with the body and `break` after it 67 and the if/else
+// arms swapped 67 (same code each); the indexed terminator with that continue form 84, with i declared first 80, that with
+// the result indexed 80. Body unchanged.
 // M3 lane 8 r221 (h2m fast with 0x24a64d, MATCH each time; control 67): a redundant `if (0 < count)` guard ahead of the
 // search loop 66 (189 B; one point, under the bar), with the terminator indexed 83 (198 B); the search as a guarded
 // do-while 67 (same code), with the indexed terminator 84 (same code as the indexed for); lane 10 r119's two-member
 // lead rebuilt 39 (204 B), with the guard 39 (same code). Body unchanged.
+// M3 lane 5 r233 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67, aligned 24/26).
+// Reading: retail's base spill at [ebp-8] does not need an escaping pointer: the suffix clear (`xor eax, eax; rep
+// stosd`) and the calls destroy EAX, so the base is stored once and reloaded for the terminator; what has to be
+// explained is only that the found entry's address (ESI, lost when ESI takes the 0x31 argument) is formed again from
+// the index, which keeps the index in EBX across the calls and leaves no register for a zero. Tried: the found entry's
+// name built by a forced-inline helper taking the list and the index by value, everything inside indexed, 84 (197 B,
+// the indexed-terminator code: the entry address is kept in EBX), with direct returns in the caller 86; the search
+// with its exhaustion exit inside the loop (`for (i = 0; ; ++i) { if (i >= count) return result; if (match) break; }`)
+// and the found entry handled after it, indexed 87, through a per-iteration entry pointer 77 (195 B, aligned 13: the
+// cursor is kept in ESI); round 101's search-then-`if (i < count)` form re-measured 69 (201 B, aligned 7: the cursor
+// copied to ESI at the break and the extra count test), the same with the count copied into a plain local for the loop
+// and the test 69 (same code); a found pointer cleared before the loop and tested after it 88; lane 10 r119's
+// two-member lead re-measured 39 (204 B: index ECX, cursor EDX, loaded id ESI, product EBX against retail's index EBX,
+// cursor ECX, id EDX, product ECX). Body unchanged.
+// M3 lane 2 r138 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67, aligned 26). On the
+// two-member lead only one choice is left: ours keeps the product `i * 0x248` in EBX across the string calls (EBX pushed
+// after the loop), retail keeps i in EBX and multiplies again (ESI pushed after the loop). Tried to keep the three index
+// expressions apart: a file-local inline getter taking the entries and the position at the arm, the terminator and the
+// plain arm 84 on main's locals (197 B) and 39 on the lead (the getter's copies fold); on the lead `buffer` named before
+// the ascii conversion 44, `result = buffer;` ahead of the indexed terminator 39, the terminator through the arm's
+// entry pointer 54 (199 B). Body unchanged.
+// M3 lane 11 r156 (H2M fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67, aligned 26): entries typed
+// as the header's profile list entry (index, name, tag bytes and display buffer as its own fields) 67 (same code); the search
+// as a forced-inline index finder returning the index or NONE, the found body under `if (i != NONE)` 84 (191 B); `entries`
+// and `count` declared first with the items call as its own statement 69; the loop test as `count > i` 67 (aligned 36,
+// other code); the items result kept as `void *items`, the arm's entry formed as `items + i` with the terminator indexed
+// 83 (198 B). Body unchanged.
+// M3 lane 11 r159 (H2M fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67). The file is /O1. Re-measured
+// the indexed terminator 84 (the arm's entry address kept in EBX across the calls) and lane 10 r119's two-member lead 39
+// (retail's code but for one choice: our product `i * 0x248` is kept in EBX from the arm to the terminator with `i` in
+// ECX for the loop, where retail keeps `i` in EBX from the start and multiplies again). On main: the indexed terminator
+// through `s_entry_24a64d *const &kept = entries` 84, with the plain arm through it too 84 (the reference folds). On the
+// lead: the terminator's index through `long const &found = i` 39; the arm's entry as a reference 39 (same code each);
+// the entry pointer formed ahead of the append test and used by the plain arm 72. Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

@@ -920,6 +920,54 @@ extern point2f *g_468778;
 // facing pointer straight from the 0x25d740 call 384 (1551 B). On the 384 lead: the dot as `dot3f(local_8, &actor)` 404
 // (1549 B), as `dot3f(&actor, local_8)` 404, written i, j, k 384 (same code). On the 410 form: the three facing copies
 // read through the view 410, the weight dot through dot3f 410 (same code each). Body unchanged.
+// M3 lane 15 r137 (H2M_FAST; control 389 at 1563 B, aligned exact/stack-masked/register-masked 190/92/30; main has
+// retail's homes for arg_0, actor and slot and loses only the prop to the view, which takes EBX apart from the facing
+// pointer): the -0.4 facing dot through the facing pointer with its three terms in each of the six orders, and with
+// the products written actor-first in two orders, 410 each (1549 B, same code: the sum is emitted k, i, j whatever the
+// order; aligned 278/159/39); the facing pointer declared right after the 0x25d740 call (ahead of the 0x110ab0 test)
+// with the dot through it 407 (1549 B, 282/166/39), with the dot left on the view 430 (1572 B); the dot's k and j
+// through the facing pointer and i through the view 410 (1549 B, 278/155/34); k through the view, j and i through the
+// facing pointer 432 (1573 B). Body unchanged.
+// M3 lane 3 r302 (H2M_FAST with 0x265d30, MATCH each run; control 389 at 1563 B, aligned exact/register-masked 124/51):
+// the view bound by `s_prop_view_fields *const &` for the facing pointer 395 (1568 B); the prop bound by
+// `s_prop_node_view *const &` for the view block's six uses 401 (1571 B); lane 1 r147's lead re-measured (the facing
+// pointer straight from the 0x25d740 call, no view local, the dot through it) 384 (1551 B, aligned 223/81: the prop
+// takes retail's EBX with retail's `xor ebx, ebx`, but arg_0/facing ESI, actor EDI spilled, slot EBP, frame 0x44); on
+// it a named `&field_2d` pointer for the tail 384, the prop lookup ahead of the clock 384, the facing pointer under the
+// view's old name 384 (same code each); on it the prop left uninitialised and cleared in the no-prop arm 354 at 1550 B
+// but aligned 225/84 (positional only: the rotation stays). Main's body with that prop clearing alone 370 (1563 B,
+// aligned 124/51 unchanged: the NULL store moves from the entry into the else arm, away from retail's `xor ebx, ebx`
+// ahead of the NONE test, and the next rows line up by position only; not kept). Body unchanged.
+// M3 lane 12 r182 (link-time lab, 9 s a variant, 14 rows from our fast listing with registers masked 1; counts are
+// lab aligned / register-masked rows against retail, base 138 / 50; body unchanged). The -0.4 dot through the facing
+// pointer 184 / 45 (the listed 410 form: view and facing share one register with the in-place add, but that register
+// is ESI and the slot takes EDI, retail the other way round); on it: the slot, the actor and the settings declared in
+// three other orders 184, 184, 247; the dot written i, j, k 184 (same code); k and j through the view with i through
+// the pointer 136 / 49 (compiles as the base: the i term is still read through the view and the pointer formed after
+// it); the pointer declared after the copy vector 184. Dead-local phase scan (diagnostic) on the pointer form, K =
+// 0..16: masked 45, 21, 35, 35, 36, 43, 25, 25, then repeating with period 8; on the base, K = 2..6: masked 33. At
+// K = 1 the pointer form has retail's dot order (k, j, the add, then i) and retail's prediction block (the three
+// components loaded and scaled in place); left there: the ESI/EDI exchange, the first product's operand side and the
+// prediction's XMM numbering. Use counts do not decide ESI/EDI (diagnostic probes: one or two facing reads fewer, two
+// slot reads more, one argument use fewer: ESI each time). No facing pointer at all (every read through the view)
+// 297 / 59, the same at K = 1, 2, 3, 5, 6 (K = 1: 299 / 79). One-symbol natural forms on the pointer form: the unit
+// index named for its four calls 187 / 27 (retail reads the field at each call); the rate named for both predictions
+// 219 / 57; pointers to the actor's position or the prop's origin 184 / 45 (same code); the second prediction's scale
+// in its own local 184 / 45 (same code); no direction pointer (the field at each use) 275 / 73.
+// M3 lane 8 r232 (h2m fast with 0x265d30, MATCH each run; control 389 at 1563 B, aligned 124, register-masked 51; body
+// unchanged). Colouring order read on main: the slot argument (priority 157) takes ESI and the actor (134) EBP as retail,
+// then the direction pointer local_20 (73) and the view (44) both take EBX, and the prop is never coloured as a whole
+// (its weighted cost is not positive), which is the spill into arg_1's home. On the listed dot3f lead (the first facing
+// dot named through dot3f ahead of the facing pointer, re-measured 377 at 1549 B, masked 85 by this round's counter) the
+// prop does take EBX; what turns the other three registers is one decision: the facing pointer (21 references,
+// priority 176) is coloured ahead of the slot (157) and takes ESI, so the slot falls to EBP and the actor to EDI with a
+// spill (frame 0x44). The pointer's 176 is 48 from the facing-dot block (its definition and three reads, six candidates
+// referenced there), 36 each from the weight-dot and sign-dot blocks, 20 from the reversed copy and 12 + 18 + 18 from the
+// three vector copies, less 12 for the blocks it only crosses; the slot's 157 is 222 less 65 for 31 crossed blocks. The
+// slot goes first, and the pointer then takes retail's EDI, the actor EBP and the frame 0x40, once the pointer loses 20
+// or the slot gains 20: two of the facing dot's reads counted on the view instead of the pointer would do it. Forms: the facing dot through the facing pointer 410 (re-measure; the pointer 176 again, the same
+// rotation); the dot named ahead of the pointer through the view's fields 401 (1571 B, re-measure; it compiles as main,
+// view EBX and a separate lea), with the copy vector declared first 401, as a named bool 415 (1581 B).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1515,6 +1563,30 @@ static __forceinline long real_to_long(real value);
 // facing pointer formed straight from the 0x25d740 call with no view local 381 (aligned 151, masked 108: the first dot
 // then loads the state's field first, retail's operand order; a gain of 1, not kept); that with the velocity read
 // through an AI object pointer at each use 486 (1924 B, masked 98). Body unchanged.
+// M3 lane 15 r137 (H2M_FAST with 0x25d740, MATCH each run; control 382, aligned exact/stack-masked/register-masked
+// 242/109/58; retail's false exit sits after the first goto arm, and its near arm forms the facing address from the view
+// in EAX while the far arm reads the first dot off the view and forms the pointer later): the speed through the existing
+// magnitude3d 468 (1904 B, 287/144/82); the facing pointer declared at the top of the far arm with the near arm copying
+// the view's field 479 (1907 B), with magnitude3d too 493 (1927 B); the first dot written facing-first 382 (same code);
+// the first dot through the existing dot3f, either argument order, 381 (1904 B, 240/107/57; a gain of 1, not kept).
+// Still BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
+// M3 lane 3 r302 (H2M_FAST with 0x25d740, MATCH each run; control 382 at 1904 B, aligned exact/register-masked 155/112,
+// 21 calls): re-measured the facing pointer straight from the 0x25d740 call (no view local) 381 (aligned 151/112) and
+// lane 6's computed entry result with it 508 (1921 B, 20 calls: 0x25d740 expanded). New: the prop pointer declared
+// ahead of the two lookups 494 (1913 B); the near arm's flag set ahead of its facing copy 382 (aligned 159), with the
+// facing pointer from the call 381; the near arm copying `local_9->unknown2c` (the far arm keeping the pointer) 397
+// (1905 B); 0x1aa0d0's kept r125 form here (`local_17` declared bare and zeroed in the branch that copies the facing)
+// 467 (aligned 156/115), with the facing pointer from the call 466. Reading of the aligned diff: beyond the false exit's
+// place, retail reads the object velocity off the AI object pointer kept at [esp+0x20] (+0x88/+0x8c/+0x90) where ours
+// keeps a velocity pointer in EBX, and forms the two position pointers for 0xfa1a0 ahead of the direction rows. Still
+// BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0x25d740, MATCH each run; control 382, aligned exact/stack/register-masked 157/109/58;
+// the score is positional, so nothing below the threaded false exit can move it): the computed entry result tested as
+// `if (local_2 == true)` 508 (1921 B, 0x25d740 expanded); the computed result then `if (!local_2) return false;` with
+// the body unnested 526 (1911 B, frame 0x54, 0x25d740 expanded), `return local_2;` there 526; diagnostics, not keepable
+// (an always-true test in front of the getter site): `else if (!field_18 && local_1)` on the computed result 489
+// (1904 B, 0x25d740 a call, object-speed root a call), with `&& local_0` too 490. Re-measured: result preset false 495,
+// rejection written first 382, computed result 508, that with magnitude3d 508 (both expanded), magnitude3d alone 468.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

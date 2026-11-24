@@ -1001,6 +1001,69 @@ extern "C" void _ReadWriteBarrier(void);
 // the barrier, the final store kept, 33 (205 B: the early store is not eliminated and takes EDX for its constant); the
 // same with no barrier 40; the early store between the lookup and the barrier 33; the 0x450 store also at the head of
 // the NONE block 42 (211 B); the state declared NULL and assigned from the slot after the lookup 6 (same code).
+// M3 lane 3 r296 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the busy test as a guard (`if (busy !=
+// NONE) { 0x450 store; return; }`) with the barrier 14 (209 B), without it 46 (212 B); the busy test as a one-case switch
+// (`case NONE:` ... `break;`) with the barrier 6 (same code), without it 44 (208 B); the state as a `s_slot_4c *const &`
+// bound to the parameter (a reinterpreting reference), ahead of or after the actor, 6/6 (same code).
+// M3 lane 4 r249 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, each with the barrier): the state read through a
+// `s_slot *const *` to the parameter as the first statement 6; the 0x86 test as `!(... < 7)` 6; actor first, then the state,
+// then the barrier and `(void)list;` 6; the busy test as `!(... != NONE)` 6; the flags test through a cast of the slot
+// parameter at the test 6 (all the same code: the slot still loads after the jne). Without the barrier re-measured 44 (208 B).
+// M3 lane 1 r157 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH each time; control 6, no barrier 44 at 208 B). By-value
+// copies (an inline accessor returning a small aggregate by value, the form that matched 0x151b80), each without the
+// barrier: the state through a one-pointer aggregate copied from the parameter's own home, declared first or after the
+// actor, 44/44 (folded); the vehicle index through a one-long aggregate accessor in the test 44 (same code), named at the
+// top ahead of the state 44; the flags byte through a one-byte aggregate accessor in the arm 39 (205 B: `mov dl, [ecx +
+// 0x22]; test dl, 4`, the constant 4 no longer shared, the slot still loads after the jne); that copy named at the top
+// after the actor 38 (205 B, first +0x1e: retail's first seven instructions exactly with no barrier, the slot into ECX
+// after the data base and the 0x26c compare in memory, but the byte loads in the entry block into DL and ESI is pushed
+// there), named ahead of the actor 50 (210 B), with the barrier after it 38 (same code as without); the copy at the top
+// unused with the plain test in the arm 44/44 (dropped early, named or discarded); the copy joined to the busy test as
+// an always-true term 44; actor and state through a two-pointer aggregate returned by value from an inline routine 49
+// (210 B: the slot loads in the entry block after the 0x26c load, the data base in ESI), filled through an out-pointer
+// 44; the state through a one-pointer aggregate built from the parameter and returned by value 44; the seat group
+// (0x1c..0x23) copied by value at the top and its flags tested 86 (237 B, a real stack copy), through an accessor 86,
+// the four bytes from 0x20 60 (218 B), the 0x14-byte seat selection 116 (260 B). Diagnostics (reverted): a self-copy
+// `state->flags = state->flags;` at the top 38 (the store goes, the load stays in the entry block and feeds the arm's
+// test: the 38 code), `state->flags |= 0;` 38; self-copies of another byte, of the 0x1c dword, of the header or of the
+// point 44 each (dropped early). Reading: a statement that reads through the state between the actor lookup and the
+// busy test gives retail's entry and memory compare with no barrier, but every such read tried leaves its own load in
+// the entry block; retail's entry statement leaves only the slot load.
+// M3 lane 13 r145 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state converted through `(void *)` 6;
+// the actor as an `s_actor_view &` with the barrier 6; the busy test held in a named bool after the barrier 6 (all three
+// the same code); a second barrier at the head of the NONE block 7; a second barrier ahead of the state and the lookup
+// 6 (same code).
+// M3 lane 12 r179 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the flags tested through a bool set ahead of
+// the barrier, `bool point_target = (state->flags & 4) != 0;` 38 (208 B: the test and `setne` in the entry block); the
+// flags as a `long` local read ahead of the barrier 37 (205 B, first +0x1e: retail's entry through the add, the slot into
+// ECX right after the data base, but the flags `movzx` into EDX in the entry block and ESI pushed there); that local read
+// first, ahead of the actor lookup, 44 (first +0x5); read after the barrier 6 (same code: it sinks); actor, `long` flags
+// local, no barrier, 44 (208 B). A read through the slot anchored by the barrier always brings its own load into the
+// entry block; retail's entry has the slot load alone.
+// M3 lane 13 r150 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; each without the barrier): the actor assigned in
+// the busy test's condition 44 (208 B); the busy test as an empty first arm of one flat else-if chain 44; a second state
+// pointer for the point copy 44; the state assigned again from the slot at the head of the NONE block 44 (all the no-barrier
+// code). Matched functions found by a scan for a stack parameter loaded in the entry block and read after its branch
+// (0x1b22e0, 0x25fe50, 0x227600) read it on both paths or after the join; matched 0x1c14b0 (actor test, then a slot test)
+// loads the slot after the branch, as ours does here.
+// M3 lane 15 r140 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; aimed at keeping the state from being
+// copy-propagated into the slot): the state started NULL, then assigned from the slot ahead of the actor lookup 6; started
+// NULL and assigned after the lookup, then the barrier 6, the same without the barrier 44 (208 B); started NULL and
+// assigned after the barrier 6; declared bare and assigned after the lookup 6 (the 6s the same code: the dead first store
+// is removed before the copy is propagated). Matched functions that load a stack parameter in the entry block and read it
+// only on the fall-through path (0xa8dd0, 0xc40f0, 0x195820) use it in two sibling arms or through its address.
+// M3 lane 6 r238 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6). Reading from the allocator's side: the slot
+// is a register candidate over the NONE block and the flags arm only, and its load from the parameter home is placed in
+// front of its first use, which is after the branch; retail's load sits in the entry block after the pool and data loads
+// (it takes ECX once the pool pointer is dead and is scheduled ahead of the mask), so retail's slot is defined in the
+// entry block after the actor lookup, and with ECX and EDX both held there the 0x26c compare stays on memory without a
+// barrier. Diagnostic (a volatile read of the parameter after the lookup, with the barrier; never in the tree): 31, and
+// no single forced register or schedule choice on it gives retail's code, so that anchored read is not retail's shape
+// either. No barrier: the state set NULL in an else arm of the busy test 44 (208 B); the state started NULL and assigned
+// from the slot at the head of the NONE block 44; the busy field in a named long read after the state 44; the actor
+// looked up through a `long const &` to the index parameter 44; the slot read through a `s_slot *const &` to the
+// parameter 44; the state read through a `s_slot_4c *const &` to the state local 44. With the barrier: the actor looked up
+// through a `long const &` to the index parameter 6 (same code).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2278,6 +2341,27 @@ void function_1f86a0(long actor_index);
 // code: the shared mask temp takes BL too), with non-zero tests 234; the mask local read from the state view with bit 0x40
 // from the selection 245 (867 B). Reading: any byte value live across the two root calls (mask local, shared mask temp or
 // the shared flags byte) takes BL; retail has none (mask spilled at F+3, flags re-read for bit 0x40, entry in EBX).
+// M3 lane 1 r160 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123): the iterator's three
+// stores as the first statements, ahead of the actor and unit lookups 248 (865 B: the early return gets its own epilogue);
+// `same` started false and set under `if (specified)` re-measured 240; the element's root named under `if (specified ==
+// 0x20)` and compared with the selection's 240; the entry's index named ahead of the element lookup and used once 123
+// (same code); the decline and the join attempt taking the actor index from the iterator record 123 (same code); the
+// accept arm as a bare `break` with the joint index read through the entry after the loop 123 (same code). Diagnostics
+// (reverted): one unused local ahead of the element, between the mask and the same-root test, or ahead of the entry
+// declaration 123 each (same code: the contest is not a symbol-count tie). Reading of retail's loop: the first root's
+// result takes EBX across the second root call and the entry is reloaded from its home after it, the actor stays in EDI
+// and the mask is the only value left without a register; ours gives the root EDI (reloading the actor every pass) and
+// the mask BL. Body unchanged.
+// M3 lane 3 r305 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123). Allocator reading:
+// in the first colouring pass the allocator ranks the mask byte above the loop entry, 88 against 45 (the mask's copy
+// and `and` count three references in the loop's first block, which references eight values, where the entry counts
+// one), so the mask takes EBX and the entry is split into pieces with no register; the flags byte load is a shared
+// value whose 0x40 use is re-read from memory. In the no-mask-local form the shared flags byte and the shared mask
+// rank 56 each against the entry's 45, the flags byte takes EBX and the mask is spilled as retail. Retail needs the
+// entry ranked above both (it would win a tie at 56, being created later). Forms: the entry declared in the `while`
+// condition 123; one element local shared by the loop and the tail 123; the flags read through a `byte const &` for
+// the mask and the 0x40 test 123; the entry as a pointer to const 123 (same code each); re-measured the no-mask form
+// with plain truth tests 244 (868 B). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

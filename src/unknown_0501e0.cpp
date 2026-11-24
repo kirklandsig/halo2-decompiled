@@ -766,6 +766,80 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // with a single scale read 256/261. Shared vector setter in the same four forms
 // 218/219/299/300. NOT kept: the three-point gain is below the threshold, the retail-length
 // forms score higher, and the frame remains 0x20.
+// M3 lane 16 r177 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221, difflib-aligned 270, register-
+// masked 156): the perspective weight sum as `local_4 + local_5` 221; field_14 stored ahead of the blended position 220
+// (1113 B, one point); field_10 ahead of field_c 221; the depth limits as `4.f * k * k` 221 (same code each); the view
+// helper's scale test as `1.f != arg_0` 259 at retail's 1136 B (aligned 263, masked 168: it loads the scale fifth and
+// compares the constant from a register, not retail's shape). Body unchanged.
+// M3 lane 12 r175 (H2M_FAST with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221): the camera origin copied once
+// into a const point local for both offset loops 262 (1136 B, frame still 0x20); the second point's view transform called
+// first 218 (1114 B, three points, under the bar); that with the second offset loop first as well 219; that with the
+// helper's rows in 0x142640's order (+0x1c by z, +0x10 by y, +4 by x) 218; the two offset vectors declared in the other
+// order 221 (same code). Body unchanged.
+// M3 lane 12 r178 (h2m fast; control 221 at 1112 B; "masked" = difflib rows that differ with XMM numbers, stack offsets
+// and addresses masked, control 154). Dead-local scans (diagnostic, `long unused = 0;` lines, none kept), to see whether
+// the product orders and XMM ranks are a symbol-count state: K = 0 to 32 after the two offset vectors 221, 222, 222, 223,
+// 223, then 221 for K = 5 to 12, 218 for 13 and 14 (masked 156), 279 at 15 (1107 B), 287 at 16 and 17, 293 to 302 from 18
+// on (1095 to 1086 B); K = 1 to 16 between the two view calls the same values; K = 1 to 16 inside the view helper 221 at
+// every K (its locals are not counted); the helper with three scalar copies scaled under the test, K = 0 to 40, the same
+// values as the aggregate form at every K. So no count of locals gives retail's first view on this body. Lane 8 r201's
+// macro lead rebuilt on this body 252 (1136 B, frame 0x14, masked 62) and its six-statement form with the second point
+// first 226 (1136 B, masked 67); the statement form over K = 0 to 40: 226 at K 0, 251 at K 1 and 2 (1140 B), 270 for K 3
+// to 10 (1151 B), 272 at 11 and 12 (1116 B), 200 at 13 and 14 (1118 B, masked 112), then 1114 B falling to 1072 B with
+// masked 119 to 146: K 0 is its closest state. On the statement form: the clamp folded into the root's argument (one
+// named local fewer) 226, that and the radicand written at both uses 226, the rows written right, up, forward 226 (all
+// the same code); the view helper with separate outputs in place of the macro 260 (1114 B, masked 120). Left on the
+// statement form (first view: retail's shape; second view: retail holds right.i in XMM7 from the first view and the
+// scale in XMM6, loaded after the last origin subtraction, so the second view's scaled x and z go to [esp+4] and [esp];
+// ours gives XMM7 to the scale at the top and keeps all three in registers).
+// M3 lane 8 r229 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH unless stated; control 221, aligned 249, register-masked
+// 154; body unchanged). Diagnostics on the form retail's code points to, each reverted at once: matched 0x142640 itself expanded
+// here (an `inline` on its definition, which its /Ob1 file otherwise prevents; 0x16c2f0 then 107) in place through
+// `(transform4x3f const *)&g_4b9e14` 218 (1115 B, masked 144), with the depth limits in the condition 256 (1117 B, masked 115):
+// retail's first 33 instructions up to register numbers (second offsets stored at once, the scale loaded into XMM6 after the last
+// origin use, copy then scale), but every product copies the value and multiplies by the coefficient in memory and the sums run
+// x, y, z where retail loads the coefficient first and sums z, y, x; frame 0x20. On that form: 0x142640's scalar copies assigned
+// z, y, x 256 (the sums become z, y, x; 0x142640 itself 18), declared z, y, x but assigned x, y, z 256 (same code), so an expanded
+// helper's sum order follows the order its scalar copies are assigned and not the written sum; separate view vectors 310 (1075 B),
+// the first separate and the second in place 285 (1099 B); offsets through vector3d_from_points3d with the first/second point
+// first 256/257; all 36 orders of the six offset statements (first point first) 255 to 270 (i,j,k for the second point with
+// j,i,k / i,j,k for the first 255 / 256; none moves the sum order); the second view out of place with the segment kept in the
+// second offset vector 256 (first view in place) and 285 (both out of place), without that reuse 290 and 310. On lane 13 r96's
+// macro lead (re-measured 252 at 1136 B, frame 0x14, masked 62): the second view reading another global as its matrix
+// (diagnostic) 256 (masked 85) with the first view still loading its coefficients, so those loads do not come from sharing
+// between the views; the second view without its scale step 322 (1067 B), the first without 302 (1086 B), neither 375 (1012 B):
+// in none does this build carry a coefficient from the first view into the second, even inside one block, because all eight XMM
+// registers are held (the second offset's i keeps XMM0 through the first view), so retail's right.i in XMM7 needs the second
+// offsets out of the registers first; the scale step as three conditional expressions 320 (1188 B); the segment kept in the
+// second offset vector 253 (frame 0x20, the second offset's i still in XMM0 through the first view). On this body: the offsets
+// as component statements with the first/second point first 218/220, paired by component 216/217, through
+// vector3d_from_points3d 219/219, one fused loop 218; the helper reading the camera's scale itself with the offset loops 218 and
+// with those seven offset forms 218/220/216/217/218/218/219; the helper with three scalar copies scaled under the test the same
+// eight values. The small gains do not add up (floor 216, five under the control).
+// M3 lane 7 r222 (H2M_FAST with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221, aligned 275, register-masked 154).
+// Link-time inlining of the transform: the neighbour file's transform_vector in place re-measured 218 (1115 B, masked
+// 144); diagnostic, a copy of it in a third file with its rows in 0x142640's order and the parameter used directly 218
+// (the same code: the row order of a body inlined at link time is ignored as well); that copy with a local copy of its
+// camera argument 271 (1151 B, aligned 252, masked 156: retail's opening, the second offsets stored at once, the scale
+// loaded after the last origin use and copy-then-`scale * raw`, but 1.0 held in XMM7, the products value-first from
+// memory and frame 0x20). A file-local helper whose camera pointer defaults to the global when NULL, called with NULL
+// (0x30830's idiom), rows right-first or forward-first x scalar copies x, y, z or z, y, x: in place 268/266/268/266
+// (1148 B, masked 160), separate outputs 253 each (1141 B, masked 155). Diagnostic (`inline` on 0x142640's definition,
+// restored): both views through it in place 218 (masked 144), with the limits in the condition 256 (1117 B, masked 115),
+// separate outputs 304 (1083 B) and 310 (1075 B); on the in-place form with the limits in the condition, K = 1..16
+// unused locals ahead of the calls 256 for K 1-14 and 261 for 15, 16 (masked 115 to 125, lowest at K 0-2). Body unchanged.
+// M3 lane 12 r183 (h2m fast with 0x30290, 0x30bf0 and 0x142640, all MATCH; control 221; body unchanged). On the macro
+// statement lead (re-measured 226 at 1136 B): the second view written back into the second offset vector 226 (same code);
+// that with the orthographic segment kept in the same vector (one address-taken vector for the second offset, its view
+// and the segment) 226 at 1136 B with frame 0x14, which is retail's storage (that vector plus two scratch cells); the
+// first view in place 299 (1177 B); both in place 299. With main's inline helper in place of the macro: the first view
+// into its own vector, the second in place, six offset statements (second point first), the limits in the condition and
+// the shared segment vector 260 (1114 B); without the shared segment 260; with the two offset loops 282 (1102 B); with
+// main's named limits 220 (1112 B, one point); that with the loops 288. Float register ranking on the 226 lead: retail
+// gives XMM0/2/4 to the first view's scaled copy, XMM1/3/5 to the first offsets and then the first view's results, XMM6
+// to the scale and XMM7 to the coefficient it carries; the lead keeps the second offset's x in XMM0 across the first
+// view, so the copy takes XMM3/4/5, the results XMM2/6/1 and the scale XMM7 (it ranks 186 against 190 for the two
+// second-view temporaries coloured just ahead of it).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

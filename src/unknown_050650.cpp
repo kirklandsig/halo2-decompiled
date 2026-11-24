@@ -1031,6 +1031,24 @@ struct s_collision_result_buffer_1697c0
 // projection term 287 (1438 B; 0x297d30 31); the rotate helper with the vector's k read into a local and the crosses scaled
 // by the sine 317 (0x297d30 244); best_fraction initialised after the pitch axis 267 (under the bar); lane 5 r224's
 // sine-scaled crosses re-measured 199 (0x297d30 153). Body unchanged.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 416 (1347 B; 0x297d30
+// 245). Restored.
+// M3 lane 5 r238 (h2m fast with 0x297d30 (23), 0x297660, 0x2967b0, 0x24590, 0x2980d0, 0x297a50; control 270, aligned 198
+// exact / 71 register-masked). Reading: retail's x87-to-SSE transfer slots hold {magnitude, both draws, first sine,
+// second cosine} and {first cosine, second sine}; this build's hold {magnitude, both cosines} and {draws, both sines},
+// and each rotation's pair written out in its own block gets the same slots as the wrapper (331 at 1434 B, frame 0xb0),
+// so variable identity does not set them. An automated search over the shared in-place rotation's spelling, every
+// form screened on both users (63 forms: the dot's six term orders and product sides, the projection's operand
+// order, six declaration orders and four product-side forms of the cross terms, the sine scaled in the cross or in the
+// row, four row term orders and each row product's sides): 44 forms compile to main's code (270 / 23), the dot with k
+// ahead of j 324 / 23, the cross terms with k ahead of j 268 / 39, sine-scaled crosses 199 / 153 (with those cross
+// orders 196 / 155), rows `cos - sin + proj` 287 / 31 and `proj - sin + cos` 340 / 44: no form lowers this body
+// without raising 0x297d30. The wrapper's cosine computed first 274 (0x297d30 41); the candidate copied between the
+// two draws 330 at 1423 B (aligned 383: worse); the up axis through a pointer local 283 (1438 B). Body unchanged.
+// M3 lane 15 r139 (h2m fast with 0x297660, 0x2980d0, 0x297d30 (23) and 0x24590; control 270): the normalizer's length local
+// renamed (slot-name order) 270 (same code); the pitch axis passed through a const pointer local 328 (frame 0xb0); the
+// candidate through a pointer local for both turns 334; both draws held as double 341 (1425 B, frame 0xb0, aligned 329
+// against 198); the candidate declared ahead of the draws and assigned after them 270 (same code). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1806,149 +1824,11 @@ done:
 	return result;
 }
 
-// MiniMax S (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool into EDX, keeps the
-// actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the actor with
-// `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base; changing the shared getter's
-// spelling (the offset local with a byte pointer, the base pointer with a slot local) compiles to byte-identical code here
-// and in the sixteen matched functions that share the getter, so MSVC canonicalises the lookup and the register choice is
-// not steerable from the source.
-// MiniMax H (11-13): no new form, no lower score (9).
-// MiniMax A (11-12): no new form, no lower score (9): three fresh spellings of the lookup (the byte-offset
-// product through the pool data, the offset computed before the pool read, and a byte base with an offset
-// local) all compile to our code - MSVC keeps the scaled index in the pointer register and adds the base,
-// where retail keeps the product in eax and forms the actor with a lea; the shared getter is used by sixteen
-// matched functions of this file, so its spelling cannot change on its own account.
-// MiniMax H (11-11): no new form, no lower score (9); retail still builds the actor offset in EAX and forms the actor with a lea where ours keeps the scaled index in the pointer register and adds the base, and the shared getter cannot be respelled because sixteen matched callers depend on it.
-// MiniMax D (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool table into
-// EDX, computes the actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the
-// actor with `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base (`add esi, edx`);
-// the getter is shared with sixteen matched functions of this file, so its spelling cannot change on its own account,
-// and retail's only caller of this function, 0x1f38c0, has no body in this tree, so the call context that shapes the
-// allocation is missing here.
-// MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
-// spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
-// MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
-// MiniMax E (11-10): no new form, no lower score (9): four more spellings of the actor address (a byte base
-// local with an offset local, the offset local alone, the typed subscript and the base after the offset) all
-// compile to the same code as the shared getter: ours keeps the scaled index in the pointer register and adds
-// the base, retail keeps the product in eax and forms the actor with a lea.
-// MiniMax E (11-09): no new form, no lower score (9): the masked slot in a local with the lookup written out
-// and the slot multiplied by the element size both compile to the same code as the shared getter, and the
-// mask written as a word truncation gives 38; the prologue still builds the actor offset in ESI and adds the
-// base where retail keeps it in EAX and forms the actor with a lea.
-// MiniMax C (11-08): forms tried, none lower: the byte offset in a local 9, the masked slot in a local 9, the getter written out 9, the base in a local 9; the permuter was killed at its time limit before it searched anything.
-// MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
-// base and a masked slot local in either order, a byte offset local, the slot first, the current one)
-// compile to the same code, so retail's offset in EAX and its `lea esi, [eax + edx]` are not
-// steerable from the source; the reduced image also leaves our body one byte short.
-// MiniMax E (11-07): score 9 (was 9): forms tried, none lower (the masked byte offset in a local, the
-// data base in a local and the inline byte-pointer product with the literal size all compile to the same
-// code); the prologue still builds the offset in ESI and adds the base where retail keeps it in EAX and
-// forms the actor with a lea; retail's matched sibling 0x297a50 uses the same getter and compiles the
-// same way as ours (the chain in ESI and an add), so what differs here is the allocation in this one
-// function, not the spelling of the lookup.
-// MiniMax E (11-06): score 9 (was 9): no new form tried this round; the prologue still builds the
-// actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
-// and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
-// MiniMax R (11-15): no new form, no lower score (9): retail still loads the pool pointer into edx and the masked, scaled index into eax, while this build loads the pool pointer into eax and folds the index into esi.
-// MiniMax C (11-16): score 9 (was 9): no new form, no lower score; only the prologue differs: retail loads the
-// pool pointer into edx and keeps the masked, scaled actor offset in eax (`mov eax, ecx; and eax, 0xffff;
-// imul eax, eax, 0x888; lea esi, [eax + edx]`) where this build loads the pool pointer into eax, folds the
-// offset into esi and finishes with an add, so this build also ends with an extra int3; twenty-five
-// spellings of the lookup and a 51-try permuter run all build the same prologue, so the register choice is
-// not steerable from this function.
-// MiniMax C (11-17): no new form, no lower score (9, was 9): the full build scores 9 as well, so the reduced image does not distort this one; only the prologue differs - retail builds the actor offset in EAX and forms the actor with `lea esi, [eax + edx]`, while this build computes the offset in ESI and adds the base - and the lookup's spelling does not change the code.
-// score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
-// so the reduced image does not distort this one; the lookup's spelling does not change the code
-// (see below), and the prologue's register choice is not steerable from the source.
-// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX (`mov eax, ecx`,
-// `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`; ours builds the offset in
-// ESI and adds the base. This round: the `&((s_actor_looking_view *)g_4f55f0->data)[index & 0xffff]`
-// subscript and an unsigned slot local with a byte-offset product compile to the same code (9), so
-// MSVC canonicalises every spelling of the lookup; the body was restored.
-// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX (`mov eax, ecx`,
-// `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`; ours builds the offset in
-// ESI and adds the base. This round: every lookup form tried (byte offset local, the same with a
-// base local, the masked slot first, the offset inline, typed and byte arithmetic, an unsigned or
-// size_t slot, a subscript, a long-multiply getter, an unsigned getter parameter) compiles to the
-// same code and scores 9, so the register choice is not steerable from the source; the reduced
-// image leaves one global unresolved and flags the call target, so two of the nine are artifacts,
-// and ours ends a byte short with a trailing int3.
-// score 9 (was 9): this round: eight more forms of the shared getter (a data base and a masked
-// slot local in either order, the base added with `+=`, a byte-pointer product with sizeof, a
-// pool local, the slot masked in its own local) all compile to the same code (9); an
-// `unsigned short` slot local gives 38 (`movzx esi, cx`) and was reverted. The prologue's
-// register choice (the offset in EAX and `lea esi, [eax + edx]` against our offset in ESI and
-// `add esi, edx`) is not steerable from the source.
-// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX and forms the
-// actor with `lea esi, [eax + edx]`, ours builds it in ESI and adds the base. This round: the
-// shared getter rewritten as a byte-pointer product (`(byte *)data + (index & 0xffff) * sizeof(...)`)
-// compiles byte-identically in all seventeen functions of the file, so MSVC canonicalizes it.
-// score 9 (was 9): Round 30 (lane C): the prologue still builds the actor offset in ESI and folds
-// the table base into it (`add esi, edx`); retail computes the offset in EAX and forms the actor
-// with `lea esi, [eax + edx]`. New forms: a data-base local with a masked slot local, a byte
-// offset local and the `&array[index]` subscript form (9 each); an `unsigned short` slot local
-// gives 38 (`movzx esi, cx`) and was reverted.
-// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX
-// (`mov eax, ecx`) and moves the actor to ESI with `lea esi, [eax + edx]`; ours builds it in ESI.
-// Tried: a specification pointer local 9; an if/else chain without the early return 9; the valid
-// flag assigned from the `&&` 22; a valid local stored once 47; the getter as `data + index * size`
-// 9; a temporary caller (its only retail caller 0x1f38c0 is disabled here) 9; a cdecl compile-only
-// build gives ours too; shared actor getter or type 9 each; direct byte-base 9; offset local 9;
-// getter forceinline 9; data-base or slot locals 9 each; nested actor getter 9; a mode pointer 9.
-// Further forms: direct decoder result 42; low-mode rejection 38, with direct result 45;
-// path-first reset 21, with direct result 45; nested independent guards 9; native mode
-// snapshot 9; uniform getter observations 58. Original reset path and call values restored.
-// MiniMax A (11-12): no new form, no lower score (9): the lookup written in this body - the plain inline expression, the
-// byte-pointer product, the address of the array subscript, the masked index local and the offset local - compiles to our
-// code in every case; MSVC keeps the scaled index in the pointer register, so retail's `imul` in eax and its
-// `lea esi, [eax + edx]` are not reachable from the source. Original body restored.
-// MiniMax C (11-09): score 9 (was 9): retail's prologue is one byte longer than ours (its `lea esi,
-// [eax + edx]` against our `add esi, edx`), so our code is 113 bytes and retail's 114. Eight more
-// getter spellings all compile to our code and score 9: an unsigned offset local, the byte-pointer
-// product `(data + (index & 0xffff) * sizeof(view))`, an array-pointer subscript, the same product
-// with the base added last, an unsigned index local, the array-address form, a signed literal
-// product and a masked slot local. MSVC keeps the scaled index in the pointer register, so the
-// `imul` never lands in EAX as retail has it.
-// MiniMax C (11-09): score 9 (was 9): only the prologue differs: retail builds the actor offset
-// in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`,
-// ours builds the offset in ESI and adds the base. A byte subscript, a typed subscript and an
-// offset local all compile to the same code (9), so the register choice is not steerable here.
-// MiniMax C (11-09): score 9 (was 9): the byte-pointer product spelled with a masked slot local
-// (`(s_actor_looking_view *)(g_4f55f0->data + actor_slot * sizeof(s_actor_looking_view))`)
-// compiles to the same code as the shared getter (9): MSVC keeps the scaled index in the pointer
-// register, so the `imul` never lands in EAX as retail has it. Original body restored.
-// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 9 (114 bytes, as retail's); the only difference is the prologue, where retail builds the actor offset in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, while ours builds the offset in ESI and adds the base (`add esi, edx`), one byte short; the shared getter is used by sixteen matched functions of this file, so its spelling cannot change without losing them.
-// MiniMax R (11-10): no new form, no lower score (9); the body is unchanged, and the shared lookup keeps
-// compiling to the same code.
-// MiniMax A (11-11): no new form, no lower score (9); the shared getter written as a byte-pointer product, as a base plus an offset local, as a slot local and as a two-statement add compiles byte-identically in all seventeen functions of the file.
-// MiniMax R (11-11): no new form, no lower score (9): only the prologue differs - retail builds the actor offset
-// in eax (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, ours builds the
-// offset in esi and adds the base (`add esi, edx`), one byte short; the call to 0x2967b0 is still unverified in
-// the reduced image, so the reduced-image target address differs as well.
-// MiniMax B (11-12): no new form, no lower score (9): three more ways of writing the actor lookup in this
-// function's own body - a masked slot local added to the typed base, the byte-pointer product and the
-// integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
-// address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
-// MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
-// MiniMax S (11-15): no new form, no lower score (9): the actor offset is still built in esi with an add where
-// retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
-// compiles to the same prologue, so the register choice is not steerable from this function.
-// MiniMax D (11-16): no new form, no lower score (9).
-// MiniMax S (11-16): no new form, no lower score (9): the actor lookup still computes the masked slot into the
-// result register and adds it, where retail keeps the slot in a separate register and adds it with a lea; the
-// byte-pointer product, the address of the indexed element and the integer base all compile to the same
-// prologue here.
-// score 9 (was 9): MiniMax D (11-17): no new form, no lower score (9): the prologue still differs in one byte - retail
-// builds the actor offset in eax (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and finishes with
-// `lea esi, [eax + edx]`, where this build folds the masked slot into the result register and adds the base with
-// `add esi, edx`; the shared getter cannot change (sixteen matched functions in this file use it), so the spelling would
-// have to be this function's own, and the twenty-five forms the earlier rounds list all build the same prologue.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
-	if (actor->aiming_direction_type == 0 && !actor->path_active)
+	if (actor->aiming_direction_type == 0 && !actor_looking_get(actor_index)->path_active)
 	{
 		actor->aiming_mode = 0;
 		return;
@@ -2355,6 +2235,50 @@ struct s_actor_looking_structure_view
 // 0x1b2340) 23 (same code); that with both traces through the eight-argument declaration 66; a `point3f const *` origin
 // for both trace calls 69; the actor's sector index named for its test and both calls 182; the best direction indexed at
 // each use without the `best` pointer 39. All restored.
+// M3 lane 2 r136 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched throughout; control 23): the
+// fraction set by if/else after the trace (no initialiser) 144 (the ternary's code); the trace record declared at function
+// scope 23; the candidate array declared ahead of the first trace 23; forward's i and j copied as a planar pair before
+// the k clear 217 (906 B); the direction loop as a do/while on `++i < 8` 23 (the 23s the same code). Restored.
+// M3 lane 8 r224 (h2m fast with 0x296e60, 0x2980d0, 0x297660 and 0x24590; 0x296e60 270 and the rest matched in every build;
+// control 23): the loop score as `dot3f(&forward, &directions[i])`, either argument order, with 0-3 redundant pairs on the clamp
+// product 35/144/11/128 (928 B at 3). LEAD 11 at 924 B (steering parens, not kept; the shared helper untouched): the rotation dot
+// and cross k are retail's; left are the j row (v.j * cos and axis j * projection in each other's registers) and the score's
+// order (k, j, i for retail's i, k, j). The hand-written score in all 12 written orders x 0-3 clamp pairs: 23/25 at 0, 60, 144,
+// 141. On the dot3f score: the clamp as an if then `score *= fraction` 128 (928 B); as a ternary statement then `*=` 128;
+// fraction-first clamp product 35; constant-first angle and `0.2f * distance` the same cycle (35/144/11/128); a `direction`
+// pointer for copy, rotation, trace and score 139/143/143/126; the selected or best test reversed 35/35; the fraction as a
+// ternary initialiser 114/130/103/129; the angle named 32/145/29/128; the dot3f call itself in 1-3 pairs: total count mod 4.
+// No natural form gives the 2-pair shift.
+// M3 lane 6 r232 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the shared rotate
+// helper's trig as `sinf`/`cosf` 145 (928 B; 0x296e60 273); the loop step `i++` 23; the best score declared ahead of the best
+// index 25; the candidate array at function scope 23; the clamp as an if then `score *= fraction` 141 (re-measured); the
+// fraction initialised ahead of the candidate copy 23. Restored.
+// M3 lane 11 r155 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590, MATCH throughout; control 23): a grid of
+// argument spelling x score form x 0-3 redundant pairs on the clamp product (score forms: main's; `i + k` then `+= j`;
+// dot3f(&forward, &directions[i]); dot3f(&directions[i], &forward)). Plain arguments reproduce the listed cycles (23/60/
+// 144/141, 124/143/59/9, 35/144/11/128, 35/144/11/128). A `vector3f *direction = &directions[i]` passed to the rotation and
+// the trace (no reads or writes through it) 33/69/144/141, 124/143/68/19, 32/145/29/128, 32/145/29/128; the same pointer
+// passed to only the rotation, or only the trace, gives exactly those numbers (its existence sets the cycle, not its uses).
+// A `vector3f const *up = g_4687b0` for the rotation 70/144/143/141, 134/65/143/143, 144/146/138/143, 144/146/138/143;
+// both pointers 61/145/143/140, 135/172 (911 B)/142/141, 144/145/139/21, 144/145/139/21. The angle wrapper computing
+// cosine before sine (0x296e60 270 -> 274) with main's, the two-stage and the dot3f score: 41/73/145/142, 125/144/70/25,
+// 51/145/31/129. Nothing below round 152's 9.
+// M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): actor_looking_rotate's in-place step through include/axis_rotation.h's helper 245 (893 B; 0x296e60
+// 416). Restored.
+// M3 lane 3 r300 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590, MATCH each run; control 23): the candidate
+// array declared after the best pair 23 (same code); the trace fraction as `trace.distance / 5.f` 23 (same code: it folds to
+// the 0.2 product); the best index stored before the best score 25; the selected direction as `directions[best_index]` at
+// each use (no pointer) 39; a per-candidate trace record inside the loop 144 (928 B). Restored.
+// M3 lane 15 r140 (h2m fast with 0x296e60/0x297660/0x2980d0/0x24590; control 23, 0x296e60 270): lane 3 r277's merged
+// helper (the dot ahead of the sine and cosine) re-measured 6 (0x296e60 282; left: cross i's second product and the
+// score's order); on it the score in two statements (`i*i + k*k`, then `+= j*j`) with 0-3 redundant pairs on the clamp
+// product 53/143 (928 B)/141 (927 B)/33; the score as `dot3f(&forward, &directions[i])` 145 (928 B), as
+// `dot3f(&directions[i], &forward)` 145 (928 B). Retail 0x296e60 runs each of its rotations as fsin, dot, fcos too.
+// M3 lane 13 r152 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the selected test as
+// `best_index >= 0` 34; the selected direction as `directions + best_index` 23 (same code); a `vector3f &direction` bound to
+// the candidate for the copy, rotation, trace and score 139 (928 B); no result local, `return true` at the success and
+// `return false` at the end 221 (939 B); 0x2105b0 writing straight into the specification's vector (the in-place call and
+// the copy dropped) 154 (909 B).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -2718,6 +2642,12 @@ struct s_actor_looking_turn_request
 // Share the masked long actor slot through the looking, movement, or prop lookup 534/534/534.
 // Word slot with those lookups 523/523/523. Shared byte displacement, direct or named bases 442/442.
 // NOT kept: both slot types recover frame 0xc8 and the displacement home but shorten and raise the score.
+// M3 lane 5 r238 (h2m fast with its callees and 0x1fdd90; control 442, aligned 356 exact / 179 register-masked; 27
+// calls for retail's 28): 0x1fdd90's own body with its second test nested (a heavier body) is still expanded here
+// (548) and no longer matches itself (7); the looking output chosen through a `vector3f const *` with one copy at
+// the end 536 (2012 B; aligned 365 / 156), with `bool valid` 614 (1932 B; 341 / 165); `bool valid` and `bool
+// looking_valid` re-measured 547 (1996 B; 366 / 175). Reading: the actor's pool offset retail spills at entry is read
+// once, by the output getter at the end, which this body already re-reads there. BLOCKED-BY 0x1fdd90 stands.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

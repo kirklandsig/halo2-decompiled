@@ -47,7 +47,8 @@ real function_2008fc(s_interface_pulse const *arg_0, bool arg_1);
 void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
     long arg_2, long arg_3, long arg_4);
 
-// score 14 (was 14): r131 unchanged. Draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
+// score 14 (was 14): r131, r232 and r234 unchanged. Draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
+// r133 unchanged. Draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
 // Round 74: half-height lower/all/upper/early-lower copies 14/20/14/14;
 // half-width right/all/early-right copies 14/14/14; bounds pointer with early-right copy 12
 // (one-use pointer, not kept without a match). Opening graph restored.
@@ -330,6 +331,45 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // M3 lane 15 r131 (h2m fast with 0x2008fc 0x200891, control 14): the pulse and both half extents declared `real const`
 // 14; the first x step written product first (`x = w * pulse + x`) 14; both x steps so 14; the corners as a flat `real[8]`
 // array 14; the corner sums written extent first (`w + x`, `h + y`) 14 (all five the same code).
+// M3 lane 5 r232 (h2m fast with 0x2008fc 0x200891, control 14; on the draw pass's record pointer, re-measured 12 with
+// only the XMM3/XMM4 pair left, unless noted): the four edges named (left, top, right, bottom) after the x step 12; the
+// half extents as one `point2f half_size` local 12; both x steps as `pulse * half_width` 12; the corners' half height
+// through a `real const &` 12 (all four the same code); the half height computed after the first x step 18 (the
+// product then takes XMM3 as retail, but the halving constant moves to XMM7 and the running x to XMM4); the half height
+// declared beside the half width and assigned after the step 18; on main, the half height after the step 20. All restored.
+// M3 lane 5 r234 (h2m fast with 0x2008fc 0x200891, control 14): the sprite size read through a `short const *` used for
+// both the width and the height 121 (853 B); the default bounds set by four assignments 14 (same code), by two chained
+// assignments (zeros, then ones) 20; the first x step alone written `pulse * half width` 14; both x steps as plain
+// assignments 14 (both the same code). Reading: the zero stays in XMM5 across the whole iteration, so only XMM3/XMM4 are
+// free for the advance product and the half-height copy. All restored.
+// M3 lane 15 r133 (h2m fast, control 14; the draw pass's record pointer re-measured 12, aligned 12 unmatched rows, only
+// the XMM3/XMM4 pair): the half height declared after the first x step 20; that on the record pointer 18 (the product
+// then takes XMM3 and the half-height copy XMM4 as retail, but the product is formed ahead of the half height's
+// chain, so the shared 0.5 moves to XMM7 and the running x to XMM4); with the corner array declared ahead of the half
+// extents as well 18; the x corners, then the half height, then the y corners 92 (846 B). On the record pointer: the
+// lower and upper corner points named and the four corners filled from their members 12; the half extents as one
+// two-member extent local used by both steps and the corners 12; the stepped y read into a local for the y corners 12
+// (all three the pointer form's code).
+// M3 lane 14 r147 (h2m fast with 0x2008fc 0x200891, control 14): the advance bound by `real const &` to the product and
+// used by both x steps 55; the four corner y values stored ahead of the first x step, the x values after it 37; the half
+// height grouped `span * (height * 0.5f)` 87 (846 B); the pulse query between the half width and the half height 28; on
+// the bounds-record pointer (re-measured 12, only the XMM3/XMM4 pair left) the advance bound by `real const &` 53. All
+// restored.
+// M3 lane 15 r135 (h2m fast with 0x2008fc 0x200891, control 14): on this body the four edges named (left, right, top,
+// bottom, each used twice) ahead of the corner stores 39 (first difference +0x119); the bitmap test as a positive arm
+// around the rest of the draw iteration 14; the half height declared bare ahead of the half width and assigned after it
+// 14; the corner array and the draw call in their own block 14; the corner array declared at function scope beside the
+// position 14 (the last four the same code). All restored.
+// M3 lane 6 r236 (h2m fast with 0x2008fc 0x200891, control 14): both half extents as `0.5f * span * size` 14; only the
+// half height so 14; both as `size * 0.5f * span` 14; corners 2 and 3 copying corner 1's and 0's x and corner 3 copying
+// corner 2's y 32; the bounds copy source read as a `long` and offset as an integer 14 (the ADD stays). All restored.
+// M3 lane 13 r151 (h2m fast with 0x2008fc 0x200891, control 14; the bounds record through a one-use pointer re-measured
+// 12): the four corners through a new forceinline (corners, center, half width, half height) helper taking the extents
+// by value 14, on the record pointer 12 (same code: the copies fold); the half height's `* 0.5f` as its own statement
+// after the first x step 20, on the record pointer 18 (the pair becomes retail's but the 0.5 stays live in XMM7 and x
+// moves to XMM4); one function-scope sprite-record pointer shared by both passes 12 (the one-use pointer's code); the
+// top and bottom y edges named before the first x step 25, on the record pointer 23; only the left and right x edges
+// named after the step 39, on the record pointer 37. All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

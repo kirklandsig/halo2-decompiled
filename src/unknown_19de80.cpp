@@ -952,6 +952,66 @@ static inline bool teams_enabled_19e1c0()
 // renamed with a `z_` prefix 691, `long const remaining` 691, the text buffer declared ahead of the result 691 (same code
 // each: no name or declaration tie); the loop counter typed long 688 (1172 B); the score test written
 // `best_score <= score` 691, with the long counter 688. On the volatile result: `best_score <= score` 388.
+// M3 lane 6 r230 (H2M_FAST with 0x19e0f0, MATCH; control 390, plain result 691): a text buffer declared in each arm, on
+// the plain result 691 and on the kept result 390 (same code each). Diagnostics, not keepable: the plain result with
+// the token read through a volatile view of its own address at every use 469 (1386 B: result ESI, token length EDI,
+// event EBX and the per-compare token reloads as retail, but EBP goes to a hoisted zero used by the event NULL tests
+// and the `text[0]` stores, and `remaining` stays on the stack); those reads at the twelve compares only 473 (1381 B);
+// with a long team counter 469 (same ranking). Body unchanged.
+// M3 lane 8 r223 (h2m fast with 0x19e0f0, MATCH; control 390): the engine-text arm as `if (result) return result;` ahead of
+// the token copy (retail returns there with a dead `mov esi, eax`) 390 (same code), on the plain result 693 (1168 B); the
+// switch-side-time failure as `result = remaining;` on the volatile result 431 (1398 B); the text buffer declared ahead of
+// the volatile result 390; the opponent arm's mode read from the global at each of its three uses 390 (same code each).
+// M3 lane 4 r252 (H2M_FAST with 0x19e0f0, MATCH; control 390, all on the volatile result): the opponent loop counter
+// typed long 421 (1424 B), with the score test written `best_score <= score` 421 (that test alone re-measured 388); both
+// team arms reading the event's team field at each use 394; the local team typed long 393 (1436 B); the token
+// fallback's clamp as one ternary 395 (1432 B). Retail reads the token from its argument slot ahead of the prologue
+// (`mov eax, [esp + 4]` before `sub esp`), so the token is its lightest value. Body unchanged.
+// M3 lane 14 r146 (H2M_FAST with 0x19e0f0, MATCH; control 390, aligned 324, masked 203): the opponent test as
+// `best_score <= function_1587f0(team)` 388 (retail's `cmp esi, eax; jg`; under the bar); that with a long team counter
+// 421 (1424 B); the opponent text cleared after the scan instead of before it 408 (1432 B); the time-mode test inverted
+// with the arms swapped 390 (same code); the local player lookup as one conditional initialiser 390 (same code). Retail
+// re-reads the zero of `wcsncmp`'s result for the score-to-win buffer clear (`mov word [text], ax`).
+// M3 lane 2 r142 (H2M_FAST with 0x19e0f0, 0x19ea60 and 0x19eae0, all MATCH each run; control 390, difflib-aligned 229, 145
+// with registers and offsets masked; plain result re-measured 691 at 1170 B, aligned 232; body unchanged). Reading of
+// retail's merges, arm by arm: the four name arms are compiled apart (their scratch registers rotate: the destination in
+// EAX, ECX, EDX, EAX and the text address in EDX, EAX, ECX, EDX) and each is joined only to the token fallback's tail, the
+// first, second and fourth at its `call` and the third six instructions earlier, where its registers happen to agree;
+// the first and fourth arms end in the same 13 instructions and are still not joined to each other. Of the formatted
+// arms, #cause_team_score keeps the full tail with its own epilogue, #local_team_score, #score_to_win, #local_spawn_time,
+// #local_lives_remaining and #switch_side_time jump into it at four different depths, and #cause_team_opponent_score and
+// #local_player_score each keep a full copy with their own epilogue although their last eight instructions are that
+// tail's. With the plain result this build joins every arm whose code is identical: the second player arm jumps to the
+// first one's start, the team arms share one tail, the opponent arm's tail is copied into both of its format branches
+// and each copy joins #cause_team_score's. Tried, all on the plain result: `return result;` closing the opponent and the
+// local-player arms 704 (1160 B: those two join each other, through `cmovl eax, esi`, and leave the first score arm);
+// those two arms with their own `count` local returned 704 (same code); the switch-side failure as `result = remaining;`
+// 732 (1129 B, re-measured); that with the two returns 744 (1119 B); the four name copies through one file-local inline
+// helper (length, clamp, copy, return the length) 732 (same code as without it: instances of one helper still join);
+// each name arm with its own differently named length local, assigned to the result 732 or returned 732 (same code).
+// So neither a separate variable, a separate helper instance nor a return keeps identical arms apart here; retail's
+// arms were never identical when its merge ran, and what kept them apart is not found.
+// M3 lane 8 r231 (h2m fast with 0x19e0f0, MATCH each run; control 390, plain result 691). Reading: each of retail's name
+// arms makes four rotating scratch loads (the token, the wcslen argument, the copy's text address, the destination), so
+// the next arm starts one register on and no two arms are the same code; with the token in a callee-saved register ours
+// makes three, every arm starts alike and the arms join. On the plain result, all 691 (same code): `(void)remaining;` as
+// the first statement; the token read through an aggregate view of its own address at every use (folded); the token as
+// a by-value one-member aggregate parameter with 0x19e0f0's pointer type and call changed to suit (diagnostic: the member
+// is enregistered like the pointer; 390 on the kept result); `remaining` typed dword with a `long capacity` copy used
+// everywhere; a `capacity` copy reduced by the result ahead of the return. Body unchanged.
+// Ordinary player-name count published after copying 460; team-name count 484; all names 620;
+// all names with ordinary return count 691; capacity-default per-name counts 620, with ordinary
+// return count 692; single fallback count publication 564; shared ordinary name count 620.
+// NOT kept: the ordinary result recovers frame 0x204 while merging name preparation paths.
+// M3 lane 12 r184 (h2m fast with 0x19e0f0, MATCH throughout; control 390, plain result re-measured 691): on the plain
+// result the allocator splits the stack parameter `remaining` into thirteen small candidates, one per arm that reads it,
+// because nothing on the compare chain references it, so the result, the token length, the event and the token take the
+// four callee-saved registers; retail's one `remaining` web from entry needs a reference there. New forms: the whole
+// dispatch in a file-local `static inline` helper called from a one-line definition 1839 (not expanded), the same
+// helper `__forceinline` 691 (same code as the plain result); a dead `remaining -= result;` before the return 691 (same
+// code); one redundant clamp of the result against `remaining` at the exit 661 (1201 B, still thirteen candidates).
+// Diagnostic lever (a test retail lacks): `remaining > 0 &&` in front of the first compare only 479 (1487 B): `remaining`
+// loads into EBP at retail's entry instruction, but the event takes EDI and the token length EBX (retail EBX / EDI).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
@@ -1217,9 +1277,11 @@ void function_19ea60(long player_index, word *buffer)
 	buffer[0xff] = 0;
 }
 
-/* the team's name, as the text shows it */
+/* the team's name, as the text shows it; inline because retail expands it in
+   0x1608e0's team rows (the name buffer cleared twice) while its callers here and in
+   the postgame statistics keep the call */
 // @retail 0x19eae0
-void function_19eae0(long team, word *buffer)
+inline void function_19eae0(long team, word *buffer)
 {
 	s_event_universal_globals *universal = ((s_event_globals_definition *)g_4e3b44[g_4e034c->index & 0xffff].bytes)->universal;
 	long team_names;

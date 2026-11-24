@@ -59,8 +59,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489; m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
+// Earlier header line, a stack merged here in m3 lane 2 r139: 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r220 unchanged, its line just above the marker.
 // Earlier score 489 (was 489). The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
@@ -851,6 +853,59 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // velocity 672, steering 738, both 752, rotated 715, velocity/rotated 722, steering/rotated 749,
 // all 740, all with shared collision addition 764. Reduced control 654, full score 489.
 // NOT kept: the length-exact velocity form moves the first difference earlier; the rest grow.
+// M3 lane 14 r145 (plain check each, with 0x30bf0, 0x1f9760, 0x29b990 matched and 0x2922b0 521 throughout; control 489; body
+// unchanged). With general registers, XMM registers and ESP offsets masked the aligned difference is 77 of 844 rows (125 with the
+// offsets kept): the structure is close and most of the 489 is the exchanged position/path-output homes. What the 77 rows are: the
+// side point's y computed inside both arms of the side select in retail (ours once after it) with the planar difference's i squared
+// first; a `test al, al; setne al` after the first 0x2922b0 call; the half-angle block's 0.5 products; the stopping block's zero
+// kept in XMM1 (ours compares with the pooled zero). Tried: the call's result compared `!= false` 667 (3508 B, masked 109: the
+// conversion appears and the homes move); the side select as an assignment and an `if` 648 (masked 105); the side point as two
+// scalars with y first 688 (3499 B, masked 103); diagnostics, removed: one dead initialised local at the top 665 (3499 B, masked
+// 103), one after the position query 665 (masked 101), two at the top 665 (masked 99). Every added symbol moves the frame homes
+// and the float product sides together (masked 99 to 109), so a form has to be judged over the count phases, which costs a plain
+// check per phase here (the reduced image gives another body).
+// M3 lane 15 r132 (plain each; the reduced image still reads 654; control 489): retail 0x29be20-0x29be5f selects the side
+// distance into XMM1 with `0.0 - d` in the else arm and computes the y row (`* local_17.i + local_8.y`) inside each arm,
+// the x row after the join; ours computes both rows after the join. Forms: the select written in each coordinate (no
+// local_24) 589 (3512 B, first +0x4e; the 384 measured on an older base no longer holds); local_14 declared beside local_9
+// 489 (same code); both 589; the else arm as `0.0f - local_23` 489 (same code); local_14 typed point3f 489 (same code).
+// Body unchanged.
+// M3 lane 2 r139 (plain each; control 489, aligned 178, slot-masked 155): the side point built as two statements with the
+// y row first (retail's order) 708 (3488 B, first +0x4e), with the select written into each row 722 (3514 B), with the
+// select as an if/else 708; local_26 formed straight from the rows (no local_25) 711 (3484 B); the perpendicular as a
+// 2-D vector `{ 0.0f - local_17.j, local_17.i }` with both side tests through dot_product2d 661 (3499 B, aligned 235).
+// Body unchanged.
+// M3 lane 6 r234 (plain each; control 489, aligned-equal 799 of 844 masked rows): the blend rows reading field_64 at
+// each use with no `blend` local (retail's complement reads the field from memory while XMM6 holds it) 572 (3502 B);
+// that with both clamps as `MIN(1.0f, ratio)` 571; the side point with the y row inside each arm of an if/else select
+// and the x row after the join (retail 0x29be20-0x29be5f's shape) 718 (3501 B, first +0x2); the 0x47c override read
+// into a named local used for the test and the store 665 (3499 B, first +0x60); the turn factor's dot as
+// `dot_product2d(&local_17, &local_15)` 489 (same code). Body unchanged.
+// M3 lane 15 r139: the h2m fast screen reproduces the full check (489 at 3503 B, 0x29b2e0 130, 0x29b990 MATCH) once
+// 0x29b2e0, 0x29b990, 0x170d70 (the file of the rotation 0x29b2e0 expands), 0x11ce20, 0x11cc90 and 0x1e5450 are listed with
+// 0x1f9e70, 0x110ab0 and 0x2922b0; without 0x170d70 it builds 0x29b2e0 at 1309 B and this body at 654. Call list and order
+// agree with retail (23 calls). Control 489, aligned 224. Forms: the first 0x2922b0 result read through a `bool const &`
+// 665 (3499 B, aligned 305: the new symbol moves the homes from +0x60); the side decision cleared to false at the top of
+// the steering arm 489 and initialised false at its declaration 489 (same code each); the planar distance read through
+// a `real const &` at the field_44 test 665 (3499 B); the blend field read at each of its six uses (no local) 572
+// (3502 B). Body unchanged.
+// Location still uses ESP+0x8c instead of +0x80. Native planar points for input/actor heading/
+// both/pre-turn/input and pre-turn/actor and pre-turn/all seven forms score 654 in the reduced image.
+// All three points initialized from their two source fields 693. Reduced control 654, full 489.
+// NOT kept: the view forms tie and the coordinate initializers grow the frame.
+// M3 lane 3 r304 (h2m fast with lane 15 r139's companion list, which reads the full check's 489; control 489, aligned
+// 224, register-masked 125; body unchanged). Frame reading: this 0x88 frame is ordered by memory references per byte. The
+// position's home has 7 references and the home shared by the translated target, the second side distance and the path
+// output has 8, so the position sits above it; retail's second read of the position's y (the y row inside both arms of
+// the side select) is the one reference that puts the position below it, at +0x80. Forms: the side point through the
+// existing 2-D point setter 775 (3560 B: the setter's file is outside the reduced image, so the call stays out of line;
+// not a measure); the side point's y member assigned ahead of its x 708 (3488 B); one, two and three redundant pairs of
+// parentheses in the side point's rows 499/497/505 (aligned 234/230/238: main already sits on the best count phase); the
+// rows written product first, with either factor order, 489 (same code each); diagnostic: the y row written in each arm
+// of the side select 718 (3501 B: the compiler merges the two rows again, so retail's per-arm row is not two written rows).
+// With the setter's file (0x22bbca) added to the screen's list: the side point through the existing 2-D point setter,
+// declared here, 487 (3503 B, aligned 222, register-masked 123: a gain of 2, under the bar, homes unchanged); the setter
+// with the signed side distance written in both arguments (no local) 721 (3476 B).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

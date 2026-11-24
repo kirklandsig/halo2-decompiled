@@ -191,7 +191,8 @@ bool function_01de20(long index)
 dword function_1d6f0(bool linear, bool alternate, dword format, long width, long height);
 long g_55e6c0;
 
-// score 29 (was 29): r131 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// score 29 (was 29): r131, r232 and r234 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
+// r133 unchanged. Frame, incoming data in EBP, delayed saves and the level loop agree; retail
 // keeps the size packing unfolded (lea/shr 6/shl 24/sub, shl 12/sub) where /Og folds it
 // ((w<<20)&mask, (h+0xfffff)<<12), and height/count then take each other's register.
 // Kept: the offset declared after the kind store (data stays in EBP) 107; one result variable
@@ -517,6 +518,58 @@ long g_55e6c0;
 // data test, 36 (the `imul` hoists above the test); the entry bound as a reference (`entry.` throughout) 29 (same code);
 // the round-51 signed pitch/packed lead with the constant-left clamp 29 (484 B); that lead with the entry pointer at the
 // top 36 (484 B).
+// M3 lane 5 r232 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp's store moved between the data
+// store and the +0x8c clear 33; round 51's signed pitch/packed lead (re-measured 29 at 484 B) with the select read from
+// the stored flag field (`entry->flag94 ? packed : 0`, 0x1ddd0's idiom) 29 (484 B); the clamp as a `levels` local
+// capped by two independent ifs 168 (497 B); round 51's lead with the packing ahead of the clamp, after the +0x8c clear,
+// 31 (the height in EAX as retail, but the clamp branch and the zero register move); the clamp written non-negative
+// first (`count >= 0 ? (count > 4 ? 4 : count) : 0`) 32. All restored.
+// M3 lane 5 r234 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): early returns (`return false;` for a busy
+// entry, `return true;` on the other paths, no result local) 104 (486 B, first difference +0x1); the clamp through the
+// CRT's `__min(__max(count, 0), 4)` 140 (484 B), as `__max(0, __min(count, 4))` 151 (495 B); the clamp's upper arm as
+// `count < 4 ? count : 4` 30; round 51's signed pitch/packed packing with the `__min(__max(...))` clamp 150 (495 B).
+// All restored.
+// M3 lane 15 r133 (h2m fast; control 29, aligned 20 unmatched rows; the round-51 signed lead re-measured 29 at 484 B,
+// aligned 18): the two header zero stores as one chained assignment 31; the clamp's lower test as `!(count >= 0)` 29
+// (same code); on the signed lead the size word's three terms named in retail's order of computation (rows, pitch,
+// then the OR) 29 (484 B, the lead's code); the height term written first in the one-expression OR 29 (the lead's
+// code); the last column and last row named ahead of the pitch 29 (the lead's code); the three zero stores moved ahead
+// of the dimension stores 38 (484 B, aligned 32). The height/count EAX/EDX choice stays in all of them.
+// M3 lane 14 r147 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; round 51's signed pitch/packed lead re-measured 29 at 484 B,
+// only the top block's height/count swap left): on that lead the format call's count through a copy declared just before the
+// call 29 (propagated); the clamp's store after the pitch, ahead of the packed word, 71 (486 B); the height part named
+// inside the packing (`long rows = (height - 1) << 12;`) 29; the entry as `g_4b4b58 + index` 29; the busy test with the
+// flag first 32 (the 29s are the lead's code). All restored.
+// M3 lane 15 r135 (h2m fast with 0x1dc40/0x1db10, both MATCH; control 29): the clamp positive-first (`count > 0 ? (count <
+// 4 ? count : 4) : 0`) 32; `(void)&height;` at the top 29, `(void)&count;` 29, `(void)&kind;` 29 (all three the same code);
+// round 51's signed pitch/packed lead re-measured 29 (484 B), with `(void)&height;` 29 (484 B). All restored.
+// M3 lane 11 r160 (h2m fast with 0x1dc40/0x1db10, both MATCH; round 51's lead re-measured 29 at 484 B): on the lead the
+// clamp in a `levels` local right after the +0x8c clear, stored after the packing 29 or after the three zero stores 29
+// (both the lead's code); the direct clamp store after the packing 32 (483 B, zero in EDX); main's packing with that
+// local 29 (main's code); the clamp through a file-local forceinline helper taking the count 29 (the lead's code); 1..12
+// probe locals 29 each (no tie). Diagnostics: the call's count as `(long)(short)count` 54, as the stored field 130 (any
+// reference to the count at the call keeps the clamp value in EAX). All restored.
+// M3 lane 13 r151 (h2m fast with 0x1dc40/0x1db10, both MATCH; round 51's lead re-measured 29 at 484 B, aligned 18): on
+// the lead the register parameter `index` declared last (all callers in the file updated; 0x1d770 MATCH) 29 (the
+// lead's code: parameter numbering does not move the height/clamp choice); the offset declared right after the clamp
+// store 36, after the three zero stores 39; the pitch read from the stored width field 29, the `width - 1` term so 29
+// (both forwarded); re-measured the clamp after the packing 32 (483 B). All restored.
+// M3 lane 1 r163 (h2m fast with 0x1dc40/0x1db10/0x1d770, all MATCH unless noted; control 29; round 122's lead re-measured
+// 29 at 484 B). Reading of the allocator's ranking on that lead: the merged clamp value ranks 36 (three definitions in
+// two-candidate blocks and one store in the join block, which references twelve candidates) and is coloured ahead of the
+// height's top piece, which ranks 24 (its store, its packing use, minus the four clamp blocks it only crosses), so the
+// clamp takes EAX and the height EDX; the count's piece (20) then follows the clamp. The height's piece is that small
+// because its three-use range (store, packing, the format call's push; 48) loses its last free register to the data
+// pointer (49, EBP) and is cut at the packing. The clamp value ranked anywhere above the height changes nothing; only
+// below 24 does the lead give retail's bytes, a 13-point gap that no statement order inside the two blocks retail fixes
+// (six stores ahead of the clamp's branch, the rest after its join) can close. Forms: the packing inside `do { } while
+// (0)` 29, the levels store inside one 29 (both the lead's code: no block boundary survives to the allocator).
+// Diagnostics, restored: the height read at every use through the width parameter's address (an explicit load) 153
+// (493 B; 0x1db10, 0x1dc40 and 0x1d770 lost), for the store, the packing and the format call only 152 (493 B).
+// Re-measured: main's stores with the signed packing 29 (484 B), the select-first form 38 (483 B: its three-use height
+// range keeps EAX to the push at rank 48, so the clamp takes EDX as retail), the count copied and clamped in place 166
+// (497 B: the count's whole range then ranks 55 and takes EBP ahead of the data pointer).
+// On the lead, the header pointer formed between the packing and the levels store 29 (484 B, the lead's score).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

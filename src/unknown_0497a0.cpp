@@ -16,7 +16,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
-// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// score 536 (was 536; m3 lane 2 r139 unchanged, its lines just above the marker): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
 // MiniMax A (11-20): no new form, no lower score (536): the frame is 0x64 against retail's 0x60
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
@@ -664,6 +664,47 @@
 // or late selection with separate intermediate 731/770/631/643. With both staged crosses
 // 732/771/628/645. NOT kept: late selection alone retains retail length but raises the
 // score and reserves 0x64 bytes. Separate intermediates increase the frame further.
+// M3 lane 14 r145 (H2M_FAST with 0x2e9e0 281 and 0x2f2d0 142, unchanged in every run; control 536; body unchanged). With general
+// registers, XMM registers and ESP offsets masked the aligned difference is 183 of 681 rows (477 with the offsets kept), so most
+// of the 536 is the 0x54/0x60 frame shift. Re-measured with that count: the two wave values from a forceinline helper (point,
+// wave vector) that stores the plain sine, names the 8.2 phase and the three factors as reals, stores the mixed wave and writes an
+// unread third component `phase * sine * cosine_a + cosine_b` through a copy of the output pointer 628 (2607 B, masked 150); the
+// same with the third component written through the parameter 621 (2622 B, masked 186); with a third component that leaves the
+// phase out 635 (2605 B, masked 158); as a plain sum of the four 628 (masked 150); the same statements written in the body on a
+// local wave vector, no helper 638 (2670 B, masked 321). None lowers the positional score, so none is kept; by structure the
+// pointer-copy helper stays the closest form (150 masked rows: the wave cells' homes, the first cross's i home and the perspective
+// rows' registers).
+// M3 lane 15 r132 (H2M_FAST with 0x4a1e0; control 536 at 2622 B): retail computes the first cross k, j, i (the staged
+// helper's order) with each first product stored to its own cell (+0x28/+0x2c/+0x30) while the x87 wave code runs, and the
+// homes run v1 0x34, v2 0x40, w 0x4c, v3 0x58, v4 0x64. Forms: the special test without its doubled parens 536, the first
+// cross through cross3f_staged 536, s1 computed ahead of the first cross 536, the second cross (w) through cross3f_staged
+// 536 (the same code each); v4 declared ahead of v3 554 (register-masked 477 -> 406). Body unchanged.
+// M3 lane 2 r139 (H2M_FAST with 0x4a1e0; control 536 at 2622 B, aligned 420, register-masked 437). Retail evaluates the
+// 8.2 phase product, sin x, cos 7.8y and cos 7.75y first, then `fxch st(3); fsin` on the phase, and pops the other three
+// after the rounded store: three common values whose second use was removed. Forms: shape1 declared ahead of shape0 536
+// (same code); inv declared after the shape pointers 549; special computed ahead of the shape pointers 704 (2643 B); w
+// declared ahead of v1 536 (same code); v4 declared ahead of v1 658 (2633 B). Body unchanged.
+// M3 lane 14 r149 (H2M_FAST with 0x4a1e0, unchanged at 322; control 536). LEAD 476 (2630 B, frame 0x60 as retail, first
+// +0x6): the special block split in two, the first holding the first cross and both wave values (declared at function
+// scope; the cross vector renamed so it does not clash with the later input copy) with `w = source->v1c` as ITS else arm,
+// the second holding the two scaled adds and the second cross. s1 is then evaluated first into +0x1c and s0 into +0x18,
+// both scaled in SSE, shape0 at retail's +0x14. Left: the else arm laid out after the mode switch (8 extra bytes), the x87
+// factor schedule, the reciprocal in XMM4. Not kept: the second `if (special)` repeats a test (match-only). The same split
+// with the else arm on the second block 644 (2665 B, lane 3 r249's shape); either cross through cross3f_staged on the
+// lead 476 each (same code); the waves scaled in place (`s0 *= 0.03f; s1 *= 0.025f;`) ahead of the adds 652 (2592 B).
+// M3 lane 3 r304 (fast with 0x4a1e0; control 536 = baseline, 2622 B; nothing kept). Frame reading: the compiler packs this
+// frame by size, then by reference count, then by which object reached its count first. Retail's 4-byte cells run inv,
+// shape0, the mixed wave, the plain sine, the first cross's j and k, then the three shared cross products; its 12-byte
+// homes run v1, v2, w, v3, v4, and the two input copies reuse v4's home (first input) and v1's (second input, scaled in
+// place). Ours has one shared x87 transfer cell and three product cells (0x54), and puts v4 below v3: the special arm
+// reloads v4.i once, a seventh reference retail does not have. On r257's wave helper lead (628 with the plain cross,
+// re-measured) the helper's vector takes a 12-byte home (its own, or w's) and the first cross a 12-byte home of its own,
+// so that frame is 0x60 for another reason than retail's. Forms: that lead with the first cross staged into w 626
+// (listed); the helper with three real outputs, the third through a pointer copy, 659 (2586 B); two real outputs and a
+// spare vector written through a pointer copy 659; the caller naming the helper's two values 626 (same code); the
+// helper's vector with the mixed wave first 626; the camera shifts read in the two calls (retail reads the second one
+// after the first add's stores) 537; the second input copy scaled in place 536 (retail's form, other code, same count);
+// both 537; those three on the 626 form 625/626/625. Twelve forced single allocator decisions: none below 536.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1563,6 +1604,29 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // homes); on the kept form, case 4's three offsets named the same way 437 (2592 B), the offsets declared x then y 285 (same
 // score), the half width computed after the u/v stores 292, case 1/2's z pair as `first.z = second.z = ...` 415 (2592 B),
 // case 1/2's x row ahead of the y row 284 (statement order, not kept).
+// M3 lane 15 r137 (H2M_FAST with 0x42c50/0x42b20/0x43740, all MATCH; control 285 at 2596 B): the pixel named and stored
+// to the first vertex then the outer one (retail's store order) 283; case 0's z rows first and then the chained x and y
+// pairs (`first.x = second.x = ...`) 285, the same with second's z first and y before x 285 (same code each); case 0's
+// chained y and x pairs ahead of the z rows 425 (2588 B), with the named pixel 425; case 0 with the whole second edge
+// first (y, x, z) 455 (2588 B); the endpoint fades through a `strip` pointer formed as `vertex - input->vertex_count`
+// 617. Half width still XMM3 (retail XMM4), frame 0xa0 (retail 0xac). Body unchanged.
+// M3 lane 12 r182 (H2M_FAST with 0x42c50, 0x42b20 and 0x43740, all MATCH each run; control 285 at 2596 B; counts are
+// score (bytes) and aligned / register-masked rows, control 164 / 56; body unchanged). Retail's registers: half width
+// XMM4, first edge x/y/z in XMM6/XMM5/XMM3 (first.z spilled to a frame slot of its own in case 0), second edge in
+// XMM0/XMM1/XMM2; ours half width XMM3, first XMM4/XMM5/XMM6. Case 0's four statements (x pair, y pair, each z) in
+// all 24 orders with either chain direction (48 forms): best 277 / 162 / 51 (y pair, x pair, first z, second z), the
+// chained second-then-first direction never better; all keep ours' registers and frame. Case 1/2's z pair chained
+// 415 (2592 B), chained the other way 286, `first.z = second.z;` copy 415. A random search over 197 combinations of
+// case 0 orders, case 1/2 spellings (offsets named or inline, z pair forms, side scaled in place), case 4 spellings
+// (offsets named, side scaled in place, first edge first, half width first), the position stores as two aggregate
+// copies or second first, the pixel named or chained the other way, and `second` declared first: best aligned 142
+// (349, 2588 B); case 1/2's products inline (no offset locals) moves the edges to XMM5/XMM6/XMM4 at frame 0xa8. Case
+// 4's side scaled in place (`side.i *= half_width; ...` and then the rows) with case 1/2 inline gives retail's half
+// width XMM4 and first edge XMM6/XMM5/XMM3 with second XMM0/XMM1/XMM2 (all roles retail's) at 2588 or 2592 B; a grid
+// of 108 (case 0 order x case 1/2 form x case 4 row order) around it: best 421 / 143 / 56 (case 0 y pair, second z,
+// x pair, first z; case 4 rows first-y, first-x, then the second edge), 411 / 147 / 60 at 2592 B. The frame stays
+// 0xa0 against 0xac in every form (retail keeps first.z's spill slot and two more cells), and every role-correct form
+// is shorter, so none lowers the positional score.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
