@@ -1219,6 +1219,12 @@ real function_30bf0(vector3f *v);
 // conditional cap 273, direct optional pointer reads 274, forced first with direct reads 274,
 // shared solve result 276, with conditional cap 276 or direct optional reads 276. Restored.
 // The early rounded root and separate divisions still differ at frame 0x28 versus 0x30.
+// Round 668: early linear fallback with full/positive-only/extent-first/selected-extent
+// gate 232/251/252/274; the same gates with a linear-first branch and one result
+// 216/265/249/268. NOT kept: the 216 form (983 bytes, plain check) swaps the arms and
+// returns through one exit, both match-only forms. In it the fallback loses its extra
+// distance-pointer load and keeps the retail argument setup. Frame 0x28/0x30, delayed
+// rounded horizontal root and shared reciprocal remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2390,6 +2396,11 @@ real function_17c900(short function_type, real input);
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
+// Round 668: lookup index address read with point copy/setter/memcpy 351/374/351;
+// drift salt address read with point copy/setter/memcpy 366/389/366, direct turn
+// exit 364, direct turn and drift exits 332. NOT kept: the 332 form recovers
+// entry through +0x4f but reads its own parameter through its address and is nonexact.
+// Original frame 0x30 and index/output transport difference remain.
 	long salt = projectile_index >> 16;
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
