@@ -1878,6 +1878,10 @@ struct s_item_flags_view_10b850
 // Ray as lateral cross output with direct or staged cross and coordinate or shared point difference
 // 901/902/909/914. With single-precision absolute value 879/880/885/892. NOT kept: all reduce the frame
 // to 0x13c but shorten the body and raise the score. The entry Boolean stores still differ.
+// Impact/bounce offsets as component stores, point setter, or shared scaled add:
+// components/setter 821, components/scaled add 824; setter with components/setter/scaled add
+// 904/911/904; scaled add with components/setter/scaled add 824/821/824.
+// NOT kept: the bounce setter alone gains three and the impact setter shortens the body.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
