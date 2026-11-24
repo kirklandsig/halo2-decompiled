@@ -920,6 +920,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (3740 B: frame 0x2cac, retail's straight/aligned byte homes and the 0x26c field loaded into a register as retail, but
 // actor_index in EDX and the zero in EDI); the entry declarations as actor, self_unit, the three flags, then the four
 // shorts 925 (same code but two rows); both 932. Body unchanged.
+// M3 lane 12 r183 (h2m fast with the three callers and five callees as above; control 925, aligned distance 657; body
+// unchanged). Frame reading: retail's frame is four bytes smaller because self_unit lives in EBP through the loop and the
+// skip flag in a stack byte that packs with the other six flags; ours keeps the skip flag in BL and self_unit in a
+// four-byte home. LEAD, not kept (retail stores 0 to the restricted flag ahead of the unit/ignore test and 1 under the
+// bit test, so this is not its source, and the declaration moves): `bool restricted_spheres = TEST_FIELD_BIT(...)`
+// after the unit/ignore `continue` with `if (!restricted_spheres && <no-obstacle bit>) continue;` 886 at 3744 B (aligned
+// 597): the entry is then retail's instruction for instruction (actor_index EBX, zero EBP, six stores from EBP, three
+// flag bytes) with frame 0x2cb4. Forms: the device flag as one boolean expression 915 at 3760 B (aligned 592; retail has
+// the conditional store there, so not kept), both 920; the self-unit test as a nested `if (self_unit) { if (...)
+// continue; }` 925 (same code); the self-unit test ahead of the hidden-object test 923; the actor's unit type test with a
+// `(char)` cast 925.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -2479,6 +2490,21 @@ long function_1fa7f0(void);
 // zero store moves between start's x and y as retail's; -2, not kept). Retail's tail is 0x210850's own code (the
 // zero-extended index and `cmp ax, 0xffff` of its retail body) inlined twice through 0x210a30, both in an /Ob1 file:
 // BLOCKED-BY 0x210a30 and 0x210850. Body unchanged.
+// M3 lane 6 r237 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked 275/56
+// by a difflib count): the corner trace's start point stored member by member 400; the radius sum's leaf in one, two and
+// three redundant parenthesis pairs (an allocation-phase test) 400/400/400 (same code each); re-measured the copied last
+// step as `points[end - 1]` 545 (1811 B). The outer loop as `for (; index < count; index = next)` does not compile here
+// (`next` is the body's local). Retail's tail is two inlined copies of 0x210850 (`xor eax, eax; mov ax, [esi + 0xc];
+// cmp ax, 0xffff`, the first sharing the equality test's AX load) and one `(z*z + y*y) + x*x` sum. Body unchanged.
+// M3 lane 3 r305 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400). Frame reading: the
+// eight extra bytes are two 4-byte homes retail does without here: the second side flag (`other_side`) has its own home
+// (`sete byte [..]`, retail `sete bl` in the register the first flag used), and the corner endpoint pointer cannot share
+// the candidate distance's home because the attempt counter takes that home first (equal-size homes pack by reference
+// count; retail shares distance and endpoint). The head's rotation (retail's zero in EBX and count in SI, ours EDX and
+// BX) spans 22 register webs from +0x66. No single forced register pick lowers the count (60 tried). Forms: the second
+// side as `!side` at the call with `side = !side;` at the loop end 434 (1715 B); the endpoint pointer declared ahead of
+// the previous pointer 459 (1754 B); the start point built ahead of the 0x2c2a70 call 453 (1755 B); the edge declared
+// first in the loop body 400, after type and link 400 (same code each). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

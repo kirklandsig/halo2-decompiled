@@ -442,6 +442,14 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // ordinal homes do not follow names); the loop's pointer advances with the six coefficient pointers ahead of value and
 // velocity 228 (1415 B), all advances ahead of current/target 215 (1397 B), value moved after first (retail's EBP add
 // position) 78, the coefficient advances reversed then velocity and value 241 (1415 B). Body unchanged.
+// M3 lane 13 r152 (h2m fast with 0x16fe90, MATCH; control 64). Frame reading: the time step's compiler pointer and the group
+// counter both have four references; equal counts go to the one referenced first, and the counter's zero comes ahead of
+// the pointer's set-up, so the counter gets the lower home (retail sets the pointer first and gives it the lower home).
+// On the explicit read-only time cursor stepped last (125 at 1413 B, aligned 35 against main's 65; loop exact): the up pointer
+// declared ahead of forward 125; the time step read without the const cast 255; left through the file's cross product helper
+// 125; left and the new up both through it 131; the counts read at each advance (no count local) 132 (1403 B); the new up
+// stored directly i, j, k 131; only up.i named, j and k stored directly 125; all three named, stored i, j, k 130; the
+// orthogonality test through dot3f(up, forward) 125, dot3f(forward, up) 125.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1940,6 +1948,12 @@ struct s_point_pool_173520
 // `remaining` ahead of the cursor 2; the inverse computed ahead of the destination point 2; the guard on `count` with
 // `remaining` kept 2; `index += step` ahead of `++cursor` 121 (863 B); permuter (seed 13821, anneal, 600 s) 69 tries,
 // best 2.
+// Round 114: The typed pool used for capacity and reservation 37, pool count increment before the point expression 42.
+// With the staged reservation, separate bound and cap reads, and the long count reference: signed winding arithmetic
+// 158, forward defaults 167, step after point selection 40, cursor in the loop increment 121, short step 166, and
+// unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
+// published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
+// for the bounds 194, and one viewport receiver after projection 128.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

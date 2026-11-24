@@ -707,6 +707,34 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // at function scope 848, the list local at function scope set before the entry test and used by it 848 (same code
 // each), the object type in a long local for both mask tests 843 (4226 B), one flags-word local for the four record bit
 // tests 884 (4230 B); on the body `if (!local_21) continue;` as a block around the rest 838 (same code). Body unchanged.
+// M3 lane 3 r302 (H2M_FAST, single address; control 838 at 4255 B, difflib-aligned exact/register-masked 386/299): the
+// list bound as `s_havok_array08 *const &` to the component's field 927 (4277 B); the element as `s_1d24a0 &` 838 (same
+// code); main's mix of `local_15` and direct `field_1` reads made uniform: the field at every use 934 (4271 B), the local at
+// every later use 862 (4253 B). One `real response_fraction;` declared inside each of the two blocks that share it (the
+// same name in both scopes; retail gives the four fraction outputs four homes) 836 (aligned 341/260: a structural gain of
+// 45 rows, 2 points positional, under the bar); with both angular coefficients read at each use 848 at 4225 B (aligned
+// 269/172, frame 0x1d4 = retail's, first difference `push ebx`), with only field_5c at each use 848 (4242 B, 332/246).
+// Lead (match-only, a moved declaration): those two plus lane 11 r141's list local at the removal (the head reading the
+// field) 775 at 4234 B, aligned 206/149, the same 775 as r152's remove_at form but with no header change. The loop head
+// stays BLOCKED-BY 0xbadc0's write summary (src/unknown_0bad50.cpp, on this round's avoid list). Body unchanged.
+// M3 lane 7 r224 (fast screen, single address; control 838 at 4255 B, aligned exact / register-and-slot-masked 386/123).
+// Rebuilt: both angular coefficients at each use with a fraction local of the angular block's own 848 (4225 B,
+// 269/116, frame 0x1d4, first difference `push ebx`); that with lane 11 r141's list local at the removal 775 (4234 B,
+// 206/91). On the 775 form the allocator's view of the tail was read for the first time: retail's `push ebx` at the
+// entry needs an EBX reference outside the loop, since forcing any one of the three tail values (either level or the
+// target) into EBX moves the push to the entry and nothing else (775 -> 736, forced, not source); retail's tail shows
+// no EBX, so the reference is one the final code no longer has. Retail keeps the first level in EDX and the target in
+// ECX, which needs the target coloured ahead of the first level (ours ranks the level 28 against the target's 18: the
+// level is live but unreferenced over the six blocks of the target's compare and step). Source forms on the 775 form:
+// the first level's step ahead of the target test (lane 11 r141's 807 form on main's body, re-measured 807 at 4259 B,
+// 374/122) 740 (4237 B, 187/89: `push ebx` at the entry, the step's load in EBX); the record's bit-1 flag declared
+// ahead of its bit-2 flag 761 (195/85); both 726 (4237 B, 176/83), the lowest count so far; the object type in a long
+// local for both mask tests (lane 7 r215's form) on the 775 form 840, with the flag order 827, on the 740 form 802, on
+// the 726 form 789 (it helps main's body only). None kept: the 726 form is four match-only forms together (two moved
+// declarations, a statement order, the coefficient reads) and is 22 bytes short of retail. Left on it: retail
+// multiplies field_28 by the rate in source order at both uses in the second limit arm where ours loads the rate
+// first, the same side swap at the scale products of both limit arms, the flag pairs' store order, and the tail's
+// ECX/EDX roles. Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

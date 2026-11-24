@@ -1259,6 +1259,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // test, 170 (CSE folds it back); the sample/matrices/orientations initialisers ahead of final_matrices and the mask copy
 // 244 (844 B, head unchanged: object_index EDX, parameter ESI); node_count through a `(dword)` cast as in 0xbd090 170
 // (same code). Body unchanged.
+// M3 lane 7 r221 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0xbfc90, all MATCH; control 240; lane 4 r225's lead rebuilt
+// 170 at 826 B, aligned 100). On the lead: the model's node mask named once for the copy and both calls 170; one fresh
+// read of the header's object in a second pointer local for the bit-29 and +0x34b tests 170 (same code), the same local
+// from object_get() 293 (825 B, aligned 74); the header through slot_handler.h's object_header_get 170; final_matrices
+// read once through the parameter's own address 170, with the object_get() local 293 (same code each: the entry roles stay
+// object_index EDX / parameter ESI). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1891,6 +1897,29 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // sort ahead of the other locals 20 and after them 20; the index declared `register` 20; the index and its test in their
 // own inner block, parent and flag outside 20; the no-model parent and flag renamed to sort first 20 (all the same code:
 // names and scopes do not move the index off ECX).
+// M3 lane 14 r150 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Reading: up to the arm our code is
+// retail's, so ECX still holds the pool there in both builds; ours ends the pool value at the current-object lookup and
+// reuses ECX only when nothing overwrites it (the else-arm form), retail's index avoids ECX, so there the pool was a live
+// value across the model tests when registers were chosen. Tried: a pool local declared ahead of the current-object
+// lookup for that lookup and the render arm's flag lookup, the arm through the accessors 20 (same code: the arm reloads
+// the global); that local for the current lookup and one parent-object local in the arm, the render arm through the
+// accessor 286 (1399 B: the arm shares EDI's data and the render arm reloads the pool); a pool local at the function's
+// top used by the arm only 397 (1405 B); a file-local node-matrix helper that reads its index parameter in two lookups
+// 20, one that reassigns its index parameter (`object_index &= 0xffff;`) 20 (both the base's code: the parameter copy
+// does not survive and the node is still read ahead of the lookup, where retail reads it after). Diagnostic, restored: an
+// arm pool local with a second, different use (a lookup of the current object) 376 (1397 B: the pool is then a held
+// value from the current-object lookup on and the arm re-reads only data through it, but in EBP). Re-measured: the
+// matrix lookup indexed by the field re-read 54 (1406 B: the two lookups are no longer merged); a pool local at every
+// lookup 20; an arm-local pool with one parent-object local 44.
+// M3 lane 13 r152 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Allocator reading: the no-model
+// parent index takes ECX because ECX is the first free register at its turn (priority 78, before the pool's own value, 34);
+// forcing it to ESI gives retail's register but the mask is then done in place, with no `mov eax, esi` copy. With the arm
+// calling 0xb8bd0 (re-measured 47, 1385 B) the aligned difference is only the call against retail's expanded body (the index
+// in ESI copied to EAX is then retail's), so retail's block reads as that call expanded at link time at this one site.
+// Forms with the call, none expanded: defaults in an else arm 48 (1387 B); the flag read ahead of the call 19 (1395 B,
+// re-measured); the arms swapped under `render_index == NONE` 309 (1372 B); the render arm ending in `return;` with the
+// no-model code after it 47; parent and flag as conditional initialisers on the index 48 (1387 B); the index test
+// inverted (`== NONE` arm first with the defaults) 48 (1387 B); the index field read at each use, no local, 47.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

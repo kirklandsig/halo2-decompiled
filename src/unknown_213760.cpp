@@ -2126,6 +2126,32 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // parameter takes no rotation step either). On the write-local form (`s_file_handle write_handle = *handle;`, 114): the
 // count tested through a `dword *` to it 114, through a `dword const &` 114; the close test through a const reference
 // to the raw handle 114; the write's task result named and left unused 114 (same code each). Body unchanged.
+// M3 lane 7 r221 (h2m fast with 0x213800, 0x2149c0 and 0x2141f0, all MATCH; control 33; lane 9 r132's 5 form rebuilt
+// at 5, aligned 4; the plain write-handle local on it 114 at 917 B, aligned 4). Looking for the no-code scratch step
+// between the write and the close on the write-local form, all 114 (same code each): `written = false;` again at the top
+// of the resized block, again after the write's wait; `valid = false;` again at the resized block's top, after the wait;
+// the count declared ahead of the empty header; the count declared ahead of `written` outside the block. Redundant
+// stores fold before allocation and the declaration order does not move the close copy. Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x213800, 0x2149c0 and 0x2141f0, all MATCH; control 33; lane 9 r132's 5 form rebuilt at 5,
+// the plain write-handle local on it 114 at 917 B). Reading: retail's write is the 5 form's allocation with the flags zero
+// in ECX, after which the handle load is lifted to the top as in the resize call; why EAX is not free for the zero there
+// is the open point. On the 5 form: the close test through a const-reference accessor 5 (same code). On the write-local
+// form, 114 each (same code): that accessor, a scalar accessor taking the handle pointer, a by-value accessor, a named
+// raw handle for the test, the close through a file-local helper taking the handle pointer, the close's handle named,
+// the test or the invalidation through `file->handle`, the test through the global element, the close argument as a
+// cast of `file->handle`, the first test through `file->handle`. The write through a by-value bool helper 217 (868 B);
+// `!resized || !helper(...)` with the header inside the helper 355 (834 B). A 36-cell grid (write handle unnamed / named
+// ahead of or after the header set-up / `handle[0]` / a cast of `file->handle`; flags in the call or named; count and
+// header pointers named or not; declaration order): every unnamed-handle cell 5, every named-handle cell 114 (118 with
+// the flags named ahead of the set-up and the handle after it). Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x213800, 0x2149c0 and 0x2141f0, all MATCH; control 33; lane 9 r132's 5 form rebuilt
+// from its patch at 5, first +0x1e1). Reading of the 5 form: in code-generation order the write's flags zero is made
+// before the handle load and both take EAX; retail's handle load takes EAX and is lifted to the top because its zero
+// took ECX. The zero is a code-generator temp bound before colouring (no single forced colouring, cut or priority
+// decision moves it). On the 5 form, 5 each (same code): the handle pointer declared second in the loop body, after the
+// cache-file pointer; the query size declared beside `valid` at the loop body's top; `resized` declared at the top of
+// the size-mismatch block; the handle pointer const; the expected size const with the write's size as
+// `sizeof(empty_header)`. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

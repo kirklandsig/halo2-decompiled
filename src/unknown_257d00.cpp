@@ -2053,7 +2053,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 
 // score 429 (was 429; m3 lane 2 r139 unchanged, its lines just above the marker; m3 lane 5 r233 unchanged; earlier 431, r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 unchanged): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier header line, a stack merged here in m3 lane 2 r139: 429 (was 431; r173 case 20's squared lengths through length_sq3f; m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
-// score 429 (was 429; m3 lane 13 r147, m3 lane 5 r233, m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; two stacked header lines merged here, r147): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier header line, a stack merged here in m3 lane 4 r256: 429 (was 429; m3 lane 13 r147, m3 lane 5 r233, m3 lane 8 r220 and m3 lane 11 r152 unchanged, their lines just above the marker; earlier 431, r173 case 20's squared lengths through length_sq3f; two stacked header lines merged here, r147): r130 kept the post-switch result as an if/else (same code); r160 layout cause found, no keepable form (see the r160 lines below); r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
@@ -2832,6 +2832,51 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // the 0x502400 load left; the extra bytes are a loop alignment pad before case 20); that with the 0x29 OR ahead of the
 // two 1000.f stores 482 (same code); every case 6 store through the global read at each use 428 (still one `or 0x69`).
 // Body unchanged.
+// M3 lane 1 r161 (h2m fast with 0x110ab0 and 0x258a00; control 429): case 6's 0x29 OR moved ahead of the 0x20 store
+// (the 0x48 OR after the 1000.f stores) 429 (same code: still one `or 0x69`); the 0x29 OR as the case's first statement
+// 605 (exchanged, first difference +0x9); case 9's test written actor field first alone 428; the tail's 0x1f57f0 target
+// named once for its test and call 429 (same code); case 14's type store ahead of the 0x20 flag 604 (exchanged). Body
+// unchanged.
+// M3 lane 4 r256 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, aligned 130, register-masked
+// 82; body unchanged). Lane 5 r233's retail-shaped lead rebuilt on today's file (case 13 dropped, case 20's arms as
+// conditional clears, case 7/8's conditional flag, case 5's swapped arms, case 2 in the siblings' order with the vector read
+// straight from the actor, case 4 through dot3f(&displacement, &state facing), case 18's held targets, `? 1 : 0` at +0x465,
+// cases 9 and 11 actor field first, the iterator set up data, index, datum_index, the second publish flag-first) 631 at
+// 2380 B (first difference +0x9, actor EDI / state EBX); with the own-parameter re-read at case 21's flag set (diagnostic)
+// 249 at 2396 B as before. Looked for a plain form that turns the exchange on that lead; every one still exchanged
+// (first difference +0x9): 1 to 6 unused initialised longs at the top 520 each (2384 B: the exchange does not follow the
+// symbol count); case 21's target in a two-use named local 520 (2384 B); case 21's flag set ahead of the 0x1c1080 call
+// 570 (2396 B); that flag set through the parameter cast 631 (same code); one extra actor read inside case 20's loop
+// (diagnostic) 616 (2400 B: a loop use does not outweigh the margin either); the tail's 0x468 pair stored member by
+// member 503 (2396 B), the 0x470 pair member by member 631 (same code), both 503; both on main 619 (2432 B).
+// Reading: on the 249 form the tail's scratch registers are off from the 0x110ab0 argument on, and the cases still
+// differing ahead of it (6: one flags temporary for retail's two, 18, 20) each use a different number of scratch values,
+// so the tail's rotation may follow from them and not be a difference of its own.
+// Round 114: Case 0 falling through to the success return 502, case 1 returning success at the distance test 574,
+// and the case 4 dot helper with its facing copy 467. One facing-flag load for the timer tests 429, signed timer
+// values 431, and selector read before the request destination 600 (actor/state exchange). Case 20 completion arms
+// 429, inactive clear 533, retained publication target 429, and case 11 named short state 429. The shared success
+// return and excess length remain.
+// The dispatch span and shared success target remain. Prior target snapshot 429, selected target snapshot 429,
+// both snapshots 431, skip invalid candidate 429, skip non-winning distance 429, both scan skips 429, direct
+// completed search 490, inactive search first 505.
+// M3 lane 2 r145 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; body unchanged). Allocator
+// ranking read for the actor/state exchange: the datum is coloured first and takes EBP, which leaves the actor and the
+// state without a whole-function register, so both are cut into pieces and ranked again; on main the actor's piece then
+// ranks 184 against the state's 180 (actor EBX, the state cut once more for EDI with its own small piece after the
+// 0x1c1080 call, retail's shape). Case 2's aggregate copy from the actor costs the actor 22 (the copy counts as one
+// reference where the helper's three reads and three stores count six), case 4 through dot3f on the state's facing
+// gives the state 12 and case 18's held targets 8 (two more values in that block), so the retail-shaped body ranks the
+// state 196 over the actor 158 and the state takes EBX; lane 5 r233's own-parameter read removes the state's reference
+// after the 0x1c1080 call, worth 40, which is why it alone turns it (156 against 158). The state's references in the
+// four request blocks (cases 6, 18, 21 and 14) carry 138 of its 196: a block that jumps straight into the countdown
+// tail is weighted four higher than its own count. Forms on that reading, each still exchanged (first difference
+// +0x9): the keepable set (case 2 in the siblings' order with the copy straight from the actor, dot3f on the state's
+// facing, case 18's targets in two-use locals, case 13 dropped, the iterator set up data, index, datum_index) 643
+// (2368 B); that with case 6's flags in a named byte and two stores 635 (2372 B); with case 20's two arms as
+// conditional clears 555 (2396 B); without case 18's locals 639 (2368 B); without dot3f 612 (2400 B). To turn it
+// without the own-parameter read the actor's piece has to gain 39 on the state's; no declaration order, name or
+// case spelling tried so far moves either count by more than 2.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

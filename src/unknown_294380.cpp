@@ -400,6 +400,21 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // lane 12 r176's `dot3f(arg_1, &previous)` with one pair 455 (3712 B, the pair inert); the speed vector declared without
 // its `*g_4687a4` initialiser 797 (3683 B: the copy is not dead code here) and as `{ 0.0f, 0.0f, 0.0f }` with the three
 // zero stores dropped 797 (3683 B). Body unchanged.
+// M3 lane 2 r143 (h2m fast with 0x293b30, 0x293d30, 0x294050 and 0x295600; this body builds at 280 there, 252 plain,
+// so equal scores were compared listing by listing): the final nearest test as `local_10 < 3.402823466e38f` 280 (same
+// code); the count incremented ahead of the three centroid sums 281; the sums written `local_9.x = local_24.x +
+// local_9.x` 280 (same code); the nearest arm storing the point before the distance 283; the centroid test as `local_15
+// != 0` 280 (`je` for `jle`, otherwise the same code). Body unchanged.
+// M3 lane 12 r183 (h2m fast listing 0x293b30, 0x293d30, 0x294050, 0x295600, 0x11c380 and 0x293130 with this function:
+// with the last two the reduced image builds it at 252 like the full build; control 252; body unchanged). Frame reading:
+// the five density-1000 slots are created count, nearest, object (+ centroid distance), record (+ `3 - total`), centroid
+// sum, and the back end's unstable density sort leaves them nearest, count, object, record, sum (retail object, count,
+// nearest, sum, record); with this slot set no creation order that keeps the packing order gives retail's, so retail's
+// slot set differs. The walk's position and offset tie at 10 references and the one whose tenth reference comes first
+// shares the post-walk vector's slot (ours the offset, last read by the separation term; retail the position). Forms: the
+// centroid sum and count ahead of the separation block 770 (3771 B); between the alignment and separation terms 770; the
+// nearest arm first under the negated radius test 252 (same code), with the sum ahead of the separation block 770; the
+// nearest point copied by components 275 (3727 B).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

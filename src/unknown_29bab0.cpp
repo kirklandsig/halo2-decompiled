@@ -59,7 +59,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489; m3 lane 2 r139, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
 // Earlier header line, a stack merged here in m3 lane 2 r139: 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
@@ -881,6 +881,31 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and the x row after the join (retail 0x29be20-0x29be5f's shape) 718 (3501 B, first +0x2); the 0x47c override read
 // into a named local used for the test and the store 665 (3499 B, first +0x60); the turn factor's dot as
 // `dot_product2d(&local_17, &local_15)` 489 (same code). Body unchanged.
+// M3 lane 15 r139: the h2m fast screen reproduces the full check (489 at 3503 B, 0x29b2e0 130, 0x29b990 MATCH) once
+// 0x29b2e0, 0x29b990, 0x170d70 (the file of the rotation 0x29b2e0 expands), 0x11ce20, 0x11cc90 and 0x1e5450 are listed with
+// 0x1f9e70, 0x110ab0 and 0x2922b0; without 0x170d70 it builds 0x29b2e0 at 1309 B and this body at 654. Call list and order
+// agree with retail (23 calls). Control 489, aligned 224. Forms: the first 0x2922b0 result read through a `bool const &`
+// 665 (3499 B, aligned 305: the new symbol moves the homes from +0x60); the side decision cleared to false at the top of
+// the steering arm 489 and initialised false at its declaration 489 (same code each); the planar distance read through
+// a `real const &` at the field_44 test 665 (3499 B); the blend field read at each of its six uses (no local) 572
+// (3502 B). Body unchanged.
+// Location still uses ESP+0x8c instead of +0x80. Native planar points for input/actor heading/
+// both/pre-turn/input and pre-turn/actor and pre-turn/all seven forms score 654 in the reduced image.
+// All three points initialized from their two source fields 693. Reduced control 654, full 489.
+// NOT kept: the view forms tie and the coordinate initializers grow the frame.
+// M3 lane 3 r304 (h2m fast with lane 15 r139's companion list, which reads the full check's 489; control 489, aligned
+// 224, register-masked 125; body unchanged). Frame reading: this 0x88 frame is ordered by memory references per byte. The
+// position's home has 7 references and the home shared by the translated target, the second side distance and the path
+// output has 8, so the position sits above it; retail's second read of the position's y (the y row inside both arms of
+// the side select) is the one reference that puts the position below it, at +0x80. Forms: the side point through the
+// existing 2-D point setter 775 (3560 B: the setter's file is outside the reduced image, so the call stays out of line;
+// not a measure); the side point's y member assigned ahead of its x 708 (3488 B); one, two and three redundant pairs of
+// parentheses in the side point's rows 499/497/505 (aligned 234/230/238: main already sits on the best count phase); the
+// rows written product first, with either factor order, 489 (same code each); diagnostic: the y row written in each arm
+// of the side select 718 (3501 B: the compiler merges the two rows again, so retail's per-arm row is not two written rows).
+// With the setter's file (0x22bbca) added to the screen's list: the side point through the existing 2-D point setter,
+// declared here, 487 (3503 B, aligned 222, register-masked 123: a gain of 2, under the bar, homes unchanged); the setter
+// with the signed side distance written in both arguments (no local) 721 (3476 B).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

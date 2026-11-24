@@ -1367,6 +1367,14 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // axis crossed and normalized in a local vector, then assigned 590 (2822 B); the up axis negated into a local vector
 // 625 (2862 B); the forward cross into a local vector 585 (2857 B); the cone half extents as `0.5f * (width * scale)`
 // 600 (2777 B); the cone reciprocal computed before the centre projection 597 (2780 B). Body unchanged.
+// M3 lane 11 r161 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the cone plane test
+// as `0.0f < origin_offset` 290; the tail flags in member order (84, 85, 8c) 290; the entry as `entries + i` 290; the cone
+// depth as `origin_offset + far_distance` 290 (all the same code); the sphere depth stored after the up negate 411
+// (2831 B). Body unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the projection
+// helper's three row statements in other orders (the operand sorts follow the order values are first defined): up,
+// forward, left 491 (2812 B); left, forward, up 295 (2832 B); up, then the perspective scale, then forward and left 502
+// (2798 B); up, left, forward 318 (2831 B); forward, up, left 491 (2809 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

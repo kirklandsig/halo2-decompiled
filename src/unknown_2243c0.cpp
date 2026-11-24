@@ -948,6 +948,28 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 47 (the flags load is hoisted above the search). On the 8 chain: the pass tag `long const` 8; the field_44 zero back
 // between the pass tag and the pass definition 59 (first +0x50); the instance pointer to const 8; the root tag not
 // const 8; the cache local declared ahead of the context local 8 (same code each). Body unchanged.
+// M3 lane 7 r221 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117; lane 16 r152's chain
+// rebuilt at 8, first +0x9e: pass definition EDX for retail's EAX, material tag ECX for EDX, material definition EDX
+// for retail's EDI, the cache zero's xor after the material lookup). On the chain, the material lookup split into a
+// named definition pointer and its +8 read: with the four zeros after both 8 (same code), the zeros between the two
+// 95 (552 B), only the first zero ahead of the split 23 (first +0x50); the definition bound to a const reference from
+// the tag-data accessor with the zeros between 95, after 92 (552 B). Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117; the reference chain rebuilt at 8,
+// first +0x9e, the same eight lines). On the chain, match-only: the material index masked into a named long with the four
+// zeros between it and the lookup 41 (re-measure: the stores stay ahead of the lookup's loads), with only the first zero
+// between 40; the material instance named as a pointer into the table with the zeros between 135 (552 B), after 8; the
+// definition read without its `+ 0x1c` and the offset added after the zeros 8; the lookup through an accessor taking an
+// already masked index 8; through an accessor with a NULL-initialised result and a named masked index 8; the four zeros
+// through a file-local reset helper taking the cache pointer after the lookup 8 (same code each), ahead of it 13.
+// Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117; the reference chain rebuilt
+// at 8, same eight lines). Allocator reading: on the chain the pass definition is the scratch pick that sits one cursor
+// step from retail's (ours EDX, retail EAX), so the material tag and definition follow (ours ECX/EDX, retail EDX and the
+// dying table's EDI); on main the in-place mask splits the head's table piece from the body's (ECX, hoisted above the
+// frame) where retail keeps one EDI web; no single forced colouring decision lowers main. On main: the tag as `dword`
+// with a `& 0xffff` fallback 152 (re-measure of round 40's form); the fallback indexed by `(unsigned short)` 117 (same
+// code); the instance read from the tag field as a short 117 (same code); the tag local passed to 0x1bbf0 130 (listed);
+// the four cache zeros between the definition's table read and the head element 121. Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -828,6 +828,20 @@ s_1a8a10 g_4453c0[] =
 // accumulated through a reference (`left = i * y; left += (0 - actor j) * x;`) 84 (first difference +0x75, the xmm
 // numbering moves); the left sum built in three steps through it (`left = 0 - actor j; left *= x; left += i * y;`) 37
 // (the zero then stays out of XMM1 and the [1] store moves up). j is read once in all five. All restored.
+// M3 lane 1 r161 (h2m fast with 0x1a8c30, MATCH each time; control 17): the facing copy declared at the function's top
+// 17; the value array declared at the function's top 17; the result flag declared after the path-trace locals 17; the
+// table pointer initialised ahead of the sums 17; the facing copy typed as the facing's own 3D vector (only i and j set)
+// 17 (all the same code: j read once). Body unchanged.
+// M3 lane 15 r140 (h2m fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17): the left sum read in
+// place from the actor (`i * y + (0 - j) * x`) with the forward sum from the copy 29; the left sum in two statements
+// (`i * y`, then `+= (0 - j) * x`) 17, with the negated term first 17, both sums so 17 (the split is folded: same code);
+// the forward sum in two statements (`i * x`, then `+= j * y`) 38. Body unchanged.
+// M3 lane 13 r152 (h2m fast with 0x1a8c30, MATCH unless noted; control 17): forced allocator decisions (picks, priorities,
+// cuts, reload flags, costs and the call alias sets, 77 of them) never give the second j load, so retail's reload is decided
+// before registers are chosen. Forms: the first switch without its `default: __assume(0);` 163 (560 B: a range check comes
+// back); its case 3 also the default 141 (540 B); the input point copied into a local and the first switch reading it 129
+// (548 B); the first switch's cases written 3, 2, 1, 0 79; `return` of the 0x1f57f0 result in place and `return false` at
+// the end with no result local 216 (584 B; 0x1a8c30 49).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

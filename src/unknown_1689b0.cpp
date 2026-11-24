@@ -1449,6 +1449,15 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // marks' flag, tick and table (0x4e7c18, 0x4e7c1c, 0x4e7c20) are three separate globals, while the cluster and object
 // marks this function also uses are one storage block each; retail hoists only the instance tick out of its loop
 // (reloading it after the call). The table is defined in src/unknown_1321f0.cpp (a held file), so it was not tried.
+// Round 230 (m3 lane 8, h2m fast over this file's markers plus the six listed above, base 23): that lead is now on main
+// (include/instance_marks_storage.h, one block), and the tick still loads at the loop top. Diagnostics: the tick as a
+// separate scalar global 23; the store going to another block 58; the loop without the store 186; without the call 241:
+// in every one the load stays in the loop, so neither the table store nor the call is what keeps it there. Tried: the
+// test and mark as a forceinline helper returning whether it marked 23; the tick named inside the loop body for the
+// test and the store 23 (both same code); the tick read into a local ahead of the loop and read again after the call
+// 27 (retail's preheader load and reload, but loaded ahead of the count guard and in EAX, the count in EDX); that inside
+// an explicit `if (0 < count)` guard 24 (retail's layout, scratch registers rotated: tick EAX, element pointer ECX,
+// index EDX against retail's EDX/EAX/EAX); that with the dword world mask 218 (898 bytes).
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)
@@ -1555,7 +1564,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 551 (was 551; m3 lane 2 r139 unchanged, its lines just above the marker): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
+// score 551 (was 551): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree (551 since 580 before m3 lane 8 r184).
 // The projected and first point now have retail's stack homes.
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
@@ -2295,6 +2304,35 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // and `inside` moved up after the distance 618. Diagnostic on the named-successor form, restored: 1 to 10 dead
 // initialised longs at the top 619, 620, 609, 610, 611, 611, 576, 619, 619, 619 (frame 0xb968 in every one). Body
 // unchanged.
+// M3 lane 4 r256 (h2m fast with 0x16a440, 0x120790, 0x2469b0, 0xc2d00 and 0x17a380; control 551 at 2877 B, aligned 363,
+// register-masked 191; body unchanged). The named-successor edge loop (zero-based, `(vertex + 1) % point_count` named at
+// its top) re-measured 619 (2904 B, frame 0xb968). Diagnostic grid, one no-op float multiply on the `opposite` scale
+// against 0 to 7 unused longs at the top: on main 553, 560, 560, 560, 557, 556, 555, 555, on the named-successor loop
+// 619, 619, 620, 609, 610, 611, 611, 576 (the multiply is inert here: each column equals the unused-long sweep
+// alone, and no cell brings the frame back). The side test's dot as dot3f(&side, &plane normal) 551, the perpendicular
+// dot as dot3f(&relative, &perpendicular) 551, both 551 (same code each). The projection's `0.0f - distance` in a
+// three-use named local 565 (2893 B: the three projected rows then share one negated value, but the distance and cross
+// rows reorder), with the side test's dot swapped 554 (2883 B), with the perpendicular dot swapped 565, with both 554;
+// 1 to 7 unused longs on the named-local form with the side dot swapped (diagnostic) 565, 565, 564, 555, 555, 555, 543
+// (2878 B, aligned 348).
+// Out-of-reach prism continue 551; candidate-default clamp 584; shared scaled-vector candidate 582;
+// shared along-edge subtraction and i-k-j dot 559; shared separation and midpoint subtraction 558;
+// both staged crosses 552; shared ray-miss sums 576; inside-first normal test 555.
+// NOT kept: none recovers the count and clearance homes or the post-branch square.
+// M3 lane 8 r232 (h2m fast with 0x120790, 0x2469b0, 0xc2d00 and 0x17a380, all MATCH each run; control 551 at 2877 B, aligned
+// rows with registers and ESP offsets masked 233; body unchanged). Frame reading: a frame this large has its homes
+// sorted by references x 1000 / size, the densest lowest, and equal densities come out in an unstable order that
+// changes with the number of homes, so the four tallies (4 references each, equal with five 12-byte vectors of 12) cannot
+// be placed by declaration order alone. Main's frame has eleven 4-byte cells, as retail's 0xb964 does; lane 14's
+// structural form (zero-based edge loop with the named successor, the square in the prism loop, the reset ahead of the
+// projection, the tally order, the normal arm first) re-measured 584 at 2895 B, masked 108, has twelve: the successor's
+// home goes and two compiler temporaries come, one of them a float spill in the cross-product rows, which is the
+// 0xb968 frame; every positional row then sits 4 bytes off, so no count falls until that spill goes. The zero-based loop
+// alone re-measured 619 (2904 B, masked 207). On the structural form: the side cross through cross3f_staged 585 (masked
+// 109), the perpendicular cross through it 585 (109), both 584 (108); the plane distance as one expression 584 (masked
+// 99); as `dot3f(point, &plane normal) - d` 584 (masked 116); without the tally order 584 (110), without the early reset
+// 585 (114), with the square ahead of the loop 585 (116), with the ray arm first 617 (2904 B, masked 191). Frame 0xb968
+// in every one.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

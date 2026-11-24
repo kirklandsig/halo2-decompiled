@@ -1039,6 +1039,18 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // work in its else 22; the opening's address tests as `== NULL` 22; its flag test as `== false` 22; the machine mask as
 // `(1u << member_count) - 1` 22 (all 22s the same code); re-measured the `short` player index 127 (0x6e500 69, 0x72700
 // 94). Body unchanged.
+// M3 lane 1 r162 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost, its copy loop still one scratch step off): on the pair, the player record
+// as `session->players + i` at both uses 46, the mask and slot tests as two nested ifs 46, the player buffer typed as the
+// setter's 0x3648-byte block (cast at the 0x6e910 call) 46 (the three the same code), the summary passed through the
+// getter at the call 146 (493 B), the copy loop walking a member pointer and an address pointer beside the countdown 50;
+// on this body the two loop tests nested 22 and the 0x3648-byte player buffer 22 (same code each). Re-measured: the
+// pair's NULL preset in an else arm 46.
+// M3 lane 7 r223 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22): on the NULL-preset pair
+// (re-measured 46) the allocator ranks the session at 95 against the player-loop index at 86 (the pair's block references
+// four candidates), so the session is coloured first and takes ESI; with the index ranked first the pair form leaves 14
+// (the copy loop's scratch step). On the pair: a named session player record pointer in the player loop 49; the pair set
+// under the flag test alone 46; the pair assigned players first 46; the output buffer entry named 46.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1607,6 +1619,21 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // through a 12-byte user id record pointer declared in the arm with an aggregate copy `*dest++ = *(record const *)&player`
 // 216 (728 B), with `count++` first 203 (704 B). An ordinary call or an aggregate assignment does not keep the 48 form's
 // colouring (that needs memcpy's own argument order).
+// M3 lane 6 r236 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220, all MATCH; control 9; the indexed copy
+// re-measured 195): the identities zeroed by a `= {0}` initialiser in place of the memset 14 (first difference +0x2d); the
+// copy source as `current->players + i` 9; the player loop as a `while` stepping its index at the body's end 9; the
+// destination as `&identities[0][0]` 9 (the three the same code); the count declared bare and zeroed after the clear 15.
+// M3 lane 1 r162 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9): identities, destination and count all
+// declared ahead of the close call 192 (704 B); identities alone declared ahead of it 9; the two NONE arrays declared beside
+// identities 9, at the function top 9; identities without the align declaration 9 (the marker still aligns the frame; the
+// four the same code); `count++` ahead of the copy on this body 21. Re-measured: the count zeroed after the clear 15, the
+// destination formed before the close call 191 (704 B), the source as `current->players + i` 9.
+// M3 lane 7 r223 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9): the allocator ranks the loop index
+// above `count` once the destination is declared in the true arm (65 against 62: the entry block loses a referenced
+// candidate, the loop's first block gains one), so `count` is left uncoloured; forcing the index below `count` on that
+// form leaves 4 (the mask temporary in ECX for retail's EAX). With the destination in the true arm: the copy size as
+// `3 * sizeof(dword)` 195; `dest += 3;` ahead of `count++;` 216 (728 B); a named player record pointer for the source
+// 195 (on this body 9); the else arm's copy size named 195, its entry list address named 195, both 195 (all folded).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

@@ -995,6 +995,24 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // iterator's cell at fifteen sites, because the expanded sampler's 0x38-byte copy and 0x2640c0's output register take
 // ESI and EDI inside the loop. Still BLOCKED-BY 0x2641c0's expansion (0x264210 expands it too once the noinline
 // declaration goes) and the release site's 0x25c820 expansion.
+// M3 lane 16 r183 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all MATCH; control 404): the
+// context record declared ahead of the motion record 404; the two flags declared after the 0x263670 call 404; the prior
+// state read ahead of the next link 404; case 1's tracking pointer declared in its own block 404; the prior state as a
+// `word` at both uses 404 (all the same code). All restored.
+// M3 lane 5 r242 (H2M_FAST with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, 0x2641c0, 0x264210 and
+// 0x264b50; control 404 at 1624 B; body unchanged). The allocator's ranking in this body: the node 634 (EBP); the
+// `update` byte 30, which takes EBX in the first pass because BL is the only byte register that survives the calls; the
+// actor index over its whole range -56 (its references add 228, the 61 blocks it only lives through take 284), so it is
+// cut into pieces and its stack home is read again; the prop index 134 once split (EDI). With `update` kept out of the
+// registers (a forced compile, not source) the frame is retail's 0xa0 and the first difference moves to +0x6, the
+// argument's stack read; with the actor index's largest piece ranked first instead, the node moves to EBX and the count
+// rises (440). So the frame follows from `update` losing BL, as it does once the sampler is expanded between its store
+// and its test (four or five more blocks it lives through unread), and the register argument needs the actor index's
+// whole range above zero on top of that. Forms: the tail's maximum store written in each exit (retail has three
+// returns), as `if (...) { ++; store; return; } store;` 421 (1644 B), as if/else arms 421 (same code), with the NONE
+// test first 421 (same code); `sample = true; update = true;` as two statements 404 (same code); the node fetched from
+// `next` ahead of `long index = next;` 438 (1616 B, retail's length). Still BLOCKED-BY 0x2641c0's expansion (its
+// noinline declaration is in a file another lane holds this round) and the release site's 0x25c820 expansion.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

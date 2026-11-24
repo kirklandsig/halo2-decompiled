@@ -501,10 +501,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
 // MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
 // counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
 // the table global in ECX the other way round, so every later home is one slot off.
-// score 535 (was 535; m3 lane 8 r221, m3 lane 1 r154 and m3 lane 4 r251 unchanged, their lines just above the marker): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
 // M3 lane 6 r223 (plain each; the reduced image builds this function differently, 834; control 535): the first loop as
 // a do-while with its index declared at function scope 533 (frame 0x21e4: the tag then spills at retail's +0x94 and the
 // secondary count sits at retail's +0x54, but the face list moves to +0x1f0 and the count to +0x1c), with the index in
@@ -1130,6 +1130,26 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // with the walking index copied from it 535, the orientation bounds pair through a pointer to the pair 535 (same code
 // each); the remaining count lowered ahead of the group's call loop 746; re-measured: the edge extrema as ternaries 613,
 // the inner empty slot as `continue` 535 (same code).
+// M3 lane 15 r139 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; 0x17d9a0/0x17d900 MATCH
+// each run; control 535). Frame reading (ours -> retail): group count +0xc -> +0x14, face count/remaining +0x18 -> +0x20,
+// first face +0x1c -> +0x10, secondary count +0x4c -> +0x54, tag pointer +0xb4 -> +0x94, search index +0xbc -> +0x88.
+// Forms: `first_face` declared ahead of the search loop 535; the search index declared ahead of its loop 535; the two
+// counts declared ahead of the face arrays (assigned in place) 535; the tag pointer declared ahead of the arrays 535 (same
+// code each: scope and declaration order move no home); the seed face stored after the two counts 536. Body unchanged.
+// The tag spill and addressed count homes remain displaced. Secondary seed/candidate/both slots
+// through references 676/535/694 and through pointers 676/535/694.
+// Read back the queued seed for its distance test 763, with explicit first group count 746.
+// The candidate-only forms reproduce 535. The seed forms leave the spill displaced or change the prologue.
+// M3 lane 3 r304 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535; body
+// unchanged). Frame reading: the frame is ordered by memory references per byte, and a new 4-byte object joins the newest
+// cell it does not interfere with. Retail's densest cell (+0x10, 16 references) holds the first face, the integer scratch
+// that follows it and nine references of float spill scratch from the rotation block; ours keeps the first face and its
+// scratch in one cell (7 references) and the float scratch (the cosine and the first distance, 9) in another, so ours has
+// one more 4-byte cell, its lowest local is at +0xc for retail's +0x10, and every cell above is displaced: the homes
+// follow from which values the rotation block spills, not from names or declaration order. Forms: the rotate helper's
+// rows through one reused accumulator 579 (3663 B, first +0x7); its rows summed forward, left, up 535 (same code); the
+// first plane declared ahead of the first face 535 (same code); the cosine taken ahead of the sine 535 (same code); the
+// first face declared ahead of its loop 535 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

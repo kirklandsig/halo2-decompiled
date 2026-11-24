@@ -1226,6 +1226,29 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // `root->entity == NULL` 238 (same code each); the fraction test as `results[key].fraction <= distance` 304 (1243 B).
 // Reading: retail copies the origin and the hit with float moves into separate cells (origin z +0x18, y +0x14, x +0x38;
 // hit +0x2c..+0x34), ours with dword moves into two 12-byte aggregates. Body unchanged.
+// M3 lane 3 r303 (H2M_FAST with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238, aligned 180): the 1..16
+// classifier with its result preset to each bound over one named value (`limited = 1; if (!(limited > value)) { limited =
+// 16; if (!(limited < value)) limited = value; }`, compared with the value) 326 at retail's 1243 B (aligned 215: the
+// `mov ecx, 1` / `mov ecx, 0x10` preloads, but `cmp eax, ecx; jl` for retail's `cmp ecx, edx; jg`, the third arm folded and
+// one data load); on it 0 to 40 initialised dead longs at the top of the body 326 at every count but 26 to 28 (327): the
+// compare's operand order is no symbol-count state up to 40 either. A clamp taking and returning `long const &` with
+// separate returns, called on a named copy of the data, 347 (1275 B: the bounds become stack cells and the result an
+// address, as listed for the ternary form); the classifier as a plain function for the link step to expand 377 (1212 B,
+// it stays a call, with the ternary or the preset body); a plain by-value clamp called from the inline classifier 238
+// (expanded and folded to the kept code). Reading of retail's exclusion test: the shape pointer stays in EAX and the data
+// is loaded three times from it (into ECX for the zero test, into EDX for the classifier, into EAX for the byte test), so
+// the classifier compares its ECX bound with EDX; ours keeps one load in EAX or EDX for all three. Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, aligned 180, masked
+// 104). Frame packer reading: this build packs valid, first (shared with material and restitution), second (shared with
+// friction), index, other_index, distance, then the origin (12 bytes, 9 references) below the hit (12 bytes, 6); retail
+// has the hit below the origin and two more 4-byte cells for origin.y and origin.z, so retail's 12-byte origin object
+// carries only x's references. In every form below the origin stays one 9-reference object (frame 0x40). Tried: the
+// origin through a file-local point-copy helper 251 (1260 B), the hit through it too 347, with both plane tests through
+// plane_distance_to_point 251; x stored directly with y and z through a pointer to the origin 315 (1256 B), that with
+// both tests through plane_distance_to_point 315, written z, y then x 314; all three stored through the pointer with
+// those tests 251; the origin's members assigned z, y, x from a position pointer with those tests 311 (aligned 170,
+// masked 81); both tests through plane_distance_to_point alone 238 (same code); the hit's members assigned y, x, z 323;
+// the origin through real_point3d_set from the position 251, from three casts 318. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

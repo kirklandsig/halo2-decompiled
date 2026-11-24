@@ -8,6 +8,7 @@
 #include "screen_widgets.h"
 #include "user_interface_lists.h"
 #include "unknown_19b516.h"
+#include "saved_game_storage.h"
 
 void function_148a58();
 
@@ -53,7 +54,6 @@ bool __stdcall function_19a728(s_game_variant *variant);
 bool __stdcall function_2cb001(long controller_index);
 c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
-extern long g_55c154;
 
 // MiniMax E (11-20): no new form and no lower score (61): retail calls the name copy out of line at 0x13fac0 with
 // the count in a register, where this build expands the copy in place, because 0x13fac0's own body lives in
@@ -488,6 +488,32 @@ extern long g_55c154;
 // variant and replaced by `saved` under `if (create_default)` 76 (577 B); the variant copy ahead of the index store 174
 // (581 B, first +0x7: the frame flips); the copy's count as the name array's element count 61 (same code); the load
 // result held in a named bool 61 (same code). Body unchanged.
+// M3 lane 12 r181 (H2M_FAST with 0x13fac0/0x212bc0/0x238c69, all MATCH; control 61): two load arms re-measured 174
+// (595 B: `this` EDI from the first instruction, `saved` EBX, then the hoisted variant address in EBX); on them `saved`
+// declared at the function's top, at the second half's top or ahead of the entry 174/174/174 (same code: declaration
+// order does not break the `this`/`saved` contest); the game type read once into a local for the second half's three
+// calls 160 (586 B, aligned 80); the first flag read once into a local for its two tests 187 (594 B); both 176 (585 B,
+// retail's length, aligned 70; `this` still EDI); the game-type local on the one-load body 159 (572 B).
+// M3 lane 7 r224 (fast screen with 0x13fac0, 0x212bc0, 0x238c69, 0x2ba9f4, 0x1489b5, 0x2ca244, all MATCH each run; control
+// 61). Rebuilt: two load arms 174 (595 B), with 0x238c69 as (controller, mode, type, name, maximum_count) 167 (590 B),
+// with a count named in the default arm as well (lane 7 r189's form 3) 183 (575 B). The allocator's ranking on these
+// forms, read for the first time: every use of the variant's address (each copy's destination, the build-default
+// argument, the two file-type arguments) is one candidate; on form 3 it has five uses over the two arms and ranks
+// 104 against `this` at 63, so it takes EBX first and `this` is split round the copies; on this one-load body `this`
+// ranks 72 and the candidate gets no register, but a second pass then gives its copy-to-push stretch EAX (the cached
+// address of the default arm). Form 3 with the selected arm's file type read from the local copy (diagnostic, a wrong
+// value) 62 at 584 B: `this` 84 against the candidate's 72, every row retail's but that EAX cache. On that
+// diagnostic, one forced allocator decision (not source), the candidate cut ahead of its second use, the
+// build-default push, gives 15: retail's default arm. So retail's compile does not count a copy's destination as a
+// use of the address candidate: without those uses the candidate has three uses, ranks below `this`, and no stretch
+// between two calls holds two of them, which is retail's code in both arms. Source forms on the diagnostic, none
+// moving the cache: the default arm on a plain global of its own 62; its copy as memcpy 62; its copy into
+// `variant_bytes` 62 (same code each); the game type read into a local ahead of the index store 173 (576 B, the
+// address then in EBX); the index store after the copy 172 (587 B). On form 3: the default arm's copy as memcpy 183;
+// the selected arm's default flag cleared in the local ahead of the copy 183; one named name pointer for the copy
+// and both requests 183. Processor-target flags on the file (/G5, /G6, /G7; the one compiler-setting diagnostic) 61
+// each, the same code. Body unchanged. Next: a copy whose destination the compiler does not see as a use of
+// &g_54e4a0 (no spelling of the assignment, memcpy or the destination tried so far does that); then form 3 applies.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

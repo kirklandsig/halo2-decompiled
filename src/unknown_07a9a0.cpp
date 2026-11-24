@@ -1043,7 +1043,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871; r251 unchanged): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call. Earlier score 964.
 // Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
 // Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
@@ -1818,6 +1818,40 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // m3 lane 4 r251 (H2M_FAST with 0x73530 and 0x192e60, both MATCH; control 871): the party histogram's cells `short` 871;
 // `use_parties` computed ahead of the team-count block 875; the rated count stepped ahead of the average sum 871;
 // `bool result = true;` after the output clear 871; the player loop's group copy ahead of the identity copy 877 (2784 B).
+// M3 lane 15 r139 (h2m fast with 0x73530, 0x71730 (376), 0x6fa60, 0x63220, 0x192e60, 0x193300, 0x1932c0, 0x193250,
+// 0x1931a0, 0x1931d0 and 0x72330; control 871, aligned 1016): round 81 forms re-measured on this body. Both failure exits
+// as `result = false;` joined to the one `return result;` (type-5 scan under `result &&`, the rest under `if (result)`) 988
+// (2952 B, aligned 846; 0x73530 8); that with the player value through the existing 0x63220 957 (2920 B, aligned 893);
+// that with the file-local ratings accessors replaced by the matched 0x1934d0/0x1933d0/0x1933a0/0x193440/0x193400 and the
+// type tests by 0x1934b0/0x193470, 902 (2892 B, aligned 786; 0x73530 8; the top 0x192e60, 0x1931a0 and 0x193250 still
+// expand and 0x193300 stays a call). On the early-return body: the player value through 0x63220 1012 (2608 B); with the
+// accessors 1103 (2516 B); the accessors alone 917 (2724 B, aligned 785). Body unchanged.
+// Guarded opening lookup with lower/upper/full/nested index bounds and word buckets
+// 888/888/885/885. The same guards with long buckets 937/937/942/942.
+// NOT kept: the guarded call adds a rejection path where retail calls unconditionally.
+// Long buckets reduce the frame to 0xb0, short of 0xb4, and all eight scores rise.
+// M3 lane 3 r304 (h2m fast with 0x73530, 0x63220 and 0x192e60; control 871, 2780 B, 0x73530 MATCH; body unchanged).
+// Reading: the link-time expansions here follow the estimated frequency of each call site, and the estimate is what
+// separates retail from ours. Retail's seven calls are the opening 0x192e60, 0x1932c0, 0x1934f0 (inside the lookup
+// expanded in the player loop), 0x1931a0 (the maximum's second evaluation; the first is expanded), 0x91e30, 0x193250 and
+// 0x91f00. With the player loop written as a call to the existing 0x63220 (declared here): early returns as on main
+// 1012 (2608 B: the helper stays a call, because the five-term validity test in front of an early return leaves the
+// rest of the function at a thirty-second); without the second early exit (diagnostic) 1087; with no early exit at all
+// (diagnostic) 971 (2920 B: the helper and everything in it expand, 0x73530 lost at 8); the validity test clearing the
+// result with `if (!result) return result;` after it 977 (2920 B, the same expansions, 0x73530 8), on main's hand-written
+// loop 1013 (2952 B); that exit test written two or three times (diagnostic) 948 (2696 B: the helper a call again),
+// four times 1028 (2592 B, 0x193250 a call again). So retail's loop sits between one and two halvings. Exit structures in
+// that band: the clearing test, then the type-5 scan in its else arm, then one exit test: 964 (2908 B); the clearing
+// test, an exit test, the type-5 scan, an exit test outside the scan's block: 964 (2908 B); the scan guarded by the
+// result instead 901 with the guard below. In all of them the opening lookup still expands (retail calls it) until it
+// sits behind one more two-way test: with the diagnostic `if (result) variant = function_192e60(variant_index);` (always
+// true, no code) the two 964 forms give 858 at retail's 2828 B, 0x73530 MATCH, with six of retail's seven calls in place
+// (ours still calls 0x193300 where retail expands it and expands 0x193250 where retail calls it); lead patch
+// build/r304/lead-7e210-858.patch in the m3-lane3 worktree, not kept: the guard is a test that is always true. Natural
+// spellings of the opening on the second 964 form: the result declared ahead of the lookup, or first of all, 945 (2900
+// B); the variant declared NULL and then assigned 964; the accessor called in the lookup's argument 951 (2924 B); the
+// lookup only when there is a summary 916 on the 977 form (0x73530 1: the call then follows the summary read); the
+// 0x5b060 accessor with two returns 966 (and 0x5b060 itself lost, 27 B for 26). None makes the opening lookup a call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

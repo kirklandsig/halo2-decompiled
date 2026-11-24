@@ -1342,18 +1342,6 @@ bool sound_playback_update_location(long sound_index)
 
 /* ---- gains in decibels, held as real bits ---- */
 
-/* a sound class's volume fade (g_502118, unknown_221490.cpp) */
-struct s_sound_class_fade
-{
-	dword target;
-	s_decibels current;
-	real time;
-	byte flags;
-	byte unknownd[3];
-};
-
-extern s_sound_class_fade *g_502118;
-
 long sound_definition_gain_lower(s_sound_definition const *definition);
 long sound_definition_gain_upper(s_sound_definition const *definition);
 real function_2195f0(real decibels);
@@ -1924,6 +1912,16 @@ long function_2197f0(real gain);
 // assigned before the window test, declared at the top of the function and assigned there, or assigned inside the window
 // test's first comparison: masked 76 each (H2M_FAST 128 at 678 B for each of the four places). The kept inverse form with
 // the local at the first three places: masked 80 each (H2M_FAST 92). The declaration point does not move the register.
+// M3 lane 14 r151 (fast screen with 0x1251e0/0x221810, both matched; control 87). Reading (allocator trace): no single
+// forced allocator decision changes the count (80 tried: every rank and pick of the float values); in this build the
+// window test's fade-out load never becomes a value that lives into arm 1 (the product reads the field again), while
+// retail's product reuses that load in XMM1, which is what pushes the reciprocal, elapsed and 1.0 one register up; so
+// the cause is the reuse, not the ranking. Forms: the product written in retail's order `(elapsed - hold) * inverse *
+// fade_out` reading the field 87 (the product reassociates to fade-out second, from memory); the product in two steps
+// with a named ramp `(elapsed - hold) * inverse`, then `ramp * fade_out` 87; the whole fade-out term named and then
+// added to the ambience difference 87 (same code); the time sum written product first 87;
+// the fade-in copy and the reciprocal computed ahead of the window test 181 (633 B); re-measured: the eager clamp
+// `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4057,6 +4055,26 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // the admitted datum directly from its low word 91. NOT kept: The shared calls remain out of line and shorten the
 // body. A native word slot retains 558 bytes at 168. Advancing the admitted slot directly removes the retail
 // sentinel branch and shortens the body.
+// M3 lane 11 r160 (fast): the hoist comes from the loop top reading the pool global (the macro): with the start test
+// and the sound pointer read through `sounds` the loop end's load stays in the loop end (round 181's 6 form, re-measured
+// 6: the load then sits in the compare block ahead of the next-index ternary). Barriers after the entry, at the loop
+// top or a volatile index change nothing (8/8/171). The existing record_pool_next_used at the loop end 183, at both
+// sites 293; held form (`inline` on its definition) 91 at either (517 bytes: load after the ternary, 0x16bc00 called),
+// with `inline` on 0x16bc00 too 8 (main's code, hoisted). On the 6 base: the loop end as `datum(g, find(g, next)),
+// sounds = g` 17 (retail's loop end plus a `mov esi, ebp` copy); a named next index, then `sounds = g_4e637c`, then the
+// datum and find through `sounds` 25 (every instruction retail's, but the pool takes ESI where retail has EBP; the
+// embedded `data_datum_index(sounds = g_4e637c, ...)` is the same code); on that: the datum through the global 40, the
+// find through the global 25, the entry through the global 163/27/25, the pointer declared before the start test 162, a
+// named playback array for the loop top 160, the start test through the macro 157; 1..8 probe locals 25 each (no tie).
+// M3 lane 5 r241 (H2M_FAST), at 8: the latch scan through the existing for-loop twin data_next_absolute_index_inlined
+// 8 (same code); the reload written in both arms of the next-index ternary 162 (559 bytes: VC hoists the common load into
+// the compare block); the latch as a forced-inline step shaped like 0x16bbc0 (if/else start, scan, NONE result) with
+// the global or `sounds` passed 8/8 (same code); the next index named first with the macro loop top 8 (same code). On
+// the loop top through `sounds` with the next index named first (the 25 form, re-measured 25): the scan through the
+// for-loop twin 25, the start test only through `sounds` 173 (572 bytes), the pointer only through `sounds` 157 (561
+// bytes), the pointer declared through `sounds` ahead of the start test 162 (561 bytes). Reading: with the loop top reading the global, the latch's load is a CSE temporary placed at the latch head;
+// a user-variable definition keeps its place after the ternary, but its shorter range then takes ESI ahead of the scan
+// temporaries (retail: the scan result in ESI, the pool in EBP).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4965,6 +4983,16 @@ struct s_128ca0
 // chunk-queue call 199 (1056 B); on this body `char count = NONE` in place 203 (1054 B), declared just before function_21f720
 // 197 (1056 B). Every char form keeps the scratch shift at the pitch-range index (+0x12a); a declaration live across a call
 // lengthens the frame. Body unchanged.
+// M3 lane 14 r150 (h2m fast with 0x1293f0, MATCH throughout; control 48, aligned 36). The aligned rows: both pins'
+// scratch pair (the gain byte and the bits' copy trade registers), the field_c store one row late at the first pin, the
+// count's `or dl, 0xff` with immediate compares for retail's `or edx, -1` and register compares, the tail's rotation
+// after the second pin, and the second pending test with the constant 8 in EBX. Tried: the processed bits bound by a
+// `s_decibels const &` to the local and passed as the sum's right operand in both pins 48 (same code); the
+// permutation's gain bound by a const reference to its converted value, then summed, in both pins 152 (1062 B: the
+// gain is stored and reloaded); the voice's current permutation named in the second arm's test for the test and the
+// gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
+// is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
+// field_c store 48 (same code: the store still follows the index load).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

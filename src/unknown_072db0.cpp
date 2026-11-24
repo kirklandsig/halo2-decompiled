@@ -2333,6 +2333,26 @@ bool function_1900a5(long index);
 // the player state stays in EBP, where retail re-reads it, so the property cursor loses EBP); that with the last write
 // local 645; bound 6 with `+= record->count` and the named space 645; bound `record->count` with the named space 689.
 // Reading: retail re-reads the state after the fill, so its fill stores go through a pointer that may alias it.
+// M3 lane 2 r143 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643): the two request counts
+// zeroed by one chained assignment 643 (same code); the clock read ahead of the two zeroed counts 646; the write poll's
+// pending test as `state == 0 || state == 1` 643 (same code); the received count as `dword` 643 (same code); `if (received
+// != 6) failed = true;` for the `failed = failed || ...` update 679 (2830 B). Reading: retail lays out the request's
+// failure arm (the expanded restore loop, then the failure count) ahead of the read poll, and tests that poll's range
+// (`jl`, `cmp 1; jle`, `cmp 2; jne`) before the completion block. Body unchanged.
+// M3 lane 4 r256 (h2m fast with 0x72700, 0x75890 and 0x75870; control 643 at 2862 B, aligned 440; body unchanged). The
+// function does not answer to names, declaration order or the number of locals: the request outputs' third local renamed
+// to sort first or last 643 / 643, the team flag renamed to sort first or last 643 / 643 (same-size slots do not follow
+// the names here: retail has the request's third output at +0x28 beside the other two, ours at +0x30; the team byte at
+// +0x13, ours +0x17), the flag pair declared team first 643, the request outputs declared third-first, or in three other
+// orders 643 each, and 1 to 8 unused initialised longs at the top (diagnostic) 643 each; every one is the same code.
+// What is left is not a spelling: the users cursor (retail the record itself in a stack cell, with the copy chain of
+// expanded pointer getters), the slot test's conditional move and the elapsed-time copy, as the lines above record.
+// M3 lane 2 r145 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643; body unchanged): the delay
+// as `> 3 ? 300000 : 2000` (retail's `setle` and 0x7d0 base; an arm swap, match-only) 640; that with the last request
+// time in a two-use local 642; with the last write time in a two-use local 634 (the local alone 637, re-measured); with
+// both locals 636; the write poll's pending range as an early return ahead of the state-2 test 643 (same code), nested
+// under `state >= 0` 643 (same code); either with the last write local 660 (2846 B), with both locals 662. The 634 form
+// needs the arm swap, so nothing is kept.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

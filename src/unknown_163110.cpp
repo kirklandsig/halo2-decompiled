@@ -616,7 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115; m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1277,6 +1277,43 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // copy 141 (re-measured, first +0x5d); the segment flags cleared after the near distance 172 (first +0x4a); the near
 // distance's compare as `near_sum < 1.52588e-5f` 115 (same code); the forward pointer declared with the locals at the top
 // 196 (first +0x6); the planes array declared ahead of the point arrays 115 (same code). Body unchanged.
+// M3 lane 2 r142 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH each run; control 115, difflib-aligned 64, register-masked
+// 22). At +0xbb retail loads all three view coefficients (j, k, i) ahead of the forward copy and reads the copied normal
+// back j, k, i, so the i coefficient is the product's destination in XMM4 and the copied i sits in XMM3; ours reads the
+// copied i first (it is stored first) and the i coefficient last. Plane 0 only: the distance negated and offset in one
+// statement (`near_distance - d`) 423 (first +0x60); the dot kept in a local and stored negated after the normal's
+// negations 119; the normal negated from `forward` again (the copy read by the dot only) 452 (1819 B); the distance
+// negated ahead of the normal's negations 143 (first +0xae); the dot's terms written j, k, i 133 (first +0xaf); the i
+// product added to a parenthesised k + j 145. Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x1648d0 and 0x320b0, both MATCH each run; control 115): the segment flags typed bool 115
+// (same code); the planes typed plane3f and read through its scalar members (`planes[0].i`, `plane->j`) 115 (same code);
+// the classification index typed short 648 (1579 B: the loop is no longer unrolled); the pass index typed short 363; the
+// `negated` vector declared with the top locals 115 (same code). Body unchanged.
+// Near normal memcpy 115; reflected normal memcpy 115; named near/far plane references 306;
+// indexed plane-enable array 482; guarded output cursor 254; success from projected count 459;
+// count each projected vertex 116; retained cull byte 384. NOT kept: none restores the near x preload
+// or the subsequent XMM roles.
+// M3 lane 11 r163 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH each run; control 115, difflib-aligned 73; body
+// unchanged). Reading of the head: it is one colouring decision made in the clip block. The allocator ranks the zero of
+// the negations above each of the three clip deltas (214 against 196), so the zero is coloured first and takes XMM3;
+// retail colours the y and z deltas first (XMM2, XMM3), then the zero (XMM4), then the x delta (XMM5), and with the zero
+// in XMM4 the copied normal's i falls to XMM3 and the view coefficient's load, now in a fresh register, is scheduled
+// above the copy. The y and z deltas outrank the zero only when their rows are scaled in place, which needs the ratio
+// ranked between the deltas as a product operand: the compiler orders a product's operands by the order in which their
+// symbols are first referenced, and retail's rows need x delta, ratio, then the z and y deltas. Forms: the denominator
+// accumulated in the ratio variable (`real t = delta.i * n.i; t += ...; if (t != 0.0f) ... / t`) 200 (first +0x60,
+// aligned 65: all three rows in place, the coefficient preload as retail, zero and near distance swapped XMM4/XMM5);
+// diagnostic, the first product named and the ratio accumulating the other two (`real denominator = delta.i * n.i; real
+// t = denominator + delta.k * n.k; t += n.j * delta.j;`) 191 (first +0x22f, aligned 36: the whole head, the delta
+// registers and the three rows are retail's; left are the plane-normal operand orders and the projection tail), with
+// the walking `out`, a `source` element pointer and `total` declared first 193 (aligned 32;
+// build/r163/lead-0x1652e0-ratio-partial-sum.patch), with three unused locals 88 (first +0x22f); the denominator through
+// the existing dot3f, either argument order, 224 (first +0x60, aligned 68: the ratio ranks below the deltas). The
+// plane-normal loads sort by a class, not by the source order: the normal's j and k are fixed by their offsets, its i
+// follows the plane pointer's symbol number mod 8 (why unused locals moved earlier counts with period 8). The plane as
+// `&planes[pass]` after two separate flag tests gives the classes retail's orders need but computes the pointer 378
+// (1835 B); the two flag tests with a conditional plane 249 (1867 B); the conditional plane ahead of the two-arm tests
+// 387 (1835 B); one combined flag test with the conditional plane 382 (1867 B).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -1006,6 +1006,20 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // [273, 199]. Reading: retail's result is a byte set to 1 at entry and read only at the two kept exits (the failure exit
 // returns a literal false with its own epilogue), and the centre-transform loops count a short against the list's short
 // count. Body unchanged.
+// M3 lane 5 r240 (H2M_FAST with 0x270930 and 0x2c4030, both MATCH each run; control 675): lane 13 r121's 0x2c0d60 order
+// (previous direction as the ninth parameter; definition, four declarations, three calls) re-measured 661, with 0x2c0d60
+// 925 -> 933 and 0x29a190/0x29cbb0/0x2c2060 unchanged (not kept: the callee rises). On main's body: the segment direction
+// as a `vector2f` through include/unknown_11cc90.h's normalize2d_fast 713 (first difference +0x1); the object-index pass
+// testing `ignored != NONE` before the blocking count 695; the node walk as a `for` with the parent step inside 675 (same
+// code); `flags` as a byte local (no cast at the call) 774 (2960 B); the previous direction's pointer set in the actor
+// test and passed as a named pointer 725 (2976 B). Body unchanged.
+// M3 lane 4 r258 (H2M_FAST with 0x270930/0x2c4030 MATCH and 0x2c0d60/0x29a190/0x29cbb0 listed, without which 0x2c0d60
+// builds differently in the reduced image; control 675, aligned 418): `result` as a byte 768 (2958 B), as a char 768; the
+// pathfinding pointer declared after `final_complete` 674 (one count, not kept); after `result` 675, `flags` as a dword
+// 675 (same code each). Reading: retail's result byte is stored once (1) and read at two exits, so it is not folded
+// because the failure exit's `result = false` is split off into its own literal-false exit; at entry retail colours the
+// pathfinding pointer (EBX, then stored) and the flag pointer (EDI), where this build leaves the pointer uncoloured
+// (its weighted cost is not above zero) and gives EBX the constant 1 and EDI NONE.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

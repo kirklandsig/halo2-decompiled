@@ -3961,238 +3961,6 @@ extern vector3f *g_4687bc;
 /* a raised weapon's point (type 41 update): when its time is up, it
    shoves the target in front of the unit, with damage and an impact
    effect */
-// score 8 (was 8): 23 before main took 0x188180's material parameter as the 2-byte type by value (the held patch below); 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
-// as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
-// loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
-// data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
-// material as the 2-byte type by value, held behind 0x1883e0's declarations). Round 220 (m3 lane 3, fast): material
-// type 31 (kept); constructed after the component lookup 33; short rigid body index 46 (1099 B); rigid body fields at
-// each use 35; component and index declared first, assigned after the material 31; rigid body through
-// `rigid_bodies.data + index` 31.
-// Earlier head at 45 (from 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
-// data and offset registers swap in its address add, and the 0x188180 call setup differs
-// (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
-// in eax, forward in ecx and pushes the short material slot raw).
-// Round 236: complete initial vector copy with entry damage lifetime and center/shove/impact names, all subsets 277/277/277/277/277/277/277/277.
-// Keep only the whole forward-vector initialization; all workspace and name changes restored.
-// Round 46: result false at entry 310; result per exit 277; result true, cleared on failure 220; material
-// NONE before function_d6660 222; long rigid body index 221; long node index (nested) 202; dot through
-// vector3d_from_points3d + dot3f 203; perpendicular scaled/added in place 227; side cases scaled into a
-// fresh vector 99; add operands swapped 227; dot term orders xzy 97, xyz 94, zyx 99, zxy 97, yxz 99;
-// dot3f either way 100/100; rigid_bodies.data 94; material read before the component 93; rigid body
-// pointer 90; both 89; result declared first 54; unknown14 stored first/second/last 51/51/56;
-// x + (y + z) 54; x + (z + y) 48; with unknown14 second 45; rigid body by pointer arithmetic 45;
-// the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
-// Round 145: material declaration/assignment split, direct initialization and renamed material; rigid-body
-// reference, base then index, const component and first-node dereference all 45; shared array base 58. Original restored.
-// Round 65 (m3 lane 15, fast; base 31): the component index named ahead of the material 31 (same code); the material
-// default-constructed and assigned after the component lookup 33; 0x188180's seventh parameter as the 2-byte material
-// type by value, changed at its definition, five declarations and six calls together 45 (0x188180 77 -> 95: the effect
-// value takes EAX and the point ECX; 0xe4d90 154 -> 168, 0xceee0 94 -> 103, 0x10c880 67 -> 65, 0x247070 29 -> 15; all
-// restored): retail's 0x188180 takes its tag from the stack into EBX for 0x1883e0, so its inputs follow that callee
-// (BLOCKED-BY 0x1883e0, whose declaration in src/impacts.cpp is held); the rigid body through a const reference to the
-// array 31 (same code); the node count and first node read through the array at each use 35.
-// m3 lane 11 r83 (fast): the impulse through vector3f_scale 31 (same code); the material built before the effect-tag
-// test 36 (aligned 17); the definition re-lookup before the havok test 116; the strength as a `long` 49; the strength
-// read before the 0x1eb020 call 98 (1107 B). Re-measured: `&component->rigid_bodies.data[index]` 31, the material
-// copy-initialised from a temporary 31, default-constructed then `m_index = g_54e898` 31, node_count and nodes[0]
-// through `rigid_bodies.data[index]` at each use (0x1d1a20's spelling) 35.
-// m3 lane 5 r169 (plain; base 23: the one extra byte is the movsx of the material for 0x188180's long parameter, the rest
-// is the g_54e898 word in DX stored at once where retail loads CX and stores it just before the 0x0b67a0 call, and the
-// rigid body's data/offset registers): re-measured with 0x1883e0 matched, 0x188180's seventh parameter as c_type_47f957 by
-// value (definition, five declarations, six calls, and s_item_impact's material declared as c_type_47f957 in items.cpp) 8 at
-// 1098 B (0x10c880 69 -> 39, 0x247070 30 -> 6, 0xe4d90 168 -> 163, 0xceee0 90 -> 97 (its own material parameter is
-// c_type_47f957 in retail too), 0x1883e0/0xcf040 still MATCH): HELD (needs lane 16's src/bipeds.cpp and src/unit_object_type.cpp
-// and the reviewer's OK; patch in m3-lane5 build/r169/held-188180.patch). On that patch: material built after the
-// component lookup 10; rigid body as `rigid_bodies.data + index` 8. On main (fast): the rigid body as a const reference to
-// the element 23, the component as `s_havok_component const *` 23, 0x0b67a0 given `&component->identifier` 23, the
-// strength clamp as a ternary 23 (all the same code); the impulse as `-shove.i` (unary minus) 76 (1084 B: the -1.0f
-// multiplies become sign flips). No untried natural form is left for the two register choices.
-// m3 lane 1 r95 (fast; base 23: eleven of the lines are branch offsets one byte off from the material's movsx for
-// 0x188180's `long` parameter, BLOCKED-BY 0x188180 as above; the rest is the material in DX stored at once where retail
-// holds it in CX and stores it before `mov ecx, esi`, and the rigid body's data/offset registers). Kept: the definitions
-// read through the typed object/unit definition fields (same code, 23). Tried: the node index as `char` (the nodes'
-// element type) 106 (1102 B); the material default-constructed with the block's locals and given a constructed value
-// at the effect block 23 (same code); 0x1eb020's out parameter as `c_type_47f957 *` (definition and declaration, the
-// call passing `&material_index`; 0x1eb020 still MATCH) 23 (same code); the material built first in the Havok block
-// 45 (1100 B); the node-count test folded into the index test with the element read at each use 27; re-measured the
-// material built after the component lookup 25 (the global load is not hoisted: retail's early CX load is a material
-// built ahead of the lookup, as here; only its register differs).
-// m3 lane 4 r193 (base 8 at 1098 B, fast and plain: main has 0x188180's material parameter as the 2-byte type now, so the
-// 0x188180 blocker above is gone and two register choices are all that is left: (A) the default material goes through DX
-// and is stored before the pool's data load, retail holds it in CX and stores it just before `mov ecx, esi` (5 lines);
-// (B) ours loads the array into EDX and scales the index in EAX, retail scales into EDX and loads the array into EAX
-// (3 lines)). A whole-file compile-only harness reproduces both sites as the linked build has them (0.8 s a variant).
-// Fast: the default material built after the 0xb67a0 call 48 (1099 B); the node through a forceinline first-node getter
-// holding an element pointer 8 (same code), the same getter indexing the element at each use 12; the effect tag through a
-// forceinline getter 8 (same code); the array pointer in a local used for both reads 32; the index masked to a word at
-// the element 75 (1103 B); the default material through a forceinline getter returning the type 8 (same code); permuter
-// (27 tries) 8. Harness only, all the body's code unless noted: 0 to 33 unused locals; the index, or the component,
-// declared at the top of the function; index + array, byte arithmetic either way round, a named offset; element getters
-// taking (index, component) or (component, index); the default material assigned to a default-built local, built from a
-// short local, or filled through an out-parameter getter; the pool, the masked index or the pool's data named ahead of the
-// material; the definition and the model through forceinline tag getters, the model in a local, the tag assigned inside
-// its test; a short index (word compare, 3 lines off). Diagnostics: the material takes CX when one more scratch value is
-// loaded between the effect tag test and it (an extra copy placed ahead of it), or one fewer before it (no model lookup),
-// and a callee without a register argument moves the pool's data to ECX. So the scratch choice follows the order values
-// are loaded in and 0xb67a0's ECX argument, not the spelling of these statements: the lead is a statement whose value
-// retail loads between the tag test and the material (or one fewer ahead of it) without adding an instruction.
-// M3 lane 2 r127 (fast, control 8): the node count named and read through the array's data before the element pointer
-// (the form of the matched 0x1d44f0, which has retail's `lea edx, [eax + eax*2]; mov eax, [esi + 0x70]` here) 12; the
-// first node as `node_count > 0 ? nodes[0] : NONE` in one local 8; 0x1eb020 given the material object's own address
-// cast to `short *` 8; the root's component index bound to a `long const &` for the test and the lookup 8 (all the same
-// code); the element pointer formed ahead of the index test 27.
-// MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
-// offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
-// that callee's parameter order in another file.
-// MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
-// M3 lane 16 r117 (fast with 0xb67a0, 0x188180, 0x1eb020): the model definition in a `byte *` local for the effect tag 8
-// (same code); the havok component index in a two-use local read ahead of the type test 43 (1099 B); the material
-// declared (default-built) at the top of the function and assigned `c_type_47f957(g_54e898)` in place 8 (same code); the
-// component pointer declared ahead of the material and assigned after it 8 (same code); the re-read definition typed as
-// the unit definition, reading `.object.` fields 8 (same code).
-// Round 247 (m3 lane 3, fast; a /GL- compile-only screen of this file reproduces both sites): the component as
-// `(s_havok_component *)g_51e9b8->data + (index & 0xffff)` 8, as byte arithmetic with sizeof 8; the type test on the
-// typed `object.object_type` field 8; `strength` declared before `impulse` 8; the type and component-index tests nested
-// with the index in a two-use local 8 (all the same code). Screen only: the material built after the component lookup
-// (its load then follows the lookup, in AX) or after the 0xb67a0 call (CX, but after the call); same sites for the rigid
-// body as a reference, through a reference to the array, `(short)` on the index test, the damage block's position and
-// origin copies swapped, the strength clamp as a ternary, and the two centre declarations swapped.
-// Round 110 (m3 lane 1, fast; the /GL- screen reproduces both sites): the model tag in a named `byte *model` for the
-// effect tag 8; the element through `&component->rigid_bodies.data[index]` (bypassing the array's operator[]) 8; both 8;
-// the effect tag declared ahead of the definition and assigned from the named model 8, with the element through `.data`
-// 8 (all the same code). Screen only: the effect tag's address taken in a local reference (dropped, same code); the
-// component looked up again for the 0xb67a0 argument (the material stays in DX, the array still loads first).
-// M3 lane 12 r134 (fast, base 8): the rigid body as byte arithmetic with the array first, with the offset first, and as a
-// const reference to the element 8 each (same code); the component index read into a local between the tag test and the
-// material 8 (same code); the global read into a short ahead of the lookup with the material built after it 10 (the load
-// sinks to the store, in AX, as the material built after the lookup, re-measured 10). Ours stores the material at once
-// because it holds it in DX, which the pool's data load needs; retail holds it in CX until `mov ecx, esi`, so the late
-// store follows from the register alone.
-// M3 lane 2 r100 (fast with 0xb67a0, 0x188180 and 0x1eb020): the node-count test read as
-// `component->rigid_bodies.data[index].node_count` before the element pointer is formed (0x1cf520's fix) 12, the same
-// through the array's operator[] 12 (both form the element address first, `lea eax, [ecx + edx]`); the havok-flag and
-// component-index tests as nested ifs 8 (same code); the rigid-body index as `short` (0xb67a0's return type) 25 (1099
-// B, word compare); the material copy-initialised from `c_type_47f957(g_54e898)` 8 (same code).
-// M3 lane 15 r102 (a /GL- compile-only screen of this file, both sites as the linked build has them): the default material
-// passed by value through a forceinline helper taking and returning the material type (a by-value argument of that type, which
-// other functions showed takes no rotation step) 8; built from a const reference to the global 8; copied from a named
-// default material 8 (all the same code); built before the effect tag test 228/214 aligned (the load stays in DX and
-// the store moves above the branch), before the effect tag read and before the definition re-lookup (the material in
-// CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
-// Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
-// effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
-// M3 lane 2 r106 (a one-file LTCG harness with the callee files linked in gives 1098 B and both sites as the check):
-// 0-8 dead locals at the top, or 1-8 just ahead of the material (diagnostics) 8 each, so neither scratch choice is a
-// symbol-count tie; the node count in a named local 8; the element through a const reference to the rigid-body array 8;
-// the element as `index + rigid_bodies.data` 8 (all the same code).
-// M3 lane 5 r211 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the rigid-body index read through a
-// `long const &` bound to it 8; the material as a reference bound to a default-material local 8; the material copied
-// from the global as the material type through a cast of its address 8; the effect tag read through a `long const &`
-// bound to it 8; the element as the array's data pointer then `+= rigid_body_index` 8 (all the same code); the element
-// through a second havok_component_get of the root's component index (the impacts file's spelling) 80 (1105 B: the pool
-// is reloaded after the call).
-// M3 lane 11 r126 (fast): redundant parens (no grouping change), which do move float operand orders in other functions,
-// leave both register choices: 0-3 pairs on the perpendicular's i with 0-3 of the impulse products 8 each (16 builds); 0-3
-// pairs around the definition re-lookup's and the model lookup's masked indices 8 each (15 builds); the node-count test
-// as `>= 1` 25 (1099 B); the impulse products constant-first 8; the impulse as an aggregate initializer 8 (same code).
-// M3 lane 16 r151 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the Havok block's five integer tests
-// constant-first 8 (same code); the shove normalize test as `0.0f != function_30bf0(&shove)` 151; the direction's
-// `0.0f != function_30bf0(&direction)` 9 (only the ucomiss operands flip); the facing test as `0.0f < dot` 8; the default
-// material built ahead of the definition re-lookup 40 (1099 B), between the re-lookup and the effect tag read 35 (1099
-// B); re-measured: round 247's typed object-type test (with a byte cast) 8.
-// M3 lane 3 r276 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the element as the array's data pointer
-// bound through a pointer reference and stepped with `+= rigid_body_index` 33 (the add's operands flip, data first as
-// retail, but in ESI/ECX for retail's EAX/EDX, and the node count moves to EAX). Compile-only screen (it reproduces
-// both sites; all the same code at both): a code-free forceinline identity wrapper on each of twelve reads of the
-// Havok block (the component index at the test and at the lookup, the unit's definition index, the model index, the
-// effect tag, the global material, the component, the rigid-body index at its call, its test and its element, the
-// component at the element); the element as data then `+=` without the reference, through a named index copy, as byte
-// arithmetic; `long const` effect tag and index; a const definition; `*rigid_body->nodes`; the model in a `byte *`
-// local; the node index as `short` (one more line, both sites unchanged).
-// M3 lane 13 r128 (screened, control 8): the default material built from `(short)(long)g_54e898` 8; the component index
-// named for the lookup, after the material 8; the impulse declared at the top of the physics-tag block 8; the strength
-// passed as `(long)strength` 8 (all the same code); the node-count and first-node tests joined, the node read again
-// inside 105 (1101 B).
-// M3 lane 16 r155 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): an unused `char` copy of the
-// component's +0x18 index after the lookup (the shape the matched 0x0b67a0 callers in another file carry) 8 (same code,
-// diagnostic); the material as a plain `short` local (its address to 0x1eb020, `c_type_47f957(material_index)` at the
-// 0x188180 call) 25 (the global loaded as a dword); the component bound through a `s_havok_component *const &` for the
-// 0x0b67a0 call and the element 8; the re-looked-up definition and the effect tag read as const 8; the model index
-// named ahead of the effect tag read 8 (the 8s the same code).
-// M3 lane 8 r207 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the node index through a file-local
-// forceinline helper taking the component (rigid-body index, element, node-count test, NONE result) 8 (same code); the
-// same helper as plain `inline` 114 (1057 B: it stays a call), with early returns 114. Compile-only screen (both sites
-// as the check; all the same code at both): the effect tag through a copy local, through a named masked model index,
-// through a named tag-table pointer, through a dword cast, the model index as a word cast; the rigid-body index as
-// dword; the element from the array's data by byte arithmetic with sizeof, through a reference to the data element,
-// non-const. Diagnostics (screen): without the 0x188180 call, without the damage block, without 0x1eb020's call, with
-// the strength a constant: the material still in DX and the element still data-in-EDX, so both choices are local.
-// M3 lane 8 r210 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the element pointer declared at the
-// effect block's scope and assigned after the index test 8; the rigid-body index declared before the material and
-// assigned at the call 8; the node index declared at the effect block's scope 8; the element through a named pointer
-// to the rigid-body array formed after the component lookup 8 (all the same code); the material default-constructed
-// before the component lookup and assigned a constructed value after it 10 (the load sinks to the store, in AX).
-// Compile-only screen (both sites as the check; same code at both): the element as a data local then
-// `&rigid_body[index]`, as `index + data`; the component bound as a reference; a const component pointer; `0 <
-// node_count`; an `int` index; `NONE != index`. Diagnostics (screen): the index kept live past the element goes to EBX
-// with the data still loaded first; without the node-count test the offset takes ECX, data still first. Both stores and
-// loads sit as late or early as their registers allow, so both sites are register choices, not schedules.
-// M3 lane 3 r287 (fast, control 8): the rigid-body data pointer through a `s_havok_component_rigid_body *const &`
-// bound after the index test and indexed with `[]` 8, bound before the 0x0b67a0 call 8; the default material copied
-// into a short local read through a `short const &` for the constructor 8; the element as a const reference to
-// `component->rigid_bodies[index]` with `.node_count` / `.nodes[0]` 8 (all the same code at both sites); the component
-// through a `s_havok_component *const &` bound to the cast pool data (0xb9b90's data-first form) 47 (1099 B: the pool's
-// data then loads into ECX ahead of the material, retail's lookup is index-first).
-// M3 lane 7 r209 (h2m fast, control 8; retail's 0x0b67a0 clobbers only EAX and EDX, as ours): the material
-// default-constructed, then `material_index.m_index = g_54e898` 8; the effect tag read at both uses (no local) 145 (1101
-// B: reloaded after the call, not shared); the material set through a file-local forceinline setter 8; the first node in
-// a NONE-initialised local set inside the rigid-body and node-count tests, tested after them 8; the component's index
-// view named for the 0x0b67a0 argument with the material built after the lookup 10 (all 8s the same code).
-// M3 lane 7 r211 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the Havok push block (the effect
-// tag through the 0x188180 call) as a file-local forceinline helper 8; the pool's data in a named pointer ahead of the
-// material, the component indexed after it 8; the masked component index named ahead of the material, data + index after
-// it 8; the rigid-body data pointer read into a local ahead of the 0x0b67a0 call 8 (the load sinks past the call); 0x188180
-// given `c_type_47f957(material_index.m_index)` 8; the effect test held in a named bool 8; the rigid-body test held in a
-// named bool 8 (all the same code).
-// M3 lane 7 r212 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the first node held in a `char` (the
-// nodes' element type) 105 (1101 B); no element local, the node-count test and the first node through the array's
-// operator[] at each use 12 (`lea eax, [ecx + edx]` forms the element first); the index and node-count tests joined with
-// `&&`, the node through operator[] inside 12; the default material read through a `short const *` cast of the global 8;
-// the component as a const pointer under LTCG 8 (the 8s the same code).
-// M3 lane 14 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the material constructed after the
-// component lookup 10 (its load then follows the lookup in AX, not hoisted: retail's load comes first in the block and only
-// its register differs); the default material read into a `short` ahead of the lookup and the object built after it 10
-// (forwarded, same code); the material copy-initialised from a constructed temporary 8; the impulse and strength declared at
-// the effect block's top 8; the node tests joined in one condition 8 (all the 8s the same code). Kept: the impulse through
-// the existing vector3f_scale (same code).
-// M3 lane 11 r154 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): a code-free `static __forceinline`
-// long identity around one read at each of twelve places (the Havok component index, the model tag index, the target
-// index at its read, test and 0xbadc0 argument, both point-target reads, the damage definition and owner fields, the
-// 0xb67a0 result, its NONE test, the first node, the effect-tag test) 8 each (same code: the scratch rotation is not
-// shifted at either site); the same identity as a function template 99 to 296 (1102-1127 B: not code-free); the element
-// as `.data + index`, `index + .data` and `&.data[index]` re-measured 8 each; 0x1eb020's output as `(short *)&material_index`
-// 8. Permuter (600 s, 23 tries, reduced image of 542 sources) best 8.
-// M3 lane 13 r143 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the permuter (fast, anneal, one
-// job, 1810 s, 70 tries) best 8; the rigid-body index as a `long const` 8; the rigid-body index declared between the
-// material and the component lookup, assigned at the call 8 (both the same code). All restored.
-// M3 lane 3 r298 (h2m fast with 0xb67a0, MATCH; control 8): the element subscript given `(short)rigid_body_index` 73
-// (1101 B); the element as `&rigid_body_index[component->rigid_bodies.data]` 8 (same code: the data still loads first);
-// the object-type test as `((1 << type) & 1) != 0` 8 (same code), as a `(bool)` cast 26 (byte shift `mov dl, 1; shl dl,
-// cl`); the default material built ahead of the effect-tag test 13 (its load and store move above the branch, still DX).
-// M3 lane 12 r178 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8). Matched 0x22a110 has retail's
-// `lea edx, [eax + eax*2]; mov eax, [reg + 0x70]; shl edx, 5` where the 0xb67a0 result indexes the array directly (it
-// calls 0xb67a0 twice; this function calls it once, so that spelling does not apply), and 0x1d1b60 reads the node count
-// through an array pointer and re-reads the array for the node. Tried: 0x1d1b60's spelling (an array pointer for the
-// node-count test only, the node through `rigid_bodies.data[index]`) 12; the array pointer for the test and the element
-// pointer for the node 12; the node count through the element pointer and the node through the array again 12 (all three
-// form the element first with `lea eax, [ecx + edx]`); the callee's result named as a `short` and widened into the index
-// 8 (same code); that `short` indexing the element with the widened index for the NONE test 25 (1099 B, a second
-// `movsx`); the element indexed by `(short)rigid_body_index` 73 (1101 B).
-// M3 lane 6 r233 (h2m fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the component pointer as `*const` 8;
-// `strength` declared at the top of the Havok block, ahead of the material 8; the rigid-body index declared there too and
-// assigned at its call 8; the element as a non-const pointer `rigid_bodies.data + index` 8; impulse and strength both
-// declared ahead of the material 8 (all the same code: the material still takes DX).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
@@ -4285,21 +4053,19 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 						if (((1 << *(byte *)local_98b918) & 1) && root->havok_component_index != NONE)
 						{
 							s_object_definition *definition = (s_object_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
-							long effect_tag_index = *(long *)(g_4e3b44[definition->model_tag_index & 0xffff].bytes + 0x24);
+							byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
 
-							if (effect_tag_index != NONE)
+							if (*(long *)(model + 0x24) != NONE)
 							{
-								c_type_47f957 material_index(g_54e898);
 								s_havok_component *component = havok_component_get(root->havok_component_index);
+								c_type_47f957 material_index(g_54e898);
 								long rigid_body_index = function_0b67a0((s_small_index const *)component);
 
 								if (rigid_body_index != NONE)
 								{
-									s_havok_component_rigid_body const *rigid_body = &component->rigid_bodies[rigid_body_index];
-
-									if (rigid_body->node_count > 0)
+									if (component->rigid_bodies[rigid_body_index].node_count > 0)
 									{
-										long node_index = rigid_body->nodes[0];
+										long node_index = component->rigid_bodies[rigid_body_index].nodes[0];
 
 										if (node_index != NONE)
 										{
@@ -4307,7 +4073,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											byte strength;
 
 											vector3f_scale(&shove, -1.0f, &impulse);
-											function_1eb020(effect_tag_index, node_index, &material_index.m_index);
+											function_1eb020(*(long *)(model + 0x24), node_index, &material_index.m_index);
 											strength = target_definition->impact_sound_size;
 											if (strength > definition->impact_sound_size)
 												strength = definition->impact_sound_size;

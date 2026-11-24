@@ -1045,6 +1045,10 @@ struct s_collision_result_buffer_1697c0
 // orders 196 / 155), rows `cos - sin + proj` 287 / 31 and `proj - sin + cos` 340 / 44: no form lowers this body
 // without raising 0x297d30. The wrapper's cosine computed first 274 (0x297d30 41); the candidate copied between the
 // two draws 330 at 1423 B (aligned 383: worse); the up axis through a pointer local 283 (1438 B). Body unchanged.
+// M3 lane 15 r139 (h2m fast with 0x297660, 0x2980d0, 0x297d30 (23) and 0x24590; control 270): the normalizer's length local
+// renamed (slot-name order) 270 (same code); the pitch axis passed through a const pointer local 328 (frame 0xb0); the
+// candidate through a pointer local for both turns 334; both draws held as double 341 (1425 B, frame 0xb0, aligned 329
+// against 198); the candidate declared ahead of the draws and assigned after them 270 (same code). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2265,6 +2269,16 @@ struct s_actor_looking_structure_view
 // array declared after the best pair 23 (same code); the trace fraction as `trace.distance / 5.f` 23 (same code: it folds to
 // the 0.2 product); the best index stored before the best score 25; the selected direction as `directions[best_index]` at
 // each use (no pointer) 39; a per-candidate trace record inside the loop 144 (928 B). Restored.
+// M3 lane 15 r140 (h2m fast with 0x296e60/0x297660/0x2980d0/0x24590; control 23, 0x296e60 270): lane 3 r277's merged
+// helper (the dot ahead of the sine and cosine) re-measured 6 (0x296e60 282; left: cross i's second product and the
+// score's order); on it the score in two statements (`i*i + k*k`, then `+= j*j`) with 0-3 redundant pairs on the clamp
+// product 53/143 (928 B)/141 (927 B)/33; the score as `dot3f(&forward, &directions[i])` 145 (928 B), as
+// `dot3f(&directions[i], &forward)` 145 (928 B). Retail 0x296e60 runs each of its rotations as fsin, dot, fcos too.
+// M3 lane 13 r152 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the selected test as
+// `best_index >= 0` 34; the selected direction as `directions + best_index` 23 (same code); a `vector3f &direction` bound to
+// the candidate for the copy, rotation, trace and score 139 (928 B); no result local, `return true` at the success and
+// `return false` at the end 221 (939 B); 0x2105b0 writing straight into the specification's vector (the in-place call and
+// the copy dropped) 154 (909 B).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

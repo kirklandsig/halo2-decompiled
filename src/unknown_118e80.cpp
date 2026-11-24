@@ -620,6 +620,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // forms 2-10, never 0 (the ties move with the symbol count). Reading: retail's six products load forward.j, up.j, up.i,
 // up.k, up.j, up.i (the last forward.j read through the forward pointer formed mid-cross); each of our forms gets five
 // of the six with the test, or all six without it. Still BLOCKED-BY 0x1faf80.
+// M3 lane 13 r150 (h2m fast with 0x1faf80, 0x118700, 0x11f0d0 and 0xe01d0; control 15). On round 129's reorder lead (0x1faf80
+// as (object_index, facing, settings, control, threshold, turn), re-measured: here 2, 0x1faf80 2, 0xe01d0 569), in 0x1faf80's
+// test: the i product's object operand re-fetched through object_get(object_index) 4 (the re-fetch folds into the object
+// pointer; a cross-product row flips), all three test products so 238 (890 B); facing as a `vector3f &` parameter (definition,
+// both declarations, both calls) 2; the facing i leaf through a `real const *` declared after the object 2; the object's
+// forward.i leaf through a `real const *` so 2 (each the same code: the i product still loads facing first). Still
+// BLOCKED-BY 0x1faf80. All restored.
+// M3 lane 1 r162 (h2m fast with 0x11f0d0, 0x1faf80, 0x109290 and 0x118700, faithful at 15; control 15): the two field
+// pointers `vector3f *const` 15, in one declaration 15, as `vector3f &` references for the tests and stores 15 (the three
+// the same code); the agreement test as `!(a >= 0.9999f) || !(b >= 0.9999f)` 19; the turn-velocity store ahead of the
+// dispatch block 80.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1689,6 +1700,18 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // so the store's 14 is a row realignment and not retail's shape. Still BLOCKED-BY 0x1c4b00's bool formal (this round one
 // of its declarations sits in src/unknown_1cec30.cpp, another lane's file, and one in a contributor's src/bipeds.cpp)
 // and by 0x1ec690 (not yet written) for the copy's hoisted loads. Body unchanged.
+// M3 lane 13 r150 (h2m fast with 0x1c4b00 and 0x11f0d0, both MATCH; control 14; 0x1c4b00's formal kept `long`): the object
+// write and the 0x1c4b00 call through a file-local inline (object, linear, angular, force) helper, without the member store 92,
+// with it 16 (first +0x273); the +0x88 copy component by component 106 (1050 B); the force bool declared at the top and
+// assigned at the call 14; the copy through a `vector3f *` to the re-fetched object's +0x88 14 (both the same code).
+// Still BLOCKED-BY 0x1c4b00 (round 272's bool form stays held: it raises contributor 0xe24f0).
+// M3 lane 1 r162 (h2m fast with 0x1c4b00, its callers and 0x1197b0's callees; control 14). Diagnostics, all restored:
+// 0x1c4b00's last parameter `bool` in its definition and all 14 declarations (none of those files held this round)
+// re-measured 90 with the member store (1038 B; 0xe24f0 579 -> 601) and 40 without it; on the 40 form the 0x119bc0 result
+// passed straight to the call 98, the member store after the call 100 (1043 B), the object looked up before the 0x119bc0
+// call 40, the result `bool const` 40 (both the same code); `inline` on 0xb7740's definition with
+// `function_b7740(arg_0, &local_11.field_c, NULL, true)` for the lookup and copy 279 (ten callers lost: it then expands
+// everywhere). Still BLOCKED-BY 0x1c4b00 and 0xb7740.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

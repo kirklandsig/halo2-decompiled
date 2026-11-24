@@ -497,6 +497,12 @@ void function_11bed0(s_location *location, point3f const *point);
 // Absolute slot with signed or sentinel guard 88/90; sentinel guard with pool stride 92; element traversal with pool stride 78.
 // Signed audible interval or separate low and high nibble tests on the typed cursor 83/81, salted cursor 164/167.
 // NOT kept: the pool-stride form gains two points, and the spatial query still expands.
+// M3 lane 6 r239 (fast with 0x11bed0, its other callers, 0x16bc00/0x16bbc0 and the walk siblings; control 80): the type
+// test and the 0x11bed0 call in a new plain helper taking the source, on 0x219d90's walk, 89 (197 B: the walk becomes
+// retail's handle loop, but this /Ob1 file keeps the helper out of line); that helper `static` 89; defined in the location
+// query's /O2 file 160 (281 B: the link expands the helper and then 0x11bed0 at the loop site); `__forceinline` here 160;
+// the /O2-file helper on the current body 80 (same code). Our link expands callees from /O2 files and never from /Ob1 ones,
+// the reverse of retail for 0x11bed0 and 0x16bbc0. Still BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1538,6 +1544,38 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // S1. LEAD, HELD (twin form): S1's step written out by hand in this body (`for (;;)` with the step, then `break` on NONE),
 // the shared helper unchanged: this, 0x21bd00, 0x21b870, 0x126df0 and 0x12a810 all MATCH (check.py --fast too), 0x21b0e0
 // 305 unchanged; not kept, a per-site spelling of the shared step.
+// M3 lane 4 r255 (h2m fast with 0x21bd00, 0x21b870, 0x126df0 and 0x12a810; control 24). S1 re-measured: this MATCH,
+// 0x21b870 MATCH, 0x21bd00 2 (only the latch's two reloads after the 0x12a810 call: retail the count `[esp+0x18]` then
+// the first index from the parameter's home `[esp+0x24]`, ours the reverse), 0x21b0e0 305 -> 418 (so S1 alone also
+// raises that user). On S1: the next index named first (`next = ...; index = next; if (next == first) ...`) 47 (201 B;
+// 0x21bd00 71, 0x21b870 32); 0x21bd00's guard on the iterator's own first field after it is built 0x21bd00 77 (this and
+// 0x21b870 MATCH); the count stepped first (`long count = iterator->count++; if (count > 0 && ...)`) 23 (213 B; 0x21bd00
+// 51, 0x21b870 16). In 0x126df0 (file free this round) the fade-in gain as one conditional expression 37 (205 B;
+// 0x126df0 15). Restored.
+// M3 lane 16 r183 (h2m fast with 0x126df0, 0x21bd00, 0x21b870 and 0x12a810; control 24; 0x126df0's fade-in half, its
+// file free this round): the two times stored end first 24 (0x126df0 2); the curve stored after the times 27 (0x126df0
+// 3); the fading-bit setter right after the gain's join 28 (0x126df0 7); the gain in a local defaulted to the silence
+// value, set by the fading test and stored once 29 (203 B; 0x126df0 50); the curve stored ahead of the gain test 38
+// (0x126df0 9). Restored.
+// M3 lane 4 r257 (h2m fast with 0x126df0, 0x12a810, 0x21bd00, 0x21b870 and 0x21b0e0; control 24). Measured ranking:
+// the allocator colours the index ahead of the element, 166 against 144, and the first one coloured takes ESI. 120 of
+// the index's 166 come from the shared step's stepped arm (five references to it in a block that touches six values:
+// the mask and the multiply are done on the index itself); the element has 80 from the stores after the gain's join
+// and 40 from the lookup block. On equal weight the element (created later) would go first, so 22 more for the
+// element or 22 less for the index is the whole difference; one more value referenced in the post-join block would
+// give exactly 164 each. The store-then-overwrite step gives the index 98 (three references in the stepped arm, the
+// lookup done on a copy), which is why this function matches with it. On that step 0x21bd00's two rows are a
+// scheduling tie: its two latch reloads have equal height and come out in the order of their split pieces' numbers;
+// with main's step the count's piece takes the lower free number, with the other step the first index's does
+// (main's next-link temporary keeps one number busy that the other step frees), and no spelling below moves that.
+// Forms: the store-then-overwrite step with the lookup written without the by-value helper MATCH (0x21bd00 2, same
+// code as with the helper), main's step with it 24; on the store-then-overwrite step, 0x21bd00's body with the
+// promotion index unnamed 43, the promotion-table accessor written out without its table local 2, a for loop whose init and
+// step are the next call 116 (318 B), an endless loop with its own exit 2, a do-while around a guarded body 2, no
+// index local outside the loop (a body copy of iterator.index) 2. Main's conditional step with no links local 54
+// (207 B; 0x21bd00 71, 0x21b870 32), with a named next link 54 (same code), with a whole-sound pointer 46 (208 B;
+// 0x21bd00 52, 0x21b870 8, 0x21b0e0 418), the compare written `first != next` 24 (0x21bd00 1, 0x21b870 1), a named
+// next link and no links local 54. 0x21b0e0 with the store-then-overwrite step: 418, aligned rows 167 -> 153. Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -3763,6 +3801,19 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // back for `next_state` (`mov byte ptr [ebp + 0xc], 0` / `mov al, [ebp + 0xc]`), which no spelling here reproduces.
 // The pieces alone: alternate inside the guard 615 (2500 B; 322 / 150), the short-counted clear 667 (361 / 162), both
 // 697. Body unchanged.
+// M3 lane 7 r221 (plain with 0x18a7b0, 0x21d630, 0x21bd00, 0x21aeb0, 0x21cf80 and 0x21d060, all MATCH; control 597).
+// Re-measured: `alternate` inside the availability block 596 (2518 B, aligned 336), inside the definition guard 615 (2500
+// B, aligned 322), lane 5 r238's replay of lane 2 r104's stack 586 (2478 B, aligned 219). New: on the guard form the pool
+// data named once for the sound lookup 615 (same code); the creation arm testing its own result (`if (index == NONE) {
+// result = false; goto done; }`, the join's test and its else dropped) 750 (2504 B), with the guard 711 (2518 B); the
+// four impulse-bit sets through the existing setter 0xbfe20 (link-time inlined) 597 on main and 586 on the replay (same
+// code each: the second test of each pair is still threaded). Body unchanged.
+// M3 lane 6 r239 (fast with the callers 0x18a7b0/0x21d630 and 15 callees, control 597, aligned 267): `seed` declared ahead
+// of the two track pointers 596; impulse_states' bit 0 as `(flags & 1) != 0` 648 (2524 B); on the old-end fade's looping
+// bit through function_0bfe40 (592, as listed): the seed first 600, a pointer to the sound's source for the final listener
+// test 591, that with 0x21b940's bounds pointer 591, that with track ahead of track_definition 591. Reading: retail's
+// constant 1 sits in EBX across the start arm because EBX holds `state` there and state is dead in that arm (state == 0
+// threads past the `state != 2` test); this build holds NONE in EBX for the whole pass. Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

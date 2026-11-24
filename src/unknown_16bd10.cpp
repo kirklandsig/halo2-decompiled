@@ -1478,6 +1478,52 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 126 and the origin store ahead of the sine 126 (same code each). Reading: the tail keeps the target in a register for
 // both the zero test and `current = target` in retail (0x16c740's helper shape), and every block's zero is XMM0 there.
 // Body unchanged.
+// M3 lane 3 r303 (H2M_FAST with 0x16c6f0/0x13cb40/0x142d10/0x16c740, all MATCH; control 126, aligned 103). Diagnostic
+// dead-local scan at the function top, K = 0..40: an 8-period, 126 at K = 0 and 7 (mod 8) and 394 or 395 at every other
+// count (the same at an anchor inside the yaw block), so the kept body sits in the good window and a form that adds or
+// removes a counted symbol reads 39x until the count is put back. Forms re-measured with the count compensated (best of
+// K = 0..7, the K in brackets): the squared length as length_sq3f(&plane.n) 177 [2, 3]; as
+// length_sq3f(&camera->point.left) 478 [0, 7]; the squared-length dot's arguments swapped 126 [3] (the kept code: the
+// swap only moves the window); the yaw distance dot's arguments swapped 126 [0, 7] (same code); the camera point's left
+// through a `vector3f const &` at the copy, the dot and the add-scaled call, or at the dot and the add-scaled call only,
+// 126 [6] each (the kept code again: the listed 393 with retail's left.j preload is the out-of-window state, whose plane
+// block is otherwise further off); the yaw block's offset through the existing vector3f_scale and vector3f_negate_ab
+// with the distance store between them or ahead of them 141 [0, 7] (aligned 124: the forward is then read through one
+// pointer where retail reads i through the copy's pointer and j, k from the command), with the store after them 140
+// (aligned 130). Reading of retail's yaw block: the forward's three components are loaded first, all three are scaled
+// by the distance (the negated distance stored after the first product), then the three are subtracted from zero in
+// i, j, k order; every block takes its zero in XMM0 before the block's own value. Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x16c6f0, 0x13cb40, 0x142d10, 0x16c740 and, for the helper change, 0xa9b40, all MATCH
+// each run; control 126, aligned 107, masked 39). LEAD at 8 (aligned 15, every difference in one sum), not kept: its main
+// steps are statement moves, which stay only with a byte match; the whole diff is build/r184/lead-16c840.patch.
+// Reading: the zero constant is one register candidate for the whole body. The allocator ranks it 104, second to the
+// yaw block's offset.i (112), which is inflated because this body multiplies offset.i by the sine in place; so offset.i
+// takes XMM0 and the zero XMM1 in every block. Retail multiplies in the sine's register. Operands of a float product
+// are ordered by when each was last assigned, the later one first, so the sine has to be assigned after the offset rows.
+// The lead, step by step (each on top of the ones before): the sine assigned just ahead of the cosine 85 (the zero now
+// ranks first and takes XMM0 everywhere); the tail as `if (function_13cb40() && target != 0.0f)` with `start` read after
+// the PIN, the shape of 0x16c740's helper, 38; the yaw distance dot's arguments exchanged 36; the animation arm's flags
+// store after its two zero stores 33; `switch (camera->mode)` with no mode local 31; `command->offset.k = offset.k`
+// after the two rotation rows 24; `command->distance = 0.0f - distance` ahead of the offset rows 12 (the three forward
+// loads and products then come first as in retail); 0x142d10 as (out, forward, up) at its definition, declaration and
+// its only call 10 (retail sets up ECX up, EDX forward, EAX out; 0x142d10 matches either way); the shared
+// quaternion_unit_or_identity summing i, j, k, w 8 (0xa9b40, its other user, still matches).
+// Left at 8: `cosine * offset.i + sine * offset.j` is evaluated sine product first here, cosine product first in
+// retail, which also exchanges the sine's and cosine's stack cells and XMM6/XMM7. Measured rule: the product whose
+// offset was assigned later goes first (rows in j, i, k order give retail's sum, 10, but exchange the i and j
+// registers; `cosine * offset.k + sine * offset.j` and `cosine * offset.i + sine * offset.k` follow the same rule).
+// On the 12 form (before the last two steps), none lower: the sum's terms or factors in any written order 12 (same
+// code); the cosine declared ahead of the sine, the offset declared first, sine and cosine declared at their
+// assignments 12 (same code); the sine assigned after the i row 11 (retail's sum order and cells, but `offset.j * sine`
+// copies the offset), after the j row or with the k row between sine and cosine 12, ahead of all rows 151, cosine
+// assigned first 14; the rotation rows exchanged 18; the origin store after the rows 259, after the rotation 267,
+// between the distance store and the rows 33; the object index store ahead of the rotation 22; the offset.k store
+// between the rotation rows 12, ahead of them 32; the rows as `distance * forward` 12; the yaw as a double 13; the
+// offset as a point3f 12; the rows through vector3f_scale and vector3f_negate_ab on the offset 168, through a second
+// vector 169, as product rows with vector3f_negate_ab in place 39, as product rows with the negation written inside
+// the rotation rows 160 to 164 (276 with unary minus), through vector3f_assign 152 and 167 (in each of these the
+// offsets outrank the zero again). The symbol count has a period of 8 with a window two wide: with the mode local
+// the yaw dot's i product has its factors exchanged, any other count costs the plane block (38x). Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

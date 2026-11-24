@@ -21,6 +21,7 @@
 #include "unknown_19b510.h"
 #include "unknown_19d220.h"
 #include "unknown_24b5bc.h"
+#include "saved_game_storage.h"
 
 void unicode_string_copy(word *destination, const word *source, long maximum_count);
 c_class_1473c9 *__stdcall function_23784f(s_screen_parameters *parameters);
@@ -51,7 +52,6 @@ struct s_friend_request;
 bool friend_request_get(s_friend_request *request);
 void function_148ca8(long error, short controller_flags);
 bool gamertag_valid(word *string);
-extern long g_55c154;
 
 /* a key of the virtual keyboard (vtable 0x459b58) */
 class c_keyboard_key_widget : public c_class_19b8b1

@@ -361,6 +361,17 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // Round 181 (m3 lane 16, h2m fast): the found test compared as integers 22; the joint lookup as `joint = NULL;` then an
 // `if` 22; the fixed body named ahead of the found test 22; the builder's result passed straight to 0x1d0150 22; the
 // first loop's two-part test as an early `continue` 22 (all the same code: the found block stays after the exit).
+// Round 230 (m3 lane 8, h2m fast): the override strength search as a forceinline helper returning the strength or zero 391
+// (1820 bytes, the zero store moves behind the search; tail unchanged); the second fields cleared by a chained assignment
+// 24; the contact's entity_a compared first 27; the list getter as if/return 22; the found test as an empty `!=` arm with
+// the found code in the else 22; the strength loop ended by setting the index to the count 339. Diagnostics: a seventh
+// case (`case 6`) beside the unreachable default 102 (1832 bytes, our tail stays: not the switch's block count); an
+// unreachable `__assume(0)` arm in the tail loop 22; the reachable `default: constraint = NULL; break;` 370 again (its
+// default block sits just ahead of the 0x1d0150 call, and the second loop's head is then entered by a `jmp`).
+// Round 223 (m3 lane 7, h2m fast with 0x1d6ad0): the builder `static` without `__forceinline` 1829 (left out of line);
+// `if ((unsigned long)type > 5) __assume(0);` ahead of the switch with the default kept 22; the builder `__forceinline`
+// with external linkage 22; the builder returning through an out-parameter 22; the builder calling 0x1d0150 itself 22
+// (the four 22s the same code).
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

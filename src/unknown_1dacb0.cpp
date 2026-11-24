@@ -1661,6 +1661,33 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // `if (0 < graph->inheritance_count)` 823 (2805 B; it costs matched 0x1dc8c0 two, so it is out); diagnostic, `for
 // (;;)` with both breaks under a favour-size pragma 2035 (1794 B, nothing inlines). Retail's `jne 0x1db22a; jmp
 // 0x1db1d3` is `for (;;)`'s graph without the header copy our build makes at the latch. Body unchanged.
+// M3 lane 3 r303 (h2m fast with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, siblings MATCH unless noted; control 812,
+// aligned 578): the three request helpers as member functions of the graph type, called on the caller's own object, 812
+// (same code); the body's locals renamed (the candidate as a, zz_candidate, candidate, one more spelling; the mode output as a_mode,
+// zz_mode, z_mode, resolved_mode, found_mode_value; result and named renamed) 812 each (same code: same-size homes do not
+// follow names here); the outputs, 0x1dd9d0 and both requests in the loop's found pass with its own return and the outputs
+// repeated on the not-found exit 1075 (2884 B, no zero register); on the single-return form (1040 re-measured, aligned 153)
+// a single-iterate found flag 1040 (same code) and `for (;;)` with both breaks 1049 (aligned 150). Diagnostics, removed:
+// only the first request kept 2221 (1557 B) and only the second 2285 (1543 B) both use `test` and two immediate counter
+// stores (no zero register although EBP is free at the fifth kind; the kept body's second request, with EBX and EBP busy,
+// makes a scratch zero in ECX for the count test and both stores); one extra zero store beside the inheritance counter's
+// initialiser (a local 783, a file global 784; 0x1dc8c0 lost) gives retail's `xor ebp, ebp` from the fifth kind's first test
+// with its five compares and the counter store, but the stride store behind the zero-trip branch stays an immediate; the
+// extra store in the loop's preheader instead 812 (a scratch zero for that block only). Read from matched 0x1dc790's retail:
+// with its flag loop the result's dword stays in a register and the test after the outputs is `cmp word [result + 2]`, as
+// in the twins' retail; this body's do-while tests a reloaded dword shifted right. Retail's frame is the three outputs,
+// the result and the iterator in that order with every other value in a dead parameter home; ours differs only by the mode
+// output taking found_mode's home, which follows the second request's registers (retail: `this` in EBX reloaded once at
+// the first loop's exit, the mode copied once into EBP, the +0x34 table pointer left in its home). Body unchanged.
+// M3 lane 8 r233 (h2m fast with 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH; control 812). Allocator reading: the found
+// mode (11 home references) takes found_mode's dead home because the second request gives EBX to the shared mode-table
+// temp and EBP to `this`, and the found mode's piece over the root kinds ranks below both and stays in memory; the entry
+// ECX/EDX pair is the class (priority 30) colouring before the NONE constant (27), whose piece also covers the three
+// output defaults (a forced class-in-EDX pick alone gives 958). Forms: the outputs declared ahead of the iterator with
+// the iterator stored graph, step, entries, then keys (retail's store order) 812 (both twins); that on the siblings'
+// found-flag loop with the inner return kept 994 (2837 B), without it 755 (match-only, as listed); the iterator declared
+// at the top of the function 812 (both twins); on the 755 form the first request keyed by the iterator's own key fields
+// 1020 (2875 B). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2269,6 +2296,40 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // graph's inheritance count once into a local ahead of its loop 818 (0x1dc8c0 lost, 272); the type helper's urgent
 // resource index named before the resource pointer 812; its streamed test written `!= 0` 812; the request helper's outer
 // test as an early `return` 812 (same code each, the siblings stay matched). Body unchanged.
+// M3 lane 2 r142 (H2M_FAST with 0x1db170, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70, 0x1ddd00 and 0x1db120; control 812; body
+// unchanged). Re-measured, the siblings' found-flag loop with the outputs and the result as one record 732 (2825 B): its
+// first 255 lines and its three epilogues are retail's. Left on it are the zero register from the fifth kind to the
+// inheritance setup of each request, and the second request's roles: retail has the graph in EBX (reloaded from its home
+// on the first inheritance loop's exit edge only), the found mode copied into EBP at the join and the table address read
+// from its spill home at each kind; ours reloads the table address into EBX at the join, loads the graph into EBP at the
+// first resource loop and reads the mode from memory at each kind. New forms on the 732 form: the urgent flag in a named
+// local as well 697 (2825 B: the padding jump after the first kind's loop goes, no zero register); the request helper's
+// counter initialised at its declaration ahead of the kinds request 800 (0x1dc8c0 lost, 474: the counter's zero store
+// moves ahead of the first kind); both requests written out in the body as the kinds call and the inheritance loop with
+// one counter 737 (same roles); the three-level lookup helper with early returns 732 (same code, 0x1db120 lost, 29); its
+// result declared after the first lookup 732 (same code, 0x1db120 2). Diagnostics on the 732 form, each reverted at once:
+// the second request alone compiles to retail's request (graph EBX, mode EBP, `xor ebp, ebp` after the fifth kind's first
+// lookup, five `cmp reg, ebp`, both counter stores from EBP); the first request alone has a zero in ECX at the
+// inheritance setup only, and gets the EBP zero once its mode or its weapon_class argument is a found key instead of the
+// parameter (the weapon_type argument makes no difference); with both requests the first inheritance setup stores
+// immediates whatever the keys (first request on the found keys, second on the parameters, one found key in the first),
+// also with the second request's inheritance loop removed or its graph read from the iterator (no shared table address).
+// The first request without its inheritance loop: the whole second request is retail's (graph kept in EBX, mode in EBP,
+// EBP zero), so the loop between the requests is what costs the graph its register. The second request without its loop:
+// mode in EBP at the join and the table address read from memory as retail, the graph in EBX but loaded at the first
+// resource loop. No source form found yet that keeps the graph in EBX across the first inheritance loop.
+// M3 lane 12 r183 (h2m fast with the twin, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70 and 0x1ddd00, all but the twins MATCH;
+// control 812; body unchanged). Frame reading: the 4-byte homes are packed most-referenced first and each tries the dead
+// argument homes first. Retail's shared mode-table address has 10 home references (one store, nine reads by the two
+// requests) and the found mode 8, so the table address takes found_mode's dead home, the outputs get new slots mode,
+// class, type with the result above, and the candidate joins the table address; ours has the found mode at 11 (read at
+// all eight kinds) and the table address at 7, so the found mode takes that home. Both counts follow from the second
+// request: retail holds the graph in EBX and the found mode in EBP and reads the table address from memory; ours gives
+// EBX to the table address (kinds 2 to 5) and EBP to the graph, whose piece runs into the second inheritance loop where
+// EBX is the inherited graph's. The allocator ranks that table-address piece just above the point where the found mode
+// would take a register. Forms: the request helper taking its mode by `long const &` 812; all three keys by `long const
+// &` 812; the kinds helper's mode by `long const &` 812; the graph by `s_graph_tag *const &` 812; the second request in
+// its own `if (result.index != NONE)` block after the first 812 (same code each).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

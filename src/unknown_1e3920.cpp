@@ -1325,6 +1325,31 @@ void function_1e3b60(long actor_index);
 // diagnostic, 0x2641c0's noinline declaration dropped: 0x262ba0 509 (1696 B), this 25, 0x264210 114 (139 B); reverted. In
 // 0x262ba0 (404 each, same code): a `short volatile` maximum, `short old_state`, `long const index`, the node pointer and its
 // byte view declared the other way round, the state cases in numeric order. Still BLOCKED-BY 0x262ba0.
+// M3 lane 16 r182 (h2m fast with 0x262ba0, control 404 at 1624 B; 25 here in every form): in 0x262ba0, `update` typed
+// `short` 408 (1628 B), with integer stores 408; `sampled_one` typed `long` 408 (1628 B); the update test nested under
+// `if (sample)` after the sampler 404 (same code); the actor pointer `byte *const` 404 (same code). Reading: retail's loop
+// is top-tested (the walk test at the loop head, `mov edi, edi` aligned) with sample/update/sampled_one in stack bytes
+// 0x11/0x12/0x13 and the actor index in EBX throughout; ours is rotated and keeps sample in BL, so the actor index is
+// spilled in the loop and LTCG keeps it a stack argument. Still BLOCKED-BY 0x262ba0.
+// M3 lane 16 r183 (h2m fast with 0x262ba0, control 404; 25 here in every form): in 0x262ba0 the context record declared
+// ahead of the motion record, the two flags declared after the 0x263670 call, the prior state read ahead of the next
+// link, case 1's tracking pointer in its own block, the prior state as a `word` at both uses: 404 each (same code).
+// Retail expands 0x2641c0 inside 0x262ba0 and calls it elsewhere; its noinline declaration sat in a file held by another
+// lane this round. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0).
+// M3 lane 4 r257 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680, 0x26be00 and 0x26be30; 25 here in every
+// form; 0x262ba0 control 404 at 1624 B, aligned rows 209). Measured ranking in 0x262ba0: the node 634, the prop index
+// 118, the update flag 30, the actor index 17 (eighteen references, but live and unreferenced across 62 blocks);
+// the update flag takes EBX, the last callee-saved register, and the actor index is left in its stack home. The
+// loop-top block touches eleven values, so the update flag's clear there counts 44 of its 76. Retail's loop head is the
+// existing walk (0x26be00 / 0x26be30) expanded inline: the next link and the index live in two stack cells and the
+// three flags in stack bytes. That walk form re-measured: 443 there at retail's 1616 B and frame, aligned rows
+// 209 -> 187; in it the prop index takes EBX (36), the update flag 26, the actor index 14. Diagnostic (forced
+// ranking, not source): with the actor index ranked first in either body it gets a callee-saved register but is
+// still loaded from its stack home (469 / 472 there), so its weight alone does not make it a register argument.
+// On the walk form: a `short` prior state 443 (same code); the actor looked up again at each use in the loop
+// 466 (1648 B); a plain `short` maximum 446 (1620 B); the release pair written at case 2's failing test 442; the
+// two flags declared after the 0x263670 call 443 (same code). Retail expands 0x2641c0 here; its noinline
+// declaration sits in a file another lane held this round. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2076,6 +2101,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // 280 (1216 B, unrolled into the two-call form); filled through a cursor 280; both queries through 0xcbd50 with fresh
 // slot lookups, the grenade type through a fresh lookup and the unit fetched after the queries 280 (the same code
 // each); the pair as an initializer of two 0xcbd50 calls with a `long` loop index 333 (1186 B). Body unchanged.
+// M3 lane 6 r239 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60/0x1e1f20/0x1e1fd0; control 251,
+// aligned 135): both halving tests with the flag first 251 (aligned 143, other code); the second block's queries through
+// 0xcbd50 on a named `unit_index` 280; the rounds pair cleared by `rounds[1] = 0;` 253; the rounds pair declared at the loop
+// top 251 and the weapon pair ahead of the grenade lookup 251 (same code each). Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -1030,6 +1030,36 @@ void function_3dd10(long object_index, bool force);
 // each toggle the selection loop's choice-first add: a phase, not kept); on the latter the variant left uninitialised and
 // zeroed in an else arm of the model test 234 (1042 B), the weight declared just ahead of the first scan 293 (974 B).
 // Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0x131c20/0x1318d0/0x131a00/0x3dd10, all MATCH; control 77, difflib-aligned 34). LEAD: the
+// HSV blend is the existing function_131c20 (rgb/hsv interpolation, flags 1, t = blend); retail inlines it, and our LTCG
+// inlines it only with no outer guard and a `for` scan: on main it stays a call 399 (838 B); with no guard 398, float fmod
+// 397, the `for (j; choice_count > j;)` scan 440, no guard + for 220, + fmod 218, + `0 < choice_count` 95 (1034 B,
+// inlined), fmod + for 439, + `0 <` 397. With it inlined the natural `for (long j = 0; j < choice_count; ++j)` scan stays
+// rolled: no guard, float fmod, that scan, `choice_count > 0`: 195 at 1034 B (masked 29; count still spilled, mask in EBP);
+// with `0 < choice_count` 218 (1002 B). Lane 15 r134's 135 form with the helper, with or without its paren pair: 137
+// (aligned 13: the variant's zero store ahead of the count test's jle, and retail's 1.0 load on the selection loop's
+// not-found edge, where ours jumps back into the clamp entry's load). One to eight unused initialised locals at the top
+// of that form 137 each (no effect); on it, the selection loop as `for (long j = 0; j < choice_count; ++j)` with the break
+// 153 (aligned 40), the clamp rows through a `color3f *current = &output[i]` 152 (1019 B, aligned 8: only the selection
+// add's operand form toggles; the variant store and the 1.0 edge load stay).
+// The bank ordinal still sinks below the entry guard; count and mask homes remain different. Empty-bank single exit 197, guarded while 77, tint block reference 86, admitted tint base 311.
+// Returned HSV inputs 200, returned RGB bank color 309, shared absolute/signed hue difference 184, two signed half-turn bounds 203.
+// NOT kept: the guarded while ties. The single exit puts the ordinal store in place and swaps the saved object and tint registers.
+// M3 lane 12 r184 (h2m fast with 0x1318d0/0x131a00/0x3dd10/0x131c20, all MATCH; control 77). On lane 16's R form the choice
+// count loses EBP to the eligible mask by two priority points (2 against 4) and stays uncoloured; the first scan block
+// references three constants (NONE for `last`, 0, and 0xff for the variant byte test). R re-measured 186 (1034 B); on R
+// the eligible arm's statements reversed 186, `weight > 0.0f && eligible` 188, the selection latch `choice_count > j` 186,
+// the selection loop as a `for` 93, one `j` for both loops 74. LEAD: the variant byte read as `char` and tested against
+// NONE (the 0xff folds into NONE's constant) flips the ranking to retail's: count in EBP, the mask in the colours
+// argument's dead slot, the count test, variant lookup and first scan identical to retail (151 at 1019 B on R, 140 on
+// this body alone); + the selection add as `choice->weight + cumulative` 151 (same code); + the outer index zeroed ahead
+// of the guard 143 (head identical); fmod overloads: selection double 130, blend double 133, both 146; the outer bound
+// as `count > i` 128 (1034 B, the selection add retail's). Without the outer guard (`for (long i = 0; count > i; ++i)`)
+// 143, and with the found block's blend through the existing function_131c20 (flags 1, t = blend; expanded) 128 at
+// 1034 B: only retail's own 1.0 load on the selection loop's not-found edge is left (ours jumps to the clamp entry's
+// load), with the outer guard kept it stays a call (373). On that form the selection loop as a `for` 148, the clamp
+// through a file-local inline pin 263. No single forced allocator decision gives the edge load (a block-shape
+// difference: retail's found and not-found exits join before the `weight <= 0` path does). Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

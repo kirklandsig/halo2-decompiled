@@ -362,6 +362,27 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // `if (local_17)` 379; the 0x664 store ahead of `*arg_6 = false` 377 (-1, not kept); local_12 declared after local_11 393;
 // the three output stores with `*arg_4 = 0` last 378; the local_26 test as `local_17 == 1 && local_4` 378. Still BLOCKED-BY
 // 0x210770 as 0x299460 sees it (the left vector's store forwarding). Body unchanged.
+// M3 lane 6 r237 (H2M_FAST with 0x29c860 and 0x29cb10, MATCH each run; control 378, aligned/masked 107/30 by a difflib
+// count): the side test reading the left vector through a `vector3f const &` 378; `local_25` declared at the arm's top
+// 378; the left vector through the existing vector3f_assign 378; `{left_i, local_8.i, 0}` 378 (same code each); the left
+// vector built from `local_11` (the copy of local_8) 630 (2833 B); re-measured the component stores 378 and the 0.9
+// block's `left_i * local_9.i` 378. Lead (not kept, the count rises): the initializer without k, `{left_i, local_8.i}`
+// (k zeroed implicitly), 388 at 2825 B with the first difference at +0xab: frame 0x5b4 as retail and the side test
+// reads the vector's own home as retail (no forwarding, no product kept across 0x299460), aligned/masked 58/31; left
+// there: k stored as an integer zero (`mov dword [..], 0`, retail `movss` from XMM5) and the two 12-byte vectors (the
+// left vector and local_14, five references each) in swapped slots; renaming the vector or declaring local_14 ahead of
+// it leaves the swap (388 each).
+// M3 lane 3 r305 (H2M_FAST with 0x29c860 and 0x29cb10, MATCH each run; control 378). Frame reading: the two 12-byte
+// vectors tie at five references; on a tie the one that reaches the count first packs first, and the left vector
+// reaches five at the 0x299460 address, ahead of local_14's fifth (the 0x1f9e70 argument), so it takes the lower slot
+// where retail has local_14 there. Forms: the left vector as a three-real array 378 (still forwarded); left_i and the
+// left vector declared ahead of local_12 and local_11 375 (retail's store order: left_i, i, j, k from XMM5, then the
+// copies; -3, not kept), stored component by component there 375 (same code), with the 2-D dot of the 0x5d1 test
+// through the existing dot_product2d 377; the k-less initializer with that order 385 (store order as retail, k still an
+// integer zero); the declaration order plus local_25 computed ahead of the angle call 373 (2814 B, frame 0x5b4, but the
+// small homes move four bytes down: left_i +0x5c against retail's +0x54), on it the k-less initializer 398, the
+// dot_product2d test 375, left_i const 373 (same code), local_11 declared ahead of local_12 391, the left vector built
+// right after local_8's normalization 422. Body unchanged.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -1441,6 +1441,26 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // 24 (refresh EDX, but its branches split ahead of the product); the frame rate as the argument 18; `limited` stored
 // first 19; burst stored first 20; the test stored straight into the channel after the budget and rate 67/72 (1035
 // B); the out-of-line 0x78190 called instead 135/134 (926 B, LTCG keeps the call).
+// M3 lane 4 r255 (h2m fast, 18; on lane 12 r180's base, the quotient through `long const &` and the `<=` clamp, 18
+// with the product in ECX as retail): the tail written as a call to the existing 0x79600 (whose body it repeats)
+// 387/385 (880 B, LTCG keeps the call; retail inlines this site and calls 0x79600 only in the loop); 0x78190's wrapper
+// force-inlined and called (diagnostic) 24; the rate-test result through `bool const &` 18, the frame rate through
+// `real const &` 18, the minimum through `long const &` 18, the burst clamped through `long &` 18; a second channel
+// pointer for the tail's stores 18; the frame rate and test in their own block 18; const locals 18; budget and rate
+// stored ahead of the test 72 (1035 B); `false` for the wanted flag 83 (973 B); the refresh read and 60 fallback as a
+// nested inline getter inside network_frame_rate 18/18 (main/base); the shared rate test with its configured test
+// nested 18, its result through `bool &` 35, the halved frame rate as a local 18, early `return true` exits 32 (0x78190
+// 27). Diagnostic (network_frame_rate written out): the refresh word read ahead of the quotient or the product, its
+// tests after the clamp, 42/34: the refresh then takes retail's EDX and hoists, but the flag stays AL with the field
+// loads in DL, so the tail has two independent causes.
+// M3 lane 16 r183 (h2m fast; control 18; L = lane 12's `long const &` quotient with the `<=` clamp, 18): 1 to 7
+// initialised dead longs at the top, on main and on L, 18 each (the scratch choices are not numbering-dependent); the
+// shared rate test computing the frame rate itself (its frame-rate parameter dropped at all three callers) 18 (0x78190
+// 7, 0x79600 1), with the frame rate after the false default 20; 0x78190 marked `inline` and called for the tail 24; on L
+// the wanted flag read into a local ahead of the frame rate 17 (only that load hoists into DL, the flag stays AL), after
+// it 18, all three flags as locals 35; on L the refresh read ahead of the product with a wanted local 34, with three
+// flag locals 51; the tail as a call to 0x79600 marked `inline` 258 (948 B), with 0x78190 also `inline` 382 (902 B):
+// LTCG does not expand either here.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
@@ -2336,45 +2356,8 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
     return observer_round(local_0);
 }
 
-// score 2 (was 2; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
-// slots of rate/j and count/float temp are swapped (retail rate+j at esp+0xc,
-// count at esp+0x10; moving rate's or count's declaration did not change it);
-// (2) retail rereads the refresh word g_485ac0 (movsx) in each of the three
-// inlined frame-rate reads (0x77ccc, 0x77d59, 0x77de5) but keeps the configuration
-// pointer in ecx across them; ours keeps the word in a register (bx) and reloads
-// [edi+0x10] after each _ReadWriteBarrier, which shifts the registers of the whole
-// budget block; (3) flag4f18 test uses bl (ours) vs al (retail). Tried: dropping
-// both barriers (343), network_frame_rate under optimize("g", off) (225, x87 code),
-// min/max written as if/ternary forms (206), ternary vs sum order for
-// value4e28/rate (205-224).
-// Permuter (25 min on r663): nothing below 89.
-// Round 135 (m3 lane 9, plain with 0x78090, 0x78190 and 0x75da0; --fast gives 205 here, it builds this one differently):
-// retail inlines the matched 0x78090 twice (large set, limit clear then set) and 0x78190's test once: the existing
-// network_observer_rate_for_size and network_observer_rate_below called here stay out of line under LTCG (442, 1349
-// bytes). On the private copy: its `#pragma optimize("g", off)` and both barriers dropped, the limited flag through the
-// existing function_78190 92 (the second copy then multiplies frame rate by the table entry, one byte short); its limit
-// test written as 0x78090's (`real maximum = frame_rate * 0.5f; if (result > maximum) result = maximum;`) 2. Left: the
-// flag4f18 test loads into BL where retail uses AL: ours reads the 0x140 value before the flag, retail after the flag
-// test but ahead of the branch. Tried on 2: the sum as one expression `value140 + (flag ? value4e28 : rate)` 93 and
-// with the ternary first 93 (the flag gets AL, but the 0x140 load sinks to the join); if/else with the whole sum in
-// each arm 245; `budget = rate; if (flag) budget = value4e28; budget += value140;` 251; the flag read first into a
-// bool 2 (same code). The same pragma dropped from function_779f1 and function_779f4 as well: 2 (same code).
-// Direct enable-field reads 142 in a reduced image (unchanged control 272).
-// Branch additions 211; chosen base before adjustment 212; increment and base locals 146; inverted selector 142;
-// default prior budget 285; clear-flag base with adjustment 212; shared configuration view 211.
-// NOT kept: the reduced variants do not recover the full-image frame slots and flag register.
-// Round 140 (m3 lane 9, plain with 0x78090, 0x78190, 0x75da0): retail's 0x140 load between `test al, al` and `je` reads
-// as a head merge, both arms of a two-arm sum starting with `mov eax, [ecx+0x140]` (the 4e28 arm then loads EDX and
-// falls into the shared add). The two-arm forms give the flag AL, but the 4e28 arm always loads 4e28 into EAX and 0x140
-// into EDX, so nothing merges: `flag ? 4e28 + c140 : rate + c140` 245, c140 written first in both arms 245, if/else
-// arms each `budget = c140; budget += x;` 245, a `long const *` to the 0x140 field used in both arms 246; the ternary
-// alone then `budget += c140` 251. Compile-only (the stream matches the real build here): the arm's operand order
-// follows the base, not the spelling (observer fields and globals load before configuration fields; two configuration
-// fields, a diagnostic, give retail's exact merged shape); a pointer or reference to 4e28, a `this` member body, a
-// configuration local and an earlier mention of c140 all leave it.
-// M3 lane 12 r180 (plain): the sum as `if (flag) budget += value4e28; else budget += rate;` 137; the ternary negated
-// with its arms swapped 2 (same code); the selection into an increment local (rate, replaced by 4e28 under the flag)
-// then the 0x140 base plus it 159; `!= false` on the flag 2; the 0x140 field bound to a const reference first 2.
+// Matched: the raised budget is summed through a reference in each arm of the flag test, so the flag is tested
+// before the 0x140 word loads (retail's head-merged load and AL flag); written as one `+=` the flag took BL.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2435,8 +2418,19 @@ void network_observer_update_channel_budgets(s_network_observer *observer)
 			else if (observer->value4f10 >= *(long *)((byte *)observer->configuration + 0x12c))
 			{
 				if (rate > observer->value4e20) observer->value4e20 = rate;
-				long budget = *(long *)((byte *)observer->configuration + 0x140);
-				budget += observer->flag4f18 ? observer->value4e28 : rate;
+				/* the sum is formed through a reference in each arm: both arms start from the 0x140 word */
+				long budget;
+				long &sum = budget;
+				if (observer->flag4f18)
+				{
+					sum = *(long *)((byte *)observer->configuration + 0x140);
+					sum += observer->value4e28;
+				}
+				else
+				{
+					sum = *(long *)((byte *)observer->configuration + 0x140);
+					sum += rate;
+				}
 				if (budget > observer->value4e28 && budget + *(long *)((byte *)observer->configuration + 0x13c) < observer->value4e24)
 				{
 					observer->value4e28 = budget;

@@ -65,7 +65,7 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
-// score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// score 376 (was 376; r239 unchanged; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // MiniMax G (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line for the session data where this
 // build expands it at the call site, and the second session state still sits in ESI where retail keeps it in EAX; the
 // 0x5b080 body lives in another file, so the two paths diverge from the first difference on. BLOCKED-BY 0x5b080.
@@ -497,6 +497,20 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (0x6dae0 134, 268 B), so the number of the getter's call sites does not move its expansion here (all restored); the two
 // missing-input exits in the other order 372 (statement order by score, not kept); the surface and data locals declared
 // first and assigned after 376 (same code). Still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 5 r239 (H2M_FAST with 0x5b080, 0x72140, 0x71ff0, 0x71e00 and 0x706f0, all MATCH; control 376). Reading: our
+// build also calls the live-state test out of line at both of this body's live tests (session_state_is_live, folded
+// with another file's copy), where retail expands it. Diagnostics: a forced-inline file-local copy of the test at both
+// sites 431 (1602 B); with the data getter as `true ? ... : NULL` as well 438 (1555 B, stack-masked aligned 185 -> 165,
+// the second session state then in EAX as retail); the getter form alone 452 (1565 B). The two tests through the
+// existing inline function_058d70 376 (same code: called out of line too), with the getter form 452. Body unchanged;
+// still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 8 r233 (h2m fast with 0x706f0 and 0x5b080, both MATCH unless noted; control 376). Retail calls 0x5b080 out
+// of line only at this site (0x6d380, 0x6e720 and 0x7e210 expand it in retail too), so the open point is this site's
+// expansion level (round 58's folding test), not the getter's own size: the getter (machine 3's) written with one
+// combined condition 376 (same code everywhere); as one conditional return 409 (the getter itself then 13, 36 B); as an
+// early `return data4a00;` under the combined test 409 (getter 13), inside the nested tests 409 (getter 13); here, the
+// second state test with its arms swapped (`else if (local_2->function_058d20())` with the mode-14 arm last) 376 (same
+// code). Body unchanged; the getter restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
