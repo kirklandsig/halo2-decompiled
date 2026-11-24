@@ -1003,6 +1003,15 @@ static inline bool teams_enabled_19e1c0()
 // all names with ordinary return count 691; capacity-default per-name counts 620, with ordinary
 // return count 692; single fallback count publication 564; shared ordinary name count 620.
 // NOT kept: the ordinary result recovers frame 0x204 while merging name preparation paths.
+// M3 lane 12 r184 (h2m fast with 0x19e0f0, MATCH throughout; control 390, plain result re-measured 691): on the plain
+// result the allocator splits the stack parameter `remaining` into thirteen small candidates, one per arm that reads it,
+// because nothing on the compare chain references it, so the result, the token length, the event and the token take the
+// four callee-saved registers; retail's one `remaining` web from entry needs a reference there. New forms: the whole
+// dispatch in a file-local `static inline` helper called from a one-line definition 1839 (not expanded), the same
+// helper `__forceinline` 691 (same code as the plain result); a dead `remaining -= result;` before the return 691 (same
+// code); one redundant clamp of the result against `remaining` at the exit 661 (1201 B, still thirteen candidates).
+// Diagnostic lever (a test retail lacks): `remaining > 0 &&` in front of the first compare only 479 (1487 B): `remaining`
+// loads into EBP at retail's entry instruction, but the event takes EDI and the token length EBX (retail EBX / EDI).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
