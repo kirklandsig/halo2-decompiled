@@ -1894,6 +1894,9 @@ struct s_item_flags_view_10b850
 // Ray as lateral cross output with direct or staged cross and coordinate or shared point difference
 // 901/902/909/914. With single-precision absolute value 879/880/885/892. NOT kept: all reduce the frame
 // to 0x13c but shorten the body and raise the score. The entry Boolean stores still differ.
+// Floor/slow test producers, true default on floor/slow/both, false default on both,
+// explicit/complementary arms on both, true floor with complementary slow, or opposite defaults:
+// 824/871/855/855/824/824/824/855/855. NOT kept: the equivalent test forms tie or regress, with the same 0x154 frame.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
