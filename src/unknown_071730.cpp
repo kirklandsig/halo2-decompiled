@@ -504,6 +504,13 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // the second session state then in EAX as retail); the getter form alone 452 (1565 B). The two tests through the
 // existing inline function_058d70 376 (same code: called out of line too), with the getter form 452. Body unchanged;
 // still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 8 r233 (h2m fast with 0x706f0 and 0x5b080, both MATCH unless noted; control 376). Retail calls 0x5b080 out
+// of line only at this site (0x6d380, 0x6e720 and 0x7e210 expand it in retail too), so the open point is this site's
+// expansion level (round 58's folding test), not the getter's own size: the getter (machine 3's) written with one
+// combined condition 376 (same code everywhere); as one conditional return 409 (the getter itself then 13, 36 B); as an
+// early `return data4a00;` under the combined test 409 (getter 13), inside the nested tests 409 (getter 13); here, the
+// second state test with its arms swapped (`else if (local_2->function_058d20())` with the mode-14 arm last) 376 (same
+// code). Body unchanged; the getter restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
