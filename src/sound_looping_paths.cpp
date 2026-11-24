@@ -960,6 +960,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // &choices[choice_count++];` 952 (3273 B); the four choice stores in retail's store order (tag, source, decibels,
 // cluster) 837 and the three 1.0f defaults as three statements 837 (both the same code); the primary set inside the
 // build loop as `if (i == 0 && inside) primary = choice->source;` 949 (3305 B).
+// Duplicate membership as bool/byte/long OR 954/954/948. Matching-choice tally 948. Full-width
+// query and choice counts with bool OR or tally 1033/980. Retained candidate tag with bool OR
+// or tally 954/948. NOT kept: the duplicate reductions shorten the body and raise the score.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
