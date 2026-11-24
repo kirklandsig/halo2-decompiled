@@ -3614,6 +3614,9 @@ struct s_ammo_conversion_entry
 // the loop head reading the field through the definition, 208 (713 B); the same-definition sum read through `source`
 // for both operands (re-measured: it does flip the loop pair) 204 (718 B: the weapon and the other weapon swap
 // EBX/EBP and the loop entry changes).
+// Generic source view mutable/const, generic destination view, and paired mutable/const views 190 each.
+// Existing header accessors for the destination, source with generic refresh, and both with generic refresh
+// 190 each. NOT kept: all preserve the exchanged saved-register roles and 731-byte extent.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {

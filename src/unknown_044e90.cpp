@@ -663,6 +663,10 @@ struct s_visibility_bound_record
 // visible-mask pointer read before the node loop 397 (1778 B, the listed match-only lead); the containment flag
 // declared ahead of the part bit 430 (same code); the planes and plane query declared ahead of the list set-up 430
 // (same code). Body unchanged.
+// Tag snapshot 430, shared structure-section load 452, single geometry result 443, with the tag snapshot 443,
+// instance-first section 452, single result and section join 452, structure flag snapshot 456, and flag
+// snapshot with section join 452. NOT kept: the shared section and flag forms lose both matched helper users,
+// and the remaining forms tie or raise the score.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
