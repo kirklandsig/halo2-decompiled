@@ -1314,6 +1314,25 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // `&planes[pass]` after two separate flag tests gives the classes retail's orders need but computes the pointer 378
 // (1835 B); the two flag tests with a conditional plane 249 (1867 B); the conditional plane ahead of the two-arm tests
 // 387 (1835 B); one combined flag test with the conditional plane 382 (1867 B).
+// M3 lane 2 r146 (H2M_FAST with 0x1648d0 and 0x320b0, both MATCH each run; control 115, aligned 64, 22 with registers
+// masked; body unchanged). vector_products.h's i, k, j dot helper (basis_dot_xzy), not tried here before but for the plane
+// distances: the clip denominator through it, delta first or normal first, 224 each (first +0x60, aligned 58: the same code
+// for both argument orders, all three rows scaled in place, zero and near distance exchanged XMM4/XMM5 as with dot3f); the
+// clip distance through it, either argument order, 115 (aligned 64, masked 21); the classification through it, normal
+// first 143, point first 263 (1867 B); the denominator and the distance through it 228, 225 with the normal first in the
+// denominator; the helper denominator with the intersection through vector3f_add_scaled 226 (aligned 51, masked 15: the
+// closest structure, but the same XMM4/XMM5 exchange from +0x60 on). On main: the scale helper writing a second vector
+// 115 (same code); `real t` declared ahead of the delta 115 (same code); `real t = 0.0f` ahead of the delta with no else
+// arm 239 (first +0x60). Reading of the operand ranks (the compiler sorts a product's operands by rank, descending,
+// ties in source order, and forms the product in the first): a load through a pointer ranks by its offset (+4 below +8,
+// offset 0 by the pointer's symbol number mod 8), a scalar local by its symbol number, and here every local ranks below
+// every such load except an offset-0 load whose pointer's number is a multiple of 8. This body's three delta parts and
+// the ratio are locals numbered i, k, j, ratio, so each normal load is formed first and the ratio is formed first in every
+// row. Retail forms delta.i and delta.k first in the denominator, normal.j first in its third product, the ratio first
+// in the x row only and the y and z deltas in place: delta.i at or below the ratio, delta.j above the ratio but not above
+// a +4 load, delta.k not below a +8 load, and the plane pointer's number a multiple of 8. No form of the existing delta
+// and scale helpers gives the y and z parts those two ranks (they are numbered together); that is what the written-out
+// 18 and 10 forms reach by naming one part.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
