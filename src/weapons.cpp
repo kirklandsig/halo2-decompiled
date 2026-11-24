@@ -2034,6 +2034,13 @@ static inline bool unit_dual_wielding(long unit_index)
 // the link-time inliner expands 2 (the 2 form's code, so the order is not set per unit); the existing 0xbf5a0 for the
 // animation test 106 (547 B, it stays a call). Left: a form that puts only the animation-test group on a pool local
 // without that local, or 0xc9d00's, taking over the lookups ahead of them.
+// M3 lane 7 r223 (h2m fast; control 17): the reassociation order reads each lookup as ADD(offset, pool data, 8), a
+// CSE temp ranked by its value-table number and a single-use data load ranked above every temp; on every 0xc9d00-call
+// form the put-away lookup's reloaded data is used once (0xc9d00's own load stays a separate value, later forwarded as
+// `mov eax, ecx`), so it stays data-first. Tried: weapon_get_102e10 at every subset of the six weapon lookups (63 forms
+// on this body) 15 with lookup 1 in the subset, 17 without; that with `result` declared first 15; that with the put-away
+// re-fetch assigned to `weapon` 152 (526 B). Diagnostics (reverted): on the 2 form a dead holder-unit lookup ahead of
+// the 0xc9d00 call 42; 0xc9d00's second read through UNIT_GET (its own file) 41, with 0xc9d00 at 131.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
