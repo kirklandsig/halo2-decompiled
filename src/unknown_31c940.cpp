@@ -725,8 +725,10 @@ static __forceinline void apply_second_pair_fallback(float impulse,
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
+	// Capture the receiver before A can replace its shared pointer home.
+	float *linear_receiver=(float *)linear_velocity_b_pointer;
 	a->linear = _mm_add_ps(a->linear, linear_a);
-	(*linear_velocity_b_pointer) = _mm_sub_ps((*linear_velocity_b_pointer), linear_b);
+	_mm_store_ps(linear_receiver,_mm_sub_ps(_mm_load_ps(linear_receiver),linear_b));
 	// Reload the axes after both linear writes, then form both contributions
 	// before either angular write. Row storage may overlap the body fields.
 	__m128 angular_a = _mm_mul_ps(change_a, row->a);
@@ -1394,7 +1396,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2061. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2076. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.

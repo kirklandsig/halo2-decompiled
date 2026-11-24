@@ -1294,3 +1294,52 @@ def test_second_normal_simd_capture_precedes_first_result(solver_images, precisi
                 snapshots[rounding] = snapshot
             else:
                 assert snapshots[rounding] == snapshot
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_second_normal_fallback_captures_receiver_before_a_linear(solver_images,precision):
+    """Retain B before the A linear store can change the shared pointer word."""
+    from unicorn.x86_const import UC_X86_REG_ESP
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    def as_bits(value):return struct.unpack('<I',struct.pack('<f',value))[0]
+    frame=STACK+32768-0xd0
+    a=frame
+    original=HEAP+0x80;replacement=original+0x100;final=original+0x200
+    delta=as_float(replacement+0x10)-as_float(original+0x10)
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',a,original)
+            put(data,OPS+24,'3I',14|(12<<8)|(2<<16),CALLBACK,0)
+            put(data,OPS+36,'5I',3|(8<<8)|(5<<16),0,3|(8<<8)|(5<<16),0,0x400)
+            put(data,TERMS,'24f',*([0.0]*24))
+            put(data,TERMS+96,'24f',0,0,0,delta,0,0,0,1/delta,0,0,0,1/delta,0,0,0,0,0,0,0,0,0,0,0,0)
+            put(data,HEAP,'B',3)
+            for b in [original,replacement,final]:
+                for offset in [0x10,0x20]:put(data,b+offset,'4f',0,0,0,0)
+                put(data,b+0x30,'4f',1,1,1,1)
+            output=HEAP+0x5000;put(data,output,'4f',0,0,0,0)
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3);callbacks.append((terms,payload))
+                uc.mem_write(frame+0x3c,struct.pack('<f',1))
+                return_from_hook(uc)
+            machine.mem_write(frame+0x10,b'\0'*80)
+            # Isolate this capture from the separately tracked spurious entry publication.
+            machine.mem_write(frame+0x1c,struct.pack('<I',original+0x10))
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            expected=(0,0,0,as_bits(-delta))
+            original_value=words(machine,original+0x10,4);replacement_value=words(machine,replacement+0x10,4)
+            assert original_value==expected,(label,precision,rounding,original_value,replacement_value)
+            assert replacement_value==(0,0,0,0),(label,precision,rounding,original_value,replacement_value)
+            assert words(machine,final+0x10,4)==(0,0,0,0)
+            assert callbacks==[(TERMS,OPS+32)]
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,callbacks)
+            else:assert snapshots[rounding]==(snapshot,callbacks)
+        print(label,'receivers four modes passed',hex(precision),flush=True)
+
