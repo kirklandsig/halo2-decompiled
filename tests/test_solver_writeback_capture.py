@@ -847,3 +847,76 @@ def test_bounded_angular_a_inertia_precedes_scalar_copy(solver_images,precision)
             assert snapshot[1]==1
             if label=='retail':snapshots[rounding]=(snapshot,b_home)
             else:assert snapshots[rounding]==(snapshot,b_home)
+
+
+@pytest.mark.parametrize('kind',[2,6,9,11])
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_linear_and_friction_a_inertia_precedes_scalar_copy(solver_images,precision,kind):
+    frame=STACK+32768-0xd0
+    body_a=frame-0x20
+    body_b=HEAP+0x80
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(kind,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',body_a,body_b)
+            size,classification={2:(4,3),6:(8,3),9:(8,4),11:(12,3)}[kind]
+            put(data,OPS+24,'I',kind|(size<<8)|(classification<<16))
+            if kind in [6,9]:put(data,OPS+28,'f',2)
+            if kind==11:put(data,OPS+28,'2f',0,1)
+            put(data,OPS+24+size,'I',0x400)
+            if kind==9:put(data,TERMS,'8f',0,0,0,1,0,0,0,1)
+            else:put(data,TERMS,'12f',0,0,0,1,0,0,1 if kind==2 else 0,1,0,0,0,0)
+            put(data,HEAP,'B',3)
+            for offset in [0x10,0x20]:put(data,body_b+offset,'4f',0,0,0,0)
+            put(data,body_b+0x30,'4f',1,1,1,1)
+            put(data,IMPULSES,'f',0)
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*16)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            b_home=words(machine,frame+0xc,1)
+            assert b_home==(body_b,),(label,kind,precision,rounding,b_home)
+            assert words(machine,IMPULSES,1)==(0x3f800000,),(label,kind,precision,rounding,words(machine,IMPULSES,1))
+            assert words(machine,body_b+0x20,4)==(0,0,0,0x3f800000 if kind==9 else 0)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,b_home)
+            else:assert snapshots[rounding]==(snapshot,b_home)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_linear_friction_retains_angular_receiver(solver_images,precision):
+    frame=STACK+32768-0xd0
+    body_a=frame-0x10
+    body_b=HEAP+0x80
+    other_b=body_b+0x100
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    delta=as_float(other_b+0x20)-as_float(body_b+0x20)
+    retail,compiled,symbols=solver_images
+    snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(6,0)
+            put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+            put(data,OPS+12,'2I',body_a,body_b)
+            put(data,OPS+24,'3I',6|(8<<8)|(3<<16),0x40000000,0x400)
+            put(data,TERMS,'12f',0,0,0,1,0,delta/as_float(body_a),0,1,0,0,0,1)
+            put(data,HEAP,'B',3)
+            for offset in [0x10,0x20]:put(data,body_b+offset,'4f',0,0,0,0)
+            put(data,body_b+0x30,'4f',1,1,1,1)
+            put(data,other_b+0x20,'4f',0,0,0,0)
+            put(data,IMPULSES,'f',0)
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*16)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            b_home=words(machine,frame+0xc,1)
+            assert b_home==(body_b,),(label,precision,rounding,b_home)
+            assert words(machine,IMPULSES,1)==(0x3f800000,),(label,precision,rounding,words(machine,IMPULSES,1))
+            assert words(machine,body_b+0x20,4)==(0,0,0,0x3f800000),(label,precision,rounding,words(machine,body_b+0x20,4),words(machine,other_b+0x20,4))
+            assert words(machine,other_b+0x20,4)==(0,0,0,0)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,b_home)
+            else:assert snapshots[rounding]==(snapshot,b_home)

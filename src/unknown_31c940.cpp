@@ -889,12 +889,15 @@ static __forceinline void solve_linear_friction(float target, float const &limit
 		impulse *= factor; row->linear.m128_f32[3] *= factor;
 	}
 	// Round the SIMD input once, retaining the extended impulse for accumulation.
+	__m128 inertia_a=a->inverse_inertia;
 	float &rounded = simd_scratch;
 	rounded = impulse;
 	__m128 scalar = _mm_load_ss(&rounded);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 scalar_b = _mm_load_ss(&rounded);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar_b, scalar_b, 0), *inverse_b_pointer);
+	// Retain B angular before either linear or angular write can redirect its home.
+	__m128 *angular_receiver=angular_b_pointer;
 	// Capture both linear contributions before either body write.
 	__m128 linear_contribution[2] =
 	{
@@ -910,7 +913,7 @@ static __forceinline void solve_linear_friction(float target, float const &limit
 		_mm_mul_ps(change_b, row->b)
 	};
 	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
-	(*angular_b_pointer) = _mm_add_ps((*angular_b_pointer), angular_contribution[1]);
+	*angular_receiver = _mm_add_ps(*angular_receiver, angular_contribution[1]);
 	*result += impulse;
 }
 
@@ -1042,10 +1045,11 @@ static __forceinline void solve_angular_friction_kernel(float target, float cons
 		impulse *= factor; row->b.m128_f32[3] *= factor;
 	}
 	// Round the SIMD input once, then construct each body's broadcast separately.
+	__m128 inertia_a=a->inverse_inertia;
 	float &rounded_impulse = simd_scratch;
 	rounded_impulse = impulse;
 	__m128 input_a = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), inertia_a);
 	__m128 input_b = _mm_load_ss(&rounded_impulse);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), (*inverse_b_pointer));
 	__m128 axis_a = row->a, axis_b = row->b;
@@ -1127,9 +1131,10 @@ static __forceinline void solve_unilateral_linear(float target,
 	if (error > 0.0f)
 	{
 		float impulse = error * row->a.m128_f32[3];
+		__m128 inertia_a=a->inverse_inertia;
 		simd_scratch = impulse;
 		__m128 scalar = _mm_load_ss(&simd_scratch);
-		__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+		__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 		__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b.body->inverse_inertia);
 		// Capture B before either body write can replace its saved address.
 		__m128 *const angular_receiver = angular_b_pointer;
@@ -1164,9 +1169,10 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
  solver_velocity_31c940 *a, __m128 const &inverse_b,
  float *linear_b,__m128 *const & angular_b_pointer, float *result, float &simd_scratch)
 {
+	__m128 inertia_a=a->inverse_inertia;
 	simd_scratch = impulse;
 	__m128 scalar = _mm_load_ss(&simd_scratch);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	// Capture B's angular receiver before either body is written.
 	__m128 *angular_receiver=angular_b_pointer;
@@ -1332,7 +1338,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2084. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2105. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
