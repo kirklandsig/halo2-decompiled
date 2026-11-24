@@ -1600,3 +1600,26 @@ def test_second_normal_angular_home_publication_follows_first_projection(solver_
             if label=='retail':snapshots[rounding]=snapshot
             else:assert snapshots[rounding]==snapshot
         print(label,'second normal angular home4RM',hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_initial_iteration_count_precedes_counter_publication(solver_images,precision):
+    frame=STACK+32768-0xd0;step=frame+0x10
+    retail,compiled,symbols=solver_images;snapshots={}
+    for label,machine,entry,gate in [('retail',retail,0x31c940,0x480c60),('compiled',compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+        for rounding in range(4):
+            data=solver_case(3,0)
+            put(data,OPS+24,'4I',14|(12<<8)|(2<<16),CALLBACK,0,0x400)
+            callbacks=[]
+            def callback(uc,va,size,user):
+                ret,terms,payload=words(uc,uc.reg_read(UC_X86_REG_ESP),3);callbacks.append((terms,payload))
+                return_from_hook(uc)
+            machine.mem_write(frame,b'\0'*208)
+            machine.mem_write(step,struct.pack('<7fi',0,0,0,0,1,0,0,1))
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[step,OPS,HEAP,HEAP+0x4000],hooks=[(CALLBACK,callback)],precision=precision|(rounding<<10))
+            assert callbacks==[(TERMS,OPS+32)],(label,precision,rounding,callbacks)
+            assert snapshot[1]==1
+            if label=='retail':snapshots[rounding]=(snapshot,callbacks)
+            else:assert snapshots[rounding]==(snapshot,callbacks)
+        print(label,'initial counter capture4RM',hex(precision),flush=True)

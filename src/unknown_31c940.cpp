@@ -67,8 +67,8 @@ struct stored_word_31c940 {
 typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
 
 // These five words serve different scalar and pointer roles in separate operations.
-// The rounded-input word also serves as a linear cursor in other operations.
-// Keep its native storage separate; this view borrows the currently active roles.
+// The rounded-input word has its own consumed scalar storage.
+// This view borrows the currently active roles.
 struct solver_work_prefix_31c940 {
  union { stored_word_31c940 pair_b; __m128 const *inverse_b; float const *writeback_time; };
  union { stored_word_31c940 first_error; __m128 *angular_b; };
@@ -1403,7 +1403,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1990. Stack allocation is 0xB4, as in retail.
+// Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1441,7 +1441,10 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 		function_31c7d0();
 		if (!g_480c60) return 0;
 	}
-	for (state.solving.iteration = 0; state.solving.iteration < step->iterations; ++state.solving.iteration)
+	// Capture the first count before publishing the counter; reload later counts
+ // after each increment because the input can overlap the counter home.
+ long iteration_count=step->iterations;
+	for (state.solving.iteration = 0; state.solving.iteration < iteration_count; ++state.solving.iteration,iteration_count=step->iterations)
 	{
 		solver_step_31c940 *initial_parameters = step;
 		state.solving.saved_error = initial_parameters->error_scale;
