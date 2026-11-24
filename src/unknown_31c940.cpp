@@ -937,101 +937,74 @@ static __forceinline void solve_linear_friction(float target, float &limit,float
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,__m128 *const & angular_b_pointer, __m128 &linear_b, __m128 const *const &inverse_b_pointer,
 	solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
 {
- struct { __m128 first;
-	 __m128 second;
-	 } work;
+	struct { __m128 first;
+		__m128 second;
+	} work;
+	__m128 temporary;
+	__m128 contribution;
+	__m128 axis;
 
-__m128 temporary;
-	 __m128 contribution;
-	 __m128 axis;
-
- // Reuse the two consumed projection values for the body weights.
+	// Reuse the two consumed projection values for the body weights.
 	work.first=linear_b;
 	work.second=a->linear;
 	temporary=row->a;
-
- work.second=_mm_sub_ps(work.second,work.first);
+	work.second=_mm_sub_ps(work.second,work.first);
 	work.first=a->angular;
 	work.first=_mm_mul_ps(work.first,temporary);
-
- temporary=row->linear;
+	temporary=row->linear;
 	work.second=_mm_mul_ps(work.second,temporary);
 
- // A projection inputs precede this publication; B angular inputs follow it.
+	// A projection inputs precede this publication; B angular inputs follow it.
 	limit=next_limit;
-
- contribution=*angular_b_pointer;
+	contribution=*angular_b_pointer;
 	temporary=row->b;
 	contribution=_mm_mul_ps(contribution,temporary);
-
- work.first=_mm_add_ps(work.first,contribution);
+	work.first=_mm_add_ps(work.first,contribution);
 	work.first=_mm_add_ps(work.first,work.second);
-
- sum_three_to_arena_31c940(work.first,projection_pool.linear_friction);
-
+	sum_three_to_arena_31c940(work.first,projection_pool.linear_friction);
 	float impulse = (target * (*friction_scale_pointer)
-		- projection_pool.linear_friction * load_velocity_scale(step)) * row->a.m128_f32[3];
-
+	- projection_pool.linear_friction * load_velocity_scale(step)) * row->a.m128_f32[3];
 	float magnitude = (float)fabs(impulse);
-
 	if (magnitude > limit)
 	{
 		float factor = limit / magnitude;
-
 		impulse *= factor;
-	 row->linear.m128_f32[3] *= factor;
-
+		row->linear.m128_f32[3] *= factor;
 	}
 
- // Retain the extended impulse for accumulation, rounding only its SIMD copy.
+	// Retain the extended impulse for accumulation, rounding only its SIMD copy.
 	temporary=a->inverse_inertia;
-
- simd_scratch=impulse;
-
- work.second=_mm_load_ss(&simd_scratch);
-
- work.first=_mm_shuffle_ps(work.second,work.second,0);
+	simd_scratch=impulse;
+	work.second=_mm_load_ss(&simd_scratch);
+	work.first=_mm_shuffle_ps(work.second,work.second,0);
 	work.first=_mm_mul_ps(work.first,temporary);
-
- temporary=*inverse_b_pointer;
-
- work.second=_mm_load_ss(&simd_scratch);
-
- work.second=_mm_shuffle_ps(work.second,work.second,0);
+	temporary=*inverse_b_pointer;
+	work.second=_mm_load_ss(&simd_scratch);
+	work.second=_mm_shuffle_ps(work.second,work.second,0);
 	work.second=_mm_mul_ps(work.second,temporary);
 
- // Capture B angular before either body can replace its saved home.
+	// Capture B angular before either body can replace its saved home.
 	__m128 *angular_receiver=angular_b_pointer;
-
- axis=row->linear;
-
- temporary=_mm_mul_ps(_mm_shuffle_ps(work.first,work.first,0xff),axis);
-
- contribution=_mm_mul_ps(_mm_shuffle_ps(work.second,work.second,0xff),axis);
-
- axis=a->linear;
+	axis=row->linear;
+	temporary=_mm_mul_ps(_mm_shuffle_ps(work.first,work.first,0xff),axis);
+	contribution=_mm_mul_ps(_mm_shuffle_ps(work.second,work.second,0xff),axis);
+	axis=a->linear;
 	axis=_mm_add_ps(axis,temporary);
 	a->linear=axis;
-
- temporary=linear_b;
+	temporary=linear_b;
 	temporary=_mm_sub_ps(temporary,contribution);
 	linear_b=temporary;
-
- temporary=row->a;
+	temporary=row->a;
 	work.first=_mm_mul_ps(work.first,temporary);
 	temporary=row->b;
 	work.second=_mm_mul_ps(work.second,temporary);
-
- temporary=a->angular;
+	temporary=a->angular;
 	temporary=_mm_add_ps(temporary,work.first);
 	a->angular=temporary;
-
- work.first=*angular_receiver;
+	work.first=*angular_receiver;
 	work.first=_mm_add_ps(work.first,work.second);
 	*angular_receiver=work.first;
-
- *result+=impulse;
-
+	*result+=impulse;
 }
 
 // Select the active angular limit before the shared body-update tail. The
@@ -1854,18 +1827,28 @@ result+=2;
 					do
 					{
 						solver_linear_row_31e7b0 const *row = (solver_linear_row_31e7b0 const *)terms;
-						// Retain the angular inputs, then reuse their work vectors for reduction.
-						__m128 work_a = _mm_load_ps((float const *)&(a->angular));
-						__m128 work_b = *angular_b_pointer;
-						work_a = _mm_mul_ps(work_a, row->a);
-						__m128 work_c = row->b;
-						work_c = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_c));
-						// The lower update keeps this axis; the upper update reads the row again.
-						__m128 first_linear_axis=row->linear;
-						work_b = _mm_add_ps(work_c,
-							_mm_mul_ps(_mm_sub_ps(_mm_load_ps((float const *)&(a->linear)),
-								*(__m128 const *)linear_b_pointer), first_linear_axis));
-						sum_three_to_arena_31c940(work_b, projection_pool.linear_bounds);
+						
+ 						// Reuse consumed projection values while retaining the first bound axis.
+						struct { __m128 first;
+						__m128 second;
+						} projection;
+						__m128 temporary;
+						__m128 contribution;
+						__m128 first_linear_axis;
+						projection.first=_mm_load_ps(linear_b_pointer);
+						projection.second=a->linear;
+						temporary=row->a;
+						contribution=*angular_b_pointer;
+						first_linear_axis=row->linear;
+						projection.second=_mm_sub_ps(projection.second,projection.first);
+						projection.first=a->angular;
+						projection.first=_mm_mul_ps(projection.first,temporary);
+						temporary=row->b;
+						contribution=_mm_mul_ps(contribution,temporary);
+						projection.second=_mm_mul_ps(projection.second,first_linear_axis);
+						projection.first=_mm_add_ps(projection.first,contribution);
+						projection.first=_mm_add_ps(projection.first,projection.second);
+						sum_three_to_arena_31c940(projection.first,projection_pool.linear_bounds);
 						// Capture the step pointer for velocity and the first bound. The
 						// second bound reloads it after any first-bound result write.
 						solver_step_31c940 *parameters = step;
