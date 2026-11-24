@@ -143,7 +143,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
 // zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
 // in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
-// score 607 (was 607; m3 lane 13 r149 unchanged, its lines just above the marker): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// m3 lane 13 r149 unchanged, its lines just above the marker.
 // Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
 // EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
@@ -1038,6 +1039,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the 694 form: the previous index into EDX leaves 604 (aligned distance 844 -> 527), the 0x130f60 result into EDX
 // 706 (546), the cursor into EBP 689; no single pick reaches retail. Nothing kept: the retail load pair needs the
 // index local at one use and the field at the two later ones (a mix, match-only), and every form with it is above 607.
+// Encoded palette byte then signed-char/short/long ordinal or sign-bit bounds 604/796/794/680.
+// Byte read before metadata defaults gives the same four scores. NOT kept: 604 gains three
+// at 3829 bytes. Provider and lookup register assignments still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

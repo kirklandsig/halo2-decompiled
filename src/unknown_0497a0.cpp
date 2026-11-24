@@ -713,6 +713,9 @@
 // perspective rows (no `k` local) 536 (same code); the two reciprocals written at their uses (no sx / sy) 678 (2671 B); both wave
 // values written in the add calls (no s1 / s0 locals) 536 (same code); the first input scaled through vector3f_scale into a vector
 // 538; the first cross through cross3f_staged into a function-scope vector 536 (masked 183, same code).
+// Wave position setters for mixed/short/both 649/645/647 through either point or vector setter;
+// scaled displacement locals with point setter 648 (0x60 frame, 2650 bytes, primary shape still at +0x1c);
+// both point setters with opposite cross between updates 646.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

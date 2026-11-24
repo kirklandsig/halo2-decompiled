@@ -1036,6 +1036,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // update as `if (!left_start) left_start = points2d_differ(...)` 162; `current` as a long 281 (746 B, 0x239d50 34); the lowest
 // scan's index as a long 645 (1095 B: the scan unrolls); `hull_count = pass + 1` ahead of the index store 207; the departure
 // flag declared after the lowest scan 240.
+// The result and departure homes still differ. Post-pass short/long hull counter with one terminal continuation
+// 254/237, completion test 245/254, three terminal returns 256/239, one merged terminal return 256/239.
+// NOT kept: the short counter reaches the frame size with different homes and every form raises the score.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
