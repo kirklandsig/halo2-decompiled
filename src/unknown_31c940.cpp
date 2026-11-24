@@ -67,15 +67,29 @@ struct stored_word_31c940 {
 typedef char stored_word_size_31c940[sizeof(stored_word_31c940)==4 ? 1 : -1];
 
 // These five words serve different scalar and pointer roles in separate operations.
-struct solver_scalar_work_31c940 {
+// The rounded-input word also serves as a linear cursor in other operations.
+// Keep its native storage separate; this view borrows the currently active roles.
+struct solver_work_prefix_31c940 {
  union { stored_word_31c940 pair_b; __m128 const *inverse_b; float const *writeback_time; };
  union { stored_word_31c940 first_error; __m128 *angular_b; };
  union { stored_word_31c940 fallback_scalar; float const *friction_scale; solver_linear_row_31e7b0 const *next_circular; };
- // Normal pairs retain B's linear-field address; other updates use this word
- // for their rounded SIMD input.
- union { float simd_scalar; __m128 *linear_cursor; };
- union { stored_word_31c940 pair_a; __m128 *linear_b; float *linear_floats_b; };
 };
+union solver_simd_word_31c940 {float value;__m128 *linear_cursor;};
+struct solver_work_tail_31c940 {
+ union {stored_word_31c940 pair_a;__m128 *linear_b;float *linear_floats_b;};
+};
+struct solver_scalar_work_31c940 {
+ stored_word_31c940 &pair_b;__m128 const *&inverse_b;float const *&writeback_time;
+ stored_word_31c940 &first_error;__m128 *&angular_b;
+ stored_word_31c940 &fallback_scalar;float const *&friction_scale;solver_linear_row_31e7b0 const *&next_circular;
+ float &simd_scalar;__m128 *&linear_cursor;
+ stored_word_31c940 &pair_a;__m128 *&linear_b;float *&linear_floats_b;
+ __forceinline solver_scalar_work_31c940(solver_work_prefix_31c940 &prefix,solver_simd_word_31c940 &simd_word,solver_work_tail_31c940 &tail):
+ pair_b(prefix.pair_b),inverse_b(prefix.inverse_b),writeback_time(prefix.writeback_time),first_error(prefix.first_error),angular_b(prefix.angular_b),
+ fallback_scalar(prefix.fallback_scalar),friction_scale(prefix.friction_scale),next_circular(prefix.next_circular),
+ simd_scalar(simd_word.value),linear_cursor(simd_word.linear_cursor),pair_a(tail.pair_a),linear_b(tail.linear_b),linear_floats_b(tail.linear_floats_b){}
+};
+
 
 
 // Keep the SSE reduction in a scalar result object before x87 arithmetic.
@@ -1298,17 +1312,17 @@ struct solver_pointer_phase_31c940
 };
 struct solver_complete_scalars_31c940
 {
-	solver_scalar_work_31c940 work;
+	solver_work_tail_31c940 work;
 	solver_phase_state_31c940 phase;
 	solver_scalar_arena_31c940 projections;
 };
 
-typedef char solver_work_size_31c940[sizeof(solver_scalar_work_31c940) == 20 ? 1 : -1];
+typedef char solver_work_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_work_tail_31c940)) == 20 ? 1 : -1];
 typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 1 : -1];
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
-typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
+typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_complete_scalars_31c940)) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 2145. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2144. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1332,8 +1346,10 @@ static __forceinline void decode_solver_header_31c940(unsigned char *&op,
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
 {
-	solver_complete_scalars_31c940 frame;
-	solver_scalar_work_31c940 &scalar_work = frame.work;
+	solver_work_prefix_31c940 work_prefix;
+solver_simd_word_31c940 simd_word;
+solver_complete_scalars_31c940 frame;
+solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 	solver_phase_state_31c940 &state = frame.phase;
 	solver_scalar_arena_31c940 &projection_pool = frame.projections;
 	solver_pointer_phase_31c940 pointer_phase;
