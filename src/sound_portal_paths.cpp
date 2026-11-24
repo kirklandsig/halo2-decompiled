@@ -299,6 +299,18 @@ __forceinline long portal_path_gain(real distance, real range)
 // six uses 340 (1351 B); the portal flag test as its own `continue` 287 (same code); the starting cluster's sound index
 // named once at the top for the seed block and the loop 361; the cluster pointer declared after the arrays and the
 // nearest distance 287 (same code). Still BLOCKED-BY 0x14b240's write summary.
+// M3 lane 5 r240 (H2M_FAST with 0x18dc90, 0x14b240 and 0x222150; lane 15 r126's lead rebuilt: 8 here, 0x18dc90 4,
+// 0x18ae80 913 against its 837 on main). On the lead, the 8 are the nearest test's hoisted cluster read and the four
+// portal/cluster output stores written [iv + delta] where retail has [delta + iv] (the twin gets the stores right): the
+// deep block without its `sound` pointer (the twin's spelling) 15 (the stores become retail's, the deep block's index and
+// address registers rotate); that with the walk, fill and output tests through bit_vector_test as the twin has them 15;
+// the fill and output tests through the bit helper 8; the deep pointer renamed, declared const, or as `bsp->sounds + i`
+// 8 each; the gain block's pointer renamed or const 8, read directly 22 (1366 B); a file-local element accessor at both
+// pointer sites 8; one to three redundant paren pairs at the gain block's test 8 each; the stores as `*(i + portals)` 8;
+// the nearest test nested with the index local read inside the compare's arm 250, the local declared at the walk top
+// and assigned there 250 (the read must span the compare for the cluster pointer to win its register).
+// On main: kept, the fill and output tests through bit_vector_test 287 (same code; the walk's test through it 309 stays
+// written out, as round 204 found). Still BLOCKED-BY 0x14b240's write summary while 0x18ae80 rises on it.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -357,7 +369,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	for (long i = 0; i < bsp->sound_count; i++)
 	{
 		order[i] = i;
-		if (!(valid[i >> 5] & (1 << (i & 31))))
+		if (!bit_vector_test(valid, i))
 			distances[i] = FLT_MAX;
 	}
 	{
@@ -370,7 +382,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	for (long i = 0; i < limit; i++)
 	{
 		long index = order[i];
-		if (valid[index >> 5] & (1 << (index & 31)))
+		if (bit_vector_test(valid, index))
 		{
 			*indices++ = index;
 			if (gains)

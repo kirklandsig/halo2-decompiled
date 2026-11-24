@@ -182,7 +182,6 @@ word *function_215b50(long file_index, word *name)
 struct s_player_profile;
 void function_1a0750(s_player_profile *profile);
 const word *saved_game_storage_get_default_profile_name(long language);
-long g_55c280;
 
 // @retail 0x216760
 void function_216760(void)
@@ -635,7 +634,6 @@ void function_212f40(long preset, s_game_variant *variant)
 
 #include <xtl.h>
 
-extern bool g_55c14c;
 void function_125d60(void);
 void function_120d50(bool volatile *done, bool idle);
 
@@ -719,7 +717,6 @@ void __stdcall function_215e60(long file_index)
 
 #include "files.h"
 
-extern long g_55c154;
 long function_217590(long memory_unit);
 bool function_216d70(const char *directory, char *path, long type);
 s_type_acf665 *file_ref_create(s_type_acf665 *file, bool replace, const char *name);
