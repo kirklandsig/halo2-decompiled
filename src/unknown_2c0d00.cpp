@@ -2485,6 +2485,15 @@ long function_1fa7f0(void);
 // step as `points[end - 1]` 545 (1811 B). The outer loop as `for (; index < count; index = next)` does not compile here
 // (`next` is the body's local). Retail's tail is two inlined copies of 0x210850 (`xor eax, eax; mov ax, [esi + 0xc];
 // cmp ax, 0xffff`, the first sharing the equality test's AX load) and one `(z*z + y*y) + x*x` sum. Body unchanged.
+// M3 lane 3 r305 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400). Frame reading: the
+// eight extra bytes are two 4-byte homes retail does without here: the second side flag (`other_side`) has its own home
+// (`sete byte [..]`, retail `sete bl` in the register the first flag used), and the corner endpoint pointer cannot share
+// the candidate distance's home because the attempt counter takes that home first (equal-size homes pack by reference
+// count; retail shares distance and endpoint). The head's rotation (retail's zero in EBX and count in SI, ours EDX and
+// BX) spans 22 register webs from +0x66. No single forced register pick lowers the count (60 tried). Forms: the second
+// side as `!side` at the call with `side = !side;` at the loop end 434 (1715 B); the endpoint pointer declared ahead of
+// the previous pointer 459 (1754 B); the start point built ahead of the 0x2c2a70 call 453 (1755 B); the edge declared
+// first in the loop body 400, after type and link 400 (same code each). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
