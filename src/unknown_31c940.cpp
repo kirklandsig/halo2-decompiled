@@ -172,24 +172,53 @@ static __forceinline void project_second_linear_velocity(solver_linear_row_31e7b
 	sum_three_to_arena_31c940(work_0,projection_output);
 }
 
-static __forceinline void linear_velocity(solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float &projection_output)
+static __forceinline __m128 circular_first_projection_value(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
 {
-	// Retain the projection inputs, reusing each work vector after its last use.
-	__m128 work_a = a->linear;
-	__m128 work_b = row->a;
-	__m128 work_c = _mm_load_ps((float const *)&(row->b));
-	__m128 work_d = b->linear;
-	__m128 work_e = _mm_load_ps((float const *)&(a->angular));
-	work_a = _mm_sub_ps(work_a, work_d);
-	work_b = _mm_mul_ps(work_e, work_b);
-	work_d = _mm_load_ps((float const *)&(row->linear));
-	work_d = _mm_mul_ps(work_a, work_d);
-	work_e = _mm_mul_ps(b->angular, work_c);
-	work_a = _mm_add_ps(work_b, work_e);
-	work_b = _mm_add_ps(work_a, work_d);
-	sum_three_to_arena_31c940(work_b, projection_output);
+	__m128 w[5];
+	w[0]=b->linear;
+	w[1]=a->linear;
+	w[3]=b->angular;
+	w[2]=row->a;
+	w[1]=_mm_sub_ps(w[1],w[0]);
+	w[0]=a->angular;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=row->linear;
+	w[1]=_mm_mul_ps(w[1],w[2]);
+	w[2]=row->b;
+	w[3]=_mm_mul_ps(w[3],w[2]);
+	w[0]=_mm_add_ps(w[0],w[3]);
+	w[0]=_mm_add_ps(w[0],w[1]);
+	w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
+	w[1]=_mm_add_ss(w[1],w[0]);
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
+	w[2]=_mm_add_ss(w[2],w[1]);
+	return w[2];
 }
+static __forceinline void circular_second_projection_fields(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &linear_b,__m128 *const &angular_b, float &projection_output)
+{
+	__m128 w[5];
+	w[0]=linear_b;
+	w[1]=a->linear;
+	w[2]=row->a;
+	w[3]=row->b;
+	w[1]=_mm_sub_ps(w[1],w[0]);
+	w[0]=a->angular;
+	w[0]=_mm_mul_ps(w[0],w[2]);
+	w[2]=*angular_b;
+	w[2]=_mm_mul_ps(w[2],w[3]);
+	w[3]=row->linear;
+	w[1]=_mm_mul_ps(w[1],w[3]);
+	w[0]=_mm_add_ps(w[0],w[2]);
+	w[0]=_mm_add_ps(w[0],w[1]);
+	w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
+	w[1]=_mm_add_ss(w[1],w[0]);
+	w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
+	w[2]=_mm_add_ss(w[2],w[1]);
+	_mm_store_ss(&projection_output,w[2]);
+}
+
 
 
 static __forceinline void apply_angular(float const &impulse, solver_angular_row_31e7b0 const *row,
@@ -1246,7 +1275,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1966. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 2043. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1354,12 +1383,16 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				case 1:
 					header_complete = true;
 					continue;
-	// Two tangential rows share a circular friction limit.
+				// Two tangential rows share a circular friction limit.
 				case 7:
 				{
 					float target_a = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
-					linear_velocity(((solver_linear_row_31e7b0 *)terms), a, b, projection_pool.circular_first);
-					linear_velocity(((solver_linear_row_31e7b0 *)terms) + 1, a, b, projection_pool.circular_second);
+					__m128 *linear_b=&b->linear;
+					__m128 first_projection=circular_first_projection_value(((solver_linear_row_31e7b0*)terms),a,b);
+					// Publish this receiver after reduction, before the scalar output.
+					scalar_work.angular_b=&b->angular;
+					_mm_store_ss(&projection_pool.circular_first,first_projection);
+					circular_second_projection_fields(((solver_linear_row_31e7b0*)terms)+1,a,*linear_b,scalar_work.angular_b,projection_pool.circular_second);
 					// Both projections finish before these shared parameter reads.
 					solver_step_31c940 *parameters = step;
 					scalar_work.fallback_scalar = target_a * parameters->friction_scale - projection_pool.circular_first * parameters->velocity_scale;
