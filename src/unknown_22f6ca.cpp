@@ -358,6 +358,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // M3 lane 13 r150 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the model count read once into a
 // `long` local for the model loop's test 156 (424 B), the text count so 62 (421 B), both 163 (429 B); the model array bound
 // to a `s_model_block *const &` ahead of its loop 23, the text array so 23 (both the same code). All callees are matched.
+// M3 lane 15 r140 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23): the text loop's NULL test as
+// `if (!text) continue;` then the animation test 23; its animation test outside the NULL test 26; the model loop's start
+// and store in one `model && animating` arm with an `else if (model)` store 23; `s_screen_pane *const pane` 23; explicit
+// `!= NULL` / `!= false` tests in the text and model loops 23 (the 23s the same code). Reading: matched /O1 0x2b3e4d's
+// `and [slot], eax` is a plain `field = 0;` store to a memory local after a `repe cmpsd` left EAX zero, so retail's text
+// reset is a constant-zero store given the zero register late, its model reset a store of the counter's zero register.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

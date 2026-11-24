@@ -954,6 +954,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // named definition pointer and its +8 read: with the four zeros after both 8 (same code), the zeros between the two
 // 95 (552 B), only the first zero ahead of the split 23 (first +0x50); the definition bound to a const reference from
 // the tag-data accessor with the zeros between 95, after 92 (552 B). Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117; the reference chain rebuilt at 8,
+// first +0x9e, the same eight lines). On the chain, match-only: the material index masked into a named long with the four
+// zeros between it and the lookup 41 (re-measure: the stores stay ahead of the lookup's loads), with only the first zero
+// between 40; the material instance named as a pointer into the table with the zeros between 135 (552 B), after 8; the
+// definition read without its `+ 0x1c` and the offset added after the zeros 8; the lookup through an accessor taking an
+// already masked index 8; through an accessor with a NULL-initialised result and a named masked index 8; the four zeros
+// through a file-local reset helper taking the cache pointer after the lookup 8 (same code each), ahead of it 13.
+// Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

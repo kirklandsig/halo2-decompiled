@@ -321,6 +321,17 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // NULL-defaulted and set by `if (local_6)` 236 (982 B); the search flag as `local_4 ? (*local_4 & 1) != 0 : false` 222.
 // The two swapped home pairs stay; the bool output's chain (0x261280 -> 0x2605d0 -> 0x260670, itself BLOCKED-BY 0x262a30)
 // is unchanged. All restored.
+// M3 lane 2 r144 (h2m fast with 0x1e1f20, MATCH each run; control 12, the same two swapped home pairs). Both pairs tie in
+// weighted references, and ours orders each tied pair by its first store or address in the code (offset temporary, then
+// actor; prop node, then bool output) where retail has each pair the other way round. Combination screen of forms that
+// are each the same code alone (the bool output declared first; no second 0x25d690 position pointer; no marker-pointer
+// local; the 0x265c30 flag carried in `local_6`; the 0x262b40 result declared at function scope; the 0x1af530 real output
+// declared at the top; the rounding input declared at the arm's top; the saved reference `const`; the prop node
+// `*const`): all nine together 12, 21 seeded random subsets of two to eight of them 12 each (the same code every time).
+// Changes to the number of symbols that own a frame home, each match-only: the scratch buffer carried in the 0x1e4be0
+// pointer local (one symbol fewer in their shared cell) 12; a second actor pointer copied at the top of the not-equal
+// arm for the two late actor uses 12; a second prop-node pointer copied for the second 0x25d690 call 12 (same code
+// each: the copies fold). So the tie order follows neither the symbol count nor any of these declarations.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
