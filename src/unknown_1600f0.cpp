@@ -1748,6 +1748,10 @@ PRIVATE inline long score_string_list_1608e0()
 // header rectangle variable (diagnostic, a cast) 640 at frame 0x7a0, still no reload. So neither an address-taking
 // inline helper nor sharing the header rectangle's storage makes this build read the origin again after that call;
 // lane 6's diagnostic (the origin's address stored in a global) is still the only form that does.
+// Typed title buffer 679; title and caption buffer 679; caption and team-name buffer 679;
+// one text buffer for all three 679; shared title and caption rectangle 679; separate optional
+// caption rectangles 679; shared row color 679; first palette color passed directly 721.
+// NOT kept: the frame and viewer register stay displaced, and direct palette access shortens the body.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

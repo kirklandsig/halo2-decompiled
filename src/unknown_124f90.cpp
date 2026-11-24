@@ -1342,18 +1342,6 @@ bool sound_playback_update_location(long sound_index)
 
 /* ---- gains in decibels, held as real bits ---- */
 
-/* a sound class's volume fade (g_502118, unknown_221490.cpp) */
-struct s_sound_class_fade
-{
-	dword target;
-	s_decibels current;
-	real time;
-	byte flags;
-	byte unknownd[3];
-};
-
-extern s_sound_class_fade *g_502118;
-
 long sound_definition_gain_lower(s_sound_definition const *definition);
 long sound_definition_gain_upper(s_sound_definition const *definition);
 real function_2195f0(real decibels);
@@ -4976,6 +4964,16 @@ struct s_128ca0
 // chunk-queue call 199 (1056 B); on this body `char count = NONE` in place 203 (1054 B), declared just before function_21f720
 // 197 (1056 B). Every char form keeps the scratch shift at the pitch-range index (+0x12a); a declaration live across a call
 // lengthens the frame. Body unchanged.
+// M3 lane 14 r150 (h2m fast with 0x1293f0, MATCH throughout; control 48, aligned 36). The aligned rows: both pins'
+// scratch pair (the gain byte and the bits' copy trade registers), the field_c store one row late at the first pin, the
+// count's `or dl, 0xff` with immediate compares for retail's `or edx, -1` and register compares, the tail's rotation
+// after the second pin, and the second pending test with the constant 8 in EBX. Tried: the processed bits bound by a
+// `s_decibels const &` to the local and passed as the sum's right operand in both pins 48 (same code); the
+// permutation's gain bound by a const reference to its converted value, then summed, in both pins 152 (1062 B: the
+// gain is stored and reloaded); the voice's current permutation named in the second arm's test for the test and the
+// gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
+// is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
+// field_c store 48 (same code: the store still follows the index load).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
