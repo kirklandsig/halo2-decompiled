@@ -588,6 +588,21 @@ __forceinline bool function_184448(long arg_0)
 // group read (retail forms the element address with a lea and reads +6 through it), the worklist cursor zeroed ahead
 // of the six bounds stores, the per-face bounds constants loaded at the face-loop top, and the product order in the
 // plane transform. Body unchanged; still BLOCKED-BY 0x48e70.
+// M3 lane 5 r244 (fast screen with the callers 0x9cca0/0x184060/0x184250, all MATCH each run; control 965). On the form
+// with retail's frame (the axes read from g_440b94 at each use, re-measured 974 at 4595 B, first difference +0x1c; with
+// the flag word in a long for the index and the flip test, re-measured 970 at retail's 4590 B): the face array in a
+// per-face local indexed by the face for both field reads and for the neighbour tests, with no element pointer
+// (retail's `[ebx + esi*8]` and its +0x10 home) 970 (same code: the array was already one value); that with the plane
+// array in a per-face local as well 975 (4573 B); that with the edge and vertex arrays in locals ahead of the vertex
+// loop 968 (4590 B); that with the per-face bounds initialised at the face-loop top 979 (4590 B); the worklist scan
+// with a found flag (retail has no index == count test) on this body 970 (4573 B), on the 968 form 987 (4595 B).
+// Reading of the allocator's order on the 970 and 968 forms: the head's three register differences (the start face in
+// EBX for retail's EDI, the scenario base in ECX for EDX, the surface list in EDI for ECX) are one decision. The list's
+// range from the head to the vertex loop ranks 124 and takes EDI, the lowest-scored free register; retail gives it ECX,
+// which needs the face array (EBX; ranked 56 here), the plane array (EDI) and the face index (ESI; ranked 152 here and
+// given EDX) coloured ahead of it, and the flag word (ranked 96 here, given ECX) in EDX. Forcing any one of those
+// decisions (a diagnostic, not source) moves the count by 13 at most (957), so no single count gives retail's head.
+// Body unchanged; still BLOCKED-BY 0x48e70 for the reloads after its calls.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

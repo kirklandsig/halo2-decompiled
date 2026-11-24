@@ -973,6 +973,15 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // file-local inline (diagnostic, a one-caller helper) 453 plain inline (out of line, 590 B), 154 forced inline (880 B),
 // with the sine and cosine as its arguments 152, with the axis drawn inside it 154; the oscillation as `cos(0.005f *
 // time)` 130 and the angle as `0.15f * fraction * oscillation * oscillation` 130 (same code each). Body unchanged.
+// Rounded angle held as double with clock record/interval across draw/tick
+// count across draw/both clock fields 161/154/162/213. Early seed alone or
+// with the early interval 131/122, bounded generator without or with early
+// seed 155/160. Early interval with real angle 147; whole time after draw
+// 195; elapsed time started before draw 137. Real angle promoted at the
+// rotation with early interval/time before draw/time after draw/elapsed
+// time scaled after draw 120/127/193/135.
+// NOT kept: 122 and 120 both move the single-use interval read ahead of
+// the seed update. The 120 form also leaves the 0x1c frame.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1259,6 +1268,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // the object index in a local, as matched 0x1171a0 and 0x117a80 write theirs, 303 (aligned 42, masked 14; a one-use local, so
 // match-only); the material index as a default overridden under `== NONE` 376, as an if/else with the tag arm first 318.
 // Body unchanged.
+// With the material call's two stack arguments, full baseline 280. Lighting byte pointer
+// from the cache offset or typed cache member, respectively: ternary 280/280, NULL before
+// lookup 273/273, success arm first 280/280, absent arm first 280/280. NOT kept: seven-point
+// gain is below the threshold. Record spill and draw-state expansion still differ. Body restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

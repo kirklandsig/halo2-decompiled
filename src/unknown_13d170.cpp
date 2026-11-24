@@ -1018,6 +1018,22 @@ struct s_physical_block_iterator
 // allocation test on, retail the reverse); by `best.previous == NONE` tested directly in both stages 93 (same code); on
 // that, the overlap end as `pages + best.offset` 93 (same code) and the second overlap test as `best.offset < offset +
 // pages` 93 (masked 21). Body unchanged.
+// M3 lane 13 r153 (h2m fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201; lane 1 r124's 40 lead rebuilt,
+// 40 at 1213 B). Readings on the lead. The walk: the overlap end is formed in a copy of its higher-ranked operand, here
+// best.offset (its member is first named late, pages at the top), and best.offset is then read from memory again; retail
+// forms it in the page count's register because best.offset stays in EDI for the second test, so the open cause there is
+// that this build does not hold best.offset in a register across the two tests. 60 single allocator decisions forced on
+// the lead (picks and ranks of the walk's values): none below the lead. The insertion through `long previous =
+// best.previous;` tested in both stages re-measured 93: the result avoids EDI there because a waiting value has only EDI
+// left, and takes EBX; forcing the result to EDI leaves fewer differing rows but moves the first one up to +0xcb. On
+// main: the insertion as one successor lookup (`next` from the head or the predecessor), one stage for the previous link
+// and one for the next link 255 (1196 B); the candidate prefetch on `(i + 1) % 256` with the index stepped by the same
+// expression (no `next` local) 201 (same code); the insertion's predecessor index in a `long previous` used by its test
+// and its lookup 201 (same code).
+// The time-and-page rule still threads into the take branch. Earlier-timestamp branches 212, later-timestamp
+// branches 246, tie first with earlier and later time 219/219, combined earlier and later time expressions
+// 247/242, packed time and signed-page ranks 356, packed ranks with symmetric age clamps 390. The packed form
+// changes the frame probe.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

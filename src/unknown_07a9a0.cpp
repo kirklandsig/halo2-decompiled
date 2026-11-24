@@ -1852,6 +1852,17 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // B); the variant declared NULL and then assigned 964; the accessor called in the lookup's argument 951 (2924 B); the
 // lookup only when there is a summary 916 on the 977 form (0x73530 1: the call then follows the summary read); the
 // 0x5b060 accessor with two returns 966 (and 0x5b060 itself lost, 27 B for 26). None makes the opening lookup a call.
+// M3 lane 15 r143 (fast screens with 0x73530, 0x63220, 0x192e60, 0x192db0, 0x193f50 and 0x5b060 listed; control 871 at
+// 2780 B, 0x73530 MATCH; body unchanged). Asked whether the three expansion choices that differ (the opening 0x192e60
+// and 0x193250 expand here where retail calls them, 0x193300 is called where retail expands it) come from how the
+// callees themselves are written, since each goes the other way for a callee of about the same size. They do not. In
+// the callees' file: 0x192e60 and its siblings calling the real 0x192db0 and 0x193f50 in place of the file-local
+// inline copies of those two (the file's 34 functions, 0x63220 and 0x73530 all MATCH) leaves this function at 871, lane
+// 3's guarded lead at 858 (2828 B) and its unguarded form at 945 (0x73530 8), the same code each; 0x193300 with the
+// capacity selection written in its own body and 0x193250 returning it at its shared label (no forced-inline copy; all
+// 36 MATCH) the same three values; both together the same; 0x193250 returning 0x193300 from each of its two cases
+// instead 868 (2848 B) with 0x193250 lost (56 B for 100). So the choices do not follow the callees' spelling, and the
+// opening lookup still needs one more two-way test in front of it that emits no code.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
