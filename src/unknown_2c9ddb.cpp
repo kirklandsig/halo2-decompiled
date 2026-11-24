@@ -527,6 +527,15 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // with shared copy destination 173, failure-first with copy destination 188 or private template 178,
 // eligibility disjunction with copy destination 179, separate dispatch returns with copy destination 179,
 // common screen dispatch with private template 196. NOT kept: receiver allocation and frame layout differ.
+// M3 lane 12 r187 (H2M_FAST with 0x13fac0, 0x212bc0, 0x238c69 and 0x2ca244, all MATCH; control 61, aligned 25; body
+// unchanged). Aimed at lane 7 r224's reading (retail does not count a copy's destination as a use of the variant's
+// address): on this one-load body the second half's copy as memcpy into `variant_bytes`, as `*(&record.variant) =
+// variant`, through a named pointer or a reference to the whole record for the index and the copy, and as memcpy
+// through a cast of the byte array 61 each (the same code: the address is still loaded once into EAX for the copy and
+// the build-default push); the copy ahead of the index store 174 (581 B, the frame flips). Retail's selected arm shows
+// the same thing without any call between the two uses (`mov edi, 0x54e4a0` for the copy, then `mov eax, 0x54e4a0` for
+// the file type, 0x2ca482 and 0x2ca492), a pair this build always joins in one register, so in retail's compile the
+// copy's destination and the argument are not one address value.
 // Keyboard mode produced by the two successful decodes. Guarded assignments or
 // conditional results give long 167/173, short 172/179, word 172/179, enum 167/173.
 // NOT kept: the frame loses its 0x70 bias and the score rises.
